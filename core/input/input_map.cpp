@@ -400,6 +400,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_filedialog_refresh",                         TTRC("Refresh") },
     { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
     { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
+    { "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
     { "",                                              ""}
 	/* clang-format on */
 };
@@ -753,6 +754,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_submit", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::U | KeyModifierMask::CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_unicode_start", inputs);
 
 	// ///// UI Graph Shortcuts /////
 

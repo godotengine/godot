@@ -41,11 +41,11 @@ layout(location = 3) out vec2 pixel_size_interp;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-
+/* clang-format off */
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
 } material;
+/* clang-format on */
 #endif
 
 #GLOBALS
@@ -214,14 +214,14 @@ void main() {
 
 	color_interp = color;
 
+	vertex = (canvas_data.canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
+
 	if (canvas_data.use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid
 		uv += 1e-5;
 	}
-
-	vertex = (canvas_data.canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
 	vertex_interp = vertex;
 	uv_interp = uv;
@@ -258,11 +258,11 @@ layout(location = 3) in vec2 pixel_size_interp;
 layout(location = 0) out vec4 frag_color;
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
-
+/* clang-format off */
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
 } material;
+/* clang-format on */
 #endif
 
 vec2 screen_uv_to_sdf(vec2 p_uv) {

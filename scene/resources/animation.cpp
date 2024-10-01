@@ -321,8 +321,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				Vector<real_t> times = d["times"];
 				Vector<real_t> values = d["points"];
 #ifdef TOOLS_ENABLED
-				ERR_FAIL_COND_V(!d.has("handle_modes"), false);
-				Vector<int> handle_modes = d["handle_modes"];
+				Vector<int> handle_modes;
+				if (d.has("handle_modes")) {
+					handle_modes = d["handle_modes"];
+				} else {
+					handle_modes.resize_zeroed(times.size());
+				}
 #endif // TOOLS_ENABLED
 
 				ERR_FAIL_COND_V(times.size() * 5 != values.size(), false);
@@ -3902,6 +3906,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
+	ClassDB::bind_method(D_METHOD("optimize", "allowed_velocity_err", "allowed_angular_err", "precision"), &Animation::optimize, DEFVAL(0.01), DEFVAL(0.01), DEFVAL(3));
 	ClassDB::bind_method(D_METHOD("compress", "page_size", "fps", "split_tolerance"), &Animation::compress, DEFVAL(8192), DEFVAL(120), DEFVAL(4.0));
 
 	ClassDB::bind_method(D_METHOD("is_capture_included"), &Animation::is_capture_included);
@@ -4804,9 +4809,9 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 					continue; // This track is exhausted (all keys were added already), don't consider.
 				}
 			}
-
-			uint32_t key_frame = double(track_get_key_time(uncomp_track, time_tracks[i].key_index)) / frame_len;
-
+			double key_time = track_get_key_time(uncomp_track, time_tracks[i].key_index);
+			double result = key_time / frame_len;
+			uint32_t key_frame = Math::fast_ftoi(result);
 			if (time_tracks[i].needs_start_frame && key_frame > base_page_frame) {
 				start_frame = true;
 				best_frame = base_page_frame;

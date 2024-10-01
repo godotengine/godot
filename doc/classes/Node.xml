@@ -498,6 +498,12 @@
 				Returns the time elapsed (in seconds) since the last process callback. This value is identical to [method _process]'s [code]delta[/code] parameter, and may vary from frame to frame. See also [constant NOTIFICATION_PROCESS].
 			</description>
 		</method>
+		<method name="get_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
+			</description>
+		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -965,6 +971,13 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Similar to [method call_thread_safe], but for setting properties.
+			</description>
+		</method>
+		<method name="set_translation_domain_inherited">
+			<return type="void" />
+			<description>
+				Makes this node inherit the translation domain from its parent node. If this node has no parent, the main translation domain will be used.
+				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
 		<method name="update_configuration_warnings">

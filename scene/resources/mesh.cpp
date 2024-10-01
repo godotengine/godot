@@ -205,81 +205,81 @@ Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
 int Mesh::get_surface_count() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_surface_count, ret);
+	GDVIRTUAL_CALL(_get_surface_count, ret);
 	return ret;
 }
 
 int Mesh::surface_get_array_len(int p_idx) const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_array_len, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_array_len, p_idx, ret);
 	return ret;
 }
 
 int Mesh::surface_get_array_index_len(int p_idx) const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_array_index_len, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_array_index_len, p_idx, ret);
 	return ret;
 }
 
 Array Mesh::surface_get_arrays(int p_surface) const {
 	Array ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_arrays, p_surface, ret);
+	GDVIRTUAL_CALL(_surface_get_arrays, p_surface, ret);
 	return ret;
 }
 
 TypedArray<Array> Mesh::surface_get_blend_shape_arrays(int p_surface) const {
 	TypedArray<Array> ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_blend_shape_arrays, p_surface, ret);
+	GDVIRTUAL_CALL(_surface_get_blend_shape_arrays, p_surface, ret);
 	return ret;
 }
 
 Dictionary Mesh::surface_get_lods(int p_surface) const {
 	Dictionary ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_lods, p_surface, ret);
+	GDVIRTUAL_CALL(_surface_get_lods, p_surface, ret);
 	return ret;
 }
 
 BitField<Mesh::ArrayFormat> Mesh::surface_get_format(int p_idx) const {
 	uint32_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_format, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_format, p_idx, ret);
 	return ret;
 }
 
 Mesh::PrimitiveType Mesh::surface_get_primitive_type(int p_idx) const {
 	uint32_t ret = PRIMITIVE_MAX;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_primitive_type, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_primitive_type, p_idx, ret);
 	return (Mesh::PrimitiveType)ret;
 }
 
 void Mesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
-	GDVIRTUAL_REQUIRED_CALL(_surface_set_material, p_idx, p_material);
+	GDVIRTUAL_CALL(_surface_set_material, p_idx, p_material);
 }
 
 Ref<Material> Mesh::surface_get_material(int p_idx) const {
 	Ref<Material> ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_material, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_material, p_idx, ret);
 	return ret;
 }
 
 int Mesh::get_blend_shape_count() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_blend_shape_count, ret);
+	GDVIRTUAL_CALL(_get_blend_shape_count, ret);
 	return ret;
 }
 
 StringName Mesh::get_blend_shape_name(int p_index) const {
 	StringName ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_blend_shape_name, p_index, ret);
+	GDVIRTUAL_CALL(_get_blend_shape_name, p_index, ret);
 	return ret;
 }
 
 void Mesh::set_blend_shape_name(int p_index, const StringName &p_name) {
-	GDVIRTUAL_REQUIRED_CALL(_set_blend_shape_name, p_index, p_name);
+	GDVIRTUAL_CALL(_set_blend_shape_name, p_index, p_name);
 }
 
 AABB Mesh::get_aabb() const {
 	AABB ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_aabb, ret);
+	GDVIRTUAL_CALL(_get_aabb, ret);
 	return ret;
 }
 

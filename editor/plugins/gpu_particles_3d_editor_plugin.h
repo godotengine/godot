@@ -59,7 +59,7 @@ protected:
 	Vector<Face3> geometry;
 
 	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
-	virtual void _generate_emission_points(){};
+	virtual void _generate_emission_points() {}
 	void _node_selected(const NodePath &p_path);
 
 public:

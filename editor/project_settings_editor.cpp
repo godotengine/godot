@@ -31,7 +31,7 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_log.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -106,7 +106,6 @@ void ProjectSettingsEditor::_update_advanced(bool p_is_advanced) {
 void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
 	EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", p_button_pressed);
 	_update_advanced(p_button_pressed);
-	general_settings_inspector->set_restrict_to_basic_settings(!p_button_pressed);
 }
 
 void ProjectSettingsEditor::_setting_selected(const String &p_path) {
@@ -267,7 +266,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	String name = property_box->get_text().strip_edges();
-	if (!name.contains("/")) {
+	if (!name.begins_with("_") && !name.contains("/")) {
 		name = "global/" + name;
 	}
 	return name;
@@ -688,6 +687,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector = memnew(SectionedInspector);
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
+	general_settings_inspector->register_advanced_toggle(advanced);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
@@ -775,7 +775,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	}
 
 	_update_advanced(use_advanced);
-	general_settings_inspector->set_restrict_to_basic_settings(!use_advanced);
 
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));

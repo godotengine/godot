@@ -267,6 +267,14 @@ bool Engine::is_extra_gpu_memory_tracking_enabled() const {
 	return extra_gpu_memory_tracking;
 }
 
+void Engine::set_print_to_stdout(bool p_enabled) {
+	CoreGlobals::print_line_enabled = p_enabled;
+}
+
+bool Engine::is_printing_to_stdout() const {
+	return CoreGlobals::print_line_enabled;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }

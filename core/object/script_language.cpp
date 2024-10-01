@@ -174,6 +174,8 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::get_rpc_config);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
 
@@ -189,7 +191,17 @@ void Script::reload_from_file() {
 	set_source_code(rel->get_source_code());
 	set_last_modified_time(rel->get_last_modified_time());
 
-	reload();
+	// Only reload the script when there are no compilation errors to prevent printing the error messages twice.
+	if (rel->is_valid()) {
+		if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
+			get_language()->reload_tool_script(this, true);
+		} else {
+			// It's important to set p_keep_state to true in order to manage reloading scripts
+			// that are currently instantiated.
+			reload(true);
+		}
+	}
+
 #else
 	Resource::reload_from_file();
 #endif

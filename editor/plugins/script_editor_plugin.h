@@ -131,7 +131,7 @@ class ScriptEditorQuickOpen : public ConfirmationDialog {
 
 	void _update_search();
 
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	Vector<String> functions;
 
 	void _confirmed();

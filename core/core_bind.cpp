@@ -184,6 +184,10 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 	::ResourceSaver::remove_resource_format_saver(p_format_saver);
 }
 
+ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
+	return ::ResourceSaver::get_resource_id_for_path(p_path, p_generate);
+}
+
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
@@ -191,6 +195,7 @@ void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
+	ClassDB::bind_method(D_METHOD("get_resource_id_for_path", "path", "generate"), &ResourceSaver::get_resource_id_for_path, DEFVAL(false));
 
 	BIND_BITFIELD_FLAG(FLAG_NONE);
 	BIND_BITFIELD_FLAG(FLAG_RELATIVE_PATHS);
@@ -1419,6 +1424,11 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 	}
 }
 
+ClassDB::APIType ClassDB::class_get_api_type(const StringName &p_class) const {
+	::ClassDB::APIType api_type = ::ClassDB::get_api_type(p_class);
+	return (APIType)api_type;
+}
+
 bool ClassDB::class_has_signal(const StringName &p_class, const StringName &p_signal) const {
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
@@ -1615,7 +1625,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled" || pf == "is_class_enum_bitfield");
+				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		for (const String &E : get_class_list()) {
@@ -1635,6 +1645,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_parent_class", "class", "inherits"), &ClassDB::is_parent_class);
 	::ClassDB::bind_method(D_METHOD("can_instantiate", "class"), &ClassDB::can_instantiate);
 	::ClassDB::bind_method(D_METHOD("instantiate", "class"), &ClassDB::instantiate);
+
+	::ClassDB::bind_method(D_METHOD("class_get_api_type", "class"), &ClassDB::class_get_api_type);
 
 	::ClassDB::bind_method(D_METHOD("class_has_signal", "class", "signal"), &ClassDB::class_has_signal);
 	::ClassDB::bind_method(D_METHOD("class_get_signal", "class", "signal"), &ClassDB::class_get_signal);
@@ -1669,6 +1681,12 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
+
+	BIND_ENUM_CONSTANT(API_CORE);
+	BIND_ENUM_CONSTANT(API_EDITOR);
+	BIND_ENUM_CONSTANT(API_EXTENSION);
+	BIND_ENUM_CONSTANT(API_EDITOR_EXTENSION);
+	BIND_ENUM_CONSTANT(API_NONE);
 }
 
 } // namespace special
@@ -1835,6 +1853,14 @@ String Engine::get_write_movie_path() const {
 	return ::Engine::get_singleton()->get_write_movie_path();
 }
 
+void Engine::set_print_to_stdout(bool p_enabled) {
+	::Engine::get_singleton()->set_print_to_stdout(p_enabled);
+}
+
+bool Engine::is_printing_to_stdout() const {
+	return ::Engine::get_singleton()->is_printing_to_stdout();
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	::Engine::get_singleton()->set_print_error_messages(p_enabled);
 }
@@ -1903,10 +1929,14 @@ void Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
+	ClassDB::bind_method(D_METHOD("set_print_to_stdout", "enabled"), &Engine::set_print_to_stdout);
+	ClassDB::bind_method(D_METHOD("is_printing_to_stdout"), &Engine::is_printing_to_stdout);
+
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_to_stdout"), "set_print_to_stdout", "is_printing_to_stdout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_physics_steps_per_frame"), "set_max_physics_steps_per_frame", "get_max_physics_steps_per_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");

@@ -880,6 +880,11 @@ Error GDScript::reload(bool p_keep_state) {
 	if (can_run && p_keep_state) {
 		_restore_old_static_data();
 	}
+
+	if (p_keep_state) {
+		// Update the properties in the inspector.
+		update_exports();
+	}
 #endif
 
 	reloading = false;
@@ -906,7 +911,7 @@ void GDScript::get_members(HashSet<StringName> *p_members) {
 	}
 }
 
-const Variant GDScript::get_rpc_config() const {
+Variant GDScript::get_rpc_config() const {
 	return rpc_config;
 }
 

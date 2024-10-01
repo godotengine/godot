@@ -41,11 +41,11 @@ struct [[nodiscard]] Basis {
 		Vector3(0, 0, 1)
 	};
 
-	_FORCE_INLINE_ const Vector3 &operator[](int p_axis) const {
-		return rows[p_axis];
+	_FORCE_INLINE_ const Vector3 &operator[](int p_row) const {
+		return rows[p_row];
 	}
-	_FORCE_INLINE_ Vector3 &operator[](int p_axis) {
-		return rows[p_axis];
+	_FORCE_INLINE_ Vector3 &operator[](int p_row) {
+		return rows[p_row];
 	}
 
 	void invert();

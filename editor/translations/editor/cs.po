@@ -48,13 +48,14 @@
 # Demon <scheuer.cz@gmail.com>, 2024.
 # Moneroboi <davidkylar@email.cz>, 2024.
 # michaloM <michalsvoboda2004@gmail.com>, 2024.
+# freezerbox <freezerbox.site@proton.me>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-27 00:53+0000\n"
-"Last-Translator: michaloM <michalsvoboda2004@gmail.com>\n"
+"PO-Revision-Date: 2024-09-02 12:09+0000\n"
+"Last-Translator: freezerbox <freezerbox.site@proton.me>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -62,7 +63,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavní vlákno"
@@ -389,6 +390,9 @@ msgstr "Označit slovo pod kurzorem"
 msgid "Add Selection for Next Occurrence"
 msgstr "Přidat další výskyt do označení"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Přeskočit výběr pro Další Výskyt"
+
 msgid "Clear Carets and Selection"
 msgstr "Odnačit kurzory a výběr"
 
@@ -584,6 +588,9 @@ msgstr "Animace: Vložit klíče"
 msgid "Animation Delete Keys"
 msgstr "Animace: Smazat klíče"
 
+msgid "Focus"
+msgstr "Zaměřit"
+
 msgid "Select All Keys"
 msgstr "Vybrat všechny klíče"
 
@@ -608,6 +615,21 @@ msgstr "Animace: Změnit hodnotu klíčového snímku"
 msgid "Animation Change Call"
 msgstr "Animace: Změnit volání"
 
+msgid "Animation Multi Change Transition"
+msgstr "Animace Multi Change Přechod"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animace Multi Change Position3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Animace Multi Change Rotation3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Animace Multi Change Scale3D"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Animace Multi Change Hodnota Klíčového snímku"
+
 msgid "Change Animation Length"
 msgstr "Změnit délku animace"
 
@@ -619,6 +641,12 @@ msgstr "Nelze změnit režim smyčky na instanci animace z importované scény."
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "Nelze změnit režim smyčky na animaci vložené do jiné scény."
+
+msgid "3D Position Track..."
+msgstr "Stopa 3D Pozice"
+
+msgid "3D Rotation Track..."
+msgstr "Stopa 3D rotace"
 
 msgid "Blend Shape Track..."
 msgstr "Stopa prolínání tvarů..."
@@ -6417,14 +6445,14 @@ msgstr "Odstranit odchozí kontrolní bod křivky"
 msgid "Remove In-Control from Curve"
 msgstr "Odstranit příchozí kontrolní bod křivky"
 
-msgid "Split Curve"
-msgstr "Rozdělit křivku"
-
 msgid "Move Point in Curve"
 msgstr "Přesunout bod v křivce"
 
 msgid "Add Point to Curve"
 msgstr "Přidat bod do křivky"
+
+msgid "Split Curve"
+msgstr "Rozdělit křivku"
 
 msgid "Move In-Control in Curve"
 msgstr "Odstranit vnitřní kontrolní bod křivky"
@@ -9139,8 +9167,181 @@ msgstr "Neplatné přiřazení '%s' do '%s'."
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
 
+msgid "Duplicated hint: '%s'."
+msgstr "Duplikovaná nápověda: '%s'."
+
+msgid "Range hint is for '%s' and '%s' only."
+msgstr "Nápověda rozsahu je pouze pro '%s' a '%s'."
+
+msgid "Expected ',' after integer constant."
+msgstr "Očekáváno ',' po integer konstantě."
+
+msgid "Expected an integer constant after ','."
+msgstr "Očekávána integer konstanta po ','."
+
+msgid "Can only specify '%s' once."
+msgstr "'%s' lze zadat pouze jednou."
+
+msgid "The instance index can't be negative."
+msgstr "Instance index nesmí být záporný."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"backend."
+msgstr ""
+"'hint_normal_roughness_texture' je pouze dostupné při používání Forward+ "
+"backendu."
+
+msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
+msgstr "'hint_normal_roughness_texture' není podporované v '%s' shaderech."
+
+msgid "'hint_depth_texture' is not supported in '%s' shaders."
+msgstr "'hint_depth_texture' není podporované v '%s' shaderech."
+
+msgid "This hint is only for sampler types."
+msgstr "Tento hint je pouze pro sampler typy."
+
+msgid "Redefinition of hint: '%s'. The hint has already been set to '%s'."
+msgstr "Předefinování hintu: '%s'. Hint byl již nastaven na: '%s'."
+
+msgid "Duplicated filter mode: '%s'."
+msgstr "Duplikovaný filter režim: '%s'."
+
+msgid ""
+"Redefinition of filter mode: '%s'. The filter mode has already been set to "
+"'%s'."
+msgstr ""
+"Předefinování režimu filtru: '%s'. Režim filtru byl již nastaven na '%s'."
+
+msgid "Duplicated repeat mode: '%s'."
+msgstr "Duplikovaný opakovací režim: '%s'."
+
+msgid ""
+"Redefinition of repeat mode: '%s'. The repeat mode has already been set to "
+"'%s'."
+msgstr ""
+"Předefinování opakovacího režimu: '%s'. Opakovací režim byl již nastaven na "
+"'%s'."
+
+msgid "Invalid constant type (samplers are not allowed)."
+msgstr "Neplatný typ konstanty (samplery nejsou povoleny)."
+
+msgid "Invalid function type (samplers are not allowed)."
+msgstr "Neplatný typ funkce (samplery nejsou povoleny)."
+
+msgid "Expected a function name after type."
+msgstr "Očekáván název funkce po typu."
+
+msgid "Expected '(' after function identifier."
+msgstr "Očekáváno '(' po identifikátoru funkce."
+
+msgid ""
+"Global non-constant variables are not supported. Expected '%s' keyword before "
+"constant definition."
+msgstr ""
+"Globální non-constant proměnné nejsou podporovány. Očekávané '%s' klíčové "
+"slovo před definicí konstanty."
+
+msgid "Expected an identifier after type."
+msgstr "Očekáván indentifikátor po typu."
+
+msgid ""
+"The '%s' qualifier cannot be used within a function parameter declared with "
+"'%s'."
+msgstr ""
+"'%s' kvalifikátor nemůže být použit v rámci parametru funkce prohlášeným s "
+"'%s'."
+
+msgid "Expected a valid data type for argument."
+msgstr "Očekávám platný data typ pro argument."
+
+msgid "Opaque types cannot be output parameters."
+msgstr "Neprůhledné typy nemohou být výstupními parametry."
+
+msgid "Expected a '%s'."
+msgstr "Očekáváno: '%s'."
+
+msgid "Expected a '%s' or '%s'."
+msgstr "Očekáváno '%s' nebo '%s'."
+
+msgid "Expected a '%s' after '%s'."
+msgstr "Očekáváno '%s' po '%s'."
+
+msgid "Redefinition of '%s'."
+msgstr "Redefinice '%s'."
+
+msgid "Unknown directive."
+msgstr "Neznámá direktiva."
+
+msgid "Invalid macro name."
+msgstr "Neplatný název makra."
+
+msgid "Macro redefinition."
+msgstr "Redefinice makra."
+
 msgid "Invalid argument name."
 msgstr "Neplatný název argumentu."
+
+msgid "Expected a comma in the macro argument list."
+msgstr "Očekávaná čárka v seznamu makro argumentů."
+
+msgid "'##' must not appear at beginning of macro expansion."
+msgstr "'##' nesmí být na začátku rozšíření makra."
+
+msgid "'##' must not appear at end of macro expansion."
+msgstr "'##' nesmí být na konci rozšíření makra."
+
+msgid "Missing condition."
+msgstr "Chybějící podmínka."
+
+msgid "Condition evaluation error."
+msgstr "Chyba ve vyhodnocení podmínky."
+
+msgid "Unmatched else."
+msgstr "Nesdružené else."
+
+msgid "Invalid else."
+msgstr "Neplatné else."
+
+msgid "Unmatched endif."
+msgstr "Nesdružené endif."
+
+msgid "Invalid endif."
+msgstr "Neplatné endif."
+
+msgid "Invalid ifdef."
+msgstr "Neplatný ifdef."
+
+msgid "Invalid ifndef."
+msgstr "Neplatný ifndef."
+
+msgid "Shader include file does not exist:"
+msgstr "ShaderInclude soubor neexistuje:"
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Načtení Shader include selhalo. Existuje shader include? Obsahuje kód "
+"cyklickou dependency?"
+
+msgid "Shader include resource type is wrong."
+msgstr "Typ zdroje Shader include je špatný."
+
+msgid "Cyclic include found"
+msgstr "Cyclický include nalezen"
+
+msgid "Shader max include depth exceeded."
+msgstr "Maximální hloubka Shader include překročena."
+
+msgid "Invalid pragma directive."
+msgstr "Neplatná pragma direktiva."
+
+msgid "Invalid undef."
+msgstr "Neplatný undef."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Limit rozšíření maker překročen."
 
 msgid "Invalid macro argument count."
 msgstr "Neplatný počet argumentů makra."

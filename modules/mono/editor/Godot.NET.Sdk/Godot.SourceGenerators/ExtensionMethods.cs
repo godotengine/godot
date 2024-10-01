@@ -155,6 +155,32 @@ namespace Godot.SourceGenerators
             };
         }
 
+        public static string GetAccessibilityKeyword(this INamedTypeSymbol namedTypeSymbol)
+        {
+            if (namedTypeSymbol.DeclaredAccessibility == Accessibility.NotApplicable)
+            {
+                // Accessibility not specified. Get the default accessibility.
+                return namedTypeSymbol.ContainingSymbol switch
+                {
+                    null or INamespaceSymbol => "internal",
+                    ITypeSymbol { TypeKind: TypeKind.Class or TypeKind.Struct } => "private",
+                    ITypeSymbol { TypeKind: TypeKind.Interface } => "public",
+                    _ => "",
+                };
+            }
+
+            return namedTypeSymbol.DeclaredAccessibility switch
+            {
+                Accessibility.Private => "private",
+                Accessibility.Protected => "protected",
+                Accessibility.Internal => "internal",
+                Accessibility.ProtectedAndInternal => "private",
+                Accessibility.ProtectedOrInternal => "private",
+                Accessibility.Public => "public",
+                _ => "",
+            };
+        }
+
         public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
         {
             return symbol.IsGenericType ?

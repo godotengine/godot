@@ -517,6 +517,10 @@ abstract class BaseGodotEditor : GodotActivity() {
 			return isNativeXRDevice();
 		}
 
+		if (featureTag == "horizonos") {
+			return isHorizonOSDevice()
+		}
+
         return false
     }
 }

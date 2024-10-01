@@ -245,7 +245,6 @@ namespace GodotTools.Export
                     {
                         publishOutputDir = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "godot-publish-dotnet",
                             $"{buildConfig}-{runtimeIdentifier}");
-
                     }
 
                     outputPaths.Add(publishOutputDir);
@@ -322,6 +321,30 @@ namespace GodotTools.Export
                             {
                                 if (embedBuildResults)
                                 {
+                                    if (platform == OS.Platforms.Android)
+                                    {
+                                        if (IsSharedObject(Path.GetFileName(path)))
+                                        {
+                                            AddSharedObject(path, tags: new string[] { arch },
+                                                Path.Join(projectDataDirName,
+                                                    Path.GetRelativePath(publishOutputDir,
+                                                        Path.GetDirectoryName(path)!)));
+
+                                            return;
+                                        }
+
+                                        static bool IsSharedObject(string fileName)
+                                        {
+                                            if (fileName.EndsWith(".so") || fileName.EndsWith(".a")
+                                             || fileName.EndsWith(".jar") || fileName.EndsWith(".dex"))
+                                            {
+                                                return true;
+                                            }
+
+                                            return false;
+                                        }
+                                    }
+
                                     string filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputDir, path));
                                     byte[] fileData = File.ReadAllBytes(path);
                                     string hash = Convert.ToBase64String(SHA512.HashData(fileData));

@@ -77,13 +77,15 @@
 # "Vampie C." <devamp@gmail.com>, 2024.
 # Philip Goto <philip.goto@gmail.com>, 2024.
 # Tycho <tychoschurink@outlook.com>, 2024.
+# Leroy <Leroyvanraaij@gmail.com>, 2024.
+# pim wagemans <pimwagemans09@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-13 14:07+0000\n"
-"Last-Translator: Philip Goto <philip.goto@gmail.com>\n"
+"PO-Revision-Date: 2024-09-10 14:09+0000\n"
+"Last-Translator: pim wagemans <pimwagemans09@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -91,7 +93,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Hoofdthread"
@@ -508,6 +510,9 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "Actie '%s' bestaat al."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Kan niet terugdraaien - Actie is hetzelfde als de oorspronkelijke"
 
 msgid "Revert Action"
 msgstr "Actie ongedaan maken"
@@ -944,6 +949,9 @@ msgstr "Sleutel kan niet toegevoegd worden omdat spoorpad ongeldig is."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Sleutel kan niet ingevoegd worden omdat spoor niet van type Node3D is"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "Track is niet van het type MeshInstance3D, kan geen sleutel invoeren"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Methodesleutel kan niet toegevoegd worden omdat spoorpad ongeldig is."
@@ -2117,6 +2125,9 @@ msgstr "De volgende bestanden konden niet worden uitgepakt uit \"%s\":"
 msgid "(and %s more files)"
 msgstr "(en nog %s bestanden)"
 
+msgid "Asset \"%s\" installed successfully!"
+msgstr "Asset \"%s\" succesvol geïnstalleerd!"
+
 msgid "Success!"
 msgstr "Gelukt!"
 
@@ -2217,6 +2228,9 @@ msgstr "Volume opnieuw instellen"
 msgid "Delete Effect"
 msgstr "Effect verwijderen"
 
+msgid "Toggle Audio Bottom Panel"
+msgstr "Audio-onderpaneel in- of uitschakelen"
+
 msgid "Add Audio Bus"
 msgstr "Geluidsbus toevoegen"
 
@@ -2295,6 +2309,25 @@ msgstr "Kan niet beginnen met een cijfer."
 msgid "Valid characters:"
 msgstr "Geldige tekens:"
 
+msgid "Must not collide with an existing engine class name."
+msgstr ""
+"Mag niet in conflict komen met een bestaande naam van een engine-klasse."
+
+msgid "Must not collide with an existing global script class name."
+msgstr ""
+"Mag niet in conflict komen met een bestaande naam van een globale script-"
+"klasse."
+
+msgid "Must not collide with an existing built-in type name."
+msgstr ""
+"Mag niet in conflict komen met een bestaande naam van een ingebouwde type."
+
+msgid "Must not collide with an existing global constant name."
+msgstr "Mag niet in conflict komen met een bestaande globale constante naam."
+
+msgid "Keyword cannot be used as an Autoload name."
+msgstr "Sleutelwoord mag niet gebruikt worden als autoload-naam."
+
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' bestaat al!"
 
@@ -2330,6 +2363,9 @@ msgstr "Autoload toevoegen"
 
 msgid "Path:"
 msgstr "Pad:"
+
+msgid "Set path or press \"%s\" to create a script."
+msgstr "Voer pad in of druk op \"%s\" om een script te creëren."
 
 msgid "Node Name:"
 msgstr "Knoopnaam:"
@@ -2458,8 +2494,14 @@ msgstr "Voornaamste functionaliteiten:"
 msgid "Text Rendering and Font Options:"
 msgstr "Tekst-rendering- en lettertypeopties:"
 
+msgid "Reset the edited profile?"
+msgstr "Geselecteerde sleutel(s) verwijderen?"
+
 msgid "File saving failed."
 msgstr "Bestand opslaan mislukt."
+
+msgid "Create a new profile?"
+msgstr "Een nieuw profiel creëren?"
 
 msgid "This will scan all files in the current project to detect used classes."
 msgstr ""
@@ -2493,8 +2535,14 @@ msgstr "Uit project detecteren"
 msgid "Actions:"
 msgstr "Acties:"
 
+msgid "Configure Engine Compilation Profile:"
+msgstr "Engine-bouwprofiel configureren:"
+
 msgid "Please Confirm:"
 msgstr "Gelieve te bevestigen:"
+
+msgid "Engine Compilation Profile"
+msgstr "Engine-bouwprofiel"
 
 msgid "Load Profile"
 msgstr "Profiel laden"
@@ -2533,11 +2581,23 @@ msgstr "[niet opgeslagen]"
 msgid "%s - Godot Engine"
 msgstr "%s - Godot Engine"
 
-msgid "Dock Position"
-msgstr "Tabbladpositie"
+msgid "Move this dock right one tab."
+msgstr "Beweeg dit paneel een tabblad naar links."
 
-msgid "Move this dock to the bottom panel."
-msgstr "Verplaats dit dock naar de onderste paneel."
+msgid "Move this dock left one tab."
+msgstr "Beweeg dit paneel een tabblad naar links."
+
+msgid "Dock Position"
+msgstr "Paneelpositie"
+
+msgid "Make Floating"
+msgstr "Maak zwevend"
+
+msgid "Move to Bottom"
+msgstr "Verplaats naar Bodem"
+
+msgid "Close this dock."
+msgstr "Sluit dit paneel."
 
 msgid "3D Editor"
 msgstr "3D-bewerker"
@@ -2546,7 +2606,7 @@ msgid "Script Editor"
 msgstr "Script-bewerker"
 
 msgid "Asset Library"
-msgstr "Bronbibliotheek"
+msgstr "Materiaalbibliotheek"
 
 msgid "Scene Tree Editing"
 msgstr "Scèneboombewerking"
@@ -3229,6 +3289,9 @@ msgstr "Wijzig de zichtbaarheid van waarschuwingen."
 msgid "Toggle visibility of editor messages."
 msgstr "Wijzig de zichtbaarheid van editor berichten."
 
+msgid "Native Shader Source Inspector"
+msgstr "Ingebouwde shader-bron inspecteur"
+
 msgid "Unnamed Project"
 msgstr "Naamloos Project"
 
@@ -3257,6 +3320,17 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Bron opslaan als..."
 
+msgid "Scene file '%s' appears to be invalid/corrupt."
+msgstr "Scène bestand \"%s\" lijkt invalide of corrupt te zijn."
+
+msgid ""
+"File '%s' is saved in a format that is newer than the formats supported by "
+"this version of Godot, so it can't be opened."
+msgstr ""
+"Bestand \"%s\" is in een bestandsformaat opgeslagen dat nieuwer is dan de "
+"bestandsformaten die ondersteund worden door deze versie van Godot, dus kan "
+"het niet opgeslagen worden."
+
 msgid "Saving Scene"
 msgstr "Scène aan het opslaan"
 
@@ -3266,8 +3340,19 @@ msgstr "Aan Het Analyseren"
 msgid "Creating Thumbnail"
 msgstr "Thumbnail Aan Het Maken"
 
+msgid ""
+"This scene can't be saved because there is a cyclic instance inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+"Deze scène kan niet opgeslagen worden omdat er een cyclische instantie "
+"inclusie is.\n"
+"Los dit op en probeer het dan opnieuw op te slaan."
+
 msgid "Save scene before running..."
 msgstr "Scène opslaan voor het afspelen..."
+
+msgid "Could not save one or more scenes!"
+msgstr "Kon een of meer scènes niet opslaan!"
 
 msgid "Save All Scenes"
 msgstr "Alle scènes opslaan"
@@ -3277,6 +3362,9 @@ msgstr "Kan geen scènes overschrijven die nog open zijn!"
 
 msgid "Merge With Existing"
 msgstr "Met bestaande samenvoegen"
+
+msgid "Can't load MeshLibrary for merging!"
+msgstr "Kan MeshLibrary niet laden voor invoegen!"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3335,6 +3423,9 @@ msgstr "Scène snel openen..."
 msgid "Quick Open Script..."
 msgstr "Script snel openen..."
 
+msgid "%s no longer exists! Please specify a new save location."
+msgstr "%s bestaat niet meer! Specificeer alstublieft een nieuwe opslaglocatie."
+
 msgid "Save Scene As..."
 msgstr "Scène opslaan als..."
 
@@ -3376,6 +3467,13 @@ msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Wijzigen aan de volgende scène(s) opslaan voor het openen van Projectbeheer?"
 
+msgid ""
+"This option is deprecated. Situations where refresh must be forced are now "
+"considered a bug. Please report."
+msgstr ""
+"Deze optie is verouderd. Situaties waarin een verversing geforceerd moet "
+"worden, worden nu als een bug gezien. Rapporteer deze alstublieft."
+
 msgid "Pick a Main Scene"
 msgstr "Kies een startscène"
 
@@ -3409,6 +3507,14 @@ msgstr ""
 "Scène '%s' werd automatisch geïmporteerd en kan daarom niet aangepast "
 "worden.\n"
 "Om aanpassingen te doen kan je een afgeleide scène aanmaken."
+
+msgid ""
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
+msgstr ""
+"Foutmelding tijdens het laden van de scène, het moet bestaan in het project-"
+"pad. Gebruik \"Importeren\" om de scène te openen, en sla het dan op in het "
+"project-pad."
 
 msgid "Scene '%s' has broken dependencies:"
 msgstr "De scène '%s' heeft verbroken afhankelijkheden:"
@@ -3525,6 +3631,12 @@ msgid ""
 msgstr ""
 "Onmogelijk om te schrijven naar bestand '%s', het bestand is reeds in "
 "gebruik, vergrendeld, of vereist permissies ontbreken."
+
+msgid "Preparing scenes for reload"
+msgstr "Scènes aan het voorbereiden voor herladen"
+
+msgid "Reloading done."
+msgstr "Herladen voltooid."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -3771,12 +3883,18 @@ msgstr "Bibliotheek exporteren"
 msgid "Open & Run a Script"
 msgstr "Een script openen en uitvoeren"
 
+msgid "Files have been modified on disk"
+msgstr "Bestanden zijn op de disk gemodificeerd"
+
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
 msgstr ""
 "De volgende bestanden zijn nieuwer op de schijf.\n"
 "Welke actie moet worden genomen?"
+
+msgid "Keep local changes and overwrite"
+msgstr "Behoud lokale veranderingen en overschrijf"
 
 msgid "Version Control Settings..."
 msgstr "Versiebeheer­instellingen…"
@@ -3849,6 +3967,17 @@ msgstr "Ongeldige RID"
 
 msgid "Recursion detected, unable to assign resource to property."
 msgstr "Recursie ontdekt, kan bron niet aan eigenschap toewijzen."
+
+msgid ""
+"Can't create a ViewportTexture in a Texture2D node because the texture will "
+"not be bound to a scene.\n"
+"Use a Texture2DParameter node instead and set the texture in the \"Shader "
+"Parameters\" tab."
+msgstr ""
+"Kan geen ViewportTexture creëren in een Texture2D node omdat de texture niet "
+"aan een scène gebonden zal worden.\n"
+"Gebruik in plaats daarvan een Texture2DParameter node en zet de texture in "
+"het \"Shader parameters\" tabblad."
 
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
@@ -3973,6 +4102,9 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Schrijf je logica in de _run() methode."
 
+msgid "The current scene already has a root node."
+msgstr "De huidige scène heeft al een wortel-node."
+
 msgid "Common"
 msgstr "Gemeen­schappelijk"
 
@@ -4012,11 +4144,38 @@ msgstr "Klik om naar de download pagina te openen."
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Linkerstick Links, Joystick 0 Links"
 
+msgid "Left Stick Right, Joystick 0 Right"
+msgstr "Linker Pook Rechts, Joystick 0 Rechts"
+
+msgid "Left Stick Up, Joystick 0 Up"
+msgstr "Linker Pook Omhoog, Joystick 0 Omhoog"
+
+msgid "Left Stick Down, Joystick 0 Down"
+msgstr "Linker Pook Omlaag, Joystick 0 Omlaag"
+
+msgid "Right Stick Left, Joystick 1 Left"
+msgstr "Rechter Pook Links, Joystick 1 Links"
+
+msgid "Right Stick Right, Joystick 1 Right"
+msgstr "Rechter Pook Rechts, Joystick 1 Rechts"
+
+msgid "Right Stick Up, Joystick 1 Up"
+msgstr "Rechter Pook Omhoog, Joystick 1 Omhoog"
+
+msgid "Right Stick Down, Joystick 1 Down"
+msgstr "Rechter Pook Omlaag, Joystick 1 Omlaag"
+
 msgid "Joystick 2 Left"
 msgstr "Joystick 2 Links"
 
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "Linker Trigger, Sony L2, Xbox LT, Joystick 2 Rechts"
+
 msgid "Joystick 2 Up"
 msgstr "Joystick 2 Omhoog"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "Rechter Trigger, Sony R2, Xbox RT, Joystick 2 Omlaag"
 
 msgid "Joystick 3 Left"
 msgstr "Joystick 3 Links"
@@ -4027,8 +4186,20 @@ msgstr "Joystick 3 Rechts"
 msgid "Joystick 3 Up"
 msgstr "Joystick 3 Omhoog"
 
+msgid "Joystick 3 Down"
+msgstr "Joystick 3 Omlaag"
+
+msgid "Joystick 4 Left"
+msgstr "Joystick 4 Links"
+
+msgid "Joystick 4 Right"
+msgstr "Joystick 4 Rechts"
+
 msgid "Joystick 4 Up"
 msgstr "Joystick 4 Omhoog"
+
+msgid "Joystick 4 Down"
+msgstr "Joystick 4 Omlaag"
 
 msgid "or"
 msgstr "of"
@@ -4044,6 +4215,18 @@ msgstr "Apparaat"
 
 msgid "Filter by Event"
 msgstr "Filter per Event"
+
+msgid "Can't get filesystem access."
+msgstr "Kan geen toegang krijgen tot het bestandssysteem."
+
+msgid "Failed to get Info.plist hash."
+msgstr "Info.plist hash krijgen is niet gelukt."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Invalide Info.plist, geen bundel id."
+
+msgid "Unknown object type."
+msgstr "Onbekend object type."
 
 msgid "Project export for platform:"
 msgstr "Project export voor platform:"
@@ -4068,6 +4251,13 @@ msgstr "Aangepast debug pakket niet gevonden."
 
 msgid "Custom release template not found."
 msgstr "Aangepast release pakket niet gevonden."
+
+msgid ""
+"A texture format must be selected to export the project. Please select at "
+"least one texture format."
+msgstr ""
+"Een texture-bestandsformaat moet geselecteerd worden om het project te "
+"exporteren. Selecteer teminste een texture-bestandsformaat."
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Bij 32-bit export mag de ingebouwde PCK niet groter zijn dan 4 GiB."
@@ -4223,6 +4413,14 @@ msgstr ""
 msgid "Runnable"
 msgstr "Uitvoerbaar"
 
+msgid "Export the project for all the presets defined."
+msgstr "Exporteer het project voor alle gedefinieerde presets."
+
+msgid "All presets must have an export path defined for Export All to work."
+msgstr ""
+"Alle presets moeten een export-pad gedefinieerd hebben zodat Exporteer Alles "
+"kan werken."
+
 msgid "Delete preset '%s'?"
 msgstr "Verwijder voorinstelling '%s'?"
 
@@ -4260,6 +4458,9 @@ msgstr ""
 msgid "Advanced Options"
 msgstr "Geavanceerde opties"
 
+msgid "If checked, the advanced options will be shown."
+msgstr "Als dit is aangeklikt zullen de geavanceerde opties getoond worden."
+
 msgid "Export Path"
 msgstr "Export Pad"
 
@@ -4277,6 +4478,9 @@ msgstr "Exporteer geselecteerde scènes (en afhankelijkheden)"
 
 msgid "Export selected resources (and dependencies)"
 msgstr "Exporteer geselecteerde bronnen (en afhankelijkheden)"
+
+msgid "Export as dedicated server"
+msgstr "Exporteer als aangewezen server"
 
 msgid "Export Mode:"
 msgstr "Exporteermodus:"
@@ -4310,11 +4514,60 @@ msgstr "Kenmerkenlijst:"
 msgid "Encryption"
 msgstr "Versleuteling"
 
+msgid "Encrypt Exported PCK"
+msgstr "Versleutel Geëxporteerde PCK"
+
+msgid "Encrypt Index (File Names and Info)"
+msgstr "Versleutel Index (bestandsnamen en info)"
+
+msgid ""
+"Note: Encryption key needs to be stored in the binary,\n"
+"you need to build the export templates from source."
+msgstr ""
+"Belangrijk: Versleutelings-sleutel moet worden opgeslagen in het binaire "
+"bestand.\n"
+"Je moet de export-templates bouwen van de bron."
+
 msgid "Scripts"
 msgstr "Scripts"
 
+msgid "Text (easier debugging)"
+msgstr "Tekst (makkelijker debuggen)"
+
+msgid "Binary tokens (faster loading)"
+msgstr "Binaire tokens (sneller laden)"
+
+msgid "Compressed binary tokens (smaller files)"
+msgstr "Gecomprimeerde binaire tokens (kleinere bestanden)"
+
+msgid "Export PCK/ZIP..."
+msgstr "Exporteer PCK/Zip..."
+
+msgid ""
+"Export the project resources as a PCK or ZIP package. This is not a playable "
+"build, only the project data without a Godot executable."
+msgstr ""
+"Exporteer de project resources als een PCK of ZIP pakket. Dit is geen "
+"uitvoerbare build, alleen de project data zonder Godot executable."
+
+msgid "Export Project..."
+msgstr "Exporteer project..."
+
+msgid ""
+"Export the project as a playable build (Godot executable and project data) "
+"for the selected preset."
+msgstr ""
+"Exporteer het project als een speelbare build (Godot ecxecutable en project "
+"data) voor de geselecteerde voorinstelling."
+
 msgid "Export All"
 msgstr "Exporteer alles"
+
+msgid "Choose an export mode:"
+msgstr "Kies een export-modus:"
+
+msgid "Export All..."
+msgstr "Exporteer alles..."
 
 msgid "ZIP File"
 msgstr "Zip-bestand"
@@ -4325,8 +4578,25 @@ msgstr "Vermiste Exportsjablonen voor dit platform:"
 msgid "Manage Export Templates"
 msgstr "Beheer Export Templates"
 
+msgid "Path to FBX2glTF executable is empty."
+msgstr "Pad naar FBX2glTF excecutable is leeg."
+
+msgid "Path to FBX2glTF executable is invalid."
+msgstr "Pad naar FBX2glTF executable is ongeldig."
+
+msgid "Error executing this file (wrong version or architecture)."
+msgstr ""
+"Foutmelding tijdens het uitvoeren van dit bestand (verkeerde versie of "
+"architectuur)."
+
+msgid "Click this link to download FBX2glTF"
+msgstr "Klik op deze link om FBX2glTF te downloaden"
+
 msgid "Browse"
 msgstr "Bladeren"
+
+msgid "Confirm Path"
+msgstr "Pad bevestigen"
 
 msgid "Favorites"
 msgstr "Favorieten"
@@ -4363,6 +4633,30 @@ msgstr "Fout bij het dupliceren:"
 msgid "Failed to save resource at %s: %s"
 msgstr "Opslaan van bron mislukt op %s: %s"
 
+msgid "Failed to load resource at %s: %s"
+msgstr "Bron op %s: %s laden mislukt"
+
+msgid ""
+"This filename begins with a dot rendering the file invisible to the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager."
+msgstr ""
+"Deze bestandsnaam begint met een punt, waardoor het bestand niet zichtbaar "
+"zal zijn in de editor.\n"
+"Als je het toch wil hernoemen, gebruik dan het bestandsbeheer van je "
+"besturingssysteem."
+
+msgid ""
+"This file extension is not recognized by the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager.\n"
+"After renaming to an unknown extension, the file won't be shown in the editor "
+"anymore."
+msgstr ""
+"Deze bestandsextensie word niet herkend door de editor.\n"
+"Als je het bestand toch wil hernoemen, gebruik dan het bestandsbeheer van je "
+"besturingssysteem,\n"
+"Na het hernoemen naar een onbekende bestandsextensie zal het bestand niet "
+"meer zichtbaar zijn in de editor."
+
 msgid "A file or folder with this name already exists."
 msgstr "Er bestaat al een bestand of map met deze naam."
 
@@ -4372,6 +4666,29 @@ msgid ""
 msgstr ""
 "De volgende bestanden of folders conflicteren met de bestanden op de "
 "doellocatie '%s':"
+
+msgid "Do you wish to overwrite them or rename the copied files?"
+msgstr "Wil je ze overschrijven of de gekopieerde bestanden hernoemen?"
+
+msgid "Do you wish to overwrite them or rename the moved files?"
+msgstr "Wil je ze overschrijven of de verplaatste bestanden hernoemen?"
+
+msgid ""
+"Couldn't run external program to check for terminal emulator presence: "
+"command -v %s"
+msgstr ""
+"Kon extern programma om terminal emulator aanwezigheid te controleren niet "
+"uitvoeren: commando -v%s"
+
+msgid ""
+"Couldn't run external terminal program (error code %d): %s %s\n"
+"Check `filesystem/external_programs/terminal_emulator` and `filesystem/"
+"external_programs/terminal_emulator_flags` in the Editor Settings."
+msgstr ""
+"Kon extern terminal programma niet uitvoeren (foutmelding: %d):%s%s\n"
+"Controleer `bestandssysteem/externe_programmas/terminal_emulator` en "
+"`bestandssysteem/externe_programmas/terminal_emulator_vlaggen` in de editor "
+"instellingen."
 
 msgid "Duplicating file:"
 msgstr "Bestand dupliceren:"
@@ -4531,8 +4848,20 @@ msgstr "Vervang..."
 msgid "Searching..."
 msgstr "Aan het zoeken..."
 
+msgid "Renaming Group References"
+msgstr "Groep referenties aan het hernoemen"
+
+msgid "Removing Group References"
+msgstr "Groep referenties aan het verwijderen"
+
 msgid "Rename Group"
 msgstr "Groepen hernoemen"
+
+msgid "Delete references from all scenes"
+msgstr "Verwijder referenties van alle scènes"
+
+msgid "Rename references in all scenes"
+msgstr "Hernoem referenties in alle scènes"
 
 msgid "Global Groups"
 msgstr "Globale Groepen"
@@ -6577,14 +6906,14 @@ msgstr "Verwijder Uit-Control van Curve"
 msgid "Remove In-Control from Curve"
 msgstr "Verwijder In-Controle van Curve"
 
-msgid "Split Curve"
-msgstr "Split Curve"
-
 msgid "Move Point in Curve"
 msgstr "Verplaats Punt in Curve"
 
 msgid "Add Point to Curve"
 msgstr "Voeg Punt toe aan Curve"
+
+msgid "Split Curve"
+msgstr "Split Curve"
 
 msgid "Move In-Control in Curve"
 msgstr "Verplaats In-Control in Curve"
@@ -7403,6 +7732,9 @@ msgstr "Patronen"
 
 msgid "Terrains"
 msgstr "Terreinen"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "Extraheer Tilemap lagen als individuele TilMapLayer nodes"
 
 msgid "Atlas"
 msgstr "Atlas"
@@ -9028,6 +9360,20 @@ msgid ""
 msgstr ""
 "Dit bot heeft geen correcte REST pose. Deze kan in een Skeleton2D knoop gezet "
 "worden."
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"De TileMap node is verouderd omdat het is vervangen door het gebruik van "
+"meerdere TileMapLayer nodes.\n"
+"Om een TileMap om te zetten naar een set van TileMapLayer nodes, open het "
+"\"TileMap\" beneden-paneel met deze node geselecteerd, klik op het "
+"gereedschapskist-icoon en kies \"Extraheer Tilemap lagen als individuele "
+"TilMapLayer nodes\"."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Niets is zichtbaar want geen mesh is toegewezen."

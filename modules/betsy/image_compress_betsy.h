@@ -32,13 +32,79 @@
 #define IMAGE_COMPRESS_BETSY_H
 
 #include "core/io/image.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/thread.h"
+#include "core/templates/command_queue_mt.h"
+
+#include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/rendering_server_default.h"
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 enum BetsyFormat {
-	BETSY_FORMAT_BC6,
+	BETSY_FORMAT_BC1,
+	BETSY_FORMAT_BC1_DITHER,
+	BETSY_FORMAT_BC3,
+	BETSY_FORMAT_BC6_SIGNED,
+	BETSY_FORMAT_BC6_UNSIGNED,
 };
 
-Error _compress_betsy(BetsyFormat p_format, Image *r_img);
+struct BC6PushConstant {
+	float sizeX;
+	float sizeY;
+	uint32_t padding[2];
+};
+
+struct BC1PushConstant {
+	uint32_t num_refines;
+	uint32_t padding[3];
+};
+
+void free_device();
 
 Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels);
+Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels);
+
+class BetsyCompressor : public Object {
+	mutable CommandQueueMT command_queue;
+	bool exit = false;
+	WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
+
+	struct BetsyShader {
+		RID compiled;
+		RID pipeline;
+	};
+
+	// Resources shared by all compression formats.
+	RenderingDevice *compress_rd = nullptr;
+	RenderingContextDriver *compress_rcd = nullptr;
+	HashMap<String, BetsyShader> cached_shaders;
+	RID src_sampler = RID();
+
+	// Format-specific resources.
+	RID dxt1_encoding_table_buffer = RID();
+
+	void _init();
+	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
+	void _thread_loop();
+	void _thread_exit();
+
+	Error _compress(BetsyFormat p_format, Image *r_img);
+
+public:
+	void init();
+	void finish();
+
+	Error compress(BetsyFormat p_format, Image *r_img) {
+		Error err;
+		command_queue.push_and_ret(this, &BetsyCompressor::_compress, p_format, r_img, &err);
+		return err;
+	}
+};
 
 #endif // IMAGE_COMPRESS_BETSY_H

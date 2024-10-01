@@ -102,6 +102,22 @@ void PackedData::add_pack_source(PackSource *p_source) {
 	}
 }
 
+uint8_t *PackedData::get_file_hash(const String &p_path) {
+	PathMD5 pmd5(p_path.md5_buffer());
+	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	if (!E || E->value.offset == 0) {
+		return nullptr;
+	}
+
+	return E->value.md5;
+}
+
+void PackedData::clear() {
+	files.clear();
+	_free_packed_dirs(root);
+	root = memnew(PackedDir);
+}
+
 PackedData *PackedData::singleton = nullptr;
 
 PackedData::PackedData() {

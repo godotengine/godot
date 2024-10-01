@@ -816,13 +816,14 @@ void GridMapEditor::_text_changed(const String &p_text) {
 	update_palette();
 }
 
-void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
-	const Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid() && (k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::PAGEUP || k->get_keycode() == Key::PAGEDOWN)) {
-		// Forward the key input to the ItemList so it can be scrolled
-		mesh_library_palette->gui_input(k);
-		search_box->accept_event();
+void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the item list.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			mesh_library_palette->gui_input(key);
+			search_box->accept_event();
+		}
 	}
 }
 
@@ -1199,7 +1200,7 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/clear_selection", TTR("Clear Selection"), Key::KEY_DELETE);
 	ED_SHORTCUT("grid_map/fill_selection", TTR("Fill Selection"), KeyModifierMask::CTRL + Key::F);
 
-	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
+	int mw = EDITOR_GET("editors/grid_map/palette_min_width");
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
 	add_child(ec);
@@ -1308,8 +1309,6 @@ GridMapEditor::GridMapEditor() {
 	size_slider->set_value(1.0f);
 	size_slider->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
-
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1533,9 +1532,6 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 }
 
 GridMapEditorPlugin::GridMapEditorPlugin() {
-	EDITOR_DEF("editors/grid_map/editor_side", 1);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
-
 	grid_map_editor = memnew(GridMapEditor);
 	switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 		case 0: { // Left.

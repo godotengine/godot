@@ -533,8 +533,10 @@ void EditorResourcePreview::stop() {
 			}
 
 			while (!exited.is_set()) {
+				// Sync pending work.
 				OS::get_singleton()->delay_usec(10000);
-				RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
+				RenderingServer::get_singleton()->sync();
+				MessageQueue::get_singleton()->flush();
 			}
 
 			thread.wait_to_finish();

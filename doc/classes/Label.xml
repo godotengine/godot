@@ -14,7 +14,7 @@
 			<return type="Rect2" />
 			<param index="0" name="pos" type="int" />
 			<description>
-				Returns the bounding rectangle of the character at position [param pos]. If the character is a non-visual character or [param pos] is outside the valid range, an empty [Rect2] is returned. If the character is a part of a composite grapheme, the bounding rectangle of the whole grapheme is returned.
+				Returns the bounding rectangle of the character at position [param pos] in the label's local coordinate system. If the character is a non-visual character or [param pos] is outside the valid range, an empty [Rect2] is returned. If the character is a part of a composite grapheme, the bounding rectangle of the whole grapheme is returned.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">

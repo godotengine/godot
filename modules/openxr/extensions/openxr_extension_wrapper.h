@@ -97,10 +97,11 @@ public:
 	virtual void on_state_loss_pending() {} // `on_state_loss_pending` is called when the OpenXR session state is changed to loss pending.
 	virtual void on_state_exiting() {} // `on_state_exiting` is called when the OpenXR session state is changed to exiting.
 
-	virtual void *set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, Dictionary p_property_values, void *p_next_pointer) { return p_next_pointer; } // Add additional data structures to composition layers created via OpenXRCompositionLayer.
+	virtual void *set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, const Dictionary &p_property_values, void *p_next_pointer) { return p_next_pointer; } // Add additional data structures to composition layers created via OpenXRCompositionLayer.
 	virtual void on_viewport_composition_layer_destroyed(const XrCompositionLayerBaseHeader *p_layer) {} // `on_viewport_composition_layer_destroyed` is called when a composition layer created via OpenXRCompositionLayer is destroyed.
 	virtual void get_viewport_composition_layer_extension_properties(List<PropertyInfo> *p_property_list) {} // Get additional property definitions for OpenXRCompositionLayer.
 	virtual Dictionary get_viewport_composition_layer_extension_property_defaults() { return Dictionary(); } // Get the default values for the additional property definitions for OpenXRCompositionLayer.
+	virtual void *set_android_surface_swapchain_create_info_and_get_next_pointer(const Dictionary &p_property_values, void *p_next_pointer) { return p_next_pointer; }
 
 	// `on_event_polled` is called when there is an OpenXR event to process.
 	// Should return true if the event was handled, false otherwise.
