@@ -654,6 +654,15 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 	return ref;
 }
 
+void ResourceCache::set_ref(const String& p_path, Resource* r_res) {
+	if (r_res == nullptr) {
+		return;
+	}
+	MutexLock mutex_lock(lock);
+	r_res->set_path_cache(p_path);
+	resources[p_path] = r_res;
+}
+
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	MutexLock mutex_lock(lock);
 

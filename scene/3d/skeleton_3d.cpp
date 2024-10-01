@@ -2155,6 +2155,100 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 	bone_idx = -1;
 	search_path.clear();
 
+	// 检测是否骨骼翻转
+	{
+		Vector<String> right_bones ;	
+		
+		right_bones.push_back("RightThumbMetacarpal");
+		right_bones.push_back("RightThumbProximal");
+		right_bones.push_back("RightThumbDistal");
+		right_bones.push_back("RightIndexProximal");
+		right_bones.push_back("RightIndexIntermediate");
+		right_bones.push_back("RightIndexDistal");
+		right_bones.push_back("RightMiddleProximal");
+		right_bones.push_back("RightMiddleIntermediate");
+		right_bones.push_back("RightMiddleDistal");
+		right_bones.push_back("RightRingProximal");
+		right_bones.push_back("RightRingIntermediate");
+		right_bones.push_back("RightRingDistal");
+		right_bones.push_back("RightLittleProximal");
+		right_bones.push_back("RightLittleIntermediate");
+		right_bones.push_back("RightLittleDistal");
+		right_bones.push_back("RightShoulder");
+		right_bones.push_back("RightUpperArm");
+		right_bones.push_back("RightLowerArm");
+		right_bones.push_back("RightHand");
+		right_bones.push_back("RightEye");
+		right_bones.push_back("RightShoulder");
+		right_bones.push_back("RightUpperArm");
+		right_bones.push_back("RightLowerArm");
+		right_bones.push_back("RightHand");
+		right_bones.push_back("RightUpperLeg");
+		right_bones.push_back("RightLowerLeg");
+		right_bones.push_back("RightFoot");
+		right_bones.push_back("RightToes");
+
+		Vector<String> left_bones;
+		left_bones.push_back("LeftThumbMetacarpal");
+		left_bones.push_back("LeftThumbProximal");
+		left_bones.push_back("LeftThumbDistal");
+		left_bones.push_back("LeftIndexProximal");
+		left_bones.push_back("LeftIndexIntermediate");
+		left_bones.push_back("LeftIndexDistal");
+		left_bones.push_back("LeftMiddleProximal");
+		left_bones.push_back("LeftMiddleIntermediate");
+		left_bones.push_back("LeftMiddleDistal");
+		left_bones.push_back("LeftRingProximal");
+		left_bones.push_back("LeftRingIntermediate");
+		left_bones.push_back("LeftRingDistal");
+		left_bones.push_back("LeftLittleProximal");
+		left_bones.push_back("LeftLittleIntermediate");
+		left_bones.push_back("LeftLittleDistal");
+		left_bones.push_back("LeftShoulder");
+		left_bones.push_back("LeftUpperArm");
+		left_bones.push_back("LeftLowerArm");
+		left_bones.push_back("LeftHand");
+		left_bones.push_back("LeftEye");
+		left_bones.push_back("LeftShoulder");
+		left_bones.push_back("LeftUpperArm");
+		left_bones.push_back("LeftLowerArm");
+		left_bones.push_back("LeftHand");
+		left_bones.push_back("LeftUpperLeg");
+		left_bones.push_back("LeftLowerLeg");
+		left_bones.push_back("LeftFoot");
+		left_bones.push_back("LeftToes");
+		bone_idx = skeleton->get_bone_parent(p_bone_map[("Spine")]);
+		Vector3 center = skeleton->get_bone_global_pose(chest_or_upper_chest).origin;
+		for (int i = 0; i < right_bones.size(); i++) {
+			int left_bone_idx = -1,right_bones_idx = -1;
+			String left_bone_name, right_bone_name;
+
+			if(p_bone_map.has(right_bones[i])) {
+				right_bone_name = p_bone_map[right_bones[i]];
+				right_bones_idx = skeleton->find_bone(right_bone_name);
+			}
+			if(p_bone_map.has(left_bones[i])) {
+				left_bone_name = p_bone_map[left_bones[i]];
+				left_bone_idx = skeleton->find_bone(left_bone_name);
+			}
+			if(right_bones_idx != -1) {
+				Vector3 right_bone = skeleton->get_bone_global_pose(right_bones_idx).origin - center;
+				if(right_bone.x < 0) {
+					if(left_bone_idx != -1) {
+						p_bone_map[right_bones[i]] = left_bone_name;
+					}
+				}		
+			}
+			if(left_bone_idx != -1) {
+				Vector3 left_bone = skeleton->get_bone_global_pose(left_bone_idx).origin - center;
+				if(left_bone.x > 0) {
+					p_bone_map[left_bones[i]] = right_bone_name;
+				}
+			}
+		}
+
+	}
+
 	WARN_PRINT("Finish auto mapping.");
 }
 

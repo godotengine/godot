@@ -642,7 +642,7 @@ static void save_fbx_res( const String& group_name,const String& sub_path,const 
 	}
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
 	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
-	p_resource->set_path(save_path);
+	ResourceCache::set_ref(save_path, p_resource.ptr());
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
     save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
 }
