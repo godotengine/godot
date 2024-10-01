@@ -453,6 +453,10 @@ void Curve::set_data(const Array p_input) {
 }
 
 void Curve::bake() {
+	_bake();
+}
+
+void Curve::_bake() const {
 	_baked_cache.clear();
 
 	_baked_cache.resize(_bake_resolution);
@@ -481,7 +485,7 @@ void Curve::set_bake_resolution(int p_resolution) {
 real_t Curve::sample_baked(real_t p_offset) const {
 	if (_baked_cache_dirty) {
 		// Last-second bake if not done already
-		const_cast<Curve *>(this)->bake();
+		_bake();
 	}
 
 	// Special cases if the cache is too small

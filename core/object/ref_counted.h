@@ -124,7 +124,7 @@ public:
 
 	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
-		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
+		RefCounted *refb = static_cast<RefCounted *>(p_from.ptr());
 		if (!refb) {
 			unref();
 			return;
@@ -173,7 +173,7 @@ public:
 
 	template <typename T_Other>
 	Ref(const Ref<T_Other> &p_from) {
-		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
+		RefCounted *refb = static_cast<RefCounted *>(p_from.ptr());
 		if (!refb) {
 			unref();
 			return;
@@ -252,7 +252,7 @@ struct PtrToArg<Ref<T>> {
 			return Ref<T>();
 		}
 		// p_ptr points to a RefCounted object
-		return Ref<T>(const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr)));
+		return Ref<T>(*reinterpret_cast<T *const *>(p_ptr));
 	}
 
 	typedef Ref<T> EncodeT;

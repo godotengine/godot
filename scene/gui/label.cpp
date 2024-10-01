@@ -101,7 +101,7 @@ int Label::get_line_height(int p_line) const {
 	}
 }
 
-void Label::_shape() {
+void Label::_shape() const {
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
 
@@ -285,11 +285,11 @@ void Label::_shape() {
 	_update_visible();
 
 	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
+		const_cast<Label *>(this)->update_minimum_size();
 	}
 }
 
-void Label::_update_visible() {
+void Label::_update_visible() const {
 	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int lines_visible = lines_rid.size();
@@ -362,7 +362,7 @@ PackedStringArray Label::get_configuration_warnings() const {
 
 	if (font.is_valid()) {
 		if (dirty || font_dirty || lines_dirty) {
-			const_cast<Label *>(this)->_shape();
+			_shape();
 		}
 
 		const Glyph *glyph = TS->shaped_text_get_glyphs(text_rid);
@@ -638,7 +638,7 @@ void Label::_notification(int p_what) {
 
 Rect2 Label::get_character_bounds(int p_pos) const {
 	if (dirty || font_dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		_shape();
 	}
 
 	bool has_settings = settings.is_valid();
@@ -760,7 +760,7 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 Size2 Label::get_minimum_size() const {
 	// don't want to mutable everything
 	if (dirty || font_dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		_shape();
 	}
 
 	Size2 min_size = minsize;
@@ -799,7 +799,7 @@ int Label::get_line_count() const {
 		return 1;
 	}
 	if (dirty || font_dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		_shape();
 	}
 
 	return lines_rid.size();
@@ -1105,7 +1105,7 @@ int Label::get_max_lines_visible() const {
 
 int Label::get_total_character_count() const {
 	if (dirty || font_dirty || lines_dirty) {
-		const_cast<Label *>(this)->_shape();
+		_shape();
 	}
 
 	return xl_text.length();

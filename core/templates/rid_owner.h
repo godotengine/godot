@@ -152,7 +152,7 @@ public:
 		return _allocate_rid();
 	}
 
-	_FORCE_INLINE_ T *get_or_null(const RID &p_rid, bool p_initialize = false) {
+	_FORCE_INLINE_ T *get_or_null(const RID &p_rid, bool p_initialize = false) const {
 		if (p_rid == RID()) {
 			return nullptr;
 		}
@@ -381,7 +381,7 @@ public:
 		alloc.initialize_rid(p_rid, p_ptr);
 	}
 
-	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) {
+	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) const {
 		T **ptr = alloc.get_or_null(p_rid);
 		if (unlikely(!ptr)) {
 			return nullptr;
@@ -447,7 +447,7 @@ public:
 		alloc.initialize_rid(p_rid, p_ptr);
 	}
 
-	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) {
+	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) const {
 		return alloc.get_or_null(p_rid);
 	}
 

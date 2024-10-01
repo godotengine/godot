@@ -54,14 +54,14 @@ private:
 	bool clip = false;
 	String el_char = U"…";
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
-	Size2 minsize;
+	mutable Size2 minsize;
 	bool uppercase = false;
 
-	bool lines_dirty = true;
-	bool dirty = true;
-	bool font_dirty = true;
-	RID text_rid;
-	Vector<RID> lines_rid;
+	mutable bool lines_dirty = true;
+	mutable bool dirty = true;
+	mutable bool font_dirty = true;
+	mutable RID text_rid;
+	mutable Vector<RID> lines_rid;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -91,8 +91,8 @@ private:
 		int font_shadow_outline_size;
 	} theme_cache;
 
-	void _update_visible();
-	void _shape();
+	void _update_visible() const;
+	void _shape() const;
 	void _invalidate();
 
 protected:

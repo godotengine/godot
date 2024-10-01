@@ -195,8 +195,8 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
-		Size2 minimum_size_cache;
-		bool minimum_size_valid = false;
+		mutable Size2 minimum_size_cache;
+		mutable bool minimum_size_valid = false;
 
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
@@ -253,8 +253,8 @@ private:
 		// Internationalization.
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
-		bool is_rtl_dirty = true;
-		bool is_rtl = false;
+		mutable bool is_rtl_dirty = true;
+		mutable bool is_rtl = false;
 
 		bool localize_numeral_system = true;
 
@@ -294,7 +294,7 @@ private:
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
-	void _update_minimum_size_cache();
+	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
 	void _size_changed();
 

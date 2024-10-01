@@ -416,7 +416,7 @@ String OS_Android::get_data_path() const {
 	return get_user_data_dir();
 }
 
-void OS_Android::_load_system_font_config() {
+void OS_Android::_load_system_font_config() const {
 	font_aliases.clear();
 	fonts.clear();
 	font_names.clear();
@@ -541,7 +541,7 @@ void OS_Android::_load_system_font_config() {
 
 Vector<String> OS_Android::get_system_fonts() const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	Vector<String> ret;
 	for (const String &E : font_names) {
@@ -552,7 +552,7 @@ Vector<String> OS_Android::get_system_fonts() const {
 
 Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	String font_name = p_font_name.to_lower();
 	if (font_aliases.has(font_name)) {
@@ -604,7 +604,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 
 String OS_Android::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	String font_name = p_font_name.to_lower();
 	if (font_aliases.has(font_name)) {

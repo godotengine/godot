@@ -1175,7 +1175,7 @@ void Variant::reference(const Variant &p_variant) {
 				}
 			}
 
-			_get_obj().obj = const_cast<Object *>(p_variant._get_obj().obj);
+			_get_obj().obj = p_variant._get_obj().obj;
 			_get_obj().id = p_variant._get_obj().id;
 		} break;
 		case CALLABLE: {

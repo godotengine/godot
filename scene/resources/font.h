@@ -97,7 +97,7 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
+	virtual void _update_rids_fb(const Font *p_f, int p_depth) const;
 	virtual void _update_rids() const;
 	virtual void reset_state() override;
 
@@ -183,7 +183,7 @@ class FontFile : public Font {
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
-	PackedByteArray data;
+	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;

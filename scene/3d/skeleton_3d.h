@@ -153,25 +153,25 @@ private:
 	HashSet<SkinReference *> skin_bindings;
 	void _skin_changed();
 
-	Vector<Bone> bones;
-	bool process_order_dirty = false;
+	mutable Vector<Bone> bones;
+	mutable bool process_order_dirty = false;
 
-	Vector<int> parentless_bones;
+	mutable Vector<int> parentless_bones;
 	HashMap<String, int> name_to_bone_index;
 
 	mutable StringName concatenated_bone_names = StringName();
 	void _update_bone_names() const;
 
 	void _make_dirty();
-	bool dirty = false;
-	bool rest_dirty = false;
+	mutable bool dirty = false;
+	mutable bool rest_dirty = false;
 
 	bool show_rest_only = false;
 	float motion_scale = 1.0;
 
 	uint64_t version = 1;
 
-	void _update_process_order();
+	void _update_process_order() const;
 
 	// To process modifiers.
 	ModifierCallbackModeProcess modifier_callback_mode_process = MODIFIER_CALLBACK_MODE_PROCESS_IDLE;
@@ -181,7 +181,7 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
-	LocalVector<BonePoseBackup> bones_backup;
+	mutable LocalVector<BonePoseBackup> bones_backup;
 
 #ifndef DISABLE_DEPRECATED
 	void _add_bone_bind_compat_88791(const String &p_name);
@@ -270,8 +270,11 @@ public:
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
 	void force_update_all_dirty_bones();
+	void _force_update_all_dirty_bones() const;
 	void force_update_all_bone_transforms();
-	void force_update_bone_children_transforms(int bone_idx);
+	void _force_update_all_bone_transforms() const;
+	void force_update_bone_child_transform(int bone_idx);
+	void _force_update_bone_child_transform(int bone_idx) const;
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;

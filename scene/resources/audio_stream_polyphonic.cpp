@@ -264,18 +264,36 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 }
 
 AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
-	uint32_t index = static_cast<uint64_t>(p_id) >> INDEX_SHIFT;
-	if (index >= streams.size()) {
+	uint32_t index = _find_stream_index(p_id);
+	if (index < 0) {
 		return nullptr;
 	}
+
+	return &streams[index];
+}
+
+const AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) const {
+	uint32_t index = _find_stream_index(p_id);
+	if (index < 0) {
+		return nullptr;
+	}
+
+	return &streams[index];
+}
+
+uint32_t AudioStreamPlaybackPolyphonic::_find_stream_index(int64_t p_id) const {
+	uint32_t index = static_cast<uint64_t>(p_id) >> INDEX_SHIFT;
+	if (index >= streams.size()) {
+		return -1;
+	}
 	if (!streams[index].active.is_set()) {
-		return nullptr; // Not active, no longer exists.
+		return -1; // Not active, no longer exists.
 	}
 	int64_t id = static_cast<uint64_t>(p_id) & ID_MASK;
 	if (streams[index].id != id) {
-		return nullptr;
+		return -1;
 	}
-	return &streams[index];
+	return index;
 }
 
 void AudioStreamPlaybackPolyphonic::set_stream_volume(ID p_stream_id, float p_volume_db) {
@@ -295,7 +313,7 @@ void AudioStreamPlaybackPolyphonic::set_stream_pitch_scale(ID p_stream_id, float
 }
 
 bool AudioStreamPlaybackPolyphonic::is_stream_playing(ID p_stream_id) const {
-	return const_cast<AudioStreamPlaybackPolyphonic *>(this)->_find_stream(p_stream_id) != nullptr;
+	return _find_stream(p_stream_id) != nullptr;
 }
 
 void AudioStreamPlaybackPolyphonic::stop_stream(ID p_stream_id) {

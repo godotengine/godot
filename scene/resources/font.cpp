@@ -102,23 +102,24 @@ void Font::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
 
-void Font::_update_rids_fb(const Ref<Font> &p_f, int p_depth) const {
+void Font::_update_rids_fb(const Font *p_f, int p_depth) const {
 	ERR_FAIL_COND(p_depth > MAX_FALLBACK_DEPTH);
-	if (p_f.is_valid()) {
+	if (p_f != nullptr) {
 		RID rid = p_f->_get_rid();
 		if (rid.is_valid()) {
 			rids.push_back(rid);
 		}
 		const TypedArray<Font> &_fallbacks = p_f->get_fallbacks();
 		for (int i = 0; i < _fallbacks.size(); i++) {
-			_update_rids_fb(_fallbacks[i], p_depth + 1);
+			Ref<Font> fb_font = _fallbacks[i];
+			_update_rids_fb(fb_font.ptr(), p_depth + 1);
 		}
 	}
 }
 
 void Font::_update_rids() const {
 	rids.clear();
-	_update_rids_fb(const_cast<Font *>(this), 0);
+	_update_rids_fb(this, 0);
 	dirty_rids = false;
 }
 
@@ -2084,9 +2085,8 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 
 PackedByteArray FontFile::get_data() const {
 	if (unlikely((size_t)data.size() != data_size)) {
-		PackedByteArray *data_w = const_cast<PackedByteArray *>(&data);
-		data_w->resize(data_size);
-		memcpy(data_w->ptrw(), data_ptr, data_size);
+		data.resize(data_size);
+		memcpy(data.ptrw(), data_ptr, data_size);
 	}
 	return data;
 }
@@ -2853,10 +2853,11 @@ void FontVariation::_update_rids() const {
 
 		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
 		for (int i = 0; i < base_fallbacks.size(); i++) {
-			_update_rids_fb(base_fallbacks[i], 0);
+			Ref<Font> fb_font = base_fallbacks[i];
+			_update_rids_fb(fb_font.ptr(), 0);
 		}
 	} else {
-		_update_rids_fb(const_cast<FontVariation *>(this), 0);
+		_update_rids_fb(this, 0);
 	}
 	dirty_rids = false;
 }
@@ -2903,7 +2904,7 @@ Ref<Font> FontVariation::get_base_font() const {
 
 Ref<Font> FontVariation::_get_base_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids));
+		theme_font->disconnect_changed(callable_mp(static_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids));
 		theme_font.unref();
 	}
 
@@ -2937,7 +2938,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 			}
 			if (f.is_valid()) {
 				theme_font = f;
-				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+				theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 			}
 			return f;
 		}
@@ -2947,7 +2948,7 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	if (!_is_base_cyclic(f, 0)) {
 		if (f.is_valid()) {
 			theme_font = f;
-			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		return f;
 	}
@@ -3134,10 +3135,11 @@ void SystemFont::_update_rids() const {
 
 		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
 		for (int i = 0; i < base_fallbacks.size(); i++) {
-			_update_rids_fb(base_fallbacks[i], 0);
+			Ref<Font> fb_font = base_fallbacks[i];
+			_update_rids_fb(fb_font.ptr(), 0);
 		}
 	} else {
-		_update_rids_fb(const_cast<SystemFont *>(this), 0);
+		_update_rids_fb(this, 0);
 	}
 	dirty_rids = false;
 }
@@ -3271,7 +3273,7 @@ void SystemFont::reset_state() {
 
 Ref<Font> SystemFont::_get_base_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids));
+		theme_font->disconnect_changed(callable_mp(static_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids));
 		theme_font.unref();
 	}
 
@@ -3300,7 +3302,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 			}
 			if (f.is_valid()) {
 				theme_font = f;
-				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+				theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 			}
 			return f;
 		}
@@ -3310,7 +3312,7 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 	if (!_is_base_cyclic(f, 0)) {
 		if (f.is_valid()) {
 			theme_font = f;
-			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		return f;
 	}

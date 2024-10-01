@@ -175,16 +175,16 @@ private:
 		String name;
 		String code;
 	};
-	Vector<LayoutInfo> kbd_layouts;
-	int current_layout = 0;
-	bool keyboard_layout_dirty = true;
+	mutable Vector<LayoutInfo> kbd_layouts;
+	mutable int current_layout = 0;
+	mutable bool keyboard_layout_dirty = true;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
-	Point2i origin;
-	bool displays_arrangement_dirty = true;
+	mutable Point2i origin;
+	mutable bool displays_arrangement_dirty = true;
 	bool is_resizing = false;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
@@ -217,7 +217,7 @@ private:
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd);
 
-	void _update_displays_arrangement();
+	void _update_displays_arrangement() const;
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
 
@@ -225,7 +225,7 @@ private:
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts();
+	void _update_keyboard_layouts() const;
 	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
