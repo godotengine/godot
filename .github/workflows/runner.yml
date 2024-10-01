@@ -6,9 +6,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  linux-build:
-    name: 🐧 Linux
-    uses: ./.github/workflows/linux_builds.yml
+#  linux-build:
+#    name: 🐧 Linux
+#    uses: ./.github/workflows/linux_builds.yml
 
   macos-build:
     name: 🍎 macOS

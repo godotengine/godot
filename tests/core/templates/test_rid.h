@@ -38,6 +38,10 @@
 
 #include "tests/test_macros.h"
 
+#include <mach/mach.h>
+#include <pthread.h>
+#include <unistd.h>
+
 namespace TestRID {
 TEST_CASE("[RID] Default Constructor") {
 	RID rid;
@@ -114,6 +118,7 @@ TEST_CASE("[RID_Owner] Thread safety") {
 	struct RID_OwnerTester {
 		RID_Owner<DataHolder, true> rid_owner;
 		TightLocalVector<Thread> threads;
+		long cpu_cores = 0;
 		SafeNumeric<uint32_t> next_thread_idx;
 		// Using std::atomic directly since SafeNumeric doesn't support relaxed ordering.
 		TightLocalVector<std::atomic<uint64_t>> rids; // Atomic here to prevent false data race warnings.
@@ -136,7 +141,11 @@ TEST_CASE("[RID_Owner] Thread safety") {
 
 		explicit RID_OwnerTester(bool p_chunk_for_all, bool p_chunks_preallocated) :
 				rid_owner(sizeof(DataHolder) * (p_chunk_for_all ? OS::get_singleton()->get_processor_count() : 1)) {
-			threads.resize(OS::get_singleton()->get_processor_count() * 2);
+			cpu_cores = sysconf(_SC_NPROCESSORS_ONLN);
+			printf("############################# %ld cores\n", cpu_cores);
+
+			threads.resize(OS::get_singleton()->get_processor_count());
+			printf("############################# %u threads\n", threads.size());
 			rids.resize(threads.size());
 			if (p_chunks_preallocated) {
 				LocalVector<RID> prealloc_rids;
@@ -163,6 +172,15 @@ TEST_CASE("[RID_Owner] Thread safety") {
 
 							// 1. Each thread gets a zero-based index.
 							uint32_t self_th_idx = rot->next_thread_idx.postincrement();
+
+							// Use pthread to set affinity to the core self_th_idx modulo cpu cores.
+							// This is to avoid threads running on the same core.
+							thread_port_t mach_thread;
+							int core = self_th_idx % rot->cpu_cores;
+							thread_affinity_policy_data_t policy = { core };
+							mach_thread = pthread_mach_thread_np(pthread_self());
+							thread_policy_set(mach_thread, THREAD_AFFINITY_POLICY, (thread_policy_t)&policy, 1);
+							printf("############################# thread %d - %d\n", self_th_idx, core);
 
 							rot->lockstep(0);
 
@@ -211,8 +229,10 @@ TEST_CASE("[RID_Owner] Thread safety") {
 	};
 
 	SUBCASE("All items in one chunk, pre-allocated") {
-		RID_OwnerTester tester(true, true);
-		tester.test();
+		for (int i = 0; i < 1000; i++) {
+			RID_OwnerTester tester(true, true);
+			tester.test();
+		}
 	}
 #if 0
 	SUBCASE("All items in one chunk, NOT pre-allocated") {
