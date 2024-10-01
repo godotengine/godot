@@ -1026,7 +1026,7 @@ namespace human
 
             if (skBoneIndex >= 0)
             {
-                skeleton::SetupAxes(&apHuman->m_Skeleton, apSkeletonPoseGlobal, GetAxeInfo(i), i, skAxisBoneId, true, len);
+                skeleton::SetupAxes(&apHuman->m_Skeleton, apSkeletonPoseGlobal, GetAxeInfo(i), skBoneIndex, skAxisBoneId, true, len);
             }
         }
     }
@@ -1381,7 +1381,7 @@ namespace human
 			String bone_name = apSkeleton->get_bone_name(i);
 
             if(human_to_bone_map.has(bone_name)) {
-                m_Skeleton.m_Node[i].m_AxesId = human_to_bone_map[bone_name];
+                m_Skeleton.m_Node[i].m_AxesId = i;
                 m_Skeleton.m_Node[i].m_bone_index = i;
                 m_Skeleton.m_Node[i].m_ParentId = apSkeleton->get_bone_parent(i);
             }
