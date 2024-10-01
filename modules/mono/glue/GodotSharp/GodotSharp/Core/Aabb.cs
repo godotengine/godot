@@ -173,10 +173,10 @@ namespace Godot
                 case 7:
                     return new Vector3(_position.X + _size.X, _position.Y + _size.Y, _position.Z + _size.Z);
                 default:
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(idx),
-                            $"Index is {idx}, but a value from 0 to 7 is expected.");
-                    }
+                {
+                    throw new ArgumentOutOfRangeException(nameof(idx),
+                        $"Index is {idx}, but a value from 0 to 7 is expected.");
+                }
             }
         }
 
