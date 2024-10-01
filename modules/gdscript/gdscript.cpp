@@ -83,7 +83,12 @@ void GDScript::_clear_pending_func_states() {
 		// Order matters since clearing the stack may already cause
 		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
-		E->self()->_clear_stack();
+		GDScriptFunctionState *state = E->self();
+		ObjectID state_id = state->get_instance_id();
+		state->_clear_connections();
+		if (ObjectDB::get_instance(state_id)) {
+			state->_clear_stack();
+		}
 	}
 	GDScriptLanguage::get_singleton()->lock.unlock();
 }
@@ -1372,7 +1377,12 @@ GDScriptInstance::~GDScriptInstance() {
 		// Order matters since clearing the stack may already cause
 		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
-		E->self()->_clear_stack();
+		GDScriptFunctionState *state = E->self();
+		ObjectID state_id = state->get_instance_id();
+		state->_clear_connections();
+		if (ObjectDB::get_instance(state_id)) {
+			state->_clear_stack();
+		}
 	}
 
 	if (script.is_valid() && owner) {
