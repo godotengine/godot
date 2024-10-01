@@ -530,7 +530,10 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
+#ifdef DEBUG_ENABLED
 			} else if (command == "evaluate") {
+				ERR_FAIL_COND(data.size() < 2);
+
 				String expression_str = data[0];
 				int frame = data[1];
 
@@ -564,7 +567,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				stvar.value = return_val;
 				stvar.type = 3;
 
-				send_message("evaluation_return", stvar.serialize());
+				send_message("evaluation_return:", stvar.serialize());
 			} else {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
@@ -572,6 +575,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					WARN_PRINT("Unknown message received from debugger: " + command);
 				}
 			}
+#endif
 		} else {
 			OS::get_singleton()->delay_usec(10000);
 			if (Thread::get_caller_id() == Thread::get_main_id()) {
