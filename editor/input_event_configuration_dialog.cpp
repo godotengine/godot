@@ -709,7 +709,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
 	device_id_option->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
-	_set_current_device(InputMap::ALL_DEVICES);
+	_set_current_device(InputEvent::DEVICE_ID_ALL_DEVICES);
 	device_container->add_child(device_id_option);
 
 	device_container->hide();
