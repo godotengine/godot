@@ -30,10 +30,8 @@
 
 #include "editor_inspector.h"
 
-#include "array_property_edit.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
-#include "dictionary_property_edit.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_property_name_processor.h"
@@ -1084,8 +1082,26 @@ void EditorInspectorSection::_notification(int p_what) {
 				draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 			}
 		} break;
-		case NOTIFICATION_MOUSE_ENTER:
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			dropping_for_unfold = true;
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			dropping_for_unfold = false;
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER: {
+			if (dropping_for_unfold) {
+				dropping_unfold_timer->start();
+			}
+			update();
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
+			if (dropping_for_unfold) {
+				dropping_unfold_timer->stop();
+			}
 			update();
 		} break;
 	}
@@ -1151,12 +1167,11 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 
 		_test_unfold();
 
-		bool unfold = !object->editor_is_section_unfolded(section);
-		object->editor_set_section_unfold(section, unfold);
-		if (unfold) {
-			vbox->show();
+		bool should_unfold = !object->editor_is_section_unfolded(section);
+		if (should_unfold) {
+			unfold();
 		} else {
-			vbox->hide();
+			fold();
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		update();
@@ -1206,6 +1221,13 @@ EditorInspectorSection::EditorInspectorSection() {
 	foldable = false;
 	vbox = memnew(VBoxContainer);
 	vbox_added = false;
+
+	dropping_for_unfold = false;
+	dropping_unfold_timer = memnew(Timer);
+	dropping_unfold_timer->set_wait_time(0.6);
+	dropping_unfold_timer->set_one_shot(true);
+	add_child(dropping_unfold_timer);
+	dropping_unfold_timer->connect("timeout", this, "unfold");
 }
 
 EditorInspectorSection::~EditorInspectorSection() {
