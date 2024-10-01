@@ -56,6 +56,14 @@ void ActionMapEditor::_event_config_confirmed() {
 	Dictionary new_action = current_action.duplicate();
 	Array events = new_action["events"].duplicate();
 
+	// Check for duplicate events on action
+	for (Ref<InputEvent> event : events) {
+		if (ev->is_match(event, true)) {
+			show_message(TTR(vformat("Action \"%s\" already has an Event with this Input.", current_action_name)));
+			return;
+		}
+	}
+
 	if (current_action_event_index == -1) {
 		// Add new event
 		events.push_back(ev);
