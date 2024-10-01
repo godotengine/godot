@@ -628,4 +628,9 @@ ActionMapEditor::ActionMapEditor() {
 
 	message = memnew(AcceptDialog);
 	add_child(message);
+
+	warning = memnew(AcceptDialog);
+	add_child(warning);
+	warning->set_title(TTR("Input Configuration Warning!"));
+	warning->set_flag(Window::FLAG_POPUP, true);
 }
