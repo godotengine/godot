@@ -966,7 +966,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 
 	List<int> scope_ids = stackframe_list.find(frame)->value;
 	ERR_FAIL_COND(scope_ids.size() != 3);
-	ERR_FAIL_INDEX(stack_var.type, 3);
+	ERR_FAIL_INDEX(stack_var.type, 4);
 	int var_id = scope_ids.get(stack_var.type);
 
 	DAP::Variable variable;
