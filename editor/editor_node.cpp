@@ -1084,7 +1084,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 			//this serves no purpose and confused people
 			continue;
 		}
-		file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+		file->add_filter("*." + E->get(), E->get().to_upper());
 		preferred.push_back(E->get());
 	}
 	// Lowest priority extension
@@ -2328,7 +2328,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				file->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			Node *scene = editor_data.get_edited_scene_root();
@@ -2474,7 +2474,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				file->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			if (scene->get_filename() != "") {
@@ -2898,7 +2898,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				file->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			Node *scene = editor_data.get_edited_scene_root();
@@ -6949,7 +6949,7 @@ EditorNode::EditorNode() {
 	file_templates->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	file_templates->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
-	file_templates->add_filter("*.tpz ; " + TTR("Template Package"));
+	file_templates->add_filter("*.tpz", TTR("Template Package"));
 
 	file = memnew(EditorFileDialog);
 	gui_base->add_child(file);
