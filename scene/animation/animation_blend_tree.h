@@ -331,7 +331,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 		bool break_loop_at_end = false;
 		bool reset = true;
 	};
-	Vector<InputData> input_data;
+	LocalVector<InputData> input_data;
 
 	StringName prev_xfading = "prev_xfading";
 	StringName prev_index = "prev_index";
