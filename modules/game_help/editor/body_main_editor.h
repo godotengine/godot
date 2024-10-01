@@ -425,7 +425,7 @@ public:
 			sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 			sub_inspector->set_use_doc_hints(true);
 
-			sub_inspector->set_sub_inspector(true);
+			//sub_inspector->set_sub_inspector(true);
 			sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
 			sub_inspector->connect("property_keyed", callable_mp(this, &CharacterLogicNodeListSection::_sub_inspector_property_keyed));
@@ -544,7 +544,7 @@ public:
 		sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 		sub_inspector->set_use_doc_hints(true);
 
-		sub_inspector->set_sub_inspector(true);
+		//sub_inspector->set_sub_inspector(true);
 		sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
 		sub_inspector->connect("property_keyed", callable_mp(this, &CharacterBrainSection::_sub_inspector_property_keyed));
@@ -703,7 +703,7 @@ public:
 			sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 			sub_inspector->set_use_doc_hints(true);
 
-			sub_inspector->set_sub_inspector(true);
+			//sub_inspector->set_sub_inspector(true);
 			sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
 			sub_inspector->connect("property_keyed", callable_mp(this, &CharacterInductorListSection::_sub_inspector_property_keyed));
