@@ -495,6 +495,7 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 }
 
 void ProjectSettings::_convert_to_last_version(int p_from_version) {
+#ifndef DISABLE_DEPRECATED
 	if (p_from_version <= 3) {
 		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
 		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
@@ -508,6 +509,22 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 			}
 		}
 	}
+	if (p_from_version <= 5) {
+		// Converts the device in events from -1 (emulated events) to -3 (all events).
+		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
+			if (String(E.key).begins_with("input/")) {
+				Dictionary action = E.value.variant;
+				Array events = action["events"];
+				for (int i = 0; i < events.size(); i++) {
+					Ref<InputEvent> x = events[i];
+					if (x->get_device() == -1) { // -1 was the previous value (GH-97707).
+						x->set_device(InputEvent::DEVICE_ID_ALL_DEVICES);
+					}
+				}
+			}
+		}
+	}
+#endif // DISABLE_DEPRECATED
 }
 
 /*
