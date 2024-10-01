@@ -114,6 +114,20 @@ class InputDefault : public Input {
 
 	CursorShape default_shape;
 
+#ifdef TOOLS_ENABLED
+	// Simple single-threaded detection of whether
+	// inside `_parse_input_event_impl()`.
+	bool _currently_parsing_input = false;
+	class InputGuard {
+		bool &_currently_parsing;
+
+	public:
+		InputGuard(bool &r_currently_parsing) :
+				_currently_parsing(r_currently_parsing) { _currently_parsing = true; }
+		~InputGuard() { _currently_parsing = false; }
+	};
+#endif
+
 public:
 	enum HatMask {
 		HAT_MASK_CENTER = 0,
