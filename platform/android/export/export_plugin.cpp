@@ -1744,7 +1744,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VrApi (Deprecated),OpenXR"), XR_MODE_REGULAR));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VrApi (Deprecated),OpenXR,ARCore"), XR_MODE_REGULAR));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_HAND_TRACKING_NONE));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking_frequency", PROPERTY_HINT_ENUM, "Low,High"), XR_HAND_TRACKING_FREQUENCY_LOW));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/passthrough", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_PASSTHROUGH_NONE));
@@ -2689,6 +2689,8 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back("--xr_mode_ovr");
 	} else if (xr_mode_index == XR_MODE_OPENXR) {
 		command_line_strings.push_back("--xr_mode_openxr");
+	} else if (xr_mode_index == XR_MODE_ARCORE) {
+		command_line_strings.push_back("--xr_mode_arcore");
 	} else { // XRMode.REGULAR is the default.
 		command_line_strings.push_back("--xr_mode_regular");
 	}
