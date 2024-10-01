@@ -1,4 +1,4 @@
-/* bcdec.h - v0.96
+﻿/* bcdec.h - v0.97
    provides functions to decompress blocks of BC compressed images
    written by Sergii "iOrange" Kudlai in 2022
 
@@ -30,6 +30,11 @@
                                         - Split BC6H decompression function into 'half' and
                                           'float' variants
 
+      Michael Schmidt (@RunDevelopment) - Found better "magic" coefficients for integer interpolation
+                                          of reference colors in BC1 color block, that match with
+                                          the floating point interpolation. This also made it faster
+                                          than integer division by 3!
+
    bugfixes:
       @linkmauve
 
@@ -38,6 +43,9 @@
 
 #ifndef BCDEC_HEADER_INCLUDED
 #define BCDEC_HEADER_INCLUDED
+
+#define BCDEC_VERSION_MAJOR 0
+#define BCDEC_VERSION_MINOR 97
 
 /* if BCDEC_STATIC causes problems, try defining BCDECDEF to 'inline' or 'static inline' */
 #ifndef BCDECDEF
@@ -96,6 +104,7 @@ BCDECDEF void bcdec_bc6h_float(const void* compressedBlock, void* decompressedBl
 BCDECDEF void bcdec_bc6h_half(const void* compressedBlock, void* decompressedBlock, int destinationPitch, int isSigned);
 BCDECDEF void bcdec_bc7(const void* compressedBlock, void* decompressedBlock, int destinationPitch);
 
+#endif /* BCDEC_HEADER_INCLUDED */
 
 #ifdef BCDEC_IMPLEMENTATION
 
@@ -110,35 +119,44 @@ static void bcdec__color_block(const void* compressedBlock, void* decompressedBl
     c0 = ((unsigned short*)compressedBlock)[0];
     c1 = ((unsigned short*)compressedBlock)[1];
 
-    /* Expand 565 ref colors to 888 */
-    r0 = (((c0 >> 11) & 0x1F) * 527 + 23) >> 6;
-    g0 = (((c0 >> 5)  & 0x3F) * 259 + 33) >> 6;
-    b0 =  ((c0        & 0x1F) * 527 + 23) >> 6;
-    refColors[0] = 0xFF000000 | (b0 << 16) | (g0 << 8) | r0;
+    /* Unpack 565 ref colors */
+    r0 = (c0 >> 11) & 0x1F;
+    g0 = (c0 >> 5)  & 0x3F;
+    b0 =  c0        & 0x1F;
 
-    r1 = (((c1 >> 11) & 0x1F) * 527 + 23) >> 6;
-    g1 = (((c1 >> 5)  & 0x3F) * 259 + 33) >> 6;
-    b1 =  ((c1        & 0x1F) * 527 + 23) >> 6;
-    refColors[1] = 0xFF000000 | (b1 << 16) | (g1 << 8) | r1;
+    r1 = (c1 >> 11) & 0x1F;
+    g1 = (c1 >> 5)  & 0x3F;
+    b1 =  c1        & 0x1F;
+
+    /* Expand 565 ref colors to 888 */
+    r = (r0 * 527 + 23) >> 6;
+    g = (g0 * 259 + 33) >> 6;
+    b = (b0 * 527 + 23) >> 6;
+    refColors[0] = 0xFF000000 | (b << 16) | (g << 8) | r;
+
+    r = (r1 * 527 + 23) >> 6;
+    g = (g1 * 259 + 33) >> 6;
+    b = (b1 * 527 + 23) >> 6;
+    refColors[1] = 0xFF000000 | (b << 16) | (g << 8) | r;
 
     if (c0 > c1 || onlyOpaqueMode) {    /* Standard BC1 mode (also BC3 color block uses ONLY this mode) */
         /* color_2 = 2/3*color_0 + 1/3*color_1
            color_3 = 1/3*color_0 + 2/3*color_1 */
-        r = (2 * r0 + r1 + 1) / 3;
-        g = (2 * g0 + g1 + 1) / 3;
-        b = (2 * b0 + b1 + 1) / 3;
+        r = ((2 * r0 + r1) *  351 +   61) >>  7;
+        g = ((2 * g0 + g1) * 2763 + 1039) >> 11;
+        b = ((2 * b0 + b1) *  351 +   61) >>  7;
         refColors[2] = 0xFF000000 | (b << 16) | (g << 8) | r;
 
-        r = (r0 + 2 * r1 + 1) / 3;
-        g = (g0 + 2 * g1 + 1) / 3;
-        b = (b0 + 2 * b1 + 1) / 3;
+        r = ((r0 + r1 * 2) *  351 +   61) >>  7;
+        g = ((g0 + g1 * 2) * 2763 + 1039) >> 11;
+        b = ((b0 + b1 * 2) *  351 +   61) >>  7;
         refColors[3] = 0xFF000000 | (b << 16) | (g << 8) | r;
     } else {                            /* Quite rare BC1A mode */
         /* color_2 = 1/2*color_0 + 1/2*color_1;
            color_3 = 0;                         */
-        r = (r0 + r1 + 1) >> 1;
-        g = (g0 + g1 + 1) >> 1;
-        b = (b0 + b1 + 1) >> 1;
+        r = ((r0 + r1) * 1053 +  125) >>  8;
+        g = ((g0 + g1) * 4145 + 1019) >> 11;
+        b = ((b0 + b1) * 1053 +  125) >>  8;
         refColors[2] = 0xFF000000 | (b << 16) | (g << 8) | r;
 
         refColors[3] = 0x00000000;
@@ -1268,8 +1286,6 @@ BCDECDEF void bcdec_bc7(const void* compressedBlock, void* decompressedBlock, in
 }
 
 #endif /* BCDEC_IMPLEMENTATION */
-
-#endif /* BCDEC_HEADER_INCLUDED */
 
 /* LICENSE:
 
