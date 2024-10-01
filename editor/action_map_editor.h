@@ -78,6 +78,7 @@ private:
 
 	InputEventConfigurationDialog *event_config_dialog = nullptr;
 	AcceptDialog *message = nullptr;
+	AcceptDialog *warning = nullptr;
 
 	// Filtering and Adding actions
 

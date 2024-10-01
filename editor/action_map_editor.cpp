@@ -56,6 +56,15 @@ void ActionMapEditor::_event_config_confirmed() {
 	Dictionary new_action = current_action.duplicate();
 	Array events = new_action["events"].duplicate();
 
+	// Check for duplicate events on action
+	for (Ref<InputEvent> event : events) {
+		if (ev->is_match(event, true)) {
+			warning->set_text(TTR(vformat("Action \"%s\" already has an Event with this Input.", current_action_name)));
+			warning->popup_centered();
+			return;
+		}
+	}
+
 	if (current_action_event_index == -1) {
 		// Add new event
 		events.push_back(ev);
@@ -620,4 +629,9 @@ ActionMapEditor::ActionMapEditor() {
 
 	message = memnew(AcceptDialog);
 	add_child(message);
+
+	warning = memnew(AcceptDialog);
+	add_child(warning);
+	warning->set_title(TTR("Input Configuration Warning!"));
+	warning->set_flag(Window::FLAG_POPUP, true);
 }
