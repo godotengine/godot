@@ -88,6 +88,8 @@ void SceneTreeDock::_inspect_hovered_node() {
 		tree_item_inspected = item;
 		tree_item_inspected->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	}
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
+	editor_history->add_object(node_hovered_now->get_instance_id());
 	InspectorDock::get_inspector_singleton()->edit(node_hovered_now);
 	InspectorDock::get_inspector_singleton()->propagate_notification(NOTIFICATION_DRAG_BEGIN); // Enable inspector drag preview after it updated.
 	InspectorDock::get_singleton()->update(node_hovered_now);
@@ -132,14 +134,6 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 		if (!mb->is_pressed() && pending_click_select) {
 			_push_item(pending_click_select);
 			pending_click_select = nullptr;
-		}
-
-		if (mb->is_released()) {
-			if (tree_item_inspected) {
-				tree_item_inspected->clear_custom_color(0);
-				tree_item_inspected = nullptr;
-			}
-			_reset_hovering_timer();
 		}
 	}
 
@@ -435,6 +429,22 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	}
 
 	instantiated_scene->set_unique_name_in_owner(base->is_unique_name_in_owner());
+
+	Node2D *copy_2d = Object::cast_to<Node2D>(instantiated_scene);
+	Node2D *base_2d = Object::cast_to<Node2D>(base);
+	if (copy_2d && base_2d) {
+		copy_2d->set_position(base_2d->get_position());
+		copy_2d->set_rotation(base_2d->get_rotation());
+		copy_2d->set_scale(base_2d->get_scale());
+	}
+
+	Node3D *copy_3d = Object::cast_to<Node3D>(instantiated_scene);
+	Node3D *base_3d = Object::cast_to<Node3D>(base);
+	if (copy_3d && base_3d) {
+		copy_3d->set_position(base_3d->get_position());
+		copy_3d->set_rotation(base_3d->get_rotation());
+		copy_3d->set_scale(base_3d->get_scale());
+	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Replace with Branch Scene"));
@@ -1702,13 +1712,30 @@ void SceneTreeDock::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			_reset_hovering_timer();
-			if (select_node_hovered_at_end_of_drag && !hovered_but_reparenting) {
-				Node *node_inspected = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
-				if (node_inspected) {
+			if (tree_item_inspected) {
+				tree_item_inspected->clear_custom_color(0);
+				tree_item_inspected = nullptr;
+			} else {
+				return;
+			}
+			if (!hovered_but_reparenting) {
+				InspectorDock *inspector_dock = InspectorDock::get_singleton();
+				if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
+					List<Node *> full_selection = editor_selection->get_full_selected_node_list();
 					editor_selection->clear();
-					editor_selection->add_node(node_inspected);
-					scene_tree->set_selected(node_inspected);
-					select_node_hovered_at_end_of_drag = false;
+					for (Node *E : full_selection) {
+						editor_selection->add_node(E);
+					}
+					return;
+				}
+				if (select_node_hovered_at_end_of_drag) {
+					Node *node_inspected = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+					if (node_inspected) {
+						editor_selection->clear();
+						editor_selection->add_node(node_inspected);
+						scene_tree->set_selected(node_inspected);
+						select_node_hovered_at_end_of_drag = false;
+					}
 				}
 			}
 			hovered_but_reparenting = false;
@@ -3259,6 +3286,36 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 		// Root node cannot ever be unique name in its own Scene!
 		copy->set_unique_name_in_owner(false);
 
+		const Dictionary dict = new_scene_from_dialog->get_selected_options();
+		bool reset_position = dict.get(TTR("Reset Position"), true);
+		bool reset_scale = dict.get(TTR("Reset Scale"), false);
+		bool reset_rotation = dict.get(TTR("Reset Rotation"), false);
+
+		Node2D *copy_2d = Object::cast_to<Node2D>(copy);
+		if (copy_2d != nullptr) {
+			if (reset_position) {
+				copy_2d->set_position(Vector2(0, 0));
+			}
+			if (reset_rotation) {
+				copy_2d->set_rotation(0);
+			}
+			if (reset_scale) {
+				copy_2d->set_scale(Size2(1, 1));
+			}
+		}
+		Node3D *copy_3d = Object::cast_to<Node3D>(copy);
+		if (copy_3d != nullptr) {
+			if (reset_position) {
+				copy_3d->set_position(Vector3(0, 0, 0));
+			}
+			if (reset_rotation) {
+				copy_3d->set_rotation(Vector3(0, 0, 0));
+			}
+			if (reset_scale) {
+				copy_3d->set_scale(Vector3(0, 0, 0));
+			}
+		}
+
 		Ref<PackedScene> sdata = memnew(PackedScene);
 		Error err = sdata->pack(copy);
 		memdelete(copy);
@@ -4598,7 +4655,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
-	scene_tree->connect(SceneStringName(mouse_exited), callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
 
 	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
@@ -4668,6 +4724,9 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	new_scene_from_dialog->add_option(TTR("Reset Position"), Vector<String>(), true);
+	new_scene_from_dialog->add_option(TTR("Reset Rotation"), Vector<String>(), false);
+	new_scene_from_dialog->add_option(TTR("Reset Scale"), Vector<String>(), false);
 	add_child(new_scene_from_dialog);
 	new_scene_from_dialog->connect("file_selected", callable_mp(this, &SceneTreeDock::_new_scene_from));
 

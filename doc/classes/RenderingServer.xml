@@ -913,7 +913,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas light.
-				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilizing a shifting origin.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
