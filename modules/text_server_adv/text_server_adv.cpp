@@ -442,6 +442,8 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 	}
 #else
 	if (!icu_data_loaded) {
+		UErrorCode err = U_ZERO_ERROR;
+#ifdef ICU_DATA_NAME
 		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
 		Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
@@ -451,13 +453,13 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 		uint64_t len = f->get_length();
 		icu_data = f->get_buffer(len);
 
-		UErrorCode err = U_ZERO_ERROR;
 		udata_setCommonData(icu_data.ptr(), &err);
 		if (U_FAILURE(err)) {
 			ERR_FAIL_V_MSG(false, u_errorName(err));
 		}
 
 		err = U_ZERO_ERROR;
+#endif
 		u_init(&err);
 		if (U_FAILURE(err)) {
 			ERR_FAIL_V_MSG(false, u_errorName(err));
