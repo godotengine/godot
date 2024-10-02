@@ -663,10 +663,10 @@ namespace skeleton
     }
 
 
-	void SetupAxes(skeleton::HumanSkeleton* apSkeleton, skeleton::SkeletonPose const* apSkeletonPoseGlobal, math::SetupAxesInfo const& apSetupAxesInfo, int32_t aIndex, int32_t aAxisIndex, bool aLeft, float aLen)
+	void SetupAxes(skeleton::HumanSkeleton* apSkeleton, skeleton::SkeletonPose const* apSkeletonPoseGlobal, math::SetupAxesInfo const& apSetupAxesInfo, int32_t aBoneIndex, int32_t aAxisIndex, bool aLeft, float aLen)
 	{
 		// 获取指定节点
-		skeleton::Node& node = apSkeleton->m_Node[aIndex];
+		skeleton::Node& node = apSkeleton->m_Node[aBoneIndex];
 		int32_t parentIndex = node.m_ParentId; // 获取父节点索引
 
 		// 如果节点有轴的ID
@@ -676,7 +676,7 @@ namespace skeleton
 			math::Axes& axes = apSkeleton->m_AxesArray[node.m_AxesId];
 
 			// 获取全局骨骼变换
-			math::trsX boneX = apSkeletonPoseGlobal->m_X[aIndex];
+			math::trsX boneX = apSkeletonPoseGlobal->m_X[aBoneIndex];
 
 			// 设置轴的限制（最小值和最大值）
 			axes.m_Limit.m_Min = math::radians(math::float3(apSetupAxesInfo.m_Min[0], apSetupAxesInfo.m_Min[1], apSetupAxesInfo.m_Min[2]));
@@ -730,12 +730,12 @@ namespace skeleton
 				// 根据强制轴的值设置方向
 				switch (apSetupAxesInfo.m_ForceAxis)
 				{
-				case +1: uDir = math::float3(+1.f, 0.f, 0.f); break;
-				case -1: uDir = math::float3(-1.f, 0.f, 0.f); break;
-				case +2: uDir = math::float3(0.f, +1.f, 0.f); break;
-				case -2: uDir = math::float3(0.f, -1.f, 0.f); break;
-				case +3: uDir = math::float3(0.f, 0.f, +1.f); break;
-				default: uDir = math::float3(0.f, 0.f, -1.f); break;
+                    case +1: uDir = math::float3(+1.f, 0.f, 0.f); break;
+                    case -1: uDir = math::float3(-1.f, 0.f, 0.f); break;
+                    case +2: uDir = math::float3(0.f, +1.f, 0.f); break;
+                    case -2: uDir = math::float3(0.f, -1.f, 0.f); break;
+                    case +3: uDir = math::float3(0.f, 0.f, +1.f); break;
+                    default: uDir = math::float3(0.f, 0.f, -1.f); break;
 				}
 
 				math::float3 vDir = math::cross(mainAxis, uDir); // 计算交叉方向
