@@ -162,6 +162,10 @@ bool SkyRD::SkyShaderData::casts_shadows() const {
 	return false;
 }
 
+bool SkyRD::SkyShaderData::needs_alpha_pass() const {
+	return false;
+}
+
 RS::ShaderNativeSourceCode SkyRD::SkyShaderData::get_native_source_code() const {
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
