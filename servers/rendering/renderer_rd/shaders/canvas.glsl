@@ -443,7 +443,7 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 	return mix(light_color, shadow_color, shadow);
 }
 
-void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
+void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color, inout vec3 accumulated_light_to_clamp, inout vec3 clamp_min, inout vec3 clamp_max) {
 	uint blend_mode = light_array.data[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
 
 	switch (blend_mode) {
@@ -455,6 +455,16 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 		} break;
 		case LIGHT_FLAGS_BLEND_MODE_MIX: {
 			color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
+		} break;
+		case LIGHT_FLAGS_BLEND_MODE_ADD_MAX: {
+			vec3 delta_light = light_color.rgb * light_color.a;
+			clamp_max = max(clamp_max, delta_light);
+			accumulated_light_to_clamp += delta_light;
+		} break;
+		case LIGHT_FLAGS_BLEND_MODE_SUB_MAX: {
+			vec3 delta_light = light_color.rgb * -light_color.a;
+			clamp_min = min(clamp_min, delta_light);
+			accumulated_light_to_clamp += delta_light;
 		} break;
 	}
 }
@@ -620,6 +630,10 @@ void main() {
 
 #if defined(USE_LIGHTING) && !defined(MODE_UNSHADED)
 
+	vec3 clamp_max = vec3(0.0, 0.0, 0.0);
+	vec3 clamp_min = vec3(0.0, 0.0, 0.0);
+	vec3 accumulated_light_to_clamp = vec3(0.0, 0.0, 0.0);
+
 	// Directional Lights
 
 	for (uint i = 0; i < canvas_data.directional_light_count; i++) {
@@ -655,7 +669,7 @@ void main() {
 			);
 		}
 
-		light_blend_compute(light_base, light_color, color.rgb);
+		light_blend_compute(light_base, light_color, color.rgb, accumulated_light_to_clamp, clamp_min, clamp_max);
 #ifdef MODE_LIGHT_ONLY
 		light_only_alpha += light_color.a;
 #endif
@@ -742,11 +756,13 @@ void main() {
 			);
 		}
 
-		light_blend_compute(light_base, light_color, color.rgb);
+		light_blend_compute(light_base, light_color, color.rgb, accumulated_light_to_clamp, clamp_min, clamp_max);
 #ifdef MODE_LIGHT_ONLY
 		light_only_alpha += light_color.a;
 #endif
 	}
+
+	color.rgb += clamp(accumulated_light_to_clamp, clamp_min, clamp_max);
 #endif
 
 #ifdef MODE_LIGHT_ONLY

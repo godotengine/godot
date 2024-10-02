@@ -91,5 +91,15 @@
 		<constant name="BLEND_MODE_MIX" value="2" enum="BlendMode">
 			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
 		</constant>
+		<constant name="BLEND_MODE_ADD_MAX" value="3" enum="BlendMode">
+			Adds the value of pixels corresponding to the Light2D to the values of pixels under it, limited to the maximum amount of all lights using the same blend mode.
+			This creates non-stacking regular lights.
+			eAll additive and subtractive lights with a maximum are calculated as one group, and applied after the lights without a maximum.
+		</constant>
+		<constant name="BLEND_MODE_SUB_MAX" value="4" enum="BlendMode">
+			Subtracts the value of pixels corresponding to the Light2D to the values of pixels under it, limited to the maximum amount of all lights using the same blend mode.
+			This creates non-stacking negative lights.
+			All additive and subtractive lights with a maximum are calculated as one group, and applied after the lights without a maximum.
+		</constant>
 	</constants>
 </class>
