@@ -263,6 +263,11 @@ struct SceneShaderData : public ShaderData {
 		DEPTH_TEST_ENABLED
 	};
 
+	enum MotionDraw {
+		MOTION_DRAW_DISABLED,
+		MOTION_DRAW_ENABLED
+	};
+
 	enum Cull {
 		CULL_DISABLED,
 		CULL_FRONT,
@@ -292,6 +297,7 @@ struct SceneShaderData : public ShaderData {
 	AlphaAntiAliasing alpha_antialiasing_mode;
 	DepthDraw depth_draw;
 	DepthTest depth_test;
+	MotionDraw motion_draw;
 	Cull cull_mode;
 
 	bool uses_point_size;

@@ -121,6 +121,11 @@ public:
 			DEPTH_TEST_ENABLED
 		};
 
+		enum MotionDraw {
+			MOTION_DRAW_DISABLED,
+			MOTION_DRAW_ENABLED
+		};
+
 		enum Cull {
 			CULL_DISABLED,
 			CULL_FRONT,
@@ -156,6 +161,8 @@ public:
 
 		DepthDraw depth_draw = DEPTH_DRAW_OPAQUE;
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
+
+		MotionDraw motion_draw = MOTION_DRAW_ENABLED;
 
 		bool uses_point_size = false;
 		bool uses_alpha = false;

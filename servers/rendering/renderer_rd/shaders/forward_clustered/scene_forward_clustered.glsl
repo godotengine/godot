@@ -110,7 +110,7 @@ layout(location = 5) out vec3 tangent_interp;
 layout(location = 6) out vec3 binormal_interp;
 #endif
 
-#ifdef MOTION_VECTORS
+#if defined(MOTION_VECTORS) && !defined(MOTION_DRAW_DISABLED)
 layout(location = 7) out vec4 screen_position;
 layout(location = 8) out vec4 prev_screen_position;
 #endif
@@ -506,7 +506,7 @@ void vertex_shader(vec3 vertex_input,
 	combined_projected = combined_projection * vec4(vertex_interp, 1.0);
 #endif
 
-#ifdef MOTION_VECTORS
+#if defined(MOTION_VECTORS) && !defined(MOTION_DRAW_DISABLED)
 	screen_pos = gl_Position;
 #endif
 
@@ -718,7 +718,7 @@ void main() {
 
 	mat4 model_matrix = instances.data[instance_index].transform;
 
-#ifdef MOTION_VECTORS
+#if defined(MOTION_VECTORS) && !defined(MOTION_DRAW_DISABLED)
 	// Previous vertex.
 	vec3 prev_vertex;
 #ifdef NORMAL_USED
@@ -854,7 +854,7 @@ layout(location = 5) in vec3 tangent_interp;
 layout(location = 6) in vec3 binormal_interp;
 #endif
 
-#ifdef MOTION_VECTORS
+#if defined(MOTION_VECTORS) && !defined(MOTION_DRAW_DISABLED)
 layout(location = 7) in vec4 screen_position;
 layout(location = 8) in vec4 prev_screen_position;
 #endif
@@ -2718,7 +2718,7 @@ void fragment_shader(in SceneData scene_data) {
 #endif //MODE_SEPARATE_SPECULAR
 
 #endif //MODE_RENDER_DEPTH
-#ifdef MOTION_VECTORS
+#if defined(MOTION_VECTORS) && !defined(MOTION_DRAW_DISABLED)
 	vec2 position_clip = (screen_position.xy / screen_position.w) - scene_data.taa_jitter;
 	vec2 prev_position_clip = (prev_screen_position.xy / prev_screen_position.w) - scene_data_block.prev_data.taa_jitter;
 

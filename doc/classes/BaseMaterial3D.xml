@@ -272,6 +272,9 @@
 		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
+		<member name="motion_vectors_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If enabled, will disable the drawing of motion vectors for this material. This will fallback to the motion vectors written by whatever is behind this material. Useful for transparent materials that are causing TAA artifacts such as particles or post processing quads.
+		</member>
 		<member name="msdf_outline_size" type="float" setter="set_msdf_outline_size" getter="get_msdf_outline_size" default="0.0">
 			The width of the shape outline.
 		</member>
@@ -707,7 +710,10 @@
 		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
 			Disables receiving depth-based or volumetric fog.
 		</constant>
-		<constant name="FLAG_MAX" value="22" enum="Flags">
+		<constant name="FLAG_MOTION_DRAW_DISABLED" value="22" enum="Flags">
+			Disables drawing of motion vectors.
+		</constant>
+		<constant name="FLAG_MAX" value="23" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
