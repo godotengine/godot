@@ -142,6 +142,7 @@ public:
 	virtual uint32_t get_32() const; ///< get 32 bits uint
 	virtual uint64_t get_64() const; ///< get 64 bits uint
 
+	virtual float get_half() const;
 	virtual float get_float() const;
 	virtual double get_double() const;
 	virtual real_t get_real() const;
@@ -173,6 +174,7 @@ public:
 	virtual void store_32(uint32_t p_dest); ///< store 32 bits uint
 	virtual void store_64(uint64_t p_dest); ///< store 64 bits uint
 
+	virtual void store_half(float p_dest);
 	virtual void store_float(float p_dest);
 	virtual void store_double(double p_dest);
 	virtual void store_real(real_t p_real);
