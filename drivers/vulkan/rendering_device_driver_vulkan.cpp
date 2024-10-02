@@ -35,6 +35,11 @@
 #include "thirdparty/misc/smolv.h"
 #include "vulkan_hooks.h"
 
+#if defined(ANDROID_ENABLED) && defined(__ANDROID_API__) && __ANDROID_API__ >= 26
+#include <android/hardware_buffer.h>
+#include <vulkan/vulkan_android.h>
+#endif
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define PRINT_NATIVE_COMMANDS 0
@@ -498,6 +503,11 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
+
+#if defined(ANDROID_ENABLED) && defined(__ANDROID_API__) && __ANDROID_API__ >= 26
+	_register_requested_device_extension(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, false);
+#endif
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -981,7 +991,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		vulkan_1_1_features.variablePointersStorageBuffer = 0;
 		vulkan_1_1_features.variablePointers = 0;
 		vulkan_1_1_features.protectedMemory = 0;
-		vulkan_1_1_features.samplerYcbcrConversion = 0;
+		vulkan_1_1_features.samplerYcbcrConversion = enabled_device_extension_names.has(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
 		vulkan_1_1_features.shaderDrawParameters = 0;
 		create_info_next = &vulkan_1_1_features;
 	} else {
@@ -1886,6 +1896,91 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 #endif
 
 	return TextureID(tex_info);
+}
+
+RDD::TextureID RenderingDeviceDriverVulkan::texture_create_external(int p_width, int p_height, uint64_t p_external_buffer, uint64_t p_external_buffer_type) {
+#if defined(ANDROID_ENABLED) && defined(__ANDROID_API__) && __ANDROID_API__ >= 26
+	if (p_external_buffer_type == 0) {
+		p_external_buffer_type = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+	}
+	ERR_FAIL_COND_V_MSG(p_external_buffer_type != VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID, TextureID(), "Unknown external buffer type.");
+	ERR_FAIL_COND_V_MSG(!enabled_device_extension_names.has(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME), TextureID(), "VK_ANDROID_external_memory_android_hardware_buffer extension is required to create an external texture");
+	ERR_FAIL_COND_V_MSG(!enabled_device_extension_names.has(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME), TextureID(), "VK_KHR_sampler_ycbcr_conversion extension is required to create an external texture");
+
+	AHardwareBuffer *hardware_buffer = reinterpret_cast<AHardwareBuffer *>(p_external_buffer);
+	VkResult err;
+
+	AHardwareBuffer_Desc buffer_desc = {};
+	AHardwareBuffer_describe(hardware_buffer, &buffer_desc);
+
+	VkAndroidHardwareBufferFormatPropertiesANDROID format_info = {};
+	format_info.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID;
+
+	VkAndroidHardwareBufferPropertiesANDROID properties = {};
+	properties.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
+	properties.pNext = &format_info;
+
+	err = vkGetAndroidHardwareBufferPropertiesANDROID(vk_device, hardware_buffer, &properties);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkGetAndroidHardwareBufferPropertiesANDROID failed with error " + itos(err) + ".");
+
+	VkExternalFormatANDROID external_format = {};
+	external_format.sType = VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID;
+	external_format.externalFormat = format_info.externalFormat;
+
+	VkExternalMemoryImageCreateInfo external_create_info = {};
+	external_create_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
+	external_create_info.pNext = &external_format;
+	external_create_info.handleTypes = p_external_buffer_type;
+
+	VkImageCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	create_info.pNext = &external_create_info;
+	create_info.flags = 0u;
+	create_info.imageType = VK_IMAGE_TYPE_2D;
+	create_info.format = format_info.format;
+	create_info.extent.width = buffer_desc.width;
+	create_info.extent.height = buffer_desc.height;
+	create_info.extent.depth = 1;
+	create_info.mipLevels = 1;
+	create_info.arrayLayers = 1;
+	create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+	create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+	create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	VkImage vk_image = VK_NULL_HANDLE;
+	err = vkCreateImage(vk_device, &create_info, nullptr, &vk_image);
+	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
+
+	// @todo Finish implementing this!
+	// @see https://github.com/google-ar/arcore-android-sdk/blob/main/samples/hello_ar_vulkan_c/app/src/main/cpp/vulkan_handler.cc
+
+	/*
+	VkImportAndroidHardwareBufferInfoANDROID android_hardware_buffer_info = {};
+	android_hardware_buffer_info.sType = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
+	android_hardware_buffer_info.buffer = hardware_buffer;
+
+	VkMemoryDedicatedAllocateInfo memory_dedicated_allocate_info = {};
+	memory_dedicated_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO;
+	memory_dedicated_allocate_info.pNext = &android_hardware_buffer_info;
+	memory_dedicated_allocate_info.image = vk_image;
+	memory_dedicated_allocate_info.buffer = VK_NULL_HANDLE;
+	*/
+
+	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	tex_info->vk_image = vk_image;
+	//tex_info->vk_view = vk_image_view;
+	tex_info->rd_format = DATA_FORMAT_A8B8G8R8_UNORM_PACK32;
+	tex_info->vk_create_info = create_info;
+	//tex_info->vk_view_create_info = image_view_create_info;
+	//tex_info->allocation.handle = allocation;
+	//vmaGetAllocationInfo(allocator, tex_info->allocation.handle, &tex_info->allocation.info);
+
+	return TextureID(tex_info);
+#else
+	ERR_FAIL_V_MSG(RDD::TextureID(), "Not implemented.");
+#endif
 }
 
 void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {

@@ -1047,6 +1047,33 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 }
 
 void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+	Texture texture;
+
+	texture.type = TextureStorage::TYPE_2D;
+
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = 1;
+	texture.mipmaps = 1;
+	texture.depth = 1;
+	texture.format = Image::FORMAT_RGB8;
+	texture.validated_format = Image::FORMAT_RGB8;
+
+	texture.rd_type = RD::TEXTURE_TYPE_2D;
+	texture.rd_format = RD::DATA_FORMAT_A8B8G8R8_UNORM_PACK32;
+	texture.rd_format_srgb = RD::DATA_FORMAT_A8B8G8R8_SRGB_PACK32;
+
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.is_proxy = false;
+
+	if (p_external_buffer) {
+		texture.rd_texture = RD::get_singleton()->texture_create_external(p_width, p_height, p_external_buffer);
+		ERR_FAIL_COND(texture.rd_texture.is_null());
+	}
+
+	texture_owner.initialize_rid(p_texture, texture);
 }
 
 void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
@@ -1324,6 +1351,18 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 }
 
 void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+
+	tex->width = p_width;
+	tex->height = p_height;
+
+	if (p_external_buffer) {
+		if (tex->rd_texture.is_valid()) {
+			RD::get_singleton()->free(tex->rd_texture);
+		}
+		tex->rd_texture = RD::get_singleton()->texture_create_external(p_width, p_height, p_external_buffer);
+	}
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {

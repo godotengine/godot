@@ -15,7 +15,7 @@ if env["use_volk"]:
     env.Prepend(CPPPATH=[thirdparty_volk_dir])
 
 if env["platform"] == "android":
-    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
+    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR", "VK_ANDROID_external_memory_android_hardware_buffer"])
 elif env["platform"] == "ios":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK", "VK_USE_PLATFORM_METAL_EXT"])
 elif env["platform"] == "linuxbsd":
