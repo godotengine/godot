@@ -72,7 +72,15 @@ void Timer::_notification(int p_what) {
 			if (!processing || timer_process_callback == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
 			}
-			time_left -= get_physics_process_delta_time();
+
+			switch (timer_process_type) {
+				case TIMER_PROCESS_TYPE_TIME: {
+					time_left -= get_physics_process_delta_time();
+				}; break;
+				case TIMER_PROCESS_TYPE_FRAMES: {
+					time_left -= 1;
+				}; break;
+			}
 
 			if (time_left < 0) {
 				if (!one_shot) {
@@ -88,7 +96,12 @@ void Timer::_notification(int p_what) {
 
 void Timer::set_wait_time(double p_time) {
 	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
-	wait_time = p_time;
+	if (timer_process_type == TIMER_PROCESS_TYPE_FRAMES) {
+		ERR_FAIL_COND_MSG(p_time != (int)p_time, "Frame mode only accepts non-fractional values. (Frames will be rounded.)");
+		wait_time = (int)p_time;
+	} else {
+		wait_time = p_time;
+	}
 	update_configuration_warnings();
 }
 
@@ -182,6 +195,7 @@ void Timer::set_timer_process_type(TimerProcessType p_type) {
 	switch (timer_process_type) {
 		case TIMER_PROCESS_TYPE_FRAMES: {
 			wait_time = (int)wait_time;
+			time_left = (int)time_left;
 		}; break;
 		case TIMER_PROCESS_TYPE_TIME:
 			break;
