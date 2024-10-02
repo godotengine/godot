@@ -292,6 +292,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 		String mesh_path = mesh_storage->mesh_get_path(p_mesh).is_empty() ? "" : "(" + mesh_storage->mesh_get_path(p_mesh) + ")";
 		WARN_PRINT_ED(vformat("Attempting to use a shader %s that requires tangents with a mesh %s that doesn't contain tangents. Ensure that meshes are imported with the 'ensure_tangents' option. If creating your own meshes, add an `ARRAY_TANGENT` array (when using ArrayMesh) or call `generate_tangents()` (when using SurfaceTool).", shader_path, mesh_path));
 	}
+	sdcache->pass_index = p_material->pass_index;
 }
 
 void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material_chain(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material_data, RID p_mat_src, RID p_mesh) {
@@ -299,13 +300,15 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material_chain(Ge
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
 	_geometry_instance_add_surface_with_material(ginstance, p_surface, material_data, p_mat_src.get_local_index(), material_storage->material_get_shader_id(p_mat_src), p_mesh);
-
+	uint8_t pass_index = material_data->pass_index;
 	while (material_data->next_pass.is_valid()) {
 		RID next_pass = material_data->next_pass;
 		material_data = static_cast<GLES3::SceneMaterialData *>(material_storage->material_get_data(next_pass, RS::SHADER_SPATIAL));
 		if (!material_data || !material_data->shader_data->valid) {
 			break;
 		}
+		pass_index += 1;
+		material_data->pass_index = pass_index;
 		if (ginstance->data->dirty_dependencies) {
 			material_storage->material_update_dependency(next_pass, &ginstance->data->dependency_tracker);
 		}
@@ -332,6 +335,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface(GeometryInstanceGLES3 
 		if (ginstance->data->dirty_dependencies) {
 			material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);
 		}
+		material_data->pass_index = 0;
 	} else {
 		material_data = static_cast<GLES3::SceneMaterialData *>(material_storage->material_get_data(scene_globals.default_material, RS::SHADER_SPATIAL));
 		m_src = scene_globals.default_material;
@@ -349,6 +353,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface(GeometryInstanceGLES3 
 			if (ginstance->data->dirty_dependencies) {
 				material_storage->material_update_dependency(m_src, &ginstance->data->dependency_tracker);
 			}
+			material_data->pass_index = 128;
 
 			_geometry_instance_add_surface_with_material_chain(ginstance, p_surface, material_data, m_src, p_mesh);
 		}
