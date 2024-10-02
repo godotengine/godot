@@ -1518,7 +1518,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			quick_open->set_title(TTR("Go to Function"));
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_dialog->popup_find_line(tx);
+			goto_line_popup->popup_find_line(code_editor);
 		} break;
 		case BOOKMARK_TOGGLE: {
 			code_editor->toggle_bookmark();
@@ -2272,8 +2272,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
 	add_child(quick_open);
 
-	goto_line_dialog = memnew(GotoLineDialog);
-	add_child(goto_line_dialog);
+	goto_line_popup = memnew(GotoLinePopup);
+	add_child(goto_line_popup);
 
 	add_child(connection_info_dialog);
 

@@ -31,35 +31,33 @@
 #ifndef CODE_EDITOR_H
 #define CODE_EDITOR_H
 
+#include "editor/gui/editor_spin_slider.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
 #include "scene/main/timer.h"
 
 class MenuButton;
+class CodeTextEditor;
 
-class GotoLineDialog : public ConfirmationDialog {
-	GDCLASS(GotoLineDialog, ConfirmationDialog);
+class GotoLinePopup : public PopupPanel {
+	GDCLASS(GotoLinePopup, PopupPanel);
 
-	Label *line_label = nullptr;
-	LineEdit *line = nullptr;
+	EditorSpinSlider *line_input = nullptr;
+	CodeTextEditor *text_editor = nullptr;
 
-	CodeEdit *text_editor = nullptr;
-
-	virtual void ok_pressed() override;
+	void _goto_line();
+	void _submit();
 
 public:
-	void popup_find_line(CodeEdit *p_edit);
-	int get_line() const;
+	void popup_find_line(CodeTextEditor *p_text_editor);
 
-	GotoLineDialog();
+	GotoLinePopup();
 };
-
-class CodeTextEditor;
 
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);

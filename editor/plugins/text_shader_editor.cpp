@@ -712,7 +712,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_dialog->popup_find_line(code_editor->get_text_editor());
+			goto_line_popup->popup_find_line(code_editor);
 		} break;
 		case BOOKMARK_TOGGLE: {
 			code_editor->toggle_bookmark();
@@ -1235,8 +1235,8 @@ TextShaderEditor::TextShaderEditor() {
 	editor_box->add_child(warnings_panel);
 	code_editor->set_warnings_panel(warnings_panel);
 
-	goto_line_dialog = memnew(GotoLineDialog);
-	add_child(goto_line_dialog);
+	goto_line_popup = memnew(GotoLinePopup);
+	add_child(goto_line_popup);
 
 	disk_changed = memnew(ConfirmationDialog);
 
