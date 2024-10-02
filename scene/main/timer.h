@@ -95,7 +95,6 @@ private:
 	TimerProcessCallback timer_process_callback = TIMER_PROCESS_IDLE;
 	TimerProcessType timer_process_type = TIMER_PROCESS_TYPE_TIME;
 	void _set_process(bool p_process, bool p_force = false);
-
 };
 
 VARIANT_ENUM_CAST(Timer::TimerProcessCallback);
