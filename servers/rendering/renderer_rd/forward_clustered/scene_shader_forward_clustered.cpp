@@ -493,7 +493,7 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	material_storage->material_free(debug_shadow_splits_material);
 }
 
-void SceneShaderForwardClustered::init(const String p_defines) {
+void SceneShaderForwardClustered::init(const String &p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	{

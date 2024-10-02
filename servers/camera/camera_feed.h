@@ -92,7 +92,7 @@ public:
 	void set_active(bool p_is_active);
 
 	String get_name() const;
-	void set_name(String p_name);
+	void set_name(const String &p_name);
 
 	int get_base_width() const;
 	int get_base_height() const;
@@ -106,7 +106,7 @@ public:
 	RID get_texture(CameraServer::FeedImage p_which);
 
 	CameraFeed();
-	CameraFeed(String p_name, FeedPosition p_position = CameraFeed::FEED_UNSPECIFIED);
+	CameraFeed(const String &p_name, FeedPosition p_position = CameraFeed::FEED_UNSPECIFIED);
 	virtual ~CameraFeed();
 
 	FeedDataType get_datatype() const;
