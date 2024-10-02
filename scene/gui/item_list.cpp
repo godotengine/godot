@@ -1039,7 +1039,7 @@ void ItemList::_notification(int p_what) {
 			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 
 			Size2 size = get_size();
-			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
+			int width = size.width - theme_cache.panel_style->get_margin(SIDE_RIGHT);
 			if (scroll_bar->is_visible()) {
 				width -= scroll_bar_minwidth;
 			}
@@ -1192,9 +1192,9 @@ void ItemList::_notification(int p_what) {
 					Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
 
 					if (icon_mode == ICON_MODE_TOP) {
-						pos.y += theme_cache.v_separation / 2;
+						pos.y += MAX(theme_cache.v_separation, 0) / 2;
 					} else {
-						pos.x += theme_cache.h_separation / 2;
+						pos.x += MAX(theme_cache.h_separation, 0) / 2;
 					}
 
 					if (icon_mode == ICON_MODE_TOP) {
@@ -1243,8 +1243,8 @@ void ItemList::_notification(int p_what) {
 					}
 
 					Point2 draw_pos = items[i].rect_cache.position;
-					draw_pos.x += theme_cache.h_separation / 2;
-					draw_pos.y += theme_cache.v_separation / 2;
+					draw_pos.x += MAX(theme_cache.h_separation, 0) / 2;
+					draw_pos.y += MAX(theme_cache.v_separation, 0) / 2;
 					if (rtl) {
 						draw_pos.x = size.width - draw_pos.x - tag_icon_size.x;
 					}
@@ -1283,8 +1283,7 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						text_ofs.x += theme_cache.h_separation / 2;
-						text_ofs.y += theme_cache.v_separation / 2;
+						text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
 
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - max_len;
@@ -1292,7 +1291,7 @@ void ItemList::_notification(int p_what) {
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
-						float text_w = items[i].rect_cache.size.width - theme_cache.h_separation;
+						float text_w = items[i].rect_cache.size.width;
 						items.write[i].text_buf->set_width(text_w);
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
@@ -1307,17 +1306,17 @@ void ItemList::_notification(int p_what) {
 
 						if (icon_mode == ICON_MODE_TOP) {
 							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
-							text_ofs.x += theme_cache.h_separation / 2;
-							text_ofs.y += theme_cache.v_separation / 2;
+							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
+							text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
 						} else {
 							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
-							text_ofs.x += theme_cache.h_separation / 2;
+							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 						}
 
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = width - text_ofs.x - theme_cache.h_separation;
+						float text_w = width - text_ofs.x;
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
@@ -1410,14 +1409,14 @@ void ItemList::force_update_list_size() {
 		max_column_width = MAX(max_column_width, minsize.x);
 
 		// Elements need to adapt to the selected size.
-		minsize.y += theme_cache.v_separation;
-		minsize.x += theme_cache.h_separation;
+		minsize.y += MAX(theme_cache.v_separation, 0);
+		minsize.x += MAX(theme_cache.h_separation, 0);
 
 		items.write[i].rect_cache.size = minsize;
 		items.write[i].min_rect_cache.size = minsize;
 	}
 
-	int fit_size = size.x - theme_cache.panel_style->get_minimum_size().width - scroll_bar_minwidth;
+	int fit_size = size.x - theme_cache.panel_style->get_minimum_size().width;
 
 	//2-attempt best fit
 	current_columns = 0x7FFFFFFF;
@@ -1443,7 +1442,7 @@ void ItemList::force_update_list_size() {
 			}
 
 			if (same_column_width) {
-				items.write[i].rect_cache.size.x = max_column_width + theme_cache.h_separation;
+				items.write[i].rect_cache.size.x = max_column_width + MAX(theme_cache.h_separation, 0);
 			}
 			items.write[i].rect_cache.position = ofs;
 
@@ -1468,13 +1467,17 @@ void ItemList::force_update_list_size() {
 			}
 		}
 
+		float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
+		float max = MAX(page, ofs.y + max_h);
+		if (page >= max) {
+			fit_size -= scroll_bar_minwidth;
+		}
+
 		if (all_fit) {
 			for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
 				items.write[j].rect_cache.size.y = max_h;
 			}
 
-			float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
-			float max = MAX(page, ofs.y + max_h);
 			if (auto_height) {
 				auto_height_value = ofs.y + max_h + theme_cache.panel_style->get_minimum_size().height;
 			}
