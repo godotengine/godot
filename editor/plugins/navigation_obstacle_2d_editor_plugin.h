@@ -37,11 +37,11 @@
 class NavigationObstacle2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(NavigationObstacle2DEditor, AbstractPolygon2DEditor);
 
-	NavigationObstacle2D *node = nullptr;
+	NavigationObstacle2D *target_obstacle = nullptr;
 
 protected:
-	virtual Node2D *_get_node() const override;
-	virtual void _set_node(Node *p_polygon) override;
+	virtual Node2D *_get_target_node() const override;
+	virtual void _set_target_node(Node2D *p_node) override;
 
 	virtual Variant _get_polygon(int p_idx) const override;
 	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const override;

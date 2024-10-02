@@ -37,13 +37,13 @@
 class LightOccluder2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(LightOccluder2DEditor, AbstractPolygon2DEditor);
 
-	LightOccluder2D *node = nullptr;
+	LightOccluder2D *target_occluder = nullptr;
 
 	Ref<OccluderPolygon2D> _ensure_occluder() const;
 
 protected:
-	virtual Node2D *_get_node() const override;
-	virtual void _set_node(Node *p_polygon) override;
+	virtual Node2D *_get_target_node() const override;
+	virtual void _set_target_node(Node2D *p_node) override;
 
 	virtual bool _is_line() const override;
 	virtual int _get_polygon_count() const override;

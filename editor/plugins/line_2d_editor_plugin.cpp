@@ -33,12 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
-Node2D *Line2DEditor::_get_node() const {
-	return node;
+Node2D *Line2DEditor::_get_target_node() const {
+	return target_line;
 }
 
-void Line2DEditor::_set_node(Node *p_line) {
-	node = Object::cast_to<Line2D>(p_line);
+void Line2DEditor::_set_target_node(Node2D *p_node) {
+	target_line = Object::cast_to<Line2D>(p_node);
 }
 
 bool Line2DEditor::_is_line() const {
@@ -46,18 +46,17 @@ bool Line2DEditor::_is_line() const {
 }
 
 Variant Line2DEditor::_get_polygon(int p_idx) const {
-	return _get_node()->get("points");
+	return target_line->get("points");
 }
 
 void Line2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
-	_get_node()->set("points", p_polygon);
+	target_line->set("points", p_polygon);
 }
 
 void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
-	Node2D *_node = _get_node();
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(_node, "set_points", p_polygon);
-	undo_redo->add_undo_method(_node, "set_points", p_previous);
+	undo_redo->add_do_method(target_line, "set_points", p_polygon);
+	undo_redo->add_undo_method(target_line, "set_points", p_previous);
 }
 
 Line2DEditor::Line2DEditor() {}
