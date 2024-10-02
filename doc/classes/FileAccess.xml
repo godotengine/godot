@@ -173,6 +173,12 @@
 				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
+		<method name="get_half" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the next 16 bits from the file as a half-precision floating-point number.
+			</description>
+		</method>
 		<method name="get_hidden_attribute" qualifiers="static">
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
@@ -468,6 +474,13 @@
 			<param index="0" name="value" type="float" />
 			<description>
 				Stores a floating-point number as 32 bits in the file.
+			</description>
+		</method>
+		<method name="store_half">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<description>
+				Stores a half-precision floating-point number as 16 bits in the file.
 			</description>
 		</method>
 		<method name="store_line">
