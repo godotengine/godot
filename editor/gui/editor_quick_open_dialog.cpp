@@ -223,13 +223,16 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 }
 
 QuickOpenResultContainer::~QuickOpenResultContainer() {
-	for (QuickOpenResultItem *E : result_items) {
-		memdelete(E);
+	if (never_opened) {
+		for (QuickOpenResultItem *E : result_items) {
+			memdelete(E);
+		}
 	}
 }
 
 void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 	base_types = p_base_types;
+	never_opened = false;
 
 	const int display_mode_behavior = EDITOR_GET("filesystem/quick_open_dialog/default_display_mode");
 	const bool adaptive_display_mode = (display_mode_behavior == 0);
@@ -574,13 +577,9 @@ void QuickOpenResultContainer::_toggle_display_mode() {
 void QuickOpenResultContainer::_set_display_mode(QuickOpenDisplayMode p_display_mode) {
 	content_display_mode = p_display_mode;
 
-	const bool first_time = !list->is_visible() && !grid->is_visible();
-
-	if (!first_time) {
-		const bool show_list = (content_display_mode == QuickOpenDisplayMode::LIST);
-		if ((show_list && list->is_visible()) || (!show_list && grid->is_visible())) {
-			return;
-		}
+	const bool show_list = (content_display_mode == QuickOpenDisplayMode::LIST);
+	if ((show_list && list->is_visible()) || (!show_list && grid->is_visible())) {
+		return;
 	}
 
 	hide();
@@ -595,6 +594,8 @@ void QuickOpenResultContainer::_set_display_mode(QuickOpenDisplayMode p_display_
 		prev_root = Object::cast_to<CanvasItem>(list);
 		next_root = Object::cast_to<CanvasItem>(grid);
 	}
+
+	const bool first_time = !list->is_visible() && !grid->is_visible();
 
 	prev_root->hide();
 	for (QuickOpenResultItem *item : result_items) {

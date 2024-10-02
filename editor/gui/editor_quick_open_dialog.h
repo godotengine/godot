@@ -96,7 +96,9 @@ private:
 	int selection_index = -1;
 	int num_visible_results = 0;
 	int max_total_results = 0;
+
 	bool showing_history = false;
+	bool never_opened = true;
 
 	QuickOpenDisplayMode content_display_mode = QuickOpenDisplayMode::LIST;
 	Vector<QuickOpenResultItem *> result_items;
