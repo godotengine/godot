@@ -177,6 +177,10 @@
 		<member name="disable_ambient_light" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object receives no ambient light.
 		</member>
+		<member name="disable_decals" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], [Decal] nodes do not display on surfaces using this material. This can be seen as an alternative to [member Decal.cull_mask], which works by render layers.
+			Enabling this property can be useful for objects composed of multiple materials, as some materials (such as eyes on a character) should never receive decals.
+		</member>
 		<member name="disable_fog" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the object will not be affected by fog (neither volumetric nor depth fog). This is useful for unshaded or transparent materials (e.g. particles), which without this setting will be affected even if fully transparent.
 		</member>
@@ -707,7 +711,10 @@
 		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
 			Disables receiving depth-based or volumetric fog.
 		</constant>
-		<constant name="FLAG_MAX" value="22" enum="Flags">
+		<constant name="FLAG_DISABLE_DECALS" value="22" enum="Flags">
+			Disables receiving decals.
+		</constant>
+		<constant name="FLAG_MAX" value="23" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
