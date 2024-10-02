@@ -2755,7 +2755,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool prefer_wayland_found = false;
 					bool prefer_wayland = false;
-					bool remember_window_size_and_position_found = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2771,7 +2770,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found || !remember_window_size_and_position_found) {
+					while (!screen_found || !prefer_wayland_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2785,16 +2784,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 							if (!screen_found && assign == screen_property) {
 								init_screen = value;
 								screen_found = true;
+
+								if (editor) {
+									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+								}
 							}
 
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
-							}
-
-							if (!remember_window_size_and_position_found && assign == "interface/editor/remember_window_size_and_position") {
-								restore_editor_window_layout = value;
-								remember_window_size_and_position_found = true;
 							}
 						}
 					}
@@ -4095,8 +4093,7 @@ int Main::start() {
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
-			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting(
-					"interface/editor/remember_window_size_and_position");
+			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
