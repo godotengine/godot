@@ -50,8 +50,11 @@
 #include "tests/core/io/test_json.h"
 #include "tests/core/io/test_json_native.h"
 #include "tests/core/io/test_marshalls.h"
+#include "tests/core/io/test_packet_peer.h"
 #include "tests/core/io/test_pck_packer.h"
 #include "tests/core/io/test_resource.h"
+#include "tests/core/io/test_stream_peer.h"
+#include "tests/core/io/test_stream_peer_buffer.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
@@ -161,6 +164,7 @@
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
 #include "tests/scene/test_skeleton_3d.h"
+#include "tests/scene/test_sky.h"
 #endif // _3D_DISABLED
 
 #include "modules/modules_tests.gen.h"

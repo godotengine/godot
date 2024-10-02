@@ -3246,7 +3246,10 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 				sub_inspector->set_use_doc_hints(true);
 
-				sub_inspector->set_sub_inspector(true);
+				EditorInspector *parent_inspector = get_parent_inspector();
+				ERR_FAIL_NULL(parent_inspector);
+				sub_inspector->set_root_inspector(parent_inspector->get_root_inspector());
+
 				sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
 				sub_inspector->connect("property_keyed", callable_mp(this, &EditorPropertyResource::_sub_inspector_property_keyed));

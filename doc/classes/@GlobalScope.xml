@@ -1209,7 +1209,7 @@
 			<return type="int" />
 			<param index="0" name="x" type="int" />
 			<description>
-				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
+				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if [param x] is zero.
 				[codeblock]
 				signi(-6) # Returns -1
 				signi(0)  # Returns 0
