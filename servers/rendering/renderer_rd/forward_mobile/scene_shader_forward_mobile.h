@@ -55,6 +55,12 @@ public:
 		SHADER_VERSION_MAX
 	};
 
+	enum PipelinePasses {
+		PIPELINE_PASS_NOT_COLOR_OR_OPAQUE = 0,
+		PIPELINE_PASS_COLOR_TRANSPARENT = 1,
+		PIPELINE_PASS_COUNT = 2,
+	};
+
 	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
@@ -99,7 +105,7 @@ public:
 		bool valid = false;
 		RID version;
 		uint64_t vertex_input_mask = 0;
-		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
+		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX][PIPELINE_PASS_COUNT];
 
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
