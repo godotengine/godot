@@ -516,7 +516,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/disable_folding", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/auto_unfold_foreign_scenes", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/vector2_display_style", 0, "Vertical,Horizontal,Compact")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/vector_types_display_style", 0, "Vertical,Horizontal,Compact")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/vector_types_display_style", 1, "Vertical,Horizontal,Compact")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/open_resources_in_current_inspector", true, "")
 
 	PackedStringArray open_in_new_inspector_defaults;
