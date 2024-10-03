@@ -68,7 +68,7 @@ Ref<MultiMesh> MultiMeshInstance3D::get_multimesh() const {
 	return multimesh;
 }
 
-Array MultiMeshInstance3D::get_meshes() const {
+Array MultiMeshInstance3D::get_meshes(bool swap_array_order) const {
 	if (multimesh.is_null() || multimesh->get_mesh().is_null() || multimesh->get_transform_format() != MultiMesh::TransformFormat::TRANSFORM_3D) {
 		return Array();
 	}
@@ -82,8 +82,13 @@ Array MultiMeshInstance3D::get_meshes() const {
 
 	Array results;
 	for (int i = 0; i < count; i++) {
-		results.push_back(multimesh->get_instance_transform(i));
-		results.push_back(mesh);
+		if (swap_array_order) {
+			results.push_back(mesh);
+			results.push_back(multimesh->get_instance_transform(i));
+		} else {
+			results.push_back(multimesh->get_instance_transform(i));
+			results.push_back(mesh);
+		}
 	}
 	return results;
 }
