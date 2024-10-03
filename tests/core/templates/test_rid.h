@@ -234,7 +234,6 @@ TEST_CASE("[RID_Owner] Thread safety") {
 			tester.test();
 		}
 	}
-#if 0
 	SUBCASE("All items in one chunk, NOT pre-allocated") {
 		RID_OwnerTester tester(true, false);
 		tester.test();
@@ -247,7 +246,6 @@ TEST_CASE("[RID_Owner] Thread safety") {
 		RID_OwnerTester tester(false, false);
 		tester.test();
 	}
-#endif
 }
 } // namespace TestRID
 

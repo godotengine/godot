@@ -77,7 +77,7 @@ class RID_Alloc : public RID_AllocBase {
 	uint32_t **free_list_chunks = nullptr;
 
 	uint32_t elements_in_chunk;
-	std::atomic<uint32_t> max_alloc = 0;
+	uint32_t max_alloc = 0;
 	uint32_t alloc_count = 0;
 	uint32_t chunk_limit = 0;
 
@@ -90,8 +90,7 @@ class RID_Alloc : public RID_AllocBase {
 			mutex.lock();
 		}
 
-		uint32_t curr_max_alloc = max_alloc.load(std::memory_order_relaxed);
-		if (alloc_count == curr_max_alloc) {
+		if (alloc_count == max_alloc) {
 			//allocate a new chunk
 			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk);
 			if (THREAD_SAFE && chunk_count == chunk_limit) {
@@ -121,7 +120,7 @@ class RID_Alloc : public RID_AllocBase {
 				free_list_chunks[chunk_count][i] = alloc_count + i;
 			}
 
-			max_alloc.store(curr_max_alloc + elements_in_chunk, std::memory_order_release);
+			max_alloc += elements_in_chunk;
 		}
 
 		uint32_t free_index = free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk];
@@ -171,7 +170,7 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= max_alloc.load(std::memory_order_acquire))) {
+		if (unlikely(idx >= max_alloc)) {
 			return nullptr;
 		}
 
