@@ -1410,6 +1410,9 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 		return OK;
 	}
 
+	Ref<GLTFAttributeMap> general_attrmap;
+	general_attrmap.instantiate();
+
 	Array meshes = p_state->json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
@@ -1464,6 +1467,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				};
 
 				primitive = primitives2[mode];
+			}
+
+			Ref<GLTFAttributeMap> attrmap = general_attrmap;
+			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+				Ref<GLTFAttributeMap> am = ext->import_get_attribute_map(p_state, i);
+				if (am.is_valid()) {
+					attrmap = am;
+				}
 			}
 
 			int32_t orig_vertex_num = 0;
@@ -1528,69 +1539,86 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			if (a.has("TANGENT")) {
 				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_float32s(p_state, a["TANGENT"], indices_vec4_mapping);
 			}
-			if (a.has("TEXCOORD_0")) {
-				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_0"], indices_mapping);
-			}
-			if (a.has("TEXCOORD_1")) {
-				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_1"], indices_mapping);
-			}
-			for (int custom_i = 0; custom_i < 3; custom_i++) {
-				Vector<float> cur_custom;
-				Vector<Vector2> texcoord_first;
-				Vector<Vector2> texcoord_second;
-
-				int texcoord_i = 2 + 2 * custom_i;
-				String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
-				int num_channels = 0;
-				if (a.has(gltf_texcoord_key)) {
-					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
-					num_channels = 2;
-				}
-				gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
-				if (a.has(gltf_texcoord_key)) {
-					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
-					num_channels = 4;
-				}
-				if (!num_channels) {
-					break;
-				}
-				if (num_channels == 2 || num_channels == 4) {
-					cur_custom.resize(vertex_num * num_channels);
-					for (int32_t uv_i = 0; uv_i < texcoord_first.size() && uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * num_channels + 0] = texcoord_first[uv_i].x;
-						cur_custom.write[uv_i * num_channels + 1] = texcoord_first[uv_i].y;
-					}
-					// Vector.resize seems to not zero-initialize. Ensure all unused elements are 0:
-					for (int32_t uv_i = texcoord_first.size(); uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * num_channels + 0] = 0;
-						cur_custom.write[uv_i * num_channels + 1] = 0;
-					}
-				}
-				if (num_channels == 4) {
-					for (int32_t uv_i = 0; uv_i < texcoord_second.size() && uv_i < vertex_num; uv_i++) {
-						// num_channels must be 4
-						cur_custom.write[uv_i * num_channels + 2] = texcoord_second[uv_i].x;
-						cur_custom.write[uv_i * num_channels + 3] = texcoord_second[uv_i].y;
-					}
-					// Vector.resize seems to not zero-initialize. Ensure all unused elements are 0:
-					for (int32_t uv_i = texcoord_second.size(); uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * num_channels + 2] = 0;
-						cur_custom.write[uv_i * num_channels + 3] = 0;
-					}
-				}
-				if (cur_custom.size() > 0) {
-					array[Mesh::ARRAY_CUSTOM0 + custom_i] = cur_custom;
-					int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
-					if (num_channels == 2) {
-						flags |= Mesh::ARRAY_CUSTOM_RG_FLOAT << custom_shift;
-					} else {
-						flags |= Mesh::ARRAY_CUSTOM_RGBA_FLOAT << custom_shift;
-					}
-				}
-			}
-			if (a.has("COLOR_0")) {
-				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
+			if (a.has(attrmap->_color)) {
+				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a[attrmap->_color], indices_mapping);
 				has_vertex_color = true;
+			}
+			if (a.has(attrmap->_uv)) {
+				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a[attrmap->_uv], indices_mapping);
+			}
+			if (a.has(attrmap->_uv2)) {
+				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a[attrmap->_uv2], indices_mapping);
+			}
+			for (int custom_i = 0; custom_i < 4; custom_i++) {
+				const String &attr = attrmap->_custom[custom_i];
+				const String &mux = attrmap->_custom_mux[custom_i];
+
+				if (!a.has(attr)) {
+					continue;
+				}
+
+				Mesh::ArrayCustomFormat format;
+
+				if (a.has(mux)) {
+					const Ref<GLTFAccessor> &acc = p_state->accessors[a[attr]];
+					const Ref<GLTFAccessor> &acc2 = p_state->accessors[a[mux]];
+					if (acc->accessor_type > GLTFAccessor::TYPE_VEC4 || acc2->accessor_type > GLTFAccessor::TYPE_VEC4) {
+						Array arr;
+						arr.push_back(attr);
+						arr.push_back(mux);
+						ERR_PRINT(String("Unsupported format for multiplex {}<->{}, ignoring attributes.").format(arr));
+						continue;
+					}
+
+					// assumes GLTFAccessor::SCALAR = 0
+					const int stride_a = 1 + acc->accessor_type;
+					const int stride_b = (1 + acc2->accessor_type);
+					const int stride = stride_a + stride_b;
+					if (stride > 4) {
+						Array arr;
+						arr.push_back(attr);
+						arr.push_back(mux);
+						ERR_PRINT(String("Format for multiplex {}<->{} exceeds vec4, ignoring attributes.").format(arr));
+						continue;
+					}
+					format = (Mesh::ArrayCustomFormat)((int)Mesh::ARRAY_CUSTOM_R_FLOAT + (stride - 1));
+
+					Vector<float> src_a = _decode_accessor_as_float32s(p_state, a[attr], indices_mapping);
+					Vector<float> src_b = _decode_accessor_as_float32s(p_state, a[mux], indices_mapping);
+					const int frames = src_a.size() / stride_a;
+					if (frames != src_b.size() / stride_b) {
+						Array arr;
+						arr.push_back(attr);
+						arr.push_back(mux);
+						ERR_PRINT(String("Element count for multiplex {}<->{} are not equal, ignoring attributes.").format(arr));
+						continue;
+					}
+
+					Vector<float> data;
+					data.resize_initialized(frames * stride);
+					for (int f = 0; f < frames; f++) {
+						for (int s = 0; s < stride_a; s++) {
+							data.set(f * stride + s, src_a[f * stride_a + s]);
+						}
+						for (int s = 0; s < stride_b; s++) {
+							data.set(f * stride + stride_a + s, src_b[f * stride_b + s]);
+						}
+					}
+					array[Mesh::ARRAY_CUSTOM0 + custom_i] = data;
+
+				} else {
+					const Ref<GLTFAccessor> &accessor = p_state->accessors[a[attr]];
+					if (accessor->accessor_type > GLTFAccessor::TYPE_VEC4) {
+						Array arr;
+						arr.push_back(attr);
+						ERR_PRINT(String("Unsupported format for {}, ignoring attribute.").format(arr));
+						continue;
+					}
+					format = (Mesh::ArrayCustomFormat)((int)Mesh::ARRAY_CUSTOM_R_FLOAT + (int)accessor->accessor_type);
+					array[Mesh::ARRAY_CUSTOM0 + custom_i] = _decode_accessor_as_float32s(p_state, a[attr], indices_mapping);
+				}
+
+				flags |= format << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + Mesh::ARRAY_FORMAT_CUSTOM_BITS * custom_i);
 			}
 			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
 				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
@@ -1717,7 +1745,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 
 			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("NORMAL"));
 
-			if (generate_tangents && !a.has("TEXCOORD_0")) {
+			if (generate_tangents && !a.has(attrmap->_uv)) {
 				// If we don't have UVs we provide a dummy tangent array.
 				Vector<float> tangents;
 				tangents.resize(vertex_num * 4);
@@ -1755,7 +1783,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 			}
 			mesh_surface_tool->index();
-			if (generate_tangents && a.has("TEXCOORD_0")) {
+			if (generate_tangents && a.has(attrmap->_uv)) {
 				//must generate mikktspace tangents.. ergh..
 				mesh_surface_tool->generate_tangents();
 			}
