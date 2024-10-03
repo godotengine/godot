@@ -3410,6 +3410,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 	bool found = false;
 	const DocTools *dd = EditorHelp::get_doc_data();
 	HashMap<String, DocData::ClassDoc>::ConstIterator E = dd->class_list.find(p_class_name);
+
 	while (E) {
 		// Non-native theme items shouldn't be cached, nor translated.
 		const bool is_native = !E->value.is_script_doc;
@@ -3417,19 +3418,13 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 		for (const DocData::ThemeItemDoc &theme_item : E->value.theme_properties) {
 			HelpData current;
 			current.description = HANDLE_DOC(theme_item.description);
+
 			if (theme_item.is_deprecated) {
-				if (theme_item.deprecated_message.is_empty()) {
-					current.deprecated_message = TTR("This theme property may be changed or removed in future versions.");
-				} else {
-					current.deprecated_message = HANDLE_DOC(theme_item.deprecated_message);
-				}
+				current.deprecated_message = theme_item.deprecated_message.is_empty() ? TTR("This theme property may be changed or removed in future versions.") : HANDLE_DOC(theme_item.deprecated_message);
 			}
+
 			if (theme_item.is_experimental) {
-				if (theme_item.experimental_message.is_empty()) {
-					current.experimental_message = TTR("This theme property may be changed or removed in future versions.");
-				} else {
-					current.experimental_message = HANDLE_DOC(theme_item.experimental_message);
-				}
+				current.experimental_message = theme_item.experimental_message.is_empty() ? TTR("This theme property may be changed or removed in future versions.") : HANDLE_DOC(theme_item.experimental_message);
 			}
 
 			if (theme_item.name == p_theme_item_name) {
@@ -3450,12 +3445,28 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 			break;
 		}
 
-		// Check for inherited theme items.
+		// Check for inherited theme items in the base class if not found in the current class
 		E = dd->class_list.find(E->value.inherits);
+	}
+
+	// If the theme item wasn't found in the variation, check the base class for the description.
+	if (!found && !p_class_name.is_empty()) {
+		// Get the base class information
+		HashMap<String, DocData::ClassDoc>::ConstIterator base_class = dd->class_list.find(E->value.inherits);
+		if (base_class) {
+			// Search in the base class theme properties
+			for (const DocData::ThemeItemDoc &theme_item : base_class->value.theme_properties) {
+				if (theme_item.name == p_theme_item_name) {
+					result.description = HANDLE_DOC(theme_item.description);
+					break;
+				}
+			}
+		}
 	}
 
 	return result;
 }
+
 
 #undef HANDLE_DOC
 
