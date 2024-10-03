@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
+#include "core/string/string_builder.h"
 #include "editor/editor_dock_manager.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -511,24 +512,36 @@ void SceneTreeEditor::_queue_update_node_tooltip(Node *p_node, TreeItem *p_item)
 }
 
 void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
+	// Use static StringBuilder to reuse inner buffer, avoiding memory allocation.
+	static StringBuilder tooltip;
+	tooltip.clear();
 	// Display the node name in all tooltips so that long node names can be previewed
 	// without having to rename them.
-	String tooltip = p_node->get_name();
+	tooltip += p_node->get_name();
 
 	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
 		if (p_item->get_button_by_id(0, BUTTON_SUBSCENE) == -1) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		}
-		tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
+		tooltip += "\n";
+		tooltip += TTR("Inherits:");
+		tooltip += " ";
+		tooltip += p_node->get_scene_inherited_state()->get_path();
 	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
 		if (p_item->get_button_by_id(0, BUTTON_SUBSCENE) == -1) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("InstanceOptions")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		}
-		tooltip += String("\n" + TTR("Instance:") + " " + p_node->get_scene_file_path());
+		tooltip += "\n";
+		tooltip += TTR("Instance:");
+		tooltip += " ";
+		tooltip += p_node->get_scene_file_path();
 	}
 
 	StringName custom_type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
-	tooltip += "\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class());
+	tooltip += "\n";
+	tooltip += TTR("Type:");
+	tooltip += " ";
+	tooltip += custom_type != StringName() ? String(custom_type) : p_node->get_class();
 
 	if (!p_node->get_editor_description().is_empty()) {
 		const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
@@ -537,11 +550,12 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 		for (int i = 0; i < boundaries.size(); i += 2) {
 			const int start = boundaries[i];
 			const int end = boundaries[i + 1];
-			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			tooltip += "\n";
+			tooltip += p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
 		}
 	}
 
-	p_item->set_tooltip_text(0, tooltip);
+	p_item->set_tooltip_text(0, tooltip.as_string());
 }
 
 void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
