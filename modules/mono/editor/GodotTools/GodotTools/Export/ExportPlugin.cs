@@ -71,6 +71,17 @@ namespace GodotTools.Export
                         }
                     },
                     { "default_value", false }
+                },
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/runtime_identifier" },
+                            { "type", (int)Variant.Type.String }
+                        }
+                    },
+                    { "default_value", "" }
                 }
             };
         }
@@ -225,7 +236,18 @@ namespace GodotTools.Export
                 foreach (string arch in config.Archs)
                 {
                     string ridArch = DetermineRuntimeIdentifierArch(arch);
-                    string runtimeIdentifier = $"{ridOS}-{ridArch}";
+                    string overriddenRuntimeIdentifier = (string)GetOption("dotnet/runtime_identifier");
+                    string runtimeIdentifier;
+
+                    if (overriddenRuntimeIdentifier == "")
+                    {
+                        runtimeIdentifier = $"{ridOS}-{ridArch}";
+                    }
+                    else 
+                    {
+                        runtimeIdentifier = overriddenRuntimeIdentifier;
+                    }
+
                     string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{platform}_{arch}";
                     if (platform == OS.Platforms.MacOS)
                     {
