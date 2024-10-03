@@ -197,6 +197,8 @@ protected:
 	void _unload_patches();
 
 public:
+	TypedArray<String> get_platform_features_as_array() const;
+	TypedArray<String> get_preset_features_as_array(const Ref<EditorExportPreset> &p_preset) const;
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 
 	struct ExportOption {

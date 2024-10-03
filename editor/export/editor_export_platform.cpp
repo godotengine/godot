@@ -530,6 +530,26 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 	return result;
 }
 
+TypedArray<String> EditorExportPlatform::get_platform_features_as_array() const {
+	List<String> feature_list;
+	get_platform_features(&feature_list);
+	TypedArray<String> result;
+	for (const String &E : feature_list) {
+		result.push_back(E);
+	}
+	return result;
+}
+
+TypedArray<String> EditorExportPlatform::get_preset_features_as_array(const Ref<EditorExportPreset> &p_preset) const {
+	List<String> feature_list;
+	get_preset_features(p_preset, &feature_list);
+	TypedArray<String> result;
+	for (const String &E : feature_list) {
+		result.push_back(E);
+	}
+	return result;
+}
+
 EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	HashSet<String> features = p_platform.get_features(p_preset, p_debug);
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
@@ -2294,6 +2314,9 @@ void EditorExportPlatform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ssh_run_on_remote", "host", "port", "ssh_arg", "cmd_args", "output", "port_fwd"), &EditorExportPlatform::_ssh_run_on_remote, DEFVAL(Array()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("ssh_run_on_remote_no_wait", "host", "port", "ssh_args", "cmd_args", "port_fwd"), &EditorExportPlatform::_ssh_run_on_remote_no_wait, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("ssh_push_to_remote", "host", "port", "scp_args", "src_file", "dst_file"), &EditorExportPlatform::ssh_push_to_remote);
+
+	ClassDB::bind_method(D_METHOD("get_platform_features"), &EditorExportPlatform::get_platform_features_as_array);
+	ClassDB::bind_method(D_METHOD("get_preset_features", "preset"), &EditorExportPlatform::get_preset_features_as_array);
 
 	ClassDB::bind_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files"), &EditorExportPlatform::get_forced_export_files);
 
