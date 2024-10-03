@@ -115,6 +115,12 @@
 				Returns the list of packs on which to base a patch export on.
 			</description>
 		</method>
+		<method name="get_platform" qualifiers="const">
+			<return type="EditorExportPlatform" />
+			<description>
+				Returns the [EditorExportPlatform] for this export preset.
+			</description>
+		</method>
 		<method name="get_preset_name" qualifiers="const">
 			<return type="String" />
 			<description>

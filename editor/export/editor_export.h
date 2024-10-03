@@ -65,7 +65,7 @@ public:
 	static EditorExport *get_singleton() { return singleton; }
 
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
-	int get_export_platform_count();
+	int get_export_platform_count() const;
 	Ref<EditorExportPlatform> get_export_platform(int p_idx);
 	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
 
