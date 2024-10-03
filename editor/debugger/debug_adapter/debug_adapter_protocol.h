@@ -35,7 +35,6 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
-#include "core/object/object_id.h"
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
 #include "scene/debugger/scene_debugger.h"
@@ -117,7 +116,7 @@ private:
 	bool _processing_stackdump = false;
 	int _remaining_vars = 0;
 	int _current_frame = 0;
-	uint64_t _request_timeout = 1000;
+	uint64_t _request_timeout = 5000;
 	bool _sync_breakpoints = false;
 
 	String _current_request;
