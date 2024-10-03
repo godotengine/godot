@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_expression_evaluator.cpp                                       */
+/*  expression_evaluator_editor_plugin.cpp                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_expression_evaluator.h"
+#include "expression_evaluator_editor_plugin.h"
 
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 
-void EditorExpressionEvaluator::on_start() {
-	expression_input->set_editable(false);
-	evaluate_btn->set_disabled(true);
+void EditorExpressionEvaluator::set_can_evaluate(bool p_enabled) {
+	expression_input->set_editable(p_enabled);
+	evaluate_btn->set_disabled(!p_enabled);
 
-	if (clear_on_run_checkbox->is_pressed()) {
-		inspector->clear_stack_variables();
+	if (p_enabled) {
+		expression_input->set_placeholder(TTR("Expression to evaluate"));
+	} else {
+		expression_input->set_placeholder(TTR("Expressions can only be evaluated when a running project is paused in the debugger."));
 	}
 }
 
-void EditorExpressionEvaluator::set_editor_debugger(ScriptEditorDebugger *p_editor_debugger) {
-	editor_debugger = p_editor_debugger;
+void EditorExpressionEvaluator::on_start() {
+	if (clear_on_run_checkbox->is_pressed()) {
+		inspector->clear_stack_variables();
+	}
 }
 
 void EditorExpressionEvaluator::add_value(const Array &p_array) {
@@ -60,14 +64,15 @@ void EditorExpressionEvaluator::_evaluate() {
 		return;
 	}
 
-	if (!editor_debugger->is_session_active()) {
+	if (!session->is_active()) {
 		return;
 	}
 
 	Array expr_data;
 	expr_data.push_back(expression);
-	expr_data.push_back(editor_debugger->get_stack_script_frame());
-	editor_debugger->send_message("evaluate", expr_data);
+	// expr_data.push_back(editor_debugger->get_stack_script_frame());
+	expr_data.push_back(0);
+	session->send_message("evaluate", expr_data);
 
 	expression_input->clear();
 }
@@ -77,44 +82,25 @@ void EditorExpressionEvaluator::_clear() {
 }
 
 void EditorExpressionEvaluator::_remote_object_selected(ObjectID p_id) {
-	editor_debugger->emit_signal(SNAME("remote_object_requested"), p_id);
+	// editor_debugger->emit_signal(SNAME("remote_object_requested"), p_id);
 }
 
 void EditorExpressionEvaluator::_on_expression_input_changed(const String &p_expression) {
 	evaluate_btn->set_disabled(p_expression.is_empty());
 }
 
-void EditorExpressionEvaluator::_on_debugger_breaked(bool p_breaked, bool p_can_debug) {
-	expression_input->set_editable(p_breaked);
-	evaluate_btn->set_disabled(!p_breaked);
-}
-
-void EditorExpressionEvaluator::_on_debugger_clear_execution(Ref<Script> p_stack_script) {
-	expression_input->set_editable(false);
-	evaluate_btn->set_disabled(true);
-}
-
-void EditorExpressionEvaluator::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_READY: {
-			EditorDebuggerNode::get_singleton()->connect("breaked", callable_mp(this, &EditorExpressionEvaluator::_on_debugger_breaked));
-			EditorDebuggerNode::get_singleton()->connect("clear_execution", callable_mp(this, &EditorExpressionEvaluator::_on_debugger_clear_execution));
-		} break;
-	}
-}
-
-EditorExpressionEvaluator::EditorExpressionEvaluator() {
-	set_h_size_flags(SIZE_EXPAND_FILL);
+EditorExpressionEvaluator::EditorExpressionEvaluator(const Ref<EditorDebuggerSession> &p_session) {
+	set_name(TTR("Evaluate"));
+	session = p_session;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 
 	expression_input = memnew(LineEdit);
 	expression_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	expression_input->set_placeholder(TTR("Expression to evaluate"));
 	expression_input->set_clear_button_enabled(true);
 	expression_input->connect("text_submitted", callable_mp(this, &EditorExpressionEvaluator::_evaluate).unbind(1));
-	expression_input->connect(SceneStringName(text_changed), callable_mp(this, &EditorExpressionEvaluator::_on_expression_input_changed));
+	expression_input->connect("text_changed", callable_mp(this, &EditorExpressionEvaluator::_on_expression_input_changed));
 	hb->add_child(expression_input);
 
 	clear_on_run_checkbox = memnew(CheckBox);
@@ -143,6 +129,43 @@ EditorExpressionEvaluator::EditorExpressionEvaluator() {
 	inspector->set_use_filter(true);
 	add_child(inspector);
 
-	expression_input->set_editable(false);
-	evaluate_btn->set_disabled(true);
+	set_can_evaluate(false);
+}
+
+void ExpressionEvaluatorDebugger::setup_session(int p_idx) {
+	Ref<EditorDebuggerSession> session = get_session(p_idx);
+
+	EditorExpressionEvaluator *evaluator = memnew(EditorExpressionEvaluator(session));
+	session->add_session_tab(evaluator);
+	session->connect("started", callable_mp(evaluator, &EditorExpressionEvaluator::on_start));
+	session->connect("breaked", callable_mp(evaluator, &EditorExpressionEvaluator::set_can_evaluate));
+	session->connect("stopped", callable_mp(evaluator, &EditorExpressionEvaluator::set_can_evaluate).bind(false));
+	session->connect("continued", callable_mp(evaluator, &EditorExpressionEvaluator::set_can_evaluate).bind(false));
+
+	evaluators[p_idx] = evaluator;
+}
+
+bool ExpressionEvaluatorDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
+	EditorExpressionEvaluator *evaluator = evaluators[p_session];
+	evaluator->add_value(p_data);
+	return true;
+}
+
+bool ExpressionEvaluatorDebugger::has_capture(const String &p_capture) const {
+	return p_capture == "evaluation_return";
+}
+
+void ExpressionEvaluatorEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			add_debugger_plugin(plugin);
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			remove_debugger_plugin(plugin);
+		}
+	}
+}
+
+ExpressionEvaluatorEditorPlugin::ExpressionEvaluatorEditorPlugin() {
+	plugin.instantiate();
 }

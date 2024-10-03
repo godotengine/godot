@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_expression_evaluator.h                                         */
+/*  expression_evaluator_editor_plugin.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPRESSION_EVALUATOR_H
-#define EDITOR_EXPRESSION_EVALUATOR_H
+#ifndef EXPRESSION_EVALUATOR_EDITOR_PLUGIN_H
+#define EXPRESSION_EVALUATOR_EDITOR_PLUGIN_H
 
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 class Button;
@@ -44,7 +46,7 @@ class EditorExpressionEvaluator : public VBoxContainer {
 	GDCLASS(EditorExpressionEvaluator, VBoxContainer)
 
 private:
-	Ref<RemoteDebuggerPeer> peer;
+	Ref<EditorDebuggerSession> session;
 
 	LineEdit *expression_input = nullptr;
 	CheckBox *clear_on_run_checkbox = nullptr;
@@ -58,20 +60,37 @@ private:
 
 	void _remote_object_selected(ObjectID p_id);
 	void _on_expression_input_changed(const String &p_expression);
-	void _on_debugger_breaked(bool p_breaked, bool p_can_debug);
-	void _on_debugger_clear_execution(Ref<Script> p_stack_script);
+
+public:
+    void set_can_evaluate(bool p_enabled);
+	void on_start();
+
+	void add_value(const Array &p_array);
+
+	EditorExpressionEvaluator(const Ref<EditorDebuggerSession> &p_session);
+};
+
+class ExpressionEvaluatorDebugger : public EditorDebuggerPlugin {
+	GDCLASS(ExpressionEvaluatorDebugger, EditorDebuggerPlugin);
+
+	HashMap<int, EditorExpressionEvaluator *> evaluators;
+
+public:
+	void setup_session(int p_idx) override;
+	bool capture(const String &p_message, const Array &p_data, int p_session) override;
+	bool has_capture(const String &p_capture) const override;
+};
+
+class ExpressionEvaluatorEditorPlugin : public EditorPlugin {
+	GDCLASS(ExpressionEvaluatorEditorPlugin, EditorPlugin);
+
+	Ref<ExpressionEvaluatorDebugger> plugin;
 
 protected:
-	ScriptEditorDebugger *editor_debugger = nullptr;
-
 	void _notification(int p_what);
 
 public:
-	void on_start();
-	void set_editor_debugger(ScriptEditorDebugger *p_editor_debugger);
-	void add_value(const Array &p_array);
-
-	EditorExpressionEvaluator();
+	ExpressionEvaluatorEditorPlugin();
 };
 
-#endif // EDITOR_EXPRESSION_EVALUATOR_H
+#endif // EXPRESSION_EVALUATOR_EDITOR_PLUGIN_H
