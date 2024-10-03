@@ -1147,11 +1147,11 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 	uint32_t normal_tangent_stride = 0;
 	uint32_t attribute_stride = 0;
 	uint32_t skin_stride = 0;
-	RD::VertexAttribute vd;
 
 	r_position_stride = 0;
 
 	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
+		RD::VertexAttribute vd;
 		vd.location = i;
 
 		if (!(p_surface_format & (1ULL << i))) {
