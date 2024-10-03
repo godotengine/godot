@@ -41,11 +41,7 @@
 #if defined(VULKAN_ENABLED)
 #import "rendering_context_driver_vulkan_ios.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
 
 #if defined(METAL_ENABLED)

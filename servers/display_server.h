@@ -594,6 +594,16 @@ public:
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
 	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 
+	enum RenderingDeviceCreationStatus {
+		UNKNOWN,
+		SUCCESS,
+		FAILURE,
+	};
+
+	// Used to cache the result of `can_create_rendering_device()` when RenderingDevice isn't currently being used.
+	// This is done as creating a RenderingDevice is quite slow.
+	static inline RenderingDeviceCreationStatus created_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
+
 	static bool can_create_rendering_device();
 
 	DisplayServer();
