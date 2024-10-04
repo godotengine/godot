@@ -60,11 +60,6 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#ifdef DEBUG_ENABLED
-// forward error messages to OutputDebugString
-#define WINDOWS_DEBUG_OUTPUT_ENABLED
-#endif
-
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
@@ -112,10 +107,6 @@ class OS_Windows : public OS {
 #endif
 
 	CrashHandler crash_handler;
-
-#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
-	ErrorHandlerList error_handlers;
-#endif
 
 	HWND main_window;
 
