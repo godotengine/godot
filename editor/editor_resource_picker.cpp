@@ -949,6 +949,10 @@ void EditorResourcePicker::set_toggle_pressed(bool p_pressed) {
 	assign_button->set_pressed(p_pressed);
 }
 
+bool EditorResourcePicker::is_toggle_pressed() const {
+	return assign_button->is_pressed();
+}
+
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
 	assign_button->set_disabled(!editable && !edited_resource.is_valid());
