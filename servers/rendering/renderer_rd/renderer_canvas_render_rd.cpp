@@ -2901,22 +2901,12 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 				RS::PrimitiveType primitive = mesh_storage->mesh_surface_get_primitive(surface);
 				ERR_CONTINUE(primitive < 0 || primitive >= RS::PRIMITIVE_MAX);
 
-				uint64_t input_mask = p_shader_data->get_vertex_input_mask(pipeline_key.variant, pipeline_key.ubershader);
-
 				RID vertex_array;
-				RD::VertexFormatID vertex_format = RD::INVALID_FORMAT_ID;
-
-				if (mesh_instance.is_valid()) {
-					mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(mesh_instance, j, input_mask, false, vertex_array, vertex_format);
-				} else {
-					mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, false, vertex_array, vertex_format);
-				}
-
 				pipeline_key.variant = primitive == RS::PRIMITIVE_POINTS ? SHADER_VARIANT_ATTRIBUTES_POINTS : SHADER_VARIANT_ATTRIBUTES;
 				pipeline_key.render_primitive = _primitive_type_to_render_primitive(primitive);
-				pipeline_key.vertex_format_id = vertex_format;
+				pipeline_key.vertex_format_id = RD::INVALID_FORMAT_ID;
 
-				pipeline = _get_pipeline_specialization_or_ubershader(p_shader_data, pipeline_key, push_constant);
+				pipeline = _get_pipeline_specialization_or_ubershader(p_shader_data, pipeline_key, push_constant, mesh_instance, surface, j, &vertex_array);
 				RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 
 				push_constant.base_instance_index = p_batch->start;
