@@ -6034,6 +6034,429 @@ T GLTFDocument::_interpolate_track(const Vector<double> &p_times, const Vector<T
 	ERR_FAIL_V(p_values[0]);
 }
 
+NodePath GLTFDocument::_find_material_node_path(Ref<GLTFState> p_state, Ref<Material> p_material) {
+	int mesh_index = 0;
+	for (Ref<GLTFMesh> gltf_mesh : p_state->meshes) {
+		TypedArray<Material> materials = gltf_mesh->get_instance_materials();
+		for (int mat_index = 0; mat_index < materials.size(); mat_index++) {
+			if (materials[mat_index] == p_material) {
+				for (Ref<GLTFNode> gltf_node : p_state->nodes) {
+					if (gltf_node->mesh == mesh_index) {
+						NodePath node_path = gltf_node->get_scene_node_path(p_state);
+						// Example: MyNode:mesh:surface_0/material:albedo_color, so we want the mesh:surface_0/material part.
+						Vector<StringName> subpath;
+						subpath.append("mesh");
+						subpath.append("surface_" + itos(mat_index) + "/material");
+						return NodePath(node_path.get_names(), subpath, false);
+					}
+				}
+			}
+		}
+		mesh_index++;
+	}
+	return NodePath();
+}
+
+Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTFState> p_state, const String &p_json_pointer) {
+	if (p_state->object_model_properties.has(p_json_pointer)) {
+		return p_state->object_model_properties[p_json_pointer];
+	}
+	Ref<GLTFObjectModelProperty> ret;
+	// Split the JSON pointer into its components.
+	const PackedStringArray split = p_json_pointer.split("/", false);
+	ERR_FAIL_COND_V_MSG(split.size() < 3, ret, "glTF: Cannot use JSON pointer '" + p_json_pointer + "' because it does not contain enough elements. The only animatable properties are at least 3 levels deep (ex: '/nodes/0/translation' or '/materials/0/emissiveFactor').");
+	ret.instantiate();
+	ret->set_json_pointers({ split });
+	// Partial paths are passed to GLTFDocumentExtension classes if GLTFDocument cannot handle a given JSON pointer.
+	TypedArray<NodePath> partial_paths;
+	// Note: This might not be an integer, but in that case, we don't use this value anyway.
+	const int top_level_index = split[1].to_int();
+	// For JSON pointers present in the core glTF Object Model, hard-code them in GLTFDocument.
+	// https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/ObjectModel.adoc
+	if (split[0] == "nodes") {
+		ERR_FAIL_INDEX_V_MSG(top_level_index, p_state->nodes.size(), ret, vformat("glTF: Unable to find node %d for JSON pointer '%s'.", top_level_index, p_json_pointer));
+		Ref<GLTFNode> pointed_gltf_node = p_state->nodes[top_level_index];
+		NodePath node_path = pointed_gltf_node->get_scene_node_path(p_state);
+		partial_paths.append(node_path);
+		// Check if it's something we should be able to handle.
+		const String &node_prop = split[2];
+		if (node_prop == "translation") {
+			ret->append_path_to_property(node_path, "position");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else if (node_prop == "rotation") {
+			ret->append_path_to_property(node_path, "quaternion");
+			ret->set_types(Variant::QUATERNION, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+		} else if (node_prop == "scale") {
+			ret->append_path_to_property(node_path, "scale");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else if (node_prop == "matrix") {
+			ret->append_path_to_property(node_path, "transform");
+			ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+		} else if (node_prop == "globalMatrix") {
+			ret->append_path_to_property(node_path, "global_transform");
+			ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+		} else if (node_prop == "weights") {
+			if (split.size() > 3) {
+				const String &weight_index_string = split[3];
+				ret->append_path_to_property(node_path, "blend_shapes/morph_" + weight_index_string);
+				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			}
+			// Else, Godot's MeshInstance3D does not expose the blend shape weights as one property.
+			// But that's fine, we handle this case in _parse_animation_pointer instead.
+		}
+	} else if (split[0] == "cameras") {
+		const String &camera_prop = split[2];
+		for (Ref<GLTFNode> gltf_node : p_state->nodes) {
+			if (gltf_node->camera == top_level_index) {
+				NodePath node_path = gltf_node->get_scene_node_path(p_state);
+				partial_paths.append(node_path);
+				// Check if it's something we should be able to handle.
+				if (camera_prop == "orthographic" || camera_prop == "perspective") {
+					ERR_FAIL_COND_V(split.size() < 4, ret);
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					const String &sub_prop = split[3];
+					if (sub_prop == "xmag" || sub_prop == "ymag") {
+						ret->append_path_to_property(node_path, "size");
+					} else if (sub_prop == "yfov") {
+						ret->append_path_to_property(node_path, "fov");
+						GLTFCamera::set_fov_conversion_expressions(ret);
+					} else if (sub_prop == "zfar") {
+						ret->append_path_to_property(node_path, "far");
+					} else if (sub_prop == "znear") {
+						ret->append_path_to_property(node_path, "near");
+					}
+				}
+			}
+		}
+	} else if (split[0] == "materials") {
+		ERR_FAIL_INDEX_V_MSG(top_level_index, p_state->materials.size(), ret, vformat("glTF: Unable to find material %d for JSON pointer '%s'.", top_level_index, p_json_pointer));
+		Ref<Material> pointed_material = p_state->materials[top_level_index];
+		NodePath mat_path = _find_material_node_path(p_state, pointed_material);
+		if (mat_path.is_empty()) {
+			WARN_PRINT(vformat("glTF: Unable to find a path to the material %d for JSON pointer '%s'. This is likely bad data but it's also possible this is intentional. Continuing anyway.", top_level_index, p_json_pointer));
+		} else {
+			partial_paths.append(mat_path);
+			const String &mat_prop = split[2];
+			if (mat_prop == "alphaCutoff") {
+				ret->append_path_to_property(mat_path, "alpha_scissor_threshold");
+				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			} else if (mat_prop == "emissiveFactor") {
+				ret->append_path_to_property(mat_path, "emission");
+				ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (mat_prop == "extensions") {
+				ERR_FAIL_COND_V(split.size() < 5, ret);
+				const String &ext_name = split[3];
+				const String &ext_prop = split[4];
+				if (ext_name == "KHR_materials_emissive_strength" && ext_prop == "emissiveStrength") {
+					ret->append_path_to_property(mat_path, "emission_energy_multiplier");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				}
+			} else {
+				ERR_FAIL_COND_V(split.size() < 4, ret);
+				const String &sub_prop = split[3];
+				if (mat_prop == "normalTexture") {
+					if (sub_prop == "scale") {
+						ret->append_path_to_property(mat_path, "normal_scale");
+						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					}
+				} else if (mat_prop == "occlusionTexture") {
+					if (sub_prop == "strength") {
+						// This is the closest thing Godot has to an occlusion strength property.
+						ret->append_path_to_property(mat_path, "ao_light_affect");
+						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					}
+				} else if (mat_prop == "pbrMetallicRoughness") {
+					if (sub_prop == "baseColorFactor") {
+						ret->append_path_to_property(mat_path, "albedo_color");
+						ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+					} else if (sub_prop == "metallicFactor") {
+						ret->append_path_to_property(mat_path, "metallic");
+						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					} else if (sub_prop == "roughnessFactor") {
+						ret->append_path_to_property(mat_path, "roughness");
+						ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					} else if (sub_prop == "baseColorTexture") {
+						ERR_FAIL_COND_V(split.size() < 6, ret);
+						const String &tex_ext_dict = split[4];
+						const String &tex_ext_name = split[5];
+						const String &tex_ext_prop = split[6];
+						if (tex_ext_dict == "extensions" && tex_ext_name == "KHR_texture_transform") {
+							// Godot only supports UVs for the whole material, not per texture.
+							// We treat the albedo texture as the main texture, and import as UV1.
+							// Godot does not support texture rotation, only offset and scale.
+							if (tex_ext_prop == "offset") {
+								ret->append_path_to_property(mat_path, "uv1_offset");
+								ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+							} else if (tex_ext_prop == "scale") {
+								ret->append_path_to_property(mat_path, "uv1_scale");
+								ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+							}
+						}
+					}
+				}
+			}
+		}
+	} else if (split[0] == "meshes") {
+		for (Ref<GLTFNode> gltf_node : p_state->nodes) {
+			if (gltf_node->mesh == top_level_index) {
+				NodePath node_path = gltf_node->get_scene_node_path(p_state);
+				Vector<StringName> subpath;
+				subpath.append("mesh");
+				partial_paths.append(NodePath(node_path.get_names(), subpath, false));
+				break;
+			}
+		}
+	} else if (split[0] == "extensions") {
+		if (split[1] == "KHR_lights_punctual" && split[2] == "lights" && split.size() > 4) {
+			const int light_index = split[3].to_int();
+			ERR_FAIL_INDEX_V_MSG(light_index, p_state->lights.size(), ret, vformat("glTF: Unable to find light %d for JSON pointer '%s'.", light_index, p_json_pointer));
+			const String &light_prop = split[4];
+			const Ref<GLTFLight> pointed_light = p_state->lights[light_index];
+			for (Ref<GLTFNode> gltf_node : p_state->nodes) {
+				if (gltf_node->light == light_index) {
+					NodePath node_path = gltf_node->get_scene_node_path(p_state);
+					partial_paths.append(node_path);
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+					// Check if it's something we should be able to handle.
+					if (light_prop == "color") {
+						ret->append_path_to_property(node_path, "light_color");
+						ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+					} else if (light_prop == "intensity") {
+						ret->append_path_to_property(node_path, "light_energy");
+					} else if (light_prop == "range") {
+						const String &light_type = p_state->lights[light_index]->light_type;
+						if (light_type == "spot") {
+							ret->append_path_to_property(node_path, "spot_range");
+						} else {
+							ret->append_path_to_property(node_path, "omni_range");
+						}
+					} else if (light_prop == "spot") {
+						ERR_FAIL_COND_V(split.size() < 6, ret);
+						const String &sub_prop = split[5];
+						if (sub_prop == "innerConeAngle") {
+							ret->append_path_to_property(node_path, "spot_angle_attenuation");
+							GLTFLight::set_cone_inner_attenuation_conversion_expressions(ret);
+						} else if (sub_prop == "outerConeAngle") {
+							ret->append_path_to_property(node_path, "spot_angle");
+						}
+					}
+				}
+			}
+		}
+	}
+	// Additional JSON pointers can be added by GLTFDocumentExtension classes.
+	// We only need this if no mapping has been found yet from GLTFDocument's internal code.
+	// When available, we pass the partial paths to the extension to help it generate the full path.
+	// For example, for `/nodes/3/extensions/MY_ext/prop`, we pass a NodePath that leads to node 3,
+	// so the GLTFDocumentExtension class only needs to resolve the last `MY_ext/prop` part of the path.
+	// It should check `split.size() > 4 and split[0] == "nodes" and split[2] == "extensions" and split[3] == "MY_ext"`
+	// at the start of the function to check if this JSON pointer applies to it, then it can handle `split[4]`.
+	if (!ret->has_node_paths()) {
+		for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
+			ret = ext->import_object_model_property(p_state, split, partial_paths);
+			if (ret.is_valid() && ret->has_node_paths()) {
+				if (!ret->has_json_pointers()) {
+					ret->set_json_pointers({ split });
+				}
+				break;
+			}
+		}
+		if (ret.is_null() || !ret->has_node_paths()) {
+			if (split.has("KHR_texture_transform")) {
+				WARN_VERBOSE(vformat("glTF: Texture transforms are only supported per material in Godot. All KHR_texture_transform properties will be ignored except for the albedo texture. Ignoring JSON pointer '%s'.", p_json_pointer));
+			} else {
+				WARN_PRINT(vformat("glTF: Animation contained JSON pointer '%s' which could not be resolved. This property will not be animated.", p_json_pointer));
+			}
+		}
+	}
+	p_state->object_model_properties[p_json_pointer] = ret;
+	return ret;
+}
+
+Ref<GLTFObjectModelProperty> GLTFDocument::export_object_model_property(Ref<GLTFState> p_state, const NodePath &p_node_path, const Node *p_godot_node, GLTFNodeIndex p_gltf_node_index) {
+	Ref<GLTFObjectModelProperty> ret;
+	const Object *target_object = p_godot_node;
+	const Vector<StringName> subpath = p_node_path.get_subnames();
+	ERR_FAIL_COND_V_MSG(subpath.is_empty(), ret, "glTF: Cannot export empty property. No property was specified in the NodePath: " + p_node_path);
+	int target_prop_depth = 0;
+	for (StringName subname : subpath) {
+		Variant target_property = target_object->get(subname);
+		if (target_property.get_type() == Variant::OBJECT) {
+			target_object = target_property;
+			if (target_object) {
+				target_prop_depth++;
+				continue;
+			}
+		}
+		break;
+	}
+	const String &target_prop = subpath[target_prop_depth];
+	ret.instantiate();
+	ret->set_node_paths({ p_node_path });
+	Vector<PackedStringArray> split_json_pointers;
+	PackedStringArray split_json_pointer;
+	if (Object::cast_to<BaseMaterial3D>(target_object)) {
+		for (int i = 0; i < p_state->materials.size(); i++) {
+			if (p_state->materials[i].ptr() == target_object) {
+				split_json_pointer.append("materials");
+				split_json_pointer.append(itos(i));
+				if (target_prop == "alpha_scissor_threshold") {
+					split_json_pointer.append("alphaCutoff");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (target_prop == "emission") {
+					split_json_pointer.append("emissiveFactor");
+					ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+				} else if (target_prop == "emission_energy_multiplier") {
+					split_json_pointer.append("extensions");
+					split_json_pointer.append("KHR_materials_emissive_strength");
+					split_json_pointer.append("emissiveStrength");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (target_prop == "normal_scale") {
+					split_json_pointer.append("normalTexture");
+					split_json_pointer.append("scale");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (target_prop == "ao_light_affect") {
+					split_json_pointer.append("occlusionTexture");
+					split_json_pointer.append("strength");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (target_prop == "albedo_color") {
+					split_json_pointer.append("pbrMetallicRoughness");
+					split_json_pointer.append("baseColorFactor");
+					ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+				} else if (target_prop == "metallic") {
+					split_json_pointer.append("pbrMetallicRoughness");
+					split_json_pointer.append("metallicFactor");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (target_prop == "roughness") {
+					split_json_pointer.append("pbrMetallicRoughness");
+					split_json_pointer.append("roughnessFactor");
+					ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+				} else if (target_prop == "uv1_offset" || target_prop == "uv1_scale") {
+					split_json_pointer.append("pbrMetallicRoughness");
+					split_json_pointer.append("baseColorTexture");
+					split_json_pointer.append("extensions");
+					split_json_pointer.append("KHR_texture_transform");
+					if (target_prop == "uv1_offset") {
+						split_json_pointer.append("offset");
+					} else {
+						split_json_pointer.append("scale");
+					}
+					ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT2);
+				} else {
+					split_json_pointer.clear();
+				}
+				break;
+			}
+		}
+	} else {
+		// Properties directly on Godot nodes.
+		Ref<GLTFNode> gltf_node = p_state->nodes[p_gltf_node_index];
+		if (Object::cast_to<Camera3D>(target_object) && gltf_node->camera >= 0) {
+			split_json_pointer.append("cameras");
+			split_json_pointer.append(itos(gltf_node->camera));
+			const Camera3D *camera_node = Object::cast_to<Camera3D>(target_object);
+			const Camera3D::ProjectionType projection_type = camera_node->get_projection();
+			if (projection_type == Camera3D::PROJECTION_PERSPECTIVE) {
+				split_json_pointer.append("perspective");
+			} else {
+				split_json_pointer.append("orthographic");
+			}
+			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			if (target_prop == "size") {
+				PackedStringArray xmag = split_json_pointer.duplicate();
+				xmag.append("xmag");
+				split_json_pointers.append(xmag);
+				split_json_pointer.append("ymag");
+			} else if (target_prop == "fov") {
+				split_json_pointer.append("yfov");
+				GLTFCamera::set_fov_conversion_expressions(ret);
+			} else if (target_prop == "far") {
+				split_json_pointer.append("zfar");
+			} else if (target_prop == "near") {
+				split_json_pointer.append("znear");
+			} else {
+				split_json_pointer.clear();
+			}
+		} else if (Object::cast_to<Light3D>(target_object) && gltf_node->light >= 0) {
+			split_json_pointer.append("extensions");
+			split_json_pointer.append("KHR_lights_punctual");
+			split_json_pointer.append("lights");
+			split_json_pointer.append(itos(gltf_node->light));
+			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			if (target_prop == "light_color") {
+				split_json_pointer.append("color");
+				ret->set_types(Variant::COLOR, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (target_prop == "light_energy") {
+				split_json_pointer.append("intensity");
+			} else if (target_prop == "spot_range") {
+				split_json_pointer.append("range");
+			} else if (target_prop == "omni_range") {
+				split_json_pointer.append("range");
+			} else if (target_prop == "spot_angle") {
+				split_json_pointer.append("spot");
+				split_json_pointer.append("outerConeAngle");
+			} else if (target_prop == "spot_angle_attenuation") {
+				split_json_pointer.append("spot");
+				split_json_pointer.append("innerConeAngle");
+				GLTFLight::set_cone_inner_attenuation_conversion_expressions(ret);
+			} else {
+				split_json_pointer.clear();
+			}
+		} else if (Object::cast_to<MeshInstance3D>(target_object) && target_prop.begins_with("blend_shapes/morph_")) {
+			const String &weight_index_string = target_prop.trim_prefix("blend_shapes/morph_");
+			split_json_pointer.append("nodes");
+			split_json_pointer.append(itos(p_gltf_node_index));
+			split_json_pointer.append("weights");
+			split_json_pointer.append(weight_index_string);
+		}
+		// Transform properties. Check for all 3D nodes if we haven't resolved the JSON pointer yet.
+		// Note: Do not put this in an `else`, because otherwise this will not be reached.
+		if (split_json_pointer.is_empty() && Object::cast_to<Node3D>(target_object)) {
+			split_json_pointer.append("nodes");
+			split_json_pointer.append(itos(p_gltf_node_index));
+			if (target_prop == "position") {
+				split_json_pointer.append("translation");
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (target_prop == "quaternion") {
+				// Note: Only Quaternion rotation can be converted from Godot in this mapping.
+				// Struct methods like from_euler are not accessible from the Expression class. :(
+				split_json_pointer.append("rotation");
+				ret->set_types(Variant::QUATERNION, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4);
+			} else if (target_prop == "scale") {
+				split_json_pointer.append("scale");
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (target_prop == "transform") {
+				split_json_pointer.append("matrix");
+				ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+			} else if (target_prop == "global_transform") {
+				split_json_pointer.append("globalMatrix");
+				ret->set_types(Variant::TRANSFORM3D, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT4X4);
+			} else {
+				split_json_pointer.clear();
+			}
+		}
+	}
+	// Additional JSON pointers can be added by GLTFDocumentExtension classes.
+	// We only need this if no mapping has been found yet from GLTFDocument's internal code.
+	// We pass as many pieces of information as we can to the extension to give it lots of context.
+	if (split_json_pointer.is_empty()) {
+		for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
+			ret = ext->export_object_model_property(p_state, p_node_path, p_godot_node, p_gltf_node_index, target_object, target_prop_depth);
+			if (ret.is_valid() && ret->has_json_pointers()) {
+				if (!ret->has_node_paths()) {
+					ret->set_node_paths({ p_node_path });
+				}
+				break;
+			}
+		}
+	} else {
+		// GLTFDocument's internal code found a mapping, so set it and return it.
+		split_json_pointers.append(split_json_pointer);
+		ret->set_json_pointers(split_json_pointers);
+	}
+	return ret;
+}
+
 void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	ERR_FAIL_COND(p_state.is_null());
 	Node *scene_root = p_animation_player->get_parent();
@@ -7177,6 +7600,9 @@ void GLTFDocument::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
+
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("import_object_model_property", "state", "json_pointer"), &GLTFDocument::import_object_model_property);
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("export_object_model_property", "state", "node_path", "godot_node", "gltf_node_index"), &GLTFDocument::export_object_model_property);
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));

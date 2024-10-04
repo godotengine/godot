@@ -38,6 +38,7 @@
 #include "structures/gltf_camera.h"
 #include "structures/gltf_mesh.h"
 #include "structures/gltf_node.h"
+#include "structures/gltf_object_model_property.h"
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
@@ -101,6 +102,7 @@ protected:
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
 	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
+	HashMap<String, Ref<GLTFObjectModelProperty>> object_model_properties;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;

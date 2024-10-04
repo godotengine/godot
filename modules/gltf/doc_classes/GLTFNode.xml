@@ -32,7 +32,7 @@
 			<param index="0" name="gltf_state" type="GLTFState" />
 			<param index="1" name="handle_skeletons" type="bool" default="true" />
 			<description>
-				Returns the [NodePath] that this GLTF node will have in the Godot scene tree after being imported.
+				Returns the [NodePath] that this GLTF node will have in the Godot scene tree after being imported. This is useful when importing glTF object model pointers with [GLTFObjectModelProperty], for handling extensions such as [code]KHR_animation_pointer[/code] or [code]KHR_interactivity[/code].
 				If [param handle_skeletons] is true, paths to skeleton bone glTF nodes will be resolved properly. For example, a path that would be [code]^"A/B/C/Bone1/Bone2/Bone3"[/code] if false will become [code]^"A/B/C/Skeleton3D:Bone3"[/code].
 			</description>
 		</method>
