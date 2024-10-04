@@ -4255,8 +4255,31 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	ray_params.to = world_pos + world_ray * camera->get_far();
 
 	PhysicsDirectSpaceState3D::RayResult result;
-	if (ss->intersect_ray(ray_params, result)) {
-		return result.position;
+	if (ss->intersect_ray(ray_params, result) && preview_node->get_child_count() > 0) {
+		// Calculate an offset for the `preview_node` such that the its bounding box is on top of and touching the contact surface's plane.
+
+		// Use the Gram-Schmidt process to get an orthonormal Basis aligned with the surface normal.
+		const Vector3 bb_basis_x = result.normal;
+		Vector3 bb_basis_y = Vector3(0, 1, 0);
+		bb_basis_y = bb_basis_y - bb_basis_y.project(bb_basis_x);
+		if (bb_basis_y.is_zero_approx()) {
+			bb_basis_y = Vector3(0, 0, 1);
+			bb_basis_y = bb_basis_y - bb_basis_y.project(bb_basis_x);
+		}
+		bb_basis_y = bb_basis_y.normalized();
+		const Vector3 bb_basis_z = bb_basis_x.cross(bb_basis_y);
+		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
+
+		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
+		const Transform3D bb_transform = Transform3D(bb_basis, preview_node->get_transform().origin);
+		const AABB preview_node_bb = _calculate_spatial_bounds(preview_node, true, &bb_transform);
+		// The x-axis's alignment with the surface normal also makes it trivial to get the distance from `preview_node`'s origin at (0, 0, 0) to the correct AABB face.
+		const float offset_distance = -preview_node_bb.position.x;
+
+		// `result_offset` is in global space.
+		const Vector3 result_offset = result.position + result.normal * offset_distance;
+
+		return result_offset;
 	}
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
@@ -4284,18 +4307,21 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
-AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent) {
+AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level, const Transform3D *p_bounds_orientation) {
 	AABB bounds;
 
-	if (!p_top_level_parent) {
-		p_top_level_parent = p_parent;
+	Transform3D bounds_orientation;
+	if (p_bounds_orientation) {
+		bounds_orientation = *p_bounds_orientation;
+	} else {
+		bounds_orientation = p_parent->get_global_transform();
 	}
 
 	if (!p_parent) {
 		return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
 
-	Transform3D xform_to_top_level_parent_space = p_top_level_parent->get_global_transform().affine_inverse() * p_parent->get_global_transform();
+	const Transform3D xform_to_top_level_parent_space = bounds_orientation.affine_inverse() * p_parent->get_global_transform();
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
 	if (visual_instance) {
@@ -4306,9 +4332,9 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, con
 	bounds = xform_to_top_level_parent_space.xform(bounds);
 
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
-		Node3D *child = Object::cast_to<Node3D>(p_parent->get_child(i));
-		if (child) {
-			AABB child_bounds = _calculate_spatial_bounds(child, p_top_level_parent);
+		const Node3D *child = Object::cast_to<Node3D>(p_parent->get_child(i));
+		if (child && !(p_omit_top_level && child->is_set_as_top_level())) {
+			const AABB child_bounds = _calculate_spatial_bounds(child, p_omit_top_level, &bounds_orientation);
 			bounds.merge_with(child_bounds);
 		}
 	}
@@ -4359,6 +4385,10 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 			if (instance) {
 				instance = _sanitize_preview_node(instance);
 				preview_node->add_child(instance);
+				Node3D *node_3d = Object::cast_to<Node3D>(instance);
+				if (node_3d) {
+					node_3d->set_as_top_level(false);
+				}
 			}
 			add_preview = true;
 		}
@@ -4579,8 +4609,12 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 		}
 
 		Transform3D new_tf = node3d->get_transform();
-		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
-		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+		if (node3d->is_set_as_top_level()) {
+			new_tf.origin += preview_node_pos;
+		} else {
+			new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
+			new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+		}
 
 		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
