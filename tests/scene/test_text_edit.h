@@ -7445,7 +7445,8 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	text_edit->set_line_as_last_visible(visible_lines * 2);
 	MessageQueue::get_singleton()->flush();
 	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(text_edit->get_v_scroll() == visible_lines);
+	double v_offset = text_edit->get_v_scroll_bar()->get_max() - floor(text_edit->get_v_scroll_bar()->get_max());
+	CHECK(text_edit->get_v_scroll() == v_offset + visible_lines);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 
@@ -7466,7 +7467,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	text_edit->set_line_as_last_visible(visible_lines + 5, 1);
 	MessageQueue::get_singleton()->flush();
 	CHECK(text_edit->get_first_visible_line() == 16);
-	CHECK(text_edit->get_v_scroll() == 32.0);
+	CHECK(text_edit->get_v_scroll() == v_offset + 32);
 	CHECK(text_edit->get_last_full_visible_line() == visible_lines + 5);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 
@@ -7550,7 +7551,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	MessageQueue::get_singleton()->flush();
 	CHECK(text_edit->is_caret_visible());
 	CHECK(text_edit->get_first_visible_line() == 5);
-	CHECK(text_edit->get_v_scroll() == 5);
+	CHECK(text_edit->get_v_scroll() == v_offset + 5);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) + 5);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 
@@ -7606,7 +7607,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	MessageQueue::get_singleton()->flush();
 
 	CHECK(text_edit->get_first_visible_line() == (visible_lines / 2) + 6);
-	CHECK(text_edit->get_v_scroll() == (visible_lines + (visible_lines / 2)) + 1);
+	CHECK(text_edit->get_v_scroll() == (text_edit->get_v_scroll_bar()->get_max() - floor(text_edit->get_v_scroll_bar()->get_max())) + (visible_lines + (visible_lines / 2)) + 1);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines) + 5);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 1);
@@ -7717,7 +7718,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_h_scroll() == 0);
 
 	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 306);
+	CHECK(text_edit->get_h_scroll() == text_edit->get_h_scroll_bar()->get_max() - text_edit->get_h_scroll_bar()->get_page());
 	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
 
 	text_edit->set_h_scroll(-100);
@@ -7754,7 +7755,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 21);
 	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(text_edit->get_v_scroll() == 0);
+	CHECK(text_edit->get_v_scroll() == v_offset);
 	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
@@ -7763,7 +7764,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 41);
 	CHECK(text_edit->get_first_visible_line() == 20);
-	CHECK(text_edit->get_v_scroll() == 20);
+	CHECK(text_edit->get_v_scroll() == v_offset + 20);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) * 2);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
@@ -7772,7 +7773,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 21);
 	CHECK(text_edit->get_first_visible_line() == 20);
-	CHECK(text_edit->get_v_scroll() == 20);
+	CHECK(text_edit->get_v_scroll() == v_offset + 20);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) * 2);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
@@ -7813,7 +7814,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 22);
 	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(text_edit->get_v_scroll() == 1);
+	CHECK(text_edit->get_v_scroll() == v_offset + 1);
 	CHECK(text_edit->get_last_full_visible_line() == visible_lines);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
@@ -7822,7 +7823,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 42);
 	CHECK(text_edit->get_first_visible_line() == 21);
-	CHECK(text_edit->get_v_scroll() == 21);
+	CHECK(text_edit->get_v_scroll() == v_offset + 21);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
@@ -7831,7 +7832,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 22);
 	CHECK(text_edit->get_first_visible_line() == 21);
-	CHECK(text_edit->get_v_scroll() == 21);
+	CHECK(text_edit->get_v_scroll() == v_offset + 21);
 	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
