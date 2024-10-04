@@ -63,7 +63,7 @@
 
 constexpr double FPS_DECIMAL = 1.0;
 constexpr double SECOND_DECIMAL = 0.0001;
-constexpr double FACTOR = 0.0625;
+constexpr double FPS_STEP_FRACTION = 0.0625;
 
 void AnimationTrackKeyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationTrackKeyEdit::_update_obj);
@@ -5028,6 +5028,8 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 		key_edit->set_use_fps(use_fps);
 	}
 	marker_edit->set_use_fps(use_fps);
+	// To ensure that the conversion results are consistent between serialization and load, the value is snapped with 0.0625 to be a rational number when FPS mode is used.
+	step->set_step(use_fps ? FPS_STEP_FRACTION : SECOND_DECIMAL);
 	_update_step_spinbox();
 }
 
@@ -5155,12 +5157,12 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation Step"));
-	// To ensure that the conversion results are consistent between serialization and load, the value is snapped with 0.0625 to be a rational number.
-	// step_value must also be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
-	double step_value = MIN(1000.0, Math::snapped(p_new_step, FACTOR));
+	double step_value = p_new_step;
 	if (timeline->is_using_fps()) {
 		if (step_value != 0.0) {
-			step_value = 1.0 / step_value;
+			// step_value must also be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
+			step_value = 1.0 / MIN(1000.0, p_new_step);
+			;
 		}
 		timeline->queue_redraw();
 	}
