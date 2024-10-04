@@ -1622,7 +1622,7 @@ namespace human
 			Animation::Track* track = tracks[j];
 			if (track->type == Animation::TYPE_POSITION_3D) {
 				Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
-				int bone_index = get_bone_human_index(apSkeleton,p_bone_map, track_cache->path);
+				int bone_index = get_bone_human_index(human_bone_name_index,p_bone_map, track_cache->path);
 				if (bone_index < 0) {
 					other_tracks.push_back(track);
 					continue;
@@ -1630,7 +1630,7 @@ namespace human
 			}
 			else if (track->type == Animation::TYPE_ROTATION_3D) {
 				Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
-				int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
+				int bone_index = get_bone_human_index(human_bone_name_index, p_bone_map, track_cache->path);
 				if (bone_index < 0) {
 					other_tracks.push_back(track);
 					continue;
@@ -1638,7 +1638,7 @@ namespace human
 			}
 			else if (track->type == Animation::TYPE_SCALE_3D) {
 				Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
-				int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
+				int bone_index = get_bone_human_index(human_bone_name_index, p_bone_map, track_cache->path);
 				if (bone_index < 0) {
 					other_tracks.push_back(track);
 					continue;
@@ -1656,7 +1656,7 @@ namespace human
                 Animation::Track* track = tracks[j];
                 if(track->type == Animation::TYPE_POSITION_3D) {
                     Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
-                    int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(human_bone_name_index, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
@@ -1667,7 +1667,7 @@ namespace human
                 }
                 else if(track->type == Animation::TYPE_ROTATION_3D) {
                     Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
-                    int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(human_bone_name_index, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
@@ -1677,7 +1677,7 @@ namespace human
                 }
                 else if(track->type == Animation::TYPE_SCALE_3D) {
                     Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
-                    int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(human_bone_name_index, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }

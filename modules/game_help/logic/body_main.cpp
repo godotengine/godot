@@ -915,7 +915,7 @@ void CharacterBodyMain::editor_build_animation()
 	HashMap<String, int> human_bone_name_index;
 
 	if (editor_human_config.is_valid()) {
-		auto& bone_names = editor_ref_bone_map->get_bone_names();
+		auto bone_names = editor_ref_bone_map->get_bone_names();
 		for (int i = 0; i < bone_names.size(); ++i) {
 			human_bone_name_index[bone_names[i]] = i;
 		}
@@ -937,7 +937,7 @@ void CharacterBodyMain::editor_build_animation()
 
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (editor_human_config.is_valid()) {
-				new_animation = editor_human_config->human->animation_to_dof(skeleton,new_animation.ptr(), bone_map->get_bone_map());
+				new_animation = editor_human_config->human->animation_to_dof(human_bone_name_index,new_animation.ptr(), bone_map->get_bone_map());
 			}
             new_animation->optimize();
             new_animation->compress();
