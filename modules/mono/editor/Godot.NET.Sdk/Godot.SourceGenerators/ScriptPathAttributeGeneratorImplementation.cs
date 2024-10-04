@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators;
 
-public class ScriptPathAttributeGeneratorImplementation
+public class ScriptPathAttributeGeneratorImplementation : IGeneratorImplementation
 {
     public void Execute(IGeneratorExecutionContext context)
     {

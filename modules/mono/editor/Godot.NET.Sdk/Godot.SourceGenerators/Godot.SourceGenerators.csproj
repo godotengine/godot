@@ -13,11 +13,18 @@
   <ItemGroup>
     <!-- Package the generator in the analyzer directory of the nuget package -->
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Remove="Generators\**" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Package the props file -->
     <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true"/>
+  </ItemGroup>
+
+  <!-- Only needed needed when using godot generators within another generator -->
+  <ItemGroup>
+    <Compile Remove="Implementations\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Implementations\**" />
   </ItemGroup>
 </Project>
