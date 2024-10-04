@@ -90,8 +90,12 @@ HashMap<int, GLTFAnimation::NodeTrack> &GLTFAnimation::get_node_tracks() {
 	return node_tracks;
 }
 
+HashMap<String, GLTFAnimation::Channel<Variant>> &GLTFAnimation::get_pointer_tracks() {
+	return pointer_tracks;
+}
+
 bool GLTFAnimation::is_empty_of_tracks() const {
-	return node_tracks.is_empty();
+	return node_tracks.is_empty() && pointer_tracks.is_empty();
 }
 
 GLTFAnimation::GLTFAnimation() {

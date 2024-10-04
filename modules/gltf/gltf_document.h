@@ -211,6 +211,7 @@ private:
 	Error _parse_cameras(Ref<GLTFState> p_state);
 	Error _parse_lights(Ref<GLTFState> p_state);
 	Error _parse_animations(Ref<GLTFState> p_state);
+	void _parse_animation_pointer(Ref<GLTFState> p_state, const String &p_animation_json_pointer, const Ref<GLTFAnimation> p_gltf_animation, const GLTFAnimation::Interpolation p_interp, const Vector<double> &p_times, const int p_output_value_accessor_index);
 	Error _serialize_animations(Ref<GLTFState> p_state);
 	BoneAttachment3D *_generate_bone_attachment(Ref<GLTFState> p_state,
 			Skeleton3D *p_skeleton,

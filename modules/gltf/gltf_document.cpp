@@ -5371,6 +5371,33 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> p_state) {
 				channels.push_back(t);
 			}
 		}
+		if (!gltf_animation->get_pointer_tracks().is_empty()) {
+			// Serialize glTF pointer tracks with the KHR_animation_pointer extension.
+			if (!p_state->extensions_used.has("KHR_animation_pointer")) {
+				p_state->extensions_used.push_back("KHR_animation_pointer");
+			}
+			for (KeyValue<String, GLTFAnimation::Channel<Variant>> &pointer_track_iter : gltf_animation->get_pointer_tracks()) {
+				const String &json_pointer = pointer_track_iter.key;
+				const GLTFAnimation::Channel<Variant> &pointer_track = pointer_track_iter.value;
+				const Ref<GLTFObjectModelProperty> &obj_model_prop = p_state->object_model_properties[json_pointer];
+				Dictionary channel;
+				channel["sampler"] = samplers.size();
+				Dictionary channel_target;
+				channel_target["path"] = "pointer";
+				Dictionary channel_target_ext;
+				Dictionary channel_target_ext_khr_anim_ptr;
+				channel_target_ext_khr_anim_ptr["pointer"] = json_pointer;
+				channel_target_ext["KHR_animation_pointer"] = channel_target_ext_khr_anim_ptr;
+				channel_target["extensions"] = channel_target_ext;
+				channel["target"] = channel_target;
+				channels.push_back(channel);
+				Dictionary sampler;
+				sampler["input"] = _encode_accessor_as_floats(p_state, pointer_track.times, false);
+				sampler["interpolation"] = interpolation_to_string(pointer_track.interpolation);
+				sampler["output"] = _encode_accessor_as_variant(p_state, pointer_track.values, obj_model_prop->get_variant_type(), obj_model_prop->get_accessor_type());
+				samplers.push_back(sampler);
+			}
+		}
 		if (channels.size() && samplers.size()) {
 			d["channels"] = channels;
 			d["samplers"] = samplers;
@@ -5451,67 +5478,78 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 			const Dictionary &anim_target = anim_channel["target"];
 			ERR_FAIL_COND_V_MSG(!anim_target.has("path"), ERR_PARSE_ERROR, "glTF: Animation channel target missing required 'path' property.");
 			String path = anim_target["path"];
-			if (!anim_target.has("node")) {
-				WARN_PRINT("glTF: Animation channel target missing 'node' property. Ignoring this channel.");
-				continue;
-			}
-
-			GLTFNodeIndex node = anim_target["node"];
-
-			ERR_FAIL_INDEX_V(node, p_state->nodes.size(), ERR_PARSE_ERROR);
-
-			GLTFAnimation::NodeTrack *track = nullptr;
-
-			if (!animation->get_node_tracks().has(node)) {
-				animation->get_node_tracks()[node] = GLTFAnimation::NodeTrack();
-			}
-
-			track = &animation->get_node_tracks()[node];
-
-			if (path == "translation") {
-				const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
-				track->position_track.interpolation = interp;
-				track->position_track.times = times;
-				track->position_track.values = positions;
-			} else if (path == "rotation") {
-				const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, output_value_accessor_index, false);
-				track->rotation_track.interpolation = interp;
-				track->rotation_track.times = times;
-				track->rotation_track.values = rotations;
-			} else if (path == "scale") {
-				const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
-				track->scale_track.interpolation = interp;
-				track->scale_track.times = times;
-				track->scale_track.values = scales;
-			} else if (path == "weights") {
-				const Vector<float> weights = _decode_accessor_as_floats(p_state, output_value_accessor_index, false);
-
-				ERR_FAIL_INDEX_V(p_state->nodes[node]->mesh, p_state->meshes.size(), ERR_PARSE_ERROR);
-				Ref<GLTFMesh> mesh = p_state->meshes[p_state->nodes[node]->mesh];
-				const int wc = mesh->get_blend_weights().size();
-				ERR_CONTINUE_MSG(wc == 0, "glTF: Animation tried to animate weights, but mesh has no weights.");
-
-				track->weight_tracks.resize(wc);
-
-				const int expected_value_count = times.size() * output_count * wc;
-				ERR_CONTINUE_MSG(weights.size() != expected_value_count, "Invalid weight data, expected " + itos(expected_value_count) + " weight values, got " + itos(weights.size()) + " instead.");
-
-				const int wlen = weights.size() / wc;
-				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
-					GLTFAnimation::Channel<real_t> cf;
-					cf.interpolation = interp;
-					cf.times = Variant(times);
-					Vector<real_t> wdata;
-					wdata.resize(wlen);
-					for (int l = 0; l < wlen; l++) {
-						wdata.write[l] = weights[l * wc + k];
-					}
-
-					cf.values = wdata;
-					track->weight_tracks.write[k] = cf;
-				}
+			if (path == "pointer") {
+				ERR_FAIL_COND_V(!anim_target.has("extensions"), ERR_PARSE_ERROR);
+				Dictionary target_extensions = anim_target["extensions"];
+				ERR_FAIL_COND_V(!target_extensions.has("KHR_animation_pointer"), ERR_PARSE_ERROR);
+				Dictionary khr_anim_ptr = target_extensions["KHR_animation_pointer"];
+				ERR_FAIL_COND_V(!khr_anim_ptr.has("pointer"), ERR_PARSE_ERROR);
+				String anim_json_ptr = khr_anim_ptr["pointer"];
+				_parse_animation_pointer(p_state, anim_json_ptr, animation, interp, times, output_value_accessor_index);
 			} else {
-				WARN_PRINT("Invalid path '" + path + "'.");
+				// If it's not a pointer, it's a regular animation channel from vanilla glTF (pos/rot/scale/weights).
+				if (!anim_target.has("node")) {
+					WARN_PRINT("glTF: Animation channel target missing 'node' property. Ignoring this channel.");
+					continue;
+				}
+
+				GLTFNodeIndex node = anim_target["node"];
+
+				ERR_FAIL_INDEX_V(node, p_state->nodes.size(), ERR_PARSE_ERROR);
+
+				GLTFAnimation::NodeTrack *track = nullptr;
+
+				if (!animation->get_node_tracks().has(node)) {
+					animation->get_node_tracks()[node] = GLTFAnimation::NodeTrack();
+				}
+
+				track = &animation->get_node_tracks()[node];
+
+				if (path == "translation") {
+					const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
+					track->position_track.interpolation = interp;
+					track->position_track.times = times;
+					track->position_track.values = positions;
+				} else if (path == "rotation") {
+					const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, output_value_accessor_index, false);
+					track->rotation_track.interpolation = interp;
+					track->rotation_track.times = times;
+					track->rotation_track.values = rotations;
+				} else if (path == "scale") {
+					const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
+					track->scale_track.interpolation = interp;
+					track->scale_track.times = times;
+					track->scale_track.values = scales;
+				} else if (path == "weights") {
+					const Vector<float> weights = _decode_accessor_as_floats(p_state, output_value_accessor_index, false);
+
+					ERR_FAIL_INDEX_V(p_state->nodes[node]->mesh, p_state->meshes.size(), ERR_PARSE_ERROR);
+					Ref<GLTFMesh> mesh = p_state->meshes[p_state->nodes[node]->mesh];
+					const int wc = mesh->get_blend_weights().size();
+					ERR_CONTINUE_MSG(wc == 0, "glTF: Animation tried to animate weights, but mesh has no weights.");
+
+					track->weight_tracks.resize(wc);
+
+					const int expected_value_count = times.size() * output_count * wc;
+					ERR_CONTINUE_MSG(weights.size() != expected_value_count, "Invalid weight data, expected " + itos(expected_value_count) + " weight values, got " + itos(weights.size()) + " instead.");
+
+					const int wlen = weights.size() / wc;
+					for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
+						GLTFAnimation::Channel<real_t> cf;
+						cf.interpolation = interp;
+						cf.times = Variant(times);
+						Vector<real_t> wdata;
+						wdata.resize(wlen);
+						for (int l = 0; l < wlen; l++) {
+							wdata.write[l] = weights[l * wc + k];
+						}
+
+						cf.values = wdata;
+						track->weight_tracks.write[k] = cf;
+					}
+				} else {
+					WARN_PRINT("Invalid path '" + path + "'.");
+				}
 			}
 		}
 
@@ -5521,6 +5559,96 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 	print_verbose("glTF: Total animations '" + itos(p_state->animations.size()) + "'.");
 
 	return OK;
+}
+
+void GLTFDocument::_parse_animation_pointer(Ref<GLTFState> p_state, const String &p_animation_json_pointer, const Ref<GLTFAnimation> p_gltf_animation, const GLTFAnimation::Interpolation p_interp, const Vector<double> &p_times, const int p_output_value_accessor_index) {
+	// Special case: Convert TRS animation pointers to node track pos/rot/scale.
+	// This is required to handle skeleton bones, and improves performance for regular nodes.
+	// Mark this as unlikely because TRS animation pointers are not recommended,
+	// since vanilla glTF animations can already animate TRS properties directly.
+	// But having this code exist is required to be spec-compliant and handle all test files.
+	// Note that TRS still needs to be handled in the general case as well, for KHR_interactivity.
+	const PackedStringArray split = p_animation_json_pointer.split("/", false, 3);
+	if (unlikely(split.size() == 3 && split[0] == "nodes" && (split[2] == "translation" || split[2] == "rotation" || split[2] == "scale" || split[2] == "matrix" || split[2] == "weights"))) {
+		const GLTFNodeIndex node_index = split[1].to_int();
+		HashMap<int, GLTFAnimation::NodeTrack> &node_tracks = p_gltf_animation->get_node_tracks();
+		if (!node_tracks.has(node_index)) {
+			node_tracks[node_index] = GLTFAnimation::NodeTrack();
+		}
+		GLTFAnimation::NodeTrack *track = &node_tracks[node_index];
+		if (split[2] == "translation") {
+			const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, p_output_value_accessor_index, false);
+			track->position_track.interpolation = p_interp;
+			track->position_track.times = p_times;
+			track->position_track.values = positions;
+		} else if (split[2] == "rotation") {
+			const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, p_output_value_accessor_index, false);
+			track->rotation_track.interpolation = p_interp;
+			track->rotation_track.times = p_times;
+			track->rotation_track.values = rotations;
+		} else if (split[2] == "scale") {
+			const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, p_output_value_accessor_index, false);
+			track->scale_track.interpolation = p_interp;
+			track->scale_track.times = p_times;
+			track->scale_track.values = scales;
+		} else if (split[2] == "matrix") {
+			const Vector<Transform3D> transforms = _decode_accessor_as_xform(p_state, p_output_value_accessor_index, false);
+			track->position_track.interpolation = p_interp;
+			track->position_track.times = p_times;
+			track->position_track.values.resize(transforms.size());
+			track->rotation_track.interpolation = p_interp;
+			track->rotation_track.times = p_times;
+			track->rotation_track.values.resize(transforms.size());
+			track->scale_track.interpolation = p_interp;
+			track->scale_track.times = p_times;
+			track->scale_track.values.resize(transforms.size());
+			for (int i = 0; i < transforms.size(); i++) {
+				track->position_track.values.write[i] = transforms[i].get_origin();
+				track->rotation_track.values.write[i] = transforms[i].basis.get_rotation_quaternion();
+				track->scale_track.values.write[i] = transforms[i].basis.get_scale();
+			}
+		} else { // if (split[2] == "weights")
+			const Vector<float> accessor_weights = _decode_accessor_as_floats(p_state, p_output_value_accessor_index, false);
+			const GLTFMeshIndex mesh_index = p_state->nodes[node_index]->mesh;
+			ERR_FAIL_INDEX(mesh_index, p_state->meshes.size());
+			const Ref<GLTFMesh> gltf_mesh = p_state->meshes[mesh_index];
+			const Vector<float> &blend_weights = gltf_mesh->get_blend_weights();
+			const int blend_weight_count = gltf_mesh->get_blend_weights().size();
+			const int anim_weights_size = accessor_weights.size();
+			// For example, if a mesh has 2 blend weights, and the accessor provides 10 values, then there are 5 frames of animation, each with 2 blend weights.
+			ERR_FAIL_COND_MSG(blend_weight_count == 0 || ((anim_weights_size % blend_weight_count) != 0), "glTF: Cannot apply " + itos(accessor_weights.size()) + " weights to a mesh with " + itos(blend_weights.size()) + " blend weights.");
+			const int frame_count = anim_weights_size / blend_weight_count;
+			track->weight_tracks.resize(blend_weight_count);
+			for (int blend_weight_index = 0; blend_weight_index < blend_weight_count; blend_weight_index++) {
+				GLTFAnimation::Channel<real_t> weight_track;
+				weight_track.interpolation = p_interp;
+				weight_track.times = p_times;
+				weight_track.values.resize(frame_count);
+				for (int frame_index = 0; frame_index < frame_count; frame_index++) {
+					// For example, if a mesh has 2 blend weights, and the accessor provides 10 values,
+					// then the first frame has indices [0, 1], the second frame has [2, 3], and so on.
+					// Here we process all frames of one blend weight, so we want [0, 2, 4, 6, 8] or [1, 3, 5, 7, 9].
+					// For the fist one we calculate 0 * 2 + 0, 1 * 2 + 0, 2 * 2 + 0, etc, then for the second 0 * 2 + 1, 1 * 2 + 1, 2 * 2 + 1, etc.
+					weight_track.values.write[frame_index] = accessor_weights[frame_index * blend_weight_count + blend_weight_index];
+				}
+				track->weight_tracks.write[blend_weight_index] = weight_track;
+			}
+		}
+		// The special case was handled, return to skip the general case.
+		return;
+	}
+	// General case: Convert animation pointers to Variant value pointer tracks.
+	Ref<GLTFObjectModelProperty> obj_model_prop = import_object_model_property(p_state, p_animation_json_pointer);
+	if (obj_model_prop.is_null() || !obj_model_prop->has_node_paths()) {
+		// Exit quietly, `import_object_model_property` already prints a warning if the property is not found.
+		return;
+	}
+	HashMap<String, GLTFAnimation::Channel<Variant>> &anim_ptr_map = p_gltf_animation->get_pointer_tracks();
+	GLTFAnimation::Channel<Variant> channel;
+	channel.interpolation = p_interp;
+	channel.times = p_times;
+	channel.values = _decode_accessor_as_variant(p_state, p_output_value_accessor_index, obj_model_prop->get_variant_type(), obj_model_prop->get_accessor_type());
+	anim_ptr_map[p_animation_json_pointer] = channel;
 }
 
 void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
@@ -7052,6 +7180,56 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		}
 	}
 
+	for (const KeyValue<String, GLTFAnimation::Channel<Variant>> &track_iter : anim->get_pointer_tracks()) {
+		// Determine the property to animate.
+		const String json_pointer = track_iter.key;
+		const Ref<GLTFObjectModelProperty> prop = import_object_model_property(p_state, json_pointer);
+		ERR_FAIL_COND(prop.is_null());
+		// Adjust the animation duration to encompass all keyframes.
+		const GLTFAnimation::Channel<Variant> &channel = track_iter.value;
+		ERR_CONTINUE_MSG(channel.times.size() != channel.values.size(), vformat("glTF: Animation pointer '%s' has mismatched keyframe times and values.", json_pointer));
+		if (p_trimming) {
+			for (int i = 0; i < channel.times.size(); i++) {
+				anim_start = MIN(anim_start, channel.times[i]);
+				anim_end = MAX(anim_end, channel.times[i]);
+			}
+		} else {
+			for (int i = 0; i < channel.times.size(); i++) {
+				anim_end = MAX(anim_end, channel.times[i]);
+			}
+		}
+		// Begin converting the glTF animation to a Godot animation.
+		const Ref<Expression> gltf_to_godot_expr = prop->get_gltf_to_godot_expression();
+		const bool is_gltf_to_godot_expr_valid = gltf_to_godot_expr.is_valid();
+		for (const NodePath node_path : prop->get_node_paths()) {
+			// If using an expression, determine the base instance to pass to the expression.
+			Object *base_instance = nullptr;
+			if (is_gltf_to_godot_expr_valid) {
+				Ref<Resource> resource;
+				Vector<StringName> leftover_subpath;
+				base_instance = scene_root->get_node_and_resource(node_path, resource, leftover_subpath);
+				if (resource.is_valid()) {
+					base_instance = resource.ptr();
+				}
+			}
+			// Add a track and insert all keys and values.
+			const int track_index = animation->get_track_count();
+			animation->add_track(Animation::TYPE_VALUE);
+			animation->track_set_interpolation_type(track_index, GLTFAnimation::gltf_to_godot_interpolation(channel.interpolation));
+			animation->track_set_path(track_index, node_path);
+			for (int i = 0; i < channel.times.size(); i++) {
+				const double time = channel.times[i];
+				Variant value = channel.values[i];
+				if (is_gltf_to_godot_expr_valid) {
+					Array inputs;
+					inputs.append(value);
+					value = gltf_to_godot_expr->execute(inputs, base_instance);
+				}
+				animation->track_insert_key(track_index, time, value);
+			}
+		}
+	}
+
 	animation->set_length(anim_end - anim_start);
 
 	Ref<AnimationLibrary> library;
@@ -7632,6 +7810,8 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 		return false;
 	}
 	// If we reached this point, the track was some kind of TRS track and was successfully converted.
+	// All failure paths should return false before this point to indicate this
+	// isn't a node track so it can be handled by KHR_animation_pointer instead.
 	return true;
 }
 
@@ -7719,6 +7899,46 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 			// If the track was successfully converted, save it and continue to the next track.
 			node_tracks[node_i] = track;
 			continue;
+		}
+		// If the track wasn't a TRS track or Blend Shape track, it might be a Value track animating a property.
+		// Then this is something that we need to handle with KHR_animation_pointer.
+		Ref<GLTFObjectModelProperty> obj_model_prop = export_object_model_property(p_state, track_path, animated_node, node_i);
+		if (obj_model_prop.is_valid() && obj_model_prop->has_json_pointers()) {
+			// Insert the property track into the KHR_animation_pointer pointer tracks.
+			GLTFAnimation::Channel<Variant> channel;
+			channel.interpolation = gltf_interpolation;
+			channel.times = times;
+			channel.values.resize(anim_key_count);
+			// If using an expression, determine the base instance to pass to the expression.
+			const Ref<Expression> godot_to_gltf_expr = obj_model_prop->get_godot_to_gltf_expression();
+			const bool is_godot_to_gltf_expr_valid = godot_to_gltf_expr.is_valid();
+			Object *base_instance = nullptr;
+			if (is_godot_to_gltf_expr_valid) {
+				Ref<Resource> resource;
+				Vector<StringName> leftover_subpath;
+				base_instance = anim_player_parent->get_node_and_resource(track_path, resource, leftover_subpath);
+				if (resource.is_valid()) {
+					base_instance = resource.ptr();
+				}
+			}
+			// Convert the Godot animation values into glTF animation values (still Variant).
+			for (int32_t key_i = 0; key_i < anim_key_count; key_i++) {
+				Variant value = animation->track_get_key_value(track_index, key_i);
+				if (is_godot_to_gltf_expr_valid) {
+					Array inputs;
+					inputs.append(value);
+					value = godot_to_gltf_expr->execute(inputs, base_instance);
+				}
+				channel.values.write[key_i] = value;
+			}
+			// Use the JSON pointer to insert the property track into the pointer tracks. There will usually be just one JSON pointer.
+			HashMap<String, GLTFAnimation::Channel<Variant>> &pointer_tracks = gltf_animation->get_pointer_tracks();
+			Vector<PackedStringArray> split_json_pointers = obj_model_prop->get_json_pointers();
+			for (const PackedStringArray &split_json_pointer : split_json_pointers) {
+				String json_pointer_str = "/" + String("/").join(split_json_pointer);
+				p_state->object_model_properties[json_pointer_str] = obj_model_prop;
+				pointer_tracks[json_pointer_str] = channel;
+			}
 		}
 	}
 	if (!gltf_animation->is_empty_of_tracks()) {
@@ -7984,6 +8204,7 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 	// If the extension is supported directly in GLTFDocument, list it here.
 	// Other built-in extensions are supported by GLTFDocumentExtension classes.
 	supported_extensions.insert("GODOT_single_root");
+	supported_extensions.insert("KHR_animation_pointer");
 	supported_extensions.insert("KHR_lights_punctual");
 	supported_extensions.insert("KHR_materials_emissive_strength");
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");

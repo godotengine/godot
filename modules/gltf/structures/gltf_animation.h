@@ -64,6 +64,7 @@ public:
 	String original_name;
 	bool loop = false;
 	HashMap<int, NodeTrack> node_tracks;
+	HashMap<String, Channel<Variant>> pointer_tracks;
 	Dictionary additional_data;
 
 public:
@@ -77,6 +78,7 @@ public:
 	void set_loop(bool p_val);
 
 	HashMap<int, GLTFAnimation::NodeTrack> &get_node_tracks();
+	HashMap<String, GLTFAnimation::Channel<Variant>> &get_pointer_tracks();
 	bool is_empty_of_tracks() const;
 
 	Variant get_additional_data(const StringName &p_extension_name);
