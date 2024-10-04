@@ -22,9 +22,4 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" PrivateAssets="all"/>
   </ItemGroup>
-
-  <ItemGroup>
-    <!-- Package the props file -->
-    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true"/>
-  </ItemGroup>
 </Project>

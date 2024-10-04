@@ -11,4 +11,9 @@
   <ItemGroup>
     <EmbeddedResource Remove="Generators\**" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Package the props file -->
+    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="buildTransitive\Godot.SourceGenerators.Implementation.props" Visible="true"/>
+  </ItemGroup>
 </Project>
