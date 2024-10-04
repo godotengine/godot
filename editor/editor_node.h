@@ -926,7 +926,7 @@ public:
 	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
-	void restart_editor();
+	void restart_editor(bool p_goto_project_manager = false);
 	void unload_editor_addons();
 
 	void dim_editor(bool p_dimming);

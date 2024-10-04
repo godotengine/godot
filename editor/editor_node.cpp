@@ -1983,7 +1983,7 @@ void EditorNode::try_autosave() {
 	editor_data.save_editor_external_data();
 }
 
-void EditorNode::restart_editor() {
+void EditorNode::restart_editor(bool p_goto_project_manager) {
 	exiting = true;
 
 	if (project_run_bar->is_playing()) {
@@ -1991,22 +1991,25 @@ void EditorNode::restart_editor() {
 	}
 
 	String to_reopen;
-	if (get_tree()->get_edited_scene_root()) {
+	if (!p_goto_project_manager && get_tree()->get_edited_scene_root()) {
 		to_reopen = get_tree()->get_edited_scene_root()->get_scene_file_path();
 	}
 
 	_exit_editor(EXIT_SUCCESS);
 
 	List<String> args;
-
 	for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
 		args.push_back(a);
 	}
 
-	args.push_back("--path");
-	args.push_back(ProjectSettings::get_singleton()->get_resource_path());
+	if (p_goto_project_manager) {
+		args.push_back("--project-manager");
+	} else {
+		args.push_back("--path");
+		args.push_back(ProjectSettings::get_singleton()->get_resource_path());
 
-	args.push_back("-e");
+		args.push_back("-e");
+	}
 
 	if (!to_reopen.is_empty()) {
 		args.push_back(to_reopen);
@@ -3402,23 +3405,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 
 		} break;
 		case RUN_PROJECT_MANAGER: {
-			project_run_bar->stop_playing();
-			_exit_editor(EXIT_SUCCESS);
-			String exec = OS::get_singleton()->get_executable_path();
-
-			List<String> args;
-			for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
-				args.push_back(a);
-			}
-
-			String exec_base_dir = exec.get_base_dir();
-			if (!exec_base_dir.is_empty()) {
-				args.push_back("--path");
-				args.push_back(exec_base_dir);
-			}
-			args.push_back("--project-manager");
-
-			OS::get_singleton()->set_restart_on_exit(true, args);
+			restart_editor(true);
 		} break;
 		case RELOAD_CURRENT_PROJECT: {
 			restart_editor();
