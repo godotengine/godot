@@ -1,7 +1,6 @@
 ﻿<Project>
-  <Import Project="Godot.SourceGenerators.csproj"/>
+  <Import Project="Godot.SourceGenerators.targets"/>
   <PropertyGroup>
     <PackageId>Godot.SourceGenerators.Implementation</PackageId>
-    <IncludeBuildOutput>true</IncludeBuildOutput>
   </PropertyGroup>
 </Project>

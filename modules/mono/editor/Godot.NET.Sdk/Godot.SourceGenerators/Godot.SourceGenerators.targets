@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>Core C# source generator for Godot projects.</Description>
+    <Authors>Godot Engine contributors</Authors>
+
+    <PackageId>Godot.SourceGenerators</PackageId>
+    <Version>4.4.0</Version>
+    <PackageVersion>$(PackageVersion_Godot_SourceGenerators)</PackageVersion>
+    <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" PrivateAssets="all"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Package the props file -->
+    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true"/>
+  </ItemGroup>
+</Project>
