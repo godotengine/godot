@@ -3,4 +3,12 @@
   <PropertyGroup>
     <PackageId>Godot.SourceGenerators.Implementation</PackageId>
   </PropertyGroup>
+
+  <!--  Generators should not be run when assembly is loaded.-->
+  <ItemGroup>
+    <Compile Remove="Generators\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Generators\**" />
+  </ItemGroup>
 </Project>

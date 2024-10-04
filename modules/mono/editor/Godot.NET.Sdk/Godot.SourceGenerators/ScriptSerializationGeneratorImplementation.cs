@@ -7,14 +7,9 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    [Generator]
-    public class ScriptSerializationGenerator : ISourceGenerator
+    public class ScriptSerializationGeneratorImplementation
     {
-        public void Initialize(GeneratorInitializationContext context)
-        {
-        }
-
-        public void Execute(GeneratorExecutionContext context)
+        public void Execute(IGeneratorExecutionContext context)
         {
             if (context.IsGodotSourceGeneratorDisabled("ScriptSerialization"))
                 return;
@@ -57,7 +52,7 @@ namespace Godot.SourceGenerators
         }
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            IGeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
             INamedTypeSymbol symbol
         )
@@ -141,12 +136,12 @@ namespace Godot.SourceGenerators
 
             foreach (var signalDelegateSymbol in signalDelegateSymbols)
             {
-                if (!signalDelegateSymbol.Name.EndsWith(ScriptSignalsGenerator.SignalDelegateSuffix))
+                if (!signalDelegateSymbol.Name.EndsWith(ScriptSignalsGeneratorImplementation.SignalDelegateSuffix))
                     continue;
 
                 string signalName = signalDelegateSymbol.Name;
                 signalName = signalName.Substring(0,
-                    signalName.Length - ScriptSignalsGenerator.SignalDelegateSuffix.Length);
+                    signalName.Length - ScriptSignalsGeneratorImplementation.SignalDelegateSuffix.Length);
 
                 var invokeMethodData = signalDelegateSymbol
                     .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);
