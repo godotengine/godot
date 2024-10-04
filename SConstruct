@@ -149,12 +149,10 @@ env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
     env["ENV"]["TERM"] = os.environ["TERM"]
 
-env.disabled_modules = []
+env.disabled_modules = set()
 env.module_version_string = ""
 env.msvc = False
 env.scons_version = env._get_major_minor_revision(scons_raw_version)
-
-env.__class__.disable_module = methods.disable_module
 
 env.__class__.add_module_version_string = methods.add_module_version_string
 
