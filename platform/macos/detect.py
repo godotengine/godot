@@ -8,6 +8,10 @@ from platform_methods import detect_arch, detect_mvk
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
 
+# To match other platforms
+STACK_SIZE = 8388608
+STACK_SIZE_SANITIZERS = 30 * 1024 * 1024
+
 
 def get_name():
     return "macOS"
@@ -182,6 +186,10 @@ def configure(env: "SConsEnvironment"):
         if env["use_tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
+
+        env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE_SANITIZERS)])
+    else:
+        env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE)])
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  directory_create_dialog.h                                             */
+/*  test_physics_material.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIRECTORY_CREATE_DIALOG_H
-#define DIRECTORY_CREATE_DIALOG_H
+#ifndef TEST_PHYSICS_MATERIAL_H
+#define TEST_PHYSICS_MATERIAL_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/resources/physics_material.h"
+#include "tests/test_macros.h"
 
-class EditorValidationPanel;
-class Label;
-class LineEdit;
+namespace TestPhysics_material {
 
-class DirectoryCreateDialog : public ConfirmationDialog {
-	GDCLASS(DirectoryCreateDialog, ConfirmationDialog);
+TEST_CASE("[Physics_material] Defaults") {
+	Ref<PhysicsMaterial> physics_material;
+	physics_material.instantiate();
 
-public:
-	enum Mode {
-		MODE_FILE,
-		MODE_DIRECTORY,
-	};
+	CHECK(physics_material->get_friction() == 1.);
+	CHECK(physics_material->is_rough() == false);
+	CHECK(physics_material->get_bounce() == 0.);
+	CHECK(physics_material->is_absorbent() == false);
+}
 
-private:
-	String base_dir;
-	Callable accept_callback;
-	int mode = MODE_FILE;
+TEST_CASE("[Physics_material] Friction") {
+	Ref<PhysicsMaterial> physics_material;
+	physics_material.instantiate();
 
-	Label *base_path_label = nullptr;
-	LineEdit *dir_path = nullptr;
-	EditorValidationPanel *validation_panel = nullptr;
+	real_t friction = 0.314;
+	physics_material->set_friction(friction);
+	CHECK(physics_material->get_friction() == friction);
+}
 
-	String _sanitize_input(const String &p_input) const;
-	String _validate_path(const String &p_path) const;
-	void _on_dir_path_changed();
+TEST_CASE("[Physics_material] Rough") {
+	Ref<PhysicsMaterial> physics_material;
+	physics_material.instantiate();
 
-protected:
-	virtual void ok_pressed() override;
-	virtual void _post_popup() override;
+	bool rough = true;
+	physics_material->set_rough(rough);
+	CHECK(physics_material->is_rough() == rough);
 
-public:
-	void config(const String &p_base_dir, const Callable &p_accept_callback, int p_mode, const String &p_title, const String &p_default_name = "");
+	real_t friction = 0.314;
+	physics_material->set_friction(friction);
+	CHECK(physics_material->computed_friction() == -friction);
 
-	DirectoryCreateDialog();
-};
+	rough = false;
+	physics_material->set_rough(rough);
+	CHECK(physics_material->is_rough() == rough);
 
-#endif // DIRECTORY_CREATE_DIALOG_H
+	CHECK(physics_material->computed_friction() == friction);
+}
+
+TEST_CASE("[Physics_material] Bounce") {
+	Ref<PhysicsMaterial> physics_material;
+	physics_material.instantiate();
+
+	real_t bounce = 0.271;
+	physics_material->set_bounce(bounce);
+	CHECK(physics_material->get_bounce() == bounce);
+}
+
+TEST_CASE("[Physics_material] Absorbent") {
+	Ref<PhysicsMaterial> physics_material;
+	physics_material.instantiate();
+
+	bool absorbent = true;
+	physics_material->set_absorbent(absorbent);
+	CHECK(physics_material->is_absorbent() == absorbent);
+
+	real_t bounce = 0.271;
+	physics_material->set_bounce(bounce);
+	CHECK(physics_material->computed_bounce() == -bounce);
+
+	absorbent = false;
+	physics_material->set_absorbent(absorbent);
+	CHECK(physics_material->is_absorbent() == absorbent);
+
+	CHECK(physics_material->computed_bounce() == bounce);
+}
+
+} // namespace TestPhysics_material
+
+#endif // TEST_PHYSICS_MATERIAL_H
