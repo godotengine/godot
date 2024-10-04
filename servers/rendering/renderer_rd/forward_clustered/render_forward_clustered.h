@@ -66,7 +66,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	};
 
 	enum {
-		SDFGI_MAX_CASCADES = 8,
+		HDDAGI_MAX_CASCADES = 8,
 		MAX_VOXEL_GI_INSTANCESS = 8,
 		MAX_LIGHTMAPS = 8,
 		MAX_VOXEL_GI_INSTANCESS_PER_INSTANCE = 2,

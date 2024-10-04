@@ -127,7 +127,7 @@ float sc_luminance_multiplier() {
 	return 1.0;
 }
 
-#define SDFGI_MAX_CASCADES 8
+#define HDDAGI_MAX_CASCADES 8
 
 /* Set 0: Base Pass (never changes) */
 

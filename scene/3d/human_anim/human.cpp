@@ -1436,18 +1436,15 @@ namespace human
 
     }
 
-    static int get_bone_human_index(const Dictionary& p_bone_map, const NodePath& path) {
+    static int get_bone_human_index(Skeleton3D* apSkeleton,const Dictionary& p_bone_map, const NodePath& path) {
 		if (path.get_subname_count() == 1) {
-        // 获取骨骼映射
-        StringName bone_name = path.get_subname(0);
-        const Variant* re_name = p_bone_map.getptr(bone_name);
-        if (re_name != nullptr) {
-            bone_name = *re_name;
-        }
-        const HashMap<String,int>& bone_to_human_map = get_bone_to_human_map();
-        if(bone_to_human_map.has(bone_name)) {
-            return bone_to_human_map[bone_name];
-        }
+			// 获取骨骼映射
+			StringName bone_name = path.get_subname(0);
+			const Variant* re_name = p_bone_map.getptr(bone_name);
+			if (re_name != nullptr) {
+				bone_name = *re_name;
+			}
+			return apSkeleton->find_bone(bone_name);
         }
         return -1;
 
@@ -1583,7 +1580,7 @@ namespace human
     }
  
 
-     Animation* Human::animation_to_dof( Animation* p_anim, const Dictionary & p_bone_map) {
+     Animation* Human::animation_to_dof(Skeleton3D* apSkeleton, Animation* p_anim, const Dictionary & p_bone_map) {
 
         Vector<uint8_t> bone_mask;
         bone_mask.resize(kLastBone + hand::s_BoneCount * 2);
@@ -1623,7 +1620,7 @@ namespace human
 			Animation::Track* track = tracks[j];
 			if (track->type == Animation::TYPE_POSITION_3D) {
 				Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
-				int bone_index = get_bone_human_index(p_bone_map, track_cache->path);
+				int bone_index = get_bone_human_index(apSkeleton,p_bone_map, track_cache->path);
 				if (bone_index < 0) {
 					other_tracks.push_back(track);
 					continue;
@@ -1631,7 +1628,7 @@ namespace human
 			}
 			else if (track->type == Animation::TYPE_ROTATION_3D) {
 				Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
-				int bone_index = get_bone_human_index(p_bone_map, track_cache->path);
+				int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
 				if (bone_index < 0) {
 					other_tracks.push_back(track);
 					continue;
@@ -1639,7 +1636,7 @@ namespace human
 			}
 			else if (track->type == Animation::TYPE_SCALE_3D) {
 				Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
-				int bone_index = get_bone_human_index(p_bone_map, track_cache->path);
+				int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
 				if (bone_index < 0) {
 					other_tracks.push_back(track);
 					continue;
@@ -1657,7 +1654,7 @@ namespace human
                 Animation::Track* track = tracks[j];
                 if(track->type == Animation::TYPE_POSITION_3D) {
                     Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
-                    int bone_index = get_bone_human_index(p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
@@ -1668,7 +1665,7 @@ namespace human
                 }
                 else if(track->type == Animation::TYPE_ROTATION_3D) {
                     Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
-                    int bone_index = get_bone_human_index( p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }
@@ -1678,7 +1675,7 @@ namespace human
                 }
                 else if(track->type == Animation::TYPE_SCALE_3D) {
                     Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
-                    int bone_index = get_bone_human_index( p_bone_map, track_cache->path);
+                    int bone_index = get_bone_human_index(apSkeleton, p_bone_map, track_cache->path);
                     if(bone_index < 0) {
                         continue;
                     }

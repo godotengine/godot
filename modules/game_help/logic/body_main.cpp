@@ -925,7 +925,7 @@ void CharacterBodyMain::editor_build_animation()
 
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (editor_human_config.is_valid()) {
-				new_animation = editor_human_config->human->animation_to_dof(new_animation.ptr(), bone_map->get_bone_map());
+				new_animation = editor_human_config->human->animation_to_dof(skeleton,new_animation.ptr(), bone_map->get_bone_map());
 			}
             new_animation->optimize();
             new_animation->compress();
