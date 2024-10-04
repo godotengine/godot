@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/string/translation.h"
 #include "scene/theme/theme_db.h"
 
 void ItemList::_shape_text(int p_idx) {
@@ -58,12 +57,12 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 	Item item;
 	item.icon = p_texture;
 	item.text = p_item;
-	item.xl_text = atr(p_item);
 	item.selectable = p_selectable;
 	items.push_back(item);
 	int item_id = items.size() - 1;
 
-	_shape_text(items.size() - 1);
+	items.write[item_id].xl_text = _atr(item_id, p_item);
+	_shape_text(item_id);
 
 	queue_redraw();
 	shape_changed = true;
@@ -95,7 +94,7 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 	}
 
 	items.write[p_idx].text = p_text;
-	items.write[p_idx].xl_text = atr(p_text);
+	items.write[p_idx].xl_text = _atr(p_idx, p_text);
 	_shape_text(p_idx);
 	queue_redraw();
 	shape_changed = true;
@@ -139,6 +138,24 @@ void ItemList::set_item_language(int p_idx, const String &p_language) {
 String ItemList::get_item_language(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), "");
 	return items[p_idx].language;
+}
+
+void ItemList::set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+	if (items[p_idx].auto_translate_mode != p_mode) {
+		items.write[p_idx].auto_translate_mode = p_mode;
+		items.write[p_idx].xl_text = _atr(p_idx, items[p_idx].text);
+		_shape_text(p_idx);
+		queue_redraw();
+	}
+}
+
+Node::AutoTranslateMode ItemList::get_item_auto_translate_mode(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), AUTO_TRANSLATE_MODE_INHERIT);
+	return items[p_idx].auto_translate_mode;
 }
 
 void ItemList::set_item_tooltip_enabled(int p_idx, const bool p_enabled) {
@@ -1022,7 +1039,7 @@ void ItemList::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			for (int i = 0; i < items.size(); i++) {
-				items.write[i].xl_text = atr(items[i].text);
+				items.write[i].xl_text = _atr(i, items[i].text);
 				_shape_text(i);
 			}
 			shape_changed = true;
@@ -1512,6 +1529,23 @@ void ItemList::_mouse_exited() {
 	}
 }
 
+String ItemList::_atr(int p_idx, const String &p_text) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), atr(p_text));
+	switch (items[p_idx].auto_translate_mode) {
+		case AUTO_TRANSLATE_MODE_INHERIT: {
+			return atr(p_text);
+		} break;
+		case AUTO_TRANSLATE_MODE_ALWAYS: {
+			return tr(p_text);
+		} break;
+		case AUTO_TRANSLATE_MODE_DISABLED: {
+			return p_text;
+		} break;
+	}
+
+	ERR_FAIL_V_MSG(atr(p_text), "Unexpected auto translate mode: " + itos(items[p_idx].auto_translate_mode));
+}
+
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	Vector2 pos = p_pos;
 	pos -= theme_cache.panel_style->get_offset();
@@ -1750,6 +1784,9 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_language", "idx", "language"), &ItemList::set_item_language);
 	ClassDB::bind_method(D_METHOD("get_item_language", "idx"), &ItemList::get_item_language);
+
+	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &ItemList::set_item_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "idx"), &ItemList::get_item_auto_translate_mode);
 
 	ClassDB::bind_method(D_METHOD("set_item_icon_transposed", "idx", "transposed"), &ItemList::set_item_icon_transposed);
 	ClassDB::bind_method(D_METHOD("is_item_icon_transposed", "idx"), &ItemList::is_item_icon_transposed);
