@@ -504,8 +504,6 @@ public:
 
 	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); };
 
-	virtual bool can_create_resources_async() const override;
-
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
 
@@ -798,6 +796,9 @@ public:
 
 	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set);
 	void render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set);
+
+	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
+	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
 };
 
 } // namespace RendererRD

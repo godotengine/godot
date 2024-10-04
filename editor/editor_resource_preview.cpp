@@ -131,7 +131,7 @@ Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() const {
 }
 
 bool EditorResourcePreview::is_threaded() const {
-	return RSG::texture_storage->can_create_resources_async();
+	return RSG::rasterizer->can_create_resources_async();
 }
 
 void EditorResourcePreview::_thread_func(void *ud) {

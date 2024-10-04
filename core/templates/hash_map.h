@@ -63,6 +63,8 @@ struct HashMapElement {
 };
 bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
 
+bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
+
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>,
@@ -315,7 +317,7 @@ public:
 			inserting = next;
 		}
 	}
-	
+
 	_FORCE_INLINE_ TValue &get(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);

@@ -767,7 +767,12 @@ public:
 
 	uint32_t geometry_instance_get_pair_mask() override;
 
-	/* HDDAGI UPDATE */
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override {}
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override { return 0; }
+
+	/* SDFGI UPDATE */
 
 	void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
 	int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override {
