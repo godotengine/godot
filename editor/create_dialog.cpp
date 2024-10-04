@@ -817,7 +817,7 @@ CreateDialog::CreateDialog() {
 	search_hb->add_child(favorite);
 
 	is_match_typedescription = false;
-	descmatch = memnew(CheckButton); // 匹配模式
+	descmatch = memnew(CheckButton);
 	descmatch->set_text(TTR("DescMatch"));
 	descmatch->connect("toggled", callable_mp(this, &CreateDialog::_descmatch_toggled));
 	search_hb->add_child(descmatch);
