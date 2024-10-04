@@ -36,7 +36,7 @@
 
 namespace TestReflectionProbe {
 
-TEST_CASE("[SceneTree][Navigation][ReflectionProbe] Testing reflection probe - getters/setters and get AABB") {
+TEST_CASE("[SceneTree][ReflectionProbe] Testing reflection probe - getters/setters and get AABB") {
 	ReflectionProbe *reflection_probe = memnew(ReflectionProbe);
 
 	SUBCASE("Default values") {
