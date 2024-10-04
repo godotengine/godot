@@ -404,7 +404,7 @@ namespace human
         void build_form_skeleton(Skeleton3D* apSkeleton);
         void setup_axes(Skeleton3D* apSkeleton) ;
 
-        Animation* animation_to_dof(Skeleton3D* apSkeleton, Animation* p_anim, const Dictionary& p_bone_map);
+        Animation* animation_to_dof(const HashMap<String, int> &human_bone_name_index, Animation* p_anim, const Dictionary& p_bone_map);
 
         void app_dof_to_skeleton(Skeleton3D* apSkeleton, HumanAnimationKeyFrame& p_keyframes);
 

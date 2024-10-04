@@ -1436,7 +1436,7 @@ namespace human
 
     }
 
-    static int get_bone_human_index(Skeleton3D* apSkeleton,const Dictionary& p_bone_map, const NodePath& path) {
+    static int get_bone_human_index(const HashMap<String, int>& human_bone_name_index,const Dictionary& p_bone_map, const NodePath& path) {
 		if (path.get_subname_count() == 1) {
 			// 获取骨骼映射
 			StringName bone_name = path.get_subname(0);
@@ -1444,7 +1444,9 @@ namespace human
 			if (re_name != nullptr) {
 				bone_name = *re_name;
 			}
-			return apSkeleton->find_bone(bone_name);
+			if (human_bone_name_index.has(bone_name)) {
+				return human_bone_name_index[bone_name];
+			}
         }
         return -1;
 
@@ -1580,7 +1582,7 @@ namespace human
     }
  
 
-     Animation* Human::animation_to_dof(Skeleton3D* apSkeleton, Animation* p_anim, const Dictionary & p_bone_map) {
+     Animation* Human::animation_to_dof(const HashMap<String, int>& human_bone_name_index, Animation* p_anim, const Dictionary & p_bone_map) {
 
         Vector<uint8_t> bone_mask;
         bone_mask.resize(kLastBone + hand::s_BoneCount * 2);

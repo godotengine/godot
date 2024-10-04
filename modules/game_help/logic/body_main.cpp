@@ -911,6 +911,18 @@ void CharacterBodyMain::editor_build_animation()
 	String p_group = editor_animation_file_path.get_file().get_basename();
     List<StringName> p_animations;
     player->get_animation_list(&p_animations);
+
+	HashMap<String, int> human_bone_name_index;
+
+	if (editor_human_config.is_valid()) {
+		auto& bone_names = editor_ref_bone_map->get_bone_names();
+		for (int i = 0; i < bone_names.size(); ++i) {
+			human_bone_name_index[bone_names[i]] = i;
+		}
+	}
+
+
+
     for (const StringName &E : p_animations) {
         Ref<Animation> animation = player->get_animation(E);
         if(animation.is_valid())
