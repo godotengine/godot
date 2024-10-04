@@ -7,14 +7,9 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    [Generator]
-    public class ScriptMethodsGenerator : ISourceGenerator
+    public class ScriptMethodsGeneratorImplementation : IGeneratorImplementation
     {
-        public void Initialize(GeneratorInitializationContext context)
-        {
-        }
-
-        public void Execute(GeneratorExecutionContext context)
+        public void Execute(IGeneratorExecutionContext context)
         {
             if (context.IsGodotSourceGeneratorDisabled("ScriptMethods"))
                 return;
@@ -70,7 +65,7 @@ namespace Godot.SourceGenerators
         }
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            IGeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
             INamedTypeSymbol symbol
         )

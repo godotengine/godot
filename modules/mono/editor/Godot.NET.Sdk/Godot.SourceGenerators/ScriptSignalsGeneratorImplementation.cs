@@ -7,14 +7,9 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    [Generator]
-    public class ScriptSignalsGenerator : ISourceGenerator
+    public class ScriptSignalsGeneratorImplementation : IGeneratorImplementation
     {
-        public void Initialize(GeneratorInitializationContext context)
-        {
-        }
-
-        public void Execute(GeneratorExecutionContext context)
+        public void Execute(IGeneratorExecutionContext context)
         {
             if (context.IsGodotSourceGeneratorDisabled("ScriptSignals"))
                 return;
@@ -59,7 +54,7 @@ namespace Godot.SourceGenerators
         internal static string SignalDelegateSuffix = "EventHandler";
 
         private static void VisitGodotScriptClass(
-            GeneratorExecutionContext context,
+            IGeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
             INamedTypeSymbol symbol
         )

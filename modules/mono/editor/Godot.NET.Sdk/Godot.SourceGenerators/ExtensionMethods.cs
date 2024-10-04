@@ -12,21 +12,21 @@ namespace Godot.SourceGenerators
     internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
-            this GeneratorExecutionContext context, string property, out string? value
+            this IGeneratorExecutionContext context, string property, out string? value
         ) => context.AnalyzerConfigOptions.GlobalOptions
             .TryGetValue("build_property." + property, out value);
 
-        public static bool AreGodotSourceGeneratorsDisabled(this GeneratorExecutionContext context)
+        public static bool AreGodotSourceGeneratorsDisabled(this IGeneratorExecutionContext context)
             => context.TryGetGlobalAnalyzerProperty("GodotSourceGenerators", out string? toggle) &&
                toggle != null &&
                toggle.Equals("disabled", StringComparison.OrdinalIgnoreCase);
 
-        public static bool IsGodotToolsProject(this GeneratorExecutionContext context)
+        public static bool IsGodotToolsProject(this IGeneratorExecutionContext context)
             => context.TryGetGlobalAnalyzerProperty("IsGodotToolsProject", out string? toggle) &&
                toggle != null &&
                toggle.Equals("true", StringComparison.OrdinalIgnoreCase);
 
-        public static bool IsGodotSourceGeneratorDisabled(this GeneratorExecutionContext context, string generatorName) =>
+        public static bool IsGodotSourceGeneratorDisabled(this IGeneratorExecutionContext context, string generatorName) =>
             AreGodotSourceGeneratorsDisabled(context) ||
             (context.TryGetGlobalAnalyzerProperty("GodotDisabledSourceGenerators", out string? disabledGenerators) &&
             disabledGenerators != null &&
