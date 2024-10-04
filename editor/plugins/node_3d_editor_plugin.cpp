@@ -9003,8 +9003,7 @@ Node3DEditor::Node3DEditor() {
 	current_hover_gizmo_handle = -1;
 	current_hover_gizmo_handle_secondary = false;
 	{
-		//sun popup
-
+		// Sun/preview environment popup.
 		sun_environ_popup = memnew(PopupPanel);
 		add_child(sun_environ_popup);
 
@@ -9018,7 +9017,7 @@ Node3DEditor::Node3DEditor() {
 		sun_vb->hide();
 
 		sun_title = memnew(Label);
-		sun_title->set_theme_type_variation("HeaderSmall");
+		sun_title->set_theme_type_variation("HeaderMedium");
 		sun_vb->add_child(sun_title);
 		sun_title->set_text(TTR("Preview Sun"));
 		sun_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -9056,11 +9055,14 @@ void fragment() {
 		sun_direction->set_material(sun_direction_material);
 
 		HBoxContainer *sun_angle_hbox = memnew(HBoxContainer);
+		sun_angle_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		VBoxContainer *sun_angle_altitude_vbox = memnew(VBoxContainer);
+		sun_angle_altitude_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		Label *sun_angle_altitude_label = memnew(Label);
 		sun_angle_altitude_label->set_text(TTR("Angular Altitude"));
 		sun_angle_altitude_vbox->add_child(sun_angle_altitude_label);
 		sun_angle_altitude = memnew(EditorSpinSlider);
+		sun_angle_altitude->set_suffix(U"\u00B0");
 		sun_angle_altitude->set_max(90);
 		sun_angle_altitude->set_min(-90);
 		sun_angle_altitude->set_step(0.1);
@@ -9068,11 +9070,13 @@ void fragment() {
 		sun_angle_altitude_vbox->add_child(sun_angle_altitude);
 		sun_angle_hbox->add_child(sun_angle_altitude_vbox);
 		VBoxContainer *sun_angle_azimuth_vbox = memnew(VBoxContainer);
+		sun_angle_azimuth_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		sun_angle_azimuth_vbox->set_custom_minimum_size(Vector2(100, 0));
 		Label *sun_angle_azimuth_label = memnew(Label);
 		sun_angle_azimuth_label->set_text(TTR("Azimuth"));
 		sun_angle_azimuth_vbox->add_child(sun_angle_azimuth_label);
 		sun_angle_azimuth = memnew(EditorSpinSlider);
+		sun_angle_azimuth->set_suffix(U"\u00B0");
 		sun_angle_azimuth->set_max(180);
 		sun_angle_azimuth->set_min(-180);
 		sun_angle_azimuth->set_step(0.1);
@@ -9117,7 +9121,7 @@ void fragment() {
 		sun_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		VSeparator *sc = memnew(VSeparator);
-		sc->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
+		sc->set_custom_minimum_size(Size2(10 * EDSCALE, 0));
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
 		sun_environ_hb->add_child(sc);
 
@@ -9127,7 +9131,7 @@ void fragment() {
 		environ_vb->hide();
 
 		environ_title = memnew(Label);
-		environ_title->set_theme_type_variation("HeaderSmall");
+		environ_title->set_theme_type_variation("HeaderMedium");
 
 		environ_vb->add_child(environ_title);
 		environ_title->set_text(TTR("Preview Environment"));
@@ -9154,21 +9158,25 @@ void fragment() {
 
 		environ_ao_button = memnew(Button);
 		environ_ao_button->set_text(TTR("AO"));
+		environ_ao_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_ao_button->set_toggle_mode(true);
 		environ_ao_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_ao_button);
 		environ_glow_button = memnew(Button);
 		environ_glow_button->set_text(TTR("Glow"));
+		environ_glow_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_glow_button->set_toggle_mode(true);
 		environ_glow_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_glow_button);
 		environ_tonemap_button = memnew(Button);
 		environ_tonemap_button->set_text(TTR("Tonemap"));
+		environ_tonemap_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_tonemap_button->set_toggle_mode(true);
 		environ_tonemap_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_tonemap_button);
 		environ_gi_button = memnew(Button);
 		environ_gi_button->set_text(TTR("GI"));
+		environ_gi_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_gi_button->set_toggle_mode(true);
 		environ_gi_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_gi_button);
