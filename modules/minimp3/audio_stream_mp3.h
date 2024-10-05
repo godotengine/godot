@@ -114,6 +114,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<AudioStreamMP3> load_from_file(const String &p_path);
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 

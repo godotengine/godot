@@ -34,6 +34,8 @@
 
 #include "audio_stream_mp3.h"
 
+#include "resource_importer_mp3.h"
+
 #include "core/io/file_access.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
@@ -314,7 +316,13 @@ Ref<AudioSample> AudioStreamMP3::generate_sample() const {
 	return sample;
 }
 
+Ref<AudioStreamMP3> AudioStreamMP3::load_from_file(const String &p_path) {
+	return ResourceImporterMP3::import_mp3(p_path);
+}
+
 void AudioStreamMP3::_bind_methods() {
+	ClassDB::bind_static_method("AudioStreamMP3", D_METHOD("load_from_file", "path"), &AudioStreamMP3::load_from_file);
+
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamMP3::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamMP3::get_data);
 

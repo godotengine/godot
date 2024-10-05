@@ -8,6 +8,15 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="load_from_file" qualifiers="static">
+			<return type="AudioStreamMP3" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a new [AudioStreamMP3] instance from the given file path. The file must be in the MP3 format.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
 		</member>
