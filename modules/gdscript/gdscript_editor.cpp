@@ -58,13 +58,9 @@ void GDScriptLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) co
 	p_delimiters->push_back("##");
 }
 
-void GDScriptLanguage::get_doc_comment_block_delimiters(List<HashMap<String, String>> *p_delimiters) const {
-	HashMap<String, String> first;
-	first["delimiter_begin"] = "##";
-	first["delimiter_block"] = "";
-	first["delimiter_end"] = "";
-
-	p_delimiters->push_back(first);
+void GDScriptLanguage::get_block_key_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("##");
+	p_delimiters->push_back("#");
 }
 
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {

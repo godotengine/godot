@@ -101,8 +101,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = 0;
 
-	void _auto_fill_doc_comments(bool p_above);
-
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;

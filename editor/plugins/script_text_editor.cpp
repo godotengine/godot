@@ -260,6 +260,11 @@ void ScriptTextEditor::_set_theme_for_script() {
 			text_edit->add_auto_brace_completion_pair(beg, end);
 		}
 	}
+
+	List<String> block_key_delimiters;
+	script->get_language()->get_block_key_delimiters(&block_key_delimiters);
+
+	text_edit->set_block_key_delimiters(&block_key_delimiters);
 }
 
 void ScriptTextEditor::_show_errors_panel(bool p_show) {
@@ -1315,107 +1320,6 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 			// Open method documentation.
 			emit_signal(SNAME("go_to_help"), "class_method:" + base_class_split[1] + ":" + method);
 		}
-	}
-}
-
-void ScriptTextEditor::_auto_fill_doc_comments(bool p_above) {
-	CodeEdit *tx = code_editor->get_text_editor();
-
-	if (tx->get_comment_delimiters().is_empty()) {
-		return;
-	}
-
-	List<HashMap<String, String>> doc_comments_block;
-	script->get_language()->get_doc_comment_block_delimiters(&doc_comments_block);
-
-	// Store the operations to apply, as complex operations need to be used only if comments are added.
-	List<Vector<Variant>> operations;
-
-	for (int i = 0; i < tx->get_caret_count(); i++) {
-		if (tx->multicaret_edit_ignore_caret(i)) {
-			continue;
-		}
-
-		const int cl = p_above ? (tx->get_caret_line(i) + 1) : (tx->get_caret_line(i) - 1);
-		const String line = tx->get_line(cl);
-
-		if (tx->is_in_comment(cl) != -1) {
-			for (const HashMap<String, String> &doc_comment_block : doc_comments_block) {
-				const String delimiter_begin = doc_comment_block["delimiter_begin"];
-				const String delimiter_block = doc_comment_block["delimiter_block"];
-				const String delimiter_end = doc_comment_block["delimiter_end"];
-				const bool is_inline_delimiter = delimiter_end.is_empty();
-				String line_strip = line.strip_edges();
-
-				// Case for inline comments.
-				if (is_inline_delimiter) {
-					if (line_strip.begins_with(delimiter_begin)) {
-						operations.push_back({ i, delimiter_begin });
-						break;
-					}
-
-					continue;
-				}
-
-				// Case when the caret is on the same line as a block comment.
-				if (!p_above && line_strip.begins_with(delimiter_begin)) {
-					const String next_line = tx->get_line(cl + 1);
-
-					if (next_line.ends_with(delimiter_end.strip_edges())) {
-						const int non_whitespace_column = tx->get_first_non_whitespace_column(cl);
-						const String indent = line.substr(0, non_whitespace_column);
-
-						operations.push_back({ i, vformat("%s \n%s", delimiter_block, indent), cl + 1 });
-						break;
-					}
-
-					operations.push_back({ i, delimiter_block });
-					break;
-				}
-
-				// Case when the caret is on the same line as the end delimiter.
-				if (p_above && line_strip.ends_with(delimiter_end)) {
-					operations.push_back({ i, delimiter_block });
-					break;
-				}
-
-				// Case when the caret is in a block comment; needs to go up to
-				// find the beginning of the current doc comment.
-				for (int j = cl - 1; j >= 0; --j) {
-					line_strip = tx->get_line(j).strip_edges();
-
-					if (tx->is_in_comment(j) == -1) {
-						break;
-					}
-
-					if (line_strip.begins_with(delimiter_begin)) {
-						operations.push_back({ i, delimiter_block });
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	if (!operations.is_empty()) {
-		tx->begin_complex_operation();
-
-		for (const Vector<Variant> &op : operations) {
-			const int caret = op[0];
-			const String delimiter = op[1].operator String();
-
-			tx->insert_text_at_caret(delimiter + " ", caret);
-
-			if (op.size() == 3) {
-				const int line_to_move_on = op[2];
-				const int line_length = tx->get_line(line_to_move_on).length();
-				tx->set_caret_line(line_to_move_on, false, true, -1, caret);
-				tx->set_caret_column(line_length, false, caret);
-			}
-		}
-
-		tx->merge_overlapping_carets();
-		tx->end_complex_operation();
 	}
 }
 
@@ -2482,7 +2386,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
-	code_editor->get_text_editor()->add_new_line_actions(callable_mp(this, &ScriptTextEditor::_auto_fill_doc_comments));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
