@@ -3,8 +3,11 @@
 
 #include "scene/main/node.h"
 
-class TestNode : public Object {
+class TestNode : public Node {
 	GDCLASS(TestNode, Node);
+
+private:
+	int count;
 
 protected:
 	static void _bind_methods();
@@ -12,8 +15,9 @@ protected:
 public:
 	TestNode();
 	~TestNode();
-
-	int add(int a, int b);
+	void add(int p_value);
+	void reset();
+	int get_total() const;
 };
 
 #endif // TEST_NODE_H

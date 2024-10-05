@@ -2,13 +2,19 @@
 
 #include "register_types.h"
 
-#include "core/engine.h"
+#include "core/object/class_db.h"
 #include "test.h"
 
-void initialize_test_module() {
-	ClassDB::register_class<test>();
+void initialize_testmod_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+	ClassDB::register_class<TestNode>();
 }
 
-void uninitialize_test_module() {
+void uninitialize_testmod_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 	// Nothing to do here in this example.
 }
