@@ -501,7 +501,6 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             }
         } break;
         case Animation::TYPE_BLEND_SHAPE: {
-            AnimationMixer::TrackCacheBlendShape* t = context.blend_shape_cache[animation_track->path];
             float value;
             Error err = a->try_blend_shape_track_interpolate(i, time, &value);
             //ERR_CONTINUE(err!=OK); //used for testing, should be removed
@@ -511,6 +510,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if(temp_human_key_frame.set_dof(animation_track->path.get_name(0),value)) {
                 continue;
             }
+            AnimationMixer::TrackCacheBlendShape* t = context.blend_shape_cache[animation_track->path];
 			if (!context.blend_shape_cache.has(animation_track->path)) {
 				continue;
 			}
