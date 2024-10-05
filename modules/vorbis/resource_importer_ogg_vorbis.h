@@ -42,6 +42,10 @@ class ResourceImporterOggVorbis : public ResourceImporter {
 		OGG_SYNC_BUFFER_SIZE = 8192,
 	};
 
+private:
+	static Ref<AudioStreamOggVorbis> _load_from_file(const String &p_path);
+	static Ref<AudioStreamOggVorbis> _load_from_buffer(const Vector<uint8_t> &p_file_data);
+
 protected:
 	static void _bind_methods();
 
@@ -51,8 +55,8 @@ public:
 	virtual void show_advanced_options(const String &p_path) override;
 #endif
 
-	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path);
-	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &file_data);
+	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path, Error &r_error);
+	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &p_file_data, Error &r_error);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;

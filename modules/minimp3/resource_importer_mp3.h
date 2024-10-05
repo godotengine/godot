@@ -38,6 +38,13 @@
 class ResourceImporterMP3 : public ResourceImporter {
 	GDCLASS(ResourceImporterMP3, ResourceImporter);
 
+private:
+	static Ref<AudioStreamMP3> _load_from_file(const String &p_path);
+	static Ref<AudioStreamMP3> _load_from_buffer(const Vector<uint8_t> &p_file_data);
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
@@ -55,7 +62,9 @@ public:
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 #endif
-	static Ref<AudioStreamMP3> import_mp3(const String &p_path);
+
+	static Ref<AudioStreamMP3> load_from_file(const String &p_path, Error &r_error);
+	static Ref<AudioStreamMP3> load_from_buffer(const Vector<uint8_t> &p_file_data, Error &r_error);
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 

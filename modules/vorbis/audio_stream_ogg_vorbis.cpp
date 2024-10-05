@@ -582,10 +582,20 @@ AudioStreamOggVorbis::AudioStreamOggVorbis() {}
 
 AudioStreamOggVorbis::~AudioStreamOggVorbis() {}
 
-Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<uint8_t> &file_data) {
-	return ResourceImporterOggVorbis::load_from_buffer(file_data);
+Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<uint8_t> &p_file_data) {
+	Error err = OK;
+	Ref<AudioStreamOggVorbis> as = ResourceImporterOggVorbis::load_from_buffer(p_file_data, err);
+	if (err) {
+		return Ref<AudioStreamOggVorbis>();
+	}
+	return as;
 }
 
 Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_file(const String &p_path) {
-	return ResourceImporterOggVorbis::load_from_file(p_path);
+	Error err = OK;
+	Ref<AudioStreamOggVorbis> as = ResourceImporterOggVorbis::load_from_file(p_path, err);
+	if (err != OK) {
+		return Ref<AudioStreamOggVorbis>();
+	}
+	return as;
 }
