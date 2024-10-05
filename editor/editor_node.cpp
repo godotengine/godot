@@ -3232,6 +3232,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			}
 		} break;
+		case PROJECT_OPEN_PROJECT_FOLDER: {
+			OS::get_singleton()->shell_show_in_file_manager(OS::get_singleton()->get_resource_dir(), true);
+		} break;
 		case PROJECT_OPEN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
 			OS::get_singleton()->ensure_user_data_dir();
@@ -8045,6 +8048,7 @@ EditorNode::EditorNode() {
 	project_menu->add_item(TTRC("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
 #ifndef ANDROID_ENABLED
 	project_menu->add_item(TTRC("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
+	project_menu->add_item(TTRC("Open Project Folder"), PROJECT_OPEN_PROJECT_FOLDER);
 	project_menu->add_item(TTRC("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
 #endif
 
