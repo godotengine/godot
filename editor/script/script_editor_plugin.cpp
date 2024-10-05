@@ -385,10 +385,10 @@ void DocumentList::_show_context_menu() {
 	const Ref<Script> script = res;
 	{
 		if (seb) {
-			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), ScriptEditor::FILE_MENU_SAVE);
+			context_menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Save")), ED_GET_SHORTCUT("script_editor/save"), ScriptEditor::FILE_MENU_SAVE);
 			context_menu->add_separator();
 		}
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), ScriptEditor::FILE_MENU_CLOSE);
+		context_menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Close")), ED_GET_SHORTCUT("script_editor/close_file"), ScriptEditor::FILE_MENU_CLOSE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), ScriptEditor::FILE_MENU_CLOSE_OTHER_TABS);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_tabs_below"), ScriptEditor::FILE_MENU_CLOSE_TABS_BELOW);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), ScriptEditor::FILE_MENU_CLOSE_ALL);
@@ -399,14 +399,14 @@ void DocumentList::_show_context_menu() {
 
 		if (script_editor == ScriptEditor::get_singleton() && script.is_valid() && script->is_tool()) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), ScriptEditor::FILE_MENU_SOFT_RELOAD_TOOL);
-			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), ScriptEditor::FILE_MENU_RUN);
+			context_menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Play")), ED_GET_SHORTCUT("script_editor/run_file"), ScriptEditor::FILE_MENU_RUN);
 			context_menu->add_separator();
 		}
 
 		if (seb) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), ScriptEditor::FILE_MENU_COPY_PATH);
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), ScriptEditor::FILE_MENU_COPY_UID);
-			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), ScriptEditor::FILE_MENU_SHOW_IN_FILE_SYSTEM);
+			context_menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ShowInFileSystem")), ED_GET_SHORTCUT("script_editor/show_in_file_system"), ScriptEditor::FILE_MENU_SHOW_IN_FILE_SYSTEM);
 			if (script_editor == ScriptEditor::get_bottom_script_editor()) {
 				context_menu->add_shortcut(ED_SHORTCUT("script_editor/open_in_inspector", TTRC("Open File in Inspector")), ScriptEditor::FILE_MENU_INSPECT);
 				context_menu->add_shortcut(ED_SHORTCUT("script_editor/inspect_native_code", TTRC("Inspect Native Shader Code...")), ScriptEditor::FILE_MENU_INSPECT_NATIVE_SHADER_CODE);
