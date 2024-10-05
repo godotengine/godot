@@ -341,19 +341,10 @@ void CSharpLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) cons
 	p_delimiters->push_back("/** */"); // delimited doc comment
 }
 
-void CSharpLanguage::get_doc_comment_block_delimiters(List<HashMap<String, String>> *p_delimiters) const {
-	HashMap<String, String> first;
-	first["delimiter_begin"] = "///";
-	first["delimiter_block"] = "";
-	first["delimiter_end"] = "";
-
-	HashMap<String, String> second;
-	second["delimiter_begin"] = "/**";
-	second["delimiter_block"] = " *";
-	second["delimiter_end"] = "*/";
-
-	p_delimiters->push_back(first);
-	p_delimiters->push_back(second);
+void CSharpLanguage::get_block_key_delimiters(List<String> *p_delimiters) const {
+	p_delimiters->push_back("///");
+	p_delimiters->push_back("//");
+	p_delimiters->push_back("/**| *|*/");
 }
 
 void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {

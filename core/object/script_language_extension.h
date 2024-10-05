@@ -264,17 +264,13 @@ public:
 		}
 	}
 
-	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_block_delimiters)
+	GDVIRTUAL0RC(Vector<String>, _get_block_key_delimiters)
 
-	virtual void get_doc_comment_block_delimiters(List<HashMap<String, String>> *p_words) const override {
+	virtual void get_block_key_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
-		GDVIRTUAL_CALL(_get_doc_comment_block_delimiters, ret);
+		GDVIRTUAL_CALL(_get_block_key_delimiters, ret);
 		for (const String &delimiter : ret) {
-			HashMap<String, String> word;
-			word["delimiter_begin"] = delimiter;
-			word["delimiter_block"] = "";
-			word["delimiter_end"] = "";
-			p_words->push_back(word);
+			p_words->push_back(delimiter);
 		}
 	}
 
