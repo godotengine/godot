@@ -507,6 +507,8 @@ public:
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int virtual_keyboard_get_height() const;
 
+	virtual bool has_hardware_keyboard() const;
+
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
