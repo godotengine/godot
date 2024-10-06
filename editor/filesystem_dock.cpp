@@ -4146,6 +4146,7 @@ FileSystemDock::FileSystemDock() {
 	files = memnew(FileSystemList);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
+	files->set_theme_type_variation("ItemListSecondary");
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
 	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
 	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
