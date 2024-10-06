@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
 
-public class ScriptSerializationGeneratorImplementationTests
+public class ScriptSerializationGeneratorTests
 {
     [Fact]
     public async void ScriptBoilerplate()

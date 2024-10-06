@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
 
-public class ScriptSignalsGeneratorImplementationTests
+public class ScriptSignalsGeneratorTests
 {
     [Fact]
     public async void EventSignals()
