@@ -30,6 +30,12 @@
     <None Include="$(GodotSdkPackageVersionsFilePath)" Pack="true" PackagePath="Sdk">
       <Link>Sdk\SdkPackageVersions.props</Link>
     </None>
+    <None Include="Sdk\WindowsNativeAOT.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\WindowsNativeAOT.targets" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\LinuxBsdNativeAOT.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\LinuxBsdNativeAOT.targets" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\MacosNativeAOT.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\MacosNativeAOT.targets" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\Android.props" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\AndroidNativeAOT.props" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\AndroidNativeAOT.targets" Pack="true" PackagePath="Sdk" />

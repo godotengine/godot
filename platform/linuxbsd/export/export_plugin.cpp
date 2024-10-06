@@ -174,6 +174,9 @@ bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExpo
 	if (p_option == "dotnet/embed_build_outputs") {
 		return advanced_options_enabled;
 	}
+	if (p_option == "dotnet/enable_native_aot") {
+		return advanced_options_enabled;
+	}
 	return true;
 }
 

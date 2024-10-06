@@ -64,6 +64,7 @@
   <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
     <GodotTargetPlatform Condition=" $(RuntimeIdentifier.StartsWith('ios')) ">ios</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('android')) ">android</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('linux-bionic')) ">android</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('browser')) ">web</GodotTargetPlatform>
 
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('linux')) ">linuxbsd</GodotTargetPlatform>
@@ -112,6 +113,9 @@
     <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)\WindowsNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'windows' And '$(NativeAotEnabled)' == 'true' " />
+  <Import Project="$(MSBuildThisFileDirectory)\LinuxBsdNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'linuxbsd' And '$(NativeAotEnabled)' == 'true' " />
+  <Import Project="$(MSBuildThisFileDirectory)\MacosNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'macos' And '$(NativeAotEnabled)' == 'true' " />
   <Import Project="$(MSBuildThisFileDirectory)\Android.props" Condition=" '$(GodotTargetPlatform)' == 'android' And '$(NativeAotEnabled)' == 'false' " />
   <Import Project="$(MSBuildThisFileDirectory)\AndroidNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'android' And '$(NativeAotEnabled)' == 'true' " />
   <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'ios' " />

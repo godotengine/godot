@@ -169,7 +169,7 @@ namespace GodotTools.Export
                 throw new NotImplementedException("Target platform not yet implemented.");
             }
 
-            bool enableNativeAot = ((bool)GetOption("dotnet/enable_native_aot") && platform == OS.Platforms.Android);
+            bool enableNativeAot = ((bool)GetOption("dotnet/enable_native_aot") || platform == OS.Platforms.iOS);
 
             PublishConfig publishConfig = new()
             {

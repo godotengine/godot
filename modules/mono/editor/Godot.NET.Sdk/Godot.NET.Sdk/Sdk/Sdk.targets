@@ -21,8 +21,15 @@
     <PackageReference Include="GodotSharpEditor" Version="$(PackageVersion_GodotSharp)" Condition=" '$(Configuration)' == 'Debug' " />
   </ItemGroup>
 
+  <!-- Windows-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\WindowsNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'windows' And '$(NativeAotEnabled)' == 'true' " />
+  <!-- LinuxBsd-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\LinuxBsdNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'linuxbsd' And '$(NativeAotEnabled)' == 'true' " />
+  <!-- Macos-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\MacosNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'macos' And '$(NativeAotEnabled)' == 'true' " />
+  <!-- Android-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\AndroidNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'android' And '$(NativeAotEnabled)' == 'true' " />
   <!-- iOS-specific build targets -->
   <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
-  <Import Project="$(MSBuildThisFileDirectory)\AndroidNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'android' And '$(NativeAotEnabled)' == 'true' " />
 
 </Project>

@@ -344,6 +344,11 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 		return false;
 	}
 
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option == "dotnet/enable_native_aot") {
+		return advanced_options_enabled;
+	}
+
 	return true;
 }
 

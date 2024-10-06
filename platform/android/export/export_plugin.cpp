@@ -1963,6 +1963,10 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
+	if (p_option == "dotnet/enable_native_aot") {
+		return advanced_options_enabled;
+	}
+
 	return true;
 }
 

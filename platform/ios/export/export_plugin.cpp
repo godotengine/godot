@@ -249,6 +249,11 @@ bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPre
 		return false;
 	}
 
+	// Hide NativeAOT option as it's enabled by default.
+	if (p_option == "dotnet/enable_native_aot") {
+		return false;
+	}
+
 	if (p_preset == nullptr) {
 		return true;
 	}
