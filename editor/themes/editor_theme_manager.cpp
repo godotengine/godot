@@ -2138,6 +2138,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 			p_theme->set_stylebox(SceneStringName(panel), "ControlEditorPopupPanel", control_editor_popup_style);
 		}
+
+		// Secondary trees and item lists.
+		{
+			p_theme->set_type_variation("SideTree", "Tree");
+			p_theme->set_type_variation("SideItemList", "ItemList");
+		}
 	}
 
 	// Editor inspector.
