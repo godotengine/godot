@@ -898,6 +898,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("scrollbar_h_separation", "Tree", Math::round(4 * scale));
 	theme->set_constant("scrollbar_v_separation", "Tree", Math::round(4 * scale));
 
+	theme->set_type_variation("SideTree", "Tree");
+
 	// ItemList
 
 	theme->set_stylebox(SceneStringName(panel), "ItemList", make_flat_stylebox(style_normal_color));
@@ -922,6 +924,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("cursor_unfocused", "ItemList", focus);
 
 	theme->set_constant("outline_size", "ItemList", 0);
+
+	theme->set_type_variation("SideItemList", "ItemList");
 
 	// TabContainer
 
