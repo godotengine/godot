@@ -238,7 +238,18 @@ namespace GodotTools.Export
                 foreach (string arch in config.Archs)
                 {
                     string ridArch = DetermineRuntimeIdentifierArch(arch);
-                    string runtimeIdentifier = $"{ridOS}-{ridArch}";
+                    string overriddenRuntimeIdentifier = (string)GetOption("dotnet/runtime_identifier");
+                    string runtimeIdentifier;
+
+                    if (overriddenRuntimeIdentifier == "")
+                    {
+                        runtimeIdentifier = $"{ridOS}-{ridArch}";
+                    }
+                    else 
+                    {
+                        runtimeIdentifier = overriddenRuntimeIdentifier;
+                    }
+
                     string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{platform}_{arch}";
                     if (platform == OS.Platforms.MacOS)
                     {
