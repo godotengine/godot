@@ -309,6 +309,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="cell_changed">
+			<description>
+				Emitted when a cell in this this [TileMapLayer] changes.
+			</description>
+		</signal>
 		<signal name="changed">
 			<description>
 				Emitted when this [TileMapLayer]'s properties changes. This includes modified cells, properties, or changes made to its assigned [TileSet].
