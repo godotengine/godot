@@ -1988,44 +1988,59 @@ TEST_CASE("[String] Variant ptr indexed set") {
 	CHECK_EQ(s, String("azcd"));
 }
 
-TEST_CASE("[String] parse_url") {
-	String scheme, host, path, fragment;
-	int port;
+TEST_CASE("[String][URL] Parse URL") {
+#define CHECK_URL(m_url_to_parse, m_expected_schema, m_expected_host, m_expected_port, m_expected_path, m_expected_fragment, m_expected_error) \
+	if (true) {                                                                                                                                \
+		int port;                                                                                                                              \
+		String url(m_url_to_parse), schema, host, path, fragment;                                                                              \
+                                                                                                                                               \
+		CHECK_EQ(url.parse_url(schema, host, port, path, fragment), m_expected_error);                                                         \
+		CHECK_EQ(schema, m_expected_schema);                                                                                                   \
+		CHECK_EQ(host, m_expected_host);                                                                                                       \
+		CHECK_EQ(path, m_expected_path);                                                                                                       \
+		CHECK_EQ(fragment, m_expected_fragment);                                                                                               \
+		CHECK_EQ(port, m_expected_port);                                                                                                       \
+	} else                                                                                                                                     \
+		((void)0)
 
-	SUBCASE("Typical URL") {
-		Error err = String("https://docs.godotengine.org/en/stable/").parse_url(scheme, host, port, path, fragment);
-		REQUIRE(err == OK);
-		CHECK_EQ(scheme, "https://");
-		CHECK_EQ(host, "docs.godotengine.org");
-		CHECK_EQ(port, 0);
-		CHECK_EQ(path, "/en/stable/");
-		CHECK_EQ(fragment, "");
-	}
+	// All elements.
+	CHECK_URL("https://www.example.com:8080/path/to/file.html#fragment", "https://", "www.example.com", 8080, "/path/to/file.html", "fragment", Error::OK);
 
-	SUBCASE("All Elements") {
-		Error err = String("https://www.example.com:8080/path/to/file.html#fragment").parse_url(scheme, host, port, path, fragment);
-		REQUIRE(err == OK);
-		CHECK_EQ(scheme, "https://");
-		CHECK_EQ(host, "www.example.com");
-		CHECK_EQ(port, 8080);
-		CHECK_EQ(path, "/path/to/file.html");
-		CHECK_EQ(fragment, "fragment");
-	}
+	// Valid URLs.
+	CHECK_URL("https://godotengine.org", "https://", "godotengine.org", 0, "", "", Error::OK);
+	CHECK_URL("https://godotengine.org/", "https://", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("godotengine.org/", "", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("HTTPS://godotengine.org/", "https://", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("https://GODOTENGINE.ORG/", "https://", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("http://godotengine.org", "http://", "godotengine.org", 0, "", "", Error::OK);
+	CHECK_URL("https://godotengine.org:8080", "https://", "godotengine.org", 8080, "", "", Error::OK);
+	CHECK_URL("https://godotengine.org/blog", "https://", "godotengine.org", 0, "/blog", "", Error::OK);
+	CHECK_URL("https://godotengine.org/blog/", "https://", "godotengine.org", 0, "/blog/", "", Error::OK);
+	CHECK_URL("https://docs.godotengine.org/en/stable", "https://", "docs.godotengine.org", 0, "/en/stable", "", Error::OK);
+	CHECK_URL("https://docs.godotengine.org/en/stable/", "https://", "docs.godotengine.org", 0, "/en/stable/", "", Error::OK);
+	CHECK_URL("https://me:secret@godotengine.org", "https://", "godotengine.org", 0, "", "", Error::OK);
+	CHECK_URL("https://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]/ipv6", "https://", "fedc:ba98:7654:3210:fedc:ba98:7654:3210", 0, "/ipv6", "", Error::OK);
 
-	SUBCASE("Invalid Scheme") {
-		Error err = String("http_://example.com").parse_url(scheme, host, port, path, fragment);
-		REQUIRE(err == ERR_INVALID_PARAMETER); // Host being empty is an error.
-	}
+	// Scheme vs Fragment.
+	CHECK_URL("google.com/#goto=http://redirect_url/", "", "google.com", 0, "/", "goto=http://redirect_url/", Error::OK);
 
-	SUBCASE("Scheme vs Fragment") {
-		Error err = String("google.com/#goto=http://redirect_url/").parse_url(scheme, host, port, path, fragment);
-		REQUIRE(err == OK);
-		CHECK_EQ(scheme, "");
-		CHECK_EQ(host, "google.com");
-		CHECK_EQ(port, 0);
-		CHECK_EQ(path, "/");
-		CHECK_EQ(fragment, "goto=http://redirect_url/");
-	}
+	// Invalid URLs.
+
+	// Invalid Scheme.
+	CHECK_URL("https_://godotengine.org", "", "https_", 0, "//godotengine.org", "", Error::ERR_INVALID_PARAMETER);
+
+	// Multiple ports.
+	CHECK_URL("https://godotengine.org:8080:433", "https://", "", 0, "", "", Error::ERR_INVALID_PARAMETER);
+	// Missing ] on literal IPv6.
+	CHECK_URL("https://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210/ipv6", "https://", "", 0, "/ipv6", "", Error::ERR_INVALID_PARAMETER);
+	// Missing host.
+	CHECK_URL("https:///blog", "https://", "", 0, "/blog", "", Error::ERR_INVALID_PARAMETER);
+	// Invalid ports.
+	CHECK_URL("https://godotengine.org:notaport", "https://", "godotengine.org", 0, "", "", Error::ERR_INVALID_PARAMETER);
+	CHECK_URL("https://godotengine.org:-8080", "https://", "godotengine.org", -8080, "", "", Error::ERR_INVALID_PARAMETER);
+	CHECK_URL("https://godotengine.org:88888", "https://", "godotengine.org", 88888, "", "", Error::ERR_INVALID_PARAMETER);
+
+#undef CHECK_URL
 }
 
 TEST_CASE("[Stress][String] Empty via ' == String()'") {

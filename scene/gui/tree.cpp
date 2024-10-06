@@ -4034,25 +4034,25 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 			} break;
 			case MouseButton::WHEEL_UP: {
-				if (_scroll(false, -mb->get_factor() / 8)) {
+				if (_scroll(mb->is_shift_pressed(), -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				if (_scroll(false, mb->get_factor() / 8)) {
+				if (_scroll(mb->is_shift_pressed(), mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_LEFT: {
-				if (_scroll(true, -mb->get_factor() / 8)) {
+				if (_scroll(!mb->is_shift_pressed(), -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_RIGHT: {
-				if (_scroll(true, mb->get_factor() / 8)) {
+				if (_scroll(!mb->is_shift_pressed(), mb->get_factor() / 8)) {
 					accept_event();
 				}
 

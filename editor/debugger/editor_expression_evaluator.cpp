@@ -64,10 +64,7 @@ void EditorExpressionEvaluator::_evaluate() {
 		return;
 	}
 
-	Array expr_data;
-	expr_data.push_back(expression);
-	expr_data.push_back(editor_debugger->get_stack_script_frame());
-	editor_debugger->send_message("evaluate", expr_data);
+	editor_debugger->request_remote_evaluate(expression, editor_debugger->get_stack_script_frame());
 
 	expression_input->clear();
 }

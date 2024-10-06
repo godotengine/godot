@@ -653,7 +653,9 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		minimap = nullptr;
 	} else if (p_child == connections_layer) {
 		connections_layer = nullptr;
-		WARN_PRINT("GraphEdit's connection_layer removed. This should not be done. If you like to remove all GraphElements from a GraphEdit node, do not simply remove all non-internal children but check their type since the connection layer has to be kept non-internal due to technical reasons.");
+		if (is_inside_tree()) {
+			WARN_PRINT("GraphEdit's connection_layer removed. This should not be done. If you like to remove all GraphElements from a GraphEdit node, do not simply remove all non-internal children but check their type since the connection layer has to be kept non-internal due to technical reasons.");
+		}
 	}
 
 	if (top_layer != nullptr && is_inside_tree()) {

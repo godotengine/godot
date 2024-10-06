@@ -253,6 +253,13 @@ const SceneDebuggerTree *ScriptEditorDebugger::get_remote_tree() {
 	return scene_tree;
 }
 
+void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, int p_stack_frame) {
+	Array msg;
+	msg.push_back(p_expression);
+	msg.push_back(p_stack_frame);
+	_put_msg("evaluate", msg);
+}
+
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value) {
 	Array msg;
 	msg.push_back(p_obj_id);

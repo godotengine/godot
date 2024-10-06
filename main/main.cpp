@@ -245,6 +245,7 @@ static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
+static bool editor_pseudolocalization = false;
 static bool dump_gdextension_interface = false;
 static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
@@ -649,6 +650,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--fixed-fps <fps>", "Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
 	print_help_option("--delta-smoothing <enable>", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].\n");
 	print_help_option("--print-fps", "Print the frames per second to the stdout.\n");
+#ifdef TOOLS_ENABLED
+	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n");
+#endif
 
 	print_help_title("Standalone tools");
 	print_help_option("-s, --script <script>", "Run a script.\n");
@@ -1716,6 +1720,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			disable_vsync = true;
 		} else if (arg == "--print-fps") {
 			print_fps = true;
+#ifdef TOOLS_ENABLED
+		} else if (arg == "--editor-pseudolocalization") {
+			editor_pseudolocalization = true;
+#endif // TOOLS_ENABLED
 		} else if (arg == "--profile-gpu") {
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
@@ -4006,6 +4014,11 @@ int Main::start() {
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 			editor_node = memnew(EditorNode);
+
+			if (editor_pseudolocalization) {
+				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
+			}
+
 			sml->get_root()->add_child(editor_node);
 
 			if (!_export_preset.is_empty()) {
@@ -4200,6 +4213,11 @@ int Main::start() {
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
+
+			if (editor_pseudolocalization) {
+				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
+			}
+
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->benchmark_end_measure("Startup", "Project Manager");
 		}

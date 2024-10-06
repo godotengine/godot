@@ -714,6 +714,12 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
+			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
+		</member>
+		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
+			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
+		</member>
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].

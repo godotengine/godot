@@ -61,8 +61,9 @@
 #include "scene/main/window.h"
 #include "servers/audio/audio_stream.h"
 
-constexpr double FPS_DECIMAL = 1;
+constexpr double FPS_DECIMAL = 1.0;
 constexpr double SECOND_DECIMAL = 0.0001;
+constexpr double FACTOR = 0.0625;
 
 void AnimationTrackKeyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationTrackKeyEdit::_update_obj);
@@ -1799,7 +1800,7 @@ void AnimationTimelineEdit::update_values() {
 	}
 
 	editing = true;
-	if (use_fps && animation->get_step() > 0) {
+	if (use_fps && animation->get_step() > 0.0) {
 		length->set_value(animation->get_length() / animation->get_step());
 		length->set_step(FPS_DECIMAL);
 		length->set_tooltip_text(TTR("Animation length (frames)"));
@@ -5016,7 +5017,6 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 		key_edit->set_use_fps(use_fps);
 	}
 	marker_edit->set_use_fps(use_fps);
-	step->set_step(use_fps ? FPS_DECIMAL : SECOND_DECIMAL);
 	_update_step_spinbox();
 }
 
@@ -5027,12 +5027,10 @@ void AnimationTrackEditor::_update_step_spinbox() {
 	step->set_block_signals(true);
 
 	if (timeline->is_using_fps()) {
-		if (animation->get_step() == 0) {
-			step->set_value(0);
+		if (animation->get_step() == 0.0) {
+			step->set_value(0.0);
 		} else {
-			// The value stored within tscn cannot restored the original FPS due to lack of precision,
-			// so the value should be limited to integer.
-			step->set_value(Math::round(1.0 / animation->get_step()));
+			step->set_value(1.0 / animation->get_step());
 		}
 
 	} else {
@@ -5146,7 +5144,9 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation Step"));
-	float step_value = p_new_step;
+	// To ensure that the conversion results are consistent between serialization and load, the value is snapped with 0.0625 to be a rational number.
+	// step_value must also be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
+	double step_value = MIN(1000.0, Math::snapped(p_new_step, FACTOR));
 	if (timeline->is_using_fps()) {
 		if (step_value != 0.0) {
 			step_value = 1.0 / step_value;
@@ -6363,8 +6363,8 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 		return;
 	}
 	float anim_step = animation->get_step();
-	if (anim_step == 0) {
-		anim_step = 1;
+	if (anim_step == 0.0) {
+		anim_step = 1.0;
 	}
 	if (p_from_mouse_event && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Use more precise snapping when holding Shift.
@@ -6374,8 +6374,8 @@ void AnimationTrackEditor::goto_prev_step(bool p_from_mouse_event) {
 
 	float pos = timeline->get_play_position();
 	pos = Math::snapped(pos - anim_step, anim_step);
-	if (pos < 0) {
-		pos = 0;
+	if (pos < 0.0) {
+		pos = 0.0;
 	}
 	set_anim_pos(pos);
 	_timeline_changed(pos, false);
@@ -6386,8 +6386,8 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeli
 		return;
 	}
 	float anim_step = animation->get_step();
-	if (anim_step == 0) {
-		anim_step = 1;
+	if (anim_step == 0.0) {
+		anim_step = 1.0;
 	}
 	if (p_from_mouse_event && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Use more precise snapping when holding Shift.
