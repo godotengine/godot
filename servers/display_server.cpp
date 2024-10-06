@@ -634,6 +634,10 @@ int DisplayServer::virtual_keyboard_get_height() const {
 	ERR_FAIL_V_MSG(0, "Virtual keyboard not supported by this display server.");
 }
 
+bool DisplayServer::has_hardware_keyboard() const {
+	return true;
+}
+
 void DisplayServer::cursor_set_shape(CursorShape p_shape) {
 	WARN_PRINT("Cursor shape not supported by this display server.");
 }
@@ -975,6 +979,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
+
+	ClassDB::bind_method(D_METHOD("has_hardware_keyboard"), &DisplayServer::has_hardware_keyboard);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
