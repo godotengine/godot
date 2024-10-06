@@ -178,7 +178,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void OptionButton::_focused(int p_which) {
-	emit_signal(SNAME("item_focused"), p_which);
+	emit_signal(SNAME("item_focused"), popup->get_item_index(p_which));
 }
 
 void OptionButton::_selected(int p_which) {
