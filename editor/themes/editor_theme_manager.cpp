@@ -2132,6 +2132,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// EditorValidationPanel.
 		p_theme->set_stylebox(SceneStringName(panel), "EditorValidationPanel", p_config.tree_panel_style);
+
+		// Secondary trees and item lists.
+		p_theme->set_type_variation("TreeSecondary", "Tree");
+		p_theme->set_type_variation("ItemListSecondary", "ItemList");
 	}
 
 	// Editor inspector.
