@@ -274,6 +274,7 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 
 # Thirdparty libraries
+opts.Add(BoolVariable("builtin_aisuit", "Use the built-in AIsuit library", True))
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_clipper2", "Use the built-in Clipper2 library", True))
