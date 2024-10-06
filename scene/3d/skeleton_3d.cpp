@@ -2233,7 +2233,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 			}
 			if(right_bones_idx != -1) {
 				Vector3 right_bone = skeleton->get_bone_global_pose(right_bones_idx).origin - center;
-				if(right_bone.x < 0) {
+				if(right_bone.x > 0) {
 					if(left_bone_idx != -1) {
 						p_bone_map[right_bones[i]] = left_bone_name;
 					}
@@ -2241,7 +2241,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 			}
 			if(left_bone_idx != -1) {
 				Vector3 left_bone = skeleton->get_bone_global_pose(left_bone_idx).origin - center;
-				if(left_bone.x > 0) {
+				if(left_bone.x < 0) {
 					p_bone_map[left_bones[i]] = right_bone_name;
 				}
 			}

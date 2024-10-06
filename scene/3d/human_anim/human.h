@@ -335,9 +335,6 @@ namespace human
         // 
         bool set_dof(const StringName& p_name, float p_value) {
             String str = p_name.str();
-            if(str.size() != 4) {
-                return false;
-            }
 
             int index = str.substr(3).to_int();
             if(index < 0 || index >= 95) {
@@ -364,7 +361,7 @@ namespace human
         void blend(HumanAnimationKeyFrame & p_keyframe, Vector<uint8_t>& bone_mask,float p_weight) {
 
             for(int i = 0;i < kLastDoF ; i++) {
-                int bone_index = BoneFromTDoF(i);
+                int bone_index = BoneFromMuscle(i);
                 if(bone_mask[bone_index]) {
                     dot_array[i] = math::lerp(dot_array[i], p_keyframe.dot_array[i], p_weight);
                 }

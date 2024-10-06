@@ -555,37 +555,38 @@ namespace human
         // 定义一个静态数组，存储各个骨骼的轴信息
         const static math::SetupAxesInfo setupAxesInfoArray[kLastBone] =
         {
-            // m_PreQ、         m_MainAxis、        m_Min、				 m_Max、      m_Sgn、      m_Type,        m_ForceAxis
-            {{0, 0, 0, 1},      {-1, 0, 0, 0},      {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kHips
-            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0},      {-60, -60, -90}, {60, 60, 50}, {1, 1, 1, 1}, math::kZYRoll, 0},                 // kLeftUpperLeg
-            {{-0.268f, 0, 0, 1}, {1, 0, 0, 0},      {-60, -60, -90}, {60, 60, 50}, {-1, -1, 1, 1}, math::kZYRoll, 0},               // kRightUpperLeg
-            {{0.839f, 0, 0, 1}, {1, 0, 0, 0},       {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftLeg
-            {{0.839f, 0, 0, 1}, {1, 0, 0, 0},       {-90, 0, -80}, {90, 0, 80}, {-1, 1, -1, 1}, math::kZYRoll, 0},                   // kRightLeg
-            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -30, -50}, {0, 30, 50}, {1, 1, 1, 1}, math::kZYRoll, -2},                         // kLeftFoot
-            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -30, -50}, {0, 30, 50}, {1, -1, 1, 1}, math::kZYRoll, -2},                        // kRightFoot
-            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kSpine
-            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kChest
-            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-20, -20, -20}, {20, 20, 20}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kUpperChest
-            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 0},                      // kNeck
-            {{0, 0, 0, 1},     {-1, 0, 0, 0},       {-40, -40, -40}, {40, 40, 40}, {1, 1, 1, 1}, math::kZYRoll, 2},                      // kHead
-            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -15, -15}, {0, 15, 30}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftShoulder
-            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -15, -15}, {0, 15, 30}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightShoulder
-            {{0, 0.268f, 0.364f, 1}, {0, 0, 1, 0},  {-90, -100, -60}, {90, 100, 100}, {1, 1, -1, 1}, math::kZYRoll, 0},         // kLeftArm
-            {{0, -0.268f, -0.364f, 1}, {0, 0, 1, 0}, {-90, -100, -60}, {90, 100, 100}, {-1, 1, 1, 1}, math::kZYRoll, 0},       // kRightArm
-            {{0, 0.839f, 0, 1}, {0, 1, 0, 0},       {-90, 0, -80}, {90, 0, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                    // kLeftForeArm
-            {{0, -0.839f, 0, 1}, {0, 1, 0, 0},      {-90, 0, -80}, {90, 0, 80}, {-1, 1, 1, 1}, math::kZYRoll, 0},                   // kRightForeArm
-            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -40, -80}, {0, 40, 80}, {1, 1, -1, 1}, math::kZYRoll, 0},                         // kLeftHand
-            {{0, 0, 0, 1},     {0, 0, 1, 0},        {0, -40, -80}, {0, 40, 80}, {1, 1, 1, 1}, math::kZYRoll, 0},                          // kRightHand
-            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kLeftToes
-            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, 0, -50}, {0, 0, 50}, {1, 1, 1, 1}, math::kZYRoll, 3},                             // kRightToes
-            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -20, -10}, {0, 20, 15}, {1, 1, -1, 1}, math::kZYRoll, 3},                         // kLeftEye
-            {{0, 0, 0, 1},     {1, 0, 0, 0},        {0, -20, -10}, {0, 20, 15}, {1, -1, -1, 1}, math::kZYRoll, 3},                        // kRightEye
-            {{0.09f, 0, 0, 1}, {1, 0, 0, 0},        {0, -10, -10}, {0, 10, 10}, {1, 1, -1, 1}, math::kZYRoll, 3}                      // kJaw
+            // m_PreQ、						m_MainAxis、		 m_Min、				 m_Max、			m_Sgn、				m_Type,			 m_ForceAxis
+            {{0, 0, 0, 1},					{-1, 0, 0, 0},       {-40, -40, -40},		{40, 40, 40},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kHips   
+			{{-0.268f, 0, 0, 1},			{1, 0, 0, 0},        {-60, -60, -90},		{60, 60, 50},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kLeftUpperLeg   
+			{{-0.268f, 0, 0, 1},			{1, 0, 0, 0},        {-60, -60, -90},		{60, 60, 50},		{-1, -1, 1, 1},		math::kZYRoll,	 0},    // kRightUpperLeg   
+			{{0.839f, 0, 0, 1},				{1, 0, 0, 0},        {-90, 0, -80},			{90, 0, 80},		{1, 1, -1, 1},		math::kZYRoll,	 0},    // kLeftLeg   
+			{{0.839f, 0, 0, 1},				{1, 0, 0, 0},        {-90, 0, -80},			{90, 0, 80},		{-1, 1, -1, 1},		math::kZYRoll,	 0},    // kRightLeg   
+			{{0, 0, 0, 1},					{1, 0, 0, 0},        {0, -30, -50},			{0, 30, 50},		{1, 1, 1, 1},		math::kZYRoll,	 -2},   // kLeftFoot   
+			{{0, 0, 0, 1},					{1, 0, 0, 0},        {0, -30, -50},			{0, 30, 50},		{1, -1, 1, 1},		math::kZYRoll,	 -2},   // kRightFoot   
+			{{0, 0, 0, 1},					{-1, 0, 0, 0},       {-40, -40, -40},		{40, 40, 40},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kSpine   
+			{{0, 0, 0, 1},					{-1, 0, 0, 0},       {-40, -40, -40},		{40, 40, 40},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kChest   
+			{{0, 0, 0, 1},					{-1, 0, 0, 0},       {-20, -20, -20},		{20, 20, 20},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kUpperChest   
+			{{0, 0, 0, 1},					{-1, 0, 0, 0},       {-40, -40, -40},		{40, 40, 40},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kNeck   
+			{{0, 0, 0, 1},					{-1, 0, 0, 0},       {-40, -40, -40},		{40, 40, 40},		{1, 1, 1, 1},		math::kZYRoll,	 2},    // kHead   
+			{{0, 0, 0, 1},					{0, 0, 1, 0},        {0, -15, -15},			{0, 15, 30},		{1, 1, -1, 1},		math::kZYRoll,	 0},    // kLeftShoulder   
+			{{0, 0, 0, 1},					{0, 0, 1, 0},        {0, -15, -15},			{0, 15, 30},		{1, 1, 1, 1},		math::kZYRoll,	 0},    // kRightShoulder   
+			{{0, 0.268f, 0.364f, 1},		{0, 0, 1, 0},		 {-90, -100, -60},		{90, 100, 100},		{1, 1, -1, 1},		math::kZYRoll,	 0},    // kLeftArm   
+			{{0, -0.268f, -0.364f, 1},		{0, 0, 1, 0},		 {-90, -100, -60},		{90, 100, 100},		{-1, 1, 1, 1},		math::kZYRoll,	 0},    // kRightArm   
+			{{0, 0.839f, 0, 1},				{0, 1, 0, 0},        {-90, 0, -80},			{90, 0, 80},		 {1, 1, -1, 1},		math::kZYRoll,	 0},    // kLeftForeArm   
+			{{0, -0.839f, 0, 1},			{0, 1, 0, 0},		 {-90, 0, -80},			{90, 0, 80},		 {-1, 1, 1, 1},		math::kZYRoll,	 0},    // kRightForeArm   
+			{{0, 0, 0, 1},					{0, 0, 1, 0},        {0, -40, -80},			{0, 40, 80},		 {1, 1, -1, 1},		math::kZYRoll,	 0},    // kLeftHand   
+			{{0, 0, 0, 1},					{0, 0, 1, 0},        {0, -40, -80},			{0, 40, 80},		 {1, 1, 1, 1},		math::kZYRoll,	 0},    // kRightHand   
+			{{0, 0, 0, 1},					{1, 0, 0, 0},        {0, 0, -50},			{0, 0, 50},			{1, 1, 1, 1},		math::kZYRoll,	 3},    // kLeftToes   
+			{{0, 0, 0, 1},					{1, 0, 0, 0},        {0, 0, -50},			{0, 0, 50},			{1, 1, 1, 1},		math::kZYRoll,	 3},    // kRightToes   
+			{{0, 0, 0, 1},					{1, 0, 0, 0},        {0, -20, -10},			{0, 20, 15},		 {1, 1, -1, 1},		math::kZYRoll,	 3},    // kLeftEye   
+			{{0, 0, 0, 1},					{1, 0, 0, 0},        {0, -20, -10},			{0, 20, 15},		 {1, -1, -1, 1},	math::kZYRoll,	 3},    // kRightEye   
+			{{0.09f, 0, 0, 1},				{1, 0, 0, 0},        {0, -10, -10},			{0, 10, 10},		 {1, 1, -1, 1},		math::kZYRoll,	 3}     // kJaw   
         };
 
         // 返回指定索引的轴信息
         return setupAxesInfoArray[index];
     }
+
 
     Human::Human() :
         m_RootX(math::trsIdentity()),
@@ -1440,12 +1441,9 @@ namespace human
 		if (path.get_subname_count() == 1) {
 			// 获取骨骼映射
 			StringName bone_name = path.get_subname(0);
-			const Variant* re_name = p_bone_map.getptr(bone_name);
+			const int* re_name = human_bone_name_index.getptr(bone_name);
 			if (re_name != nullptr) {
-				bone_name = *re_name;
-			}
-			if (human_bone_name_index.has(bone_name)) {
-				return human_bone_name_index[bone_name];
+				return *re_name;
 			}
         }
         return -1;
@@ -2847,6 +2845,7 @@ namespace human
 		}
 
 		Skeleton2HumanPose(apHuman, apSkeletonPoseLcl, apHumanPose);
+		return;
 		apHuman->m_SkeletonLocalPose = apSkeletonPoseLcl->m_X;
 		Human2SkeletonPose(apHuman, apHumanPose, apSkeletonPoseLcl);
 
@@ -2894,6 +2893,7 @@ namespace human
         if (adjustMissingBones)
             HumanPoseAdjustForMissingBones(apHuman, apHumanPoseOut);
         Human2SkeletonPose(apHuman, apHumanPoseOut, apSkeletonPoseLs);
+		return;
 
         // 如果有额外的自由度（TDoF），处理这些自由度
         if (apHuman->m_HasTDoF)

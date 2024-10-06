@@ -173,7 +173,7 @@ static NavigationServer3D *navigation_server_3d = nullptr;
 
 
 
-static LuaAPI* lua_api = nullptr;
+//static LuaAPI* lua_api = nullptr;
 
 #ifndef _3D_DISABLED
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
@@ -433,14 +433,14 @@ void finalize_theme_db() {
 
 
 
-void initialize_lua_api() {
-	lua_api = memnew(LuaAPI);
-}
+// void initialize_lua_api() {
+// 	lua_api = memnew(LuaAPI);
+// }
 
-void finalize_lua_api() {
-	memdelete(lua_api);
-	lua_api = nullptr;
-}
+// void finalize_lua_api() {
+// 	memdelete(lua_api);
+// 	lua_api = nullptr;
+// }
 
 
 
@@ -784,7 +784,7 @@ Error Main::test_setup() {
 	initialize_theme_db();
 
 
-	initialize_lua_api();
+	//initialize_lua_api();
 
 
 	register_scene_types();
@@ -872,7 +872,7 @@ void Main::test_cleanup() {
 	finalize_theme_db();
 
 
-	finalize_lua_api();
+	//finalize_lua_api();
 
 	finalize_navigation_server();
 
@@ -3332,7 +3332,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	initialize_theme_db();
 
 
-	initialize_lua_api();
+	//initialize_lua_api();
 
 
 	register_scene_types();
@@ -4637,7 +4637,7 @@ void Main::cleanup(bool p_force) {
 	finalize_theme_db();
 
 
-	finalize_lua_api();
+	//finalize_lua_api();
 
 	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 	finalize_navigation_server();
