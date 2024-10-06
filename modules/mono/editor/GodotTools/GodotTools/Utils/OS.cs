@@ -55,6 +55,7 @@ namespace GodotTools.Utils
             public const string Linux = "linux";
             public const string Win10 = "win10";
             public const string Android = "android";
+            public const string NativeAotAndroid = "linux-bionic";
             public const string iOS = "ios";
             public const string iOSSimulator = "iossimulator";
             public const string Browser = "browser";
@@ -96,6 +97,17 @@ namespace GodotTools.Utils
             // Godot has a single export profile for both, named LinuxBSD.
             [Platforms.LinuxBSD] = DotNetOS.Linux,
             [Platforms.Android] = DotNetOS.Android,
+            [Platforms.iOS] = DotNetOS.iOS,
+            [Platforms.Web] = DotNetOS.Browser
+        };
+
+        // NativeAOT uses linux RID on android 
+        public static readonly Dictionary<string, string> DotNetOSNativeAotPlatformMap = new Dictionary<string, string> 
+        {
+            [Platforms.Windows] = DotNetOS.Win,
+            [Platforms.MacOS] = DotNetOS.OSX,
+            [Platforms.LinuxBSD] = DotNetOS.Linux,
+            [Platforms.Android] = DotNetOS.NativeAotAndroid,
             [Platforms.iOS] = DotNetOS.iOS,
             [Platforms.Web] = DotNetOS.Browser
         };

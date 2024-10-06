@@ -77,11 +77,11 @@ namespace GodotTools.Export
                     {
                         "option", new Godot.Collections.Dictionary()
                         {
-                            { "name", "dotnet/runtime_identifier" },
-                            { "type", (int)Variant.Type.String }
+                            { "name", "dotnet/enable_native_aot" },
+                            { "type", (int)Variant.Type.Bool }
                         }
                     },
-                    { "default_value", "" }
+                    { "default_value", false }
                 }
             };
         }
@@ -169,11 +169,13 @@ namespace GodotTools.Export
                 throw new NotImplementedException("Target platform not yet implemented.");
             }
 
+            bool enableNativeAot = ((bool)GetOption("dotnet/enable_native_aot") && platform == OS.Platforms.Android);
+
             PublishConfig publishConfig = new()
             {
                 BuildConfig = isDebug ? "ExportDebug" : "ExportRelease",
                 IncludeDebugSymbols = (bool)GetOption("dotnet/include_debug_symbols"),
-                RidOS = DetermineRuntimeIdentifierOS(platform),
+                RidOS = DetermineRuntimeIdentifierOS(platform, enableNativeAot),
                 Archs = new List<string>(),
                 UseTempDir = platform != OS.Platforms.iOS, // xcode project links directly to files in the publish dir, so use one that sticks around.
                 BundleOutputs = true,
@@ -236,18 +238,7 @@ namespace GodotTools.Export
                 foreach (string arch in config.Archs)
                 {
                     string ridArch = DetermineRuntimeIdentifierArch(arch);
-                    string overriddenRuntimeIdentifier = (string)GetOption("dotnet/runtime_identifier");
-                    string runtimeIdentifier;
-
-                    if (overriddenRuntimeIdentifier == "")
-                    {
-                        runtimeIdentifier = $"{ridOS}-{ridArch}";
-                    }
-                    else 
-                    {
-                        runtimeIdentifier = overriddenRuntimeIdentifier;
-                    }
-
+                    string runtimeIdentifier = $"{ridOS}-{ridArch}";
                     string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{platform}_{arch}";
                     if (platform == OS.Platforms.MacOS)
                     {
@@ -276,7 +267,7 @@ namespace GodotTools.Export
 
                     // Execute dotnet publish.
                     if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                            runtimeIdentifier, publishOutputDir, includeDebugSymbols))
+                            runtimeIdentifier, publishOutputDir, enableNativeAot, includeDebugSymbols))
                     {
                         throw new InvalidOperationException("Failed to build project.");
                     }
@@ -462,8 +453,17 @@ namespace GodotTools.Export
             return path;
         }
 
-        private string DetermineRuntimeIdentifierOS(string platform)
-            => OS.DotNetOSPlatformMap[platform];
+        private string DetermineRuntimeIdentifierOS(string platform, bool enableNativeAot)
+        {
+            if (enableNativeAot)
+            {
+                return OS.DotNetOSNativeAotPlatformMap[platform];
+            }
+            else 
+            {
+                return OS.DotNetOSPlatformMap[platform];
+            }
+        }
 
         private string DetermineRuntimeIdentifierArch(string arch)
         {

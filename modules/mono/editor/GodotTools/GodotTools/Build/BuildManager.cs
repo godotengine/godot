@@ -293,11 +293,12 @@ namespace GodotTools.Build
             string platform,
             string runtimeIdentifier,
             string publishOutputDir,
+            bool nativeAotEnabled,
             bool includeDebugSymbols = true
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
-                runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
+                runtimeIdentifier, publishOutputDir, nativeAotEnabled, restore: true, rebuild: false, onlyClean: false);
 
             if (!includeDebugSymbols)
             {
@@ -306,6 +307,9 @@ namespace GodotTools.Build
             }
 
             buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
+
+            string nativeAotEnabledString = nativeAotEnabled.ToString();
+            buildInfo.CustomProperties.Add($"NativeAotEnabled={nativeAotEnabledString.ToLowerInvariant()}");
 
             if (Internal.GodotIsRealTDouble())
                 buildInfo.CustomProperties.Add("GodotFloat64=true");
@@ -329,9 +333,10 @@ namespace GodotTools.Build
             string platform,
             string runtimeIdentifier,
             string publishOutputDir,
+            bool nativeAotEnabled,
             bool includeDebugSymbols = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
-            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
+            platform, runtimeIdentifier, publishOutputDir, nativeAotEnabled, includeDebugSymbols));
 
         public static bool GenerateXCFrameworkBlocking(
             List<string> outputPaths,

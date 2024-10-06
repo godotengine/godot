@@ -15,6 +15,7 @@ namespace GodotTools.Build
         public string Configuration { get; private set; }
         public string? RuntimeIdentifier { get; private set; }
         public string? PublishOutputDir { get; private set; }
+        public bool NativeAotEnabled { get; private set; }
         public bool Restore { get; private set; }
         public bool Rebuild { get; private set; }
         public bool OnlyClean { get; private set; }
@@ -71,13 +72,14 @@ namespace GodotTools.Build
         }
 
         public BuildInfo(string solution, string project, string configuration, string runtimeIdentifier,
-            string publishOutputDir, bool restore, bool rebuild, bool onlyClean)
+            string publishOutputDir, bool nativeAotEnabled, bool restore, bool rebuild, bool onlyClean)
         {
             Solution = solution;
             Project = project;
             Configuration = configuration;
             RuntimeIdentifier = runtimeIdentifier;
             PublishOutputDir = publishOutputDir;
+            NativeAotEnabled = nativeAotEnabled;
             Restore = restore;
             Rebuild = rebuild;
             OnlyClean = onlyClean;

@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <PublishAot>true</PublishAot>
+    <PublishAotUsingRuntimePack>true</PublishAotUsingRuntimePack>
+    <DisableUnsupportedError>true</DisableUnsupportedError> <!-- Needed as of .NET 8.0 -->
+    <UseNativeAOTRuntime>true</UseNativeAOTRuntime>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+</Project>

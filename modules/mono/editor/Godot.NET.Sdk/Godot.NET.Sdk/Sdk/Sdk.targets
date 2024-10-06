@@ -23,5 +23,6 @@
 
   <!-- iOS-specific build targets -->
   <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
+  <Import Project="$(MSBuildThisFileDirectory)\AndroidNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'android' And '$(NativeAotEnabled)' == 'true' " />
 
 </Project>
