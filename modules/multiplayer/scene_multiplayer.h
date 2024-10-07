@@ -37,9 +37,6 @@
 
 #include "scene/main/multiplayer_api.h"
 
-#include "scene_multiplayer.h"
-#include "scene_replication_interface.h"
-
 class OfflineMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(OfflineMultiplayerPeer, MultiplayerPeer);
 
@@ -64,8 +61,6 @@ public:
 	virtual int get_unique_id() const override { return TARGET_PEER_SERVER; }
 	virtual ConnectionStatus get_connection_status() const override { return CONNECTION_CONNECTED; };
 
-	void set_delete_spawned_nodes_on_peer_exit(bool value);
-	bool get_delete_spawned_nodes_on_peer_exit() const;
 };
 
 class SceneMultiplayer : public MultiplayerAPI {
@@ -107,6 +102,9 @@ public:
 		CMD_MASK = 7, // 0x7 -> 0b00000111
 	};
 
+	void set_delete_spawned_nodes_on_peer_exit(bool p_value);
+	bool get_delete_spawned_nodes_on_peer_exit() const;
+
 private:
 	struct PendingPeer {
 		bool local = false;
@@ -131,7 +129,10 @@ private:
 	Ref<StreamPeerBuffer> relay_buffer;
 
 	Ref<SceneCacheInterface> cache;
+
+
 	Ref<SceneReplicationInterface> replicator;
+
 	Ref<SceneRPCInterface> rpc;
 
 #ifdef DEBUG_ENABLED
