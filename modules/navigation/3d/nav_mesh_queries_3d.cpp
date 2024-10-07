@@ -661,29 +661,27 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 		bool inside = true;
 		
 		for (size_t point_id = 1; point_id < polygon.points.size(); point_id += 1) {
-			Vector3 edge   = polygon.points[point_id].pos - polygon.points[point_id - 1].pos;
-			Vector3 cr     = edge.cross(p_point - polygon.points[point_id].pos);
+			Vector3 edge = polygon.points[point_id].pos - polygon.points[point_id - 1].pos;
+			Vector3 cr = edge.cross(p_point - polygon.points[point_id].pos);
 			bool clockwise = cr.dot(planeNormal) > 0; 
 			if(clockwise == false){
 				inside = false;
-				
-				real_t v  = edge.dot(p_point - polygon.points[point_id - 1].pos);		
+				real_t v = edge.dot(p_point - polygon.points[point_id - 1].pos);		
 				Vector3 d = polygon.points[point_id - 1].pos + CLAMP(v / edge.length_squared(), 0.f, 1.f) * edge; 
-            	real_t dd = d.distance_squared_to(p_point);
+				real_t dd = d.distance_squared_to(p_point);
 				if(dd < closest_point_distance_squared){
 					closest_point_distance_squared = dd;
-					result.point  = d;
+					result.point = d;
 					result.normal = planeNormal;
-					result.owner  = polygon.owner->get_self();
+					result.owner = polygon.owner->get_self();
 				}
 			}
 		}
 
-		if(inside)
-		{
-			result.point  = p_point;
+		if(inside){
+			result.point = p_point;
 			result.normal = planeNormal;
-			result.owner  = polygon.owner->get_self();
+			result.owner = polygon.owner->get_self();
 			break;
 		}
 	}
