@@ -462,8 +462,24 @@ void EditorPropertyPath::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
-	emit_changed(get_edited_property(), p_path);
+	String full_path = p_path;
+	ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
+
+	if (id != ResourceUID::INVALID_ID) {
+		full_path = ResourceUID::get_singleton()->id_to_text(id);
+	}
+
+	emit_changed(get_edited_property(), full_path);
 	update_property();
+}
+
+String EditorPropertyPath::_get_path_text() {
+	String full_path = get_edited_property_value();
+	if (full_path.begins_with("uid://")) {
+		full_path = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(full_path));
+	}
+
+	return full_path;
 }
 
 void EditorPropertyPath::_path_pressed() {
@@ -474,7 +490,7 @@ void EditorPropertyPath::_path_pressed() {
 		add_child(dialog);
 	}
 
-	String full_path = get_edited_property_value();
+	String full_path = _get_path_text();
 
 	dialog->clear_filters();
 
@@ -502,7 +518,7 @@ void EditorPropertyPath::_path_pressed() {
 }
 
 void EditorPropertyPath::update_property() {
-	String full_path = get_edited_property_value();
+	String full_path = _get_path_text();
 	path->set_text(full_path);
 	path->set_tooltip_text(full_path);
 }
@@ -547,8 +563,7 @@ void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return;
 	}
 
-	emit_changed(get_edited_property(), filesPaths[0]);
-	update_property();
+	_path_selected(filesPaths[0]);
 }
 
 bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
