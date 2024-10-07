@@ -496,6 +496,27 @@ namespace Godot.Collections
         private static Dictionary<TKey, TValue> FromVariantFunc(in godot_variant variant) =>
             VariantUtils.ConvertToDictionary<TKey, TValue>(variant);
 
+        private void SetTypedForUnderlyingDictionary()
+        {
+            Marshaling.GetTypedCollectionParameterInfo<TKey>(out var keyVariantType, out var keyClassName, out var keyScriptRef);
+            Marshaling.GetTypedCollectionParameterInfo<TValue>(out var valueVariantType, out var valueClassName, out var valueScriptRef);
+
+            var self = (godot_dictionary)NativeValue;
+
+            using (keyScriptRef)
+            using (valueScriptRef)
+            {
+                NativeFuncs.godotsharp_dictionary_set_typed(
+                    ref self,
+                    (uint)keyVariantType,
+                    keyClassName,
+                    keyScriptRef,
+                    (uint)valueVariantType,
+                    valueClassName,
+                    valueScriptRef);
+            }
+        }
+
         static unsafe Dictionary()
         {
             VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.ToVariantCb = &ToVariantFunc;
@@ -519,6 +540,7 @@ namespace Godot.Collections
         public Dictionary()
         {
             _underlyingDict = new Dictionary();
+            SetTypedForUnderlyingDictionary();
         }
 
         /// <summary>
@@ -535,6 +557,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(dictionary));
 
             _underlyingDict = new Dictionary();
+            SetTypedForUnderlyingDictionary();
 
             foreach (KeyValuePair<TKey, TValue> entry in dictionary)
                 Add(entry.Key, entry.Value);

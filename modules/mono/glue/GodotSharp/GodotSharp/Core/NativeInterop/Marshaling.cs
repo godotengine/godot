@@ -199,6 +199,44 @@ namespace Godot.NativeInterop
             return Variant.Type.Nil;
         }
 
+        internal static void GetTypedCollectionParameterInfo<T>(
+            out Variant.Type variantType,
+            out godot_string_name className,
+            out godot_ref script)
+        {
+            variantType = ConvertManagedTypeToVariantType(typeof(T), out _);
+
+            if (variantType != Variant.Type.Object)
+            {
+                className = default;
+                script = default;
+                return;
+            }
+
+            godot_ref scriptRef = default;
+
+            if (!GodotObject.IsNativeClass(typeof(T)))
+            {
+                unsafe
+                {
+                    Godot.Bridge.ScriptManagerBridge.GetOrLoadOrCreateScriptForType(typeof(T), &scriptRef);
+                }
+
+                // Don't call GodotObject.InternalGetClassNativeBaseName here!
+                // godot_dictionary_set_typed and godot_array_set_typed will call CSharpScript::get_instance_base_type
+                // when a script is passed, because this is better for performance than using reflection to find the
+                // native base type.
+                className = default;
+            }
+            else
+            {
+                StringName? nativeBaseName = GodotObject.InternalGetClassNativeBaseName(typeof(T));
+                className = nativeBaseName != null ? (godot_string_name)nativeBaseName.NativeValue : default;
+            }
+
+            script = scriptRef;
+        }
+
         // String
 
         public static unsafe godot_string ConvertStringToNative(string? p_mono_string)

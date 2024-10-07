@@ -402,6 +402,14 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_array_make_read_only(ref godot_array p_self);
 
+        public static partial void godotsharp_array_set_typed(
+            ref godot_array p_self,
+            uint p_elem_type,
+            in godot_string_name p_elem_class_name,
+            in godot_ref p_elem_script);
+
+        public static partial godot_bool godotsharp_array_is_typed(ref godot_array p_self);
+
         public static partial void godotsharp_array_max(ref godot_array p_self, out godot_variant r_value);
 
         public static partial void godotsharp_array_min(ref godot_array p_self, out godot_variant r_value);
@@ -462,6 +470,31 @@ namespace Godot.NativeInterop
             in godot_variant p_key);
 
         public static partial void godotsharp_dictionary_make_read_only(ref godot_dictionary p_self);
+
+        public static partial void godotsharp_dictionary_set_typed(
+            ref godot_dictionary p_self,
+            uint p_key_type,
+            in godot_string_name p_key_class_name,
+            in godot_ref p_key_script,
+            uint p_value_type,
+            in godot_string_name p_value_class_name,
+            in godot_ref p_value_script);
+
+        public static partial godot_bool godotsharp_dictionary_is_typed_key(ref godot_dictionary p_self);
+
+        public static partial godot_bool godotsharp_dictionary_is_typed_value(ref godot_dictionary p_self);
+
+        public static partial uint godotsharp_dictionary_get_typed_key_builtin(ref godot_dictionary p_self);
+
+        public static partial uint godotsharp_dictionary_get_typed_value_builtin(ref godot_dictionary p_self);
+
+        public static partial void godotsharp_dictionary_get_typed_key_class_name(ref godot_dictionary p_self, out godot_string_name r_dest);
+
+        public static partial void godotsharp_dictionary_get_typed_value_class_name(ref godot_dictionary p_self, out godot_string_name r_dest);
+
+        public static partial void godotsharp_dictionary_get_typed_key_script(ref godot_dictionary p_self, out godot_variant r_dest);
+
+        public static partial void godotsharp_dictionary_get_typed_value_script(ref godot_dictionary p_self, out godot_variant r_dest);
 
         public static partial void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
 
