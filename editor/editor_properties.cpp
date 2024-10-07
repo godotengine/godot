@@ -2638,7 +2638,7 @@ EditorPropertyColor::EditorPropertyColor() {
 void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	assign->set_disabled(p_read_only);
 	menu->set_disabled(p_read_only);
-};
+}
 
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
 	if (p_prop == get_edited_property()) {

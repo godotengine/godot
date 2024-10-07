@@ -157,7 +157,7 @@ ControlPositioningWarning::ControlPositioningWarning() {
 
 void EditorPropertyAnchorsPreset::_set_read_only(bool p_read_only) {
 	options->set_disabled(p_read_only);
-};
+}
 
 void EditorPropertyAnchorsPreset::_option_selected(int p_which) {
 	int64_t val = options->get_item_metadata(p_which);
@@ -221,7 +221,7 @@ void EditorPropertySizeFlags::_set_read_only(bool p_read_only) {
 		check->set_disabled(p_read_only);
 	}
 	flag_presets->set_disabled(p_read_only);
-};
+}
 
 void EditorPropertySizeFlags::_preset_selected(int p_which) {
 	int preset = flag_presets->get_item_id(p_which);

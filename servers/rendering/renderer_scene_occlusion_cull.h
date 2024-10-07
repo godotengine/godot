@@ -234,11 +234,11 @@ public:
 
 	RendererSceneOcclusionCull() {
 		singleton = this;
-	};
+	}
 
 	virtual ~RendererSceneOcclusionCull() {
 		singleton = nullptr;
-	};
+	}
 };
 
 #endif // RENDERER_SCENE_OCCLUSION_CULL_H

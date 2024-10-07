@@ -89,7 +89,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 public:
 	virtual const char *get_name() const override {
 		return "CoreAudio";
-	};
+	}
 
 	virtual Error init() override;
 	virtual void start() override;
