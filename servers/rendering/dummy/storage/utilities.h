@@ -124,7 +124,7 @@ public:
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
 	virtual String get_video_adapter_api_version() const override { return String(); }
 
-	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); };
+	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); }
 };
 
 } // namespace RendererDummy

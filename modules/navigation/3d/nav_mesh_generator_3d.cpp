@@ -660,7 +660,7 @@ void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<Navigati
 	for (Node *parse_node : parse_nodes) {
 		generator_parse_geometry_node(p_navigation_mesh, p_source_geometry_data, parse_node, recurse_children);
 	}
-};
+}
 
 void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data) {
 	if (p_navigation_mesh.is_null() || p_source_geometry_data.is_null()) {

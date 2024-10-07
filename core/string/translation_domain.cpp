@@ -123,7 +123,7 @@ String TranslationDomain::_double_vowels(const String &p_message) const {
 		}
 	}
 	return res;
-};
+}
 
 String TranslationDomain::_replace_with_accented_string(const String &p_message) const {
 	String res;

@@ -487,7 +487,7 @@ void CameraAttributesPhysical::_bind_methods() {
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_min_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_min_exposure_value", "get_auto_exposure_min_exposure_value");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_max_exposure_value", PROPERTY_HINT_RANGE, "-16.0,16.0,0.01,or_greater,suffix:EV100"), "set_auto_exposure_max_exposure_value", "get_auto_exposure_max_exposure_value");
-};
+}
 
 CameraAttributesPhysical::CameraAttributesPhysical() {
 	_update_exposure();

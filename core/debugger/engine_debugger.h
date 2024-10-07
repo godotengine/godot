@@ -106,7 +106,7 @@ public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
 	_FORCE_INLINE_ static bool is_active() { return singleton != nullptr && script_debugger != nullptr; }
 
-	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; };
+	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; }
 
 	static void initialize(const String &p_uri, bool p_skip_breakpoints, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)());
 	static void deinitialize();

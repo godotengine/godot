@@ -946,7 +946,7 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 			rs->canvas_item_add_set_transform(p_canvas_item, Transform2D());
 		}
 	}
-};
+}
 #endif // DEBUG_ENABLED
 
 /////////////////////////////// Navigation //////////////////////////////////////

@@ -254,7 +254,7 @@ private:
 
 	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
 	mutable RID_Owner<Material, true> material_owner;
-	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); };
+	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); }
 
 	SelfList<Material>::List material_update_list;
 	Mutex material_update_list_mutex;
@@ -403,7 +403,7 @@ public:
 
 	/* SHADER API */
 
-	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); };
+	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
 
 	virtual RID shader_allocate() override;
 	virtual void shader_initialize(RID p_shader) override;
@@ -423,7 +423,7 @@ public:
 
 	/* MATERIAL API */
 
-	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); };
+	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); }
 
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();

@@ -42,7 +42,7 @@ void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_haptic_engine"), &iOS::supports_haptic_engine);
 	ClassDB::bind_method(D_METHOD("start_haptic_engine"), &iOS::start_haptic_engine);
 	ClassDB::bind_method(D_METHOD("stop_haptic_engine"), &iOS::stop_haptic_engine);
-};
+}
 
 bool iOS::supports_haptic_engine() {
 	if (@available(iOS 13, *)) {
