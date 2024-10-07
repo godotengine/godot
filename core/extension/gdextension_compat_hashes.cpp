@@ -1013,6 +1013,10 @@ void GDExtensionCompatHashes::initialize() {
 	// clang-format on
 }
 
+bool GDExtensionCompatHashes::initialized() {
+	return !mappings.is_empty();
+}
+
 void GDExtensionCompatHashes::finalize() {
 	mappings.clear();
 }

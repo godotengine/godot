@@ -31,6 +31,7 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/mutex.h"
@@ -1061,6 +1062,19 @@ MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_class, co
 			}
 			if ((*method)->get_hash() == p_hash) {
 				return *method;
+			} else {
+#ifndef DISABLE_DEPRECATED
+				if (!GDExtensionCompatHashes::initialized()) {
+					GDExtensionCompatHashes::initialize();
+				}
+				Array legacy_hashes;
+				// don't let p_check_valid = true to avoid stackoverflow
+				if (GDExtensionCompatHashes::get_legacy_hashes(p_class, p_name, legacy_hashes, false)) {
+					if (legacy_hashes.has(p_hash)) {
+						return *method;
+					}
+				}
+#endif
 			}
 		}
 
