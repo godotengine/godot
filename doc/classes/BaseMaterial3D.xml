@@ -553,7 +553,7 @@
 			The object will be shaded per pixel. Useful for realistic shading effects.
 		</constant>
 		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
-			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality. Not implemented yet (this mode will act like [constant SHADING_MODE_PER_PIXEL]).
+			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
 		</constant>
 		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
 			Represents the size of the [enum ShadingMode] enum.
