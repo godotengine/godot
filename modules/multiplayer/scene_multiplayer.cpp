@@ -674,6 +674,9 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneMultiplayer::get_max_delta_packet_size);
 	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneMultiplayer::set_max_delta_packet_size);
 
+	ClassDB::bind_method(D_METHOD("set_delete_spawned_nodes_on_peer_exit", "value"), &SceneMultiplayer::set_delete_spawned_nodes_on_peer_exit);
+	ClassDB::bind_method(D_METHOD("get_delete_spawned_nodes_on_peer_exit"), &SceneMultiplayer::get_delete_spawned_nodes_on_peer_exit);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
