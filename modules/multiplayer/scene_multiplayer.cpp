@@ -179,13 +179,11 @@ void SceneMultiplayer::clear() {
 }
 
 void SceneMultiplayer::set_delete_spawned_nodes_on_peer_exit(bool value) {
-    if (replicator.is_valid()) {
-        replicator->set_delete_spawned_nodes_on_peer_exit(value);
-    }
+    replicator->set_delete_spawned_nodes_on_peer_exit(value);
 }
 
 bool SceneMultiplayer::get_delete_spawned_nodes_on_peer_exit() const {
-    return replicator.is_valid() ? replicator->get_delete_spawned_nodes_on_peer_exit() : true;
+    return replicator->get_delete_spawned_nodes_on_peer_exit();
 }
 
 void SceneMultiplayer::set_root_path(const NodePath &p_path) {
