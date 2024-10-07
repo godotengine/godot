@@ -1180,6 +1180,10 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+String OS_LinuxBSD::get_default_android_sdk_path() const {
+	return OS::get_singleton()->get_environment("HOME") + "/Android/Sdk";
+}
+
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 
