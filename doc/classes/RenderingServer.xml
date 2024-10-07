@@ -1809,6 +1809,14 @@
 				Sets the lightmap GI instance to use for the specified 3D geometry instance. The lightmap UV scale for the specified instance (equivalent to [member GeometryInstance3D.gi_lightmap_scale]) and lightmap atlas slice must also be specified.
 			</description>
 		</method>
+		<method name="instance_geometry_set_lightmap_scale">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="lightmap_scale" type="float" />
+			<description>
+				Sets the lightmap scale for the given geometry instance.
+			</description>
+		</method>
 		<method name="instance_geometry_set_lod_bias">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -2371,6 +2379,14 @@
 			<param index="1" name="aabb" type="AABB" />
 			<description>
 				Sets a mesh's custom aabb.
+			</description>
+		</method>
+		<method name="mesh_set_lightmap_size_hint">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="size" type="Vector2" />
+			<description>
+				Sets a mesh's lightmap size hint.
 			</description>
 		</method>
 		<method name="mesh_set_shadow_mesh">
@@ -5030,10 +5046,13 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="ViewportDebugDraw">
 			Objects are displayed with only the emission color from [VoxelGI]s.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY" value="9" enum="ViewportDebugDraw">
+			Objects are displayed with a checkerboard pattern indicative of their UV2 texel density. Each square of the checkerboard pattern is 10 texels by 10 texels in size.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="11" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 			The slice of the camera frustum related to the shadow map cascade is superimposed to visualize coverage. The color of each slice matches the colors used for [constant VIEWPORT_DEBUG_DRAW_PSSM_SPLITS]. When shadow cascades are blended the overlap is taken into account when drawing the frustum slices.
 			The last cascade shows all frustum slices to illustrate the coverage of all slices.
@@ -5041,13 +5060,13 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
 			Draws the estimated scene luminance. This is a 1×1 texture that is generated when autoexposure is enabled to control the scene's exposure.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="13" enum="ViewportDebugDraw">
 			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SSIL" value="13" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SSIL" value="14" enum="ViewportDebugDraw">
 			Draws the screen space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="14" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="15" enum="ViewportDebugDraw">
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">

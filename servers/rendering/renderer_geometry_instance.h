@@ -125,6 +125,8 @@ public:
 		bool cast_double_sided_shadows = false;
 		bool dirty_dependencies = false;
 
+		int32_t lightmap_size_global_uniform_pos = -2; //signifies not allocated, -1 is used for tried to allocate but failed
+
 		DependencyTracker dependency_tracker;
 	};
 

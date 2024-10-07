@@ -1849,6 +1849,12 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		instance_data.uv_scale[2] = uv_scale.z;
 		instance_data.uv_scale[3] = uv_scale.w;
 
+#ifdef DEBUG_ENABLED
+		if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && inst->data->use_baked_light && inst->data->lightmap_size_global_uniform_pos >= 0)) {
+			instance_data.instance_uniforms_ofs = uint32_t(inst->data->lightmap_size_global_uniform_pos);
+		}
+#endif
+
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		element_info.lod_index = surface->lod_index;
@@ -1959,6 +1965,33 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					uses_lightmap = true;
 				}
 			}
+
+#ifdef DEBUG_ENABLED
+			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
+				if (inst->data->base_type == RS::INSTANCE_MESH && inst->data->use_baked_light && inst->lightmap_instance.is_valid()) {
+					RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+
+					RID lightmap = light_storage->lightmap_instance_get_lightmap(inst->lightmap_instance);
+					Vector2i lightmap_atlas_size = light_storage->lightmap_get_light_texture_size(lightmap);
+
+					Size2 lightmap_size = inst->lightmap_uv_scale.size * Size2(lightmap_atlas_size);
+
+					if (inst->data->lightmap_size_global_uniform_pos == -2) {
+						// Not allocated, try to allocate.
+						inst->data->lightmap_size_global_uniform_pos = RSG::material_storage->global_shader_parameters_unit_variable_allocate();
+					}
+
+					if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+						RSG::material_storage->global_shader_parameters_unit_variable_update(inst->data->lightmap_size_global_uniform_pos, lightmap_size);
+					}
+				}
+			} else if (unlikely(inst->data->lightmap_size_global_uniform_pos != -2)) {
+				if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+					RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+				}
+				inst->data->lightmap_size_global_uniform_pos = -2;
+			}
+#endif
 		}
 		inst->flags_cache = flags;
 
@@ -2180,6 +2213,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS)) {
 				material_uniform_set = scene_shader.debug_shadow_splits_material_uniform_set;
 				shader = scene_shader.debug_shadow_splits_material_shader_ptr;
+			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
+				material_uniform_set = scene_shader.uv2_texel_density_material_uniform_set;
+				shader = scene_shader.uv2_texel_density_material_shader_ptr;
 			} else {
 #endif
 				material_uniform_set = surf->material_uniform_set;

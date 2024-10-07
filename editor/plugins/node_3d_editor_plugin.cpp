@@ -3637,6 +3637,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_UNSHADED:
 		case VIEW_DISPLAY_LIGHTING:
 		case VIEW_DISPLAY_NORMAL_BUFFER:
+		case VIEW_DISPLAY_DEBUG_UV2_TEXEL_DENSITY:
 		case VIEW_DISPLAY_DEBUG_SHADOW_ATLAS:
 		case VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS:
 		case VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO:
@@ -3686,6 +3687,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_OCCLUDERS,
 				VIEW_DISPLAY_MOTION_VECTORS,
 				VIEW_DISPLAY_INTERNAL_BUFFER,
+				VIEW_DISPLAY_DEBUG_UV2_TEXEL_DENSITY,
 				VIEW_MAX
 			};
 			static const Viewport::DebugDraw debug_draw_modes[] = {
@@ -3716,6 +3718,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_OCCLUDERS,
 				Viewport::DEBUG_DRAW_MOTION_VECTORS,
 				Viewport::DEBUG_DRAW_INTERNAL_BUFFER,
+				Viewport::DEBUG_DRAW_UV2_TEXEL_DENSITY,
 			};
 
 			for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
@@ -5402,6 +5405,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	display_submenu->add_radio_check_item(TTR("Directional Shadow Splits"), VIEW_DISPLAY_DEBUG_PSSM_SPLITS);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("Normal Buffer"), VIEW_DISPLAY_NORMAL_BUFFER);
+	display_submenu->add_separator();
+	display_submenu->add_radio_check_item(TTR("UV2 Texel Density"), VIEW_DISPLAY_DEBUG_UV2_TEXEL_DENSITY);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("Shadow Atlas"), VIEW_DISPLAY_DEBUG_SHADOW_ATLAS);
 	display_submenu->add_radio_check_item(TTR("Directional Shadow Map"), VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS);

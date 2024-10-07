@@ -315,6 +315,7 @@ public:
 	virtual String mesh_get_path(RID p_mesh) const override;
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override;
+
 	virtual void mesh_clear(RID p_mesh) override;
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {

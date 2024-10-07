@@ -456,6 +456,8 @@ public:
 		uint32_t lightmap_cull_index;
 		Vector<Color> lightmap_sh; //spherical harmonic
 
+		float lightmap_scale = 1.0;
+
 		AABB aabb;
 		AABB transformed_aabb;
 		AABB prev_transformed_aabb;
