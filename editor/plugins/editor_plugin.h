@@ -53,6 +53,7 @@ class EditorScenePostImportPlugin;
 class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
+class EditorProperty;
 class ScriptCreateDialog;
 
 class EditorPlugin : public Node {
@@ -234,6 +235,8 @@ public:
 
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
+
+	EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 
 	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
