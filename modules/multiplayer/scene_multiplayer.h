@@ -37,6 +37,9 @@
 
 #include "scene/main/multiplayer_api.h"
 
+#include "scene_multiplayer.h"
+#include "scene_replication_interface.h"
+
 class OfflineMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(OfflineMultiplayerPeer, MultiplayerPeer);
 
