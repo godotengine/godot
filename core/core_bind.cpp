@@ -468,11 +468,11 @@ Error OS::set_thread_name(const String &p_name) {
 
 ::Thread::ID OS::get_thread_caller_id() const {
 	return ::Thread::get_caller_id();
-};
+}
 
 ::Thread::ID OS::get_main_thread_id() const {
 	return ::Thread::get_main_id();
-};
+}
 
 bool OS::has_feature(const String &p_feature) const {
 	const bool *value_ptr = feature_cache.getptr(p_feature);

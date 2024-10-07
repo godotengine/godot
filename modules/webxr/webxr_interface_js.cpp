@@ -271,19 +271,19 @@ void WebXRInterfaceJS::_set_environment_blend_mode(String p_blend_mode_string) {
 
 StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
-};
+}
 
 uint32_t WebXRInterfaceJS::get_capabilities() const {
 	return XRInterface::XR_STEREO | XRInterface::XR_MONO | XRInterface::XR_VR | XRInterface::XR_AR;
-};
+}
 
 uint32_t WebXRInterfaceJS::get_view_count() {
 	return godot_webxr_get_view_count();
-};
+}
 
 bool WebXRInterfaceJS::is_initialized() const {
 	return (initialized);
-};
+}
 
 bool WebXRInterfaceJS::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -333,7 +333,7 @@ bool WebXRInterfaceJS::initialize() {
 	};
 
 	return true;
-};
+}
 
 void WebXRInterfaceJS::uninitialize() {
 	if (initialized) {
@@ -378,7 +378,7 @@ void WebXRInterfaceJS::uninitialize() {
 		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 		initialized = false;
 	};
-};
+}
 
 Dictionary WebXRInterfaceJS::get_system_info() {
 	Dictionary dict;
@@ -427,7 +427,7 @@ Size2 WebXRInterfaceJS::get_render_target_size() {
 	render_targetsize.height = (float)js_size[1];
 
 	return render_targetsize;
-};
+}
 
 Transform3D WebXRInterfaceJS::get_camera_transform() {
 	Transform3D camera_transform;
@@ -445,7 +445,7 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	}
 
 	return camera_transform;
-};
+}
 
 Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -464,7 +464,7 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 	transform_for_view.origin *= world_scale;
 
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_view;
-};
+}
 
 Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	Projection view;
@@ -527,7 +527,7 @@ Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, c
 	texture_storage->render_target_set_reattach_textures(p_render_target, false);
 
 	return blit_to_screen;
-};
+}
 
 RID WebXRInterfaceJS::_get_color_texture() {
 	unsigned int texture_id = godot_webxr_get_color_texture();
@@ -608,7 +608,7 @@ void WebXRInterfaceJS::process() {
 			_update_input_source(i);
 		}
 	};
-};
+}
 
 void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -871,13 +871,13 @@ WebXRInterfaceJS::WebXRInterfaceJS() {
 	initialized = false;
 	session_mode = "inline";
 	requested_reference_space_types = "local";
-};
+}
 
 WebXRInterfaceJS::~WebXRInterfaceJS() {
 	// and make sure we cleanup if we haven't already
 	if (initialized) {
 		uninitialize();
 	};
-};
+}
 
 #endif // WEB_ENABLED
