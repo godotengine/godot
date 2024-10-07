@@ -658,7 +658,6 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 
 	for (const gd::Polygon &polygon : p_polygons) {
 		Vector3 planeNormal = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
-		Vector3 closest = {};
 		bool inside = true;
 		
 		for (size_t point_id = 1; point_id < polygon.points.size(); point_id += 1) {
