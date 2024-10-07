@@ -185,6 +185,12 @@ public:
 
 	// get textures
 	virtual RID render_target_get_texture(RID p_render_target) = 0;
+
+	// Motion vectors
+	virtual void render_target_set_motion_vectors_target(RID p_render_target, RID p_motion_vectors_texture, RID p_depth_texture, Size2i p_size, int p_view_count) = 0;
+	virtual RID render_target_get_motion_vectors_texture(RID p_render_target) const = 0;
+	virtual RID render_target_get_motion_vectors_depth_texture(RID p_render_target) const = 0;
+	virtual Size2i render_target_get_motion_vectors_target_size(RID p_render_target) const = 0;
 };
 
 #endif // TEXTURE_STORAGE_H

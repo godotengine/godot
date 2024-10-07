@@ -206,6 +206,11 @@ public:
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override { return RID(); }
 
 	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
+
+	virtual void render_target_set_motion_vectors_target(RID p_render_target, RID p_motion_vectors_texture, RID p_depth_texture, Size2i p_size, int p_view_count) override {}
+	virtual RID render_target_get_motion_vectors_texture(RID p_render_target) const override { return RID(); }
+	virtual RID render_target_get_motion_vectors_depth_texture(RID p_render_target) const override { return RID(); }
+	virtual Size2i render_target_get_motion_vectors_target_size(RID p_render_target) const override { return Size2i(0, 0); }
 };
 
 } // namespace RendererDummy
