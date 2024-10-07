@@ -150,8 +150,8 @@ public:
 	int get_max_delta_packet_size() const;
 
 	// New getter and setter for the delete_spawned_nodes_on_peer_exit property
- 	void set_delete_spawned_nodes_on_peer_exit(bool value);
- 	bool get_delete_spawned_nodes_on_peer_exit() const;
+ 	virtual void set_delete_spawned_nodes_on_peer_exit(bool value);
+ 	virtual bool get_delete_spawned_nodes_on_peer_exit() const;
 
 	SceneReplicationInterface(SceneMultiplayer *p_multiplayer, SceneCacheInterface *p_cache) {
 		multiplayer = p_multiplayer;
