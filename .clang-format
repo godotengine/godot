@@ -183,7 +183,7 @@ PackConstructorInitializers: NextLine
 # ReflowComments: true
 # RemoveBracesLLVM: false
 # RemoveParentheses: Leave
-# RemoveSemicolon: false
+RemoveSemicolon: true
 # RequiresClausePosition: OwnLine
 # RequiresExpressionIndentation: OuterScope
 # SeparateDefinitionBlocks: Leave
@@ -231,7 +231,7 @@ SpacesInLineCommentPrefix:
 #   InEmptyParentheses: false
 #   Other: false
 # SpacesInSquareBrackets: false
-Standard: c++17
+Standard: c++20
 # StatementAttributeLikeMacros:
 #   - Q_EMIT
 # StatementMacros:

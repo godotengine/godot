@@ -68,7 +68,7 @@ protected:
 	void _do_set_action_type(OpenXRAction::ActionType p_action_type);
 
 public:
-	Ref<OpenXRAction> get_action() { return action; };
+	Ref<OpenXRAction> get_action() { return action; }
 	OpenXRActionEditor(Ref<OpenXRAction> p_action);
 };
 

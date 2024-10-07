@@ -89,7 +89,7 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 	}
 
 	return warnings;
-};
+}
 
 Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	// get our XRServer
@@ -114,7 +114,7 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
 	return ray;
-};
+}
 
 Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	// get our XRServer
@@ -144,7 +144,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	res.y = (-p.normal.y * 0.5 + 0.5) * viewport_size.y;
 
 	return res;
-};
+}
 
 Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
 	// get our XRServer
@@ -174,7 +174,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) co
 	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
-};
+}
 
 Vector<Plane> XRCamera3D::get_frustum() const {
 	// get our XRServer
@@ -193,7 +193,7 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
 	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
-};
+}
 
 XRCamera3D::XRCamera3D() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -240,7 +240,7 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRNode3D::trigger_haptic_pulse);
 
 	ADD_SIGNAL(MethodInfo("tracking_changed", PropertyInfo(Variant::BOOL, "tracking")));
-};
+}
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -499,7 +499,7 @@ void XRController3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
 	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
-};
+}
 
 void XRController3D::_bind_tracker() {
 	XRNode3D::_bind_tracker();

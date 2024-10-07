@@ -85,7 +85,7 @@ public:
 			_In_ const WAVEFORMATEX *pFormat,
 			/* [annotation][in] */
 			_In_opt_ LPCGUID AudioSessionGuid) = 0;
-};
+}
 __CRT_UUID_DECL(IAudioClient3, 0x7ED4EE07, 0x8E67, 0x4CD4, 0x8C, 0x1A, 0x2B, 0x7A, 0x59, 0x87, 0xAD, 0x42)
 
 #endif // __IAudioClient3_INTERFACE_DEFINED__

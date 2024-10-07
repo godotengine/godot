@@ -51,7 +51,7 @@ struct _IP_ResolverPrivate {
 			response.clear();
 			type = IP::TYPE_NONE;
 			hostname = "";
-		};
+		}
 
 		QueueItem() {
 			clear();

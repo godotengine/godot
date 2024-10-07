@@ -168,7 +168,7 @@ protected:
 
 	virtual Vector2 _get_offset(int p_idx) const override;
 
-	virtual bool _has_uv() const override { return true; };
+	virtual bool _has_uv() const override { return true; }
 	virtual void _commit_action() override;
 
 	void _notification(int p_what);
