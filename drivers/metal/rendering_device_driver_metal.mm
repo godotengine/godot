@@ -3671,7 +3671,8 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p_type, ID p_driver_id) {
 	switch (p_type) {
 		case DRIVER_RESOURCE_LOGICAL_DEVICE: {
-			return 0;
+			uintptr_t devicePtr = (uintptr_t)(__bridge void *)device;
+			return (uint64_t)devicePtr;
 		}
 		case DRIVER_RESOURCE_PHYSICAL_DEVICE: {
 			return 0;
