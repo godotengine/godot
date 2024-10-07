@@ -60,6 +60,9 @@ public:
 	virtual void close() override {}
 	virtual int get_unique_id() const override { return TARGET_PEER_SERVER; }
 	virtual ConnectionStatus get_connection_status() const override { return CONNECTION_CONNECTED; };
+
+	void set_delete_spawned_nodes_on_peer_exit(bool value);
+	bool get_delete_spawned_nodes_on_peer_exit() const;
 };
 
 class SceneMultiplayer : public MultiplayerAPI {
