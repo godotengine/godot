@@ -689,12 +689,37 @@ void WSLPeer::poll() {
 			close(-1);
 			return;
 		}
-		if (wslay_event_get_close_sent(wsl_ctx) && wslay_event_get_close_received(wsl_ctx)) {
-			// Clean close.
-			wslay_event_context_free(wsl_ctx);
-			wsl_ctx = nullptr;
-			close(-1);
-			return;
+		if (wslay_event_get_close_sent(wsl_ctx)) {
+			if (wslay_event_get_close_received(wsl_ctx)) {
+				// Clean close.
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			} else if (!wslay_event_get_read_enabled(wsl_ctx)) {
+				// Some protocol error caused wslay to stop processing incoming events, we'll never receive a close from the other peer.
+				close_code = wslay_event_get_status_code_sent(wsl_ctx);
+				switch (close_code) {
+					case WSLAY_CODE_MESSAGE_TOO_BIG:
+						close_reason = "Message too big";
+						break;
+					case WSLAY_CODE_PROTOCOL_ERROR:
+						close_reason = "Protocol error";
+						break;
+					case WSLAY_CODE_ABNORMAL_CLOSURE:
+						close_reason = "Abnormal closure";
+						break;
+					case WSLAY_CODE_INVALID_FRAME_PAYLOAD_DATA:
+						close_reason = "Invalid frame payload data";
+						break;
+					default:
+						close_reason = "Unknown";
+				}
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
 		}
 	}
 }
