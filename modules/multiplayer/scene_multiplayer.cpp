@@ -178,6 +178,16 @@ void SceneMultiplayer::clear() {
 	relay_buffer->clear();
 }
 
+void SceneMultiplayer::set_delete_spawned_nodes_on_peer_exit(bool value) {
+    if (replicator) {
+        replicator->set_delete_spawned_nodes_on_peer_exit(value);
+    }
+}
+
+bool SceneMultiplayer::get_delete_spawned_nodes_on_peer_exit() const {
+    return replicator ? replicator->get_delete_spawned_nodes_on_peer_exit() : true;
+}
+
 void SceneMultiplayer::set_root_path(const NodePath &p_path) {
 	ERR_FAIL_COND_MSG(!p_path.is_absolute() && !p_path.is_empty(), "SceneMultiplayer root path must be absolute.");
 	root_path = p_path;
