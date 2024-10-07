@@ -109,6 +109,7 @@ namespace Godot.NativeInterop
     public ref struct godot_csharp_type_info
     {
         private godot_string _className;
+        private godot_string_name _nativeBaseName;
         private godot_string _iconPath;
         private godot_bool _isTool;
         private godot_bool _isGlobalClass;
@@ -120,6 +121,12 @@ namespace Godot.NativeInterop
         {
             readonly get => _className;
             set => _className = value;
+        }
+
+        public godot_string_name NativeBaseName
+        {
+            readonly get => _nativeBaseName;
+            set => _nativeBaseName = value;
         }
 
         public godot_string IconPath
