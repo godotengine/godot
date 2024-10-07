@@ -34,7 +34,6 @@
 #include "core/error/error_macros.h"
 #include "editor/editor_translation.h"
 #include "editor/editor_translation_parser.h"
-#include "plugins/packed_scene_translation_parser_plugin.h"
 
 POTGenerator *POTGenerator::singleton = nullptr;
 
@@ -66,8 +65,6 @@ void POTGenerator::generate_pot(const String &p_file) {
 	// Clear all_translation_strings of the previous round.
 	all_translation_strings.clear();
 
-	List<StringName> extractable_msgids = get_extractable_message_list();
-
 	// Collect all translatable strings according to files order in "POT Generation" setting.
 	for (int i = 0; i < files.size(); i++) {
 		Vector<String> msgids;
@@ -92,8 +89,8 @@ void POTGenerator::generate_pot(const String &p_file) {
 	}
 
 	if (GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot")) {
-		for (int i = 0; i < extractable_msgids.size(); i++) {
-			_add_new_msgid(extractable_msgids[i], "", "", "");
+		for (const Vector<String> &extractable_msgids : get_extractable_message_list()) {
+			_add_new_msgid(extractable_msgids[0], extractable_msgids[1], extractable_msgids[2], "");
 		}
 	}
 

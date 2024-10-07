@@ -60,8 +60,13 @@ bool CharacterBody3D::move_and_slide() {
 
 			// We need to check the platform_rid object still exists before accessing.
 			// A valid RID is no guarantee that the object has not been deleted.
-			if (ObjectDB::get_instance(platform_object_id)) {
-				//this approach makes sure there is less delay between the actual body velocity and the one we saved
+
+			// We can only perform the ObjectDB lifetime check on Object derived objects.
+			// Note that physics also creates RIDs for non-Object derived objects, these cannot
+			// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
+			// to dangling RIDs (access after free) in this scenario.
+			if (platform_object_id.is_null() || ObjectDB::get_instance(platform_object_id)) {
+				// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 				bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
 			}
 
@@ -232,7 +237,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							} else {
 								// Travel is too high to be safely canceled, we take it into account.
 								result.travel = result.travel.slide(up_direction);
-								motion = motion.normalized() * result.travel.length();
+								motion = result.remainder;
 							}
 							set_global_transform(gt);
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.

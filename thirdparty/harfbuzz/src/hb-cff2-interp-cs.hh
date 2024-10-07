@@ -76,16 +76,12 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
     coords = coords_;
     num_coords = num_coords_;
     varStore = acc.varStore;
-    seen_blend = false;
-    seen_vsindex_ = false;
-    scalars.init ();
     do_blend = num_coords && coords && varStore->size;
     set_ivs (acc.privateDicts[fd].ivs);
   }
 
   void fini ()
   {
-    scalars.fini ();
     SUPER::fini ();
   }
 
@@ -173,8 +169,8 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   unsigned int  ivs;
   hb_vector_t<float>  scalars;
   bool	  do_blend;
-  bool	  seen_vsindex_;
-  bool	  seen_blend;
+  bool	  seen_vsindex_ = false;
+  bool	  seen_blend = false;
 
   typedef cs_interp_env_t<ELEM, CFF2Subrs> SUPER;
 };

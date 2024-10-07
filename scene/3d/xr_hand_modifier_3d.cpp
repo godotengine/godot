@@ -30,6 +30,7 @@
 
 #include "xr_hand_modifier_3d.h"
 
+#include "core/config/project_settings.h"
 #include "servers/xr/xr_pose.h"
 #include "servers/xr_server.h"
 
@@ -68,6 +69,11 @@ XRHandModifier3D::BoneUpdate XRHandModifier3D::get_bone_update() const {
 void XRHandModifier3D::_get_joint_data() {
 	if (!is_inside_tree()) {
 		return;
+	}
+
+	if (has_stored_previous_transforms) {
+		previous_relative_transforms.clear();
+		has_stored_previous_transforms = false;
 	}
 
 	// Table of bone names for different rig types.
@@ -196,6 +202,23 @@ void XRHandModifier3D::_process_modification() {
 
 	// Skip if no tracking data
 	if (!tracker->get_has_tracking_data()) {
+		if (!has_stored_previous_transforms) {
+			return;
+		}
+
+		// Apply previous relative transforms if they are stored.
+		for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
+			const int bone = joints[joint].bone;
+			if (bone == -1) {
+				continue;
+			}
+
+			if (bone_update == BONE_UPDATE_FULL) {
+				skeleton->set_bone_pose_position(joints[joint].bone, previous_relative_transforms[joint].origin);
+			}
+
+			skeleton->set_bone_pose_rotation(joints[joint].bone, Quaternion(previous_relative_transforms[joint].basis));
+		}
 		return;
 	}
 
@@ -223,6 +246,12 @@ void XRHandModifier3D::_process_modification() {
 		return;
 	}
 
+	if (!has_stored_previous_transforms) {
+		previous_relative_transforms.resize(XRHandTracker::HAND_JOINT_MAX);
+		has_stored_previous_transforms = true;
+	}
+	Transform3D *previous_relative_transforms_ptr = previous_relative_transforms.ptrw();
+
 	for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
 		// Get the skeleton bone (skip if none).
 		const int bone = joints[joint].bone;
@@ -233,6 +262,7 @@ void XRHandModifier3D::_process_modification() {
 		// Calculate the relative relationship to the parent bone joint.
 		const int parent_joint = joints[joint].parent_joint;
 		const Transform3D relative_transform = inv_transforms[parent_joint] * transforms[joint];
+		previous_relative_transforms_ptr[joint] = relative_transform;
 
 		// Update the bone position if enabled by update mode.
 		if (bone_update == BONE_UPDATE_FULL) {
@@ -252,6 +282,17 @@ void XRHandModifier3D::_tracker_changed(StringName p_tracker_name, XRServer::Tra
 
 void XRHandModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
 	_get_joint_data();
+}
+
+PackedStringArray XRHandModifier3D::get_configuration_warnings() const {
+	PackedStringArray warnings = SkeletonModifier3D::get_configuration_warnings();
+
+	// Detect OpenXR without the Hand Tracking extension.
+	if (GLOBAL_GET("xr/openxr/enabled") && !GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
+		warnings.push_back("XRHandModifier3D requires the OpenXR Hand Tracking extension to be enabled.");
+	}
+
+	return warnings;
 }
 
 void XRHandModifier3D::_notification(int p_what) {

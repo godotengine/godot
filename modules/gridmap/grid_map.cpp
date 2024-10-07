@@ -30,14 +30,12 @@
 
 #include "grid_map.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/3d/light_3d.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
@@ -266,7 +264,7 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -1136,7 +1134,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 }
 
 void GridMap::set_cell_scale(float p_scale) {

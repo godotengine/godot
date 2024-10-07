@@ -51,7 +51,7 @@ class EditorPropertyNameProcessor : public Node {
 	StringName _get_context(const String &p_name, const String &p_property, const StringName &p_class) const;
 
 public:
-	// Matches `interface/inspector/capitalize_properties` editor setting.
+	// Matches `interface/inspector/default_property_name_style` editor setting.
 	enum Style {
 		STYLE_RAW,
 		STYLE_CAPITALIZED,

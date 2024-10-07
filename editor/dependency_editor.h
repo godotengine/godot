@@ -60,9 +60,6 @@ class DependencyEditor : public AcceptDialog {
 
 	void _update_file();
 
-protected:
-	static void _bind_methods();
-
 public:
 	void edit(const String &p_path);
 	DependencyEditor();
@@ -81,7 +78,6 @@ class DependencyEditorOwners : public AcceptDialog {
 
 	void _fill_owners(EditorFileSystemDirectory *efsd);
 
-	static void _bind_methods();
 	void _list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _select_file(int p_idx);
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
@@ -175,7 +171,6 @@ class OrphanResourcesDialog : public ConfirmationDialog {
 	void _button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void refresh();
-	static void _bind_methods();
 
 public:
 	void show();

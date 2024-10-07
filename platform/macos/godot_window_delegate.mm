@@ -268,7 +268,7 @@
 
 	ds->window_resize(window_id, wd.size.width, wd.size.height);
 
-	if (!wd.rect_changed_callback.is_null()) {
+	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id)));
 	}
 }
@@ -291,7 +291,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	ds->release_pressed_events();
 
-	if (!wd.rect_changed_callback.is_null()) {
+	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id)));
 	}
 }

@@ -32,9 +32,9 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -60,10 +60,18 @@ void GridMapEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_PREV_LEVEL: {
 			floor->set_value(floor->get_value() - 1);
+			if (selection.active && input_action == INPUT_SELECT) {
+				selection.current[edit_axis]--;
+				_validate_selection();
+			}
 		} break;
 
 		case MENU_OPTION_NEXT_LEVEL: {
 			floor->set_value(floor->get_value() + 1);
+			if (selection.active && input_action == INPUT_SELECT) {
+				selection.current[edit_axis]++;
+				_validate_selection();
+			}
 		} break;
 
 		case MENU_OPTION_X_AXIS:
@@ -636,6 +644,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					_do_paste();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (mb->is_shift_pressed() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;
@@ -755,19 +764,6 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					}
 				}
 			}
-
-			if (k->is_shift_pressed() && selection.active && input_action != INPUT_PASTE) {
-				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
-					selection.click[edit_axis]--;
-					_validate_selection();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
-					selection.click[edit_axis]++;
-					_validate_selection();
-					return EditorPlugin::AFTER_GUI_INPUT_STOP;
-				}
-			}
 		}
 	}
 
@@ -820,13 +816,14 @@ void GridMapEditor::_text_changed(const String &p_text) {
 	update_palette();
 }
 
-void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
-	const Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid() && (k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::PAGEUP || k->get_keycode() == Key::PAGEDOWN)) {
-		// Forward the key input to the ItemList so it can be scrolled
-		mesh_library_palette->gui_input(k);
-		search_box->accept_event();
+void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the item list.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			mesh_library_palette->gui_input(key);
+			search_box->accept_event();
+		}
 	}
 }
 
@@ -949,7 +946,7 @@ void GridMapEditor::_update_mesh_library() {
 void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (node) {
 		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
-		node->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+		node->disconnect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 		if (mesh_library.is_valid()) {
 			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
 			mesh_library = Ref<MeshLibrary>();
@@ -963,7 +960,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	_update_selection_transform();
 	_update_paste_indicator();
 
-	spatial_editor = Object::cast_to<Node3DEditorPlugin>(EditorNode::get_singleton()->get_editor_plugin_screen());
+	spatial_editor = Object::cast_to<Node3DEditorPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_selected_plugin());
 
 	if (!node) {
 		set_process(false);
@@ -987,7 +984,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	update_grid();
 
 	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
-	node->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+	node->connect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 	_update_mesh_library();
 }
 
@@ -1070,7 +1067,7 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			mesh_library_palette->connect("item_selected", callable_mp(this, &GridMapEditor::_item_selected_cbk));
+			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
 				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());
@@ -1203,7 +1200,7 @@ GridMapEditor::GridMapEditor() {
 	ED_SHORTCUT("grid_map/clear_selection", TTR("Clear Selection"), Key::KEY_DELETE);
 	ED_SHORTCUT("grid_map/fill_selection", TTR("Fill Selection"), KeyModifierMask::CTRL + Key::F);
 
-	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
+	int mw = EDITOR_GET("editors/grid_map/palette_min_width");
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
 	add_child(ec);
@@ -1224,9 +1221,9 @@ GridMapEditor::GridMapEditor() {
 	floor->get_line_edit()->add_theme_constant_override("minimum_character_width", 16);
 
 	spatial_editor_hb->add_child(floor);
-	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
-	floor->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
-	floor->get_line_edit()->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
+	floor->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_floor_changed));
+	floor->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
+	floor->get_line_edit()->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
@@ -1276,7 +1273,7 @@ GridMapEditor::GridMapEditor() {
 	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -1287,22 +1284,22 @@ GridMapEditor::GridMapEditor() {
 	search_box->set_placeholder(TTR("Filter Meshes"));
 	search_box->set_clear_button_enabled(true);
 	hb->add_child(search_box);
-	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &GridMapEditor::_text_changed));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(Button);
 	mode_thumbnail->set_theme_type_variation("FlatButton");
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	hb->add_child(mode_thumbnail);
-	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
+	mode_thumbnail->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
 	mode_list->set_theme_type_variation("FlatButton");
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	hb->add_child(mode_list);
-	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
+	mode_list->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1310,16 +1307,14 @@ GridMapEditor::GridMapEditor() {
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
 	size_slider->set_value(1.0f);
-	size_slider->connect("value_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
+	size_slider->connect(SceneStringName(value_changed), callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
-
-	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
-	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
+	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
@@ -1537,9 +1532,6 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 }
 
 GridMapEditorPlugin::GridMapEditorPlugin() {
-	EDITOR_DEF("editors/grid_map/editor_side", 1);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
-
 	grid_map_editor = memnew(GridMapEditor);
 	switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 		case 0: { // Left.

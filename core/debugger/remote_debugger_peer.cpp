@@ -45,7 +45,7 @@ bool RemoteDebuggerPeerTCP::has_message() {
 Array RemoteDebuggerPeerTCP::get_message() {
 	MutexLock lock(mutex);
 	ERR_FAIL_COND_V(!has_message(), Array());
-	Array out = in_queue[0];
+	Array out = in_queue.front()->get();
 	in_queue.pop_front();
 	return out;
 }
@@ -100,7 +100,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 				break; // Nothing left to send
 			}
 			mutex.lock();
-			Variant var = out_queue[0];
+			Variant var = out_queue.front()->get();
 			out_queue.pop_front();
 			mutex.unlock();
 			int size = 0;
@@ -144,9 +144,8 @@ void RemoteDebuggerPeerTCP::_read_in() {
 			Error err = decode_variant(var, buf, in_pos, &read);
 			ERR_CONTINUE(read != in_pos || err != OK);
 			ERR_CONTINUE_MSG(var.get_type() != Variant::ARRAY, "Malformed packet received, not an Array.");
-			mutex.lock();
+			MutexLock lock(mutex);
 			in_queue.push_back(var);
-			mutex.unlock();
 		}
 	}
 }

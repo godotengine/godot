@@ -18,13 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.3-rc\n"
 
-msgid "Example: %s"
-msgstr "ตัวอย่าง: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d หน่วย"
-
 msgid "Add current color as a preset."
 msgstr "เพิ่มสีปัจจุบันเป็นพรีเซ็ต"
 

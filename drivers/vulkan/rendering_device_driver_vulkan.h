@@ -43,11 +43,7 @@
 #endif
 #include "thirdparty/vulkan/vk_mem_alloc.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 // Design principles:
 // - Vulkan structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
@@ -87,6 +83,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
+		Size2i max_fragment_size;
 
 		Size2i texel_size; // The texel size we'll use
 	};
@@ -110,7 +107,18 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		PFN_vkAcquireNextImageKHR AcquireNextImageKHR = nullptr;
 		PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
 		PFN_vkCreateRenderPass2KHR CreateRenderPass2KHR = nullptr;
+
+		// Debug marker extensions.
+		PFN_vkCmdDebugMarkerBeginEXT CmdDebugMarkerBeginEXT = nullptr;
+		PFN_vkCmdDebugMarkerEndEXT CmdDebugMarkerEndEXT = nullptr;
+		PFN_vkCmdDebugMarkerInsertEXT CmdDebugMarkerInsertEXT = nullptr;
+		PFN_vkDebugMarkerSetObjectNameEXT DebugMarkerSetObjectNameEXT = nullptr;
+
+		// Debug device fault.
+		PFN_vkGetDeviceFaultInfoEXT GetDeviceFaultInfoEXT = nullptr;
 	};
+	// Debug marker extensions.
+	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
 
 	VkDevice vk_device = VK_NULL_HANDLE;
 	RenderingContextDriverVulkan *context_driver = nullptr;
@@ -131,6 +139,10 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	bool pipeline_cache_control_support = false;
+	bool device_fault_support = false;
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	bool device_memory_report_support = false;
+#endif
 	DeviceFunctions device_functions;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
@@ -159,10 +171,13 @@ private:
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
+private:
+	BufferID breadcrumb_buffer;
+
+public:
 	/*****************/
 	/**** BUFFERS ****/
 	/*****************/
-private:
 	struct BufferInfo {
 		VkBuffer vk_buffer = VK_NULL_HANDLE;
 		struct {
@@ -173,7 +188,6 @@ private:
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
 	};
 
-public:
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
@@ -186,6 +200,7 @@ public:
 	/*****************/
 
 	struct TextureInfo {
+		VkImage vk_image = VK_NULL_HANDLE;
 		VkImageView vk_view = VK_NULL_HANDLE;
 		DataFormat rd_format = DATA_FORMAT_MAX;
 		VkImageCreateInfo vk_create_info = {};
@@ -194,6 +209,9 @@ public:
 			VmaAllocation handle = nullptr;
 			VmaAllocationInfo info = {};
 		} allocation; // All 0/null if just a view.
+#ifdef DEBUG_ENABLED
+		bool created_from_extension = false;
+#endif
 	};
 
 	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count);
@@ -209,6 +227,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -403,6 +422,7 @@ public:
 	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
 	/*********************/
 	/**** UNIFORM SET ****/
 	/*********************/
@@ -493,6 +513,7 @@ private:
 	static int caching_instance_count;
 	PipelineCache pipelines_cache;
 	String pipeline_cache_id;
+	HashMap<uint64_t, bool> has_comp_alpha;
 
 public:
 	virtual void pipeline_free(PipelineID p_pipeline) override final;
@@ -603,6 +624,13 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
 
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
+	void print_lost_device_info();
+	void on_device_lost() const;
+
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
@@ -617,6 +645,7 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) override final;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) override final;
 	virtual uint64_t get_total_memory_used() override final;
+
 	virtual uint64_t limit_get(Limit p_limit) override final;
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
@@ -625,6 +654,8 @@ public:
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
+
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 
 private:
 	/*********************/
@@ -637,7 +668,7 @@ private:
 			VertexFormatInfo,
 			ShaderInfo,
 			UniformSetInfo>;
-	PagedAllocator<VersatileResource> resources_allocator;
+	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/
 
@@ -645,5 +676,7 @@ public:
 	RenderingDeviceDriverVulkan(RenderingContextDriverVulkan *p_context_driver);
 	virtual ~RenderingDeviceDriverVulkan();
 };
+
+using VKC = RenderingContextDriverVulkan;
 
 #endif // RENDERING_DEVICE_DRIVER_VULKAN_H

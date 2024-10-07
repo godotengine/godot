@@ -636,20 +636,25 @@ void VP8LBundleColorMap_C(const uint8_t* const row, int width, int xbits,
 
 //------------------------------------------------------------------------------
 
-static float ExtraCost_C(const uint32_t* population, int length) {
+static uint32_t ExtraCost_C(const uint32_t* population, int length) {
   int i;
-  float cost = 0.f;
-  for (i = 2; i < length - 2; ++i) cost += (i >> 1) * population[i + 2];
+  uint32_t cost = population[4] + population[5];
+  assert(length % 2 == 0);
+  for (i = 2; i < length / 2 - 1; ++i) {
+    cost += i * (population[2 * i + 2] + population[2 * i + 3]);
+  }
   return cost;
 }
 
-static float ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
-                                  int length) {
+static uint32_t ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
+                                    int length) {
   int i;
-  float cost = 0.f;
-  for (i = 2; i < length - 2; ++i) {
-    const int xy = X[i + 2] + Y[i + 2];
-    cost += (i >> 1) * xy;
+  uint32_t cost = X[4] + Y[4] + X[5] + Y[5];
+  assert(length % 2 == 0);
+  for (i = 2; i < length / 2 - 1; ++i) {
+    const int xy0 = X[2 * i + 2] + Y[2 * i + 2];
+    const int xy1 = X[2 * i + 3] + Y[2 * i + 3];
+    cost += i * (xy0 + xy1);
   }
   return cost;
 }

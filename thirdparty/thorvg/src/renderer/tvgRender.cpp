@@ -32,31 +32,47 @@
 /* External Class Implementation                                        */
 /************************************************************************/
 
-void RenderTransform::override(const Matrix& m)
+uint32_t RenderMethod::ref()
 {
-    this->m = m;
-    overriding = true;
+    ScopedLock lock(key);
+    return (++refCnt);
 }
 
 
-void RenderTransform::update()
+uint32_t RenderMethod::unref()
 {
-    if (overriding) return;
-
-    mathIdentity(&m);
-
-    mathScale(&m, scale, scale);
-
-    if (!mathZero(degree)) mathRotate(&m, degree);
-
-    mathTranslate(&m, x, y);
+    ScopedLock lock(key);
+    return (--refCnt);
 }
 
 
-RenderTransform::RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs)
+void RenderRegion::intersect(const RenderRegion& rhs)
 {
-    if (lhs && rhs) m = mathMultiply(&lhs->m, &rhs->m);
-    else if (lhs) m = lhs->m;
-    else if (rhs) m = rhs->m;
-    else mathIdentity(&m);
+    auto x1 = x + w;
+    auto y1 = y + h;
+    auto x2 = rhs.x + rhs.w;
+    auto y2 = rhs.y + rhs.h;
+
+    x = (x > rhs.x) ? x : rhs.x;
+    y = (y > rhs.y) ? y : rhs.y;
+    w = ((x1 < x2) ? x1 : x2) - x;
+    h = ((y1 < y2) ? y1 : y2) - y;
+
+    if (w < 0) w = 0;
+    if (h < 0) h = 0;
+}
+
+
+void RenderRegion::add(const RenderRegion& rhs)
+{
+    if (rhs.x < x) {
+        w += (x - rhs.x);
+        x = rhs.x;
+    }
+    if (rhs.y < y) {
+        h += (y - rhs.y);
+        y = rhs.y;
+    }
+    if (rhs.x + rhs.w > x + w) w = (rhs.x + rhs.w) - x;
+    if (rhs.y + rhs.h > y + h) h = (rhs.y + rhs.h) - y;
 }

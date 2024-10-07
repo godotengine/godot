@@ -372,10 +372,10 @@ void main() {
 
 				float d = vec4_to_float(texture(height_field_texture, uv_pos)) * SDF_MAX_LENGTH;
 
+				// Allowing for a small epsilon to allow particle just touching colliders to count as collided
+				const float EPSILON = 0.001;
 				d -= sdf_particle_size;
-
-				if (d < 0.0) {
-					const float EPSILON = 0.001;
+				if (d < EPSILON) {
 					vec2 n = normalize(vec2(
 							vec4_to_float(texture(height_field_texture, uv_pos + vec2(EPSILON, 0.0))) - vec4_to_float(texture(height_field_texture, uv_pos - vec2(EPSILON, 0.0))),
 							vec4_to_float(texture(height_field_texture, uv_pos + vec2(0.0, EPSILON))) - vec4_to_float(texture(height_field_texture, uv_pos - vec2(0.0, EPSILON)))));
@@ -400,10 +400,12 @@ void main() {
 				vec3 rel_vec = xform[3].xyz - colliders[i].transform[3].xyz;
 				vec3 local_pos = rel_vec * mat3(colliders[i].transform);
 
+				// Allowing for a small epsilon to allow particle just touching colliders to count as collided
+				const float EPSILON = 0.001;
 				if (colliders[i].type == COLLIDER_TYPE_SPHERE) {
 					float d = length(rel_vec) - (particle_size + colliders[i].extents.x);
 
-					if (d < 0.0) {
+					if (d < EPSILON) {
 						col = true;
 						depth = -d;
 						normal = normalize(rel_vec);
@@ -418,7 +420,7 @@ void main() {
 						vec3 closest = min(abs_pos, colliders[i].extents.xyz);
 						vec3 rel = abs_pos - closest;
 						depth = length(rel) - particle_size;
-						if (depth < 0.0) {
+						if (depth < EPSILON) {
 							col = true;
 							normal = mat3(colliders[i].transform) * (normalize(rel) * sgn_pos);
 							depth = -depth;
@@ -453,7 +455,7 @@ void main() {
 
 					float y = 1.0 - texture(height_field_texture, uvw_pos.xz).r;
 
-					if (y > uvw_pos.y) {
+					if (y + EPSILON > uvw_pos.y) {
 						//inside heightfield
 
 						vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;

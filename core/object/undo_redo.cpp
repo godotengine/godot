@@ -48,7 +48,7 @@ void UndoRedo::Operation::delete_reference() {
 	}
 }
 
-void UndoRedo::_discard_redo() {
+void UndoRedo::discard_redo() {
 	if (current_action == actions.size() - 1) {
 		return;
 	}
@@ -89,7 +89,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
-		_discard_redo();
+		discard_redo();
 
 		// Check if the merge operation is valid
 		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].backward_undo_ops == p_backward_undo_ops && actions[actions.size() - 1].last_tick + 800 > ticks) {
@@ -144,7 +144,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 }
 
 void UndoRedo::add_do_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -169,7 +169,7 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 }
 
 void UndoRedo::add_undo_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -288,7 +288,7 @@ void UndoRedo::end_force_keep_in_merge_ends() {
 }
 
 void UndoRedo::_pop_history_tail() {
-	_discard_redo();
+	discard_redo();
 
 	if (!actions.size()) {
 		return;
@@ -455,7 +455,7 @@ String UndoRedo::get_action_name(int p_id) {
 
 void UndoRedo::clear_history(bool p_increase_version) {
 	ERR_FAIL_COND(action_level > 0);
-	_discard_redo();
+	discard_redo();
 
 	while (actions.size()) {
 		_pop_history_tail();

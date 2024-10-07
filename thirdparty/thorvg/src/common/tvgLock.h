@@ -26,6 +26,7 @@
 #ifdef THORVG_THREAD_SUPPORT
 
 #include <mutex>
+#include "tvgTaskScheduler.h"
 
 namespace tvg {
 
@@ -40,13 +41,17 @@ namespace tvg {
 
         ScopedLock(Key& k)
         {
-            k.mtx.lock();
-            key = &k;
+            if (TaskScheduler::threads() > 0) {
+                k.mtx.lock();
+                key = &k;
+            }
         }
 
         ~ScopedLock()
         {
-            key->mtx.unlock();
+            if (TaskScheduler::threads() > 0) {
+                key->mtx.unlock();
+            }
         }
     };
 

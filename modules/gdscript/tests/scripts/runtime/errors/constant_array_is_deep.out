@@ -3,4 +3,4 @@ GDTEST_RUNTIME_ERROR
 >> on function: test()
 >> runtime/errors/constant_array_is_deep.gd
 >> 6
->> Invalid assignment of property or key '0' with value of type 'int' on a base object of type 'Dictionary'.
+>> Invalid assignment on read-only value (on base: 'Dictionary').

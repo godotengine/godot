@@ -150,14 +150,14 @@ MeshEditor::MeshEditor() {
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", callable_mp(this, &MeshEditor::_on_light_1_switch_pressed));
+	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_1_switch_pressed));
 
 	light_2_switch = memnew(Button);
 	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", callable_mp(this, &MeshEditor::_on_light_2_switch_pressed));
+	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_2_switch_pressed));
 
 	rot_x = 0;
 	rot_y = 0;

@@ -151,6 +151,14 @@ bool LightmapGIData::is_using_spherical_harmonics() const {
 	return uses_spherical_harmonics;
 }
 
+void LightmapGIData::_set_uses_packed_directional(bool p_enable) {
+	_uses_packed_directional = p_enable;
+}
+
+bool LightmapGIData::_is_using_packed_directional() const {
+	return _uses_packed_directional;
+}
+
 void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure) {
 	if (p_points.size()) {
 		int pc = p_points.size();
@@ -255,6 +263,9 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
+	ClassDB::bind_method(D_METHOD("_set_uses_packed_directional", "_uses_packed_directional"), &LightmapGIData::_set_uses_packed_directional);
+	ClassDB::bind_method(D_METHOD("_is_using_packed_directional"), &LightmapGIData::_is_using_packed_directional);
+
 	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &LightmapGIData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &LightmapGIData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &LightmapGIData::get_user_path);
@@ -267,6 +278,7 @@ void LightmapGIData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_uses_packed_directional", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uses_packed_directional", "_is_using_packed_directional");
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
@@ -709,7 +721,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 			const Vector3 *pp = probe_positions.ptr();
 			bool exists = false;
 			for (int j = 0; j < ppcount; j++) {
-				if (pp[j].is_equal_approx(real_pos)) {
+				if (pp[j].distance_to(real_pos) < (p_cell_size * 0.5f)) {
 					exists = true;
 					break;
 				}
@@ -1072,6 +1084,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 					if (env.is_valid()) {
 						environment_image = RS::get_singleton()->environment_bake_panorama(env->get_rid(), true, Size2i(128, 64));
+						environment_transform = Basis::from_euler(env->get_sky_rotation()).inverse();
 					}
 				}
 			} break;
@@ -1102,12 +1115,14 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
-	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_TOO_SMALL) {
+	if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
 	} else if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES) {
 		return BAKE_ERROR_MESHES_INVALID;
+	} else if (bake_err == Lightmapper::BAKE_ERROR_ATLAS_TOO_SMALL) {
+		return BAKE_ERROR_ATLAS_TOO_SMALL;
 	}
 
 	// POSTBAKE: Save Textures.
@@ -1184,6 +1199,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	gi_data->set_lightmap_textures(textures);
+	gi_data->_set_uses_packed_directional(directional); // New SH lightmaps are packed automatically.
 	gi_data->set_uses_spherical_harmonics(directional);
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
@@ -1333,7 +1349,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	gi_data->set_path(p_image_data_path);
+	gi_data->set_path(p_image_data_path, true);
 	Error err = ResourceSaver::save(gi_data);
 
 	if (err != OK) {
@@ -1349,6 +1365,12 @@ void LightmapGI::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			if (light_data.is_valid()) {
+				ERR_FAIL_COND_MSG(
+						light_data->is_using_spherical_harmonics() && !light_data->_is_using_packed_directional(),
+						vformat(
+								"%s (%s): The directional lightmap textures are stored in a format that isn't supported anymore. Please bake lightmaps again to make lightmaps display from this node again.",
+								get_light_data()->get_path(), get_name()));
+
 				_assign_lightmaps();
 			}
 		} break;
@@ -1448,6 +1470,14 @@ void LightmapGI::set_denoiser_strength(float p_denoiser_strength) {
 
 float LightmapGI::get_denoiser_strength() const {
 	return denoiser_strength;
+}
+
+void LightmapGI::set_denoiser_range(int p_denoiser_range) {
+	denoiser_range = p_denoiser_range;
+}
+
+int LightmapGI::get_denoiser_range() const {
+	return denoiser_range;
 }
 
 void LightmapGI::set_directional(bool p_enable) {
@@ -1570,10 +1600,19 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 }
 
 PackedStringArray LightmapGI::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Lightmap can only be baked from a device that supports the RD backends. Lightmap baking may fail."));
+#ifndef MODULE_LIGHTMAPPER_RD_ENABLED
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+	warnings.push_back(vformat(RTR("Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will still work."), OS::get_singleton()->get_name()));
+#else
+	warnings.push_back(RTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time. Rendering existing baked lightmaps will still work."));
+#endif
+	return warnings;
+#endif
+
+	if (!DisplayServer::get_singleton()->can_create_rendering_device()) {
+		warnings.push_back(vformat(RTR("Lightmaps can only be baked from a GPU that supports the RenderingDevice backends.\nYour GPU (%s) does not support RenderingDevice, as it does not support Vulkan, Direct3D 12, or Metal.\nLightmap baking will not be available on this device, although rendering existing baked lightmaps will work."), RenderingServer::get_singleton()->get_video_adapter_name()));
 		return warnings;
 	}
 
@@ -1591,6 +1630,9 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (p_property.name == "denoiser_strength" && !use_denoiser) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "denoiser_range" && !use_denoiser) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -1638,6 +1680,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_denoiser_strength", "denoiser_strength"), &LightmapGI::set_denoiser_strength);
 	ClassDB::bind_method(D_METHOD("get_denoiser_strength"), &LightmapGI::get_denoiser_strength);
 
+	ClassDB::bind_method(D_METHOD("set_denoiser_range", "denoiser_range"), &LightmapGI::set_denoiser_range);
+	ClassDB::bind_method(D_METHOD("get_denoiser_range"), &LightmapGI::get_denoiser_range);
+
 	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &LightmapGI::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &LightmapGI::is_interior);
 
@@ -1661,6 +1706,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "denoiser_strength", PROPERTY_HINT_RANGE, "0.001,0.2,0.001,or_greater"), "set_denoiser_strength", "get_denoiser_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "denoiser_range", PROPERTY_HINT_RANGE, "1,20"), "set_denoiser_range", "get_denoiser_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texel_scale", PROPERTY_HINT_RANGE, "0.01,100.0,0.01"), "set_texel_scale", "get_texel_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
@@ -1696,6 +1742,8 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_ERROR_CANT_CREATE_IMAGE);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_USER_ABORTED);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_LIGHTMAP_TOO_SMALL);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_ATLAS_TOO_SMALL);
 
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_SCENE);

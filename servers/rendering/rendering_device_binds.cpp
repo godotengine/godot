@@ -112,7 +112,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				}
 				Vector<String> slices = l.get_slice(";", 0).split("=");
 				String version = slices[0].strip_edges();
-				if (!version.is_valid_identifier()) {
+				if (!version.is_valid_ascii_identifier()) {
 					base_error = "Version names must be valid identifiers, found '" + version + "' instead.";
 					break;
 				}
@@ -156,9 +156,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 			}
 		}
 	}
-
-	Ref<RDShaderFile> shader_file;
-	shader_file.instantiate();
 
 	if (base_error.is_empty()) {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {

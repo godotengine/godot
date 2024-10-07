@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
 import default_theme_icons_builders
-
 
 env["BUILDERS"]["MakeDefaultThemeIconsBuilder"] = Builder(
     action=env.Run(default_theme_icons_builders.make_default_theme_icons_action),

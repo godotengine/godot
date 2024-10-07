@@ -57,7 +57,7 @@ void main() {
 	}
 
 	if (bool(params.flags & FLAG_USE_SRC_SECTION)) {
-		uv_interp = params.section.xy + uv_interp * params.section.zw;
+		uv_interp.xy = params.section.xy + uv_interp.xy * params.section.zw;
 	}
 }
 

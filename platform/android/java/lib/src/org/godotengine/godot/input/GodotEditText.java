@@ -264,10 +264,15 @@ public class GodotEditText extends EditText {
 				isModifiedKey;
 	}
 
-	boolean hasHardwareKeyboard() {
+	public boolean hasHardwareKeyboard() {
 		Configuration config = getResources().getConfiguration();
-		return config.keyboard != Configuration.KEYBOARD_NOKEYS &&
+		boolean hasHardwareKeyboardConfig = config.keyboard != Configuration.KEYBOARD_NOKEYS &&
 				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+		if (hasHardwareKeyboardConfig) {
+			return true;
+		}
+
+		return mRenderView.getInputHandler().hasHardwareKeyboard();
 	}
 
 	// ===========================================================

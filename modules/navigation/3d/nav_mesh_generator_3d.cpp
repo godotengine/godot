@@ -100,57 +100,55 @@ void NavMeshGenerator3D::sync() {
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	generator_task_mutex.lock();
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	{
+		MutexLock generator_task_lock(generator_task_mutex);
 
-	LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
+		LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
 
-	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
-		if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
-			finished_task_ids.push_back(E.key);
+		for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+			if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
+				WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+				finished_task_ids.push_back(E.key);
 
-			NavMeshGeneratorTask3D *generator_task = E.value;
-			DEV_ASSERT(generator_task->status == NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED);
+				NavMeshGeneratorTask3D *generator_task = E.value;
+				DEV_ASSERT(generator_task->status == NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED);
 
-			baking_navmeshes.erase(generator_task->navigation_mesh);
-			if (generator_task->callback.is_valid()) {
-				generator_emit_callback(generator_task->callback);
+				baking_navmeshes.erase(generator_task->navigation_mesh);
+				if (generator_task->callback.is_valid()) {
+					generator_emit_callback(generator_task->callback);
+				}
+				memdelete(generator_task);
 			}
-			memdelete(generator_task);
+		}
+
+		for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
+			generator_tasks.erase(finished_task_id);
 		}
 	}
-
-	for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
-		generator_tasks.erase(finished_task_id);
-	}
-
-	generator_task_mutex.unlock();
-	baking_navmesh_mutex.unlock();
 }
 
 void NavMeshGenerator3D::cleanup() {
-	baking_navmesh_mutex.lock();
-	generator_task_mutex.lock();
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	{
+		MutexLock generator_task_lock(generator_task_mutex);
 
-	baking_navmeshes.clear();
+		baking_navmeshes.clear();
 
-	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
-		NavMeshGeneratorTask3D *generator_task = E.value;
-		memdelete(generator_task);
+		for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+			NavMeshGeneratorTask3D *generator_task = E.value;
+			memdelete(generator_task);
+		}
+		generator_tasks.clear();
+
+		generator_rid_rwlock.write_lock();
+		for (NavMeshGeometryParser3D *parser : generator_parsers) {
+			generator_parser_owner.free(parser->self);
+		}
+		generator_parsers.clear();
+		generator_rid_rwlock.write_unlock();
 	}
-	generator_tasks.clear();
-
-	generator_rid_rwlock.write_lock();
-	for (NavMeshGeometryParser3D *parser : generator_parsers) {
-		generator_parser_owner.free(parser->self);
-	}
-	generator_parsers.clear();
-	generator_rid_rwlock.write_unlock();
-
-	generator_task_mutex.unlock();
-	baking_navmesh_mutex.unlock();
 }
 
 void NavMeshGenerator3D::finish() {
@@ -226,7 +224,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
-	generator_task_mutex.lock();
+	MutexLock generator_task_lock(generator_task_mutex);
 	NavMeshGeneratorTask3D *generator_task = memnew(NavMeshGeneratorTask3D);
 	generator_task->navigation_mesh = p_navigation_mesh;
 	generator_task->source_geometry_data = p_source_geometry_data;
@@ -234,14 +232,11 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
-	generator_task_mutex.unlock();
 }
 
 bool NavMeshGenerator3D::is_baking(Ref<NavigationMesh> p_navigation_mesh) {
-	baking_navmesh_mutex.lock();
-	bool baking = baking_navmeshes.has(p_navigation_mesh);
-	baking_navmesh_mutex.unlock();
-	return baking;
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	return baking_navmeshes.has(p_navigation_mesh);
 }
 
 void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {
@@ -672,10 +667,16 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	const Vector<float> &vertices = p_source_geometry_data->get_vertices();
-	const Vector<int> &indices = p_source_geometry_data->get_indices();
+	Vector<float> source_geometry_vertices;
+	Vector<int> source_geometry_indices;
+	Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> projected_obstructions;
 
-	if (vertices.size() < 3 || indices.size() < 3) {
+	p_source_geometry_data->get_data(
+			source_geometry_vertices,
+			source_geometry_indices,
+			projected_obstructions);
+
+	if (source_geometry_vertices.size() < 3 || source_geometry_indices.size() < 3) {
 		return;
 	}
 
@@ -691,10 +692,10 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	bake_state = "Setting up Configuration..."; // step #1
 
-	const float *verts = vertices.ptr();
-	const int nverts = vertices.size() / 3;
-	const int *tris = indices.ptr();
-	const int ntris = indices.size() / 3;
+	const float *verts = source_geometry_vertices.ptr();
+	const int nverts = source_geometry_vertices.size() / 3;
+	const int *tris = source_geometry_indices.ptr();
+	const int ntris = source_geometry_indices.size() / 3;
 
 	float bmin[3], bmax[3];
 	rcCalcBounds(verts, nverts, bmin, bmax);
@@ -818,8 +819,6 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcFreeHeightField(hf);
 	hf = nullptr;
 
-	const Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_get_projected_obstructions();
-
 	// Add obstacles to the source geometry. Those will be affected by e.g. agent_radius.
 	if (!projected_obstructions.is_empty()) {
 		for (const NavigationMeshSourceGeometryData3D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
@@ -894,13 +893,25 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	bake_state = "Converting to native navigation mesh..."; // step #10
 
 	Vector<Vector3> nav_vertices;
+	Vector<Vector<int>> nav_polygons;
+
+	HashMap<Vector3, int> recast_vertex_to_native_index;
+	LocalVector<int> recast_index_to_native_index;
+	recast_index_to_native_index.resize(detail_mesh->nverts);
 
 	for (int i = 0; i < detail_mesh->nverts; i++) {
 		const float *v = &detail_mesh->verts[i * 3];
-		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
+		const Vector3 vertex = Vector3(v[0], v[1], v[2]);
+		int *existing_index_ptr = recast_vertex_to_native_index.getptr(vertex);
+		if (!existing_index_ptr) {
+			int new_index = recast_vertex_to_native_index.size();
+			recast_index_to_native_index[i] = new_index;
+			recast_vertex_to_native_index[vertex] = new_index;
+			nav_vertices.push_back(vertex);
+		} else {
+			recast_index_to_native_index[i] = *existing_index_ptr;
+		}
 	}
-	p_navigation_mesh->set_vertices(nav_vertices);
-	p_navigation_mesh->clear_polygons();
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
@@ -912,12 +923,19 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 			Vector<int> nav_indices;
 			nav_indices.resize(3);
 			// Polygon order in recast is opposite than godot's
-			nav_indices.write[0] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
-			nav_indices.write[1] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
-			nav_indices.write[2] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
-			p_navigation_mesh->add_polygon(nav_indices);
+			int index1 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
+			int index2 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
+			int index3 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
+
+			nav_indices.write[0] = recast_index_to_native_index[index1];
+			nav_indices.write[1] = recast_index_to_native_index[index2];
+			nav_indices.write[2] = recast_index_to_native_index[index3];
+
+			nav_polygons.push_back(nav_indices);
 		}
 	}
+
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons);
 
 	bake_state = "Cleanup..."; // step #11
 

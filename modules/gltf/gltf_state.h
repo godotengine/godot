@@ -57,6 +57,7 @@ protected:
 	int minor_version = 0;
 	String copyright;
 	Vector<uint8_t> glb_data;
+	double bake_fps = 30.0;
 
 	bool use_named_skin_binds = false;
 	bool use_khr_texture_transform = false;
@@ -108,8 +109,17 @@ protected:
 	static void _bind_methods();
 
 public:
+	double get_bake_fps() const {
+		return bake_fps;
+	}
+
+	void set_bake_fps(double value) {
+		bake_fps = value;
+	}
+
 	void add_used_extension(const String &p_extension, bool p_required = false);
 	GLTFBufferViewIndex append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication);
+	GLTFNodeIndex append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_godot_scene_node, GLTFNodeIndex p_parent_node_index);
 
 	enum GLTFHandleBinary {
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,

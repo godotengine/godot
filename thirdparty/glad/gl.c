@@ -453,7 +453,6 @@ PFNGLMULTITEXCOORDP3UIPROC glad_glMultiTexCoordP3ui = NULL;
 PFNGLMULTITEXCOORDP3UIVPROC glad_glMultiTexCoordP3uiv = NULL;
 PFNGLMULTITEXCOORDP4UIPROC glad_glMultiTexCoordP4ui = NULL;
 PFNGLMULTITEXCOORDP4UIVPROC glad_glMultiTexCoordP4uiv = NULL;
-PFNGLNAMEDFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC glad_glNamedFramebufferTextureMultiviewOVR = NULL;
 PFNGLNEWLISTPROC glad_glNewList = NULL;
 PFNGLNORMAL3BPROC glad_glNormal3b = NULL;
 PFNGLNORMAL3BVPROC glad_glNormal3bv = NULL;
@@ -2109,29 +2108,40 @@ static void glad_gl_load_GL_EXT_framebuffer_object( GLADuserptrloadfunc load, vo
 static void glad_gl_load_GL_OVR_multiview( GLADuserptrloadfunc load, void* userptr) {
     if(!GLAD_GL_OVR_multiview) return;
     glad_glFramebufferTextureMultiviewOVR = (PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC) load(userptr, "glFramebufferTextureMultiviewOVR");
-    glad_glNamedFramebufferTextureMultiviewOVR = (PFNGLNAMEDFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC) load(userptr, "glNamedFramebufferTextureMultiviewOVR");
 }
 
 
 
-static void glad_gl_free_extensions(char **exts_i) {
-    if (exts_i != NULL) {
-        unsigned int index;
-        for(index = 0; exts_i[index]; index++) {
-            free((void *) (exts_i[index]));
-        }
-        free((void *)exts_i);
-        exts_i = NULL;
-    }
-}
-static int glad_gl_get_extensions( const char **out_exts, char ***out_exts_i) {
 #if defined(GL_ES_VERSION_3_0) || defined(GL_VERSION_3_0)
-    if (glad_glGetStringi != NULL && glad_glGetIntegerv != NULL) {
+#define GLAD_GL_IS_SOME_NEW_VERSION 1
+#else
+#define GLAD_GL_IS_SOME_NEW_VERSION 0
+#endif
+
+static int glad_gl_get_extensions( int version, const char **out_exts, unsigned int *out_num_exts_i, char ***out_exts_i) {
+#if GLAD_GL_IS_SOME_NEW_VERSION
+    if(GLAD_VERSION_MAJOR(version) < 3) {
+#else
+    GLAD_UNUSED(version);
+    GLAD_UNUSED(out_num_exts_i);
+    GLAD_UNUSED(out_exts_i);
+#endif
+        if (glad_glGetString == NULL) {
+            return 0;
+        }
+        *out_exts = (const char *)glad_glGetString(GL_EXTENSIONS);
+#if GLAD_GL_IS_SOME_NEW_VERSION
+    } else {
         unsigned int index = 0;
         unsigned int num_exts_i = 0;
         char **exts_i = NULL;
+        if (glad_glGetStringi == NULL || glad_glGetIntegerv == NULL) {
+            return 0;
+        }
         glad_glGetIntegerv(GL_NUM_EXTENSIONS, (int*) &num_exts_i);
-        exts_i = (char **) malloc((num_exts_i + 1) * (sizeof *exts_i));
+        if (num_exts_i > 0) {
+            exts_i = (char **) malloc(num_exts_i * (sizeof *exts_i));
+        }
         if (exts_i == NULL) {
             return 0;
         }
@@ -2140,40 +2150,31 @@ static int glad_gl_get_extensions( const char **out_exts, char ***out_exts_i) {
             size_t len = strlen(gl_str_tmp) + 1;
 
             char *local_str = (char*) malloc(len * sizeof(char));
-            if(local_str == NULL) {
-                exts_i[index] = NULL;
-                glad_gl_free_extensions(exts_i);
-                return 0;
+            if(local_str != NULL) {
+                memcpy(local_str, gl_str_tmp, len * sizeof(char));
             }
 
-            memcpy(local_str, gl_str_tmp, len * sizeof(char));
             exts_i[index] = local_str;
         }
-        exts_i[index] = NULL;
 
+        *out_num_exts_i = num_exts_i;
         *out_exts_i = exts_i;
-
-        return 1;
     }
-#else
-    GLAD_UNUSED(out_exts_i);
 #endif
-    if (glad_glGetString == NULL) {
-        return 0;
-    }
-    *out_exts = (const char *)glad_glGetString(GL_EXTENSIONS);
     return 1;
 }
-static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ext) {
-    if(exts_i) {
+static void glad_gl_free_extensions(char **exts_i, unsigned int num_exts_i) {
+    if (exts_i != NULL) {
         unsigned int index;
-        for(index = 0; exts_i[index]; index++) {
-            const char *e = exts_i[index];
-            if(strcmp(e, ext) == 0) {
-                return 1;
-            }
+        for(index = 0; index < num_exts_i; index++) {
+            free((void *) (exts_i[index]));
         }
-    } else {
+        free((void *)exts_i);
+        exts_i = NULL;
+    }
+}
+static int glad_gl_has_extension(int version, const char *exts, unsigned int num_exts_i, char **exts_i, const char *ext) {
+    if(GLAD_VERSION_MAJOR(version) < 3 || !GLAD_GL_IS_SOME_NEW_VERSION) {
         const char *extensions;
         const char *loc;
         const char *terminator;
@@ -2193,6 +2194,14 @@ static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ex
             }
             extensions = terminator;
         }
+    } else {
+        unsigned int index;
+        for(index = 0; index < num_exts_i; index++) {
+            const char *e = exts_i[index];
+            if(strcmp(e, ext) == 0) {
+                return 1;
+            }
+        }
     }
     return 0;
 }
@@ -2201,21 +2210,22 @@ static GLADapiproc glad_gl_get_proc_from_userptr(void *userptr, const char* name
     return (GLAD_GNUC_EXTENSION (GLADapiproc (*)(const char *name)) userptr)(name);
 }
 
-static int glad_gl_find_extensions_gl(void) {
+static int glad_gl_find_extensions_gl( int version) {
     const char *exts = NULL;
+    unsigned int num_exts_i = 0;
     char **exts_i = NULL;
-    if (!glad_gl_get_extensions(&exts, &exts_i)) return 0;
+    if (!glad_gl_get_extensions(version, &exts, &num_exts_i, &exts_i)) return 0;
 
-    GLAD_GL_ARB_debug_output = glad_gl_has_extension(exts, exts_i, "GL_ARB_debug_output");
-    GLAD_GL_ARB_framebuffer_object = glad_gl_has_extension(exts, exts_i, "GL_ARB_framebuffer_object");
-    GLAD_GL_ARB_get_program_binary = glad_gl_has_extension(exts, exts_i, "GL_ARB_get_program_binary");
-    GLAD_GL_EXT_framebuffer_blit = glad_gl_has_extension(exts, exts_i, "GL_EXT_framebuffer_blit");
-    GLAD_GL_EXT_framebuffer_multisample = glad_gl_has_extension(exts, exts_i, "GL_EXT_framebuffer_multisample");
-    GLAD_GL_EXT_framebuffer_object = glad_gl_has_extension(exts, exts_i, "GL_EXT_framebuffer_object");
-    GLAD_GL_OVR_multiview = glad_gl_has_extension(exts, exts_i, "GL_OVR_multiview");
-    GLAD_GL_OVR_multiview2 = glad_gl_has_extension(exts, exts_i, "GL_OVR_multiview2");
+    GLAD_GL_ARB_debug_output = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_ARB_debug_output");
+    GLAD_GL_ARB_framebuffer_object = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_ARB_framebuffer_object");
+    GLAD_GL_ARB_get_program_binary = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_ARB_get_program_binary");
+    GLAD_GL_EXT_framebuffer_blit = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_framebuffer_blit");
+    GLAD_GL_EXT_framebuffer_multisample = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_framebuffer_multisample");
+    GLAD_GL_EXT_framebuffer_object = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_framebuffer_object");
+    GLAD_GL_OVR_multiview = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview");
+    GLAD_GL_OVR_multiview2 = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview2");
 
-    glad_gl_free_extensions(exts_i);
+    glad_gl_free_extensions(exts_i, num_exts_i);
 
     return 1;
 }
@@ -2265,6 +2275,7 @@ int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr) {
 
     glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
     if(glad_glGetString == NULL) return 0;
+    if(glad_glGetString(GL_VERSION) == NULL) return 0;
     version = glad_gl_find_core_gl();
 
     glad_gl_load_GL_VERSION_1_0(load, userptr);
@@ -2280,7 +2291,7 @@ int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_VERSION_3_2(load, userptr);
     glad_gl_load_GL_VERSION_3_3(load, userptr);
 
-    if (!glad_gl_find_extensions_gl()) return 0;
+    if (!glad_gl_find_extensions_gl(version)) return 0;
     glad_gl_load_GL_ARB_debug_output(load, userptr);
     glad_gl_load_GL_ARB_framebuffer_object(load, userptr);
     glad_gl_load_GL_ARB_get_program_binary(load, userptr);
@@ -2299,15 +2310,16 @@ int gladLoadGL( GLADloadfunc load) {
     return gladLoadGLUserPtr( glad_gl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
 
-static int glad_gl_find_extensions_gles2(void) {
+static int glad_gl_find_extensions_gles2( int version) {
     const char *exts = NULL;
+    unsigned int num_exts_i = 0;
     char **exts_i = NULL;
-    if (!glad_gl_get_extensions(&exts, &exts_i)) return 0;
+    if (!glad_gl_get_extensions(version, &exts, &num_exts_i, &exts_i)) return 0;
 
-    GLAD_GL_OVR_multiview = glad_gl_has_extension(exts, exts_i, "GL_OVR_multiview");
-    GLAD_GL_OVR_multiview2 = glad_gl_has_extension(exts, exts_i, "GL_OVR_multiview2");
+    GLAD_GL_OVR_multiview = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview");
+    GLAD_GL_OVR_multiview2 = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_OVR_multiview2");
 
-    glad_gl_free_extensions(exts_i);
+    glad_gl_free_extensions(exts_i, num_exts_i);
 
     return 1;
 }
@@ -2349,6 +2361,7 @@ int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
 
     glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
     if(glad_glGetString == NULL) return 0;
+    if(glad_glGetString(GL_VERSION) == NULL) return 0;
     version = glad_gl_find_core_gles2();
 
     glad_gl_load_GL_ES_VERSION_2_0(load, userptr);
@@ -2356,7 +2369,7 @@ int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_ES_VERSION_3_1(load, userptr);
     glad_gl_load_GL_ES_VERSION_3_2(load, userptr);
 
-    if (!glad_gl_find_extensions_gles2()) return 0;
+    if (!glad_gl_find_extensions_gles2(version)) return 0;
     glad_gl_load_GL_OVR_multiview(load, userptr);
 
 
@@ -2614,9 +2627,10 @@ static GLADapiproc glad_dlsym_handle(void* handle, const char *name) {
   typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
 #endif
   extern __eglMustCastToProperFunctionPointerType emscripten_GetProcAddress(const char *name);
-#elif defined(GLAD_GLES2_USE_SYSTEM_EGL)
-  #include <EGL/egl.h>
+#elif EGL_STATIC
+  typedef void (*__eglMustCastToProperFunctionPointerType)(void);
   typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
+  extern __eglMustCastToProperFunctionPointerType GLAD_API_PTR eglGetProcAddress(const char *name);
 #else
   #include <glad/egl.h>
 #endif
@@ -2644,7 +2658,7 @@ static GLADapiproc glad_gles2_get_proc(void *vuserptr, const char* name) {
     return result;
 }
 
-static void* _glad_GLES2_loader_handle = NULL;
+static void* _glad_GL_loader_handle = NULL;
 
 static void* glad_gles2_dlopen_handle(void) {
 #if GLAD_PLATFORM_EMSCRIPTEN
@@ -2660,11 +2674,11 @@ static void* glad_gles2_dlopen_handle(void) {
     GLAD_UNUSED(glad_get_dlopen_handle);
     return NULL;
 #else
-    if (_glad_GLES2_loader_handle == NULL) {
-        _glad_GLES2_loader_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
+    if (_glad_GL_loader_handle == NULL) {
+        _glad_GL_loader_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
     }
 
-    return _glad_GLES2_loader_handle;
+    return _glad_GL_loader_handle;
 #endif
 }
 
@@ -2694,12 +2708,11 @@ int gladLoaderLoadGLES2(void) {
     userptr.get_proc_address_ptr = emscripten_GetProcAddress;
     version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
 #else
-#ifndef GLAD_GLES2_USE_SYSTEM_EGL
     if (eglGetProcAddress == NULL) {
         return 0;
     }
-#endif
-    did_load = _glad_GLES2_loader_handle == NULL;
+
+    did_load = _glad_GL_loader_handle == NULL;
     handle = glad_gles2_dlopen_handle();
     if (handle != NULL) {
         userptr = glad_gles2_build_userptr(handle);
@@ -2718,9 +2731,9 @@ int gladLoaderLoadGLES2(void) {
 
 
 void gladLoaderUnloadGLES2(void) {
-    if (_glad_GLES2_loader_handle != NULL) {
-        glad_close_dlopen_handle(_glad_GLES2_loader_handle);
-        _glad_GLES2_loader_handle = NULL;
+    if (_glad_GL_loader_handle != NULL) {
+        glad_close_dlopen_handle(_glad_GL_loader_handle);
+        _glad_GL_loader_handle = NULL;
     }
 }
 

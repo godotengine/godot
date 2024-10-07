@@ -45,7 +45,6 @@
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enabled" getter="is_adjustment_enabled" default="false">
 			If [code]true[/code], enables the [code]adjustment_*[/code] properties provided by this resource. If [code]false[/code], modifications to the [code]adjustment_*[/code] properties will have no effect on the rendered scene.
-			[b]Note:[/b] Adjustments are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
 			The global color saturation value of the rendered scene (default value is 1). Effective only if [member adjustment_enabled] is [code]true[/code].
@@ -415,7 +414,7 @@
 			Linear tonemapper operator. Reads the linear data and passes it on unmodified. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull.
+			Reinhard tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color * (1 + color / (white * white)) / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull. When [member tonemap_white] is left at the default value of [code]1.0[/code] this is identical to [constant TONE_MAPPER_LINEAR] while also being slightly less performant.
 		</constant>
 		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
 			Filmic tonemapper operator. This avoids clipping bright highlights, with a resulting image that usually looks more vivid than [constant TONE_MAPPER_REINHARDT].

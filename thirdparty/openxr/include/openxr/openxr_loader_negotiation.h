@@ -20,6 +20,7 @@ extern "C" {
 
 
 
+// XR_LOADER_VERSION_1_0 is a preprocessor guard. Do not pass it to API calls.
 #define XR_LOADER_VERSION_1_0 1
 
 #define XR_CURRENT_LOADER_API_LAYER_VERSION 1

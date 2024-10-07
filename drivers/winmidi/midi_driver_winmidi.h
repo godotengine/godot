@@ -48,12 +48,10 @@ class MIDIDriverWinMidi : public MIDIDriver {
 	static void CALLBACK read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 public:
-	virtual Error open();
-	virtual void close();
+	virtual Error open() override;
+	virtual void close() override;
 
-	virtual PackedStringArray get_connected_inputs();
-
-	MIDIDriverWinMidi();
+	MIDIDriverWinMidi() = default;
 	virtual ~MIDIDriverWinMidi();
 };
 

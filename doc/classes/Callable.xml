@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a custom callable used for different purposes (see [method is_custom]). Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.
-		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
 		func print_args(arg1, arg2, arg3 = ""):
@@ -203,7 +202,8 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Callable] has no target to call the method on.
+				Returns [code]true[/code] if this [Callable] has no target to call the method on. Equivalent to [code]callable == Callable()[/code].
+				[b]Note:[/b] This is [i]not[/i] the same as [code]not is_valid()[/code] and using [code]not is_null()[/code] will [i]not[/i] guarantee that this callable can be called. Use [method is_valid] instead.
 			</description>
 		</method>
 		<method name="is_standard" qualifiers="const">

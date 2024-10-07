@@ -26,7 +26,7 @@
 			If set to [code]1[/code], ANGLE libraries are exported with the exported application. If set to [code]0[/code], ANGLE libraries are exported only if [member ProjectSettings.rendering/gl_compatibility/driver] is set to [code]"opengl3_angle"[/code].
 		</member>
 		<member name="application/export_d3d12" type="int" setter="" getter="">
-			If set to [code]1[/code], Direct3D 12 runtime (DXIL, Agility SDK, PIX) libraries are exported with the exported application. If set to [code]0[/code], Direct3D 12 libraries are exported only if [member ProjectSettings.rendering/rendering_device/driver] is set to [code]"d3d12"[/code].
+			If set to [code]1[/code], the Direct3D 12 runtime libraries (Agility SDK, PIX) are exported with the exported application. If set to [code]0[/code], Direct3D 12 libraries are exported only if [member ProjectSettings.rendering/rendering_device/driver] is set to [code]"d3d12"[/code].
 		</member>
 		<member name="application/file_description" type="String" setter="" getter="">
 			File description to be presented to users. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].

@@ -31,6 +31,7 @@
 #ifndef SCENE_TREE_EDITOR_H
 #define SCENE_TREE_EDITOR_H
 
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -67,6 +68,11 @@ class SceneTreeEditor : public Control {
 
 	AcceptDialog *error = nullptr;
 	AcceptDialog *warning = nullptr;
+
+	ConfirmationDialog *revoke_dialog = nullptr;
+	Label *revoke_dialog_label = nullptr;
+	CheckBox *ask_before_revoke_checkbox = nullptr;
+	Node *revoke_node = nullptr;
 
 	bool auto_expand_selected = true;
 	bool connect_to_script_mode = false;
@@ -144,6 +150,9 @@ class SceneTreeEditor : public Control {
 
 	Vector<StringName> valid_types;
 
+	void _update_ask_before_revoking_unique_name();
+	void _revoke_unique_name();
+
 public:
 	// Public for use with callable_mp.
 	void _update_tree(bool p_scroll_to_selected = false);
@@ -160,7 +169,6 @@ public:
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = true, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = true, bool p_children_selectable = true);
-	bool has_marked() const { return !marked.is_empty(); }
 	void set_selected(Node *p_node, bool p_emit_selected = true);
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }
@@ -196,6 +204,7 @@ class SceneTreeDialog : public ConfirmationDialog {
 	void _cancel();
 	void _selected_changed();
 	void _filter_changed(const String &p_filter);
+	void _on_filter_gui_input(const Ref<InputEvent> &p_event);
 	void _show_all_nodes_changed(bool p_button_pressed);
 
 protected:

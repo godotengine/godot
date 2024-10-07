@@ -128,6 +128,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector2" />
@@ -188,7 +196,7 @@
 			<param index="0" name="with" type="Vector2" />
 			<description>
 				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
-				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				The dot product will be [code]0[/code] for a right angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
 			</description>
@@ -265,16 +273,44 @@
 				Returns the vector with a maximum length by limiting its length to [param length].
 			</description>
 		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2(maxf(x, with.x), maxf(y, with.y))[/code].
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2(maxf(x, with), maxf(y, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2(minf(x, with.x), minf(y, with.y))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Y].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2(minf(x, with), minf(y, with))[/code].
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -288,7 +324,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
 				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
@@ -369,6 +405,13 @@
 			<param index="0" name="step" type="Vector2" />
 			<description>
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>

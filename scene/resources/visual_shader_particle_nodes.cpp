@@ -1641,11 +1641,11 @@ String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualSh
 
 	String flags_str;
 
-	for (int i = 0; i < flags_arr.size(); i++) {
-		if (i > 0) {
+	for (List<String>::ConstIterator itr = flags_arr.begin(); itr != flags_arr.end(); ++itr) {
+		if (itr != flags_arr.begin()) {
 			flags_str += "|";
 		}
-		flags_str += flags_arr[i];
+		flags_str += *itr;
 	}
 
 	if (flags_str.is_empty()) {

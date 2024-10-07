@@ -237,9 +237,6 @@ void DependencyEditor::edit(const String &p_path) {
 	}
 }
 
-void DependencyEditor::_bind_methods() {
-}
-
 DependencyEditor::DependencyEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_name(TTR("Dependencies"));
@@ -266,7 +263,7 @@ DependencyEditor::DependencyEditor() {
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
-	fixdeps->connect("pressed", callable_mp(this, &DependencyEditor::_fix_all));
+	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
 
@@ -327,7 +324,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 		EditorNode::get_singleton()->load_resource(fpath);
 	}
 	hide();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 }
 
 void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -351,9 +348,6 @@ void DependencyEditorOwners::_file_option(int p_option) {
 			}
 		} break;
 	}
-}
-
-void DependencyEditorOwners::_bind_methods() {
 }
 
 void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
@@ -396,7 +390,7 @@ void DependencyEditorOwners::show(const String &p_path) {
 DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
+	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -578,32 +572,34 @@ void DependencyRemoveDialog::ok_pressed() {
 		}
 	}
 
+	bool project_settings_modified = false;
 	for (int i = 0; i < files_to_delete.size(); ++i) {
 		// If the file we are deleting for e.g. the main scene, default environment,
 		// or audio bus layout, we must clear its definition in Project Settings.
 		if (files_to_delete[i] == String(GLOBAL_GET("application/config/icon"))) {
 			ProjectSettings::get_singleton()->set("application/config/icon", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("application/run/main_scene"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("application/run/main_scene"))) {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("application/boot_splash/image"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("application/boot_splash/image"))) {
 			ProjectSettings::get_singleton()->set("application/boot_splash/image", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
 			ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
 			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom_font"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom_font"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("audio/buses/default_bus_layout"))) {
+			project_settings_modified = true;
+		} else if (files_to_delete[i] == String(GLOBAL_GET("audio/buses/default_bus_layout"))) {
 			ProjectSettings::get_singleton()->set("audio/buses/default_bus_layout", "");
+			project_settings_modified = true;
 		}
 
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
@@ -614,6 +610,9 @@ void DependencyRemoveDialog::ok_pressed() {
 		} else {
 			emit_signal(SNAME("file_removed"), files_to_delete[i]);
 		}
+	}
+	if (project_settings_modified) {
+		ProjectSettings::get_singleton()->save();
 	}
 
 	if (dirs_to_delete.size() == 0) {
@@ -642,11 +641,11 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	for (int i = 0; i < previous_favorites.size(); ++i) {
 		if (previous_favorites[i].ends_with("/")) {
-			if (dirs_to_delete.find(previous_favorites[i]) < 0) {
+			if (!dirs_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		} else {
-			if (files_to_delete.find(previous_favorites[i]) < 0) {
+			if (!files_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		}
@@ -865,9 +864,6 @@ void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_
 	dep_edit->edit(path);
 }
 
-void OrphanResourcesDialog::_bind_methods() {
-}
-
 OrphanResourcesDialog::OrphanResourcesDialog() {
 	set_title(TTR("Orphan Resource Explorer"));
 	delete_confirm = memnew(ConfirmationDialog);
@@ -875,7 +871,7 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
-	delete_confirm->connect("confirmed", callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
+	delete_confirm->connect(SceneStringName(confirmed), callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

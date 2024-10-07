@@ -42,6 +42,8 @@ public:
 	struct TouchPos {
 		int id = 0;
 		Point2 pos;
+		float pressure = 0;
+		Vector2 tilt;
 	};
 
 	struct MouseEventInfo {

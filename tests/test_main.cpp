@@ -30,6 +30,8 @@
 
 #include "test_main.h"
 
+#include "modules/modules_enabled.gen.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -46,9 +48,13 @@
 #include "tests/core/io/test_image.h"
 #include "tests/core/io/test_ip.h"
 #include "tests/core/io/test_json.h"
+#include "tests/core/io/test_json_native.h"
 #include "tests/core/io/test_marshalls.h"
+#include "tests/core/io/test_packet_peer.h"
 #include "tests/core/io/test_pck_packer.h"
 #include "tests/core/io/test_resource.h"
+#include "tests/core/io/test_stream_peer.h"
+#include "tests/core/io/test_stream_peer_buffer.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
@@ -102,22 +108,28 @@
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
+#include "tests/scene/test_button.h"
 #include "tests/scene/test_camera_2d.h"
-#include "tests/scene/test_code_edit.h"
-#include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_control.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_gradient_texture.h"
 #include "tests/scene/test_image_texture.h"
+#include "tests/scene/test_image_texture_3d.h"
+#include "tests/scene/test_instance_placeholder.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
+#include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
+#include "tests/scene/test_path_follow_2d.h"
+#include "tests/scene/test_physics_material.h"
 #include "tests/scene/test_sprite_frames.h"
-#include "tests/scene/test_text_edit.h"
+#include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_theme.h"
+#include "tests/scene/test_timer.h"
 #include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
 #include "tests/scene/test_window.h"
@@ -125,19 +137,37 @@
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
+#ifndef ADVANCED_GUI_DISABLED
+#include "tests/scene/test_code_edit.h"
+#include "tests/scene/test_color_picker.h"
+#include "tests/scene/test_graph_node.h"
+#include "tests/scene/test_option_button.h"
+#include "tests/scene/test_tab_bar.h"
+#include "tests/scene/test_tab_container.h"
+#include "tests/scene/test_text_edit.h"
+#include "tests/scene/test_tree.h"
+#endif // ADVANCED_GUI_DISABLED
+
 #ifndef _3D_DISABLED
-#include "tests/scene/test_arraymesh.h"
-#include "tests/scene/test_camera_3d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "tests/scene/test_navigation_agent_2d.h"
 #include "tests/scene/test_navigation_agent_3d.h"
 #include "tests/scene/test_navigation_obstacle_2d.h"
 #include "tests/scene/test_navigation_obstacle_3d.h"
 #include "tests/scene/test_navigation_region_2d.h"
 #include "tests/scene/test_navigation_region_3d.h"
-#include "tests/scene/test_path_3d.h"
-#include "tests/scene/test_primitives.h"
 #include "tests/servers/test_navigation_server_2d.h"
 #include "tests/servers/test_navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
+
+#include "tests/scene/test_arraymesh.h"
+#include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_height_map_shape_3d.h"
+#include "tests/scene/test_path_3d.h"
+#include "tests/scene/test_path_follow_3d.h"
+#include "tests/scene/test_primitives.h"
+#include "tests/scene/test_skeleton_3d.h"
+#include "tests/scene/test_sky.h"
 #endif // _3D_DISABLED
 
 #include "modules/modules_tests.gen.h"
@@ -151,8 +181,10 @@
 #include "servers/navigation_server_3d.h"
 #endif // _3D_DISABLED
 #include "servers/physics_server_2d.h"
+#include "servers/physics_server_2d_dummy.h"
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
+#include "servers/physics_server_3d_dummy.h"
 #endif // _3D_DISABLED
 #include "servers/rendering/rendering_server_default.h"
 
@@ -187,7 +219,7 @@ int test_main(int argc, char *argv[]) {
 	}
 	// Doctest runner.
 	doctest::Context test_context;
-	List<String> test_args;
+	LocalVector<String> test_args;
 
 	// Clean arguments of "--test" from the args.
 	for (int x = 0; x < argc; x++) {
@@ -200,7 +232,7 @@ int test_main(int argc, char *argv[]) {
 	if (test_args.size() > 0) {
 		// Convert Godot command line arguments back to standard arguments.
 		char **doctest_args = new char *[test_args.size()];
-		for (int x = 0; x < test_args.size(); x++) {
+		for (uint32_t x = 0; x < test_args.size(); x++) {
 			// Operation to convert Godot string to non wchar string.
 			CharString cs = test_args[x].utf8();
 			const char *str = cs.get_data();
@@ -212,7 +244,7 @@ int test_main(int argc, char *argv[]) {
 
 		test_context.applyCommandLine(test_args.size(), doctest_args);
 
-		for (int x = 0; x < test_args.size(); x++) {
+		for (uint32_t x = 0; x < test_args.size(); x++) {
 			delete[] doctest_args[x];
 		}
 		delete[] doctest_args;
@@ -241,7 +273,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
 
-		if (name.find("[SceneTree]") != -1 || name.find("[Editor]") != -1) {
+		if (name.contains("[SceneTree]") || name.contains("[Editor]")) {
 			memnew(MessageQueue);
 
 			memnew(Input);
@@ -251,7 +283,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (String("mock") == DisplayServer::get_create_function_name(i)) {
-					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServer::SCREEN_PRIMARY, err);
+					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServer::SCREEN_PRIMARY, DisplayServer::CONTEXT_EDITOR, err);
 					break;
 				}
 			}
@@ -267,10 +299,16 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 #ifndef _3D_DISABLED
 			physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
+			if (!physics_server_3d) {
+				physics_server_3d = memnew(PhysicsServer3DDummy);
+			}
 			physics_server_3d->init();
 #endif // _3D_DISABLED
 
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
+			if (!physics_server_2d) {
+				physics_server_2d = memnew(PhysicsServer2DDummy);
+			}
 			physics_server_2d->init();
 
 #ifndef _3D_DISABLED
@@ -290,7 +328,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			}
 
 #ifdef TOOLS_ENABLED
-			if (name.find("[Editor]") != -1) {
+			if (name.contains("[Editor]")) {
 				Engine::get_singleton()->set_editor_hint(true);
 				EditorPaths::create();
 				EditorSettings::create();
@@ -300,7 +338,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
-		if (name.find("Audio") != -1) {
+		if (name.contains("[Audio]")) {
 			// The last driver index should always be the dummy driver.
 			int dummy_idx = AudioDriverManager::get_driver_count() - 1;
 			AudioDriverManager::initialize(dummy_idx);
@@ -310,7 +348,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 #ifndef _3D_DISABLED
-		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
+		if (suite_name.contains("[Navigation]") && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = NavigationServer2DManager::new_default_server();

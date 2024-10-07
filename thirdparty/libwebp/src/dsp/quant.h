@@ -36,8 +36,9 @@ static WEBP_INLINE int IsFlat(const int16_t* levels, int num_blocks,
                               int thresh) {
   const int16x8_t tst_ones = vdupq_n_s16(-1);
   uint32x4_t sum = vdupq_n_u32(0);
+  int i;
 
-  for (int i = 0; i < num_blocks; ++i) {
+  for (i = 0; i < num_blocks; ++i) {
     // Set DC to zero.
     const int16x8_t a_0 = vsetq_lane_s16(0, vld1q_s16(levels), 0);
     const int16x8_t a_1 = vld1q_s16(levels + 8);

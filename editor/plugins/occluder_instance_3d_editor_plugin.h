@@ -31,7 +31,7 @@
 #ifndef OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 #define OCCLUDER_INSTANCE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/resources/material.h"
 

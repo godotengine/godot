@@ -31,7 +31,7 @@
 #ifndef VOXEL_GI_EDITOR_PLUGIN_H
 #define VOXEL_GI_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
 
@@ -58,7 +58,6 @@ class VoxelGIEditorPlugin : public EditorPlugin {
 	void _voxel_gi_save_path_and_bake(const String &p_path);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:

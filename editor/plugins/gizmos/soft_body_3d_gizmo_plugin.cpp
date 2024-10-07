@@ -35,7 +35,7 @@
 #include "scene/3d/soft_body_3d.h"
 
 SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();
 	create_material("shape_material", gizmo_color);
 	create_handle_material("handles");
 }

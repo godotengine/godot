@@ -138,44 +138,77 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	const Ref<Texture2D> add_handle = get_editor_theme_icon(SNAME("EditorHandleAdd"));
 	const Ref<StyleBox> focus_stylebox = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles));
 
+	// Get the background data.
+	Rect2 background_region;
+	TileData *tile_data = nullptr;
+
+	if (background_atlas_source.is_valid()) {
+		tile_data = background_atlas_source->get_tile_data(background_atlas_coords, background_alternative_id);
+		ERR_FAIL_NULL(tile_data);
+		background_region = background_atlas_source->get_tile_texture_region(background_atlas_coords);
+	} else {
+		// If no tile was selected yet, use default size.
+		background_region.size = tile_set->get_tile_size();
+	}
+
 	// Draw the focus rectangle.
 	if (base_control->has_focus()) {
 		base_control->draw_style_box(focus_stylebox, Rect2(Vector2(), base_control->get_size()));
 	}
 
 	// Draw tile-related things.
-	Size2 tile_size = tile_set->get_tile_size();
+	const Size2 base_tile_size = tile_set->get_tile_size();
 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
 	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
 	base_control->draw_set_transform_matrix(xform);
 
-	// Draw the tile shape filled.
-	Transform2D tile_xform;
-	tile_xform.set_scale(tile_size);
-	tile_set->draw_tile_shape(base_control, tile_xform, Color(1.0, 1.0, 1.0, 0.3), true);
+	// Draw fill rect under texture region.
+	Rect2 texture_rect(Vector2(), background_region.size);
+	if (tile_data) {
+		texture_rect.position -= tile_data->get_texture_origin();
+		if (tile_data->get_transpose()) {
+			texture_rect.size = Size2(texture_rect.size.y, texture_rect.size.x);
+		}
+	}
+	texture_rect.position -= texture_rect.size / 2; // Half-size offset must be applied after transposing.
+	base_control->draw_rect(texture_rect, Color(1, 1, 1, 0.3));
 
 	// Draw the background.
-	if (background_texture.is_valid()) {
+	if (tile_data && background_atlas_source->get_texture().is_valid()) {
 		Size2 region_size = background_region.size;
-		if (background_h_flip) {
+		if (tile_data->get_flip_h()) {
 			region_size.x = -region_size.x;
 		}
-		if (background_v_flip) {
+		if (tile_data->get_flip_v()) {
 			region_size.y = -region_size.y;
 		}
-		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, region_size), background_region, background_modulate, background_transpose);
+		// Destination rect position must account for transposing, size must not.
+		base_control->draw_texture_rect_region(background_atlas_source->get_texture(), Rect2(texture_rect.position, region_size), background_region, tile_data->get_modulate(), tile_data->get_transpose());
 	}
+
+	// Compute and draw the grid area.
+	Rect2 grid_area = Rect2(-base_tile_size / 2, base_tile_size);
+	grid_area.expand_to(texture_rect.position);
+	grid_area.expand_to(texture_rect.get_end());
+	base_control->draw_rect(grid_area, Color(1, 1, 1, 0.3), false);
 
 	// Draw grid.
 	if (current_snap_option == SNAP_GRID) {
-		Vector2 spacing = tile_size / snap_subdivision->get_value();
-		Vector2 offset = -tile_size / 2;
-
-		for (int i = 1; i < snap_subdivision->get_value(); i++) {
-			base_control->draw_line(Vector2(spacing.x * i, 0) + offset, Vector2(spacing.x * i, tile_size.y) + offset, Color(1, 1, 1, 0.33));
-			base_control->draw_line(Vector2(0, spacing.y * i) + offset, Vector2(tile_size.x, spacing.y * i) + offset, Color(1, 1, 1, 0.33));
+		Vector2 spacing = base_tile_size / snap_subdivision->get_value();
+		Vector2 origin = -base_tile_size / 2;
+		for (real_t y = origin.y; y < grid_area.get_end().y; y += spacing.y) {
+			base_control->draw_line(Vector2(grid_area.get_position().x, y), Vector2(grid_area.get_end().x, y), Color(1, 1, 1, 0.33));
+		}
+		for (real_t y = origin.y - spacing.y; y > grid_area.get_position().y; y -= spacing.y) {
+			base_control->draw_line(Vector2(grid_area.get_position().x, y), Vector2(grid_area.get_end().x, y), Color(1, 1, 1, 0.33));
+		}
+		for (real_t x = origin.x; x < grid_area.get_end().x; x += spacing.x) {
+			base_control->draw_line(Vector2(x, grid_area.get_position().y), Vector2(x, grid_area.get_end().y), Color(1, 1, 1, 0.33));
+		}
+		for (real_t x = origin.x - spacing.x; x > grid_area.get_position().x; x -= spacing.x) {
+			base_control->draw_line(Vector2(x, grid_area.get_position().y), Vector2(x, grid_area.get_end().y), Color(1, 1, 1, 0.33));
 		}
 	}
 
@@ -232,7 +265,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		for (int i = 0; i < (int)polygons.size(); i++) {
 			const Vector<Vector2> &polygon = polygons[i];
 			for (int j = 0; j < polygon.size(); j++) {
-				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
+				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.4, 1, 1) : Color(1, 1, 1);
 				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, poly_modulate);
 			}
 		}
@@ -240,15 +273,15 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the text on top of the selected point.
 	if (tinted_polygon_index >= 0) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 		String text = multiple_polygon_mode ? vformat("%d:%d", tinted_polygon_index, tinted_point_index) : vformat("%d", tinted_point_index);
 		Size2 text_size = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		base_control->draw_string(font, xform.xform(polygons[tinted_polygon_index][tinted_point_index]) - text_size * 0.5, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 	}
 
 	if (drag_type == DRAG_TYPE_CREATE_POINT) {
-		base_control->draw_texture(handle, xform.xform(in_creation_point) - handle->get_size() / 2, Color(0.5, 1, 2));
+		base_control->draw_texture(handle, xform.xform(in_creation_point) - handle->get_size() / 2, Color(0.4, 1, 1));
 	}
 
 	// Draw the point creation preview in edit mode.
@@ -258,6 +291,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the tile shape line.
 	base_control->draw_set_transform_matrix(xform);
+	Transform2D tile_xform;
+	tile_xform.set_scale(base_tile_size);
 	tile_set->draw_tile_shape(base_control, tile_xform, grid_color, false);
 	base_control->draw_set_transform_matrix(Transform2D());
 }
@@ -458,7 +493,7 @@ void GenericTilePolygonEditor::_snap_point(Point2 &r_point) {
 			break;
 
 		case SNAP_HALF_PIXEL:
-			r_point = r_point.snapped(Vector2(0.5, 0.5));
+			r_point = r_point.snappedf(0.5);
 			break;
 
 		case SNAP_GRID: {
@@ -487,6 +522,21 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
 	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+		panning += pan_gesture->get_delta() * 8;
+		drag_last_pos = Vector2();
+		button_center_view->set_disabled(panning.is_zero_approx());
+		accept_event();
+	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
+		editor_zoom_widget->set_zoom(editor_zoom_widget->get_zoom() * magnify_gesture->get_factor());
+		_zoom_changed();
+		accept_event();
+	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
@@ -674,6 +724,11 @@ void GenericTilePolygonEditor::_set_snap_option(int p_index) {
 	current_snap_option = p_index;
 	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
 	snap_subdivision->set_visible(p_index == SNAP_GRID);
+
+	if (initializing) {
+		return;
+	}
+
 	base_control->queue_redraw();
 	_store_snap_options();
 }
@@ -711,7 +766,17 @@ void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 		add_polygon(polygon);
 	}
 
+	// Trigger a redraw on tile_set change.
+	Callable callable = callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw);
+	if (tile_set.is_valid()) {
+		tile_set->disconnect_changed(callable);
+	}
+
 	tile_set = p_tile_set;
+
+	if (tile_set.is_valid()) {
+		tile_set->connect_changed(callable);
+	}
 
 	// Set the default zoom value.
 	int default_control_y_size = 200 * EDSCALE;
@@ -736,14 +801,11 @@ void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 	_zoom_changed();
 }
 
-void GenericTilePolygonEditor::set_background(Ref<Texture2D> p_texture, Rect2 p_region, Vector2 p_offset, bool p_flip_h, bool p_flip_v, bool p_transpose, Color p_modulate) {
-	background_texture = p_texture;
-	background_region = p_region;
-	background_offset = p_offset;
-	background_h_flip = p_flip_h;
-	background_v_flip = p_flip_v;
-	background_transpose = p_transpose;
-	background_modulate = p_modulate;
+void GenericTilePolygonEditor::set_background_tile(const TileSetAtlasSource *p_atlas_source, const Vector2 &p_atlas_coords, int p_alternative_id) {
+	ERR_FAIL_NULL(p_atlas_source);
+	background_atlas_source = p_atlas_source;
+	background_atlas_coords = p_atlas_coords;
+	background_alternative_id = p_alternative_id;
 	base_control->queue_redraw();
 }
 
@@ -812,6 +874,11 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 				button_expand->set_pressed_no_signal(false);
 			}
 		} break;
+
+		case NOTIFICATION_READY: {
+			get_parent()->connect(SceneStringName(tree_exited), callable_mp(TileSetEditor::get_singleton(), &TileSetEditor::remove_expanded_editor));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			button_expand->set_icon(get_editor_theme_icon(SNAME("DistractionFree")));
 			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
@@ -855,7 +922,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
-	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
+	button_expand->connect(SceneStringName(toggled), callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
 	toolbar->add_child(button_expand);
 
 	toolbar->add_child(memnew(VSeparator));
@@ -893,7 +960,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_advanced_menu->get_popup()->add_item(TTR("Rotate Left"), ROTATE_LEFT, Key::E);
 	button_advanced_menu->get_popup()->add_item(TTR("Flip Horizontally"), FLIP_HORIZONTALLY, Key::H);
 	button_advanced_menu->get_popup()->add_item(TTR("Flip Vertically"), FLIP_VERTICALLY, Key::V);
-	button_advanced_menu->get_popup()->connect("id_pressed", callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
+	button_advanced_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
 	button_advanced_menu->set_focus_mode(FOCUS_ALL);
 	toolbar->add_child(button_advanced_menu);
 
@@ -929,13 +996,13 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	base_control = memnew(Control);
 	base_control->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	base_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_control->connect("draw", callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
-	base_control->connect("gui_input", callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
+	base_control->connect(SceneStringName(draw), callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
+	base_control->connect(SceneStringName(gui_input), callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
 	base_control->set_clip_contents(true);
 	base_control->set_focus_mode(Control::FOCUS_CLICK);
 	root->add_child(base_control);
-	snap_subdivision->connect("value_changed", callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw).unbind(1));
-	snap_subdivision->connect("value_changed", callable_mp(this, &GenericTilePolygonEditor::_store_snap_options).unbind(1));
+	snap_subdivision->connect(SceneStringName(value_changed), callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw).unbind(1));
+	snap_subdivision->connect(SceneStringName(value_changed), callable_mp(this, &GenericTilePolygonEditor::_store_snap_options).unbind(1));
 
 	editor_zoom_widget = memnew(EditorZoomWidget);
 	editor_zoom_widget->setup_zoom_limits(0.125, 128.0);
@@ -947,7 +1014,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view = memnew(Button);
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
-	button_center_view->connect("pressed", callable_mp(this, &GenericTilePolygonEditor::_center_view));
+	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &GenericTilePolygonEditor::_center_view));
 	button_center_view->set_theme_type_variation("FlatButton");
 	button_center_view->set_tooltip_text(TTR("Center View"));
 	button_center_view->set_disabled(true);
@@ -955,6 +1022,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 
 	snap_subdivision->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_subdiv", 4));
 	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
+	initializing = false;
 }
 
 void TileDataDefaultEditor::_property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field) {
@@ -1034,7 +1102,7 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 	}
 };
 
-void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){
+void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
 
 };
 
@@ -1314,7 +1382,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 }
 
@@ -1337,10 +1405,8 @@ void TileDataTextureOriginEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 
 	TileSetSource *source = *(tile_set->get_source(p_cell.source_id));
 	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	if (atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, -tile_set_tile_size / 2) && atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, tile_set_tile_size / 2 - Vector2(1, 1))) {
-		Transform2D tile_xform;
-		tile_xform.set_scale(tile_set_tile_size);
-		tile_set->draw_tile_shape(p_canvas_item, p_transform * tile_xform, color);
+	if (atlas_source->is_rect_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, Rect2(Vector2(-tile_set_tile_size) / 2, tile_set_tile_size))) {
+		tile_set->draw_tile_shape(p_canvas_item, p_transform.scaled_local(tile_set_tile_size), color);
 	}
 
 	if (atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, Vector2())) {
@@ -1421,47 +1487,62 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	debug_occlusion_color.push_back(color);
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
-	Ref<OccluderPolygon2D> occluder = tile_data->get_occluder(occlusion_layer);
-	if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
-		p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		Ref<OccluderPolygon2D> occluder = tile_data->get_occluder_polygon(occlusion_layer, i);
+		if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
+			p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+		}
 	}
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
 
 Variant TileDataOcclusionShapeEditor::_get_painted_value() {
-	Ref<OccluderPolygon2D> occluder_polygon;
-	if (polygon_editor->get_polygon_count() >= 1) {
+	Array polygons;
+	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon;
 		occluder_polygon.instantiate();
-		occluder_polygon->set_polygon(polygon_editor->get_polygon(0));
+		occluder_polygon->set_polygon(polygon_editor->get_polygon(i));
+		polygons.push_back(occluder_polygon);
 	}
-	return occluder_polygon;
+	return polygons;
 }
 
 void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
 
-	Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer);
 	polygon_editor->clear_polygons();
-	if (occluder_polygon.is_valid()) {
-		polygon_editor->add_polygon(occluder_polygon->get_polygon());
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder_polygon(occlusion_layer, i);
+		if (occluder_polygon.is_valid()) {
+			polygon_editor->add_polygon(occluder_polygon->get_polygon());
+		}
 	}
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
 
 void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
-	Ref<OccluderPolygon2D> occluder_polygon = p_value;
-	tile_data->set_occluder(occlusion_layer, occluder_polygon);
 
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	Array polygons = p_value;
+	tile_data->set_occluder_polygons_count(occlusion_layer, polygons.size());
+	for (int i = 0; i < polygons.size(); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon = polygons[i];
+		tile_data->set_occluder_polygon(occlusion_layer, i, occluder_polygon);
+	}
+
+	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
 
 Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL_V(tile_data, Variant());
-	return tile_data->get_occluder(occlusion_layer);
+	Array polygons;
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		polygons.push_back(tile_data->get_occluder_polygon(occlusion_layer, i));
+	}
+	return polygons;
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, const Variant &p_new_value) {
@@ -1487,6 +1568,7 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
 	polygon_editor = memnew(GenericTilePolygonEditor);
+	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);
 }
 
@@ -1602,7 +1684,7 @@ void TileDataCollisionEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_
 		E.value->update_property();
 	}
 
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
 
 void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
@@ -1621,7 +1703,7 @@ void TileDataCollisionEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_so
 		tile_data->set_collision_polygon_one_way_margin(physics_layer, i, polygon_dict["one_way_margin"]);
 	}
 
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
 
 Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
@@ -2801,7 +2883,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 
 	// Setup
@@ -2862,7 +2944,7 @@ void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set
 			polygon_editor->add_polygon(nav_polygon->get_outline(i));
 		}
 	}
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
 
 void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
@@ -2871,7 +2953,7 @@ void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_s
 	Ref<NavigationPolygon> nav_polygon = p_value;
 	tile_data->set_navigation_polygon(navigation_layer, nav_polygon);
 
-	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
 
 Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {

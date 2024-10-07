@@ -87,7 +87,7 @@ using OT::Layout::GPOS;
 bool
 hb_ot_layout_has_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_data ();
+  return face->table.kern->table->has_data ();
 }
 
 /**
@@ -103,7 +103,7 @@ hb_ot_layout_has_kerning (hb_face_t *face)
 bool
 hb_ot_layout_has_machine_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_state_machine ();
+  return face->table.kern->table->has_state_machine ();
 }
 
 /**
@@ -123,7 +123,7 @@ hb_ot_layout_has_machine_kerning (hb_face_t *face)
 bool
 hb_ot_layout_has_cross_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_cross_stream ();
+  return face->table.kern->table->has_cross_stream ();
 }
 
 void
@@ -132,7 +132,7 @@ hb_ot_layout_kern (const hb_ot_shape_plan_t *plan,
 		   hb_buffer_t  *buffer)
 {
   hb_blob_t *blob = font->face->table.kern.get_blob ();
-  const AAT::kern& kern = *blob->as<AAT::kern> ();
+  const auto& kern = *font->face->table.kern;
 
   AAT::hb_aat_apply_context_t c (plan, font, buffer, blob);
 
@@ -1443,8 +1443,12 @@ hb_ot_layout_table_find_feature_variations (hb_face_t    *face,
 					    unsigned int *variations_index /* out */)
 {
   const OT::GSUBGPOS &g = get_gsubgpos_table (face, table_tag);
+  const OT::GDEF &gdef = *face->table.GDEF->table;
 
-  return g.find_variations_index (coords, num_coords, variations_index);
+  auto instancer = OT::ItemVarStoreInstancer(&gdef.get_var_store(), nullptr,
+					     hb_array (coords, num_coords));
+
+  return g.find_variations_index (coords, num_coords, variations_index, &instancer);
 }
 
 

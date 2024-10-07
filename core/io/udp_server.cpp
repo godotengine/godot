@@ -161,7 +161,7 @@ Ref<PacketPeerUDP> UDPServer::take_connection() {
 		return conn;
 	}
 
-	Peer peer = pending[0];
+	Peer peer = pending.front()->get();
 	pending.pop_front();
 	peers.push_back(peer);
 	return peer.peer;

@@ -52,6 +52,12 @@ class NavigationRegion2D : public Node2D {
 
 #ifdef DEBUG_ENABLED
 private:
+	RID debug_mesh_rid;
+	RID debug_instance_rid;
+
+	bool debug_mesh_dirty = true;
+
+	void _free_debug();
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
 	void _update_debug_baking_rect();

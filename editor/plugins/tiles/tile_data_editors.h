@@ -54,7 +54,7 @@ private:
 protected:
 	Ref<TileSet> tile_set;
 	TileData *_get_tile_data(TileMapCell p_cell);
-	virtual void _tile_set_changed(){};
+	virtual void _tile_set_changed() {}
 
 	static void _bind_methods();
 
@@ -63,13 +63,13 @@ public:
 
 	// Input to handle painting.
 	virtual Control *get_toolbar() { return nullptr; };
-	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){};
-	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){};
-	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event){};
-	virtual void forward_painting_alternatives_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event){};
+	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {}
+	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {}
+	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) {}
+	virtual void forward_painting_alternatives_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) {}
 
 	// Used to draw the tile data property value over a tile.
-	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false){};
+	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) {}
 };
 
 class DummyObject : public Object {
@@ -140,14 +140,11 @@ private:
 	EditorZoomWidget *editor_zoom_widget = nullptr;
 	Button *button_center_view = nullptr;
 	Vector2 panning;
+	bool initializing = true;
 
-	Ref<Texture2D> background_texture;
-	Rect2 background_region;
-	Vector2 background_offset;
-	bool background_h_flip = false;
-	bool background_v_flip = false;
-	bool background_transpose = false;
-	Color background_modulate;
+	Ref<TileSetAtlasSource> background_atlas_source;
+	Vector2i background_atlas_coords;
+	int background_alternative_id;
 
 	Color polygon_color = Color(1.0, 0.0, 0.0);
 
@@ -182,7 +179,7 @@ public:
 	void set_use_undo_redo(bool p_use_undo_redo);
 
 	void set_tile_set(Ref<TileSet> p_tile_set);
-	void set_background(Ref<Texture2D> p_texture, Rect2 p_region = Rect2(), Vector2 p_offset = Vector2(), bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, Color p_modulate = Color(1.0, 1.0, 1.0, 0.0));
+	void set_background_tile(const TileSetAtlasSource *p_atlas_source, const Vector2 &p_atlas_coords, int p_alternative_id);
 
 	int get_polygon_count();
 	int add_polygon(const Vector<Point2> &p_polygon, int p_index = -1);

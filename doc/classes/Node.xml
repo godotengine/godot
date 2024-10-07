@@ -255,7 +255,7 @@
 			<return type="Node" />
 			<param index="0" name="flags" type="int" default="15" />
 			<description>
-				Duplicates the node, returning a new node with all of its properties, signals and groups copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]).
+				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]).
 				[b]Note:[/b] For nodes with a [Script] attached, if [method Object._init] has been defined with required parameters, the duplicated node will not have a [Script].
 			</description>
 		</method>
@@ -498,6 +498,12 @@
 				Returns the time elapsed (in seconds) since the last process callback. This value is identical to [method _process]'s [code]delta[/code] parameter, and may vary from frame to frame. See also [constant NOTIFICATION_PROCESS].
 			</description>
 		</method>
+		<method name="get_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
+			</description>
+		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -617,6 +623,12 @@
 			<description>
 				Returns [code]true[/code] if the node is ready, i.e. it's inside scene tree and all its children are initialized.
 				[method request_ready] resets it back to [code]false[/code].
+			</description>
+		</method>
+		<method name="is_part_of_edited_scene" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is part of the scene currently opened in the editor.
 			</description>
 		</method>
 		<method name="is_physics_interpolated" qualifiers="const">
@@ -961,6 +973,13 @@
 				Similar to [method call_thread_safe], but for setting properties.
 			</description>
 		</method>
+		<method name="set_translation_domain_inherited">
+			<return type="void" />
+			<description>
+				Makes this node inherit the translation domain from its parent node. If this node has no parent, the main translation domain will be used.
+				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
+			</description>
+		</method>
 		<method name="update_configuration_warnings">
 			<return type="void" />
 			<description>
@@ -985,7 +1004,7 @@
 			[b]Note:[/b] When changing the name, the following characters will be replaced with an underscore: ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]). In particular, the [code]@[/code] character is reserved for auto-generated names. See also [method String.validate_node_name].
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
-			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it. 
+			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it.
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child]. See also (see [member unique_name_in_owner])
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
@@ -1011,7 +1030,7 @@
 			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
 		</member>
 		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages" is_bitfield="true">
-			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads, and whether it wants to receive them during regular process or physics process callbacks.
+			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads), and whether it wants to receive them during regular process or physics process callbacks.
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			The original scene's file path, if the node has been instantiated from a [PackedScene] file. Only scene root nodes contains this.
@@ -1181,7 +1200,7 @@
 		</constant>
 		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 			Notification received from the OS when a go back request is sent (e.g. pressing the "Back" button on Android).
-			Implemented only on iOS.
+			Implemented only on Android.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
 			Notification received when the window is resized.

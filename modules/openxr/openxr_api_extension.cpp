@@ -43,11 +43,16 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_proc_addr", "name"), &OpenXRAPIExtension::get_instance_proc_addr);
 	ClassDB::bind_method(D_METHOD("get_error_string", "result"), &OpenXRAPIExtension::get_error_string);
 	ClassDB::bind_method(D_METHOD("get_swapchain_format_name", "swapchain_format"), &OpenXRAPIExtension::get_swapchain_format_name);
+	ClassDB::bind_method(D_METHOD("set_object_name", "object_type", "object_handle", "object_name"), &OpenXRAPIExtension::set_object_name);
+	ClassDB::bind_method(D_METHOD("begin_debug_label_region", "label_name"), &OpenXRAPIExtension::begin_debug_label_region);
+	ClassDB::bind_method(D_METHOD("end_debug_label_region"), &OpenXRAPIExtension::end_debug_label_region);
+	ClassDB::bind_method(D_METHOD("insert_debug_label", "label_name"), &OpenXRAPIExtension::insert_debug_label);
 
 	ClassDB::bind_method(D_METHOD("is_initialized"), &OpenXRAPIExtension::is_initialized);
 	ClassDB::bind_method(D_METHOD("is_running"), &OpenXRAPIExtension::is_running);
 
 	ClassDB::bind_method(D_METHOD("get_play_space"), &OpenXRAPIExtension::get_play_space);
+	ClassDB::bind_method(D_METHOD("get_predicted_display_time"), &OpenXRAPIExtension::get_predicted_display_time);
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
 	ClassDB::bind_method(D_METHOD("can_render"), &OpenXRAPIExtension::can_render);
 
@@ -115,6 +120,30 @@ String OpenXRAPIExtension::get_swapchain_format_name(int64_t p_swapchain_format)
 	return OpenXRAPI::get_singleton()->get_swapchain_format_name(p_swapchain_format);
 }
 
+void OpenXRAPIExtension::set_object_name(int64_t p_object_type, uint64_t p_object_handle, const String &p_object_name) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::get_singleton()->set_object_name(XrObjectType(p_object_type), p_object_handle, p_object_name);
+}
+
+void OpenXRAPIExtension::begin_debug_label_region(const String &p_label_name) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::get_singleton()->begin_debug_label_region(p_label_name);
+}
+
+void OpenXRAPIExtension::end_debug_label_region() {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::get_singleton()->end_debug_label_region();
+}
+
+void OpenXRAPIExtension::insert_debug_label(const String &p_label_name) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::get_singleton()->insert_debug_label(p_label_name);
+}
+
 bool OpenXRAPIExtension::is_initialized() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 	return OpenXRAPI::get_singleton()->is_initialized();
@@ -130,8 +159,17 @@ uint64_t OpenXRAPIExtension::get_play_space() {
 	return (uint64_t)OpenXRAPI::get_singleton()->get_play_space();
 }
 
+int64_t OpenXRAPIExtension::get_predicted_display_time() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (XrTime)OpenXRAPI::get_singleton()->get_predicted_display_time();
+}
+
 int64_t OpenXRAPIExtension::get_next_frame_time() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+
+	// In the past we needed to look a frame ahead, may be calling this unintentionally so lets warn the dev.
+	WARN_PRINT_ONCE("OpenXR: Next frame timing called, verify this is intended.");
+
 	return (XrTime)OpenXRAPI::get_singleton()->get_next_frame_time();
 }
 

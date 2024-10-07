@@ -124,7 +124,7 @@ Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {
 void OpenXRActionSet::add_action(Ref<OpenXRAction> p_action) {
 	ERR_FAIL_COND(p_action.is_null());
 
-	if (actions.find(p_action) == -1) {
+	if (!actions.has(p_action)) {
 		if (p_action->action_set && p_action->action_set != this) {
 			// action should only relate to our action set
 			p_action->action_set->remove_action(p_action);

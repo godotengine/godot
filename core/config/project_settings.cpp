@@ -31,7 +31,6 @@
 #include "project_settings.h"
 
 #include "core/core_bind.h" // For Compression enum.
-#include "core/core_string_names.h"
 #include "core/input/input_map.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
@@ -253,7 +252,7 @@ bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 }
 
 void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
-	ERR_FAIL_COND_MSG(hidden_prefixes.find(p_prefix) > -1, vformat("Hidden prefix '%s' already exists.", p_prefix));
+	ERR_FAIL_COND_MSG(hidden_prefixes.has(p_prefix), vformat("Hidden prefix '%s' already exists.", p_prefix));
 	hidden_prefixes.push_back(p_prefix);
 }
 
@@ -291,7 +290,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 	} else {
-		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
+		if (p_name == CoreStringName(_custom_features)) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
@@ -330,9 +329,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			String path = p_value;
 			if (path.begins_with("*")) {
 				autoload.is_singleton = true;
-				autoload.path = path.substr(1);
+				autoload.path = path.substr(1).simplify_path();
 			} else {
-				autoload.path = path;
+				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
@@ -349,7 +348,6 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
 	if (!props.has(p_name)) {
-		WARN_PRINT("Property not found: " + String(p_name));
 		return false;
 	}
 	r_ret = props[p_name].variant;
@@ -875,7 +873,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 	if (!p_custom_features.is_empty()) {
 		// Store how many properties are saved, add one for custom features, which must always go first.
 		file->store_32(count + 1);
-		String key = CoreStringNames::get_singleton()->_custom_features;
+		String key = CoreStringName(_custom_features);
 		file->store_pascal_string(key);
 
 		int len;
@@ -1399,7 +1397,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			}
 
 			Dictionary action;
-			action["deadzone"] = Variant(0.5f);
+			action["deadzone"] = Variant(0.2f);
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
@@ -1473,27 +1471,18 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
-	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
-
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type.web", PROPERTY_HINT_ENUM, "Stream,Sample"), 1);
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"), 0);
 	GLOBAL_DEF("audio/general/ios/mix_with_others", false);
-
-	PackedStringArray extensions;
-	extensions.push_back("gd");
-	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
-		extensions.push_back("cs");
-	}
-	extensions.push_back("gdshader");
-
-	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
 
 	_add_builtin_input_map();
 
@@ -1512,6 +1501,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/scale_mode", PROPERTY_HINT_ENUM, "fractional,integer"), "fractional");
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/profiler/max_timestamp_query_elements", PROPERTY_HINT_RANGE, "256,65535,1"), 256);
 
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching"), Compression::zstd_long_distance_matching);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1"), Compression::zstd_level);
@@ -1531,6 +1521,10 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("internationalization/rendering/root_node_auto_translate", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+#ifdef TOOLS_ENABLED
+	GLOBAL_DEF("gui/timers/tooltip_delay_sec.editor_hint", 0.5);
+#endif
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
@@ -1551,12 +1545,21 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", 512);
 	custom_prop_info["rendering/rendering_device/d3d12/max_misc_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PROPERTY_HINT_RANGE, "32,4096");
 
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version"), 610);
+	// The default value must match the minor part of the Agility SDK version
+	// installed by the scripts provided in the repository
+	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
+	// For example, if the script installs 1.613.3, the default value must be 613.
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version"), 613);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
 
 	GLOBAL_DEF("collada/use_ambient", false);
+
+	// Input settings
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
@@ -1568,6 +1571,15 @@ ProjectSettings::ProjectSettings() {
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }
 
+ProjectSettings::ProjectSettings(const String &p_path) {
+	if (load_custom(p_path) == OK) {
+		resource_path = p_path.get_base_dir();
+		project_loaded = true;
+	}
+}
+
 ProjectSettings::~ProjectSettings() {
-	singleton = nullptr;
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

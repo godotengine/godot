@@ -20,6 +20,7 @@ extern "C" {
 
 #include "src/utils/rescaler_utils.h"
 #include "src/dec/vp8_dec.h"
+#include "src/webp/decode.h"
 
 //------------------------------------------------------------------------------
 // WebPDecParams: Decoding output parameters. Transient internal object.
@@ -87,8 +88,9 @@ void WebPInitCustomIo(WebPDecParams* const params, VP8Io* const io);
 
 // Setup crop_xxx fields, mb_w and mb_h in io. 'src_colorspace' refers
 // to the *compressed* format, not the output one.
-int WebPIoInitFromOptions(const WebPDecoderOptions* const options,
-                          VP8Io* const io, WEBP_CSP_MODE src_colorspace);
+WEBP_NODISCARD int WebPIoInitFromOptions(
+    const WebPDecoderOptions* const options, VP8Io* const io,
+    WEBP_CSP_MODE src_colorspace);
 
 //------------------------------------------------------------------------------
 // Internal functions regarding WebPDecBuffer memory (in buffer.c).

@@ -10,7 +10,6 @@ _FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_mod_version(argcount, const=False, returns=False):
     s = proto_mod
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
@@ -56,10 +55,10 @@ def generate_mod_version(argcount, const=False, returns=False):
 
 proto_ex = """
 #define EXBIND$VER($RETTYPE m_name$ARG) \\
-GDVIRTUAL$VER($RETTYPE_##m_name$ARG)\\
+GDVIRTUAL$VER_REQUIRED($RETTYPE_##m_name$ARG)\\
 virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
     $RETPRE\\
-    GDVIRTUAL_REQUIRED_CALL(_##m_name$CALLARGS$RETREF);\\
+    GDVIRTUAL_CALL(_##m_name$CALLARGS$RETREF);\\
     $RETPOST\\
 }
 """
@@ -68,7 +67,6 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_ex_version(argcount, const=False, returns=False):
     s = proto_ex
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")

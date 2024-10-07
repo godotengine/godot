@@ -239,13 +239,6 @@ void main() {
 	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif // USE_INSTANCING
 
-#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(read_draw_data_flags & FLAGS_USING_PARTICLES)) {
-		//scale by texture size
-		vertex /= read_draw_data_color_texture_pixel_size;
-	}
-#endif
-
 	vec2 color_texture_pixel_size = read_draw_data_color_texture_pixel_size;
 
 #ifdef USE_POINT_SIZE
@@ -269,14 +262,14 @@ void main() {
 
 	color_interp = color;
 
+	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
+
 	if (use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid
 		uv += 1e-5;
 	}
-
-	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
 	vertex_interp = vertex;
 	uv_interp = uv;
@@ -346,14 +339,16 @@ uniform sampler2D color_texture; //texunit:0
 
 layout(location = 0) out vec4 frag_color;
 
+/* clang-format off */
+// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:4
 
 #MATERIAL_UNIFORMS
 
 };
 #endif
+/* clang-format on */
 
 #GLOBALS
 
@@ -584,7 +579,8 @@ void main() {
 
 #endif
 	if (bool(read_draw_data_flags & FLAGS_CLIP_RECT_UV)) {
-		uv = clamp(uv, read_draw_data_src_rect.xy, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw));
+		vec2 half_texpixel = read_draw_data_color_texture_pixel_size * 0.5;
+		uv = clamp(uv, read_draw_data_src_rect.xy + half_texpixel, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) - half_texpixel);
 	}
 
 #endif
@@ -776,6 +772,12 @@ void main() {
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array[light_base].texture_matrix[0], light_array[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 		vec2 tex_uv_atlas = tex_uv * light_array[light_base].atlas_rect.zw + light_array[light_base].atlas_rect.xy;
+
+		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
+			//if outside the light texture, light color is zero
+			continue;
+		}
+
 		vec4 light_color = textureLod(atlas_texture, tex_uv_atlas, 0.0);
 		vec4 light_base_color = light_array[light_base].color;
 
@@ -800,10 +802,6 @@ void main() {
 			light_color.rgb *= base_color.rgb;
 		}
 #endif
-		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
-			//if outside the light texture, light color is zero
-			light_color.a = 0.0;
-		}
 
 		if (bool(light_array[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
 			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array[light_base].shadow_matrix[0], light_array[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.

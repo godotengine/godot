@@ -33,7 +33,6 @@
 
 #include "core/io/marshalls.h"
 #include "core/math/geometry_3d.h"
-#include "scene/scene_string_names.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -63,6 +62,23 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 			compression.pages[i].time_offset = page["time_offset"];
 		}
 		compression.enabled = true;
+		return true;
+	} else if (prop_name == SNAME("markers")) {
+		Array markers = p_value;
+		for (const Dictionary marker : markers) {
+			ERR_FAIL_COND_V(!marker.has("name"), false);
+			ERR_FAIL_COND_V(!marker.has("time"), false);
+			StringName marker_name = marker["name"];
+			double time = marker["time"];
+			_marker_insert(time, marker_names, MarkerKey(time, marker_name));
+			marker_times.insert(marker_name, time);
+			Color color = Color(1, 1, 1);
+			if (marker.has("color")) {
+				color = marker["color"];
+			}
+			marker_colors.insert(marker_name, color);
+		}
+
 		return true;
 	} else if (prop_name.begins_with("tracks/")) {
 		int track = prop_name.get_slicec('/', 1).to_int();
@@ -247,6 +263,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					}
 					vt->update_mode = UpdateMode(um);
 				}
+				capture_included = capture_included || (vt->update_mode == UPDATE_CAPTURE);
 
 				Vector<real_t> times = d["times"];
 				Array values = d["values"];
@@ -321,8 +338,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				Vector<real_t> times = d["times"];
 				Vector<real_t> values = d["points"];
 #ifdef TOOLS_ENABLED
-				ERR_FAIL_COND_V(!d.has("handle_modes"), false);
-				Vector<int> handle_modes = d["handle_modes"];
+				Vector<int> handle_modes;
+				if (d.has("handle_modes")) {
+					handle_modes = d["handle_modes"];
+				} else {
+					handle_modes.resize_zeroed(times.size());
+				}
 #endif // TOOLS_ENABLED
 
 				ERR_FAIL_COND_V(times.size() * 5 != values.size(), false);
@@ -466,6 +487,18 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 		r_ret = comp;
 		return true;
+	} else if (prop_name == SNAME("markers")) {
+		Array markers;
+
+		for (HashMap<StringName, double>::ConstIterator E = marker_times.begin(); E; ++E) {
+			Dictionary d;
+			d["name"] = E->key;
+			d["time"] = E->value;
+			d["color"] = marker_colors[E->key];
+			markers.push_back(d);
+		}
+
+		r_ret = markers;
 	} else if (prop_name == "length") {
 		r_ret = length;
 	} else if (prop_name == "loop_mode") {
@@ -835,6 +868,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (compression.enabled) {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "_compression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "markers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	for (int i = 0; i < tracks.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "tracks/" + itos(i) + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
@@ -966,6 +1000,24 @@ void Animation::remove_track(int p_track) {
 	memdelete(t);
 	tracks.remove_at(p_track);
 	emit_changed();
+	_check_capture_included();
+}
+
+bool Animation::is_capture_included() const {
+	return capture_included;
+}
+
+void Animation::_check_capture_included() {
+	capture_included = false;
+	for (int i = 0; i < tracks.size(); i++) {
+		if (tracks[i]->type == TYPE_VALUE) {
+			ValueTrack *vt = static_cast<ValueTrack *>(tracks[i]);
+			if (vt->update_mode == UPDATE_CAPTURE) {
+				capture_included = true;
+				break;
+			}
+		}
+	}
 }
 
 int Animation::get_track_count() const {
@@ -1051,6 +1103,27 @@ int Animation::_insert(double p_time, T &p_keys, const V &p_value) {
 			float transition = p_keys[idx - 1].transition;
 			p_keys.write[idx - 1] = p_value;
 			p_keys.write[idx - 1].transition = transition;
+			return idx - 1;
+
+			// Condition for insert.
+		} else if (idx == 0 || p_keys[idx - 1].time < p_time) {
+			p_keys.insert(idx, p_value);
+			return idx;
+		}
+
+		idx--;
+	}
+
+	return -1;
+}
+
+int Animation::_marker_insert(double p_time, Vector<MarkerKey> &p_keys, const MarkerKey &p_value) {
+	int idx = p_keys.size();
+
+	while (true) {
+		// Condition for replacement.
+		if (idx > 0 && Math::is_equal_approx((double)p_keys[idx - 1].time, p_time)) {
+			p_keys.write[idx - 1] = p_value;
 			return idx - 1;
 
 			// Condition for insert.
@@ -1474,7 +1547,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	emit_changed();
 }
 
-int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, bool p_limit) const {
+int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, bool p_limit, bool p_backward) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 
@@ -1496,7 +1569,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(tt->positions, p_time, false, p_limit);
+			int k = _find(tt->positions, p_time, p_backward, p_limit);
 			if (k < 0 || k >= tt->positions.size()) {
 				return -1;
 			}
@@ -1523,7 +1596,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(rt->rotations, p_time, false, p_limit);
+			int k = _find(rt->rotations, p_time, p_backward, p_limit);
 			if (k < 0 || k >= rt->rotations.size()) {
 				return -1;
 			}
@@ -1550,7 +1623,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(st->scales, p_time, false, p_limit);
+			int k = _find(st->scales, p_time, p_backward, p_limit);
 			if (k < 0 || k >= st->scales.size()) {
 				return -1;
 			}
@@ -1577,7 +1650,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 				return key_index;
 			}
 
-			int k = _find(bst->blend_shapes, p_time, false, p_limit);
+			int k = _find(bst->blend_shapes, p_time, p_backward, p_limit);
 			if (k < 0 || k >= bst->blend_shapes.size()) {
 				return -1;
 			}
@@ -1589,7 +1662,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
-			int k = _find(vt->values, p_time, false, p_limit);
+			int k = _find(vt->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= vt->values.size()) {
 				return -1;
 			}
@@ -1601,7 +1674,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
-			int k = _find(mt->methods, p_time, false, p_limit);
+			int k = _find(mt->methods, p_time, p_backward, p_limit);
 			if (k < 0 || k >= mt->methods.size()) {
 				return -1;
 			}
@@ -1613,7 +1686,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bt = static_cast<BezierTrack *>(t);
-			int k = _find(bt->values, p_time, false, p_limit);
+			int k = _find(bt->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= bt->values.size()) {
 				return -1;
 			}
@@ -1625,7 +1698,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *at = static_cast<AudioTrack *>(t);
-			int k = _find(at->values, p_time, false, p_limit);
+			int k = _find(at->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
@@ -1637,7 +1710,7 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
-			int k = _find(at->values, p_time, false, p_limit);
+			int k = _find(at->values, p_time, p_backward, p_limit);
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
@@ -1699,7 +1772,7 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 			ERR_FAIL_COND_V(p_key.get_type() != Variant::DICTIONARY, -1);
 
 			Dictionary d = p_key;
-			ERR_FAIL_COND_V(!d.has("method") || (d["method"].get_type() != Variant::STRING_NAME && d["method"].get_type() != Variant::STRING), -1);
+			ERR_FAIL_COND_V(!d.has("method") || !d["method"].is_string(), -1);
 			ERR_FAIL_COND_V(!d.has("args") || !d["args"].is_array(), -1);
 
 			MethodKey k;
@@ -2681,6 +2754,8 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
+
+	_check_capture_included();
 	emit_changed();
 }
 
@@ -3139,6 +3214,90 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 	}
 }
 
+void Animation::add_marker(const StringName &p_name, double p_time) {
+	int idx = _find(marker_names, p_time);
+
+	if (idx >= 0 && idx < marker_names.size() && Math::is_equal_approx(p_time, marker_names[idx].time)) {
+		marker_times.erase(marker_names[idx].name);
+		marker_colors.erase(marker_names[idx].name);
+		marker_names.write[idx].name = p_name;
+		marker_times.insert(p_name, p_time);
+		marker_colors.insert(p_name, Color(1, 1, 1));
+	} else {
+		_marker_insert(p_time, marker_names, MarkerKey(p_time, p_name));
+		marker_times.insert(p_name, p_time);
+		marker_colors.insert(p_name, Color(1, 1, 1));
+	}
+}
+
+void Animation::remove_marker(const StringName &p_name) {
+	HashMap<StringName, double>::Iterator E = marker_times.find(p_name);
+	ERR_FAIL_COND(!E);
+	int idx = _find(marker_names, E->value);
+	bool success = idx >= 0 && idx < marker_names.size() && Math::is_equal_approx(marker_names[idx].time, E->value);
+	ERR_FAIL_COND(!success);
+	marker_names.remove_at(idx);
+	marker_times.remove(E);
+	marker_colors.erase(p_name);
+}
+
+bool Animation::has_marker(const StringName &p_name) const {
+	return marker_times.has(p_name);
+}
+
+StringName Animation::get_marker_at_time(double p_time) const {
+	int idx = _find(marker_names, p_time);
+
+	if (idx >= 0 && idx < marker_names.size() && Math::is_equal_approx(marker_names[idx].time, p_time)) {
+		return marker_names[idx].name;
+	}
+
+	return StringName();
+}
+
+StringName Animation::get_next_marker(double p_time) const {
+	int idx = _find(marker_names, p_time);
+
+	if (idx >= -1 && idx < marker_names.size() - 1) {
+		// _find ensures that the time at idx is always the closest time to p_time that is also smaller to it.
+		// So we add 1 to get the next marker.
+		return marker_names[idx + 1].name;
+	}
+	return StringName();
+}
+
+StringName Animation::get_prev_marker(double p_time) const {
+	int idx = _find(marker_names, p_time);
+
+	if (idx >= 0 && idx < marker_names.size()) {
+		return marker_names[idx].name;
+	}
+	return StringName();
+}
+
+double Animation::get_marker_time(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!marker_times.has(p_name), -1);
+	return marker_times.get(p_name);
+}
+
+PackedStringArray Animation::get_marker_names() const {
+	PackedStringArray names;
+	// We iterate on marker_names so the result is sorted by time.
+	for (const MarkerKey &marker_name : marker_names) {
+		names.push_back(marker_name.name);
+	}
+	return names;
+}
+
+Color Animation::get_marker_color(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!marker_colors.has(p_name), Color());
+	return marker_colors[p_name];
+}
+
+void Animation::set_marker_color(const StringName &p_name, const Color &p_color) {
+	marker_colors[p_name] = p_color;
+}
+
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), Vector<Variant>());
 	Track *t = tracks[p_track];
@@ -3163,6 +3322,20 @@ StringName Animation::method_track_get_name(int p_track, int p_key_idx) const {
 	ERR_FAIL_INDEX_V(p_key_idx, pm->methods.size(), StringName());
 
 	return pm->methods[p_key_idx].method;
+}
+
+Array Animation::make_default_bezier_key(float p_value) {
+	const double max_width = length / 2.0;
+	Array new_point;
+	new_point.resize(5);
+
+	new_point[0] = p_value;
+	new_point[1] = MAX(-0.25, -max_width);
+	new_point[2] = 0;
+	new_point[3] = MIN(0.25, max_width);
+	new_point[4] = 0;
+
+	return new_point;
 }
 
 int Animation::bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle) {
@@ -3812,7 +3985,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_get_key_count", "track_idx"), &Animation::track_get_key_count);
 	ClassDB::bind_method(D_METHOD("track_get_key_value", "track_idx", "key_idx"), &Animation::track_get_key_value);
 	ClassDB::bind_method(D_METHOD("track_get_key_time", "track_idx", "key_idx"), &Animation::track_get_key_time);
-	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "find_mode", "limit"), &Animation::track_find_key, DEFVAL(FIND_MODE_NEAREST), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("track_find_key", "track_idx", "time", "find_mode", "limit", "backward"), &Animation::track_find_key, DEFVAL(FIND_MODE_NEAREST), DEFVAL(false), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "track_idx", "interpolation"), &Animation::track_set_interpolation_type);
 	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "track_idx"), &Animation::track_get_interpolation_type);
@@ -3856,6 +4029,17 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "track_idx", "key_idx"), &Animation::animation_track_get_key_animation);
 
+	ClassDB::bind_method(D_METHOD("add_marker", "name", "time"), &Animation::add_marker);
+	ClassDB::bind_method(D_METHOD("remove_marker", "name"), &Animation::remove_marker);
+	ClassDB::bind_method(D_METHOD("has_marker", "name"), &Animation::has_marker);
+	ClassDB::bind_method(D_METHOD("get_marker_at_time", "time"), &Animation::get_marker_at_time);
+	ClassDB::bind_method(D_METHOD("get_next_marker", "time"), &Animation::get_next_marker);
+	ClassDB::bind_method(D_METHOD("get_prev_marker", "time"), &Animation::get_prev_marker);
+	ClassDB::bind_method(D_METHOD("get_marker_time", "name"), &Animation::get_marker_time);
+	ClassDB::bind_method(D_METHOD("get_marker_names"), &Animation::get_marker_names);
+	ClassDB::bind_method(D_METHOD("get_marker_color", "name"), &Animation::get_marker_color);
+	ClassDB::bind_method(D_METHOD("set_marker_color", "name", "color"), &Animation::set_marker_color);
+
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);
 
@@ -3868,11 +4052,15 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
+	ClassDB::bind_method(D_METHOD("optimize", "allowed_velocity_err", "allowed_angular_err", "precision"), &Animation::optimize, DEFVAL(0.01), DEFVAL(0.01), DEFVAL(3));
 	ClassDB::bind_method(D_METHOD("compress", "page_size", "fps", "split_tolerance"), &Animation::compress, DEFVAL(8192), DEFVAL(120), DEFVAL(4.0));
+
+	ClassDB::bind_method(D_METHOD("is_capture_included"), &Animation::is_capture_included);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
@@ -4767,9 +4955,9 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 					continue; // This track is exhausted (all keys were added already), don't consider.
 				}
 			}
-
-			uint32_t key_frame = double(track_get_key_time(uncomp_track, time_tracks[i].key_index)) / frame_len;
-
+			double key_time = track_get_key_time(uncomp_track, time_tracks[i].key_index);
+			double result = key_time / frame_len;
+			uint32_t key_frame = Math::fast_ftoi(result);
 			if (time_tracks[i].needs_start_frame && key_frame > base_page_frame) {
 				start_frame = true;
 				best_frame = base_page_frame;

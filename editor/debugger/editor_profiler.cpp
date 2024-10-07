@@ -34,6 +34,8 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/check_box.h"
 #include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
@@ -176,8 +178,8 @@ void EditorProfiler::_item_edited() {
 }
 
 void EditorProfiler::_update_plot() {
-	const int w = graph->get_size().width;
-	const int h = graph->get_size().height;
+	const int w = MAX(1, graph->get_size().width); // Clamp to 1 to prevent from crashing when profiler is autostarted.
+	const int h = MAX(1, graph->get_size().height);
 	bool reset_texture = false;
 	const int desired_len = w * h * 4;
 
@@ -415,6 +417,10 @@ void EditorProfiler::_internal_profiles_pressed() {
 	_combo_changed(0);
 }
 
+void EditorProfiler::_autostart_toggled(bool p_toggled_on) {
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_profiler", p_toggled_on);
+}
+
 void EditorProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -423,6 +429,15 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+
+			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+			theme_cache.seek_line_color.a = 0.8;
+			theme_cache.seek_line_hover_color = theme_cache.seek_line_color;
+			theme_cache.seek_line_hover_color.a = 0.4;
+
+			if (total_metrics > 0) {
+				_update_plot();
+			}
 		} break;
 	}
 }
@@ -434,11 +449,11 @@ void EditorProfiler::_graph_tex_draw() {
 	if (seeking) {
 		int frame = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
 		int cur_x = (2 * frame + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_color);
 	}
 	if (hover_metric > -1 && hover_metric < total_metrics) {
 		int cur_x = (2 * hover_metric + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.4));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_hover_color);
 	}
 }
 
@@ -529,9 +544,10 @@ void EditorProfiler::set_enabled(bool p_enable, bool p_clear) {
 	}
 }
 
-void EditorProfiler::set_pressed(bool p_pressed) {
+void EditorProfiler::set_profiling(bool p_pressed) {
 	activate->set_pressed(p_pressed);
 	_update_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 bool EditorProfiler::is_profiling() {
@@ -614,14 +630,20 @@ EditorProfiler::EditorProfiler() {
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorProfiler::_activate_pressed));
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
+
+	CheckBox *autostart_checkbox = memnew(CheckBox);
+	autostart_checkbox->set_text(TTR("Autostart"));
+	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false));
+	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorProfiler::_autostart_toggled));
+	hb->add_child(autostart_checkbox);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
@@ -630,7 +652,7 @@ EditorProfiler::EditorProfiler() {
 	display_mode->add_item(TTR("Average Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->add_item(TTR("Physics Frame %"));
-	display_mode->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
+	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_mode);
 
@@ -642,14 +664,14 @@ EditorProfiler::EditorProfiler() {
 	// TRANSLATORS: This is an option in the profiler to display the time spent in a function, exincluding the time spent in other functions called by that function.
 	display_time->add_item(TTR("Self"));
 	display_time->set_tooltip_text(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
-	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
+	display_time->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);
 
 	display_internal_profiles = memnew(CheckButton(TTR("Display internal functions")));
 	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
 	display_internal_profiles->set_pressed(false);
-	display_internal_profiles->connect("pressed", callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
+	display_internal_profiles->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
 	hb->add_child(display_internal_profiles);
 
 	hb->add_spacer();
@@ -661,7 +683,7 @@ EditorProfiler::EditorProfiler() {
 	cursor_metric_edit->set_value(0);
 	cursor_metric_edit->set_editable(false);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorProfiler::_cursor_metric_changed));
+	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorProfiler::_cursor_metric_changed));
 
 	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 
@@ -694,9 +716,9 @@ EditorProfiler::EditorProfiler() {
 	graph = memnew(TextureRect);
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	graph->connect("draw", callable_mp(this, &EditorProfiler::_graph_tex_draw));
-	graph->connect("gui_input", callable_mp(this, &EditorProfiler::_graph_tex_input));
-	graph->connect("mouse_exited", callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
+	graph->connect(SceneStringName(draw), callable_mp(this, &EditorProfiler::_graph_tex_draw));
+	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorProfiler::_graph_tex_input));
+	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);

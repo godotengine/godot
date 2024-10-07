@@ -36,6 +36,11 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/rendering_device_driver.h"
 
+#ifndef _MSC_VER
+// Match current version used by MinGW, MSVC and Direct3D 12 headers use 500.
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#endif
+
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
@@ -43,6 +48,13 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
 #include "d3dx12.h"
@@ -59,13 +71,18 @@
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 using Microsoft::WRL::ComPtr;
 
 #define D3D12_BITCODE_OFFSETS_NUM_STAGES 3
 
-struct dxil_validator;
+#ifdef DEV_ENABLED
+#define CUSTOM_INFO_QUEUE_ENABLED 0
+#endif
+
 class RenderingContextDriverD3D12;
 
 // Design principles:
@@ -105,6 +122,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool primitive_in_multiviewport = false;
 		bool ss_image_supported = false; // We can provide a density map attachment on our framebuffer.
 		uint32_t ss_image_tile_size = 0;
+		uint32_t ss_max_fragment_size = 0;
 		bool additional_rates_supported = false;
 	};
 
@@ -121,6 +139,14 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool relaxed_casting_supported = false;
 	};
 
+	struct BarrierCapabilities {
+		bool enhanced_barriers_supported = false;
+	};
+
+	struct MiscFeaturesSupport {
+		bool depth_bounds_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	ComPtr<IDXGIAdapter> adapter;
@@ -135,6 +161,8 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	FormatCapabilities format_capabilities;
+	BarrierCapabilities barrier_capabilities;
+	MiscFeaturesSupport misc_features_support;
 	String pipeline_cache_id;
 
 	class DescriptorsHeap {
@@ -194,20 +222,6 @@ private:
 
 	ComPtr<D3D12MA::Allocator> allocator;
 
-#define USE_SMALL_ALLOCS_POOL // Disabled by now; seems not to be beneficial as it is in Vulkan.
-#ifdef USE_SMALL_ALLOCS_POOL
-	union AllocPoolKey {
-		struct {
-			D3D12_HEAP_TYPE heap_type;
-			D3D12_HEAP_FLAGS heap_flags;
-		};
-		uint64_t key = 0;
-	};
-	HashMap<uint64_t, ComPtr<D3D12MA::Pool>> small_allocs_pools;
-
-	D3D12MA::Pool *_find_or_create_small_allocs_pool(D3D12_HEAP_TYPE p_heap_type, D3D12_HEAP_FLAGS p_heap_flags);
-#endif
-
 	/******************/
 	/**** RESOURCE ****/
 	/******************/
@@ -217,11 +231,6 @@ private:
 			// As many subresources as mipmaps * layers; planes (for depth-stencil) are tracked together.
 			TightLocalVector<D3D12_RESOURCE_STATES> subresource_states; // Used only if not a view.
 			uint32_t last_batch_with_uav_barrier = 0;
-			struct CrossFamillyFallback {
-				TightLocalVector<uint64_t> subresources_dirty;
-				ComPtr<ID3D12Resource> interim_buffer;
-				ComPtr<D3D12MA::Allocation> interim_buffer_alloc;
-			} xfamily_fallback; // [[CROSS_FAMILY_FALLBACK]].
 		};
 
 		ID3D12Resource *resource = nullptr; // Non-null even if not owned.
@@ -250,20 +259,11 @@ private:
 		uint8_t groups_count = 0;
 		static const D3D12_RESOURCE_STATES DELETED_GROUP = D3D12_RESOURCE_STATES(0xFFFFFFFFU);
 	};
-	PagedAllocator<HashMapElement<ResourceInfo::States *, BarrierRequest>> res_barriers_requests_allocator;
-	HashMap<ResourceInfo::States *, BarrierRequest, HashMapHasherDefault, HashMapComparatorDefault<ResourceInfo::States *>, decltype(res_barriers_requests_allocator)> res_barriers_requests;
 
-	LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
-	uint32_t res_barriers_count = 0;
-	uint32_t res_barriers_batch = 0;
-#ifdef DEV_ENABLED
-	int frame_barriers_count = 0;
-	int frame_barriers_batches_count = 0;
-	uint64_t frame_barriers_cpu_time = 0;
-#endif
+	struct CommandBufferInfo;
 
-	void _resource_transition_batch(ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state);
-	void _resource_transitions_flush(ID3D12GraphicsCommandList *p_cmd_list);
+	void _resource_transition_batch(CommandBufferInfo *p_command_buffer, ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state);
+	void _resource_transitions_flush(CommandBufferInfo *p_command_buffer);
 
 	/*****************/
 	/**** BUFFERS ****/
@@ -274,7 +274,6 @@ private:
 		uint64_t size = 0;
 		struct {
 			bool usable_as_uav : 1;
-			bool is_for_upload : 1;
 		} flags = {};
 	};
 
@@ -311,14 +310,18 @@ private:
 	SelfList<TextureInfo>::List textures_pending_clear;
 
 	HashMap<DXGI_FORMAT, uint32_t> format_sample_counts_mask_cache;
+	Mutex format_sample_counts_mask_cache_mutex;
 
 	uint32_t _find_max_common_supported_sample_count(VectorView<DXGI_FORMAT> p_formats);
 	UINT _compute_component_mapping(const TextureView &p_view);
 	UINT _compute_plane_slice(DataFormat p_format, BitField<TextureAspectBits> p_aspect_bits);
 	UINT _compute_plane_slice(DataFormat p_format, TextureAspect p_aspect);
+	UINT _compute_subresource_from_layers(TextureInfo *p_texture, const TextureSubresourceLayers &p_layers, uint32_t p_layer_offset);
 
-	struct CommandBufferInfo;
 	void _discard_texture_subresources(const TextureInfo *p_tex_info, const CommandBufferInfo *p_cmd_buf_info);
+
+protected:
+	virtual bool _unordered_access_supported_by_format(DataFormat p_format);
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
@@ -331,6 +334,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 private:
 	TextureID _texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps);
@@ -366,8 +370,8 @@ public:
 
 	virtual void command_pipeline_barrier(
 			CommandBufferID p_cmd_buffer,
-			BitField<RDD::PipelineStageBits> p_src_stages,
-			BitField<RDD::PipelineStageBits> p_dst_stages,
+			BitField<PipelineStageBits> p_src_stages,
+			BitField<PipelineStageBits> p_dst_stages,
 			VectorView<RDD::MemoryBarrier> p_memory_barriers,
 			VectorView<RDD::BufferBarrier> p_buffer_barriers,
 			VectorView<RDD::TextureBarrier> p_texture_barriers) override final;
@@ -465,15 +469,10 @@ private:
 		RenderPassState render_pass_state;
 		bool descriptor_heaps_set = false;
 
-		// [[CROSS_FAMILY_FALLBACK]].
-		struct FamilyFallbackCopy {
-			TextureInfo *texture = nullptr;
-			uint32_t subresource = 0;
-			uint32_t mipmap = 0;
-			D3D12_RESOURCE_STATES dst_wanted_state = {};
-		};
-		LocalVector<FamilyFallbackCopy> family_fallback_copies;
-		uint32_t family_fallback_copy_count = 0;
+		HashMap<ResourceInfo::States *, BarrierRequest> res_barriers_requests;
+		LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
+		uint32_t res_barriers_count = 0;
+		uint32_t res_barriers_batch = 0;
 	};
 
 public:
@@ -683,10 +682,6 @@ private:
 		uint32_t root_signature_crc = 0;
 	};
 
-	Mutex dxil_mutex;
-	HashMap<int, dxil_validator *> dxil_validators; // One per WorkerThreadPool thread used for shader compilation, plus one (-1) for all the other.
-
-	dxil_validator *_get_dxil_validator_for_current_thread();
 	uint32_t _shader_patch_dxil_specialization_constant(
 			PipelineSpecializationConstantType p_type,
 			const void *p_value,
@@ -697,7 +692,7 @@ private:
 			const ShaderInfo *p_shader_info,
 			VectorView<PipelineSpecializationConstant> p_specialization_constants,
 			HashMap<ShaderStage, Vector<uint8_t>> &r_final_stages_bytecode);
-	bool _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
+	void _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
 
 public:
 	virtual String shader_get_binary_cache_key() override final;
@@ -705,6 +700,7 @@ public:
 	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
 
 	/*********************/
 	/**** UNIFORM SET ****/
@@ -782,10 +778,25 @@ public:
 	/**** PIPELINE ****/
 	/******************/
 
-	virtual void pipeline_free(PipelineID p_pipeline) override final;
+	struct RenderPipelineInfo {
+		const VertexFormatInfo *vf_info = nullptr;
 
-private:
-	HashMap<ID3D12PipelineState *, const ShaderInfo *> pipelines_shaders;
+		struct {
+			D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
+			Color blend_constant;
+			float depth_bounds_min = 0.0f;
+			float depth_bounds_max = 0.0f;
+			uint32_t stencil_reference = 0;
+		} dyn_params;
+	};
+
+	struct PipelineInfo {
+		ID3D12PipelineState *pso = nullptr;
+		const ShaderInfo *shader_info = nullptr;
+		RenderPipelineInfo render_info;
+	};
+
+	virtual void pipeline_free(PipelineID p_pipeline) override final;
 
 public:
 	// ----- BINDING -----
@@ -858,20 +869,6 @@ public:
 
 	// ----- PIPELINE -----
 
-private:
-	struct RenderPipelineExtraInfo {
-		struct {
-			D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
-			Color blend_constant;
-			float depth_bounds_min = 0.0f;
-			float depth_bounds_max = 0.0f;
-			uint32_t stencil_reference = 0;
-		} dyn_params;
-
-		const VertexFormatInfo *vf_info = nullptr;
-	};
-	HashMap<ID3D12PipelineState *, RenderPipelineExtraInfo> render_psos_extra_info;
-
 public:
 	virtual PipelineID render_pipeline_create(
 			ShaderID p_shader,
@@ -936,6 +933,11 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
 
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
+
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
@@ -960,7 +962,6 @@ private:
 			bool rtv = false;
 		} desc_heaps_exhausted_reported;
 		CD3DX12_CPU_DESCRIPTOR_HANDLE null_rtv_handle = {}; // For [[MANUAL_SUBPASSES]].
-		ComPtr<D3D12MA::Allocation> aux_resource;
 		uint32_t segment_serial = 0;
 
 #ifdef DEV_ENABLED
@@ -972,6 +973,7 @@ private:
 	uint32_t frames_drawn = 0;
 	uint32_t segment_serial = 0;
 	bool segment_begun = false;
+	HashMap<uint64_t, bool> has_comp_alpha;
 
 public:
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
@@ -993,6 +995,8 @@ public:
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
 
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
+
 	static bool is_in_developer_mode();
 
 private:
@@ -1012,7 +1016,7 @@ private:
 			UniformSetInfo,
 			RenderPassInfo,
 			TimestampQueryPoolInfo>;
-	PagedAllocator<VersatileResource> resources_allocator;
+	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/
 

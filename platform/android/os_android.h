@@ -91,6 +91,11 @@ public:
 	static const int DEFAULT_WINDOW_WIDTH = 800;
 	static const int DEFAULT_WINDOW_HEIGHT = 600;
 
+#ifdef TOOLS_ENABLED
+	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
+	Error verify_apk(const String &p_apk_path);
+#endif
+
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
@@ -153,7 +158,7 @@ public:
 
 	virtual Error move_to_trash(const String &p_path) override;
 
-	void vibrate_handheld(int p_duration_ms) override;
+	void vibrate_handheld(int p_duration_ms, float p_amplitude = -1.0) override;
 
 	virtual String get_config_path() const override;
 

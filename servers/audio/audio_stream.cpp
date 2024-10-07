@@ -72,7 +72,7 @@ void AudioStreamPlayback::seek(double p_time) {
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
 	return ret;
 }
 
@@ -90,6 +90,10 @@ Variant AudioStreamPlayback::get_parameter(const StringName &p_name) const {
 	return ret;
 }
 
+Ref<AudioSamplePlayback> AudioStreamPlayback::get_sample_playback() const {
+	return nullptr;
+}
+
 void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_start, "from_pos")
 	GDVIRTUAL_BIND(_stop)
@@ -101,6 +105,17 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_tag_used_streams);
 	GDVIRTUAL_BIND(_set_parameter, "name", "value");
 	GDVIRTUAL_BIND(_get_parameter, "name");
+
+	ClassDB::bind_method(D_METHOD("set_sample_playback", "playback_sample"), &AudioStreamPlayback::set_sample_playback);
+	ClassDB::bind_method(D_METHOD("get_sample_playback"), &AudioStreamPlayback::get_sample_playback);
+}
+
+AudioStreamPlayback::AudioStreamPlayback() {}
+
+AudioStreamPlayback::~AudioStreamPlayback() {
+	if (get_sample_playback().is_valid() && likely(AudioServer::get_singleton() != nullptr)) {
+		AudioServer::get_singleton()->stop_sample_playback(get_sample_playback());
+	}
 }
 //////////////////////////////
 
@@ -117,12 +132,12 @@ void AudioStreamPlaybackResampled::begin_resample() {
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	GDVIRTUAL_CALL(_mix_resampled, p_buffer, p_frames, ret);
 	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
 	float ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	GDVIRTUAL_CALL(_get_stream_sampling_rate, ret);
 	return ret;
 }
 
@@ -158,12 +173,12 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		}
 
 		float mu2 = mu * mu;
-		AudioFrame a0 = 3 * y1 - 3 * y2 + y3 - y0;
-		AudioFrame a1 = 2 * y0 - 5 * y1 + 4 * y2 - y3;
-		AudioFrame a2 = y2 - y0;
-		AudioFrame a3 = 2 * y1;
+		float h11 = mu2 * (mu - 1);
+		float z = mu2 - h11;
+		float h01 = z - h11;
+		float h10 = mu - z;
 
-		p_buffer[i] = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3) / 2;
+		p_buffer[i] = y1 + (y2 - y1) * h01 + ((y2 - y0) * h10 + (y3 - y1) * h11) * 0.5;
 
 		mix_offset += mix_increment;
 
@@ -271,10 +286,22 @@ void AudioStream::get_parameter_list(List<Parameter> *r_parameters) {
 	}
 }
 
+Ref<AudioSample> AudioStream::generate_sample() const {
+	ERR_FAIL_COND_V_MSG(!can_be_sampled(), nullptr, "Cannot generate a sample for a stream that cannot be sampled.");
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	return sample;
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
 	ClassDB::bind_method(D_METHOD("instantiate_playback"), &AudioStream::instantiate_playback);
+	ClassDB::bind_method(D_METHOD("can_be_sampled"), &AudioStream::can_be_sampled);
+	ClassDB::bind_method(D_METHOD("generate_sample"), &AudioStream::generate_sample);
+	ClassDB::bind_method(D_METHOD("is_meta_stream"), &AudioStream::is_meta_stream);
+
 	GDVIRTUAL_BIND(_instantiate_playback);
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
@@ -313,12 +340,6 @@ double AudioStreamMicrophone::get_length() const {
 
 bool AudioStreamMicrophone::is_monophonic() const {
 	return true;
-}
-
-void AudioStreamMicrophone::_bind_methods() {
-}
-
-AudioStreamMicrophone::AudioStreamMicrophone() {
 }
 
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
@@ -442,7 +463,7 @@ void AudioStreamRandomizer::add_stream(int p_index, Ref<AudioStream> p_stream, f
 	ERR_FAIL_COND(p_index > audio_stream_pool.size());
 	PoolEntry entry{ p_stream, p_weight };
 	audio_stream_pool.insert(p_index, entry);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	notify_property_list_changed();
 }
 
@@ -459,21 +480,21 @@ void AudioStreamRandomizer::move_stream(int p_index_from, int p_index_to) {
 		p_index_from++;
 	}
 	audio_stream_pool.remove_at(p_index_from);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	notify_property_list_changed();
 }
 
 void AudioStreamRandomizer::remove_stream(int p_index) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.remove_at(p_index);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	notify_property_list_changed();
 }
 
 void AudioStreamRandomizer::set_stream(int p_index, Ref<AudioStream> p_stream) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].stream = p_stream;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {
@@ -484,7 +505,7 @@ Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {
 void AudioStreamRandomizer::set_stream_probability_weight(int p_index, float p_weight) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].weight = p_weight;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 float AudioStreamRandomizer::get_stream_probability_weight(int p_index) const {
@@ -618,7 +639,7 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_sequential() {
 		if (entry.stream.is_null()) {
 			continue;
 		}
-		if (local_pool.find(entry.stream) != -1) {
+		if (local_pool.has(entry.stream)) {
 			WARN_PRINT("Duplicate stream in sequential playback pool");
 			continue;
 		}
@@ -711,8 +732,10 @@ void AudioStreamRandomizer::_bind_methods() {
 	PoolEntry defaults;
 
 	base_property_helper.set_prefix("stream_");
+	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 AudioStreamRandomizer::AudioStreamRandomizer() {

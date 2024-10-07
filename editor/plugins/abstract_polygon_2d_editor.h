@@ -31,7 +31,7 @@
 #ifndef ABSTRACT_POLYGON_2D_EDITOR_H
 #define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 
@@ -109,7 +109,6 @@ protected:
 
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 	void remove_point(const Vertex &p_vertex);
 	Vertex get_active_point() const;

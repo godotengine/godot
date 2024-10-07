@@ -177,7 +177,7 @@ private:
 
 		DRAG_TYPE_MAY_POPUP_MENU,
 
-		// Warning: keep in this order.
+		// WARNING: Keep in this order.
 		DRAG_TYPE_RESIZE_TOP_LEFT,
 		DRAG_TYPE_RESIZE_TOP,
 		DRAG_TYPE_RESIZE_TOP_RIGHT,
@@ -269,6 +269,7 @@ private:
 	void _update_manage_tile_properties_button();
 	void _update_atlas_view();
 	void _update_toolbar();
+	void _update_buttons();
 
 	// -- Misc --
 	void _auto_create_tiles();

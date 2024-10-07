@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../../include/embree4/rtcore.h"
 #include "../sys/platform.h"
 #include "../sys/alloc.h"
 #include "../sys/barrier.h"
@@ -12,7 +13,6 @@
 #include "../sys/ref.h"
 #include "../sys/atomic.h"
 #include "../math/range.h"
-#include "../../include/embree4/rtcore.h"
 
 #include <list>
 

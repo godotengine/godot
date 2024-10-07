@@ -37,8 +37,9 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "core/version.h"
+#include "core/version_generated.gen.h"
 #include "editor/doc_data_compressed.gen.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
@@ -93,6 +94,7 @@ const Vector<String> classes_with_csharp_differences = {
 	"PackedStringArray",
 	"PackedVector2Array",
 	"PackedVector3Array",
+	"PackedVector4Array",
 	"Variant",
 };
 #endif
@@ -107,6 +109,7 @@ const Vector<String> packed_array_types = {
 	"PackedStringArray",
 	"PackedVector2Array",
 	"PackedVector3Array",
+	"PackedVector4Array",
 };
 
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
@@ -194,7 +197,7 @@ void EditorHelp::_update_theme_item_cache() {
 	class_desc->add_theme_font_override("normal_font", theme_cache.doc_font);
 	class_desc->add_theme_font_size_override("normal_font_size", theme_cache.doc_font_size);
 
-	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override(SceneStringName(line_separation), get_theme_constant(SceneStringName(line_separation), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
@@ -286,7 +289,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		// Case order is important here to correctly handle edge cases like Variant.Type in @GlobalScope.
 		if (table->has(link)) {
 			// Found in the current page.
-			if (class_desc->is_ready()) {
+			if (class_desc->is_finished()) {
+				emit_signal(SNAME("request_save_history"));
 				class_desc->scroll_to_paragraph((*table)[link]);
 			} else {
 				scroll_to = (*table)[link];
@@ -342,7 +346,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 		Ref<StyleBox> class_desc_stylebox = theme_cache.background_style->duplicate();
 		class_desc_stylebox->set_content_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_content_margin(SIDE_RIGHT, display_margin);
-		class_desc->add_theme_style_override("normal", class_desc_stylebox);
+		class_desc->add_theme_style_override(CoreStringName(normal), class_desc_stylebox);
 		class_desc->add_theme_style_override("focused", class_desc_stylebox);
 	}
 }
@@ -373,10 +377,10 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 	}
 
 	p_rt->push_color(type_color);
-	bool add_array = false;
+	bool add_typed_container = false;
 	if (can_ref) {
 		if (link_t.ends_with("[]")) {
-			add_array = true;
+			add_typed_container = true;
 			link_t = link_t.trim_suffix("[]");
 			display_t = display_t.trim_suffix("[]");
 
@@ -384,6 +388,22 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 			p_rt->add_text("Array");
 			p_rt->pop(); // meta
 			p_rt->add_text("[");
+		} else if (link_t.begins_with("Dictionary[")) {
+			add_typed_container = true;
+			link_t = link_t.trim_prefix("Dictionary[").trim_suffix("]");
+			display_t = display_t.trim_prefix("Dictionary[").trim_suffix("]");
+
+			p_rt->push_meta("#Dictionary", RichTextLabel::META_UNDERLINE_ON_HOVER); // class
+			p_rt->add_text("Dictionary");
+			p_rt->pop(); // meta
+			p_rt->add_text("[");
+			p_rt->push_meta("#" + link_t.get_slice(", ", 0), RichTextLabel::META_UNDERLINE_ON_HOVER); // class
+			p_rt->add_text(_contextualize_class_specifier(display_t.get_slice(", ", 0), p_class));
+			p_rt->pop(); // meta
+			p_rt->add_text(", ");
+
+			link_t = link_t.get_slice(", ", 1);
+			display_t = _contextualize_class_specifier(display_t.get_slice(", ", 1), p_class);
 		} else if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));
 			p_rt->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
@@ -402,7 +422,7 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 	p_rt->add_text(display_t);
 	if (can_ref) {
 		p_rt->pop(); // meta
-		if (add_array) {
+		if (add_typed_container) {
 			p_rt->add_text("]");
 		} else if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));
@@ -1453,10 +1473,31 @@ void EditorHelp::_update_doc() {
 			_push_normal_font();
 			class_desc->push_color(theme_cache.comment_color);
 
+			bool has_prev_text = false;
+
+			if (theme_item.is_deprecated) {
+				has_prev_text = true;
+				DEPRECATED_DOC_MSG(HANDLE_DOC(theme_item.deprecated_message), TTR("This theme property may be changed or removed in future versions."));
+			}
+
+			if (theme_item.is_experimental) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
+				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(theme_item.experimental_message), TTR("This theme property may be changed or removed in future versions."));
+			}
+
 			const String descr = HANDLE_DOC(theme_item.description);
 			if (!descr.is_empty()) {
+				if (has_prev_text) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+				}
+				has_prev_text = true;
 				_add_text(descr);
-			} else {
+			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
@@ -1964,7 +2005,7 @@ void EditorHelp::_update_doc() {
 
 					class_desc->add_text(argument.name);
 					class_desc->add_text(": ");
-					_add_type(argument.type);
+					_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 					if (!argument.default_value.is_empty()) {
 						class_desc->push_color(theme_cache.symbol_color);
@@ -2217,12 +2258,6 @@ void EditorHelp::_update_doc() {
 				}
 				has_prev_text = true;
 				_add_text(descr);
-				// Add copy note to built-in properties returning Packed*Array.
-				if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
-					class_desc->add_newline();
-					class_desc->add_newline();
-					_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
-				}
 			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
@@ -2233,6 +2268,13 @@ void EditorHelp::_update_doc() {
 					class_desc->append_text(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
 				class_desc->pop(); // color
+			}
+
+			// Add copy note to built-in properties returning `Packed*Array`.
+			if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
+				class_desc->add_newline();
+				class_desc->add_newline();
+				_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
 			}
 
 			class_desc->pop(); // color
@@ -2269,7 +2311,7 @@ void EditorHelp::_update_doc() {
 void EditorHelp::_request_help(const String &p_string) {
 	Error err = _goto_desc(p_string);
 	if (err == OK) {
-		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 	}
 }
 
@@ -2335,9 +2377,12 @@ void EditorHelp::_help_callback(const String &p_topic) {
 		}
 	}
 
-	if (class_desc->is_ready()) {
+	if (class_desc->is_finished()) {
 		// call_deferred() is not enough.
-		class_desc->connect("draw", callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		if (class_desc->is_connected(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph))) {
+			class_desc->disconnect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph));
+		}
+		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	} else {
 		scroll_to = line;
 	}
@@ -2850,7 +2895,7 @@ void EditorHelp::_compute_doc_version_hash() {
 }
 
 String EditorHelp::get_cache_full_path() {
-	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
+	return EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("editor_doc_cache-%d.%d.res", VERSION_MAJOR, VERSION_MINOR));
 }
 
 void EditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
@@ -2887,7 +2932,7 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 		callable_mp_static(&EditorHelp::_gen_extensions_docs).call_deferred();
 	} else {
 		// We have to go back to the main thread to start from scratch, bypassing any possibly existing cache.
-		callable_mp_static(&EditorHelp::generate_doc).bind(false).call_deferred();
+		callable_mp_static(&EditorHelp::generate_doc).call_deferred(false);
 	}
 
 	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
@@ -3018,6 +3063,7 @@ void EditorHelp::update_doc() {
 void EditorHelp::cleanup_doc() {
 	_wait_for_thread();
 	memdelete(doc);
+	doc = nullptr;
 }
 
 Vector<Pair<String, int>> EditorHelp::get_sections() {
@@ -3033,7 +3079,7 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 void EditorHelp::scroll_to_section(int p_section_index) {
 	_wait_for_thread();
 	int line = section_line[p_section_index].second;
-	if (class_desc->is_ready()) {
+	if (class_desc->is_finished()) {
 		class_desc->scroll_to_paragraph(line);
 	} else {
 		scroll_to = line;
@@ -3077,6 +3123,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
+	ADD_SIGNAL(MethodInfo("request_save_history"));
 }
 
 void EditorHelp::init_gdext_pointers() {
@@ -3087,18 +3134,16 @@ void EditorHelp::init_gdext_pointers() {
 EditorHelp::EditorHelp() {
 	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
-	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
-
 	class_desc = memnew(RichTextLabel);
 	class_desc->set_tab_size(8);
 	add_child(class_desc);
 	class_desc->set_threaded(true);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	class_desc->connect("finished", callable_mp(this, &EditorHelp::_class_desc_finished));
+	class_desc->connect(SceneStringName(finished), callable_mp(this, &EditorHelp::_class_desc_finished));
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
-	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
-	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
+	class_desc->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelp::_class_desc_input));
+	class_desc->connect(SceneStringName(resized), callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
@@ -3113,7 +3158,7 @@ EditorHelp::EditorHelp() {
 
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect("pressed", callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
+	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 
 	class_desc->set_selection_enabled(true);
@@ -3372,10 +3417,25 @@ EditorHelpBit::HelpData EditorHelpBit::_get_theme_item_help_data(const StringNam
 		for (const DocData::ThemeItemDoc &theme_item : E->value.theme_properties) {
 			HelpData current;
 			current.description = HANDLE_DOC(theme_item.description);
+			if (theme_item.is_deprecated) {
+				if (theme_item.deprecated_message.is_empty()) {
+					current.deprecated_message = TTR("This theme property may be changed or removed in future versions.");
+				} else {
+					current.deprecated_message = HANDLE_DOC(theme_item.deprecated_message);
+				}
+			}
+			if (theme_item.is_experimental) {
+				if (theme_item.experimental_message.is_empty()) {
+					current.experimental_message = TTR("This theme property may be changed or removed in future versions.");
+				} else {
+					current.experimental_message = HANDLE_DOC(theme_item.experimental_message);
+				}
+			}
 
 			if (theme_item.name == p_theme_item_name) {
 				result = current;
 				found = true;
+
 				if (!is_native) {
 					break;
 				}
@@ -3544,7 +3604,7 @@ void EditorHelpBit::_update_labels() {
 }
 
 void EditorHelpBit::_go_to_help(const String &p_what) {
-	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+	EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 	ScriptEditor::get_singleton()->goto_help(p_what);
 	emit_signal(SNAME("request_hide"));
 }
@@ -3695,12 +3755,8 @@ void EditorHelpBit::set_custom_text(const String &p_type, const String &p_name, 
 	}
 }
 
-void EditorHelpBit::prepend_description(const String &p_text) {
-	if (help_data.description.is_empty()) {
-		help_data.description = p_text;
-	} else {
-		help_data.description = p_text + "\n" + help_data.description;
-	}
+void EditorHelpBit::set_description(const String &p_text) {
+	help_data.description = p_text;
 
 	if (is_inside_tree()) {
 		_update_labels();
@@ -3719,7 +3775,7 @@ void EditorHelpBit::set_content_height_limits(float p_min, float p_max) {
 
 void EditorHelpBit::update_content_height() {
 	float content_height = content->get_content_height();
-	const Ref<StyleBox> style = content->get_theme_stylebox("normal");
+	const Ref<StyleBox> style = content->get_theme_stylebox(CoreStringName(normal));
 	if (style.is_valid()) {
 		content_height += style->get_content_margin(SIDE_TOP) + style->get_content_margin(SIDE_BOTTOM);
 	}
@@ -3731,6 +3787,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol) {
 
 	title = memnew(RichTextLabel);
 	title->set_theme_type_variation("EditorHelpBitTitle");
+	title->set_custom_minimum_size(Size2(512 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
 	title->set_fit_content(true);
 	title->set_selection_enabled(true);
 	//title->set_context_menu_enabled(true); // TODO: Fix opening context menu hides tooltip.
@@ -3756,13 +3813,34 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol) {
 
 /// EditorHelpBitTooltip ///
 
+void EditorHelpBitTooltip::_start_timer() {
+	if (timer->is_inside_tree() && timer->is_stopped()) {
+		timer->start();
+	}
+}
+
+void EditorHelpBitTooltip::_safe_queue_free() {
+	if (_pushing_input > 0) {
+		_need_free = true;
+	} else {
+		queue_free();
+	}
+}
+
+void EditorHelpBitTooltip::_target_gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouse> mouse_event = p_event;
+	if (mouse_event.is_valid()) {
+		_start_timer();
+	}
+}
+
 void EditorHelpBitTooltip::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_WM_MOUSE_ENTER:
 			timer->stop();
 			break;
 		case NOTIFICATION_WM_MOUSE_EXIT:
-			timer->start();
+			_start_timer();
 			break;
 	}
 }
@@ -3770,11 +3848,17 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 // Forwards non-mouse input to the parent viewport.
 void EditorHelpBitTooltip::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-		hide(); // Will be deleted on its timer.
+		_safe_queue_free();
 	} else {
 		const Ref<InputEventMouse> mouse_event = p_event;
 		if (mouse_event.is_null()) {
+			// GH-91652. Prevents use-after-free since `ProgressDialog` calls `Main::iteration()`.
+			_pushing_input++;
 			get_parent_viewport()->push_input(p_event);
+			_pushing_input--;
+			if (_pushing_input <= 0 && _need_free) {
+				queue_free();
+			}
 		}
 	}
 }
@@ -3782,7 +3866,7 @@ void EditorHelpBitTooltip::_input_from_window(const Ref<InputEvent> &p_event) {
 void EditorHelpBitTooltip::show_tooltip(EditorHelpBit *p_help_bit, Control *p_target) {
 	ERR_FAIL_NULL(p_help_bit);
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
-	p_help_bit->connect("request_hide", callable_mp(static_cast<Window *>(tooltip), &Window::hide)); // Will be deleted on its timer.
+	p_help_bit->connect("request_hide", callable_mp(tooltip, &EditorHelpBitTooltip::_safe_queue_free));
 	tooltip->add_child(p_help_bit);
 	p_target->get_viewport()->add_child(tooltip);
 	p_help_bit->update_content_height();
@@ -3835,12 +3919,12 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(0.2);
-	timer->connect("timeout", callable_mp(static_cast<Node *>(this), &Node::queue_free));
+	timer->connect("timeout", callable_mp(this, &EditorHelpBitTooltip::_safe_queue_free));
 	add_child(timer);
 
 	ERR_FAIL_NULL(p_target);
-	p_target->connect("mouse_entered", callable_mp(timer, &Timer::stop));
-	p_target->connect("mouse_exited", callable_mp(timer, &Timer::start).bind(-1));
+	p_target->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorHelpBitTooltip::_start_timer));
+	p_target->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelpBitTooltip::_target_gui_input));
 }
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
@@ -3950,12 +4034,12 @@ void EditorHelpHighlighter::reset_cache() {
 
 #ifdef MODULE_GDSCRIPT_ENABLED
 	highlight_data_caches[LANGUAGE_GDSCRIPT].clear();
-	text_edits[LANGUAGE_GDSCRIPT]->add_theme_color_override("font_color", text_color);
+	text_edits[LANGUAGE_GDSCRIPT]->add_theme_color_override(SceneStringName(font_color), text_color);
 #endif
 
 #ifdef MODULE_MONO_ENABLED
 	highlight_data_caches[LANGUAGE_CSHARP].clear();
-	text_edits[LANGUAGE_CSHARP]->add_theme_color_override("font_color", text_color);
+	text_edits[LANGUAGE_CSHARP]->add_theme_color_override(SceneStringName(font_color), text_color);
 #endif
 }
 
@@ -3964,7 +4048,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 
 #ifdef MODULE_GDSCRIPT_ENABLED
 	TextEdit *gdscript_text_edit = memnew(TextEdit);
-	gdscript_text_edit->add_theme_color_override("font_color", text_color);
+	gdscript_text_edit->add_theme_color_override(SceneStringName(font_color), text_color);
 
 	Ref<GDScript> gdscript;
 	gdscript.instantiate();
@@ -3981,7 +4065,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 
 #ifdef MODULE_MONO_ENABLED
 	TextEdit *csharp_text_edit = memnew(TextEdit);
-	csharp_text_edit->add_theme_color_override("font_color", text_color);
+	csharp_text_edit->add_theme_color_override(SceneStringName(font_color), text_color);
 
 	// See GH-89610.
 	//Ref<CSharpScript> csharp;
@@ -4018,7 +4102,7 @@ FindBar::FindBar() {
 	add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_text->connect("text_changed", callable_mp(this, &FindBar::_search_text_changed));
+	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindBar::_search_text_submitted));
 
 	matches_label = memnew(Label);
@@ -4029,13 +4113,13 @@ FindBar::FindBar() {
 	find_prev->set_flat(true);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
-	find_prev->connect("pressed", callable_mp(this, &FindBar::search_prev));
+	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
 	find_next->set_flat(true);
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
-	find_next->connect("pressed", callable_mp(this, &FindBar::search_next));
+	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
 	Control *space = memnew(Control);
 	add_child(space);
@@ -4046,7 +4130,7 @@ FindBar::FindBar() {
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->set_ignore_texture_size(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
-	hide_button->connect("pressed", callable_mp(this, &FindBar::_hide_bar));
+	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
 }
 
 void FindBar::popup_search() {
@@ -4075,7 +4159,7 @@ void FindBar::_notification(int p_what) {
 			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
-			matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -4143,7 +4227,7 @@ void FindBar::_update_matches_label() {
 	} else {
 		matches_label->show();
 
-		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		matches_label->add_theme_color_override(SceneStringName(font_color), results_count > 0 ? get_theme_color(SceneStringName(font_color), SNAME("Label")) : get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }

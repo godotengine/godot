@@ -43,6 +43,41 @@
 
 class AudioStream;
 
+class AudioSamplePlayback : public RefCounted {
+	GDCLASS(AudioSamplePlayback, RefCounted);
+
+public:
+	Ref<AudioStream> stream;
+	Ref<AudioStreamPlayback> stream_playback;
+
+	float offset = 0.0f;
+	float pitch_scale = 1.0;
+	Vector<AudioFrame> volume_vector;
+	StringName bus;
+};
+
+class AudioSample : public RefCounted {
+	GDCLASS(AudioSample, RefCounted)
+
+public:
+	enum LoopMode {
+		LOOP_DISABLED,
+		LOOP_FORWARD,
+		LOOP_PINGPONG,
+		LOOP_BACKWARD,
+	};
+
+	Ref<AudioStream> stream;
+	Vector<AudioFrame> data;
+	int num_channels = 1;
+	int sample_rate = 44100;
+	LoopMode loop_mode = LOOP_DISABLED;
+	int loop_begin = 0;
+	int loop_end = 0;
+};
+
+///////////
+
 class AudioStreamPlayback : public RefCounted {
 	GDCLASS(AudioStreamPlayback, RefCounted);
 
@@ -54,7 +89,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_loop_count)
 	GDVIRTUAL0RC(double, _get_playback_position)
 	GDVIRTUAL1(_seek, double)
-	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
+	GDVIRTUAL3R_REQUIRED(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
 	GDVIRTUAL2(_set_parameter, const StringName &, const Variant &)
 	GDVIRTUAL1RC(Variant, _get_parameter, const StringName &)
@@ -75,6 +110,14 @@ public:
 	virtual Variant get_parameter(const StringName &p_name) const;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+
+	virtual void set_is_sample(bool p_is_sample) {}
+	virtual bool get_is_sample() const { return false; }
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {}
+
+	AudioStreamPlayback();
+	~AudioStreamPlayback();
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
@@ -98,8 +141,8 @@ protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
 	virtual float get_stream_sampling_rate();
 
-	GDVIRTUAL2R(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
-	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
+	GDVIRTUAL2R_REQUIRED(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
+	GDVIRTUAL0RC_REQUIRED(float, _get_stream_sampling_rate)
 
 	static void _bind_methods();
 
@@ -161,6 +204,11 @@ public:
 	};
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters);
+
+	virtual bool can_be_sampled() const { return false; }
+	virtual Ref<AudioSample> generate_sample() const;
+
+	virtual bool is_meta_stream() const { return false; }
 };
 
 // Microphone
@@ -173,9 +221,6 @@ class AudioStreamMicrophone : public AudioStream {
 
 	HashSet<AudioStreamPlaybackMicrophone *> playbacks;
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
@@ -183,8 +228,6 @@ public:
 	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
-
-	AudioStreamMicrophone();
 };
 
 class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
@@ -260,7 +303,7 @@ protected:
 
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
-	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, audio_stream_pool.size()); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 
@@ -291,6 +334,8 @@ public:
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 	virtual bool is_monophonic() const override;
+
+	virtual bool is_meta_stream() const override { return true; }
 
 	AudioStreamRandomizer();
 };

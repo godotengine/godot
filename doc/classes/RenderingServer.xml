@@ -92,13 +92,13 @@
 				Sets the exposure values that will be used by the renderers. The normalization amount is used to bake a given Exposure Value (EV) into rendering calculations to reduce the dynamic range of the scene.
 				The normalization factor can be calculated from exposure value (EV100) as follows:
 				[codeblock]
-				func get_exposure_normalization(float ev100):
-				    			    return 1.0 / (pow(2.0, ev100) * 1.2)
+				func get_exposure_normalization(ev100: float):
+				    return 1.0 / (pow(2.0, ev100) * 1.2)
 				[/codeblock]
 				The exposure value can be calculated from aperture (in f-stops), shutter speed (in seconds), and sensitivity (in ISO) as follows:
 				[codeblock]
-				func get_exposure(float aperture, float shutter_speed, float sensitivity):
-				    return log2((aperture * aperture) / shutterSpeed * (100.0 / sensitivity))
+				func get_exposure(aperture: float, shutter_speed: float, sensitivity: float):
+				    return log((aperture * aperture) / shutter_speed * (100.0 / sensitivity)) / log(2)
 				[/codeblock]
 			</description>
 		</method>
@@ -214,6 +214,7 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
@@ -280,6 +281,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="width" type="float" default="-1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a 2D multiline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multiline] and [method CanvasItem.draw_multiline_colors].
 			</description>
@@ -327,6 +329,7 @@
 			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. If you need more flexibility (such as being able to use bones), use [method canvas_item_add_triangle_array] instead. See also [method CanvasItem.draw_polygon].
+				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method CanvasItem.draw_mesh], [method CanvasItem.draw_multimesh], or [method canvas_item_add_triangle_array].
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -356,6 +359,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>
@@ -407,6 +411,14 @@
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
 				[b]Note:[/b] [param count] is unused and can be left unspecified.
+			</description>
+		</method>
+		<method name="canvas_item_attach_skeleton">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="skeleton" type="RID" />
+			<description>
+				Attaches a skeleton to the [CanvasItem]. Removes the previous skeleton.
 			</description>
 		</method>
 		<method name="canvas_item_clear">
@@ -634,7 +646,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas item.
-				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_light_attach_to_canvas">
@@ -730,7 +742,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a light occluder.
-				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_light_reset_physics_interpolation">
@@ -901,7 +913,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas light.
-				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
@@ -941,7 +953,8 @@
 			<param index="1" name="item" type="RID" />
 			<param index="2" name="mirroring" type="Vector2" />
 			<description>
-				A copy of the canvas item will be drawn with a local offset of the mirroring [Vector2].
+				A copy of the canvas item will be drawn with a local offset of the [param mirroring].
+				[b]Note:[/b] This is equivalent to calling [method canvas_set_item_repeat] like [code]canvas_set_item_repeat(item, mirroring, 1)[/code], with an additional check ensuring [param canvas] is a parent of [param item].
 			</description>
 		</method>
 		<method name="canvas_set_item_repeat">
@@ -1852,6 +1865,14 @@
 				Sets the visibility range values for the given geometry instance. Equivalent to [member GeometryInstance3D.visibility_range_begin] and related properties.
 			</description>
 		</method>
+		<method name="instance_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="instance_set_base">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -1891,6 +1912,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], ignores both frustum and occlusion culling on the specified 3D geometry instance. This is not the same as [member GeometryInstance3D.ignore_occlusion_culling], which only ignores occlusion culling and leaves frustum culling intact.
+			</description>
+		</method>
+		<method name="instance_set_interpolated">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the instance.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -1977,6 +2006,12 @@
 			<description>
 				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
+			</description>
+		</method>
+		<method name="is_on_render_thread">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if our code is currently executing on the rendering thread.
 			</description>
 		</method>
 		<method name="light_directional_set_blend_splits">
@@ -2179,6 +2214,13 @@
 			<param index="2" name="uses_sh" type="bool" />
 			<description>
 				Set the textures on the given [param lightmap] GI instance to the texture array pointed to by the [param light] RID. If the lightmap texture was baked with [member LightmapGI.directional] set to [code]true[/code], then [param uses_sh] must also be [code]true[/code].
+			</description>
+		</method>
+		<method name="lightmaps_set_bicubic_filter">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Toggles whether a bicubic filter should be used when lightmaps are sampled. This smoothens their appearance at a performance cost.
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -2533,6 +2575,15 @@
 				Returns the [Transform2D] of the specified instance. For use when the multimesh is set to use 2D transforms.
 			</description>
 		</method>
+		<method name="multimesh_instance_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Prevents physics interpolation for the specified instance during the current physics tick.
+				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="multimesh_instance_set_color">
 			<return type="void" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2588,6 +2639,19 @@
 				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
 				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
+				Instance transforms are in row-major order. Specifically:
+				- For [Transform2D] the float-order is: [code](x.x, y.x, padding_float, origin.x, x.y, y.y, padding_float, origin.y)[/code].
+				- For [Transform3D] the float-order is: [code](basis.x.x, basis.y.x, basis.z.x, origin.x, basis.x.y, basis.y.y, basis.z.y, origin.y, basis.x.z, basis.y.z, basis.z.z, origin.z)[/code].
+			</description>
+		</method>
+		<method name="multimesh_set_buffer_interpolated">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="buffer" type="PackedFloat32Array" />
+			<param index="2" name="buffer_previous" type="PackedFloat32Array" />
+			<description>
+				Alternative version of [method multimesh_set_buffer] for use with physics interpolation.
+				Takes both an array of current data and an array of data for the previous physics tick.
 			</description>
 		</method>
 		<method name="multimesh_set_custom_aabb">
@@ -2604,6 +2668,23 @@
 			<param index="1" name="mesh" type="RID" />
 			<description>
 				Sets the mesh to be drawn by the multimesh. Equivalent to [member MultiMesh.mesh].
+			</description>
+		</method>
+		<method name="multimesh_set_physics_interpolated">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for this MultiMesh resource.
+			</description>
+		</method>
+		<method name="multimesh_set_physics_interpolation_quality">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="quality" type="int" enum="RenderingServer.MultimeshPhysicsInterpolationQuality" />
+			<description>
+				Sets the physics interpolation quality for the [MultiMesh].
+				A value of [constant MULTIMESH_INTERP_QUALITY_FAST] gives fast but low quality interpolation, a value of [constant MULTIMESH_INTERP_QUALITY_HIGH] gives slower but higher quality interpolation.
 			</description>
 		</method>
 		<method name="multimesh_set_visible_instances">
@@ -3454,7 +3535,7 @@
 		<method name="texture_2d_placeholder_create">
 			<return type="RID" />
 			<description>
-				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create]
+				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create].
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				[b]Note:[/b] The equivalent resource is [PlaceholderTexture2D].
 			</description>
@@ -3503,6 +3584,21 @@
 			<description>
 				Updates the texture specified by the [param texture] [RID]'s data with the data in [param data]. All the texture's layers must be replaced at once.
 				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
+			</description>
+		</method>
+		<method name="texture_create_from_native_handle">
+			<return type="RID" />
+			<param index="0" name="type" type="int" enum="RenderingServer.TextureType" />
+			<param index="1" name="format" type="int" enum="Image.Format" />
+			<param index="2" name="native_handle" type="int" />
+			<param index="3" name="width" type="int" />
+			<param index="4" name="height" type="int" />
+			<param index="5" name="depth" type="int" />
+			<param index="6" name="layers" type="int" default="1" />
+			<param index="7" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<description>
+				Creates a texture based on a native handle that was created outside of Godot's renderer.
+				[b]Note:[/b] If using the rendering device renderer, using [method RenderingDevice.texture_create_from_extension] rather than this method is recommended. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
 		<method name="texture_get_format" qualifiers="const">
@@ -3643,7 +3739,7 @@
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
 			<description>
-				Returns the GPU time taken to render the last frame in milliseconds. To get a complete readout of GPU time spent to render the scene, sum the render times of all viewports that are drawn every frame. Unlike [method Engine.get_frames_per_second], this method accurately reflects GPU utilization even if framerate is capped via V-Sync or [member Engine.max_fps]. See also [method viewport_get_measured_render_time_gpu].
+				Returns the GPU time taken to render the last frame in milliseconds. To get a complete readout of GPU time spent to render the scene, sum the render times of all viewports that are drawn every frame. Unlike [method Engine.get_frames_per_second], this method accurately reflects GPU utilization even if framerate is capped via V-Sync or [member Engine.max_fps]. See also [method viewport_get_measured_render_time_cpu].
 				[b]Note:[/b] Requires measurements to be enabled on the specified [param viewport] using [method viewport_set_measure_render_time]. Otherwise, this method returns [code]0.0[/code].
 				[b]Note:[/b] When GPU utilization is low enough during a certain period of time, GPUs will decrease their power state (which in turn decreases core and memory clock speeds). This can cause the reported GPU time to increase if GPU utilization is kept low enough by a framerate cap (compared to what it would be at the GPU's highest power state). Keep this in mind when benchmarking using [method viewport_get_measured_render_time_gpu]. This behavior can be overridden in the graphics driver settings at the cost of higher power usage.
 			</description>
@@ -4030,6 +4126,15 @@
 				The texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE]. Equivalent to [member ProjectSettings.rendering/vrs/texture].
 			</description>
 		</method>
+		<method name="viewport_set_vrs_update_mode">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportVRSUpdateMode" />
+			<description>
+				Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
+				If set to [constant RenderingServer.VIEWPORT_VRS_UPDATE_ONCE], the input texture is copied once and the mode is changed to [constant RenderingServer.VIEWPORT_VRS_UPDATE_DISABLED].
+			</description>
+		</method>
 		<method name="visibility_notifier_create">
 			<return type="RID" />
 			<description>
@@ -4220,6 +4325,18 @@
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
+		</constant>
+		<constant name="MAX_MESH_SURFACES" value="256">
+			The maximum number of surfaces a mesh can have.
+		</constant>
+		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
+			2D texture.
+		</constant>
+		<constant name="TEXTURE_TYPE_LAYERED" value="1" enum="TextureType">
+			Layered texture.
+		</constant>
+		<constant name="TEXTURE_TYPE_3D" value="2" enum="TextureType">
+			3D texture.
 		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 			Array of 2-dimensional textures (see [Texture2DArray]).
@@ -4462,6 +4579,12 @@
 		</constant>
 		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
 			Use [Transform3D] to store MultiMesh transform.
+		</constant>
+		<constant name="MULTIMESH_INTERP_QUALITY_FAST" value="0" enum="MultimeshPhysicsInterpolationQuality">
+			MultiMesh physics interpolation favors speed over quality.
+		</constant>
+		<constant name="MULTIMESH_INTERP_QUALITY_HIGH" value="1" enum="MultimeshPhysicsInterpolationQuality">
+			MultiMesh physics interpolation favors quality over speed.
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
 			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.
@@ -4970,10 +5093,22 @@
 			Variable rate shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
 		</constant>
 		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
-			Variable rate shading texture is supplied by the primary [XRInterface].
+			Variable rate shading texture is supplied by the primary [XRInterface]. Note that this may override the update mode.
 		</constant>
 		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
 			Represents the size of the [enum ViewportVRSMode] enum.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_DISABLED" value="0" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will not be processed.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_ONCE" value="1" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will be processed once.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_ALWAYS" value="2" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will be processed each frame.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_MAX" value="3" enum="ViewportVRSUpdateMode">
+			Represents the size of the [enum ViewportVRSUpdateMode] enum.
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 			Automatically selects the appropriate process mode based on your sky shader. If your shader uses [code]TIME[/code] or [code]POSITION[/code], this will use [constant SKY_MODE_REALTIME]. If your shader uses any of the [code]LIGHT_*[/code] variables or any custom uniforms, this uses [constant SKY_MODE_INCREMENTAL]. Otherwise, this defaults to [constant SKY_MODE_QUALITY].
@@ -5016,7 +5151,7 @@
 			The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
 		</constant>
 		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="4" enum="CompositorEffectCallbackType">
-			The callback is called after our transparent rendering pass, but before any build in post effects and output to our render target.
+			The callback is called after our transparent rendering pass, but before any built-in post-processing effects and output to our render target.
 		</constant>
 		<constant name="COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY" value="-1" enum="CompositorEffectCallbackType">
 		</constant>
@@ -5087,7 +5222,7 @@
 			Output color as they came in. This can cause bright lighting to look blown out, with noticeable clipping in the output colors.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_REINHARD" value="1" enum="EnvironmentToneMapper">
-			Use the Reinhard tonemapper. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull.
+			Use the Reinhard tonemapper. Performs a variation on rendered pixels' colors by this formula: [code]color = color * (1 + color / (white * white)) / (1 + color)[/code]. This avoids clipping bright highlights, but the resulting image can look a bit dull. When [member Environment.tonemap_white] is left at the default value of [code]1.0[/code] this is identical to [constant ENV_TONE_MAPPER_LINEAR] while also being slightly less performant.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
 			Use the filmic tonemapper. This avoids clipping bright highlights, with a resulting image that usually looks more vivid than [constant ENV_TONE_MAPPER_REINHARD].
@@ -5528,7 +5663,10 @@
 		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalShaderParameterType">
 			Cubemap sampler global shader parameter ([code]global uniform samplerCube ...[/code]). Exposed as a [Cubemap] in the editor UI.
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalShaderParameterType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLEREXT" value="28" enum="GlobalShaderParameterType">
+			External sampler global shader parameter ([code]global uniform samplerExternalOES ...[/code]). Exposed as a [ExternalTexture] in the editor UI.
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAX" value="29" enum="GlobalShaderParameterType">
 			Represents the size of the [enum GlobalShaderParameterType] enum.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
@@ -5548,6 +5686,39 @@
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS" value="6" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered by the 2D canvas renderer.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_MESH" value="7" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered by loading meshes. These compilations will show up as longer loading times the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE" value="8" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered by building the surface cache before rendering the scene. These compilations will show up as a stutter when loading an scene the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW" value="9" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered while drawing the scene. These compilations will show up as stutters during gameplay the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION" value="10" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered to optimize the current scene. These compilations are done in the background and should not cause any stutters whatsoever.
+		</constant>
+		<constant name="PIPELINE_SOURCE_CANVAS" value="0" enum="PipelineSource">
+			Pipeline compilation that was triggered by the 2D canvas renderer.
+		</constant>
+		<constant name="PIPELINE_SOURCE_MESH" value="1" enum="PipelineSource">
+			Pipeline compilation that was triggered by loading a mesh.
+		</constant>
+		<constant name="PIPELINE_SOURCE_SURFACE" value="2" enum="PipelineSource">
+			Pipeline compilation that was triggered by building the surface cache before rendering the scene.
+		</constant>
+		<constant name="PIPELINE_SOURCE_DRAW" value="3" enum="PipelineSource">
+			Pipeline compilation that was triggered while drawing the scene.
+		</constant>
+		<constant name="PIPELINE_SOURCE_SPECIALIZATION" value="4" enum="PipelineSource">
+			Pipeline compilation that was triggered to optimize the current scene.
+		</constant>
+		<constant name="PIPELINE_SOURCE_MAX" value="5" enum="PipelineSource">
+			Represents the size of the [enum PipelineSource] enum.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>

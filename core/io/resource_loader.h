@@ -100,9 +100,13 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceLoader {
+	friend class LoadToken;
+
 	enum {
 		MAX_LOADERS = 64
 	};
+
+	struct ThreadLoadTask;
 
 public:
 	enum ThreadLoadStatus {
@@ -121,7 +125,8 @@ public:
 	struct LoadToken : public RefCounted {
 		String local_path;
 		String user_path;
-		Ref<Resource> res_if_unregistered;
+		uint32_t user_rc = 0; // Having user RC implies regular RC incremented in one, until the user RC reaches zero.
+		ThreadLoadTask *task_if_unregistered = nullptr;
 
 		void clear();
 
@@ -130,10 +135,13 @@ public:
 
 	static const int BINARY_MUTEX_TAG = 1;
 
-	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode, bool p_for_user = false);
 	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
 
 private:
+	static LoadToken *_load_threaded_request_reuse_user_token(const String &p_path);
+	static void _load_threaded_request_setup_user_token(LoadToken *p_token, const String &p_path);
+
 	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
 
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
@@ -167,28 +175,39 @@ private:
 		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
 		bool awaited = false; // If it's in the pool, this helps not awaiting from more than one dependent thread.
 		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
+		uint32_t awaiters_count = 0;
+		bool need_wait = true;
 		LoadToken *load_token = nullptr;
 		String local_path;
-		String remapped_path;
-		String dependent_path;
 		String type_hint;
 		float progress = 0.0f;
 		float max_reported_progress = 0.0f;
+		uint64_t last_progress_check_main_thread_frame = UINT64_MAX;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
 		Ref<Resource> resource;
-		bool xl_remapped = false;
 		bool use_sub_threads = false;
 		HashSet<String> sub_tasks;
+
+		struct ResourceChangedConnection {
+			Resource *source = nullptr;
+			Callable callable;
+			uint32_t flags = 0;
+		};
+		LocalVector<ResourceChangedConnection> resource_changed_connections;
 	};
 
-	static void _thread_load_function(void *p_userdata);
+	static void _run_load_task(void *p_userdata);
 
 	static thread_local int load_nesting;
-	static thread_local WorkerThreadPool::TaskID caller_task_id;
-	static thread_local Vector<String> *load_paths_stack; // A pointer to avoid broken TLS implementations from double-running the destructor.
+	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
+	static thread_local Vector<String> load_paths_stack;
+	static thread_local ThreadLoadTask *curr_load_task;
+
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_res_loader_mutex();
+
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static bool cleaning_tasks;
 
@@ -196,12 +215,18 @@ private:
 
 	static float _dependency_get_progress(const String &p_path);
 
+	static bool _ensure_load_progress();
+
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
 	static bool is_within_load() { return load_nesting > 0; };
+
+	static void resource_changed_connect(Resource *p_source, const Callable &p_callable, uint32_t p_flags);
+	static void resource_changed_disconnect(Resource *p_source, const Callable &p_callable);
+	static void resource_changed_emit(Resource *p_source);
 
 	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
@@ -226,7 +251,7 @@ public:
 	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) {
-			callable_mp_static(err_notify).bind(p_err).call_deferred();
+			MessageQueue::get_main_singleton()->push_callable(callable_mp_static(err_notify).bind(p_err));
 		}
 	}
 	static void set_error_notify_func(ResourceLoadErrorNotify p_err_notify) {
@@ -239,7 +264,7 @@ public:
 			if (Thread::get_caller_id() == Thread::get_main_id()) {
 				dep_err_notify(p_path, p_dependency, p_type);
 			} else {
-				callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
+				MessageQueue::get_main_singleton()->push_callable(callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type));
 			}
 		}
 	}
@@ -271,6 +296,9 @@ public:
 
 	static void set_create_missing_resources_if_class_unavailable(bool p_enable);
 	_FORCE_INLINE_ static bool is_creating_missing_resources_if_class_unavailable_enabled() { return create_missing_resources_if_class_unavailable; }
+
+	static Ref<Resource> ensure_resource_ref_override_for_outer_load(const String &p_path, const String &p_res_type);
+	static Ref<Resource> get_resource_ref_override(const String &p_path);
 
 	static bool is_cleaning_tasks();
 

@@ -41,6 +41,8 @@
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
+#include "hb-aat-layout-kerx-table.hh"
+#include "hb-aat-layout-morx-table.hh"
 
 
 void hb_ot_face_t::init0 (hb_face_t *face)

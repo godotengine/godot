@@ -143,7 +143,7 @@ namespace Godot.NativeInterop
             if (error.Error != godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_OK)
             {
                 using godot_variant instanceVariant = VariantUtils.CreateFromGodotObjectPtr(instance);
-                string where = GetCallErrorWhere(method, &instanceVariant, args, argCount);
+                string where = GetCallErrorWhere(ref error, method, &instanceVariant, args, argCount);
                 string errorText = GetCallErrorMessage(error, where, args);
                 GD.PushError(errorText);
             }
@@ -161,7 +161,7 @@ namespace Godot.NativeInterop
             }
         }
 
-        private unsafe static string GetCallErrorWhere(godot_string_name method, godot_variant* instance, godot_variant** args, int argCount)
+        private unsafe static string GetCallErrorWhere(ref godot_variant_call_error error, godot_string_name method, godot_variant* instance, godot_variant** args, int argCount)
         {
             string? methodstr = null;
             string basestr = GetVariantTypeName(instance);
@@ -171,6 +171,10 @@ namespace Godot.NativeInterop
                 if (argCount >= 1)
                 {
                     methodstr = VariantUtils.ConvertToString(*args[0]);
+                    if (error.Error == godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_ARGUMENT)
+                    {
+                        error.Argument += 1;
+                    }
                 }
             }
 

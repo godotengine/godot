@@ -30,7 +30,6 @@
 
 #include "marshalls.h"
 
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -1179,6 +1178,73 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = carray;
 
 		} break;
+
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
+			buf += 4;
+			len -= 4;
+
+			Vector<Vector4> varray;
+
+			if (header & HEADER_DATA_FLAG_64) {
+				ERR_FAIL_MUL_OF(count, sizeof(double) * 4, ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(count < 0 || count * sizeof(double) * 4 > (size_t)len, ERR_INVALID_DATA);
+
+				if (r_len) {
+					(*r_len) += 4; // Size of count number.
+				}
+
+				if (count) {
+					varray.resize(count);
+					Vector4 *w = varray.ptrw();
+
+					for (int32_t i = 0; i < count; i++) {
+						w[i].x = decode_double(buf + i * sizeof(double) * 4 + sizeof(double) * 0);
+						w[i].y = decode_double(buf + i * sizeof(double) * 4 + sizeof(double) * 1);
+						w[i].z = decode_double(buf + i * sizeof(double) * 4 + sizeof(double) * 2);
+						w[i].w = decode_double(buf + i * sizeof(double) * 4 + sizeof(double) * 3);
+					}
+
+					int adv = sizeof(double) * 4 * count;
+
+					if (r_len) {
+						(*r_len) += adv;
+					}
+					len -= adv;
+					buf += adv;
+				}
+			} else {
+				ERR_FAIL_MUL_OF(count, sizeof(float) * 4, ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(count < 0 || count * sizeof(float) * 4 > (size_t)len, ERR_INVALID_DATA);
+
+				if (r_len) {
+					(*r_len) += 4; // Size of count number.
+				}
+
+				if (count) {
+					varray.resize(count);
+					Vector4 *w = varray.ptrw();
+
+					for (int32_t i = 0; i < count; i++) {
+						w[i].x = decode_float(buf + i * sizeof(float) * 4 + sizeof(float) * 0);
+						w[i].y = decode_float(buf + i * sizeof(float) * 4 + sizeof(float) * 1);
+						w[i].z = decode_float(buf + i * sizeof(float) * 4 + sizeof(float) * 2);
+						w[i].w = decode_float(buf + i * sizeof(float) * 4 + sizeof(float) * 3);
+					}
+
+					int adv = sizeof(float) * 4 * count;
+
+					if (r_len) {
+						(*r_len) += adv;
+					}
+					len -= adv;
+					buf += adv;
+				}
+			}
+			r_variant = varray;
+
+		} break;
 		default: {
 			ERR_FAIL_V(ERR_BUG);
 		}
@@ -1249,10 +1315,12 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			if (array.is_typed()) {
 				Ref<Script> script = array.get_typed_script();
 				if (script.is_valid()) {
-					header |= HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT;
+					header |= p_full_objects ? HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT : HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME;
 				} else if (array.get_typed_class_name() != StringName()) {
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME;
 				} else {
+					// No need to check `p_full_objects` since for `Variant::OBJECT`
+					// `array.get_typed_class_name()` should be non-empty.
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN;
 				}
 			}
@@ -1263,6 +1331,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		case Variant::VECTOR4:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
 		case Variant::PROJECTION:
@@ -1628,7 +1697,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 						Variant value;
 
-						if (E.name == CoreStringNames::get_singleton()->_script) {
+						if (E.name == CoreStringName(script)) {
 							Ref<Script> script = obj->get_script();
 							if (script.is_valid()) {
 								String path = script->get_path();
@@ -1716,12 +1785,18 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Variant variant = array.get_typed_script();
 				Ref<Script> script = variant;
 				if (script.is_valid()) {
-					String path = script->get_path();
-					ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
-					_encode_string(path, buf, r_len);
+					if (p_full_objects) {
+						String path = script->get_path();
+						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
+						_encode_string(path, buf, r_len);
+					} else {
+						_encode_string(EncodedObjectAsID::get_class_static(), buf, r_len);
+					}
 				} else if (array.get_typed_class_name() != StringName()) {
-					_encode_string(array.get_typed_class_name(), buf, r_len);
+					_encode_string(p_full_objects ? array.get_typed_class_name().operator String() : EncodedObjectAsID::get_class_static(), buf, r_len);
 				} else {
+					// No need to check `p_full_objects` since for `Variant::OBJECT`
+					// `array.get_typed_class_name()` should be non-empty.
 					if (buf) {
 						encode_uint32(array.get_typed_builtin(), buf);
 						buf += 4;
@@ -1945,6 +2020,32 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += 4 * 4 * len;
+
+		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			Vector<Vector4> data = p_variant;
+			int len = data.size();
+
+			if (buf) {
+				encode_uint32(len, buf);
+				buf += 4;
+			}
+
+			r_len += 4;
+
+			if (buf) {
+				for (int i = 0; i < len; i++) {
+					Vector4 v = data.get(i);
+
+					encode_real(v.x, &buf[0]);
+					encode_real(v.y, &buf[sizeof(real_t)]);
+					encode_real(v.z, &buf[sizeof(real_t) * 2]);
+					encode_real(v.w, &buf[sizeof(real_t) * 3]);
+					buf += sizeof(real_t) * 4;
+				}
+			}
+
+			r_len += sizeof(real_t) * 4 * len;
 
 		} break;
 		default: {

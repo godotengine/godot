@@ -150,6 +150,7 @@ public:
 		m_start_count = 0;
 		m_done_count = 0;
 		m_task_count = 0;
+		m_callback = nullptr;
 		m_callback_last_value = 0.0f;
 		m_callback_min_diff = 1.0f;
 	}

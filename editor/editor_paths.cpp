@@ -71,7 +71,11 @@ String EditorPaths::get_export_templates_dir() const {
 }
 
 String EditorPaths::get_debug_keystore_path() const {
+#ifdef ANDROID_ENABLED
+	return "assets://keystores/debug.keystore";
+#else
 	return get_data_dir().path_join("keystores/debug.keystore");
+#endif
 }
 
 String EditorPaths::get_project_settings_dir() const {
@@ -241,7 +245,7 @@ EditorPaths::EditorPaths() {
 			}
 		}
 
-		// Check that the project data directory '.gdignore' file exists
+		// Check that the project data directory `.gdignore` file exists.
 		String project_data_gdignore_file_path = project_data_dir.path_join(".gdignore");
 		if (!FileAccess::exists(project_data_gdignore_file_path)) {
 			// Add an empty .gdignore file to avoid scan.
@@ -249,8 +253,24 @@ EditorPaths::EditorPaths() {
 			if (f.is_valid()) {
 				f->store_line("");
 			} else {
-				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path);
+				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path.quote() + ".");
 			}
+		}
+
+		// Check that `.editorconfig` file exists.
+		String project_editorconfig_path = "res://.editorconfig";
+		if (!FileAccess::exists(project_editorconfig_path)) {
+			Ref<FileAccess> f = FileAccess::open(project_editorconfig_path, FileAccess::WRITE);
+			if (f.is_valid()) {
+				f->store_line("root = true");
+				f->store_line("");
+				f->store_line("[*]");
+				f->store_line("charset = utf-8");
+				f->close();
+			} else {
+				ERR_PRINT("Failed to create file " + project_editorconfig_path.quote() + ".");
+			}
+			FileAccess::set_hidden_attribute(project_editorconfig_path, true);
 		}
 
 		Engine::get_singleton()->set_shader_cache_path(project_data_dir);

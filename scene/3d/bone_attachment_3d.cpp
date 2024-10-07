@@ -33,7 +33,7 @@
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
-		// Because it is a constant function, we cannot use the _get_skeleton_3d function.
+		// Because it is a constant function, we cannot use the get_skeleton function.
 		const Skeleton3D *parent = nullptr;
 		if (use_external_skeleton) {
 			if (external_skeleton_node_cache.is_valid()) {
@@ -44,16 +44,8 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		if (parent) {
-			String names;
-			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0) {
-					names += ",";
-				}
-				names += parent->get_bone_name(i);
-			}
-
 			p_property.hint = PROPERTY_HINT_ENUM;
-			p_property.hint_string = names;
+			p_property.hint_string = parent->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
 			p_property.hint_string = "";
@@ -142,21 +134,21 @@ void BoneAttachment3D::_update_external_skeleton_cache() {
 }
 
 void BoneAttachment3D::_check_bind() {
-	Skeleton3D *sk = _get_skeleton3d();
+	Skeleton3D *sk = get_skeleton();
 
 	if (sk && !bound) {
 		if (bone_idx <= -1) {
 			bone_idx = sk->find_bone(bone_name);
 		}
 		if (bone_idx != -1) {
-			sk->connect(SNAME("skeleton_updated"), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
+			sk->connect(SceneStringName(skeleton_updated), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 			bound = true;
 			callable_mp(this, &BoneAttachment3D::on_skeleton_update);
 		}
 	}
 }
 
-Skeleton3D *BoneAttachment3D::_get_skeleton3d() {
+Skeleton3D *BoneAttachment3D::get_skeleton() {
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_valid()) {
 			return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(external_skeleton_node_cache));
@@ -174,10 +166,10 @@ Skeleton3D *BoneAttachment3D::_get_skeleton3d() {
 
 void BoneAttachment3D::_check_unbind() {
 	if (bound) {
-		Skeleton3D *sk = _get_skeleton3d();
+		Skeleton3D *sk = get_skeleton();
 
 		if (sk) {
-			sk->disconnect(SNAME("skeleton_updated"), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
+			sk->disconnect(SceneStringName(skeleton_updated), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 		}
 		bound = false;
 	}
@@ -189,7 +181,7 @@ void BoneAttachment3D::_transform_changed() {
 	}
 
 	if (override_pose && !overriding) {
-		Skeleton3D *sk = _get_skeleton3d();
+		Skeleton3D *sk = get_skeleton();
 
 		ERR_FAIL_NULL_MSG(sk, "Cannot override pose: Skeleton not found!");
 		ERR_FAIL_INDEX_MSG(bone_idx, sk->get_bone_count(), "Cannot override pose: Bone index is out of range!");
@@ -208,7 +200,7 @@ void BoneAttachment3D::_transform_changed() {
 
 void BoneAttachment3D::set_bone_name(const String &p_name) {
 	bone_name = p_name;
-	Skeleton3D *sk = _get_skeleton3d();
+	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		set_bone_idx(sk->find_bone(bone_name));
 	}
@@ -225,7 +217,7 @@ void BoneAttachment3D::set_bone_idx(const int &p_idx) {
 
 	bone_idx = p_idx;
 
-	Skeleton3D *sk = _get_skeleton3d();
+	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone_idx <= -1 || bone_idx >= sk->get_bone_count()) {
 			WARN_PRINT("Bone index out of range! Cannot connect BoneAttachment to node!");
@@ -247,9 +239,20 @@ int BoneAttachment3D::get_bone_idx() const {
 }
 
 void BoneAttachment3D::set_override_pose(bool p_override) {
+	if (override_pose == p_override) {
+		return;
+	}
+
 	override_pose = p_override;
 	set_notify_transform(override_pose);
 	set_process_internal(override_pose);
+	if (!override_pose && bone_idx >= 0) {
+		Skeleton3D *sk = get_skeleton();
+		if (sk) {
+			sk->reset_bone_pose(bone_idx);
+		}
+	}
+
 	notify_property_list_changed();
 }
 
@@ -315,7 +318,7 @@ void BoneAttachment3D::on_skeleton_update() {
 	}
 	updating = true;
 	if (bone_idx >= 0) {
-		Skeleton3D *sk = _get_skeleton3d();
+		Skeleton3D *sk = get_skeleton();
 		if (sk) {
 			if (!override_pose) {
 				if (use_external_skeleton) {
@@ -366,6 +369,8 @@ BoneAttachment3D::BoneAttachment3D() {
 }
 
 void BoneAttachment3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_skeleton"), &BoneAttachment3D::get_skeleton);
+
 	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_name"), &BoneAttachment3D::set_bone_name);
 	ClassDB::bind_method(D_METHOD("get_bone_name"), &BoneAttachment3D::get_bone_name);
 

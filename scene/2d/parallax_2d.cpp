@@ -31,6 +31,7 @@
 #include "parallax_2d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/main/viewport.h"
 
 void Parallax2D::_notification(int p_what) {
 	switch (p_what) {
@@ -46,9 +47,18 @@ void Parallax2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			autoscroll_offset += autoscroll * get_process_delta_time();
-			autoscroll_offset = autoscroll_offset.posmodv(repeat_size);
+			Point2 offset = scroll_offset;
+			offset += autoscroll * get_process_delta_time();
 
+			if (repeat_size.x) {
+				offset.x = Math::fposmod(offset.x, repeat_size.x);
+			}
+
+			if (repeat_size.y) {
+				offset.y = Math::fposmod(offset.y, repeat_size.y);
+			}
+
+			scroll_offset = offset;
 			_update_scroll();
 		} break;
 
@@ -72,7 +82,15 @@ void Parallax2D::_validate_property(PropertyInfo &p_property) const {
 
 void Parallax2D::_camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_pos) {
 	if (!ignore_camera_scroll) {
-		set_screen_offset(p_adj_screen_pos);
+		if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+			Size2 vps = get_viewport_rect().size;
+			Vector2 offset;
+			offset.x = ((int)vps.width % 2) ? 0.0 : 0.5;
+			offset.y = ((int)vps.height % 2) ? 0.0 : 0.5;
+			set_screen_offset((p_adj_screen_pos + offset).floor());
+		} else {
+			set_screen_offset(p_adj_screen_pos);
+		}
 	}
 }
 
@@ -86,11 +104,10 @@ void Parallax2D::_update_scroll() {
 	}
 
 	Point2 scroll_ofs = screen_offset;
-	Size2 vps = get_viewport_rect().size;
 
-	if (Engine::get_singleton()->is_editor_hint()) {
-		vps = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
-	} else {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		Size2 vps = get_viewport_rect().size;
+
 		if (limit_begin.x <= limit_end.x - vps.x) {
 			scroll_ofs.x = CLAMP(scroll_ofs.x, limit_begin.x, limit_end.x - vps.x);
 		}
@@ -102,14 +119,14 @@ void Parallax2D::_update_scroll() {
 	scroll_ofs *= scroll_scale;
 
 	if (repeat_size.x) {
-		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x - autoscroll_offset.x, repeat_size.x * get_scale().x);
+		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x, repeat_size.x * get_scale().x);
 		scroll_ofs.x = screen_offset.x - mod;
 	} else {
 		scroll_ofs.x = screen_offset.x + scroll_offset.x - scroll_ofs.x;
 	}
 
 	if (repeat_size.y) {
-		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y - autoscroll_offset.y, repeat_size.y * get_scale().y);
+		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y, repeat_size.y * get_scale().y);
 		scroll_ofs.y = screen_offset.y - mod;
 	} else {
 		scroll_ofs.y = screen_offset.y + scroll_offset.y - scroll_ofs.y;
@@ -144,7 +161,7 @@ void Parallax2D::set_repeat_size(const Size2 &p_repeat_size) {
 		return;
 	}
 
-	repeat_size = p_repeat_size.max(Vector2(0, 0));
+	repeat_size = p_repeat_size.maxf(0);
 
 	_update_process();
 	_update_repeat();
@@ -189,7 +206,6 @@ void Parallax2D::set_autoscroll(const Point2 &p_autoscroll) {
 	}
 
 	autoscroll = p_autoscroll;
-	autoscroll_offset = Point2();
 
 	_update_process();
 	_update_scroll();

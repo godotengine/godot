@@ -75,7 +75,6 @@ public:
 	};
 
 private:
-	const float BAKE_FPS = 30.0f;
 	int _naming_version = 1;
 	String _image_format = "PNG";
 	float _lossy_quality = 0.75f;
@@ -93,6 +92,8 @@ public:
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
 	static Vector<Ref<GLTFDocumentExtension>> get_all_gltf_document_extensions();
+	static Vector<String> get_supported_gltf_extensions();
+	static HashSet<String> get_supported_gltf_extensions_hashset();
 
 	void set_naming_version(int p_version);
 	int get_naming_version() const;
@@ -112,8 +113,7 @@ private:
 	int _get_component_type_size(const int p_component_type);
 	Error _parse_scenes(Ref<GLTFState> p_state);
 	Error _parse_nodes(Ref<GLTFState> p_state);
-	String _get_type_name(const GLTFType p_component);
-	String _get_accessor_type_name(const GLTFType p_type);
+	String _get_accessor_type_name(const GLTFAccessor::GLTFAccessorType p_accessor_type);
 	String _sanitize_animation_name(const String &p_name);
 	String _gen_unique_animation_name(Ref<GLTFState> p_state, const String &p_name);
 	String _sanitize_bone_name(const String &p_name);
@@ -133,13 +133,13 @@ private:
 	void _compute_node_heights(Ref<GLTFState> p_state);
 	Error _parse_buffers(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> p_state);
-	GLTFType _get_type_from_str(const String &p_string);
+	GLTFAccessor::GLTFAccessorType _get_accessor_type_from_str(const String &p_string);
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	Error _decode_buffer_view(Ref<GLTFState> p_state, double *p_dst,
 			const GLTFBufferViewIndex p_buffer_view,
 			const int p_skip_every, const int p_skip_bytes,
 			const int p_element_size, const int p_count,
-			const GLTFType p_type, const int p_component_count,
+			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int p_component_count,
 			const int p_component_type, const int p_component_size,
 			const bool p_normalized, const int p_byte_offset,
 			const bool p_for_vertex);
@@ -268,7 +268,7 @@ private:
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
 	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
-			const int p_count, const GLTFType p_type,
+			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
 			const int p_component_type, const bool p_normalized,
 			const int p_byte_offset, const bool p_for_vertex,
 			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
@@ -328,7 +328,7 @@ public:
 	void _generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player,
-			const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks);
+			const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks);
 	void _convert_mesh_instances(Ref<GLTFState> p_state);
 	GLTFCameraIndex _convert_camera(Ref<GLTFState> p_state, Camera3D *p_camera);
 	void _convert_light_to_gltf(Light3D *p_light, Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node);
@@ -342,12 +342,6 @@ public:
 	void _convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
 #endif // MODULE_CSG_ENABLED
 
-	void _create_gltf_node(Ref<GLTFState> p_state,
-			Node *p_scene_parent,
-			GLTFNodeIndex p_current_node_i,
-			GLTFNodeIndex p_parent_node_index,
-			GLTFNodeIndex p_root_gltf_node,
-			Ref<GLTFNode> p_gltf_node);
 	void _convert_animation_player_to_gltf(
 			AnimationPlayer *p_animation_player, Ref<GLTFState> p_state,
 			GLTFNodeIndex p_gltf_current,

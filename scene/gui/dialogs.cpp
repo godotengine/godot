@@ -47,7 +47,7 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void AcceptDialog::_parent_focused() {
-	if (!is_exclusive() && get_flag(FLAG_POPUP)) {
+	if (popped_up && !is_exclusive() && get_flag(FLAG_POPUP)) {
 		_cancel_pressed();
 	}
 }
@@ -68,18 +68,27 @@ void AcceptDialog::_notification(int p_what) {
 
 				parent_visible = get_parent_visible_window();
 				if (parent_visible) {
-					parent_visible->connect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+					parent_visible->connect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				}
 			} else {
+				popped_up = false;
 				if (parent_visible) {
-					parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+					parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 					parent_visible = nullptr;
 				}
 			}
 		} break;
 
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			if (!is_in_edited_scene_root()) {
+				if (has_focus()) {
+					popped_up = true;
+				}
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			bg_panel->add_theme_style_override("panel", theme_cache.panel_style);
+			bg_panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 
 			child_controls_changed();
 			if (is_visible()) {
@@ -89,7 +98,7 @@ void AcceptDialog::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {
-				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+				parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				parent_visible = nullptr;
 			}
 		} break;
@@ -114,19 +123,26 @@ void AcceptDialog::_text_submitted(const String &p_text) {
 	_ok_pressed();
 }
 
+void AcceptDialog::_post_popup() {
+	Window::_post_popup();
+	popped_up = true;
+}
+
 void AcceptDialog::_ok_pressed() {
 	if (hide_on_ok) {
+		popped_up = false;
 		set_visible(false);
 	}
 	ok_pressed();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 	set_input_as_handled();
 }
 
 void AcceptDialog::_cancel_pressed() {
+	popped_up = false;
 	Window *parent_window = parent_visible;
 	if (parent_visible) {
-		parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+		parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 		parent_visible = nullptr;
 	}
 
@@ -308,7 +324,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 	button->set_meta("__right_spacer", right_spacer);
 
-	button->connect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed).bind(button));
+	button->connect(SceneStringName(visibility_changed), callable_mp(this, &AcceptDialog::_custom_button_visibility_changed).bind(button));
 
 	child_controls_changed();
 	if (is_visible()) {
@@ -316,7 +332,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (!p_action.is_empty()) {
-		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action).bind(p_action));
+		button->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_custom_action).bind(p_action));
 	}
 
 	return button;
@@ -330,7 +346,7 @@ Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 
-	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	b->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_cancel_pressed));
 
 	return b;
 }
@@ -345,12 +361,12 @@ void AcceptDialog::remove_button(Button *p_button) {
 		ERR_FAIL_COND_MSG(right_spacer->get_parent() != buttons_hbox, vformat("Cannot remove button %s as its associated spacer does not belong to this dialog.", p_button->get_name()));
 	}
 
-	p_button->disconnect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
-	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
-		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
+	p_button->disconnect(SceneStringName(visibility_changed), callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
+	if (p_button->is_connected(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_custom_action))) {
+		p_button->disconnect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_custom_action));
 	}
-	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
-		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	if (p_button->is_connected(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_cancel_pressed))) {
+		p_button->disconnect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_cancel_pressed));
 	}
 
 	if (right_spacer) {
@@ -433,7 +449,7 @@ AcceptDialog::AcceptDialog() {
 	buttons_hbox->add_child(ok_button);
 	buttons_hbox->add_spacer();
 
-	ok_button->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
+	ok_button->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_ok_pressed));
 
 	set_title(ETR("Alert!"));
 }

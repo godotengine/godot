@@ -52,7 +52,7 @@ void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 SpringArm3DGizmoPlugin::SpringArm3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();
 	create_material("shape_material", gizmo_color);
 }
 

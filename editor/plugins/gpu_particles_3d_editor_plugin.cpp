@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -197,9 +198,6 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 	emission_dialog->popup_centered(Size2(300, 130));
 }
 
-void GPUParticles3DEditorBase::_bind_methods() {
-}
-
 GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_dialog = memnew(ConfirmationDialog);
 	emission_dialog->set_title(TTR("Create Emitter"));
@@ -220,7 +218,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emd_vb->add_margin_child(TTR("Emission Source:"), emission_fill);
 
 	emission_dialog->set_ok_button_text(TTR("Create"));
-	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
+	emission_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
 	Vector<StringName> valid_types;
@@ -308,7 +306,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 
 	while (running < time) {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
+		ep.step(TTR("Generating..."), int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		AABB capture = node->capture_aabb();
@@ -401,9 +399,6 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	}
 }
 
-void GPUParticles3DEditor::_bind_methods() {
-}
-
 GPUParticles3DEditor::GPUParticles3DEditor() {
 	node = nullptr;
 	particles_editor_hb = memnew(HBoxContainer);
@@ -414,12 +409,12 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("GPUParticles3D"));
-	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
+	options->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_OPTION_RESTART);
 	options->get_popup()->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Convert to CPUParticles3D"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles3DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GPUParticles3DEditor::_menu_option));
 
 	generate_aabb = memnew(ConfirmationDialog);
 	generate_aabb->set_title(TTR("Generate Visibility AABB"));
@@ -433,7 +428,7 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 
 	add_child(generate_aabb);
 
-	generate_aabb->connect("confirmed", callable_mp(this, &GPUParticles3DEditor::_generate_aabb));
+	generate_aabb->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles3DEditor::_generate_aabb));
 }
 
 void GPUParticles3DEditorPlugin::edit(Object *p_object) {
@@ -457,7 +452,7 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
 	particles_editor = memnew(GPUParticles3DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

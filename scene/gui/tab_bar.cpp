@@ -323,6 +323,19 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+String TabBar::get_tooltip(const Point2 &p_pos) const {
+	int tab_idx = get_tab_idx_at_point(p_pos);
+	if (tab_idx < 0) {
+		return Control::get_tooltip(p_pos);
+	}
+
+	if (tabs[tab_idx].tooltip.is_empty() && tabs[tab_idx].truncated) {
+		return tabs[tab_idx].text;
+	}
+
+	return tabs[tab_idx].tooltip;
+}
+
 void TabBar::_shape(int p_tab) {
 	tabs.write[p_tab].text_buf->clear();
 	tabs.write[p_tab].text_buf->set_width(-1);
@@ -341,6 +354,8 @@ void TabBar::_notification(int p_what) {
 			if (scroll_to_selected) {
 				ensure_tab_visible(current);
 			}
+			// Set initialized even if no tabs were set.
+			initialized = true;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -607,6 +622,8 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		}
 
 		cb->draw(ci, Point2i(cb_rect.position.x + style->get_margin(SIDE_LEFT), cb_rect.position.y + style->get_margin(SIDE_TOP)));
+	} else {
+		tabs.write[p_index].cb_rect = Rect2();
 	}
 }
 
@@ -640,10 +657,10 @@ void TabBar::set_tab_count(int p_count) {
 	}
 
 	if (!initialized) {
-		if (queued_current != current) {
-			current = queued_current;
-		}
 		initialized = true;
+		if (queued_current != CURRENT_TAB_UNINITIALIZED && queued_current != current) {
+			set_current_tab(queued_current);
+		}
 	}
 
 	queue_redraw();
@@ -725,6 +742,13 @@ bool TabBar::select_next_available() {
 	return false;
 }
 
+void TabBar::set_tab_offset(int p_offset) {
+	ERR_FAIL_INDEX(p_offset, tabs.size());
+	offset = p_offset;
+	_update_cache();
+	queue_redraw();
+}
+
 int TabBar::get_tab_offset() const {
 	return offset;
 }
@@ -755,6 +779,16 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 String TabBar::get_tab_title(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
 	return tabs[p_tab].text;
+}
+
+void TabBar::set_tab_tooltip(int p_tab, const String &p_tooltip) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	tabs.write[p_tab].tooltip = p_tooltip;
+}
+
+String TabBar::get_tab_tooltip(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
+	return tabs[p_tab].tooltip;
 }
 
 void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direction) {
@@ -998,7 +1032,8 @@ void TabBar::_update_cache(bool p_update_hover) {
 		tabs.write[i].size_text = Math::ceil(tabs[i].text_buf->get_size().x);
 		tabs.write[i].size_cache = get_tab_width(i);
 
-		if (max_width > 0 && tabs[i].size_cache > max_width) {
+		tabs.write[i].truncated = max_width > 0 && tabs[i].size_cache > max_width;
+		if (tabs[i].truncated) {
 			int size_textless = tabs[i].size_cache - tabs[i].size_text;
 			int mw = MAX(size_textless, max_width);
 
@@ -1224,6 +1259,7 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 	}
 
 	Label *label = memnew(Label(get_tab_title(tab_over)));
+	label->set_auto_translate_mode(get_auto_translate_mode()); // Reflect how the title is displayed.
 	drag_preview->add_child(label);
 
 	set_drag_preview(drag_preview);
@@ -1730,6 +1766,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_next_available"), &TabBar::select_next_available);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabBar::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabBar::set_tab_tooltip);
+	ClassDB::bind_method(D_METHOD("get_tab_tooltip", "tab_idx"), &TabBar::get_tab_tooltip);
 	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &TabBar::set_tab_text_direction);
 	ClassDB::bind_method(D_METHOD("get_tab_text_direction", "tab_idx"), &TabBar::get_tab_text_direction);
 	ClassDB::bind_method(D_METHOD("set_tab_language", "tab_idx", "language"), &TabBar::set_tab_language);
@@ -1842,15 +1880,18 @@ void TabBar::_bind_methods() {
 	Tab defaults(true);
 
 	base_property_helper.set_prefix("tab_");
+	base_property_helper.set_array_length_getter(&TabBar::get_tab_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.text, &TabBar::set_tab_title, &TabBar::get_tab_title);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "tooltip"), defaults.tooltip, &TabBar::set_tab_tooltip, &TabBar::get_tab_tooltip);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabBar::set_tab_disabled, &TabBar::is_tab_disabled);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 TabBar::TabBar() {
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	set_focus_mode(FOCUS_ALL);
-	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
 
 	property_helper.setup_for_instance(base_property_helper, this);
 }

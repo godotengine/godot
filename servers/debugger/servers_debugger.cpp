@@ -97,12 +97,10 @@ Array ServersDebugger::ServersProfilerFrame::serialize() {
 	arr.push_back(script_time);
 
 	arr.push_back(servers.size());
-	for (int i = 0; i < servers.size(); i++) {
-		ServerInfo &s = servers[i];
+	for (const ServerInfo &s : servers) {
 		arr.push_back(s.name);
 		arr.push_back(s.functions.size() * 2);
-		for (int j = 0; j < s.functions.size(); j++) {
-			ServerFunctionInfo &f = s.functions[j];
+		for (const ServerFunctionInfo &f : s.functions) {
 			arr.push_back(f.name);
 			arr.push_back(f.time);
 		}

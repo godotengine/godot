@@ -153,6 +153,11 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
+			default_gl_textures[DEFAULT_GL_TEXTURE_EXT] = texture_allocate();
+			texture_external_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_EXT], 1, 1, 0);
+		}
+
+		{
 			unsigned char pixel_data[4 * 4 * 4];
 			for (int i = 0; i < 16; i++) {
 				pixel_data[i * 4 + 0] = 0;
@@ -244,11 +249,6 @@ TextureStorage::~TextureStorage() {
 	glDeleteFramebuffers(1, &texture_atlas.framebuffer);
 	texture_atlas.framebuffer = 0;
 	sdf_shader.shader.version_free(sdf_shader.shader_version);
-}
-
-//TODO, move back to storage
-bool TextureStorage::can_create_resources_async() const {
-	return false;
 }
 
 /* Canvas Texture API */
@@ -729,7 +729,7 @@ void TextureStorage::texture_free(RID p_texture) {
 			}
 		}
 	} else {
-		must_free_data = t->tex_id != 0 && !t->is_external;
+		must_free_data = t->tex_id != 0 && !t->is_from_native_handle;
 	}
 	if (must_free_data) {
 		GLES3::Utilities::get_singleton()->texture_free_data(t->tex_id);
@@ -767,6 +767,48 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 2D");
 	texture_owner.initialize_rid(p_texture, texture);
 	texture_set_data(p_texture, p_image);
+}
+
+void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+	Texture texture;
+	texture.active = true;
+	texture.alloc_width = texture.width = p_width;
+	texture.alloc_height = texture.height = p_height;
+	texture.real_format = texture.format = Image::FORMAT_RGB8;
+	texture.type = Texture::TYPE_2D;
+
+	if (GLES3::Config::get_singleton()->external_texture_supported) {
+		texture.target = _GL_TEXTURE_EXTERNAL_OES;
+	} else {
+		texture.target = GL_TEXTURE_2D;
+	}
+
+	glGenTextures(1, &texture.tex_id);
+	glBindTexture(texture.target, texture.tex_id);
+
+#ifdef ANDROID_ENABLED
+	if (texture.target == _GL_TEXTURE_EXTERNAL_OES) {
+		if (p_external_buffer) {
+			GLES3::Config::get_singleton()->eglEGLImageTargetTexture2DOES(_GL_TEXTURE_EXTERNAL_OES, reinterpret_cast<void *>(p_external_buffer));
+		}
+		texture.total_data_size = 0;
+	} else
+#endif
+	{
+		// If external textures aren't supported, allocate an empty 1x1 texture.
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		texture.total_data_size = 3;
+	}
+
+	glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(texture.target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture.target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture External");
+	texture_owner.initialize_rid(p_texture, texture);
+
+	glBindTexture(texture.target, 0);
 }
 
 void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
@@ -874,26 +916,28 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	texture_owner.initialize_rid(p_texture, proxy_tex);
 }
 
-RID TextureStorage::texture_create_external(GLES3::Texture::Type p_type, Image::Format p_format, unsigned int p_image, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
+RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
 	Texture texture;
 	texture.active = true;
-	texture.is_external = true;
-	texture.type = p_type;
+	texture.is_from_native_handle = true;
 
 	switch (p_type) {
-		case Texture::TYPE_2D: {
+		case RS::TEXTURE_TYPE_2D: {
+			texture.type = Texture::TYPE_2D;
 			texture.target = GL_TEXTURE_2D;
 		} break;
-		case Texture::TYPE_3D: {
+		case RS::TEXTURE_TYPE_3D: {
+			texture.type = Texture::TYPE_3D;
 			texture.target = GL_TEXTURE_3D;
 		} break;
-		case Texture::TYPE_LAYERED: {
+		case RS::TEXTURE_TYPE_LAYERED: {
+			texture.type = Texture::TYPE_LAYERED;
 			texture.target = GL_TEXTURE_2D_ARRAY;
 		} break;
 	}
 
 	texture.real_format = texture.format = p_format;
-	texture.tex_id = p_image;
+	texture.tex_id = p_native_handle;
 	texture.alloc_width = texture.width = p_width;
 	texture.alloc_height = texture.height = p_height;
 	texture.depth = p_depth;
@@ -926,6 +970,22 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 	_texture_set_3d_data(p_texture, p_data, false);
 
 	GLES3::Utilities::get_singleton()->texture_resize_data(tex->tex_id, tex->total_data_size);
+}
+
+void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+
+	tex->alloc_width = tex->width = p_width;
+	tex->alloc_height = tex->height = p_height;
+
+#ifdef ANDROID_ENABLED
+	if (tex->target == _GL_TEXTURE_EXTERNAL_OES && p_external_buffer) {
+		glBindTexture(_GL_TEXTURE_EXTERNAL_OES, tex->tex_id);
+		GLES3::Config::get_singleton()->eglEGLImageTargetTexture2DOES(_GL_TEXTURE_EXTERNAL_OES, reinterpret_cast<void *>(p_external_buffer));
+		glBindTexture(_GL_TEXTURE_EXTERNAL_OES, 0);
+	}
+#endif
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
@@ -1030,10 +1090,8 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 			if (texture->compressed) {
 				glPixelStorei(GL_PACK_ALIGNMENT, 4);
 				glGetCompressedTexImage(texture->target, i, &w[ofs]);
-
 			} else {
 				glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
 				glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &w[ofs]);
 			}
 		}
@@ -1041,7 +1099,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, texture->real_format, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 		if (texture->format != texture->real_format) {
 			image->convert(texture->format);
@@ -1097,7 +1155,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		data.resize(data_size);
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-		image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
+		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data);
 		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 
 		if (texture->format != Image::FORMAT_RGBA8) {
@@ -1391,8 +1449,22 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = 0;
 		tinfo.bytes = t->total_data_size;
+
+		switch (t->type) {
+			case Texture::TYPE_3D:
+				tinfo.depth = t->depth;
+				break;
+
+			case Texture::TYPE_LAYERED:
+				tinfo.depth = t->layers;
+				break;
+
+			default:
+				tinfo.depth = 0;
+				break;
+		}
+
 		r_info->push_back(tinfo);
 	}
 }
@@ -1493,16 +1565,18 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	int tsize = 0;
 
 	for (int i = 0; i < mipmaps; i++) {
-		int size, ofs;
+		int64_t size, ofs;
 		img->get_mipmap_offset_and_size(i, ofs, size);
-
 		if (compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-			int bw = w;
-			int bh = h;
-
-			glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
+			if (texture->target == GL_TEXTURE_2D_ARRAY) {
+				if (p_initialize) {
+					glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, size * texture->layers, nullptr);
+				}
+				glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, internal_format, size, &read[ofs]);
+			} else {
+				glCompressedTexImage2D(blit_target, i, internal_format, w, h, 0, size, &read[ofs]);
+			}
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->target == GL_TEXTURE_2D_ARRAY) {
@@ -1521,7 +1595,11 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 		h = MAX(1, h >> 1);
 	}
 
-	texture->total_data_size = tsize;
+	if (texture->target == GL_TEXTURE_CUBE_MAP || texture->target == GL_TEXTURE_2D_ARRAY) {
+		texture->total_data_size = tsize * texture->layers;
+	} else {
+		texture->total_data_size = tsize;
+	}
 
 	texture->stored_cube_sides |= (1 << p_layer);
 
@@ -1676,6 +1754,14 @@ uint32_t TextureStorage::texture_get_texid(RID p_texture) const {
 	ERR_FAIL_NULL_V(texture, 0);
 
 	return texture->tex_id;
+}
+
+Vector3i TextureStorage::texture_get_size(RID p_texture) const {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL_V(texture, Vector3i(0, 0, 0));
+
+	return Vector3i(texture->width, texture->height, texture->depth);
 }
 
 uint32_t TextureStorage::texture_get_width(RID p_texture) const {
@@ -2119,7 +2205,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 				texture->layers = 1;
 			}
 			texture->gl_format_cache = rt->color_format;
-			texture->gl_type_cache = GL_UNSIGNED_BYTE;
+			texture->gl_type_cache = !rt->hdr ? GL_UNSIGNED_BYTE : GL_FLOAT; // to set HDR format size to 8 and keep 4 for LDR format
 			texture->gl_internal_format_cache = rt->color_internal_format;
 			texture->tex_id = rt->color;
 			texture->width = rt->size.x;
@@ -2312,9 +2398,11 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 	if (rt->backbuffer_fbo != 0) {
 		glDeleteFramebuffers(1, &rt->backbuffer_fbo);
+		rt->backbuffer_fbo = 0;
+	}
+	if (rt->backbuffer != 0) {
 		GLES3::Utilities::get_singleton()->texture_free_data(rt->backbuffer);
 		rt->backbuffer = 0;
-		rt->backbuffer_fbo = 0;
 	}
 	if (rt->backbuffer_depth != 0) {
 		GLES3::Utilities::get_singleton()->texture_free_data(rt->backbuffer_depth);
@@ -2812,7 +2900,7 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 	}
 
 	rt->process_size = size * scale / 100;
-	rt->process_size = rt->process_size.max(Size2i(1, 1));
+	rt->process_size = rt->process_size.maxi(1);
 
 	glGenTextures(2, rt->sdf_texture_process);
 	glBindTexture(GL_TEXTURE_2D, rt->sdf_texture_process[0]);

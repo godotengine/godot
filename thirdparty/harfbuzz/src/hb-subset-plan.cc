@@ -399,12 +399,55 @@ _get_hb_font_with_variations (const hb_subset_plan_t *plan)
 }
 
 static inline void
+_remap_variation_indices (const OT::ItemVariationStore &var_store,
+                          const hb_set_t &variation_indices,
+                          const hb_vector_t<int>& normalized_coords,
+                          bool calculate_delta, /* not pinned at default */
+                          bool no_variations, /* all axes pinned */
+                          hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> &variation_idx_delta_map /* OUT */)
+{
+  if (&var_store == &Null (OT::ItemVariationStore)) return;
+  unsigned subtable_count = var_store.get_sub_table_count ();
+  float *store_cache = var_store.create_cache ();
+
+  unsigned new_major = 0, new_minor = 0;
+  unsigned last_major = (variation_indices.get_min ()) >> 16;
+  for (unsigned idx : variation_indices)
+  {
+    int delta = 0;
+    if (calculate_delta)
+      delta = roundf (var_store.get_delta (idx, normalized_coords.arrayZ,
+                                           normalized_coords.length, store_cache));
+
+    if (no_variations)
+    {
+      variation_idx_delta_map.set (idx, hb_pair_t<unsigned, int> (HB_OT_LAYOUT_NO_VARIATIONS_INDEX, delta));
+      continue;
+    }
+
+    uint16_t major = idx >> 16;
+    if (major >= subtable_count) break;
+    if (major != last_major)
+    {
+      new_minor = 0;
+      ++new_major;
+    }
+
+    unsigned new_idx = (new_major << 16) + new_minor;
+    variation_idx_delta_map.set (idx, hb_pair_t<unsigned, int> (new_idx, delta));
+    ++new_minor;
+    last_major = major;
+  }
+  var_store.destroy_cache (store_cache);
+}
+
+static inline void
 _collect_layout_variation_indices (hb_subset_plan_t* plan)
 {
   hb_blob_ptr_t<OT::GDEF> gdef = plan->source_table<OT::GDEF> ();
   hb_blob_ptr_t<GPOS> gpos = plan->source_table<GPOS> ();
 
-  if (!gdef->has_data ())
+  if (!gdef->has_data () || !gdef->has_var_store ())
   {
     gdef.destroy ();
     gpos.destroy ();
@@ -420,13 +463,13 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
   if (hb_ot_layout_has_positioning (plan->source))
     gpos->collect_variation_indices (&c);
 
-  gdef->remap_layout_variation_indices (&varidx_set,
-                                        plan->normalized_coords,
-                                        !plan->pinned_at_default,
-                                        plan->all_axes_pinned,
-                                        &plan->layout_variation_idx_delta_map);
+  _remap_variation_indices (gdef->get_var_store (),
+                            varidx_set, plan->normalized_coords,
+                            !plan->pinned_at_default,
+                            plan->all_axes_pinned,
+                            plan->layout_variation_idx_delta_map);
 
-  unsigned subtable_count = gdef->has_var_store () ? gdef->get_var_store ().get_sub_table_count () : 0;
+  unsigned subtable_count = gdef->get_var_store ().get_sub_table_count ();
   _generate_varstore_inner_maps (varidx_set, subtable_count, plan->gdef_varstore_inner_maps);
 
   gdef.destroy ();
@@ -434,31 +477,6 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
 }
 
 #ifndef HB_NO_BASE
-/* used by BASE table only, delta is always set to 0 in the output map */
-static inline void
-_remap_variation_indices (const hb_set_t& indices,
-                          unsigned subtable_count,
-                          hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>>& variation_idx_delta_map /* OUT */)
-{
-  unsigned new_major = 0, new_minor = 0;
-  unsigned last_major = (indices.get_min ()) >> 16;
-  for (unsigned idx : indices)
-  {
-    uint16_t major = idx >> 16;
-    if (major >= subtable_count) break;
-    if (major != last_major)
-    {
-      new_minor = 0;
-      ++new_major;
-    }
-
-    unsigned new_idx = (new_major << 16) + new_minor;
-    variation_idx_delta_map.set (idx, hb_pair_t<unsigned, int> (new_idx, 0));
-    ++new_minor;
-    last_major = major;
-  }
-}
-
 static inline void
 _collect_base_variation_indices (hb_subset_plan_t* plan)
 {
@@ -471,12 +489,20 @@ _collect_base_variation_indices (hb_subset_plan_t* plan)
 
   hb_set_t varidx_set;
   base->collect_variation_indices (plan, varidx_set);
-  unsigned subtable_count = base->get_var_store ().get_sub_table_count ();
-  base.destroy ();
+  const OT::ItemVariationStore &var_store = base->get_var_store ();
+  unsigned subtable_count = var_store.get_sub_table_count ();
 
-  _remap_variation_indices (varidx_set, subtable_count, plan->base_variation_idx_map);
+
+  _remap_variation_indices (var_store, varidx_set,
+                            plan->normalized_coords,
+                            !plan->pinned_at_default,
+                            plan->all_axes_pinned,
+                            plan->base_variation_idx_map);
   _generate_varstore_inner_maps (varidx_set, subtable_count, plan->base_varstore_inner_maps);
+
+  base.destroy ();
 }
+
 #endif
 #endif
 
@@ -489,12 +515,45 @@ _cmap_closure (hb_face_t	   *face,
   cmap.table->closure_glyphs (unicodes, glyphset);
 }
 
-static void _colr_closure (hb_face_t *face,
-                           hb_map_t *layers_map,
-                           hb_map_t *palettes_map,
+#ifndef HB_NO_VAR
+static void
+_remap_colrv1_delta_set_index_indices (const OT::DeltaSetIndexMap &index_map,
+                                       const hb_set_t &delta_set_idxes,
+                                       hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> &variation_idx_delta_map, /* IN/OUT */
+                                       hb_map_t &new_deltaset_idx_varidx_map /* OUT */)
+{
+  if (!index_map.get_map_count ())
+    return;
+
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> delta_set_idx_delta_map;
+  unsigned new_delta_set_idx = 0;
+  for (unsigned delta_set_idx : delta_set_idxes)
+  {
+    unsigned var_idx = index_map.map (delta_set_idx);
+    unsigned new_varidx = HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    int delta = 0;
+
+    if (var_idx != HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
+    {
+      hb_pair_t<unsigned, int> *new_varidx_delta;
+      if (!variation_idx_delta_map.has (var_idx, &new_varidx_delta)) continue;
+
+      new_varidx = hb_first (*new_varidx_delta);
+      delta = hb_second (*new_varidx_delta);
+    }
+
+    new_deltaset_idx_varidx_map.set (new_delta_set_idx, new_varidx);
+    delta_set_idx_delta_map.set (delta_set_idx, hb_pair_t<unsigned, int> (new_delta_set_idx, delta));
+    new_delta_set_idx++;
+  }
+  variation_idx_delta_map = std::move (delta_set_idx_delta_map);
+}
+#endif
+
+static void _colr_closure (hb_subset_plan_t* plan,
                            hb_set_t *glyphs_colred)
 {
-  OT::COLR::accelerator_t colr (face);
+  OT::COLR::accelerator_t colr (plan->source);
   if (!colr.is_valid ()) return;
 
   hb_set_t palette_indices, layer_indices;
@@ -506,11 +565,45 @@ static void _colr_closure (hb_face_t *face,
   glyphs_colred->union_ (glyphset_colrv0);
 
   //closure for COLRv1
-  colr.closure_forV1 (glyphs_colred, &layer_indices, &palette_indices);
+  hb_set_t variation_indices, delta_set_indices;
+  colr.closure_forV1 (glyphs_colred, &layer_indices, &palette_indices, &variation_indices, &delta_set_indices);
 
   colr.closure_V0palette_indices (glyphs_colred, &palette_indices);
-  _remap_indexes (&layer_indices, layers_map);
-  _remap_palette_indexes (&palette_indices, palettes_map);
+  _remap_indexes (&layer_indices, &plan->colrv1_layers);
+  _remap_palette_indexes (&palette_indices, &plan->colr_palettes);
+
+#ifndef HB_NO_VAR
+  if (!colr.has_var_store () || !variation_indices) return;
+
+  const OT::ItemVariationStore &var_store = colr.get_var_store ();
+  // generated inner_maps is used by ItemVariationStore serialize(), which is subset only
+  unsigned subtable_count = var_store.get_sub_table_count ();
+  _generate_varstore_inner_maps (variation_indices, subtable_count, plan->colrv1_varstore_inner_maps);
+
+  /* colr variation indices mapping during planning phase:
+   * generate colrv1_variation_idx_delta_map. When delta set index map is not
+   * included, it's a mapping from varIdx-> (new varIdx,delta). Otherwise, it's
+   * a mapping from old delta set idx-> (new delta set idx, delta). Mapping
+   * delta set indices is the same as gid mapping.
+   * Besides, we need to generate a delta set idx-> new var_idx map for updating
+   * delta set index map if exists. This map will be updated again after
+   * instancing. */
+  if (!plan->all_axes_pinned)
+  {
+    _remap_variation_indices (var_store,
+                              variation_indices,
+                              plan->normalized_coords,
+                              false, /* no need to calculate delta for COLR during planning */
+                              plan->all_axes_pinned,
+                              plan->colrv1_variation_idx_delta_map);
+
+    if (colr.has_delta_set_index_map ())
+      _remap_colrv1_delta_set_index_indices (colr.get_delta_set_index_map (),
+                                             delta_set_indices,
+                                             plan->colrv1_variation_idx_delta_map,
+                                             plan->colrv1_new_deltaset_idx_varidx_map);
+  }
+#endif
 }
 
 static inline void
@@ -549,6 +642,36 @@ _remove_invalid_gids (hb_set_t *glyphs,
   glyphs->del_range (num_glyphs, HB_SET_VALUE_INVALID);
 }
 
+template<bool GID_ALWAYS_EXISTS = false, typename I, typename F, typename G, hb_requires (hb_is_iterator (I))>
+static void
+_fill_unicode_and_glyph_map(hb_subset_plan_t *plan,
+                            I unicode_iterator,
+                            F unicode_to_gid_for_iterator,
+                            G unicode_to_gid_general)
+{
+  for (hb_codepoint_t cp : unicode_iterator)
+  {
+    hb_codepoint_t gid = unicode_to_gid_for_iterator(cp);
+    if (!GID_ALWAYS_EXISTS && gid == HB_MAP_VALUE_INVALID)
+    {
+      DEBUG_MSG(SUBSET, nullptr, "Drop U+%04X; no gid", cp);
+      continue;
+    }
+
+    plan->codepoint_to_glyph->set (cp, gid);
+    plan->unicode_to_new_gid_list.push (hb_pair (cp, gid));
+  }
+}
+
+template<bool GID_ALWAYS_EXISTS = false, typename I, typename F, hb_requires (hb_is_iterator (I))>
+static void
+_fill_unicode_and_glyph_map(hb_subset_plan_t *plan,
+                            I unicode_iterator,
+                            F unicode_to_gid_for_iterator)
+{
+  _fill_unicode_and_glyph_map(plan, unicode_iterator, unicode_to_gid_for_iterator, unicode_to_gid_for_iterator);
+}
+
 static void
 _populate_unicodes_to_retain (const hb_set_t *unicodes,
                               const hb_set_t *glyphs,
@@ -568,35 +691,21 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
     // not excessively large (eg. an inverted set).
     plan->unicode_to_new_gid_list.alloc (unicodes->get_population ());
     if (!unicode_to_gid) {
-      for (hb_codepoint_t cp : *unicodes)
-      {
+      _fill_unicode_and_glyph_map(plan, unicodes->iter(), [&] (hb_codepoint_t cp) {
         hb_codepoint_t gid;
-        if (!cmap.get_nominal_glyph (cp, &gid))
-        {
-          DEBUG_MSG(SUBSET, nullptr, "Drop U+%04X; no gid", cp);
-          continue;
+        if (!cmap.get_nominal_glyph (cp, &gid)) {
+          return HB_MAP_VALUE_INVALID;
         }
-
-        plan->codepoint_to_glyph->set (cp, gid);
-        plan->unicode_to_new_gid_list.push (hb_pair (cp, gid));
-      }
+        return gid;
+      });
     } else {
       // Use in memory unicode to gid map it's faster then looking up from
       // the map. This code is mostly duplicated from above to avoid doing
       // conditionals on the presence of the unicode_to_gid map each
       // iteration.
-      for (hb_codepoint_t cp : *unicodes)
-      {
-        hb_codepoint_t gid = unicode_to_gid->get (cp);
-        if (gid == HB_MAP_VALUE_INVALID)
-        {
-          DEBUG_MSG(SUBSET, nullptr, "Drop U+%04X; no gid", cp);
-          continue;
-        }
-
-        plan->codepoint_to_glyph->set (cp, gid);
-        plan->unicode_to_new_gid_list.push (hb_pair (cp, gid));
-      }
+      _fill_unicode_and_glyph_map(plan, unicodes->iter(), [&] (hb_codepoint_t cp) {
+        return unicode_to_gid->get (cp);
+      });
     }
   }
   else
@@ -626,29 +735,29 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
       plan->codepoint_to_glyph->alloc (unicodes->get_population () + glyphs->get_population ());
 
       auto &gid_to_unicodes = plan->accelerator->gid_to_unicodes;
+
       for (hb_codepoint_t gid : *glyphs)
       {
         auto unicodes = gid_to_unicodes.get (gid);
-
-	for (hb_codepoint_t cp : unicodes)
-	{
-	  plan->codepoint_to_glyph->set (cp, gid);
-	  plan->unicode_to_new_gid_list.push (hb_pair (cp, gid));
-	}
+        _fill_unicode_and_glyph_map<true>(plan, unicodes, [&] (hb_codepoint_t cp) {
+          return gid;
+        },
+        [&] (hb_codepoint_t cp) {
+          return unicode_glyphid_map->get(cp);
+        });
       }
-      for (hb_codepoint_t cp : *unicodes)
-      {
-	/* Don't double-add entry. */
+
+      _fill_unicode_and_glyph_map(plan, unicodes->iter(), [&] (hb_codepoint_t cp) {
+          /* Don't double-add entry. */
 	if (plan->codepoint_to_glyph->has (cp))
-	  continue;
+          return HB_MAP_VALUE_INVALID;
 
-        hb_codepoint_t *gid;
-        if (!unicode_glyphid_map->has(cp, &gid))
-          continue;
+        return unicode_glyphid_map->get(cp);
+      },
+      [&] (hb_codepoint_t cp) {
+          return unicode_glyphid_map->get(cp);
+      });
 
-	plan->codepoint_to_glyph->set (cp, *gid);
-	plan->unicode_to_new_gid_list.push (hb_pair (cp, *gid));
-      }
       plan->unicode_to_new_gid_list.qsort ();
     }
     else
@@ -657,15 +766,15 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
       hb_codepoint_t first = HB_SET_VALUE_INVALID, last = HB_SET_VALUE_INVALID;
       for (; cmap_unicodes->next_range (&first, &last); )
       {
-        for (unsigned cp = first; cp <= last; cp++)
-	{
-	  hb_codepoint_t gid = (*unicode_glyphid_map)[cp];
+        _fill_unicode_and_glyph_map(plan, hb_range(first, last + 1), [&] (hb_codepoint_t cp) {
+          hb_codepoint_t gid = (*unicode_glyphid_map)[cp];
 	  if (!unicodes->has (cp) && !glyphs->has (gid))
-	    continue;
-
-	  plan->codepoint_to_glyph->set (cp, gid);
-	  plan->unicode_to_new_gid_list.push (hb_pair (cp, gid));
-	}
+	    return HB_MAP_VALUE_INVALID;
+          return gid;
+        },
+        [&] (hb_codepoint_t cp) {
+          return unicode_glyphid_map->get(cp);
+        });
       }
     }
 
@@ -689,10 +798,6 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
     plan->_glyphset_gsub.add_array (&arr.arrayZ->second, arr.length, sizeof (*arr.arrayZ));
   }
 }
-
-#ifndef HB_COMPOSITE_OPERATIONS_PER_GLYPH
-#define HB_COMPOSITE_OPERATIONS_PER_GLYPH 64
-#endif
 
 static unsigned
 _glyf_add_gid_and_children (const OT::glyf_accelerator_t &glyf,
@@ -718,18 +823,6 @@ _glyf_add_gid_and_children (const OT::glyf_accelerator_t &glyf,
 				  gids_to_retain,
 				  operation_count,
 				  depth);
-
-#ifndef HB_NO_VAR_COMPOSITES
-  for (auto &item : glyph.get_var_composite_iterator ())
-   {
-    operation_count =
-      _glyf_add_gid_and_children (glyf,
-				  item.get_gid (),
-				  gids_to_retain,
-				  operation_count,
-				  depth);
-   }
-#endif
 
   return operation_count;
 }
@@ -821,11 +914,13 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   hb_set_t cur_glyphset = plan->_glyphset_mathed;
   if (!drop_tables->has (HB_OT_TAG_COLR))
   {
-    _colr_closure (plan->source, &plan->colrv1_layers, &plan->colr_palettes, &cur_glyphset);
+    _colr_closure (plan, &cur_glyphset);
     _remove_invalid_gids (&cur_glyphset, plan->source->get_num_glyphs ());
   }
 
   plan->_glyphset_colred = cur_glyphset;
+
+  // XXX TODO VARC closure / subset
 
   _nameid_closure (plan, drop_tables);
   /* Populate a full set of glyphs to retain by adding all referenced
@@ -833,7 +928,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   if (glyf.has_data ())
     for (hb_codepoint_t gid : cur_glyphset)
       _glyf_add_gid_and_children (glyf, gid, &plan->_glyphset,
-				  cur_glyphset.get_population () * HB_COMPOSITE_OPERATIONS_PER_GLYPH);
+				  cur_glyphset.get_population () * HB_MAX_COMPOSITE_OPERATIONS_PER_GLYPH);
   else
     plan->_glyphset.union_ (cur_glyphset);
 #ifndef HB_NO_SUBSET_CFF
@@ -1016,9 +1111,9 @@ _normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
         normalized_default = seg_maps->map (normalized_default);
         normalized_max = seg_maps->map (normalized_max);
       }
-      plan->axes_location.set (axis_tag, Triple (static_cast<float> (normalized_min / 16384.f),
-                                                 static_cast<float> (normalized_default / 16384.f),
-                                                 static_cast<float> (normalized_max / 16384.f)));
+      plan->axes_location.set (axis_tag, Triple (static_cast<double> (normalized_min / 16384.0),
+                                                 static_cast<double> (normalized_default / 16384.0),
+                                                 static_cast<double> (normalized_max / 16384.0)));
 
       if (normalized_default != 0)
         plan->pinned_at_default = false;
@@ -1145,11 +1240,9 @@ _get_instance_glyphs_contour_points (hb_subset_plan_t *plan)
     if (unlikely (!plan->new_gid_contour_points_map.set (new_gid, all_points)))
       return false;
 
-#ifdef HB_EXPERIMENTAL_API
     /* composite new gids are only needed by iup delta optimization */
     if ((plan->flags & HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS) && glyph.is_composite ())
       plan->composite_new_gids.add (new_gid);
-#endif
   }
   return true;
 }

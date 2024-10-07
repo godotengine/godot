@@ -203,6 +203,11 @@ extern VP8DecIdct VP8TransformDC;
 extern VP8DecIdct VP8TransformDCUV;
 extern VP8WHT VP8TransformWHT;
 
+#define WEBP_TRANSFORM_AC3_C1 20091
+#define WEBP_TRANSFORM_AC3_C2 35468
+#define WEBP_TRANSFORM_AC3_MUL1(a) ((((a) * WEBP_TRANSFORM_AC3_C1) >> 16) + (a))
+#define WEBP_TRANSFORM_AC3_MUL2(a) (((a) * WEBP_TRANSFORM_AC3_C2) >> 16)
+
 // *dst is the destination block, with stride BPS. Boundary samples are
 // assumed accessible when needed.
 typedef void (*VP8PredFunc)(uint8_t* dst);

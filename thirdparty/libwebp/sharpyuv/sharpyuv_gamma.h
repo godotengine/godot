@@ -12,6 +12,7 @@
 #ifndef WEBP_SHARPYUV_SHARPYUV_GAMMA_H_
 #define WEBP_SHARPYUV_SHARPYUV_GAMMA_H_
 
+#include "sharpyuv/sharpyuv.h"
 #include "src/webp/types.h"
 
 #ifdef __cplusplus
@@ -22,11 +23,13 @@ extern "C" {
 // SharpYuvGammaToLinear or SharpYuvLinearToGamma.
 void SharpYuvInitGammaTables(void);
 
-// Converts a gamma color value on 'bit_depth' bits to a 16 bit linear value.
-uint32_t SharpYuvGammaToLinear(uint16_t v, int bit_depth);
+// Converts a 'bit_depth'-bit gamma color value to a 16-bit linear value.
+uint32_t SharpYuvGammaToLinear(uint16_t v, int bit_depth,
+                               SharpYuvTransferFunctionType transfer_type);
 
-// Converts a 16 bit linear color value to a gamma value on 'bit_depth' bits.
-uint16_t SharpYuvLinearToGamma(uint32_t value, int bit_depth);
+// Converts a 16-bit linear color value to a 'bit_depth'-bit gamma value.
+uint16_t SharpYuvLinearToGamma(uint32_t value, int bit_depth,
+                               SharpYuvTransferFunctionType transfer_type);
 
 #ifdef __cplusplus
 }  // extern "C"

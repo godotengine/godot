@@ -31,7 +31,6 @@
 #include "tile_map.h"
 #include "tile_map.compat.inc"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/gui/control.h"
 
@@ -54,7 +53,7 @@ void TileMap::_tile_set_changed() {
 }
 
 void TileMap::_emit_changed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMapDataFormat p_format, const Vector<int> &p_data) {
@@ -226,91 +225,6 @@ int TileMap::get_rendering_quadrant_size() const {
 	return rendering_quadrant_size;
 }
 
-void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_normalized_animation_offset) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
-	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
-	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_alternative_tile(p_atlas_coords, p_alternative_tile));
-	TileSetSource *source = *p_tile_set->get_source(p_atlas_source_id);
-	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	if (atlas_source) {
-		// Check for the frame.
-		if (p_frame >= 0) {
-			ERR_FAIL_INDEX(p_frame, atlas_source->get_tile_animation_frames_count(p_atlas_coords));
-		}
-
-		// Get the texture.
-		Ref<Texture2D> tex = atlas_source->get_runtime_texture();
-		if (!tex.is_valid()) {
-			return;
-		}
-
-		// Check if we are in the texture, return otherwise.
-		Vector2i grid_size = atlas_source->get_atlas_grid_size();
-		if (p_atlas_coords.x >= grid_size.x || p_atlas_coords.y >= grid_size.y) {
-			return;
-		}
-
-		// Get tile data.
-		const TileData *tile_data = p_tile_data_override ? p_tile_data_override : atlas_source->get_tile_data(p_atlas_coords, p_alternative_tile);
-
-		// Get the tile modulation.
-		Color modulate = tile_data->get_modulate() * p_modulation;
-
-		// Compute the offset.
-		Vector2 tile_offset = tile_data->get_texture_origin();
-
-		// Get destination rect.
-		Rect2 dest_rect;
-		dest_rect.size = atlas_source->get_runtime_tile_texture_region(p_atlas_coords).size;
-		dest_rect.size.x += FP_ADJUST;
-		dest_rect.size.y += FP_ADJUST;
-
-		bool transpose = tile_data->get_transpose() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
-		if (transpose) {
-			dest_rect.position = (p_position - Vector2(dest_rect.size.y, dest_rect.size.x) / 2 - tile_offset);
-		} else {
-			dest_rect.position = (p_position - dest_rect.size / 2 - tile_offset);
-		}
-
-		if (tile_data->get_flip_h() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H)) {
-			dest_rect.size.x = -dest_rect.size.x;
-		}
-
-		if (tile_data->get_flip_v() ^ bool(p_alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V)) {
-			dest_rect.size.y = -dest_rect.size.y;
-		}
-
-		// Draw the tile.
-		if (p_frame >= 0) {
-			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, p_frame);
-			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
-		} else if (atlas_source->get_tile_animation_frames_count(p_atlas_coords) == 1) {
-			Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, 0);
-			tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
-		} else {
-			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
-			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
-			real_t animation_offset = p_normalized_animation_offset * animation_duration;
-			// Accumulate durations unaffected by the speed to avoid accumulating floating point division errors.
-			// Aka do `sum(duration[i]) / speed` instead of `sum(duration[i] / speed)`.
-			real_t time_unscaled = 0.0;
-			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
-				real_t frame_duration_unscaled = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame);
-				real_t slice_start = time_unscaled / speed;
-				real_t slice_end = (time_unscaled + frame_duration_unscaled) / speed;
-				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, slice_start, slice_end, animation_offset);
-
-				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
-				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
-
-				time_unscaled += frame_duration_unscaled;
-			}
-			RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, 1.0, 0.0, 1.0, 0.0);
-		}
-	}
-}
-
 void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	if (p_tileset == tile_set) {
 		return;
@@ -360,7 +274,7 @@ void TileMap::add_layer(int p_to_pos) {
 	for (uint32_t i = 0; i < layers.size(); i++) {
 		layers[i]->set_as_tile_map_internal_node(i);
 	}
-	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+	new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 
 	notify_property_list_changed();
 
@@ -618,6 +532,18 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	}
 }
 
+bool TileMap::is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_H;
+}
+
+bool TileMap::is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_V;
+}
+
+bool TileMap::is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
+}
+
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, Ref<TileMapPattern>(), get_pattern, p_coords_array);
 }
@@ -768,7 +694,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 				new_layer->set_as_tile_map_internal_node(index);
 				new_layer->set_name(vformat("Layer%d", index));
 				new_layer->set_tile_set(tile_set);
-				new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+				new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 				layers.push_back(new_layer);
 			}
 
@@ -808,7 +734,7 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-	property_helper.get_property_list(p_list, layers.size());
+	property_helper.get_property_list(p_list);
 }
 
 Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {
@@ -901,7 +827,9 @@ TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &p_coords) {
 }
 
 PackedStringArray TileMap::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	warnings.push_back(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
 	RBSet<int> y_sorted_z_index;
@@ -1010,6 +938,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_h", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_h, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_v, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_transposed", "layer", "coords", "use_proxies"), &TileMap::is_cell_transposed, DEFVAL(false));
+
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
 
@@ -1051,7 +983,7 @@ void TileMap::_bind_methods() {
 
 	ADD_PROPERTY_DEFAULT("format", TileMapDataFormat::TILE_MAP_DATA_FORMAT_1);
 
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_DEFAULT);
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_FORCE_HIDE);
@@ -1064,7 +996,7 @@ TileMap::TileMap() {
 	new_layer->set_as_tile_map_internal_node(0);
 	new_layer->set_name("Layer0");
 	new_layer->set_tile_set(tile_set);
-	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+	new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 	layers.push_back(new_layer);
 
 	if (!base_property_helper.is_initialized()) {
@@ -1073,6 +1005,7 @@ TileMap::TileMap() {
 		TileMapLayer *defaults = memnew(TileMapLayer);
 
 		base_property_helper.set_prefix("layer_");
+		base_property_helper.set_array_length_getter(&TileMap::get_layers_count);
 		base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults->get_name(), &TileMap::set_layer_name, &TileMap::get_layer_name);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "enabled"), defaults->is_enabled(), &TileMap::set_layer_enabled, &TileMap::is_layer_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::COLOR, "modulate"), defaults->get_modulate(), &TileMap::set_layer_modulate, &TileMap::get_layer_modulate);
@@ -1081,6 +1014,7 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
+		PropertyListHelper::register_base_helper(&base_property_helper);
 
 		memdelete(defaults);
 	}

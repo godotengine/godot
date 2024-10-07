@@ -21,6 +21,7 @@
  */
 
 #include "config.h"
+#include <cmath>
 #include <cstring>
 #include <memory.h>
 #include "tvgMath.h"
@@ -197,6 +198,8 @@ float strToFloat(const char *nPtr, char **endPtr)
 
 success:
     if (endPtr) *endPtr = (char *)(a);
+    if (!std::isfinite(val)) return 0.0f;
+
     return minus * val;
 
 error:
@@ -224,6 +227,14 @@ char* strDuplicate(const char *str, size_t n)
     ret[n] = '\0';
 
     return (char *) memcpy(ret, str, n);
+}
+
+char* strAppend(char* lhs, const char* rhs, size_t n)
+{
+    if (!rhs) return lhs;
+    if (!lhs) return strDuplicate(rhs, n);
+    lhs = (char*)realloc(lhs, strlen(lhs) + n + 1);
+    return strncat(lhs, rhs, n);
 }
 
 char* strDirname(const char* path)

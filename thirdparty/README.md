@@ -47,7 +47,7 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 4.7.0 (1a51f2915121275038677317c8bf61f1a78b590c, 2024)
+- Version: 4.8.0 (0d6c9047c5ad19640e2d60fdb8f11a16675e7938, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -69,6 +69,17 @@ Files extracted from upstream source:
 
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
 fix build with our own copy of zstd (patch in `patches`).
+
+## betsy
+
+- Upstream: https://github.com/darksylinc/betsy
+- Version: git (cc723dcae9a6783ae572f64d12a90d60ef8d631a, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `bc6h.glsl`, `bc1.glsl`, `CrossPlatformSettings_piece_all.glsl` and `UavCrossPlatform_piece_all.glsl`.
+- `LICENSE.md`
 
 
 ## brotli
@@ -194,7 +205,7 @@ commits.
 ## enet
 
 - Upstream: https://github.com/lsalzman/enet
-- Version: git (c44b7d0f7ff21edb702745e4c019d0537928c373, 2024)
+- Version: 1.3.18 (2662c0de09e36f2a2030ccc2c528a3e4c9e8138a, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -318,7 +329,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 2.0.6 (658f48e72aee3c6582e80b05ac0f8787a64fe6bb, 2024)
+- Version: 2.0.4 (d08b1aa01f8fe57498f04d47b5fa8c48725be877, 2023)
 - License: CC0 1.0 and Apache 2.0
 
 Files extracted from upstream source:
@@ -334,17 +345,17 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glx.c`
 - `glad/glx.h`
 
-See the permalinks in `glad/egl.h`, `glad/gl.h`, and `glad/glx.h` to regenrate
-the files with a new version of the web instance.
+See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
+a new version of the web instance.
 
-Some changes have been made in order to allow loading OpenGL and OpenGLES APIs
-at the same time. See the patches in the `patches` directory.
+Some changes have been made in order to allow loading OpenGL and OpenGLES APIs at the same time.
+See the patches in the `patches` directory.
 
 
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: vulkan-sdk-1.3.275.0 (a91631b260cba3f22858d6c6827511e636c2458a, 2023)
+- Version: vulkan-sdk-1.3.283.0 (e8dd0b6903b34f1879520b444634c75ea2deedf5, 2024)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -377,7 +388,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.4.0 (63973005bc07aba599b47fdd4cf788647b601ccd, 2024)
+- Version: 10.0.1 (a1d9bfe62818ef0fa9cf63b6e6d51436b1c93cbc, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -391,7 +402,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 74.2 (2d029329c82c7792b985024b2bdab5fc7278fbc8, 2023)
+- Version: 75.1 (7750081bda4b3bc1768ae03849ec70f67ea10625, 2024)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -403,7 +414,7 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- The `icudt74l.dat` built with the provided `godot_data.json` config file (see
+- The `icudt75l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
@@ -413,7 +424,7 @@ Files generated from upstream source:
 3. Reconfigure ICU with custom data config:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
-5. Copy `source/data/out/icudt74l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt74l.dat`
+5. Copy `source/data/out/icudt75l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt75l.dat`
 
 
 ## jpeg-compressor
@@ -426,6 +437,18 @@ Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
 - `jpge*.{c,h}`
+
+
+## libbacktrace
+
+- Upstream: https://github.com/ianlancetaylor/libbacktrace
+- Version: git (4d2dd0b172f2c9192f83ba93425f868f2a13c553, 2022)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `*.{c,h}` files for Windows platform
+- `LICENSE`
 
 
 ## libktx
@@ -505,7 +528,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.3.2 (ca332209cb5567c9b249c86788cb2dbf8847e760, 2023)
+- Version: 1.4.0 (845d5476a866141ba35ac133f856fa62f0b7445f, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -520,7 +543,7 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.0 (2ca6c285a0dd3f33982dd57299012dacab1ff206, 2024)
+- Version: 3.6.1 (71c569d44bf3a8bd53d874c81ee8ac644dd6e9e3, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -530,8 +553,6 @@ File extracted from upstream release tarball:
 - All `.c` and `.h` from `library/` to `thirdparty/mbedtls/library/` except
   for the `psa_*.c` source files
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
-- Applied the patch `no-flexible-arrays.diff` to fix Windows build (see
-  upstream GH-9020)
 - Applied the patch `msvc-redeclaration-bug.diff` to fix a compilation error
   with some MSVC versions
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
@@ -593,7 +614,7 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
-- Version: 2.2.7 (d4d5ec7d48c093b37b2ea5d7171ede21ce9d7ff2, 2024)
+- Version: 2.2.8 (b55145ec095652289a59c33603f3abafee898273, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -629,6 +650,10 @@ comments and a patch is provided in the `patches` folder.
 
 Collection of single-file libraries used in Godot components.
 
+- `bcdec.h`
+  * Upstream: https://github.com/iOrange/bcdec
+  * Version: git (3b29f8f44466c7d59852670f82f53905cf627d48, 2024)
+  * License: MIT
 - `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 (2017) + Godot changes (added optional exceptions handling)
@@ -666,6 +691,11 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.{cpp,h}`)
   * Version: git (7bdffb428b2b19ad1c43aa44c714dcc104177e84, 2021)
   * Modifications: Change from STL to Godot types (see provided patch).
+  * License: MIT
+- `qoa.h`
+  * Upstream: https://github.com/phoboslab/qoa
+  * Version: git (e0c69447d4d3945c3c92ac1751e4cdc9803a8303, 2024)
+  * Modifications: Added a few modifiers to comply with C++ nature.
   * License: MIT
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
@@ -731,7 +761,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.34 (288d3a7ebc1ad959f62d51da75baa3d27438c499, 2024)
+- Version: 1.1.41 (7d1c0961351bac61fd7bb72d402649d5ac3f2935, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -810,10 +840,26 @@ and solve conflicts and also enrich the feature set originally
 proposed by these libraries and better integrate them with Godot.
 
 
+## spirv-cross
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Cross
+- Version: vulkan-sdk-1.3.290.0 (5d127b917f080c6f052553c47170ec0ba702e54f, 2024)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All `.cpp`, `.hpp` and `.h` files, minus `main.cpp`, `spirv_cross_c.*`, `spirv_hlsl.*`, `spirv_cpp.*`
+- `include/` folder
+- `LICENSE` and `LICENSES/` folder, minus `CC-BY-4.0.txt`
+
+Versions of this SDK do not have to match the `vulkan` section, as this SDK is required
+to generate Metal source from Vulkan SPIR-V.
+
+
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: vulkan-sdk-1.3.275.0 (2f7460f0be0f73c9ffde719bc3e924b4250f4d98, 2024)
+- Version: vulkan-sdk-1.3.283.0 (ee5b57fba6a986381f998567761bbc064428e645, 2024)
 - License: Apache 2.0
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -828,24 +874,7 @@ Files extracted from upstream source:
 Some downstream changes have been made and are identified by
 `// -- GODOT begin --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `patches`
-folder.
-
-
-## squish
-
-- Upstream: https://sourceforge.net/projects/libsquish
-- Version: 1.15 (r104, 2017)
-- License: MIT
-
-Files extracted from upstream source:
-
-- `LICENSE.txt`
-- All `.cpp`, `.h` and `.inl` files
-
-Some downstream changes have been made and are identified by
-`// -- GODOT begin --` and `// -- GODOT end --` comments.
-They can be reapplied using the patches included in the `patches`
-folder.
+folder, in order.
 
 
 ## tinyexr
@@ -865,7 +894,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.12.9 (afa6d8499bd49141d99d5e40a4620bd9f6bc0467, 2024)
+- Version: 0.14.10 (366dcd72850c360b49e841e568fc5a154d7cce9e, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -877,7 +906,7 @@ number and run the script.
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: git (v0.11.1, 2024)
+- Version: 0.14.3 (19bdb7e7ef02eb914d5e7211a3685f50ee6d27e3, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -906,15 +935,11 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: vulkan-sdk-1.3.275.0 (f2a16e3e19c2349b873343b2dc38a1d4c25af23a, 2024)
+- Version: vulkan-sdk-1.3.283.0 (3a8068a57417940cf2bf9d837a7bb60d015ca2f1, 2024)
 - License: MIT
 
-Unless there is a specific reason to package a more recent version, please stick
-to tagged releases. All Vulkan libraries and headers should be kept in sync so:
-
-- Update Vulkan SDK components to the matching tag (see "vulkan")
-- Update glslang (see "glslang")
-- Update spirv-reflect (see "spirv-reflect")
+Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
+section).
 
 Files extracted from upstream source:
 
@@ -925,10 +950,16 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: vulkan-sdk-1.3.275.0 (217e93c664ec6704ec2d8c36fa116c1a4a1e2d40, 2024)
+- Version: vulkan-sdk-1.3.283.0 (eaa319dade959cb61ed2229c8ea42e307cc8f8b3, 2024)
 - License: Apache 2.0
 
-The vendored version should be kept in sync with volk, see above.
+Unless there is a specific reason to package a more recent version, please stick
+to tagged SDK releases. All Vulkan libraries and headers should be kept in sync so:
+
+- Update Vulkan SDK components to the matching tag (see "vulkan")
+- Update volk (see "volk")
+- Update glslang (see "glslang")
+- Update spirv-reflect (see "spirv-reflect")
 
 Files extracted from upstream source:
 
@@ -939,8 +970,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-Utility-Libraries/blob/main/include/vulkan/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: git (38627f4e37d7a9b13214fd267ec60e0e877e3997, 2024), as advised by upstream:
-https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/issues/318#issuecomment-1411804981
+Version: 3.1.0 (009ecd192c1289c7529bff248a16cfe896254816, 2024)
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
@@ -986,6 +1016,8 @@ Files extracted from upstream source:
 - `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
 - `unstable/tablet/README`
 - `unstable/tablet/tablet-unstable-v2.xml`
+- `unstable/text-input/README`
+- `unstable/text-input/text-input-unstable-v3.xml`
 - `unstable/xdg-decoration/README`
 - `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
 - `unstable/xdg-foreign/README`

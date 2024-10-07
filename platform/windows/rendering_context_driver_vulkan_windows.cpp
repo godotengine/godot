@@ -34,11 +34,7 @@
 
 #include "rendering_context_driver_vulkan_windows.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 const char *RenderingContextDriverVulkanWindows::_get_platform_surface_extension() const {
 	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
@@ -64,7 +60,7 @@ RenderingContextDriver::SurfaceID RenderingContextDriverVulkanWindows::surface_c
 	create_info.hwnd = wpd->window;
 
 	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateWin32SurfaceKHR(instance_get(), &create_info, nullptr, &vk_surface);
+	VkResult err = vkCreateWin32SurfaceKHR(instance_get(), &create_info, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR), &vk_surface);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
 
 	Surface *surface = memnew(Surface);

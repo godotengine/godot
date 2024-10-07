@@ -107,7 +107,7 @@ public:
 
 	EGLContext get_context(DisplayServer::WindowID p_window_id);
 
-	Error initialize();
+	Error initialize(void *p_native_display = nullptr);
 
 	EGLManager();
 	virtual ~EGLManager();

@@ -99,6 +99,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Color marked_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
+	int previous_line = 0;
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -117,6 +118,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_TRIM_FINAL_NEWLINES,
 		EDIT_CONVERT_INDENT_TO_SPACES,
 		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_TOGGLE_COMMENT,
@@ -163,6 +165,8 @@ protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
 	void _breakpoint_toggled(int p_row);
+
+	void _on_caret_moved();
 
 	void _validate_script(); // No longer virtual.
 	void _update_warnings();
@@ -225,13 +229,14 @@ public:
 	virtual Variant get_navigation_state() override;
 	virtual void ensure_focus() override;
 	virtual void trim_trailing_whitespace() override;
+	virtual void trim_final_newlines() override;
 	virtual void insert_final_newline() override;
 	virtual void convert_indent() override;
 	virtual void tag_saved_version() override;
 
-	virtual void goto_line(int p_line, bool p_with_error = false) override;
+	virtual void goto_line(int p_line, int p_column = 0) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	virtual void set_executing_line(int p_line) override;
 	virtual void clear_executing_line() override;
 
@@ -259,6 +264,9 @@ public:
 	virtual CodeTextEditor *get_code_editor() const override;
 
 	virtual void validate() override;
+
+	Variant get_previous_state();
+	void store_previous_state();
 
 	ScriptTextEditor();
 	~ScriptTextEditor();

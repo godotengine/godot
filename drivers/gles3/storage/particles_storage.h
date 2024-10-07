@@ -145,6 +145,9 @@ private:
 		Collider colliders[MAX_COLLIDERS];
 	};
 
+	static_assert(sizeof(ParticlesFrameParams) % 16 == 0, "ParticlesFrameParams size must be a multiple of 16 bytes");
+	static_assert(sizeof(ParticlesFrameParams) < 16384, "ParticlesFrameParams must be 16384 bytes or smaller");
+
 	struct Particles {
 		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
 		bool inactive = true;

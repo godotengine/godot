@@ -44,6 +44,9 @@
 #include "core/error/error_list.h"
 #include <cstdint>
 
+// Ensure that C++ standard is at least C++17. If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
+static_assert(__cplusplus >= 201703L);
+
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
 #ifndef _STR
@@ -71,12 +74,7 @@
 #endif
 #endif
 
-// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
-#ifndef _NO_DISCARD_
-#define _NO_DISCARD_ [[nodiscard]]
-#endif
-
-// In some cases _NO_DISCARD_ will get false positives,
+// In some cases [[nodiscard]] will get false positives,
 // we can prevent the warning in specific cases by preceding the call with a cast.
 #ifndef _ALLOW_DISCARD_
 #define _ALLOW_DISCARD_ (void)

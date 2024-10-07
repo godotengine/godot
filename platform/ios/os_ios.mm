@@ -56,11 +56,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 #if defined(VULKAN_ENABLED)
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
 #endif
 
@@ -571,9 +567,13 @@ String OS_IOS::get_system_font_path(const String &p_font_name, int p_weight, int
 	return ret;
 }
 
-void OS_IOS::vibrate_handheld(int p_duration_ms) {
+void OS_IOS::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	if (ios->supports_haptic_engine()) {
-		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f);
+		if (p_amplitude > 0.0) {
+			p_amplitude = CLAMP(p_amplitude, 0.0, 1.0);
+		}
+
+		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f, p_amplitude);
 	} else {
 		// iOS <13 does not support duration for vibration
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);

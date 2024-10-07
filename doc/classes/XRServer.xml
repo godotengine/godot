@@ -37,8 +37,8 @@
 				You should call this method after a few seconds have passed. For example, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
 			</description>
 		</method>
-		<method name="clear_reference_frame" qualifiers="const">
-			<return type="Transform3D" />
+		<method name="clear_reference_frame">
+			<return type="void" />
 			<description>
 				Clears the reference frame that was set by previous calls to [method center_on_hmd].
 			</description>
@@ -133,6 +133,11 @@
 			<param index="0" name="interface_name" type="StringName" />
 			<description>
 				Emitted when an interface is removed.
+			</description>
+		</signal>
+		<signal name="reference_frame_changed">
+			<description>
+				Emitted when the reference frame transform changes.
 			</description>
 		</signal>
 		<signal name="tracker_added">

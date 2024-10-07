@@ -81,7 +81,7 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (!p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
 		p_select_candidates.push_back(node);
 	}
 
@@ -90,24 +90,6 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	while (c) {
 		_pick_node_select_recursive(c, p_filter, p_select_candidates);
 		c = c->get_next();
-	}
-}
-
-void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_node->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_node->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
 	}
 }
 
@@ -175,7 +157,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
-	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -184,11 +166,9 @@ ReplicationEditor::ReplicationEditor() {
 
 	pick_node = memnew(SceneTreeDialog);
 	add_child(pick_node);
-	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
-	pick_node->get_filter_line_edit()->connect("text_changed", callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
-	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
+	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
@@ -234,7 +214,8 @@ ReplicationEditor::ReplicationEditor() {
 		Variant::PACKED_STRING_ARRAY,
 		Variant::PACKED_VECTOR2_ARRAY,
 		Variant::PACKED_VECTOR3_ARRAY,
-		Variant::PACKED_COLOR_ARRAY
+		Variant::PACKED_COLOR_ARRAY,
+		Variant::PACKED_VECTOR4_ARRAY,
 	};
 	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
@@ -243,7 +224,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(hb);
 
 	add_pick_button = memnew(Button);
-	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
+	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
 	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
 
@@ -259,7 +240,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);
-	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
+	add_from_path_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_add_pressed));
 	add_from_path_button->set_text(TTR("Add from path"));
 	hb->add_child(add_from_path_button);
 
@@ -371,7 +352,7 @@ void ReplicationEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_ENTER_TREE: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
 		} break;
@@ -429,7 +410,7 @@ void ReplicationEditor::_tree_item_edited() {
 		undo_redo->add_do_method(config.ptr(), "property_set_spawn", prop, value);
 		undo_redo->add_undo_method(config.ptr(), "property_set_spawn", prop, !value);
 		undo_redo->add_do_method(this, "_update_value", prop, column, value ? 1 : 0);
-		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 1 : 0);
+		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 0 : 1);
 		undo_redo->commit_action();
 	} else if (column == 2) {
 		undo_redo->create_action(TTR("Set sync property"));

@@ -266,9 +266,6 @@ void MultiMeshEditor::_browse(bool p_source) {
 	std->popup_scenetree_dialog(browsed_node);
 }
 
-void MultiMeshEditor::_bind_methods() {
-}
-
 MultiMeshEditor::MultiMeshEditor() {
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
@@ -278,7 +275,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MultiMeshInstance3D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
-	options->get_popup()->connect("id_pressed", callable_mp(this, &MultiMeshEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MultiMeshEditor::_menu_option));
 
 	populate_dialog = memnew(ConfirmationDialog);
 	populate_dialog->set_title(TTR("Populate MultiMesh"));
@@ -296,7 +293,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Button *b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(false));
+	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(false));
 
 	vbc->add_margin_child(TTR("Target Surface:"), hbc);
 
@@ -308,7 +305,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	hbc->add_child(b);
 	b->set_text("..");
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(true));
+	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(true));
 
 	populate_axis = memnew(OptionButton);
 	populate_axis->add_item(TTR("X-Axis"));
@@ -354,7 +351,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	populate_dialog->set_ok_button_text(TTR("Populate"));
 
-	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
+	populate_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
 	Vector<StringName> valid_types;
 	valid_types.push_back("MeshInstance3D");
@@ -387,7 +384,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 	multimesh_editor = memnew(MultiMeshEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(multimesh_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }

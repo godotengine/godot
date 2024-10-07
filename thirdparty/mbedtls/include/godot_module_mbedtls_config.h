@@ -49,25 +49,15 @@
 #undef MBEDTLS_DES_C
 #undef MBEDTLS_DHM_C
 
-#ifndef __linux__
+#if !(defined(__linux__) && defined(__aarch64__))
 // ARMv8 hardware AES operations. Detection only possible on linux.
+// May technically be supported on some ARM32 arches but doesn't seem
+// to be in our current Linux SDK's neon-fp-armv8.
 #undef MBEDTLS_AESCE_C
 #endif
 
 // Disable deprecated
 #define MBEDTLS_DEPRECATED_REMOVED
-
-// mbedTLS 3.6 finally enabled TLSv1.3 by default, but it requires some mobule
-// changes, and to enable PSA crypto (new "standard" API specification).
-// Disable it for now.
-#undef MBEDTLS_SSL_PROTO_TLS1_3
-
-// Disable PSA Crypto.
-#undef MBEDTLS_PSA_CRYPTO_CONFIG
-#undef MBEDTLS_PSA_CRYPTO_C
-#undef MBEDTLS_PSA_CRYPTO_STORAGE_C
-#undef MBEDTLS_PSA_ITS_FILE_C
-#undef MBEDTLS_LMS_C
 
 #endif // GODOT_MBEDTLS_INCLUDE_H
 

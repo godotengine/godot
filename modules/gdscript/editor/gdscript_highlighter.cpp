@@ -690,7 +690,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	color_regions.clear();
 	color_region_cache.clear();
 
-	font_color = text_edit->get_theme_color(SNAME("font_color"));
+	font_color = text_edit->get_theme_color(SceneStringName(font_color));
 	symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
 	function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
 	number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
@@ -852,6 +852,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.24, 0.54, 0.09);
 	}
 
+	// TODO: Move to editor_settings.cpp
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/global_function_color", global_function_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_path_color", node_path_color);

@@ -30,8 +30,6 @@
 
 #include "visible_on_screen_notifier_2d.h"
 
-#include "scene/scene_string_names.h"
-
 #ifdef TOOLS_ENABLED
 Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {
 	return rect;
@@ -48,7 +46,7 @@ void VisibleOnScreenNotifier2D::_visibility_enter() {
 	}
 
 	on_screen = true;
-	emit_signal(SceneStringNames::get_singleton()->screen_entered);
+	emit_signal(SceneStringName(screen_entered));
 	_screen_enter();
 }
 void VisibleOnScreenNotifier2D::_visibility_exit() {
@@ -57,7 +55,7 @@ void VisibleOnScreenNotifier2D::_visibility_exit() {
 	}
 
 	on_screen = false;
-	emit_signal(SceneStringNames::get_singleton()->screen_exited);
+	emit_signal(SceneStringName(screen_exited));
 	_screen_exit();
 }
 

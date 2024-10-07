@@ -90,7 +90,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns the difference between the two angles, in the range of [code][-PI, +PI][/code]. When [param from] and [param to] are opposite, returns [code]-PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] otherwise.
+				Returns the difference between the two angles (in radians), in the range of [code][-PI, +PI][/code]. When [param from] and [param to] are opposite, returns [code]-PI[/code] if [param from] is smaller than [param to], or [code]PI[/code] otherwise.
 			</description>
 		</method>
 		<method name="asin">
@@ -604,7 +604,7 @@
 				is_same(arr_a, arr_b)  # false
 				[/codeblock]
 				These are [Variant] value types: [code]null[/code], [bool], [int], [float], [String], [StringName], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Transform2D], [Transform3D], [Plane], [Quaternion], [AABB], [Basis], [Projection], [Color], [NodePath], [RID], [Callable] and [Signal].
-				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array] and [PackedColorArray].
+				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array], [PackedVector4Array], and [PackedColorArray].
 			</description>
 		</method>
 		<method name="is_zero_approx">
@@ -621,13 +621,13 @@
 			<param index="1" name="to" type="Variant" />
 			<param index="2" name="weight" type="Variant" />
 			<description>
-				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clamp] on the result of this function.
-				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis].
+				Linearly interpolates between two values by the factor defined in [param weight]. To perform interpolation, [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i]. If this is not desired, use [method clampf] to limit [param weight].
+				Both [param from] and [param to] must be the same type. Supported types: [int], [float], [Vector2], [Vector3], [Vector4], [Color], [Quaternion], [Basis], [Transform2D], [Transform3D].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method remap] to map a continuous series of values to another.
-				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
+				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp], [method Basis.slerp], [method Transform2D.interpolate_with], or [method Transform3D.interpolate_with].
 			</description>
 		</method>
 		<method name="lerp_angle" keywords="interpolate">
@@ -667,12 +667,9 @@
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
-				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear).
-				[b]Example:[/b]
+				Converts from linear energy to decibels (audio). Since volume is not normally linear, this can be used to implement volume sliders that behave as expected.
+				[b]Example:[/b] Change the Master bus's volume through a [Slider] node, which ranges from [code]0.0[/code] to [code]1.0[/code]:
 				[codeblock]
-				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
-				# Its range must be configured to go from 0 to 1.
-				# Change the bus name if you'd like to change the volume of a specific bus only.
 				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db($Slider.value))
 				[/codeblock]
 			</description>
@@ -696,6 +693,7 @@
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise maximum, and will pick the largest value when compared using [code]x &lt; y[/code]. To perform component-wise maximum, use [method Vector2.max], [method Vector2i.max], [method Vector3.max], [method Vector3i.max], [method Vector4.max], and [method Vector4i.max].
 			</description>
 		</method>
 		<method name="maxf">
@@ -729,6 +727,7 @@
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise minimum, and will pick the smallest value when compared using [code]x &lt; y[/code]. To perform component-wise minimum, use [method Vector2.min], [method Vector2i.min], [method Vector3.min], [method Vector3i.min], [method Vector4.min], and [method Vector4i.min].
 			</description>
 		</method>
 		<method name="minf">
@@ -857,7 +856,7 @@
 				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed. See also [member Engine.print_to_stdout] and [member ProjectSettings.application/run/disable_stdout].
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
@@ -1095,6 +1094,7 @@
 				remap(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
 				For complex use cases where multiple ranges are needed, consider using [Curve] or [Gradient] instead.
+				[b]Note:[/b] If [code]istart == istop[/code], the return value is undefined (most likely NaN, INF, or -INF).
 			</description>
 		</method>
 		<method name="rid_allocate_id">
@@ -1209,7 +1209,7 @@
 			<return type="int" />
 			<param index="0" name="x" type="int" />
 			<description>
-				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if if [param x] is zero.
+				Returns [code]-1[/code] if [param x] is negative, [code]1[/code] if [param x] is positive, and [code]0[/code] if [param x] is zero.
 				[codeblock]
 				signi(-6) # Returns -1
 				signi(0)  # Returns 0
@@ -1245,8 +1245,9 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="x" type="float" />
 			<description>
-				Returns the result of smoothly interpolating the value of [param x] between [code]0[/code] and [code]1[/code], based on the where [param x] lies with respect to the edges [param from] and [param to].
-				The return value is [code]0[/code] if [code]x &lt;= from[/code], and [code]1[/code] if [code]x &gt;= to[/code]. If [param x] lies between [param from] and [param to], the returned value follows an S-shaped curve that maps [param x] between [code]0[/code] and [code]1[/code].
+				Returns a smooth cubic Hermite interpolation between [code]0[/code] and [code]1[/code].
+				For positive ranges (when [code]from &lt;= to[/code]) the return value is [code]0[/code] when [code]x &lt;= from[/code], and [code]1[/code] when [code]x &gt;= to[/code]. If [param x] lies between [param from] and [param to], the return value follows an S-shaped curve that smoothly transitions from [code]0[/code] to [code]1[/code].
+				For negative ranges (when [code]from &gt; to[/code]) the function is mirrored and returns [code]1[/code] when [code]x &lt;= to[/code] and [code]0[/code] when [code]x &gt;= from[/code].
 				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(y) = 3*y^2 - 2*y^3[/code] where [code]y = (x-from) / (to-from)[/code].
 				[codeblock]
 				smoothstep(0, 2, -5.0) # Returns 0.0
@@ -1256,6 +1257,7 @@
 				[/codeblock]
 				Compared to [method ease] with a curve value of [code]-1.6521[/code], [method smoothstep] returns the smoothest possible curve with no sudden changes in the derivative. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_ease_comparison.png]Comparison between smoothstep() and ease(x, -1.6521) return values[/url]
+				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_range.webp]Smoothstep() return values with positive, zero, and negative ranges[/url]
 			</description>
 		</method>
 		<method name="snapped">
@@ -1567,9 +1569,6 @@
 		</member>
 		<member name="Geometry3D" type="Geometry3D" setter="" getter="">
 			The [Geometry3D] singleton.
-		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton.
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
@@ -2601,8 +2600,7 @@
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Methods that return [enum Error] return [constant OK] when no error occurred.
-			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks.
-			[b]Example:[/b]
+			Since [constant OK] has value [code]0[/code], and all other error constants are positive integers, it can also be used in boolean checks.
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
@@ -2865,7 +2863,7 @@
 			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
 			[/csharp]
 			[/codeblocks]
-			Examples:
+			[b]Examples:[/b]
 			[codeblocks]
 			[gdscript]
 			hint_string = "%d:" % [TYPE_INT] # Array of integers.
@@ -2917,6 +2915,9 @@
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
 			Hints that a property is an [Array] with the stored type specified in the hint string.
 		</constant>
+		<constant name="PROPERTY_HINT_DICTIONARY_TYPE" value="38" enum="PropertyHint">
+			Hints that a property is a [Dictionary] with the stored types specified in the hint string.
+		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
@@ -2932,17 +2933,25 @@
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TOOL_BUTTON" value="39" enum="PropertyHint">
+			Hints that a [Callable] property should be displayed as a clickable button. When the button is pressed, the callable is called. The hint string specifies the button text and optionally an icon from the [code]"EditorIcons"[/code] theme type.
+			[codeblock lang=text]
+			"Click me!" - A button with the text "Click me!" and the default "Callable" icon.
+			"Click me!,ColorRect" - A button with the text "Click me!" and the "ColorRect" icon.
+			[/codeblock]
+			[b]Note:[/b] A [Callable] cannot be properly serialized and stored in a file, so it is recommended to use [constant PROPERTY_USAGE_EDITOR] instead of [constant PROPERTY_USAGE_DEFAULT].
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="40" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is serialized and saved in the scene file (default).
+			The property is serialized and saved in the scene file (default for exported properties).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is shown in the [EditorInspector] (default).
+			The property is shown in the [EditorInspector] (default for exported properties).
 		</constant>
 		<constant name="PROPERTY_USAGE_INTERNAL" value="8" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is excluded from the class reference.
@@ -3167,7 +3176,10 @@
 		<constant name="TYPE_PACKED_COLOR_ARRAY" value="37" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="38" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR4_ARRAY" value="38" enum="Variant.Type">
+			Variable is of type [PackedVector4Array].
+		</constant>
+		<constant name="TYPE_MAX" value="39" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

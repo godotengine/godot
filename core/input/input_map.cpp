@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "input_map.h"
+#include "input_map.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -43,7 +44,7 @@ int InputMap::ALL_DEVICES = -1;
 void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
-	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
+	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.2f));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
@@ -274,6 +275,13 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 		if (r_raw_strength != nullptr) {
 			*r_raw_strength = strength;
 		}
+		if (r_event_index) {
+			if (input_event_action->get_event_index() >= 0) {
+				*r_event_index = input_event_action->get_event_index();
+			} else {
+				*r_event_index = E->value.inputs.size();
+			}
+		}
 		return input_event_action->get_action() == p_action;
 	}
 
@@ -299,7 +307,7 @@ void InputMap::load_from_project_settings() {
 		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
 
 		Dictionary action = GLOBAL_GET(pi.name);
-		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : 0.5f;
+		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : 0.2f;
 		Array events = action["events"];
 
 		add_action(name, deadzone);
@@ -393,6 +401,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_filedialog_refresh",                         TTRC("Refresh") },
     { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
     { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
+    { "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
     { "",                                              ""}
 	/* clang-format on */
 };
@@ -629,6 +638,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::A | KeyModifierMask::CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME));
 	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
@@ -638,6 +648,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::E | KeyModifierMask::CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
 
 	// Text Caret Movement Page Up/Down
@@ -658,6 +669,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
@@ -666,6 +678,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD_OR_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
 
 	// Text Caret Addition Below/Above
@@ -742,6 +755,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_submit", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::U | KeyModifierMask::CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_unicode_start", inputs);
 
 	// ///// UI Graph Shortcuts /////
 

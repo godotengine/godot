@@ -47,6 +47,9 @@
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_macos.h"
 #endif // VULKAN_ENABLED
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 #endif // RD_ENABLED
 
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
@@ -164,7 +167,6 @@ private:
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	BitField<MouseButtonMask> last_button_state;
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -192,7 +194,7 @@ private:
 	HashMap<WindowID, WindowData> windows;
 
 	struct IndicatorData {
-		id view;
+		id delegate;
 		id item;
 	};
 
@@ -302,7 +304,6 @@ public:
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	void mouse_set_button_state(BitField<MouseButtonMask> p_state);
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -328,7 +329,7 @@ public:
 
 	virtual Vector<int> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
@@ -431,18 +432,22 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
-	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override;
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
 	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) override;
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	virtual bool is_window_transparency_available() const override;
+
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_macos_driver();
 
-	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	~DisplayServerMacOS();
 };
 

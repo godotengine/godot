@@ -86,7 +86,7 @@ private:
 	JointData joints[XRBodyTracker::JOINT_MAX];
 
 	void _get_joint_data();
-	void _tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker);
+	void _tracker_changed(const StringName &p_tracker_name, XRServer::TrackerType p_tracker_type);
 };
 
 VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)

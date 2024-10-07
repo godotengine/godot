@@ -69,21 +69,41 @@ CHHapticEngine *iOS::get_haptic_engine_instance() API_AVAILABLE(ios(13)) {
 	return haptic_engine;
 }
 
-void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13)) {
+void iOS::vibrate_haptic_engine(float p_duration_seconds, float p_amplitude) API_AVAILABLE(ios(13)) {
 	if (@available(iOS 13, *)) { // We need the @available check every time to make the compiler happy...
 		if (supports_haptic_engine()) {
 			CHHapticEngine *cur_haptic_engine = get_haptic_engine_instance();
 			if (cur_haptic_engine) {
-				NSDictionary *hapticDict = @{
-					CHHapticPatternKeyPattern : @[
-						@{CHHapticPatternKeyEvent : @{
-							CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
-							CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
-							CHHapticPatternKeyEventDuration : @(p_duration_seconds)
-						},
-						},
-					],
-				};
+				NSDictionary *hapticDict;
+				if (p_amplitude < 0) {
+					hapticDict = @{
+						CHHapticPatternKeyPattern : @[
+							@{CHHapticPatternKeyEvent : @{
+								CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
+								CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+								CHHapticPatternKeyEventDuration : @(p_duration_seconds),
+							},
+							},
+						],
+					};
+				} else {
+					hapticDict = @{
+						CHHapticPatternKeyPattern : @[
+							@{CHHapticPatternKeyEvent : @{
+								CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
+								CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+								CHHapticPatternKeyEventDuration : @(p_duration_seconds),
+								CHHapticPatternKeyEventParameters : @[
+									@{
+										CHHapticPatternKeyParameterID : @("HapticIntensity"),
+										CHHapticPatternKeyParameterValue : @(p_amplitude)
+									},
+								],
+							},
+							},
+						],
+					};
+				}
 
 				NSError *error;
 				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];

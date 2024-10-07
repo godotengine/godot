@@ -18,14 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
-msgid "Example: %s"
-msgstr "Esimerkki: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d kohde"
-msgstr[1] "%d kohdetta"
-
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"

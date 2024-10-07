@@ -41,12 +41,12 @@
 #if defined(VULKAN_ENABLED)
 #import "rendering_context_driver_vulkan_ios.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
+
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif // METAL_ENABLED
 #endif // RD_ENABLED
 
 #if defined(GLES3_ENABLED)
@@ -84,7 +84,7 @@ class DisplayServerIOS : public DisplayServer {
 
 	void perform_event(const Ref<InputEvent> &p_event);
 
-	DisplayServerIOS(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerIOS(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	~DisplayServerIOS();
 
 public:
@@ -93,7 +93,7 @@ public:
 	static DisplayServerIOS *get_singleton();
 
 	static void register_ios_driver();
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	// MARK: - Events
@@ -129,10 +129,10 @@ public:
 
 	// MARK: Motion
 
-	void update_gravity(float p_x, float p_y, float p_z);
-	void update_accelerometer(float p_x, float p_y, float p_z);
-	void update_magnetometer(float p_x, float p_y, float p_z);
-	void update_gyroscope(float p_x, float p_y, float p_z);
+	void update_gravity(const Vector3 &p_gravity);
+	void update_accelerometer(const Vector3 &p_accelerometer);
+	void update_magnetometer(const Vector3 &p_magnetometer);
+	void update_gyroscope(const Vector3 &p_gyroscope);
 
 	// MARK: -
 
@@ -224,6 +224,7 @@ public:
 
 	void virtual_keyboard_set_height(int height);
 	virtual int virtual_keyboard_get_height() const override;
+	virtual bool has_hardware_keyboard() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;

@@ -269,9 +269,9 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (use_webp) {
-					data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+					data = Image::webp_lossless_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				} else {
-					data = Image::png_packer(p_image->get_image_from_mipmap(i));
+					data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				}
 				int data_len = data.size();
 				f->store_32(data_len);
@@ -289,7 +289,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+				Vector<uint8_t> data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
@@ -740,10 +740,8 @@ String ResourceImporterTexture::get_import_settings_string() const {
 	return s;
 }
 
-bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) const {
-	Dictionary meta = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
-
-	if (meta.has("has_editor_variant")) {
+bool ResourceImporterTexture::are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const {
+	if (p_meta.has("has_editor_variant")) {
 		String imported_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_path);
 		if (!FileAccess::exists(imported_path)) {
 			return false;
@@ -760,19 +758,19 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 		}
 	}
 
-	if (!meta.has("vram_texture")) {
+	if (!p_meta.has("vram_texture")) {
 		return false;
 	}
 
-	bool vram = meta["vram_texture"];
+	bool vram = p_meta["vram_texture"];
 	if (!vram) {
 		return true; // Do not care about non-VRAM.
 	}
 
 	// Will become invalid if formats are missing to import.
 	Vector<String> formats_imported;
-	if (meta.has("imported_formats")) {
-		formats_imported = meta["imported_formats"];
+	if (p_meta.has("imported_formats")) {
+		formats_imported = p_meta["imported_formats"];
 	}
 
 	int index = 0;

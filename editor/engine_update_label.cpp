@@ -30,6 +30,7 @@
 
 #include "engine_update_label.h"
 
+#include "core/io/json.h"
 #include "core/os/time.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -46,7 +47,7 @@ bool EngineUpdateLabel::_can_check_updates() const {
 void EngineUpdateLabel::_check_update() {
 	checked_update = true;
 	_set_status(UpdateStatus::BUSY);
-	http->request("https://raw.githubusercontent.com/godotengine/godot-website/master/_data/versions.yml");
+	http->request("https://godotengine.org/versions.json");
 }
 
 void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
@@ -62,31 +63,39 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		return;
 	}
 
-	PackedStringArray lines;
+	Array version_array;
 	{
 		String s;
 		const uint8_t *r = p_body.ptr();
 		s.parse_utf8((const char *)r, p_body.size());
-		lines = s.split("\n");
+
+		Variant result = JSON::parse_string(s);
+		if (result == Variant()) {
+			_set_status(UpdateStatus::ERROR);
+			_set_message(TTR("Failed to parse version JSON."), theme_cache.error_color);
+			return;
+		}
+		if (result.get_type() != Variant::ARRAY) {
+			_set_status(UpdateStatus::ERROR);
+			_set_message(TTR("Received JSON data is not a valid version array."), theme_cache.error_color);
+			return;
+		}
+		version_array = result;
 	}
 
 	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode")));
 	bool stable_only = update_mode == UpdateMode::NEWEST_STABLE || update_mode == UpdateMode::NEWEST_PATCH;
 
-	const Dictionary version_info = Engine::get_singleton()->get_version_info();
-	int current_major = version_info["major"];
-	int current_minor = version_info["minor"];
-	int current_patch = version_info["patch"];
+	const Dictionary current_version_info = Engine::get_singleton()->get_version_info();
+	int current_major = current_version_info.get("major", 0);
+	int current_minor = current_version_info.get("minor", 0);
+	int current_patch = current_version_info.get("patch", 0);
 
-	int current_version_line = -1;
-	for (int i = 0; i < lines.size(); i++) {
-		const String &line = lines[i];
-		if (!line.begins_with("- name")) {
-			continue;
-		}
+	for (const Variant &data_bit : version_array) {
+		const Dictionary version_info = data_bit;
 
-		const String version_string = _extract_sub_string(line);
-		const PackedStringArray version_bits = version_string.split(".");
+		const String base_version_string = version_info.get("name", "");
+		const PackedStringArray version_bits = base_version_string.split(".");
 
 		if (version_bits.size() < 2) {
 			continue;
@@ -110,61 +119,45 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			continue;
 		}
 
-		if (minor > current_minor || patch > current_patch) {
-			String version_type = _extract_sub_string(lines[i + 1]);
-			if (stable_only && _get_version_type(version_type, nullptr) != VersionType::STABLE) {
-				continue;
-			}
-
-			found_version = version_string;
-			found_version += "-" + version_type;
-			break;
-		} else if (minor == current_minor && patch == current_patch) {
-			current_version_line = i;
-			found_version = version_string;
-			break;
-		}
-	}
-
-	if (current_version_line == -1 && !found_version.is_empty()) {
-		_set_status(UpdateStatus::UPDATE_AVAILABLE);
-		_set_message(vformat(TTR("Update available: %s."), found_version), theme_cache.update_color);
-		return;
-	} else if (current_version_line == -1 || stable_only) {
-		_set_status(UpdateStatus::UP_TO_DATE);
-		return;
-	}
-
-	int current_version_index;
-	VersionType current_version_type = _get_version_type(version_info["status"], &current_version_index);
-
-	for (int i = current_version_line + 1; i < lines.size(); i++) {
-		const String &line = lines[i];
-		if (line.begins_with("- name")) {
-			break;
-		}
-
-		if (!line.begins_with("    - name") && !line.begins_with("  flavor")) {
+		const Array releases = version_info.get("releases", Array());
+		if (releases.is_empty()) {
 			continue;
 		}
 
-		const String version_string = _extract_sub_string(line);
-		int version_index;
-		VersionType version_type = _get_version_type(version_string, &version_index);
+		const Dictionary newest_release = releases[0];
+		const String release_string = newest_release.get("name", "unknown");
 
-		if (int(version_type) < int(current_version_type) || version_index > current_version_index) {
-			found_version += "-" + version_string;
+		int release_index;
+		VersionType release_type = _get_version_type(release_string, &release_index);
 
-			_set_status(UpdateStatus::UPDATE_AVAILABLE);
-			_set_message(vformat(TTR("Update available: %s."), found_version), theme_cache.update_color);
-			return;
+		if (minor > current_minor || patch > current_patch) {
+			if (stable_only && release_type != VersionType::STABLE) {
+				continue;
+			}
+
+			available_newer_version = vformat("%s-%s", base_version_string, release_string);
+			break;
 		}
+
+		int current_version_index;
+		VersionType current_version_type = _get_version_type(current_version_info.get("status", "unknown"), &current_version_index);
+
+		if (int(release_type) > int(current_version_type)) {
+			break;
+		}
+
+		if (int(release_type) == int(current_version_type) && release_index <= current_version_index) {
+			break;
+		}
+
+		available_newer_version = vformat("%s-%s", base_version_string, release_string);
+		break;
 	}
 
-	if (current_version_index == DEV_VERSION) {
-		// Since version index can't be determined and no strictly newer version exists, display a different status.
-		_set_status(UpdateStatus::DEV);
-	} else {
+	if (!available_newer_version.is_empty()) {
+		_set_status(UpdateStatus::UPDATE_AVAILABLE);
+		_set_message(vformat(TTR("Update available: %s."), available_newer_version), theme_cache.update_color);
+	} else if (available_newer_version.is_empty()) {
 		_set_status(UpdateStatus::UP_TO_DATE);
 	}
 }
@@ -173,29 +166,22 @@ void EngineUpdateLabel::_set_message(const String &p_message, const Color &p_col
 	if (is_disabled()) {
 		add_theme_color_override("font_disabled_color", p_color);
 	} else {
-		add_theme_color_override("font_color", p_color);
+		add_theme_color_override(SceneStringName(font_color), p_color);
 	}
 	set_text(p_message);
 }
 
 void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 	status = p_status;
-	if (compact_mode) {
-		if (status != UpdateStatus::BUSY && status != UpdateStatus::UPDATE_AVAILABLE) {
-			hide();
-			return;
-		} else {
-			show();
-		}
+	if (status == UpdateStatus::BUSY || status == UpdateStatus::UP_TO_DATE) {
+		// Hide the label to prevent unnecessary distraction.
+		hide();
+		return;
+	} else {
+		show();
 	}
 
 	switch (status) {
-		case UpdateStatus::DEV: {
-			set_disabled(true);
-			_set_message(TTR("Running a development build."), theme_cache.disabled_color);
-			set_tooltip_text(TTR("Exact version can't be determined for update checking."));
-			break;
-		}
 		case UpdateStatus::OFFLINE: {
 			set_disabled(false);
 			if (int(EDITOR_GET("network/connection/network_mode")) == EditorSettings::NETWORK_OFFLINE) {
@@ -206,21 +192,10 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			set_tooltip_text("");
 			break;
 		}
-		case UpdateStatus::BUSY: {
-			set_disabled(true);
-			_set_message(TTR("Checking for updates..."), theme_cache.default_color);
-			set_tooltip_text("");
-		} break;
 
 		case UpdateStatus::ERROR: {
 			set_disabled(false);
 			set_tooltip_text(TTR("An error has occurred. Click to try again."));
-		} break;
-
-		case UpdateStatus::UP_TO_DATE: {
-			set_disabled(false);
-			_set_message(TTR("Current version up to date."), theme_cache.disabled_color);
-			set_tooltip_text(TTR("Click to check again."));
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
@@ -289,7 +264,7 @@ void EngineUpdateLabel::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			theme_cache.default_color = get_theme_color("font_color", "Button");
+			theme_cache.default_color = get_theme_color(SceneStringName(font_color), "Button");
 			theme_cache.disabled_color = get_theme_color("font_disabled_color", "Button");
 			theme_cache.error_color = get_theme_color("error_color", EditorStringName(Editor));
 			theme_cache.update_color = get_theme_color("warning_color", EditorStringName(Editor));
@@ -315,22 +290,17 @@ void EngineUpdateLabel::pressed() {
 			emit_signal("offline_clicked");
 		} break;
 
-		case UpdateStatus::ERROR:
-		case UpdateStatus::UP_TO_DATE: {
+		case UpdateStatus::ERROR: {
 			_check_update();
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
-			OS::get_singleton()->shell_open("https://godotengine.org/download/archive/" + found_version);
+			OS::get_singleton()->shell_open("https://godotengine.org/download/archive/" + available_newer_version);
 		} break;
 
 		default: {
 		}
 	}
-}
-
-void EngineUpdateLabel::enable_compact_mode() {
-	compact_mode = true;
 }
 
 EngineUpdateLabel::EngineUpdateLabel() {

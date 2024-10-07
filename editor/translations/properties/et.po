@@ -154,12 +154,6 @@ msgstr "3D Kerimise Tugevus"
 msgid "iOS"
 msgstr "iOS"
 
-msgid "Editor"
-msgstr "Redaktor"
-
-msgid "Script"
-msgstr "Skript"
-
 msgid "Subwindows"
 msgstr "Alamaknad"
 
@@ -246,6 +240,9 @@ msgstr "Bloki Suurus (KB)"
 
 msgid "Max Size (MB)"
 msgstr "Maksimaalne suurus (MB)"
+
+msgid "Enable"
+msgstr "Luba"
 
 msgid "Save Chunk Size (MB)"
 msgstr "Salvest Tüki Suurus (MB)"
@@ -586,9 +583,6 @@ msgstr "Väärtus"
 msgid "Arg Count"
 msgstr "Arg kogus"
 
-msgid "Args"
-msgstr "Argumendid"
-
 msgid "Type"
 msgstr "Tüüp"
 
@@ -670,6 +664,12 @@ msgstr "Häirimatu režiim"
 msgid "Movie Maker Enabled"
 msgstr "Movie Maker Sees"
 
+msgid "Theme"
+msgstr "Teema"
+
+msgid "Line Spacing"
+msgstr "Reavahe"
+
 msgid "Base Type"
 msgstr "Baastüüp"
 
@@ -681,6 +681,9 @@ msgstr "Lülitusrežiim"
 
 msgid "Interface"
 msgstr "Liides"
+
+msgid "Editor"
+msgstr "Redaktor"
 
 msgid "Editor Language"
 msgstr "Redaktori Keel"
@@ -784,9 +787,6 @@ msgstr "Vaikimisi Värvivalija Režiim"
 msgid "Default Color Picker Shape"
 msgstr "Vaikimisi Värvivalija Kuju"
 
-msgid "Theme"
-msgstr "Teema"
-
 msgid "Preset"
 msgstr "Eelseadistus"
 
@@ -850,9 +850,6 @@ msgstr "Taasta Stseenid Laadimisel"
 msgid "Multi Window"
 msgstr "Mitu Akent"
 
-msgid "Enable"
-msgstr "Luba"
-
 msgid "Restore Windows on Load"
 msgstr "Taastage Aknad Laadimisel"
 
@@ -912,6 +909,9 @@ msgstr "RPC Port"
 
 msgid "RPC Server Uptime"
 msgstr "RPC Serveri Aktiivaeg"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Asukoht"
@@ -1005,9 +1005,6 @@ msgstr "Joonista Vahelehed"
 
 msgid "Draw Spaces"
 msgstr "Joonista Tühimikud"
-
-msgid "Line Spacing"
-msgstr "Reavahe"
 
 msgid "Navigation"
 msgstr "Navigatsioon"
@@ -1116,9 +1113,6 @@ msgstr "Loodud"
 
 msgid "Joint"
 msgstr "Liigend"
-
-msgid "Shape"
-msgstr "Kuju"
 
 msgid "Primary Grid Steps"
 msgstr "Põhiruudustiku Sammud"
@@ -1303,12 +1297,6 @@ msgstr "Fondi Suurus"
 msgid "Always Clear Output on Play"
 msgstr "Puhasta Alati Väljund Käivitamisel"
 
-msgid "Always Open Output on Play"
-msgstr "Ava Alati Väljund Käivitamisel"
-
-msgid "Always Close Output on Stop"
-msgstr "Sulge Alati Väljund Peatamisel"
-
 msgid "HTTP Proxy"
 msgstr "HTTP puhverserver"
 
@@ -1335,6 +1323,12 @@ msgstr "Kaugjuhitava Stseenipuu Värskendamise Intervall"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "Kauginspekteerimise Värskendamise Intervall"
+
+msgid "Input"
+msgstr "Sisend"
+
+msgid "Buffering"
+msgstr "Puhverdamine"
 
 msgid "Project Manager"
 msgstr "Projektide Haldur"
@@ -1590,9 +1584,6 @@ msgstr "Salvesta Faili"
 
 msgid "Enabled"
 msgstr "Sisselülitatud"
-
-msgid "Make Streamable"
-msgstr "Muuda Voogedastavaks"
 
 msgid "Use External"
 msgstr "Kasuta Väliseid"
@@ -1969,6 +1960,9 @@ msgstr "SSH Privaatse Võtme Asukoht"
 msgid "Main Run Args"
 msgstr "Peamised Jooksuargumendid"
 
+msgid "Script"
+msgstr "Skript"
+
 msgid "Templates Search Path"
 msgstr "Mallide Otsingutee"
 
@@ -2101,6 +2095,21 @@ msgstr "Keskkond"
 msgid "Defaults"
 msgstr "Vaikeväärtused"
 
+msgid "Icon"
+msgstr "Ikoon"
+
+msgid "Windows Native Icon"
+msgstr "Windowsi Süsteemiikoon"
+
+msgid "Pointing"
+msgstr "Osutades"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Mouse Cursor"
+msgstr "Hiire Kursor"
+
 msgid "Show Image"
 msgstr "Näita Pilti"
 
@@ -2113,24 +2122,6 @@ msgstr "Täissuurus"
 msgid "Use Filter"
 msgstr "Kasuta Filtrit"
 
-msgid "Icon"
-msgstr "Ikoon"
-
-msgid "Windows Native Icon"
-msgstr "Windowsi Süsteemiikoon"
-
-msgid "Buffering"
-msgstr "Puhverdamine"
-
-msgid "Pointing"
-msgstr "Osutades"
-
-msgid "Android"
-msgstr "Android"
-
-msgid "Mouse Cursor"
-msgstr "Hiire Kursor"
-
 msgid "Minimum Display Time"
 msgstr "Minimaalne Näitamise Aeg"
 
@@ -2139,6 +2130,12 @@ msgstr "Dotnet"
 
 msgid "Project"
 msgstr "Projekt"
+
+msgid "Time"
+msgstr "Aeg"
+
+msgid "Polygons"
+msgstr "Hulknurgad"
 
 msgid "Operation"
 msgstr "Operatsioon"
@@ -2205,9 +2202,6 @@ msgstr "Tee Pööramine"
 
 msgid "Path Local"
 msgstr "Lokaalne Tee"
-
-msgid "FBX"
-msgstr "FBX"
 
 msgid "GDScript"
 msgstr "GDScript"
@@ -3025,8 +3019,8 @@ msgstr "Ülaosa"
 msgid "Emitting"
 msgstr "Kiirgab"
 
-msgid "Time"
-msgstr "Aeg"
+msgid "Shape"
+msgstr "Kuju"
 
 msgid "Points"
 msgstr "Punktid"
@@ -3046,23 +3040,20 @@ msgstr "End"
 msgid "Point"
 msgstr "Punkt"
 
-msgid "Input"
-msgstr "Sisend"
-
 msgid "Linear"
 msgstr "Sirgjooneline"
 
 msgid "UV"
 msgstr "UV"
 
-msgid "Polygons"
-msgstr "Hulknurgad"
-
 msgid "Update"
 msgstr "Uuenda"
 
 msgid "Editor Settings"
 msgstr "Redaktori sätted"
+
+msgid "Y Sort Origin"
+msgstr "Y-Sordi Päritolu"
 
 msgid "Cull Mask"
 msgstr "Väljalõikamis mask"
@@ -3151,17 +3142,11 @@ msgstr "Maastikud"
 msgid "Custom Data"
 msgstr "Kohandatud Andmed"
 
-msgid "Scenes"
-msgstr "Stseenid"
-
 msgid "Scene"
 msgstr "Stseen"
 
 msgid "Texture Origin"
 msgstr "Tekstuuri Alguspunkt"
-
-msgid "Y Sort Origin"
-msgstr "Y-Sordi Päritolu"
 
 msgid "Probability"
 msgstr "Võimalus"
@@ -3306,6 +3291,3 @@ msgstr "Maailma Alguspunkt"
 
 msgid "Primary Interface"
 msgstr "Peamine Kasutajaliides"
-
-msgid "Property"
-msgstr "Atribuut"

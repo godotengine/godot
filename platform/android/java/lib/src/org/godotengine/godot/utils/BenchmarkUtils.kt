@@ -37,6 +37,7 @@ import android.os.SystemClock
 import android.os.Trace
 import android.util.Log
 import org.godotengine.godot.BuildConfig
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.io.file.FileAccessFlags
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.json.JSONObject
@@ -81,7 +82,8 @@ fun beginBenchmarkMeasure(scope: String, label: String) {
  *
  * * Note: Only enabled on 'editorDev' build variant.
  */
-fun endBenchmarkMeasure(scope: String, label: String) {
+@JvmOverloads
+fun endBenchmarkMeasure(scope: String, label: String, dumpBenchmark: Boolean = false) {
 	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
 		return
 	}
@@ -93,6 +95,10 @@ fun endBenchmarkMeasure(scope: String, label: String) {
 	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 		Trace.endAsyncSection("[$scope] $label", 0)
 	}
+
+	if (dumpBenchmark) {
+		dumpBenchmark()
+	}
 }
 
 /**
@@ -102,11 +108,11 @@ fun endBenchmarkMeasure(scope: String, label: String) {
  * * Note: Only enabled on 'editorDev' build variant.
  */
 @JvmOverloads
-fun dumpBenchmark(fileAccessHandler: FileAccessHandler?, filepath: String? = benchmarkFile) {
+fun dumpBenchmark(fileAccessHandler: FileAccessHandler? = null, filepath: String? = benchmarkFile) {
 	if (BuildConfig.FLAVOR != "editor" || BuildConfig.BUILD_TYPE != "dev") {
 		return
 	}
-	if (!useBenchmark) {
+	if (!useBenchmark || benchmarkTracker.isEmpty()) {
 		return
 	}
 
@@ -123,8 +129,8 @@ fun dumpBenchmark(fileAccessHandler: FileAccessHandler?, filepath: String? = ben
 	Log.i(TAG, "BENCHMARK:\n$printOut")
 
 	if (fileAccessHandler != null && !filepath.isNullOrBlank()) {
-		val fileId = fileAccessHandler.fileOpen(filepath, FileAccessFlags.WRITE)
-		if (fileId != FileAccessHandler.INVALID_FILE_ID) {
+		val (fileError, fileId) = fileAccessHandler.fileOpen(filepath, FileAccessFlags.WRITE)
+		if (fileError == Error.OK) {
 			val jsonOutput = JSONObject(benchmarkTracker.toMap()).toString(4)
 			fileAccessHandler.fileWrite(fileId, ByteBuffer.wrap(jsonOutput.toByteArray()))
 			fileAccessHandler.fileClose(fileId)

@@ -49,6 +49,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
+	enum {
+		NOT_CHANGING_TYPE = -1,
+	};
+
 	void set_array(const Variant &p_array);
 	Variant get_array();
 
@@ -68,10 +72,12 @@ protected:
 
 public:
 	enum {
-		NEW_KEY_INDEX = -2,
+		NOT_CHANGING_TYPE = -3,
+		NEW_KEY_INDEX,
 		NEW_VALUE_INDEX,
 	};
 
+	bool get_by_property_name(const String &p_name, Variant &r_ret) const;
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
 
@@ -111,9 +117,9 @@ class EditorPropertyArray : public EditorProperty {
 
 	int page_length = 20;
 	int page_index = 0;
-	int changing_type_index;
+	int changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 	Button *edit = nullptr;
-	MarginContainer *container = nullptr;
+	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;
@@ -144,7 +150,6 @@ protected:
 	bool updating = false;
 	bool dropping = false;
 
-	static void _bind_methods();
 	void _notification(int p_what);
 
 	virtual void _add_element();
@@ -165,6 +170,7 @@ protected:
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
 	virtual void update_property() override;
+	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyArray();
 };
 
@@ -205,15 +211,14 @@ class EditorPropertyDictionary : public EditorProperty {
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
-	int changing_type_index;
+	int changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
 	Button *edit = nullptr;
-	MarginContainer *container = nullptr;
+	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	PanelContainer *add_panel = nullptr;
 	EditorSpinSlider *size_sliderv = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
-	PropertyHint property_hint;
 	LocalVector<Slot> slots;
 	void _create_new_property_slot(int p_idx);
 
@@ -225,14 +230,23 @@ class EditorPropertyDictionary : public EditorProperty {
 
 	void _add_key_value();
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	void _remove_pressed(int p_slot_index);
+
+	Variant::Type key_subtype;
+	PropertyHint key_subtype_hint;
+	String key_subtype_hint_string;
+	Variant::Type value_subtype;
+	PropertyHint value_subtype_hint;
+	String value_subtype_hint_string;
+	void initialize_dictionary(Variant &p_dictionary);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	void setup(PropertyHint p_hint);
+	void setup(PropertyHint p_hint, const String &p_hint_string = "");
 	virtual void update_property() override;
+	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyDictionary();
 };
 
@@ -263,7 +277,6 @@ class EditorPropertyLocalizableString : public EditorProperty {
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:

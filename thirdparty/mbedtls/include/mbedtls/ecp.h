@@ -216,7 +216,7 @@ mbedtls_ecp_point;
  * range of <code>0..2^(2*pbits)-1</code>, and transforms it in-place to an integer
  * which is congruent mod \p P to the given MPI, and is close enough to \p pbits
  * in size, so that it may be efficiently brought in the 0..P-1 range by a few
- * additions or subtractions. Therefore, it is only an approximative modular
+ * additions or subtractions. Therefore, it is only an approximate modular
  * reduction. It must return 0 on success and non-zero on failure.
  *
  * \note        Alternative implementations of the ECP module must obey the

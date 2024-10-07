@@ -122,13 +122,14 @@ public:
 	void begin_frame(double frame_step);
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
-	void end_viewport(bool p_swap_buffers) {}
+	void gl_end_frame(bool p_swap_buffers) {}
 	void end_frame(bool p_swap_buffers);
 	void finalize();
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time; }
+	_ALWAYS_INLINE_ bool can_create_resources_async() const { return true; }
 
 	static Error is_viable() {
 		return OK;

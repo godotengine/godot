@@ -37,8 +37,10 @@
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/math/expression.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "servers/display_server.h"
 
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
@@ -206,8 +208,7 @@ void RemoteDebugger::flush_output() {
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
 		Vector<int> types;
-		for (int i = 0; i < output_strings.size(); i++) {
-			const OutputString &output_string = output_strings[i];
+		for (const OutputString &output_string : output_strings) {
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
 				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
@@ -529,6 +530,41 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
+			} else if (command == "evaluate") {
+				String expression_str = data[0];
+				int frame = data[1];
+
+				ScriptInstance *breaked_instance = script_debugger->get_break_language()->debug_get_stack_level_instance(frame);
+				if (!breaked_instance) {
+					break;
+				}
+
+				List<String> locals;
+				List<Variant> local_vals;
+
+				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
+				ERR_FAIL_COND(locals.size() != local_vals.size());
+
+				PackedStringArray locals_vector;
+				for (const String &S : locals) {
+					locals_vector.append(S);
+				}
+
+				Array local_vals_array;
+				for (const Variant &V : local_vals) {
+					local_vals_array.append(V);
+				}
+
+				Expression expression;
+				expression.parse(expression_str, locals_vector);
+				const Variant return_val = expression.execute(local_vals_array, breaked_instance->get_owner());
+
+				DebuggerMarshalls::ScriptStackVariable stvar;
+				stvar.name = expression_str;
+				stvar.value = return_val;
+				stvar.type = 3;
+
+				send_message("evaluation_return", stvar.serialize());
 			} else {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
@@ -540,7 +576,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			OS::get_singleton()->delay_usec(10000);
 			if (Thread::get_caller_id() == Thread::get_main_id()) {
 				// If this is a busy loop on the main thread, events still need to be processed.
-				OS::get_singleton()->process_and_drop_events();
+				DisplayServer::get_singleton()->force_process_and_drop_events();
 			}
 		}
 	}

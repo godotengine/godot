@@ -54,15 +54,15 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
 		case MESSAGE_ERROR: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusError"));
 		} break;
 		case MESSAGE_WARNING: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusWarning"));
 		} break;
 		case MESSAGE_SUCCESS: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusSuccess"));
 		} break;
 	}
@@ -162,7 +162,7 @@ void ProjectDialog::_validate_path() {
 		}
 	}
 
-	if (target_path.is_empty() || target_path.is_relative_path()) {
+	if (target_path.is_relative_path()) {
 		_set_message(TTR("The path specified is invalid."), MESSAGE_ERROR, target_path_input_type);
 		return;
 	}
@@ -315,6 +315,8 @@ void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 			target_path = target_path.path_join(last_custom_target_dir);
 		}
 	} else {
+		// Strip any trailing slash.
+		target_path = target_path.rstrip("/\\");
 		// Save and remove target dir name.
 		if (target_path.get_file() == auto_dir) {
 			last_custom_target_dir = "";
@@ -349,15 +351,19 @@ void ProjectDialog::_install_path_changed() {
 }
 
 void ProjectDialog::_browse_project_path() {
+	String path = project_path->get_text();
+	if (path.is_relative_path()) {
+		path = EDITOR_GET("filesystem/directories/default_project_path");
+	}
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
-		fdialog_project->set_current_path(project_path->get_text());
+		fdialog_project->set_current_path(path);
 	} else if ((mode == MODE_NEW || mode == MODE_INSTALL) && create_dir->is_pressed()) {
 		// Select parent directory of project path.
-		fdialog_project->set_current_dir(project_path->get_text().get_base_dir());
+		fdialog_project->set_current_dir(path.get_base_dir());
 	} else {
 		// Select project path.
-		fdialog_project->set_current_dir(project_path->get_text());
+		fdialog_project->set_current_dir(path);
 	}
 
 	if (mode == MODE_IMPORT) {
@@ -368,18 +374,24 @@ void ProjectDialog::_browse_project_path() {
 	} else {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 	}
+
+	hide();
 	fdialog_project->popup_file_dialog();
 }
 
 void ProjectDialog::_browse_install_path() {
 	ERR_FAIL_COND_MSG(mode != MODE_IMPORT, "Install path is only used for MODE_IMPORT.");
 
+	String path = install_path->get_text();
+	if (path.is_relative_path() || !DirAccess::dir_exists_absolute(path)) {
+		path = EDITOR_GET("filesystem/directories/default_project_path");
+	}
 	if (create_dir->is_pressed()) {
 		// Select parent directory of install path.
-		fdialog_install->set_current_dir(install_path->get_text().get_base_dir());
+		fdialog_install->set_current_dir(path.get_base_dir());
 	} else {
 		// Select install path.
-		fdialog_install->set_current_dir(install_path->get_text());
+		fdialog_install->set_current_dir(path);
 	}
 
 	fdialog_install->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
@@ -387,6 +399,8 @@ void ProjectDialog::_browse_install_path() {
 }
 
 void ProjectDialog::_project_path_selected(const String &p_path) {
+	show_dialog(false);
+
 	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL)) {
 		// Replace parent directory, but keep target dir name.
 		project_path->set_text(p_path.path_join(project_path->get_text().get_file()));
@@ -419,10 +433,16 @@ void ProjectDialog::_install_path_selected(const String &p_path) {
 	get_ok_button()->grab_focus();
 }
 
+void ProjectDialog::_reset_name() {
+	project_name->set_text(TTR("New Game Project"));
+}
+
 void ProjectDialog::_renderer_selected() {
 	ERR_FAIL_NULL(renderer_button_group->get_pressed_button());
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
+
+	bool rd_error = false;
 
 	if (renderer_type == "forward_plus") {
 		renderer_info->set_text(
@@ -431,6 +451,7 @@ void ProjectDialog::_renderer_selected() {
 				String::utf8("\n•  ") + TTR("Can scale to large complex scenes.") +
 				String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
 				String::utf8("\n•  ") + TTR("Slower rendering of simple scenes."));
+		rd_error = !rendering_device_supported;
 	} else if (renderer_type == "mobile") {
 		renderer_info->set_text(
 				String::utf8("•  ") + TTR("Supports desktop + mobile platforms.") +
@@ -438,15 +459,23 @@ void ProjectDialog::_renderer_selected() {
 				String::utf8("\n•  ") + TTR("Less scalable for complex scenes.") +
 				String::utf8("\n•  ") + TTR("Uses RenderingDevice backend.") +
 				String::utf8("\n•  ") + TTR("Fast rendering of simple scenes."));
+		rd_error = !rendering_device_supported;
 	} else if (renderer_type == "gl_compatibility") {
 		renderer_info->set_text(
 				String::utf8("•  ") + TTR("Supports desktop, mobile + web platforms.") +
-				String::utf8("\n•  ") + TTR("Least advanced 3D graphics (currently work-in-progress).") +
+				String::utf8("\n•  ") + TTR("Least advanced 3D graphics.") +
 				String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
 				String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
 				String::utf8("\n•  ") + TTR("Fastest rendering of simple scenes."));
 	} else {
 		WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
+	}
+
+	rd_not_supported->set_visible(rd_error);
+	get_ok_button()->set_disabled(rd_error);
+	if (rd_error) {
+		// Needs to be set here since theme colors aren't available at startup.
+		rd_not_supported->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	}
 }
 
@@ -462,7 +491,7 @@ void ProjectDialog::ok_pressed() {
 		ConfirmationDialog *cd = memnew(ConfirmationDialog);
 		cd->set_title(TTR("Warning: This folder is not empty"));
 		cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-		cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+		cd->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
 		get_parent()->add_child(cd);
 		cd->popup_centered();
 		return;
@@ -684,12 +713,11 @@ void ProjectDialog::set_project_path(const String &p_path) {
 }
 
 void ProjectDialog::ask_for_path_and_show() {
-	// Workaround: for the file selection dialog content to be rendered we need to show its parent dialog.
-	show_dialog();
+	_reset_name();
 	_browse_project_path();
 }
 
-void ProjectDialog::show_dialog() {
+void ProjectDialog::show_dialog(bool p_reset_name) {
 	if (mode == MODE_RENAME) {
 		// Name and path are set in `ProjectManager::_rename_project`.
 		project_path->set_editable(false);
@@ -709,8 +737,9 @@ void ProjectDialog::show_dialog() {
 		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
 	} else {
-		String proj = TTR("New Game Project");
-		project_name->set_text(proj);
+		if (p_reset_name) {
+			_reset_name();
+		}
 		project_path->set_editable(true);
 
 		String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
@@ -785,6 +814,15 @@ void ProjectDialog::_notification(int p_what) {
 			project_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
 			install_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
 		} break;
+		case NOTIFICATION_READY: {
+			fdialog_project = memnew(EditorFileDialog);
+			fdialog_project->set_previews_enabled(false); // Crucial, otherwise the engine crashes.
+			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
+			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
+			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false), CONNECT_DEFERRED);
+			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
+		} break;
 	}
 }
 
@@ -823,7 +861,7 @@ ProjectDialog::ProjectDialog() {
 	create_dir->set_text(TTR("Create Folder"));
 	create_dir->set_pressed(true);
 	pphb_label->add_child(create_dir);
-	create_dir->connect("toggled", callable_mp(this, &ProjectDialog::_create_dir_toggled));
+	create_dir->connect(SceneStringName(toggled), callable_mp(this, &ProjectDialog::_create_dir_toggled));
 
 	HBoxContainer *pphb = memnew(HBoxContainer);
 	project_path_container->add_child(pphb);
@@ -855,7 +893,7 @@ ProjectDialog::ProjectDialog() {
 
 	project_browse = memnew(Button);
 	project_browse->set_text(TTR("Browse"));
-	project_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_project_path));
+	project_browse->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_browse_project_path));
 	pphb->add_child(project_browse);
 
 	// install status icon
@@ -865,7 +903,7 @@ ProjectDialog::ProjectDialog() {
 
 	install_browse = memnew(Button);
 	install_browse->set_text(TTR("Browse"));
-	install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
+	install_browse->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_browse_install_path));
 	iphb->add_child(install_browse);
 
 	msg = memnew(Label);
@@ -893,14 +931,20 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
+	rendering_device_supported = DisplayServer::can_create_rendering_device();
+
+	if (!rendering_device_supported) {
+		default_renderer_type = "gl_compatibility";
+	}
+
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Forward+"));
-#if defined(WEB_ENABLED)
+#ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
-	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
 	if (default_renderer_type == "forward_plus") {
 		rs_button->set_pressed(true);
@@ -908,11 +952,11 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Mobile"));
-#if defined(WEB_ENABLED)
+#ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "mobile");
-	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
 	if (default_renderer_type == "mobile") {
 		rs_button->set_pressed(true);
@@ -924,7 +968,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
-	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {
@@ -940,6 +984,15 @@ ProjectDialog::ProjectDialog() {
 	renderer_info = memnew(Label);
 	renderer_info->set_modulate(Color(1, 1, 1, 0.7));
 	rvb->add_child(renderer_info);
+
+	rd_not_supported = memnew(Label);
+	rd_not_supported->set_text(vformat(TTR("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
+	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	rd_not_supported->set_visible(false);
+	renderer_container->add_child(rd_not_supported);
+
 	_renderer_selected();
 
 	l = memnew(Label);
@@ -965,21 +1018,20 @@ ProjectDialog::ProjectDialog() {
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	default_files_container->add_child(spacer);
-
-	fdialog_project = memnew(EditorFileDialog);
-	fdialog_project->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
-	fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	fdialog_install = memnew(EditorFileDialog);
 	fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	add_child(fdialog_project);
 	add_child(fdialog_install);
 
-	project_name->connect("text_changed", callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
-	project_path->connect("text_changed", callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
-	install_path->connect("text_changed", callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
-	fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
-	fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
+	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
+	project_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
+	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
+	project_path->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
+	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
+	install_path->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 	fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 

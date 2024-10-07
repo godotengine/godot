@@ -4,17 +4,16 @@
 
 import argparse
 import os
-import platform
 import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
-from typing import List, Dict, TextIO, Tuple, Optional, Any, Union
+from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
 # Import hardcoded version information from version.py
 root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.append(root_directory)  # Include the root directory
-import version
+import version  # noqa: E402
 
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
@@ -143,6 +142,7 @@ CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
     "PackedStringArray",
     "PackedVector2Array",
     "PackedVector3Array",
+    "PackedVector4Array",
     "Variant",
 ]
 
@@ -150,12 +150,13 @@ PACKED_ARRAY_TYPES: List[str] = [
     "PackedByteArray",
     "PackedColorArray",
     "PackedFloat32Array",
-    "Packedfloat64Array",
+    "PackedFloat64Array",
     "PackedInt32Array",
     "PackedInt64Array",
     "PackedStringArray",
     "PackedVector2Array",
     "PackedVector3Array",
+    "PackedVector4Array",
 ]
 
 
@@ -675,17 +676,6 @@ class ScriptLanguageParityCheck:
 
 # Entry point for the RST generator.
 def main() -> None:
-    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
-    # <https://bugs.python.org/issue29059>
-    if platform.system().lower() == "windows":
-        from ctypes import windll, c_int, byref  # type: ignore
-
-        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
-        mode = c_int(0)
-        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
-        mode = c_int(mode.value | 4)
-        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
-
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
@@ -709,7 +699,25 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    should_color = args.color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    should_color = bool(args.color or sys.stdout.isatty() or os.environ.get("CI"))
+
+    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
+    # <https://github.com/python/cpython/issues/73245>
+    if should_color and sys.stdout.isatty() and sys.platform == "win32":
+        try:
+            from ctypes import WinError, byref, windll  # type: ignore
+            from ctypes.wintypes import DWORD  # type: ignore
+
+            stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
+            mode = DWORD(0)
+            if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
+                raise WinError()
+            mode = DWORD(mode.value | 4)
+            if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
+                raise WinError()
+        except Exception:
+            should_color = False
+
     STYLES["red"] = "\x1b[91m" if should_color else ""
     STYLES["green"] = "\x1b[92m" if should_color else ""
     STYLES["yellow"] = "\x1b[93m" if should_color else ""
@@ -941,13 +949,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             inherits = class_def.inherits.strip()
             f.write(f'**{translate("Inherits:")}** ')
             first = True
-            while inherits in state.classes:
+            while inherits is not None:
                 if not first:
                     f.write(" **<** ")
                 else:
                     first = False
 
                 f.write(make_type(inherits, state))
+
+                if inherits not in state.classes:
+                    break  # Parent unknown.
+
                 inode = state.classes[inherits].inherits
                 if inode:
                     inherits = inode.strip()
@@ -1102,11 +1114,13 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create signal signature and anchor point.
 
-                f.write(f".. _class_{class_name}_signal_{signal.name}:\n\n")
+                signal_anchor = f"class_{class_name}_signal_{signal.name}"
+                f.write(f".. _{signal_anchor}:\n\n")
+                self_link = f":ref:`🔗<{signal_anchor}>`"
                 f.write(".. rst-class:: classref-signal\n\n")
 
                 _, signature = make_method_signature(class_def, signal, "", state)
-                f.write(f"{signature}\n\n")
+                f.write(f"{signature} {self_link}\n\n")
 
                 # Add signal description, or a call to action if it's missing.
 
@@ -1139,13 +1153,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create enumeration signature and anchor point.
 
-                f.write(f".. _enum_{class_name}_{e.name}:\n\n")
+                enum_anchor = f"enum_{class_name}_{e.name}"
+                f.write(f".. _{enum_anchor}:\n\n")
+                self_link = f":ref:`🔗<{enum_anchor}>`"
                 f.write(".. rst-class:: classref-enumeration\n\n")
 
                 if e.is_bitfield:
-                    f.write(f"flags **{e.name}**:\n\n")
+                    f.write(f"flags **{e.name}**: {self_link}\n\n")
                 else:
-                    f.write(f"enum **{e.name}**:\n\n")
+                    f.write(f"enum **{e.name}**: {self_link}\n\n")
 
                 for value in e.values.values():
                     # Also create signature and anchor point for each enum constant.
@@ -1183,10 +1199,12 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             for constant in class_def.constants.values():
                 # Create constant signature and anchor point.
 
-                f.write(f".. _class_{class_name}_constant_{constant.name}:\n\n")
+                constant_anchor = f"class_{class_name}_constant_{constant.name}"
+                f.write(f".. _{constant_anchor}:\n\n")
+                self_link = f":ref:`🔗<{constant_anchor}>`"
                 f.write(".. rst-class:: classref-constant\n\n")
 
-                f.write(f"**{constant.name}** = ``{constant.value}``\n\n")
+                f.write(f"**{constant.name}** = ``{constant.value}`` {self_link}\n\n")
 
                 # Add constant description.
 
@@ -1219,13 +1237,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create annotation signature and anchor point.
 
+                    self_link = ""
                     if i == 0:
-                        f.write(f".. _class_{class_name}_annotation_{m.name}:\n\n")
+                        annotation_anchor = f"class_{class_name}_annotation_{m.name}"
+                        f.write(f".. _{annotation_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{annotation_anchor}>`"
 
                     f.write(".. rst-class:: classref-annotation\n\n")
 
                     _, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{signature}\n\n")
+                    f.write(f"{signature}{self_link}\n\n")
 
                     # Add annotation description, or a call to action if it's missing.
 
@@ -1259,13 +1280,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create property signature and anchor point.
 
-                f.write(f".. _class_{class_name}_property_{property_def.name}:\n\n")
+                property_anchor = f"class_{class_name}_property_{property_def.name}"
+                f.write(f".. _{property_anchor}:\n\n")
+                self_link = f":ref:`🔗<{property_anchor}>`"
                 f.write(".. rst-class:: classref-property\n\n")
 
                 property_default = ""
                 if property_def.default_value is not None:
                     property_default = f" = {property_def.default_value}"
-                f.write(f"{property_def.type_name.to_rst(state)} **{property_def.name}**{property_default}\n\n")
+                f.write(
+                    f"{property_def.type_name.to_rst(state)} **{property_def.name}**{property_default} {self_link}\n\n"
+                )
 
                 # Create property setter and getter records.
 
@@ -1290,9 +1315,6 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if property_def.text is not None and property_def.text.strip() != "":
                     f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
-                    if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
-                        tmp = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
-                        f.write(f"{format_text_block(tmp, property_def, state)}\n\n")
                 elif property_def.deprecated is None and property_def.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1301,6 +1323,11 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         )
                         + "\n\n"
                     )
+
+                # Add copy note to built-in properties returning `Packed*Array`.
+                if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
+                    copy_note = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
+                    f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
 
                 index += 1
 
@@ -1319,13 +1346,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create constructor signature and anchor point.
 
+                    self_link = ""
                     if i == 0:
-                        f.write(f".. _class_{class_name}_constructor_{m.name}:\n\n")
+                        constructor_anchor = f"class_{class_name}_constructor_{m.name}"
+                        f.write(f".. _{constructor_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{constructor_anchor}>`"
 
                     f.write(".. rst-class:: classref-constructor\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{ret_type} {signature}\n\n")
+                    f.write(f"{ret_type} {signature}{self_link}\n\n")
 
                     # Add constructor description, or a call to action if it's missing.
 
@@ -1358,17 +1388,21 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create method signature and anchor point.
 
+                    self_link = ""
+
                     if i == 0:
                         method_qualifier = ""
                         if m.name.startswith("_"):
                             method_qualifier = "private_"
-
-                        f.write(f".. _class_{class_name}_{method_qualifier}method_{m.name}:\n\n")
+                        method_anchor = f"class_{class_name}_{method_qualifier}method_{m.name}"
+                        f.write(f".. _{method_anchor}:\n\n")
+                        self_link = f" :ref:`🔗<{method_anchor}>`"
 
                     f.write(".. rst-class:: classref-method\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{ret_type} {signature}\n\n")
+
+                    f.write(f"{ret_type} {signature}{self_link}\n\n")
 
                     # Add method description, or a call to action if it's missing.
 
@@ -1401,16 +1435,16 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Create operator signature and anchor point.
 
-                    operator_anchor = f".. _class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
+                    operator_anchor = f"class_{class_name}_operator_{sanitize_operator_name(m.name, state)}"
                     for parameter in m.parameters:
                         operator_anchor += f"_{parameter.type_name.type_name}"
-                    operator_anchor += f":\n\n"
-                    f.write(operator_anchor)
+                    f.write(f".. _{operator_anchor}:\n\n")
+                    self_link = f":ref:`🔗<{operator_anchor}>`"
 
                     f.write(".. rst-class:: classref-operator\n\n")
 
                     ret_type, signature = make_method_signature(class_def, m, "", state)
-                    f.write(f"{ret_type} {signature}\n\n")
+                    f.write(f"{ret_type} {signature} {self_link}\n\n")
 
                     # Add operator description, or a call to action if it's missing.
 
@@ -1443,13 +1477,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Create theme property signature and anchor point.
 
-                f.write(f".. _class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}:\n\n")
+                theme_item_anchor = f"class_{class_name}_theme_{theme_item_def.data_name}_{theme_item_def.name}"
+                f.write(f".. _{theme_item_anchor}:\n\n")
+                self_link = f":ref:`🔗<{theme_item_anchor}>`"
                 f.write(".. rst-class:: classref-themeproperty\n\n")
 
                 theme_item_default = ""
                 if theme_item_def.default_value is not None:
                     theme_item_default = f" = {theme_item_def.default_value}"
-                f.write(f"{theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**{theme_item_default}\n\n")
+                f.write(
+                    f"{theme_item_def.type_name.to_rst(state)} **{theme_item_def.name}**{theme_item_default} {self_link}\n\n"
+                )
 
                 # Add theme property description, or a call to action if it's missing.
 
@@ -1475,24 +1513,23 @@ def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
         return f"``{klass}``"
 
-    link_type = klass
-    is_array = False
+    def resolve_type(link_type: str) -> str:
+        if link_type in state.classes:
+            return f":ref:`{link_type}<class_{link_type}>`"
+        else:
+            print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
+            return f"``{link_type}``"
 
-    if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
-        link_type = link_type[:-2]
-        is_array = True
+    if klass.endswith("[]"):  # Typed array, strip [] to link to contained type.
+        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[:-len('[]')])}\\]"
 
-    if link_type in state.classes:
-        type_rst = f":ref:`{link_type}<class_{link_type}>`"
-        if is_array:
-            type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-        return type_rst
+    if klass.startswith("Dictionary["):  # Typed dictionary, split elements to link contained types.
+        parts = klass[len("Dictionary[") : -len("]")].partition(", ")
+        key = parts[0]
+        value = parts[2]
+        return f":ref:`Dictionary<class_Dictionary>`\\[{resolve_type(key)}, {resolve_type(value)}\\]"
 
-    print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
-    type_rst = f"``{link_type}``"
-    if is_array:
-        type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-    return type_rst
+    return resolve_type(klass)
 
 
 def make_enum(t: str, is_bitfield: bool, state: State) -> str:
@@ -1544,7 +1581,7 @@ def make_method_signature(
             out += f":ref:`{op_name}<class_{class_def.name}_{ref_type}_{sanitize_operator_name(definition.name, state)}"
             for parameter in definition.parameters:
                 out += f"_{parameter.type_name.type_name}"
-            out += f">`"
+            out += ">`"
         elif ref_type == "method":
             ref_type_qualifier = ""
             if definition.name.startswith("_"):

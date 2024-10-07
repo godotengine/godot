@@ -60,6 +60,9 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::ARRAY && (p_info.hint == PROPERTY_HINT_ARRAY_TYPE)) {
 		return String("typedarray::") + p_info.hint_string;
 	}
+	if (p_info.type == Variant::DICTIONARY && (p_info.hint == PROPERTY_HINT_DICTIONARY_TYPE)) {
+		return String("typeddictionary::") + p_info.hint_string;
+	}
 	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
 		return String("enum::") + String(p_info.class_name);
 	}
@@ -85,7 +88,7 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 }
 
 static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
-	static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
+	static const char *argmeta[13] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32" };
 	return argmeta[metadata];
 }
 
@@ -189,6 +192,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			{ Variant::PACKED_VECTOR2_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_VECTOR4_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::VARIANT_MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
 		};
 
@@ -230,6 +234,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		static_assert(type_size_array[Variant::PACKED_VECTOR2_ARRAY][sizeof(void *)] == sizeof(PackedVector2Array), "Size of PackedVector2Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
+		static_assert(type_size_array[Variant::PACKED_VECTOR4_ARRAY][sizeof(void *)] == sizeof(PackedVector4Array), "Size of PackedVector4Array mismatch");
 		static_assert(type_size_array[Variant::VARIANT_MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
 
 		Array core_type_sizes;
@@ -1012,18 +1017,31 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
 						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
+						d2["is_required"] = (F.flags & METHOD_FLAG_VIRTUAL_REQUIRED) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
 						bool has_return = mi.return_val.type != Variant::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
-						Array arguments;
-						for (int i = (has_return ? -1 : 0); i < mi.arguments.size(); i++) {
-							PropertyInfo pinfo = i == -1 ? mi.return_val : mi.arguments[i];
+						if (has_return) {
+							PropertyInfo pinfo = mi.return_val;
 							Dictionary d3;
 
-							if (i >= 0) {
-								d3["name"] = pinfo.name;
+							d3["type"] = get_property_info_type_name(pinfo);
+
+							if (mi.get_argument_meta(-1) > 0) {
+								d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)mi.get_argument_meta(-1));
 							}
+
+							d2["return_value"] = d3;
+						}
+
+						Array arguments;
+						int i = 0;
+						for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
+							const PropertyInfo &pinfo = *itr;
+							Dictionary d3;
+
+							d3["name"] = pinfo.name;
 
 							d3["type"] = get_property_info_type_name(pinfo);
 
@@ -1031,11 +1049,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 								d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)mi.get_argument_meta(i));
 							}
 
-							if (i == -1) {
-								d2["return_value"] = d3;
-							} else {
-								arguments.push_back(d3);
-							}
+							arguments.push_back(d3);
 						}
 
 						if (arguments.size()) {
@@ -1149,10 +1163,11 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 					Array arguments;
 
-					for (int i = 0; i < F.arguments.size(); i++) {
+					int i = 0;
+					for (List<PropertyInfo>::ConstIterator itr = F.arguments.begin(); itr != F.arguments.end(); ++itr, ++i) {
 						Dictionary d3;
-						d3["name"] = F.arguments[i].name;
-						d3["type"] = get_property_info_type_name(F.arguments[i]);
+						d3["name"] = itr->name;
+						d3["type"] = get_property_info_type_name(*itr);
 						if (F.get_argument_meta(i) > 0) {
 							d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)F.get_argument_meta(i));
 						}
@@ -1190,7 +1205,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (F.name.begins_with("_")) {
 						continue; //hidden property
 					}
-					if (F.name.find("/") >= 0) {
+					if (F.name.contains("/")) {
 						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 						continue;
 					}

@@ -23,6 +23,7 @@
 #ifndef _TVG_RENDER_H_
 #define _TVG_RENDER_H_
 
+#include <math.h>
 #include "tvgCommon.h"
 #include "tvgArray.h"
 #include "tvgLock.h"
@@ -85,66 +86,29 @@ struct Compositor
     uint8_t        opacity;
 };
 
-struct RenderMesh
+struct Vertex
 {
-    Polygon* triangles = nullptr;
-    uint32_t triangleCnt = 0;
+   Point pt;
+   Point uv;
+};
 
-    ~RenderMesh()
-    {
-        free(triangles);
-    }
+struct Polygon
+{
+   Vertex vertex[3];
 };
 
 struct RenderRegion
 {
     int32_t x, y, w, h;
 
-    void intersect(const RenderRegion& rhs)
+    void intersect(const RenderRegion& rhs);
+    void add(const RenderRegion& rhs);
+
+    bool operator==(const RenderRegion& rhs) const
     {
-        auto x1 = x + w;
-        auto y1 = y + h;
-        auto x2 = rhs.x + rhs.w;
-        auto y2 = rhs.y + rhs.h;
-
-        x = (x > rhs.x) ? x : rhs.x;
-        y = (y > rhs.y) ? y : rhs.y;
-        w = ((x1 < x2) ? x1 : x2) - x;
-        h = ((y1 < y2) ? y1 : y2) - y;
-
-        if (w < 0) w = 0;
-        if (h < 0) h = 0;
+        if (x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h) return true;
+        return false;
     }
-
-    void add(const RenderRegion& rhs)
-    {
-        if (rhs.x < x) {
-            w += (x - rhs.x);
-            x = rhs.x;
-        }
-        if (rhs.y < y) {
-            h += (y - rhs.y);
-            y = rhs.y;
-        }
-        if (rhs.x + rhs.w > x + w) w = (rhs.x + rhs.w) - x;
-        if (rhs.y + rhs.h > y + h) h = (rhs.y + rhs.h) - y;
-    }
-};
-
-struct RenderTransform
-{
-    Matrix m;             //3x3 Matrix Elements
-    float x = 0.0f;
-    float y = 0.0f;
-    float degree = 0.0f;  //rotation degree
-    float scale = 1.0f;   //scale factor
-    bool overriding = false;  //user transform?
-
-    void update();
-    void override(const Matrix& m);
-
-    RenderTransform() {}
-    RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs);
 };
 
 struct RenderStroke
@@ -163,7 +127,59 @@ struct RenderStroke
     struct {
         float begin = 0.0f;
         float end = 1.0f;
+        bool simultaneous = true;
     } trim;
+
+    void operator=(const RenderStroke& rhs)
+    {
+        width = rhs.width;
+
+        memcpy(color, rhs.color, sizeof(color));
+
+        delete(fill);
+        if (rhs.fill) fill = rhs.fill->duplicate();
+        else fill = nullptr;
+
+        free(dashPattern);
+        if (rhs.dashCnt > 0) {
+            dashPattern = static_cast<float*>(malloc(sizeof(float) * rhs.dashCnt));
+            memcpy(dashPattern, rhs.dashPattern, sizeof(float) * rhs.dashCnt);
+        } else {
+            dashPattern = nullptr;
+        }
+        dashCnt = rhs.dashCnt;
+        miterlimit = rhs.miterlimit;
+        cap = rhs.cap;
+        join = rhs.join;
+        strokeFirst = rhs.strokeFirst;
+        trim = rhs.trim;
+    }
+
+    bool strokeTrim(float& begin, float& end) const
+    {
+        begin = trim.begin;
+        end = trim.end;
+
+        if (fabsf(end - begin) >= 1.0f) {
+            begin = 0.0f;
+            end = 1.0f;
+            return false;
+        }
+
+        auto loop = true;
+
+        if (begin > 1.0f && end > 1.0f) loop = false;
+        if (begin < 0.0f && end < 0.0f) loop = false;
+        if (begin >= 0.0f && begin <= 1.0f && end >= 0.0f  && end <= 1.0f) loop = false;
+
+        if (begin > 1.0f) begin -= 1.0f;
+        if (begin < 0.0f) begin += 1.0f;
+        if (end > 1.0f) end -= 1.0f;
+        if (end < 0.0f) end += 1.0f;
+
+        if ((loop && begin < end) || (!loop && begin > end)) std::swap(begin, end);
+        return true;
+    }
 
     ~RenderStroke()
     {
@@ -209,7 +225,7 @@ struct RenderShape
     {
         if (!stroke) return false;
         if (stroke->trim.begin == 0.0f && stroke->trim.end == 1.0f) return false;
-        if (stroke->trim.begin == 1.0f && stroke->trim.end == 0.0f) return false;
+        if (fabsf(stroke->trim.end - stroke->trim.begin) >= 1.0f) return false;
         return true;
     }
 
@@ -266,22 +282,12 @@ private:
     Key key;
 
 public:
-    uint32_t ref()
-    {
-        ScopedLock lock(key);
-        return (++refCnt);
-    }
-
-    uint32_t unref()
-    {
-        ScopedLock lock(key);
-        return (--refCnt);
-    }
+    uint32_t ref();
+    uint32_t unref();
 
     virtual ~RenderMethod() {}
-    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
-    virtual RenderData prepare(const Array<RenderData>& scene, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
-    virtual RenderData prepare(Surface* surface, const RenderMesh* mesh, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
+    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
+    virtual RenderData prepare(Surface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
     virtual bool preRender() = 0;
     virtual bool renderShape(RenderData data) = 0;
     virtual bool renderImage(RenderData data) = 0;
@@ -292,6 +298,7 @@ public:
     virtual bool viewport(const RenderRegion& vp) = 0;
     virtual bool blend(BlendMethod method) = 0;
     virtual ColorSpace colorSpace() = 0;
+    virtual const Surface* mainSurface() = 0;
 
     virtual bool clear() = 0;
     virtual bool sync() = 0;
@@ -314,6 +321,8 @@ static inline bool MASK_REGION_MERGING(CompositeMethod method)
         //these might expand the rendering region
         case CompositeMethod::AddMask:
         case CompositeMethod::DifferenceMask:
+        case CompositeMethod::LightenMask:
+        case CompositeMethod::DarkenMask:
             return true;
         default:
             TVGERR("RENDERER", "Unsupported Composite Method! = %d", (int)method);
@@ -347,6 +356,8 @@ static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod* renderer, Composi
         case CompositeMethod::DifferenceMask:
         case CompositeMethod::SubtractMask:
         case CompositeMethod::IntersectMask:
+        case CompositeMethod::LightenMask:
+        case CompositeMethod::DarkenMask:
             return ColorSpace::Grayscale8;
         //TODO: Optimize Luma/InvLuma colorspace to Grayscale8
         case CompositeMethod::LumaMask:

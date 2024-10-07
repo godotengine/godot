@@ -105,6 +105,13 @@ class ProjectExportDialog : public ConfirmationDialog {
 	AcceptDialog *export_all_dialog = nullptr;
 
 	RBSet<String> feature_set;
+
+	Tree *patches = nullptr;
+	int patch_index = -1;
+	EditorFileDialog *patch_dialog = nullptr;
+	ConfirmationDialog *patch_erase = nullptr;
+	Button *patch_add_btn = nullptr;
+
 	LineEdit *custom_features = nullptr;
 	RichTextLabel *custom_feature_display = nullptr;
 
@@ -147,6 +154,12 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _check_propagated_to_item(Object *p_obj, int column);
 	void _tree_popup_edited(bool p_arrow_clicked);
 	void _set_file_export_mode(int p_id);
+
+	void _patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
+	void _patch_tree_item_edited();
+	void _patch_file_selected(const String &p_path);
+	void _patch_delete_confirmed();
+	void _patch_add_pack_pressed();
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
