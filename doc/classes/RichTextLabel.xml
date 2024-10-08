@@ -681,6 +681,9 @@
 		<member name="threaded" type="bool" setter="set_threaded" getter="is_threaded" default="false">
 			If [code]true[/code], text processing is done in a background thread.
 		</member>
+		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="0">
+			Controls the text's vertical alignment. Supports top, center, bottom, and fill. Set it to one of the [enum VerticalAlignment] constants.
+		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The number of characters to display. If set to [code]-1[/code], all characters are displayed. This can be useful when animating the text appearing in a dialog box.
 			[b]Note:[/b] Setting this property updates [member visible_ratio] accordingly.

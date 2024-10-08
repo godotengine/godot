@@ -781,7 +781,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 	}
 }
 
-int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
+int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
 	ERR_FAIL_NULL_V(p_frame, 0);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), 0);
 
@@ -825,7 +825,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	// Draw text.
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
 		if (line > 0) {
-			off.y += theme_cache.line_separation;
+			off.y += (theme_cache.line_separation + p_vsep);
 		}
 
 		if (p_ofs.y + off.y >= ctrl_size.height - v_limit) {
@@ -998,7 +998,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									}
 
 									for (int j = 0; j < (int)frame->lines.size(); j++) {
-										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
+										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
 									}
 									idx++;
 								}
@@ -1433,11 +1433,46 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	int to_line = main->first_invalid_line.load();
 	int from_line = _find_first_line(0, to_line, vofs);
 
-	Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
+	int total_height = INT32_MAX;
+	if (to_line && vertical_alignment != VERTICAL_ALIGNMENT_TOP) {
+		MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
+		if (theme_cache.line_separation < 0) {
+			// Do not apply to the last line to avoid cutting text.
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+		} else {
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+		}
+	}
+	float vbegin = 0, vsep = 0;
+	if (text_rect.size.y > total_height) {
+		switch (vertical_alignment) {
+			case VERTICAL_ALIGNMENT_TOP: {
+				// Nothing.
+			} break;
+			case VERTICAL_ALIGNMENT_CENTER: {
+				vbegin = (text_rect.size.y - total_height) / 2;
+			} break;
+			case VERTICAL_ALIGNMENT_BOTTOM: {
+				vbegin = text_rect.size.y - total_height;
+			} break;
+			case VERTICAL_ALIGNMENT_FILL: {
+				int lines = 0;
+				for (int l = from_line; l < to_line; l++) {
+					MutexLock lock(main->lines[l].text_buf->get_mutex());
+					lines += main->lines[l].text_buf->get_line_count();
+				}
+				if (lines > 1) {
+					vsep = (text_rect.size.y - total_height) / (lines - 1);
+				}
+			} break;
+		}
+	}
+
+	Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
 	while (ofs.y < size.height && from_line < to_line) {
 		MutexLock lock(main->lines[from_line].text_buf->get_mutex());
-		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, p_click, r_click_frame, r_click_line, r_click_item, r_click_char, false, p_meta);
-		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * theme_cache.line_separation;
+		_find_click_in_line(p_frame, from_line, ofs, text_rect.size.x, vsep, p_click, r_click_frame, r_click_line, r_click_item, r_click_char, false, p_meta);
+		ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep);
 		if (((r_click_item != nullptr) && ((*r_click_item) != nullptr)) || ((r_click_frame != nullptr) && ((*r_click_frame) != nullptr))) {
 			if (r_outside != nullptr) {
 				*r_outside = false;
@@ -1448,7 +1483,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	}
 }
 
-float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table, bool p_meta) {
+float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table, bool p_meta) {
 	Vector2 off;
 
 	bool line_clicked = false;
@@ -1553,7 +1588,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									}
 									if (crect.has_point(p_click)) {
 										for (int j = 0; j < (int)frame->lines.size(); j++) {
-											_find_click_in_line(frame, j, rect.position + Vector2(frame->padding.position.x, frame->lines[j].offset.y), rect.size.x, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
+											_find_click_in_line(frame, j, rect.position + Vector2(frame->padding.position.x, frame->lines[j].offset.y), rect.size.x, 0, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
@@ -1654,7 +1689,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 			return table_offy;
 		}
 
-		off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation;
+		off.y += TS->shaped_text_get_descent(rid) + theme_cache.line_separation + p_vsep;
 	}
 
 	// Text line hit.
@@ -1890,22 +1925,58 @@ void RichTextLabel::_notification(int p_what) {
 			int to_line = main->first_invalid_line.load();
 			int from_line = _find_first_line(0, to_line, vofs);
 
+			// Bottom margin for text clipping.
+			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
+
+			int total_height = INT32_MAX;
+			if (to_line && vertical_alignment != VERTICAL_ALIGNMENT_TOP) {
+				MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
+				if (theme_cache.line_separation < 0) {
+					// Do not apply to the last line to avoid cutting text.
+					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+				} else {
+					total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+				}
+			}
+			float vbegin = 0, vsep = 0;
+			if (text_rect.size.y > total_height) {
+				switch (vertical_alignment) {
+					case VERTICAL_ALIGNMENT_TOP: {
+						// Nothing.
+					} break;
+					case VERTICAL_ALIGNMENT_CENTER: {
+						vbegin = (text_rect.size.y - total_height) / 2;
+					} break;
+					case VERTICAL_ALIGNMENT_BOTTOM: {
+						vbegin = text_rect.size.y - total_height;
+					} break;
+					case VERTICAL_ALIGNMENT_FILL: {
+						int lines = 0;
+						for (int l = from_line; l < to_line; l++) {
+							MutexLock lock(main->lines[l].text_buf->get_mutex());
+							lines += main->lines[l].text_buf->get_line_count();
+						}
+						if (lines > 1) {
+							vsep = (text_rect.size.y - total_height) / (lines - 1);
+						}
+					} break;
+				}
+			}
+
 			Point2 shadow_ofs(theme_cache.shadow_offset_x, theme_cache.shadow_offset_y);
 
 			visible_paragraph_count = 0;
 			visible_line_count = 0;
 
-			// Bottom margin for text clipping.
-			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
 			// New cache draw.
-			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
+			Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
 			int processed_glyphs = 0;
 			while (ofs.y < size.height - v_limit && from_line < to_line) {
 				MutexLock lock(main->lines[from_line].text_buf->get_mutex());
 
 				visible_paragraph_count++;
-				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, theme_cache.default_color, theme_cache.outline_size, theme_cache.font_outline_color, theme_cache.font_shadow_color, theme_cache.shadow_outline_size, shadow_ofs, processed_glyphs);
-				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * theme_cache.line_separation;
+				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, vsep, theme_cache.default_color, theme_cache.outline_size, theme_cache.font_outline_color, theme_cache.font_shadow_color, theme_cache.shadow_outline_size, shadow_ofs, processed_glyphs);
+				ofs.y += main->lines[from_line].text_buf->get_size().y + main->lines[from_line].text_buf->get_line_count() * (theme_cache.line_separation + vsep);
 				from_line++;
 			}
 		} break;
@@ -5931,6 +6002,21 @@ HorizontalAlignment RichTextLabel::get_horizontal_alignment() const {
 	return default_alignment;
 }
 
+void RichTextLabel::set_vertical_alignment(VerticalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 4);
+
+	if (vertical_alignment == p_alignment) {
+		return;
+	}
+
+	vertical_alignment = p_alignment;
+	queue_redraw();
+}
+
+VerticalAlignment RichTextLabel::get_vertical_alignment() const {
+	return vertical_alignment;
+}
+
 void RichTextLabel::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	_stop_thread();
 
@@ -6183,6 +6269,8 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &RichTextLabel::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &RichTextLabel::get_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_vertical_alignment", "alignment"), &RichTextLabel::set_vertical_alignment);
+	ClassDB::bind_method(D_METHOD("get_vertical_alignment"), &RichTextLabel::get_vertical_alignment);
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &RichTextLabel::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &RichTextLabel::get_justification_flags);
 	ClassDB::bind_method(D_METHOD("set_tab_stops", "tab_stops"), &RichTextLabel::set_tab_stops);
@@ -6309,6 +6397,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
 
