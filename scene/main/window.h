@@ -235,7 +235,7 @@ private:
 
 	Ref<Shortcut> debugger_stop_shortcut;
 
-	static int root_layout_direction;
+	static ResolvedLayoutDirection root_layout_direction;
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
@@ -264,7 +264,7 @@ public:
 		NOTIFICATION_THEME_CHANGED = 32
 	};
 
-	static void set_root_layout_direction(int p_root_dir);
+	static void set_root_layout_direction(ResolvedLayoutDirection p_root_dir);
 
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -397,6 +397,7 @@ public:
 
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
+	ResolvedLayoutDirection get_resolved_layout_direction() const;
 	bool is_layout_rtl() const;
 
 #ifndef DISABLE_DEPRECATED

@@ -1148,7 +1148,7 @@ ProjectManager::ProjectManager() {
 
 	// Initialize UI.
 	{
-		int pm_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
+		const ResolvedLayoutDirection pm_root_dir = (ResolvedLayoutDirection)EDITOR_GET("interface/editor/ui_layout_direction").operator int();
 		Control::set_root_layout_direction(pm_root_dir);
 		Window::set_root_layout_direction(pm_root_dir);
 
