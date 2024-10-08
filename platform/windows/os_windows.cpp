@@ -2004,6 +2004,10 @@ String OS_Windows::get_system_ca_certificates() {
 	return certs;
 }
 
+String OS_Windows::get_default_android_sdk_path() const {
+	return OS::get_singleton()->get_environment("LOCALAPPDATA") + "\\Android\\Sdk";
+}
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 

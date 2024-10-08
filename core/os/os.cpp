@@ -700,6 +700,10 @@ void OS::benchmark_dump() {
 #endif
 }
 
+String OS::get_default_android_sdk_path() const {
+	return String();
+}
+
 OS::OS() {
 	singleton = this;
 

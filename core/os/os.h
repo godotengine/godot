@@ -345,6 +345,9 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+	// TODO: Create similar method for Java SDK
+	virtual String get_default_android_sdk_path() const;
+
 	OS();
 	virtual ~OS();
 };
