@@ -301,6 +301,66 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 	if (p_option == "nodes/use_node_type_suffixes" && p_options.has("nodes/use_name_suffixes")) {
 		return p_options["nodes/use_name_suffixes"];
 	}
+
+	const bool generate_physics =
+			p_options.has("meshes/generate_collisions") &&
+			p_options["meshes/generate_collisions"].operator int() > 0;
+
+	if (p_option.contains("meshes/physics/")) {
+		// Show if need to generate collisions.
+		return generate_physics;
+	}
+
+	if (p_option.contains("meshes/decomposition/")) {
+		// Show if need to generate collisions.
+		if (generate_physics &&
+				// Show if convex is enabled.
+				p_options["meshes/physics/shape_type"] == Variant(SHAPE_TYPE_DECOMPOSE_CONVEX)) {
+			if (p_option == "meshes/decomposition/advanced") {
+				return true;
+			}
+
+			const bool decomposition_advanced =
+					p_options.has("meshes/decomposition/advanced") &&
+					p_options["meshes/decomposition/advanced"].operator bool();
+
+			if (p_option == "meshes/decomposition/precision") {
+				return !decomposition_advanced;
+			} else {
+				return decomposition_advanced;
+			}
+		}
+
+		return false;
+	}
+
+	if (p_option == "meshes/primitive/position" || p_option == "meshes/primitive/rotation") {
+		const ShapeType physics_shape = (ShapeType)p_options["meshes/physics/shape_type"].operator int();
+		return generate_physics &&
+				physics_shape >= SHAPE_TYPE_BOX && physics_shape < SHAPE_TYPE_AUTOMATIC;
+	}
+
+	if (p_option == "meshes/primitive/size") {
+		const ShapeType physics_shape = (ShapeType)p_options["meshes/physics/shape_type"].operator int();
+		return generate_physics &&
+				physics_shape == SHAPE_TYPE_BOX;
+	}
+
+	if (p_option == "meshes/primitive/radius") {
+		const ShapeType physics_shape = (ShapeType)p_options["meshes/physics/shape_type"].operator int();
+		return generate_physics &&
+				(physics_shape == SHAPE_TYPE_SPHERE ||
+						physics_shape == SHAPE_TYPE_CYLINDER ||
+						physics_shape == SHAPE_TYPE_CAPSULE);
+	}
+
+	if (p_option == "meshes/primitive/height") {
+		const ShapeType physics_shape = (ShapeType)p_options["meshes/physics/shape_type"].operator int();
+		return generate_physics &&
+				(physics_shape == SHAPE_TYPE_CYLINDER ||
+						physics_shape == SHAPE_TYPE_CAPSULE);
+	}
+
 	if (p_option == "meshes/lightmap_texel_size" && int(p_options["meshes/light_baking"]) != 2) {
 		// Only display the lightmap texel size import option when using the Static Lightmaps light baking mode.
 		return false;
@@ -1414,7 +1474,7 @@ Node *ResourceImporterScene::_replace_node_with_type_and_script(Node *p_node, St
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options, int p_default_collisions) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options, CollisionMode p_default_collisions) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale, p_source_file, p_options, p_default_collisions);
@@ -2305,7 +2365,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			if (p_option == "primitive/position" || p_option == "primitive/rotation") {
 				const ShapeType physics_shape = (ShapeType)p_options["physics/shape_type"].operator int();
 				return generate_physics &&
-						physics_shape >= SHAPE_TYPE_BOX;
+						physics_shape >= SHAPE_TYPE_BOX && physics_shape < SHAPE_TYPE_AUTOMATIC;
 			}
 
 			if (p_option == "primitive/size") {
@@ -2529,6 +2589,40 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/generate_collisions", PROPERTY_HINT_ENUM, "Disabled,Static", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+
+	//
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule,Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "meshes/physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
+
+	// Decomposition
+	Ref<MeshConvexDecompositionSettings> decomposition_default = Ref<MeshConvexDecompositionSettings>();
+	decomposition_default.instantiate();
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/decomposition/advanced", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/precision", PROPERTY_HINT_RANGE, "1,10,1"), 5));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/decomposition/max_concavity", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT), decomposition_default->get_max_concavity()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/decomposition/symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT), decomposition_default->get_symmetry_planes_clipping_bias()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/decomposition/revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.001", PROPERTY_USAGE_DEFAULT), decomposition_default->get_revolution_axes_clipping_bias()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/decomposition/min_volume_per_convex_hull", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), decomposition_default->get_min_volume_per_convex_hull()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/resolution", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), decomposition_default->get_resolution()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/max_num_vertices_per_convex_hull", PROPERTY_HINT_RANGE, "5,512,1", PROPERTY_USAGE_DEFAULT), decomposition_default->get_max_num_vertices_per_convex_hull()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT), decomposition_default->get_plane_downsampling()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/convexhull_downsampling", PROPERTY_HINT_RANGE, "1,16,1", PROPERTY_USAGE_DEFAULT), decomposition_default->get_convex_hull_downsampling()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/decomposition/normalize_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), decomposition_default->get_normalize_mesh()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron", PROPERTY_USAGE_DEFAULT), static_cast<int>(decomposition_default->get_mode())));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/decomposition/convexhull_approximation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), decomposition_default->get_convex_hull_approximation()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/decomposition/max_convex_hulls", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT), decomposition_default->get_max_convex_hulls()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/decomposition/project_hull_vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), decomposition_default->get_project_hull_vertices()));
+
+	// Primitives: Box, Sphere, Cylinder, Capsule.
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "meshes/primitive/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), Vector3(2.0, 2.0, 2.0)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/primitive/height", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/primitive/radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "meshes/primitive/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), Vector3()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "meshes/primitive/rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), Vector3()));
+	//
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static,Static Lightmaps,Dynamic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
@@ -3210,9 +3304,9 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		mesh_data = subresources["meshes"];
 	}
 
-	int default_collisions = COLLISION_DISABLED;
+	CollisionMode default_collisions = COLLISION_DISABLED;
 	if (p_options.has(SNAME("meshes/generate_collisions"))) {
-		default_collisions = (int)p_options["meshes/generate_collisions"];
+		default_collisions = (CollisionMode)p_options["meshes/generate_collisions"];
 	}
 
 	float fps = 30;
