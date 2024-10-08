@@ -83,6 +83,8 @@
 		<member name="fog_aerial_perspective" type="float" setter="set_fog_aerial_perspective" getter="get_fog_aerial_perspective" default="0.0">
 			If set above [code]0.0[/code] (exclusive), blends between the fog's color and the color of the background [Sky]. This has a small performance cost when set above [code]0.0[/code]. Must have [member background_mode] set to [constant BG_SKY].
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
+			[b]Note:[/b] If the fog mode is [constant FOG_MODE_DEPTH], the sky radiance map will be rendered in its sharpest form available to allow for open world fog fading. If the fog mode is [constant FOG_MODE_EXPONENTIAL], a blurred version of the radiance map is used instead.
+			[b]Note:[/b] Aerial perspective is only effective when using the Forward+ or Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.01">
 			The fog density to be used. This is demonstrated in different ways depending on the [member fog_mode] mode chosen:
