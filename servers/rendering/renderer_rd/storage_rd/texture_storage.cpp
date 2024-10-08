@@ -172,9 +172,8 @@ TextureStorage::TextureStorage() {
 				ptr[i] = Math::make_half_float(1.0f);
 			}
 
-			Vector<Vector<uint8_t>> vpv;
-			vpv.push_back(sv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH] = RD::get_singleton()->texture_create(tf, RD::TextureView(), vpv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH] = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->texture_update(default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH], 0, sv);
 		}
 
 		for (int i = 0; i < 16; i++) {
@@ -447,9 +446,8 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			Vector<Vector<uint8_t>> vsv;
-			vsv.push_back(sv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_DEPTH] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vsv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_DEPTH] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+			RD::get_singleton()->texture_update(default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_DEPTH], 0, sv);
 		}
 	}
 
@@ -564,10 +562,6 @@ bool TextureStorage::free(RID p_rid) {
 	}
 
 	return false;
-}
-
-bool TextureStorage::can_create_resources_async() const {
-	return true;
 }
 
 /* Canvas Texture API */
@@ -3237,13 +3231,13 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	if (rt->size.width == 0 || rt->size.height == 0) {
 		return;
 	}
+
+	rt->color_format = render_target_get_color_format(rt->use_hdr, false);
+	rt->color_format_srgb = render_target_get_color_format(rt->use_hdr, true);
+
 	if (rt->use_hdr) {
-		rt->color_format = RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
-		rt->color_format_srgb = rt->color_format;
 		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBAH : Image::FORMAT_RGBH;
 	} else {
-		rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
 		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 	}
 
@@ -3262,8 +3256,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			rd_color_attachment_format.texture_type = RD::TEXTURE_TYPE_2D;
 		}
 		rd_color_attachment_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_color_attachment_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		rd_color_attachment_format.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT; // FIXME we need this only when FSR is enabled
+		rd_color_attachment_format.usage_bits = render_target_get_color_usage_bits(false);
 		rd_color_attachment_format.shareable_formats.push_back(rt->color_format);
 		rd_color_attachment_format.shareable_formats.push_back(rt->color_format_srgb);
 		if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -3285,7 +3278,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			RD::TEXTURE_SAMPLES_8,
 		};
 		rd_color_multisample_format.samples = texture_samples[rt->msaa];
-		rd_color_multisample_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		rd_color_multisample_format.usage_bits = render_target_get_color_usage_bits(true);
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
@@ -4174,4 +4167,21 @@ RID TextureStorage::render_target_get_vrs_texture(RID p_render_target) const {
 	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->vrs_texture;
+}
+
+RD::DataFormat TextureStorage::render_target_get_color_format(bool p_use_hdr, bool p_srgb) {
+	if (p_use_hdr) {
+		return RendererSceneRenderRD::get_singleton()->_render_buffers_get_color_format();
+	} else {
+		return p_srgb ? RD::DATA_FORMAT_R8G8B8A8_SRGB : RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	}
+}
+
+uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
+	if (p_msaa) {
+		return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	} else {
+		// FIXME: Storage bit should only be requested when FSR is required.
+		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	}
 }

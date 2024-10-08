@@ -828,7 +828,7 @@ def get_compiler_version(env):
                     sem_ver = split[1].split(".")
                     ret["major"] = int(sem_ver[0])
                     ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2])
+                    ret["patch"] = int(sem_ver[2].split()[0])
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
