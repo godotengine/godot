@@ -68,6 +68,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	AcceptDialog *alert = nullptr;
 	CreateDialog *select_class = nullptr;
 
+	bool is_languages_list_only_attachable = true;
 	bool is_browsing_parent = false;
 	String path_error;
 	String template_inactive_message;
@@ -124,6 +125,7 @@ protected:
 public:
 	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
+	void set_languages_list(const bool p_only_attachable);
 	ScriptCreateDialog();
 };
 

@@ -660,7 +660,8 @@ void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const A
 			append(p_type.native_type);
 		} break;
 		case GDScriptDataType::SCRIPT:
-		case GDScriptDataType::GDSCRIPT: {
+		case GDScriptDataType::GDSCRIPT:
+		case GDScriptDataType::GDTRAIT: {
 			const Variant &script = p_type.script_type;
 			append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_SCRIPT);
 			append(p_target);
@@ -930,7 +931,8 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			append(class_idx);
 		} break;
 		case GDScriptDataType::SCRIPT:
-		case GDScriptDataType::GDSCRIPT: {
+		case GDScriptDataType::GDSCRIPT:
+		case GDScriptDataType::GDTRAIT: {
 			Variant script = p_target.type.script_type;
 			int idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
