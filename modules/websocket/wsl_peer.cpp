@@ -564,6 +564,10 @@ Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
 ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len, int flags, void *user_data) {
 	WSLPeer *peer = (WSLPeer *)user_data;
 	Ref<StreamPeer> conn = peer->connection;
+	if (peer->in_buffer.space_left() < peer->min_buffer_free_space) {
+		return WSLAY_ERR_NOMEM;
+	}
+
 	if (conn.is_null()) {
 		wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
 		return -1;

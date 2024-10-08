@@ -72,6 +72,7 @@ protected:
 	int outbound_buffer_size = DEFAULT_BUFFER_SIZE;
 	int inbound_buffer_size = DEFAULT_BUFFER_SIZE;
 	int max_queued_packets = 2048;
+	int min_buffer_free_space = 4096;
 
 public:
 	static WebSocketPeer *create(bool p_notify_postinitialize = true) {
@@ -116,6 +117,9 @@ public:
 
 	void set_max_queued_packets(int p_max_queued_packets);
 	int get_max_queued_packets() const;
+
+	void set_min_buffer_free_space(int p_min_buffer_free_space);
+	int get_min_buffer_free_space() const;
 
 	WebSocketPeer();
 	~WebSocketPeer();

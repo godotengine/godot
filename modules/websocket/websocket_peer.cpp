@@ -70,6 +70,9 @@ void WebSocketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_queued_packets", "buffer_size"), &WebSocketPeer::set_max_queued_packets);
 	ClassDB::bind_method(D_METHOD("get_max_queued_packets"), &WebSocketPeer::get_max_queued_packets);
 
+	ClassDB::bind_method(D_METHOD("set_min_buffer_free_space", "min_buffer_free_space"), &WebSocketPeer::set_min_buffer_free_space);
+	ClassDB::bind_method(D_METHOD("get_min_buffer_free_space"), &WebSocketPeer::get_min_buffer_free_space);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "supported_protocols"), "set_supported_protocols", "get_supported_protocols");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "handshake_headers"), "set_handshake_headers", "get_handshake_headers");
 
@@ -77,6 +80,7 @@ void WebSocketPeer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outbound_buffer_size"), "set_outbound_buffer_size", "get_outbound_buffer_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_queued_packets"), "set_max_queued_packets", "get_max_queued_packets");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "min_buffer_free_space"), "set_min_buffer_free_space", "get_min_buffer_free_space");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);
@@ -150,4 +154,12 @@ void WebSocketPeer::set_max_queued_packets(int p_max_queued_packets) {
 
 int WebSocketPeer::get_max_queued_packets() const {
 	return max_queued_packets;
+}
+
+void WebSocketPeer::set_min_buffer_free_space(int p_min_buffer_free_space) {
+	min_buffer_free_space = p_min_buffer_free_space;
+}
+
+int WebSocketPeer::get_min_buffer_free_space() const {
+	return min_buffer_free_space;
 }
