@@ -31,6 +31,7 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -2965,7 +2966,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 		if (p_inspect) {
 			if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
 				// If the resource belongs to another (non-imported) scene, edit it in that scene instead.
-				if (!FileAccess::exists(parent + ".import")) {
+				if (!FileAccess::exists(parent + ".import") || !ResourceFormatImporter::get_singleton()->is_import_read_only(parent)) {
 					callable_mp(EditorNode::get_singleton(), &EditorNode::edit_foreign_resource).call_deferred(p_resource);
 					return;
 				}
