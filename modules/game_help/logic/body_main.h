@@ -524,7 +524,7 @@ public:
     bool get_editor_is_skeleton_human() {
         return is_skeleton_human;
     }
-	static Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path, bool is_skeleton_human);
+	Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path, bool is_skeleton_human);
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
 
     // 生成动画资产帮助类
@@ -570,6 +570,13 @@ public:
         play_animation = p_play_animation;
         update_bone_visble();
     }
+
+	void set_play_animayion_speed(float p_speed) {
+		editor_animation_speed = p_speed;
+	}
+	float get_play_animayion_speed() {
+		return editor_animation_speed;
+	}
 
     Ref<Animation> get_play_animation()
     {

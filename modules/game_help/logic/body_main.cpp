@@ -430,7 +430,10 @@ void CharacterBodyMain::_bind_methods()
     
     ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterBodyMain::set_play_animation);
     ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
+    ClassDB::bind_method(D_METHOD("set_play_animayion_speed", "speed"), &CharacterBodyMain::set_play_animayion_speed);
+    ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animayion_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
 
 
@@ -706,7 +709,7 @@ void reset_owenr(Node* node, Node* owenr)
 		reset_owenr(c, owenr);
 	}
 }
-Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path,bool is_skeleton_human)
+Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path,bool p_is_skeleton_human)
 {
 	if (!FileAccess::exists(mesh_path))
 	{
@@ -738,7 +741,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 
 		skeleton->set_human_bone_mapping(bone_map);
         
-        if(is_skeleton_human)
+        if(p_is_skeleton_human)
         {
             skeleton->init_human_config();
             config = skeleton->get_human_config();
@@ -753,7 +756,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map_ref->set_bone_map(bone_map);
         bone_map_ref->set_bone_names(bone_names);
         bone_map_ref->set_human_config(config);
-        if(is_skeleton_human) {
+        if(p_is_skeleton_human) {
 		    save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
         }
         else {
@@ -761,6 +764,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         }
 
 
+        editor_ref_bone_map = bone_map_ref;
 		skeleton->set_owner(nullptr);
 		reset_owenr(skeleton, skeleton);
 
@@ -769,7 +773,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		packed_scene.instantiate();
 		packed_scene->pack(skeleton);
 		packed_scene->set_name("skeleton");
-        if(is_skeleton_human) {
+        if(p_is_skeleton_human) {
 		    save_fbx_res("human_skeleton", p_group, packed_scene, ske_save_path, false);
         }
         else {
@@ -792,7 +796,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         
 		part->set_name(it->key);
 		String save_path;
-        if(is_skeleton_human) {
+        if(p_is_skeleton_human) {
 		    save_fbx_res("human_meshs", p_group, part, save_path, true);
         }
         else {
@@ -802,8 +806,8 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 	}
 	// 保存预制体
 	body_prefab->skeleton_path = ske_save_path;
-    body_prefab->set_is_human(is_skeleton_human);
-    if(is_skeleton_human) {
+    body_prefab->set_is_human(p_is_skeleton_human);
+    if(p_is_skeleton_human) {
 	    save_fbx_res("human_prefab", p_group, body_prefab, bone_map_save_path, true);
     }
     else {
@@ -941,6 +945,7 @@ void CharacterBodyMain::editor_build_animation()
 			}
             new_animation->optimize();
             new_animation->compress();
+            play_animation = new_animation;
 			String group = p_group;
 			if (p_animations.size() == 1)
 			{
