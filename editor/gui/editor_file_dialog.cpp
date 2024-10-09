@@ -1483,29 +1483,29 @@ void EditorFileDialog::_update_drives(bool p_select) {
 void EditorFileDialog::_update_icons() {
 	// Update icons.
 
-	mode_thumbnails->set_icon(theme_cache.mode_thumbnails);
-	mode_list->set_icon(theme_cache.mode_list);
+	mode_thumbnails->set_button_icon(theme_cache.mode_thumbnails);
+	mode_list->set_button_icon(theme_cache.mode_list);
 
 	if (is_layout_rtl()) {
-		dir_prev->set_icon(theme_cache.forward_folder);
-		dir_next->set_icon(theme_cache.back_folder);
+		dir_prev->set_button_icon(theme_cache.forward_folder);
+		dir_next->set_button_icon(theme_cache.back_folder);
 	} else {
-		dir_prev->set_icon(theme_cache.back_folder);
-		dir_next->set_icon(theme_cache.forward_folder);
+		dir_prev->set_button_icon(theme_cache.back_folder);
+		dir_next->set_button_icon(theme_cache.forward_folder);
 	}
-	dir_up->set_icon(theme_cache.parent_folder);
+	dir_up->set_button_icon(theme_cache.parent_folder);
 
-	refresh->set_icon(theme_cache.reload);
-	favorite->set_icon(theme_cache.favorite);
-	show_hidden->set_icon(theme_cache.toggle_hidden);
-	makedir->set_icon(theme_cache.create_folder);
+	refresh->set_button_icon(theme_cache.reload);
+	favorite->set_button_icon(theme_cache.favorite);
+	show_hidden->set_button_icon(theme_cache.toggle_hidden);
+	makedir->set_button_icon(theme_cache.create_folder);
 
 	filter_box->set_right_icon(theme_cache.filter_box);
-	file_sort_button->set_icon(theme_cache.file_sort_button);
+	file_sort_button->set_button_icon(theme_cache.file_sort_button);
 	filter_box->set_clear_button_enabled(true);
 
-	fav_up->set_icon(theme_cache.favorites_up);
-	fav_down->set_icon(theme_cache.favorites_down);
+	fav_up->set_button_icon(theme_cache.favorites_up);
+	fav_down->set_button_icon(theme_cache.favorites_down);
 }
 
 void EditorFileDialog::_favorite_selected(int p_idx) {

@@ -45,7 +45,7 @@
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
+			expand_button->set_button_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
 		} break;
 	}
 }

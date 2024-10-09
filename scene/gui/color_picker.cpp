@@ -80,10 +80,10 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			btn_pick->set_icon(theme_cache.screen_picker);
+			btn_pick->set_button_icon(theme_cache.screen_picker);
 			_update_drop_down_arrow(btn_preset->is_pressed(), btn_preset);
 			_update_drop_down_arrow(btn_recent_preset->is_pressed(), btn_recent_preset);
-			btn_add_preset->set_icon(theme_cache.add_preset);
+			btn_add_preset->set_button_icon(theme_cache.add_preset);
 
 			btn_pick->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 			btn_shape->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
@@ -116,7 +116,7 @@ void ColorPicker::_notification(int p_what) {
 			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_OKHSL_CIRCLE), theme_cache.shape_circle);
 
 			if (current_shape != SHAPE_NONE) {
-				btn_shape->set_icon(shape_popup->get_item_icon(current_shape));
+				btn_shape->set_button_icon(shape_popup->get_item_icon(current_shape));
 			}
 
 			internal_margin->begin_bulk_theme_override();
@@ -705,14 +705,14 @@ void ColorPicker::_text_type_toggled() {
 	if (text_is_constructor) {
 		text_type->set_text("");
 #ifdef TOOLS_ENABLED
-		text_type->set_icon(get_editor_theme_icon(SNAME("Script")));
+		text_type->set_button_icon(get_editor_theme_icon(SNAME("Script")));
 #endif
 
 		c_text->set_editable(false);
 		c_text->set_tooltip_text(RTR("Copy this constructor in a script."));
 	} else {
 		text_type->set_text("#");
-		text_type->set_icon(nullptr);
+		text_type->set_button_icon(nullptr);
 
 		c_text->set_editable(true);
 		c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
@@ -738,7 +738,7 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	}
 	if (p_shape != SHAPE_NONE) {
 		shape_popup->set_item_checked(p_shape, true);
-		btn_shape->set_icon(shape_popup->get_item_icon(p_shape));
+		btn_shape->set_button_icon(shape_popup->get_item_icon(p_shape));
 	}
 
 	current_shape = p_shape;
@@ -794,9 +794,9 @@ void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_
 
 void ColorPicker::_update_drop_down_arrow(const bool &p_is_btn_pressed, Button *p_btn_preset) {
 	if (p_is_btn_pressed) {
-		p_btn_preset->set_icon(theme_cache.expanded_arrow);
+		p_btn_preset->set_button_icon(theme_cache.expanded_arrow);
 	} else {
-		p_btn_preset->set_icon(theme_cache.folded_arrow);
+		p_btn_preset->set_button_icon(theme_cache.folded_arrow);
 	}
 }
 
