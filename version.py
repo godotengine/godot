@@ -1,9 +1,9 @@
-short_name = "godot"
-name = "Godot Engine"
+short_name = "maodot"
+name = "Maodot Engine"
 major = 4
 minor = 3
 patch = 0
-status = "stable"
+status = "dev"
 module_config = ""
-website = "https://godotengine.org"
+website = "https://github.com/SleeeepyZhou/Maodot"
 docs = "4.3"
