@@ -111,11 +111,11 @@ void EditorToaster::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
-				main_button->set_icon(get_editor_theme_icon(SNAME("Notification")));
+				main_button->set_button_icon(get_editor_theme_icon(SNAME("Notification")));
 			} else {
-				main_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
+				main_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 			}
-			disable_notifications_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
+			disable_notifications_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 
 			// Styleboxes background.
 			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)));
@@ -311,9 +311,9 @@ void EditorToaster::_draw_progress(Control *panel) {
 void EditorToaster::_set_notifications_enabled(bool p_enabled) {
 	vbox_container->set_visible(p_enabled);
 	if (p_enabled) {
-		main_button->set_icon(get_editor_theme_icon(SNAME("Notification")));
+		main_button->set_button_icon(get_editor_theme_icon(SNAME("Notification")));
 	} else {
-		main_button->set_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
+		main_button->set_button_icon(get_editor_theme_icon(SNAME("NotificationDisabled")));
 	}
 	_update_disable_notifications_button();
 }
@@ -375,7 +375,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	if (p_time > 0.0) {
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
-		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+		close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::close).bind(panel));
 		close_button->connect(SceneStringName(theme_changed), callable_mp(this, &EditorToaster::_close_button_theme_changed).bind(close_button));
 		hbox_container->add_child(close_button);
@@ -491,7 +491,7 @@ void EditorToaster::close(Control *p_control) {
 void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
 	Button *close_button = Object::cast_to<Button>(p_close_button);
 	if (close_button) {
-		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+		close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 	}
 }
 
