@@ -19,7 +19,7 @@
 			Size of the text.
 		</member>
 		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="3.0">
-			Vertical space between lines when the text is multiline.
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</member>
 		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color(1, 1, 1, 1)">
 			The color of the outline.

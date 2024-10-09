@@ -122,7 +122,7 @@
 			[Color] of the text's shadow effect.
 		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="3">
-			Vertical space between lines in multiline [Label].
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			Text outline size.

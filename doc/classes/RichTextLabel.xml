@@ -810,7 +810,7 @@
 			The default background color for odd rows.
 		</theme_item>
 		<theme_item name="line_separation" data_type="constant" type="int" default="0">
-			The vertical space between lines.
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
