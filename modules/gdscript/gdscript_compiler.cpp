@@ -1878,7 +1878,7 @@ void GDScriptCompiler::_clear_block_locals(CodeGen &codegen, const List<GDScript
 	}
 }
 
-Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals, bool p_clear_locals) {
+Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals, bool p_clear_locals, int p_do_not_patch_if) {
 	Error err = OK;
 	GDScriptCodeGenerator *gen = codegen.generator;
 	List<GDScriptCodeGenerator::Address> block_locals;
@@ -1935,7 +1935,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				for (int j = 0; j < match->branches.size(); j++) {
 					if (j > 0) {
 						// Use `else` to not check the next branch after matching.
-						gen->write_else();
+						gen->write_else(1);
 					}
 
 					const GDScriptParser::MatchBranchNode *branch = match->branches[j];
@@ -2004,32 +2004,57 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			} break;
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
-				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
-				if (err) {
-					return err;
-				}
 
-				gen->write_if(condition);
+				if (if_n->condition_count > 0) {
+					// The top-most IfNode.
 
-				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
+					// Condition of the top-most IfNode is always true.
 
-				err = _parse_block(codegen, if_n->true_block);
-				if (err) {
-					return err;
-				}
-
-				if (if_n->false_block) {
-					gen->write_else();
-
-					err = _parse_block(codegen, if_n->false_block);
+					// The last parameter prevents all nested generated IfNodes from patching jump address after testing its condition.
+					err = _parse_block(codegen, if_n->true_block, true, true, if_n->condition_count);
 					if (err) {
 						return err;
 					}
-				}
 
-				gen->write_endif();
+					if (if_n->false_block) {
+						// Patch all unpatched jump addresses with starting address of Else/Elif bytecodes.
+						gen->write_else(if_n->condition_count);
+
+						err = _parse_block(codegen, if_n->false_block);
+						if (err) {
+							return err;
+						}
+
+						gen->write_endif();
+					} else {
+						// Patch all unpatched jump addresses with the end address of the whole bytecodes.
+						for (int j = 0; j < if_n->condition_count; j++) {
+							gen->write_endif();
+						}
+					}
+				} else if (p_do_not_patch_if > 0) {
+					// Generated IfNode for condition.
+					GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
+					if (err) {
+						return err;
+					}
+
+					gen->write_if(condition);
+
+					if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						codegen.generator->pop_temporary();
+					}
+
+					err = _parse_block(codegen, if_n->true_block, true, true, p_do_not_patch_if - 1);
+					if (err) {
+						return err;
+					}
+
+					// Do not patch with `gen->write_endif()'.
+					// The top-most IfNode will handle this.
+				} else {
+					ERR_PRINT("Compiler bug: should not reach here");
+				}
 			} break;
 			case GDScriptParser::Node::FOR: {
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);

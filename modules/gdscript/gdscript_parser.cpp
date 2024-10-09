@@ -1076,7 +1076,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
 	return parse_variable(p_is_static, true);
 }
 
-GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
+GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property, bool p_in_multiple_condition_if) {
 	VariableNode *variable = alloc_node<VariableNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
@@ -1135,7 +1135,10 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	complete_extents(variable);
-	end_statement("variable declaration");
+
+	if (p_in_multiple_condition_if == false) {
+		end_statement("variable declaration");
+	}
 
 	return variable;
 }
@@ -2084,22 +2087,160 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	return n_for;
 }
 
+// To support variable declaration and multiple conditions, code like this:
+//
+// if var e := event as InputEventMouseButton, e.button_index == MOUSE_BUTTON_LEFT, e.pressed:
+//   do_something(e)
+// else:
+//   do_something_else()
+//
+// will be transformed to:
+//
+// if true:                                       # Top-most IfNode with condition_count = 3
+//   var e := event as InputEventMouseButton
+//   if e:                                        #     |- Generated IfNode with condition_count = 0
+//     if e.button_index == MOUSE_BUTTON_LEFT:    #         |- Generated IfNode with condition_count = 0
+//       if e.pressed:                            #             |- Generated IfNode with condition_count = 0
+//         do_something(e)
+// else:
+//   do_something_else()
+//
+// Semantics will be implemented duration compilation by patching all generated IfNodes with right addresses.
+//
 GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
+	SuiteNode *saved_suite = current_suite;
+
+	bool failed = false;
+
+	SuiteNode *first_suite = nullptr;
+
+	int condition_count = 0;
+
+	bool real_true_block_has_continue = false;
+	bool real_true_block_has_return = false;
+
+	IfNode *unfinished_if = nullptr;
+
+	for (;;) {
+		SuiteNode *suite = alloc_node<SuiteNode>();
+		suite->parent_function = current_function;
+		suite->parent_block = current_suite;
+		current_suite = suite;
+
+		if (first_suite == nullptr) {
+			first_suite = suite;
+		}
+
+		IfNode *internal_if = alloc_node<IfNode>();
+
+		if (current.type == GDScriptTokenizer::Token::VAR) {
+			// Variable declaration
+			advance();
+
+			VariableNode *variable = parse_variable(false, false, true);
+			if (variable == nullptr) {
+				push_error(vformat(R"(Expected variable declaration after "%s".)", p_token));
+				failed = true;
+			} else {
+				current_suite->add_local(variable, current_function);
+
+				IdentifierNode *identifier = alloc_node<IdentifierNode>();
+				identifier->name = variable->identifier->name;
+				identifier->suite = current_suite;
+				identifier->source = IdentifierNode::Source::LOCAL_VARIABLE;
+				const SuiteNode::Local &declaration = current_suite->get_local(identifier->name);
+				identifier->variable_source = declaration.variable;
+				declaration.variable->usages++;
+				complete_extents(identifier);
+
+				current_suite->statements.push_back(variable);
+
+				internal_if->condition = identifier;
+			}
+		} else {
+			// Expression
+			ExpressionNode *condition = parse_expression(false);
+			if (condition == nullptr) {
+				push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
+				failed = true;
+			} else {
+				internal_if->condition = condition;
+			}
+		}
+
+		bool finished = false;
+
+		if (failed == false) {
+			if (current.type == GDScriptTokenizer::Token::COMMA) {
+				advance();
+			} else {
+				if (consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after "%s" condition.)", p_token)) == false) {
+					failed = true;
+				} else {
+					SuiteNode *real_true_block = parse_suite(vformat(R"("%s" block)", p_token));
+
+					internal_if->true_block = real_true_block;
+					internal_if->true_block->parent_if = internal_if;
+
+					real_true_block_has_continue = real_true_block->has_continue;
+					real_true_block_has_return = real_true_block->has_return;
+
+					finished = true;
+				}
+			}
+		}
+
+		if (failed) {
+			LiteralNode *true_condition = alloc_node<LiteralNode>();
+			true_condition->value = true;
+			complete_extents(true_condition);
+
+			SuiteNode *empty = alloc_node<SuiteNode>();
+			empty->parent_function = current_function;
+			empty->parent_block = current_suite;
+			complete_extents(empty);
+
+			internal_if->condition = true_condition;
+			internal_if->true_block = empty;
+			internal_if->true_block->parent_if = internal_if;
+		}
+
+		complete_extents(internal_if);
+		current_suite->statements.push_back(internal_if);
+
+		complete_extents(current_suite);
+
+		if (unfinished_if) {
+			unfinished_if->true_block = current_suite;
+			unfinished_if->true_block->parent_if = unfinished_if;
+		}
+
+		condition_count++;
+
+		if (failed) {
+			break;
+		}
+
+		if (finished) {
+			break;
+		}
+
+		// `internal_if->true_block' has not been determined yet.
+		unfinished_if = internal_if;
+	}
+
+	current_suite = saved_suite;
+
 	IfNode *n_if = alloc_node<IfNode>();
 
-	n_if->condition = parse_expression(false);
-	if (n_if->condition == nullptr) {
-		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
-	}
+	LiteralNode *true_condition = alloc_node<LiteralNode>();
+	true_condition->value = true;
+	complete_extents(true_condition);
 
-	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after "%s" condition.)", p_token));
+	n_if->condition = true_condition;
+	n_if->true_block = first_suite;
 
-	n_if->true_block = parse_suite(vformat(R"("%s" block)", p_token));
-	n_if->true_block->parent_if = n_if;
-
-	if (n_if->true_block->has_continue) {
-		current_suite->has_continue = true;
-	}
+	n_if->condition_count = condition_count;
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
@@ -2121,10 +2262,10 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	}
 	complete_extents(n_if);
 
-	if (n_if->false_block != nullptr && n_if->false_block->has_return && n_if->true_block->has_return) {
+	if ((n_if->false_block != nullptr && n_if->false_block->has_return) && real_true_block_has_return) {
 		current_suite->has_return = true;
 	}
-	if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
+	if ((n_if->false_block != nullptr && n_if->false_block->has_continue) || real_true_block_has_continue) {
 		current_suite->has_continue = true;
 	}
 
@@ -5737,6 +5878,11 @@ void GDScriptParser::TreePrinter::print_identifier(IdentifierNode *p_identifier)
 }
 
 void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
+	if (p_if->condition_count > 0) {
+		push_text("If-Multiple-Condition");
+		push_line(" :");
+		increase_indent();
+	}
 	if (p_is_elif) {
 		push_text("Elif ");
 	} else {
@@ -5748,6 +5894,10 @@ void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
 	increase_indent();
 	print_suite(p_if->true_block);
 	decrease_indent();
+
+	if (p_if->condition_count > 0) {
+		decrease_indent();
+	}
 
 	// FIXME: Properly detect "elif" blocks.
 	if (p_if->false_block != nullptr) {

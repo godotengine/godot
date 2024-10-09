@@ -922,6 +922,11 @@ public:
 		SuiteNode *true_block = nullptr;
 		SuiteNode *false_block = nullptr;
 
+		// Used for multiple conditions.
+		// Greater-than-zero value indicates the it is the top-most IfNode for a multiple-condition if-statement.
+		// Zero value indicates it is a generated IfNode for a single condition.
+		int condition_count = 0;
+
 		IfNode() {
 			type = IF;
 		}
@@ -1516,7 +1521,7 @@ private:
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
-	VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
+	VariableNode *parse_variable(bool p_is_static, bool p_allow_property, bool p_in_multiple_condition_if = false);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);

@@ -1501,13 +1501,16 @@ void GDScriptByteCodeGenerator::write_if(const Address &p_condition) {
 	append(0); // Jump destination, will be patched.
 }
 
-void GDScriptByteCodeGenerator::write_else() {
+void GDScriptByteCodeGenerator::write_else(int count) {
 	append_opcode(GDScriptFunction::OPCODE_JUMP); // Jump from true if block;
 	int else_jmp_addr = opcodes.size();
 	append(0); // Jump destination, will be patched.
 
-	patch_jump(if_jmp_addrs.back()->get());
-	if_jmp_addrs.pop_back();
+	for (int i = 0; i < count; i++) {
+		patch_jump(if_jmp_addrs.back()->get());
+		if_jmp_addrs.pop_back();
+	}
+
 	if_jmp_addrs.push_back(else_jmp_addr);
 }
 
