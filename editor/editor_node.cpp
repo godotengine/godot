@@ -4576,8 +4576,12 @@ void EditorNode::_update_recent_scenes() {
 		recent_scenes->add_item(path.replace("res://", ""), i);
 	}
 
-	recent_scenes->add_separator();
+	if (rc.size() > 0) {
+		recent_scenes->add_separator();
+	}
+
 	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTR("Clear Recent Scenes")));
+	recent_scenes->set_item_disabled(0, rc.size() == 0);
 	recent_scenes->reset_size();
 }
 
