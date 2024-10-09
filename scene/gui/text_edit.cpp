@@ -2987,6 +2987,9 @@ void TextEdit::_update_ime_text() {
 }
 
 void TextEdit::_show_virtual_keyboard() {
+	if (!editable) {
+		return;
+	}
 	_update_ime_window_position();
 
 	if (virtual_keyboard_enabled && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)) {
