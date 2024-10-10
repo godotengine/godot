@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/math/transform_3d.h"
 
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	Error err = RD::get_singleton()->screen_prepare_for_drawing(p_screen);
@@ -66,6 +67,16 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
 
+		// We need to invert the phone rotation
+		int screen_rotation_degrees = -DisplayServer::get_singleton()->screen_get_internal_current_rotation();
+		float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
+
+		blit.push_constant.rotation_cos = cos(screen_rotation);
+		blit.push_constant.rotation_sin = sin(screen_rotation);
+		// Swap width and height when the orientation is not the native one
+		if (screen_rotation_degrees % 180 != 0) {
+			SWAP(screen_size.width, screen_size.height);
+		}
 		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
 		blit.push_constant.src_rect[1] = p_render_targets[i].src_rect.position.y;
 		blit.push_constant.src_rect[2] = p_render_targets[i].src_rect.size.width;
@@ -228,6 +239,10 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
+	int screen_rotation_degrees = DisplayServer::get_singleton()->screen_get_internal_current_rotation();
+	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
+	blit.push_constant.rotation_cos = cos(screen_rotation);
+	blit.push_constant.rotation_sin = sin(screen_rotation);
 	blit.push_constant.src_rect[0] = 0.0;
 	blit.push_constant.src_rect[1] = 0.0;
 	blit.push_constant.src_rect[2] = 1.0;
