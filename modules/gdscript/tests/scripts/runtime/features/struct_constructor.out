@@ -1,0 +1,8 @@
+GDTEST_OK
+[test_int: 1, test_float: 2.5, test_dict: { 4: 5 }, test_array: [3, "Godot"]]
+[test_int: 3, test_float: 2.5, test_dict: { 4: 5 }, test_array: [3, "Godot"]]
+[test_int: 3, test_float: 1.5, test_dict: { 4: 5 }, test_array: [3, "Godot"]]
+[test_int: 3, test_float: 1.5, test_dict: { "key": "val" }, test_array: [3, "Godot"]]
+[test_int: 3, test_float: 1.5, test_dict: { "key": "val" }, test_array: [0.5]]
+[name: "", class_name: &"", type: 0, hint: 0, hint_string: "", usage: 6]
+[name: "", class_name: &"", type: 0, hint: 0, hint_string: "", usage: 6]

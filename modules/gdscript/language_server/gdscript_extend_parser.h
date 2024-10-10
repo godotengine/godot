@@ -128,9 +128,11 @@ class ExtendGDScriptParser : public GDScriptParser {
 	void update_symbols();
 	void update_document_links(const String &p_code);
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
+	void parse_variable_symbol(const GDScriptParser::VariableNode *p_var, lsp::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
 
-	Dictionary dump_function_api(const GDScriptParser::FunctionNode *p_func) const;
+	Dictionary dump_variable_api(const GDScriptParser::VariableNode &p_var) const;
+	Dictionary dump_function_api(const GDScriptParser::FunctionNode &p_func) const;
 	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
 
 	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;

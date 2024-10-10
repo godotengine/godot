@@ -175,6 +175,9 @@ class GDScriptCompiler {
 	GDScriptParser::ExpressionNode *awaited_node = nullptr;
 	bool has_static_data = false;
 
+	/* helpers */
+	void _parse_instance_method(GDScriptCodeGenerator *p_gen, GDScriptCodeGenerator::Address &r_result, const GDScriptCodeGenerator::Address &p_base, const StringName &p_function_name, const Vector<GDScriptCodeGenerator::Address> &p_arguments, const bool p_is_awaited);
+
 public:
 	static void convert_to_initializer_type(Variant &p_variant, const GDScriptParser::VariableNode *p_node);
 	static void make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);

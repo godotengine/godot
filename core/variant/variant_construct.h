@@ -580,6 +580,93 @@ public:
 	}
 };
 
+//class VariantConstructorStruct {
+//public:
+//	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+//		// want to call Array::Array(const Array &p_from, uint32_t p_size, const StringName &p_name, const StructMember &(*p_get_member)(uint32_t))
+//		for (int i = 0; i < get_argument_count(); i++) {
+//			Variant::Type arg_type = get_argument_type(i);
+//			if (p_args[i]->get_type() != arg_type) {
+//				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+//				r_error.argument = i;
+//				r_error.expected = arg_type;
+//				return;
+//			}
+//		}
+//
+//		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+//		const uint32_t size = p_args[1]->operator uint32_t();
+//		const StringName &struct_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+//		// TODO: I don't like have to use PackedStringArray here, but there is no PackedStringNameArray
+//		const PackedStringArray &member_names = *VariantGetInternalPtr<PackedStringArray>::get_ptr(p_args[3]);
+//		Vector<StringName> names;
+//		const int count = member_names.size();
+//		names.resize(count);
+//		for (int i = 0; i < count; i++) {
+//			names.write[i] = StringName(member_names[i]);
+//		}
+//		r_ret = Array(base_arr, size, struct_name, names);
+//	}
+//
+//	_FORCE_INLINE_ static void validated_construct(Variant *r_ret, const Variant **p_args) {
+//		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+//		const uint32_t size = p_args[1]->operator uint32_t();
+//		const StringName &struct_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+//		const PackedStringArray &member_names = *VariantGetInternalPtr<PackedStringArray>::get_ptr(p_args[3]);
+//		Vector<StringName> names;
+//		const int count = member_names.size();
+//		names.resize(count);
+//		for (int i = 0; i < count; i++) {
+//			names.write[i] = StringName(member_names[i]);
+//		}
+//		*r_ret = Array(base_arr, size, struct_name, names);
+//	}
+//
+//	static void ptr_construct(void *base, const void **p_args) {
+//		const Array &base_arr = PtrToArg<Array>::convert(p_args[0]);
+//		const uint32_t size = PtrToArg<uint32_t>::convert(p_args[1]);
+//		const StringName &struct_name = PtrToArg<StringName>::convert(p_args[2]);
+//		const PackedStringArray &member_names = PtrToArg<PackedStringArray>::convert(p_args[3]);
+//		Vector<StringName> names;
+//		const int count = member_names.size();
+//		names.resize(count);
+//		for (int i = 0; i < count; i++) {
+//			names.write[i] = StringName(member_names[i]);
+//		}
+//		Array dst_arr = Array(base_arr, size, struct_name, names);
+//
+//		PtrConstruct<Array>::construct(dst_arr, base);
+//	}
+//
+//	_FORCE_INLINE_ static int get_argument_count() { // TODO: should this be const?
+//		return 4;
+//	}
+//
+//	_FORCE_INLINE_ static Variant::Type get_argument_type(int p_arg) { // TODO: should this be const?
+//		switch (p_arg) {
+//			case 0: {
+//				return Variant::ARRAY;
+//			} break;
+//			case 1: {
+//				return Variant::INT;
+//			} break;
+//			case 2: {
+//				return Variant::STRING_NAME;
+//			} break;
+//			case 3: {
+//				return Variant::PACKED_STRING_ARRAY;
+//			} break;
+//			default: {
+//				return Variant::NIL;
+//			} break;
+//		}
+//	}
+//
+//	_FORCE_INLINE_ static Variant::Type get_base_type() { // TODO: should this be const?
+//		return Variant::ARRAY;
+//	}
+//};
+
 template <typename T>
 class VariantConstructorToArray {
 public:

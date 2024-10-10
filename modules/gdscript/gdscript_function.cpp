@@ -32,6 +32,16 @@
 
 #include "gdscript.h"
 
+const StructInfo *GDScriptDataType::get_struct_info(bool p_no_inheritance) const {
+	// TODO: This ordering will prefer user-defined names over native names, but not sure if this is good.
+	if (const GDScript *gdscript_type = Object::cast_to<GDScript>(script_type)) {
+		if (const StructInfo *struct_info = gdscript_type->get_script_struct_info(native_type, p_no_inheritance)) {
+			return struct_info;
+		}
+	}
+	return ClassDB::get_struct_info(native_type, p_no_inheritance);
+}
+
 Variant GDScriptFunction::get_constant(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];

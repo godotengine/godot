@@ -141,6 +141,7 @@ public:
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) = 0;
+	virtual void write_construct_struct(const Address &p_target, const GDScriptDataType &p_struct_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_typed_dictionary(const Address &p_target, const GDScriptDataType &p_key_type, const GDScriptDataType &p_value_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_await(const Address &p_target, const Address &p_operand) = 0;
