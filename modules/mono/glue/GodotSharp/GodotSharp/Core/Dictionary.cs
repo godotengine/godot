@@ -26,6 +26,8 @@ namespace Godot.Collections
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
+        internal int TypedWrapperReferenceCount;
+
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
         /// </summary>
@@ -488,7 +490,8 @@ namespace Godot.Collections
     public class Dictionary<[MustBeVariant] TKey, [MustBeVariant] TValue> :
         IDictionary<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue>,
-        IGenericGodotDictionary
+        IGenericGodotDictionary,
+        IDisposable
     {
         private static godot_variant ToVariantFunc(in Dictionary<TKey, TValue> godotDictionary) =>
             VariantUtils.CreateFromDictionary(godotDictionary);
@@ -503,6 +506,7 @@ namespace Godot.Collections
         }
 
         private readonly Dictionary _underlyingDict;
+        private bool _disposed;
 
         Dictionary IGenericGodotDictionary.UnderlyingDictionary => _underlyingDict;
 
@@ -519,6 +523,7 @@ namespace Godot.Collections
         public Dictionary()
         {
             _underlyingDict = new Dictionary();
+            _underlyingDict.TypedWrapperReferenceCount++;
         }
 
         /// <summary>
@@ -535,6 +540,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(dictionary));
 
             _underlyingDict = new Dictionary();
+            _underlyingDict.TypedWrapperReferenceCount++;
 
             foreach (KeyValuePair<TKey, TValue> entry in dictionary)
                 Add(entry.Key, entry.Value);
@@ -554,6 +560,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(dictionary));
 
             _underlyingDict = dictionary;
+            _underlyingDict.TypedWrapperReferenceCount++;
         }
 
         // Explicit name to make it very clear
@@ -570,6 +577,29 @@ namespace Godot.Collections
         public static explicit operator Dictionary?(Dictionary<TKey, TValue>? from)
         {
             return from?._underlyingDict;
+        }
+
+        ~Dictionary()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Disposes of this <see cref="Array"/>.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _underlyingDict.TypedWrapperReferenceCount--;
+            if (_underlyingDict.TypedWrapperReferenceCount > 0) return;
+            _underlyingDict.Dispose(disposing);
         }
 
         /// <summary>
