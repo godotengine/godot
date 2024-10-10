@@ -12,7 +12,7 @@
 		    print("Time to attack!")
 		[/codeblock]
 		[b]Note:[/b] To create a one-shot timer without instantiating a node, use [method SceneTree.create_timer].
-		[b]Note:[/b] Timers are affected by [member Engine.time_scale]. The higher the time scale, the sooner timers will end. How often a timer processes may depend on the framerate or [member Engine.physics_ticks_per_second].
+		[b]Note:[/b] Timers in Time mode are affected by [member Engine.time_scale]. The higher the time scale, the sooner timers will end. How often a timer processes may depend on the framerate or [member Engine.physics_ticks_per_second].
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
@@ -53,13 +53,17 @@
 		<member name="process_callback" type="int" setter="set_timer_process_callback" getter="get_timer_process_callback" enum="Timer.TimerProcessCallback" default="1">
 			Specifies when the timer is updated during the main loop (see [enum TimerProcessCallback]).
 		</member>
+		<member name="process_type" type="int" setter="set_timer_process_type" getter="get_timer_process_type" enum="Timer.TimerProcessType" default="0">
+			Specifies which units the timer uses to count. (see [enum TimerProcessType]).
+		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. This is always [code]0[/code] if the timer is stopped.
 			[b]Note:[/b] This property is read-only and cannot be modified. It is based on [member wait_time].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
-			The time required for the timer to end, in seconds. This property can also be set every time [method start] is called.
-			[b]Note:[/b] Timers can only process once per physics or process frame (depending on the [member process_callback]). An unstable framerate may cause the timer to end inconsistently, which is especially noticeable if the wait time is lower than roughly [code]0.05[/code] seconds. For very short timers, it is recommended to write your own code instead of using a [Timer] node. Timers are also affected by [member Engine.time_scale].
+			The time required for the timer to end, in seconds or frames. This property can also be set every time [method start] is called.
+			Time mode uses floats while Frame mode only accepts and returns non-fractional numbers.
+			[b]Note:[/b] Timers can only process once per physics or process frame (depending on the [member process_callback]). In Time mode, an unstable framerate may cause the timer to end inconsistently, which is especially noticeable if the wait time is lower than roughly [code]0.05[/code] seconds. For very short timers, it is recommended to write your own code instead of using a [Timer] node. Timers are also affected by [member Engine.time_scale].
 		</member>
 	</members>
 	<signals>
@@ -75,6 +79,12 @@
 		</constant>
 		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessCallback">
 			Update the timer every process (rendered) frame (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+		<constant name="TIMER_PROCESS_TYPE_TIME" value="0" enum="TimerProcessType">
+			Timer works with seconds. In this mode the timer is affected by [member Engine.time_scale].
+		</constant>
+		<constant name="TIMER_PROCESS_TYPE_FRAMES" value="1" enum="TimerProcessType">
+			Timer works with frames. Speed depends on the framerate. Accepts non-fractional values only.
 		</constant>
 	</constants>
 </class>
