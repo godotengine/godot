@@ -1,0 +1,20 @@
+﻿<Project>
+  <Import Project="Godot.SourceGenerators.targets"/>
+  <PropertyGroup>
+    <PackageId>Godot.SourceGenerators.Implementation</PackageId>
+  </PropertyGroup>
+
+  <!--  Generators should not be run when assembly is loaded.-->
+  <ItemGroup>
+    <Compile Remove="Generators\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Generators\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Package the props files -->
+    <None Include="Godot.SourceGenerators.Implementation.props" Pack="true" PackagePath="buildTransitive" Visible="true"/>
+    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="buildTransitive" Visible="true"/>
+  </ItemGroup>
+</Project>

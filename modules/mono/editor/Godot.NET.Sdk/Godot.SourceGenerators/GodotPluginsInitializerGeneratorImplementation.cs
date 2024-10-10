@@ -4,14 +4,13 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    [Generator]
-    public class GodotPluginsInitializerGenerator : ISourceGenerator
+    public class GodotPluginsInitializerGeneratorImplementation
     {
         public void Initialize(GeneratorInitializationContext context)
         {
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        public void Execute(IGeneratorExecutionContext context)
         {
             if (context.IsGodotToolsProject() || context.IsGodotSourceGeneratorDisabled("GodotPluginsInitializer"))
                 return;

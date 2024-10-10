@@ -1,22 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Import Project="Godot.SourceGenerators.targets"/>
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <PropertyGroup>
-    <Description>Core C# source generator for Godot projects.</Description>
-    <Authors>Godot Engine contributors</Authors>
-
-    <PackageId>Godot.SourceGenerators</PackageId>
-    <Version>4.4.0</Version>
-    <PackageVersion>$(PackageVersion_Godot_SourceGenerators)</PackageVersion>
-    <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators</RepositoryUrl>
-    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
-
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Do not include the generator as a lib dependency -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
@@ -27,13 +11,20 @@
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" PrivateAssets="all" />
-  </ItemGroup>
-  <ItemGroup>
     <!-- Package the generator in the analyzer directory of the nuget package -->
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
+  <ItemGroup>
     <!-- Package the props file -->
-    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true" />
+    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true"/>
+  </ItemGroup>
+
+  <!-- Only needed needed when using godot generators within another generator -->
+  <ItemGroup>
+    <Compile Remove="Implementations\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Implementations\**" />
   </ItemGroup>
 </Project>
