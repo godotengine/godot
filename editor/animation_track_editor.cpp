@@ -4279,7 +4279,18 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	// Let's build a node path.
 	String path = root->get_path_to(p_node, true);
 
-	Variant value = p_node->get(p_property);
+	// Get the value from the subpath.
+	Variant value = p_node;
+	Vector<String> property_path = p_property.split(":");
+	for (const String &E : property_path) {
+		if (value.get_type() == Variant::OBJECT) {
+			Object *obj = value;
+			value = obj->get(E);
+		} else {
+			value = Variant();
+			break;
+		}
+	}
 
 	if (Object::cast_to<AnimationPlayer>(p_node) && p_property == "current_animation") {
 		if (p_node == AnimationPlayerEditor::get_singleton()->get_player()) {
