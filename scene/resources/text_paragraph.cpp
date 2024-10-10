@@ -112,6 +112,11 @@ void TextParagraph::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible"), "set_max_lines_visible", "get_max_lines_visible");
 
+	ClassDB::bind_method(D_METHOD("set_line_spacing", "line_spacing"), &TextParagraph::set_line_spacing);
+	ClassDB::bind_method(D_METHOD("get_line_spacing"), &TextParagraph::get_line_spacing);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing"), "set_line_spacing", "get_line_spacing");
+
 	ClassDB::bind_method(D_METHOD("get_line_objects", "line"), &TextParagraph::get_line_objects);
 	ClassDB::bind_method(D_METHOD("get_line_object_rect", "line", "key"), &TextParagraph::get_line_object_rect);
 	ClassDB::bind_method(D_METHOD("get_line_size", "line"), &TextParagraph::get_line_size);
@@ -180,6 +185,7 @@ void TextParagraph::_shape_lines() {
 			for (int i = 0; i < line_breaks.size(); i = i + 2) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
+				h += line_spacing;
 				if (!tab_stops.is_empty()) {
 					TS->shaped_text_tab_align(line, tab_stops);
 				}
@@ -574,12 +580,18 @@ Size2 TextParagraph::get_size() const {
 			}
 			size.x = MAX(size.x, lsize.x);
 			size.y += lsize.y;
+			if (i != visible_lines - 1) {
+				size.y += line_spacing;
+			}
 		} else {
 			if (h_offset > 0 && i <= dropcap_lines) {
 				lsize.y += h_offset;
 			}
 			size.x += lsize.x;
 			size.y = MAX(size.y, lsize.y);
+			if (i != visible_lines - 1) {
+				size.x += line_spacing;
+			}
 		}
 	}
 	if (h_offset > 0) {
@@ -610,6 +622,19 @@ void TextParagraph::set_max_lines_visible(int p_lines) {
 
 int TextParagraph::get_max_lines_visible() const {
 	return max_lines_visible;
+}
+
+void TextParagraph::set_line_spacing(float p_spacing) {
+	_THREAD_SAFE_METHOD_
+
+	if (line_spacing != p_spacing) {
+		line_spacing = p_spacing;
+		lines_dirty = true;
+	}
+}
+
+float TextParagraph::get_line_spacing() const {
+	return line_spacing;
 }
 
 Array TextParagraph::get_line_objects(int p_line) const {
@@ -697,10 +722,10 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 		if (i != p_line) {
 			if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 				ofs.x = 0.f;
-				ofs.y += TS->shaped_text_get_descent(lines_rid[i]);
+				ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
 			} else {
 				ofs.y = 0.f;
-				ofs.x += TS->shaped_text_get_descent(lines_rid[i]);
+				ofs.x += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
 			}
 		}
 	}
@@ -872,10 +897,10 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 		TS->shaped_text_draw(lines_rid[i], p_canvas, ofs, clip_l, clip_l + l_width, p_color);
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
-			ofs.y += TS->shaped_text_get_descent(lines_rid[i]);
+			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
 		} else {
 			ofs.y = p_pos.y;
-			ofs.x += TS->shaped_text_get_descent(lines_rid[i]);
+			ofs.x += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
 		}
 	}
 }
@@ -974,10 +999,10 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 		TS->shaped_text_draw_outline(lines_rid[i], p_canvas, ofs, clip_l, clip_l + l_width, p_outline_size, p_color);
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
-			ofs.y += TS->shaped_text_get_descent(lines_rid[i]);
+			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
 		} else {
 			ofs.y = p_pos.y;
-			ofs.x += TS->shaped_text_get_descent(lines_rid[i]);
+			ofs.x += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
 		}
 	}
 }
@@ -1001,12 +1026,12 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(line_rid).y)) {
 				return TS->shaped_text_hit_test_position(line_rid, p_coords.x);
 			}
-			ofs.y += TS->shaped_text_get_size(line_rid).y;
+			ofs.y += TS->shaped_text_get_size(line_rid).y + line_spacing;
 		} else {
 			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(line_rid).x)) {
 				return TS->shaped_text_hit_test_position(line_rid, p_coords.y);
 			}
-			ofs.y += TS->shaped_text_get_size(line_rid).x;
+			ofs.y += TS->shaped_text_get_size(line_rid).x + line_spacing;
 		}
 	}
 	return TS->shaped_text_get_range(rid).y;
