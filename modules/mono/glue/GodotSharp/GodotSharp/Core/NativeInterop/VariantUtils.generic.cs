@@ -384,7 +384,16 @@ public partial class VariantUtils
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
 
         if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
-            return (T)(object)ConvertToGodotObject(variant);
+        {
+            var godotObject = ConvertToGodotObject(variant);
+
+            //Disable the "Possible null reference return" warning for this line
+#pragma warning disable CS8603
+
+            //Only cast if the type matches, otherwise sends null
+            return godotObject is T ? (T)(object)godotObject : default;
+#pragma warning restore CS8603
+        }
 
         // `typeof(T).IsValueType` is optimized away
         // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
