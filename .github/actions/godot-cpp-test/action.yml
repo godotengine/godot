@@ -1,0 +1,37 @@
+name: Build godot-cpp
+description: Build godot-cpp with the provided options.
+
+env:
+  GODOT_CPP_BRANCH: 4.3
+
+inputs:
+  bin:
+    description: Path to the Godot binary.
+    required: true
+  scons-flags:
+    description: Additional SCons flags.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        repository: godotengine/godot-cpp
+        ref: ${{ env.GODOT_CPP_BRANCH }}
+        path: godot-cpp
+
+    - name: Extract API
+      shell: sh
+      run: |
+        ${{ inputs.bin }} --headless --dump-gdextension-interface --dump-extension-api
+        cp -f gdextension_interface.h godot-cpp/gdextension/
+        cp -f extension_api.json godot-cpp/gdextension/
+
+    - name: SCons Build
+      shell: sh
+      run: |
+        echo "Building with flags: --directory=./godot-cpp/test ${{ inputs.scons-flags }}"
+        scons --directory=./godot-cpp/test ${{ inputs.scons-flags }}
