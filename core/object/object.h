@@ -35,6 +35,7 @@
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
+#include "core/os/semaphore.h"
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
@@ -1009,6 +1010,11 @@ class ObjectDB {
 		Object *object = nullptr;
 	};
 
+#ifdef DEBUG_ENABLED
+	static Semaphore writes_blocked;
+	static bool waiting_to_debug; // no need for this to be a threadsafe lock, we're just using it to bleed off all writes, so threads can pick up the flag in their own time
+	static void block_on_waiting_to_debug();
+#endif
 	static SpinLock spin_lock;
 	static uint32_t slot_count;
 	static uint32_t slot_max;
@@ -1026,7 +1032,7 @@ class ObjectDB {
 	static void setup();
 
 public:
-	typedef void (*DebugFunc)(Object *p_obj);
+	typedef void (*DebugFunc)(Object *p_ob, void *user_data);
 
 	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
 		uint64_t id = p_instance_id;
@@ -1049,7 +1055,7 @@ public:
 
 		return object;
 	}
-	static void debug_objects(DebugFunc p_func);
+	static void debug_objects(DebugFunc p_func, void *user_data);
 	static int get_object_count();
 };
 

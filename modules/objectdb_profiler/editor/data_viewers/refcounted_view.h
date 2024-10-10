@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  refcounted_view.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef REFCOUNTED_VIEW_H
+#define REFCOUNTED_VIEW_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "../snapshot_data.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tree.h"
+#include "shared_controls.h"
+#include "snapshot_view.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
-
-	void _inspect_shader(RID p_shader);
+class SnapshotRefCountedView : public SnapshotView {
+	GDCLASS(SnapshotRefCountedView, SnapshotView);
 
 protected:
-	static void _bind_methods();
+	Tree *refs_list;
+	VBoxContainer *ref_details;
+	TreeSortAndFilterBar *filter_bar;
+	HSplitContainer *refs_view;
+
+	HashMap<TreeItem *, SnapshotDataObject *> item_data_map;
+	HashMap<SnapshotDataObject *, TreeItem *> data_item_map;
+	HashMap<TreeItem *, TreeItem *> reference_item_map;
+
+	void _refcounted_selected();
+	void _insert_data(GameStateSnapshot *p_snapshot, const String &p_name);
+	void _ref_selected(Tree *p_source_tree);
+	void _set_split_to_center();
 
 public:
-	EditorNativeShaderSourceVisualizer();
+	SnapshotRefCountedView();
+	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#endif // REFCOUNTED_VIEW_H

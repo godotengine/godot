@@ -33,6 +33,8 @@
 
 #include "editor/editor_inspector.h"
 
+class SceneDebuggerObject;
+
 class EditorDebuggerRemoteObject : public Object {
 	GDCLASS(EditorDebuggerRemoteObject, Object);
 
@@ -42,6 +44,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
+	bool readonly;
+	bool _is_read_only();
+
 public:
 	ObjectID remote_object_id;
 	String type_name;
@@ -50,6 +55,11 @@ public:
 
 	ObjectID get_remote_object_id() { return remote_object_id; };
 	String get_title();
+
+	int update_props(SceneDebuggerObject &obj, HashSet<String> *changed, HashSet<Ref<Resource>> *remote_dependencies);
+
+	void set_readonly(bool p_readonly);
+	bool get_readonly();
 
 	Variant get_variant(const StringName &p_name);
 
@@ -61,6 +71,7 @@ public:
 	void update() { notify_property_list_changed(); }
 
 	EditorDebuggerRemoteObject() {}
+	EditorDebuggerRemoteObject(SceneDebuggerObject &obj);
 };
 
 class EditorDebuggerInspector : public EditorInspector {

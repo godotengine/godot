@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  snapshot_view.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef SNAPSHOT_VIEW_H
+#define SNAPSHOT_VIEW_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "../snapshot_data.h"
+#include "scene/gui/control.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
-
-	void _inspect_shader(RID p_shader);
+class SnapshotView : public Control {
+	GDCLASS(SnapshotView, Control);
 
 protected:
-	static void _bind_methods();
+	GameStateSnapshot *snapshot_data;
+	GameStateSnapshot *diff_data;
+
+	List<TreeItem *> _get_children_recursive(Tree *p_tree);
 
 public:
-	EditorNativeShaderSourceVisualizer();
+	String view_name;
+
+	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data = nullptr);
+	virtual void clear_snapshot();
+	bool is_showing_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data);
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#endif // SNAPSHOT_VIEW_H
