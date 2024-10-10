@@ -64,10 +64,6 @@ AddMetadataDialog::AddMetadataDialog() {
 }
 
 void AddMetadataDialog::_complete_init(const StringName &p_title) {
-	add_meta_name->grab_focus();
-	add_meta_name->set_text("");
-	validation_panel->update();
-
 	set_title(vformat(TTR("Add Metadata Property for \"%s\""), p_title));
 
 	// Skip if we already completed the initialization.
@@ -90,6 +86,10 @@ void AddMetadataDialog::open(const StringName p_title, List<StringName> &p_exist
 	this->_existing_metas = p_existing_metas;
 	_complete_init(p_title);
 	popup_centered();
+
+	add_meta_name->grab_focus();
+	add_meta_name->set_text(String());
+	validation_panel->update();
 }
 
 StringName AddMetadataDialog::get_meta_name() {
