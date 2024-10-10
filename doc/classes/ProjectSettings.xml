@@ -2393,7 +2393,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To set debanding at run-time, set [member Viewport.use_debanding] on the root [Viewport] instead.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
-			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
+			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]). If TAA is enabled when the project starts, the dithering pattern for the [constant BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER] and [constant BaseMaterial3D.DISTANCE_FADE_OBJECT_DITHER] distance fade modes is jittered every frame to improve quality.
 			[b]Note:[/b] The implementation is not complete yet. Some visual instances such as particles and skinned meshes may show ghosting artifacts in motion.
 			[b]Note:[/b] TAA is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
