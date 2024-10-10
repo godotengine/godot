@@ -125,6 +125,7 @@ private:
 	Button *copy = nullptr;
 	Button *step = nullptr;
 	Button *next = nullptr;
+	Button *out = nullptr;
 	Button *dobreak = nullptr;
 	Button *docontinue = nullptr;
 	// Reference to "Remote" tab in scene tree. Needed by _live_edit_set and buttons state.
@@ -262,6 +263,7 @@ public:
 	void debug_skip_breakpoints();
 	void debug_copy();
 
+	void debug_out();
 	void debug_next();
 	void debug_step();
 	void debug_break();
