@@ -41,6 +41,32 @@
 /**
   PrimitiveMesh
 */
+const double EPSILON = 1e-7;
+
+static double _remove_negative_zero(double p_value) {
+	return Math::abs(p_value) < EPSILON ? 0.0 : p_value;
+}
+
+static double _custom_sin(double p_x) {
+	p_x = Math::fmod(p_x, Math_TAU);
+	if (p_x < 0) {
+		p_x += Math_TAU;
+	}
+	return _remove_negative_zero(Math::sin(p_x));
+}
+
+static double _custom_cos(double p_x) {
+	p_x = Math::fmod(p_x, Math_TAU);
+	if (p_x < 0) {
+		p_x += Math_TAU;
+	}
+	return _remove_negative_zero(Math::cos(p_x));
+}
+
+static Vector3 _remove_negative_zero_vector3(const Vector3 &p_v) {
+	return Vector3(_remove_negative_zero(p_v.x), _remove_negative_zero(p_v.y), _remove_negative_zero(p_v.z));
+}
+
 void PrimitiveMesh::_update() const {
 	Array arr;
 	if (GDVIRTUAL_CALL(_create_mesh_array, arr)) {
@@ -1026,8 +1052,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			x = _custom_sin(u * Math_TAU);
+			z = _custom_cos(u * Math_TAU);
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
@@ -1824,30 +1850,32 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	thisrow = 0;
 	prevrow = 0;
 	for (j = 0; j <= (rings + 1); j++) {
-		float v = j;
-		float w;
-
-		v /= (rings + 1);
-		w = sin(Math_PI * v);
-		y = scale * cos(Math_PI * v);
+		float v = static_cast<float>(j) / (rings + 1);
+		float phi = Math_PI * v;
+		float w = _custom_sin(phi);
+		y = scale * _custom_cos(phi);
 
 		for (i = 0; i <= radial_segments; i++) {
-			float u = i;
-			u /= radial_segments;
+			float u = static_cast<float>(i) / radial_segments;
+			float theta = u * Math_TAU;
+			x = _custom_sin(theta);
+			z = _custom_cos(theta);
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			Vector3 p;
+			Vector3 normal;
 
 			if (is_hemisphere && y < 0.0) {
-				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));
-				normals.push_back(Vector3(0.0, -1.0, 0.0));
+				p = _remove_negative_zero_vector3(Vector3(x * radius * w, 0.0, z * radius * w));
+				normal = Vector3(0.0, -1.0, 0.0);
 			} else {
-				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
-				points.push_back(p);
-				Vector3 normal = Vector3(x * w * scale, radius * (y / scale), z * w * scale);
-				normals.push_back(normal.normalized());
+				p = _remove_negative_zero_vector3(Vector3(x * radius * w, y, z * radius * w));
+				normal = _remove_negative_zero_vector3(Vector3(x * w * scale, radius * (y / scale), z * w * scale));
+				normal.normalize();
 			}
-			ADD_TANGENT(z, 0.0, -x, 1.0)
+
+			points.push_back(p);
+			normals.push_back(normal);
+			ADD_TANGENT(_remove_negative_zero(z), 0.0, _remove_negative_zero(-x), 1.0)
 			uvs.push_back(Vector2(u, v));
 			if (p_add_uv2) {
 				float w_h = w * 2.0 * center_h;
