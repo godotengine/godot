@@ -32,6 +32,7 @@
 
 #include "atlas_import_failed.xpm"
 #include "core/config/project_settings.h"
+#include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
@@ -320,6 +321,25 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		cache = res_cache;
 	}
 
+	//calculate size scale
+	float size_scale = 1.0f;
+
+	if (FileAccess::exists(p_group_file + ".import")) {
+		Ref<ConfigFile> group_file_config;
+		group_file_config.instantiate();
+		Error err = group_file_config->load(p_group_file + ".import");
+		if (err == OK) {
+			const int atlas_size_limit = group_file_config->get_value("params", "process/size_limit");
+			if (atlas_size_limit > 0 && (atlas_width > atlas_size_limit || atlas_height > atlas_size_limit)) {
+				if (atlas_width > atlas_height) {
+					size_scale = (float)atlas_size_limit / atlas_width;
+				} else {
+					size_scale = (float)atlas_size_limit / atlas_height;
+				}
+			}
+		}
+	}
+
 	//save the images
 	idx = 0;
 	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
@@ -334,10 +354,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			Ref<AtlasTexture> atlas_texture;
 			atlas_texture.instantiate();
 			atlas_texture->set_atlas(cache);
-			atlas_texture->set_region(Rect2(offset, pack_data.region.size));
+			atlas_texture->set_region(Rect2(offset * size_scale, pack_data.region.size * size_scale));
 
 			if (!pack_data.is_cropped) {
-				atlas_texture->set_margin(Rect2(pack_data.region.position, pack_data.image->get_size() - pack_data.region.size));
+				atlas_texture->set_margin(Rect2(pack_data.region.position * size_scale, (Vector2)(pack_data.image->get_size() - pack_data.region.size) * size_scale));
 			}
 
 			texture = atlas_texture;
