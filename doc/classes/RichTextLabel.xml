@@ -727,6 +727,12 @@
 				Triggers when the mouse enters a meta tag.
 			</description>
 		</signal>
+		<signal name="text_changed">
+			<param index="0" name="text" type="String" />
+			<description>
+				Emitted when the value behind the text property of a RichTextLabel was changed. The new text is contained in the [param text] argument.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">

@@ -111,6 +111,14 @@
 			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
 		</member>
 	</members>
+	<signals>
+		<signal name="text_changed">
+			<param index="0" name="text" type="String" />
+			<description>
+				Emitted when the value behind the text property of a Label was changed. The new text is contained in the [param text] argument.
+			</description>
+		</signal>
+	</signals>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Default text [Color] of the [Label].
