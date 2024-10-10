@@ -365,7 +365,7 @@ Performance::Performance() {
 	singleton = this;
 }
 
-Performance::MonitorCall::MonitorCall(Callable p_callable, Vector<Variant> p_arguments) {
+Performance::MonitorCall::MonitorCall(Callable p_callable, const Vector<Variant> &p_arguments) {
 	_callable = p_callable;
 	_arguments = p_arguments;
 }
