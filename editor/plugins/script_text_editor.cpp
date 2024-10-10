@@ -2354,6 +2354,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_hb->add_child(goto_menu);
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/lookup_symbol"), LOOKUP_SYMBOL);
 	goto_menu->get_popup()->add_separator();
 
 	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
@@ -2506,6 +2507,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::I);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KeyModifierMask::CMD_OR_CTRL | Key::I);
+	ED_SHORTCUT("script_text_editor/lookup_symbol", TTR("Lookup Symbol"), Key::F12);
 
 	ED_SHORTCUT_AND_COMMAND("script_text_editor/find", TTR("Find..."), KeyModifierMask::CMD_OR_CTRL | Key::F);
 
