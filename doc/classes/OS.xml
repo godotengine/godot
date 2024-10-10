@@ -655,6 +655,13 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="load_shell_environment" qualifiers="const">
+			<return type="void" />
+			<description>
+				Loads the default shell and copies environment variables set by the shell startup scripts to the app environment.
+				[b]Note:[/b] This method is implemented on macOS for non-sandboxed applications only.
+			</description>
+		</method>
 		<method name="move_to_trash" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
