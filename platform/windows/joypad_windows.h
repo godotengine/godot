@@ -86,7 +86,7 @@ private:
 			attached = false;
 			confirmed = false;
 			di_joy = nullptr;
-			guid = {};
+			guid = GUID_NULL;
 
 			for (int i = 0; i < MAX_JOY_BUTTONS; i++) {
 				last_buttons[i] = false;
@@ -104,12 +104,24 @@ private:
 		uint64_t ff_end_timestamp = 0;
 	};
 
+	struct dinput_init_task_context {
+		bool xinput_enabled = false;
+		LPDIRECTINPUT8 dinput = nullptr;
+		DIDEVICEINSTANCE instances[JOYPADS_MAX];
+		int instances_count = 0;
+		std::atomic_bool ready = false;
+	};
+
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
 	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
 	HWND *hWnd = nullptr;
 	HANDLE xinput_dll;
-	LPDIRECTINPUT8 dinput;
+
+	LPDIRECTINPUT8 dinput = nullptr;
+	dinput_init_task_context dinput_init_task_ctx;
+	WorkerThreadPool::TaskID dinput_probe_task = WorkerThreadPool::INVALID_TASK_ID;
+
 	Input *input = nullptr;
 
 	int id_to_change;
@@ -121,6 +133,7 @@ private:
 
 	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context);
 	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context);
+	static void dinput_probe_joypads_task(void *p_context);
 
 	void setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id);
 	void close_joypad(int id = -1);
@@ -130,7 +143,7 @@ private:
 	void post_hat(int p_device, DWORD p_dpad);
 
 	bool have_device(const GUID &p_guid);
-	bool is_xinput_device(const GUID *p_guid);
+	void process_dinput_init_task_result(dinput_init_task_context &context);
 	bool setup_dinput_joypad(const DIDEVICEINSTANCE *instance);
 	void joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
