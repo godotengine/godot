@@ -1446,6 +1446,13 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
+		if (p_item.is_file && FileAccess::exists(old_path + ".uid")) {
+			err = da->rename(old_path + ".uid", new_path + ".uid");
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".uid\n");
+			}
+		}
+
 		// Update scene if it is open.
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
@@ -1516,6 +1523,20 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import: " + error_names[err] + "\n");
 				return;
 			}
+		} else if (FileAccess::exists(old_path + ".uid")) { // uses UID.
+			Error err = da->copy(old_path, new_path);
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ": " + error_names[err] + "\n");
+				return;
+			}
+
+			// Create new UID.
+			Ref<FileAccess> f = FileAccess::open(new_path + ".uid", FileAccess::WRITE);
+			if (f.is_valid()) {
+				ResourceUID::ID id = ResourceUID::get_singleton()->create_id();
+				f->store_line(ResourceUID::get_singleton()->id_to_text(id));
+			}
+
 		} else {
 			// Files which do not use an uid can just be copied.
 			if (ResourceLoader::get_resource_uid(old_path) == ResourceUID::INVALID_ID) {
