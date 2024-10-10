@@ -328,6 +328,8 @@ void CanvasItem::_notification(int p_what) {
 
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
+			_update_snap_to_pixel_changed(false);
+			_update_snap_to_pixel_true_center_changed(false);
 
 			if (!block_transform_notify && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
@@ -1270,6 +1272,12 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_children_mode", "mode"), &CanvasItem::set_clip_children_mode);
 	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
+	ClassDB::bind_method(D_METHOD("set_snap_to_pixel", "mode"), &CanvasItem::set_snap_to_pixel);
+	ClassDB::bind_method(D_METHOD("get_snap_to_pixel"), &CanvasItem::get_snap_to_pixel);
+
+	ClassDB::bind_method(D_METHOD("set_snap_to_pixel_true_center", "mode"), &CanvasItem::set_snap_to_pixel_true_center);
+	ClassDB::bind_method(D_METHOD("get_snap_to_pixel_true_center"), &CanvasItem::get_snap_to_pixel_true_center);
+
 	GDVIRTUAL_BIND(_draw);
 
 	ADD_GROUP("Visibility", "");
@@ -1294,6 +1302,11 @@ void CanvasItem::_bind_methods() {
 	ADD_GROUP("Material", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
+
+	ADD_GROUP("Snap", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_to_pixel", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled"), "set_snap_to_pixel", "get_snap_to_pixel");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_to_pixel_true_center", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled"), "set_snap_to_pixel_true_center", "get_snap_to_pixel_true_center");
+
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
 
 	ADD_SIGNAL(MethodInfo("draw"));
@@ -1328,6 +1341,11 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_ONLY);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_AND_DRAW);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_MAX);
+
+	BIND_ENUM_CONSTANT(SNAP_TO_PIXEL_PARENT_NODE);
+	BIND_ENUM_CONSTANT(SNAP_TO_PIXEL_DISABLED);
+	BIND_ENUM_CONSTANT(SNAP_TO_PIXEL_ENABLED);
+	BIND_ENUM_CONSTANT(SNAP_TO_PIXEL_MAX);
 }
 
 Transform2D CanvasItem::get_canvas_transform() const {
@@ -1563,6 +1581,117 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(TEXTURE_REPEAT_DISABLED);
 	_refresh_texture_repeat_cache();
 	return (TextureRepeat)texture_repeat_cache;
+}
+
+void CanvasItem::_refresh_snap_to_pixel_cache() const {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (snap_to_pixel == SNAP_TO_PIXEL_PARENT_NODE) {
+		CanvasItem *parent_item = get_parent_item();
+		if (parent_item) {
+			snap_to_pixel_cache = parent_item->snap_to_pixel_cache;
+		} else {
+			snap_to_pixel_cache = RS::CANVAS_ITEM_SNAP_TO_PIXEL_DEFAULT;
+		}
+	} else {
+		snap_to_pixel_cache = RS::CanvasItemSnapToPixel(snap_to_pixel);
+	}
+}
+
+void CanvasItem::_update_self_snap_to_pixel(RS::CanvasItemSnapToPixel p_snap) {
+	RS::get_singleton()->canvas_item_set_snap_to_pixel(get_canvas_item(), p_snap);
+	queue_redraw();
+}
+
+void CanvasItem::_update_snap_to_pixel_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_snap_to_pixel_cache();
+	_update_self_snap_to_pixel(snap_to_pixel_cache);
+
+	if (p_propagate) {
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->snap_to_pixel == SNAP_TO_PIXEL_PARENT_NODE) {
+				E->_update_snap_to_pixel_changed(true);
+			}
+		}
+	}
+}
+
+void CanvasItem::set_snap_to_pixel(SnapToPixel p_snap_to_pixel) {
+	ERR_THREAD_GUARD;
+	ERR_FAIL_COND(p_snap_to_pixel >= SNAP_TO_PIXEL_MAX);
+
+	if (snap_to_pixel == p_snap_to_pixel) {
+		return;
+	}
+
+	snap_to_pixel = p_snap_to_pixel;
+	_update_snap_to_pixel_changed(true);
+	notify_property_list_changed();
+}
+
+CanvasItem::SnapToPixel CanvasItem::get_snap_to_pixel() const {
+	ERR_READ_THREAD_GUARD_V(SNAP_TO_PIXEL_DISABLED);
+	return snap_to_pixel;
+}
+
+void CanvasItem::_refresh_snap_to_pixel_true_center_cache() const {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (snap_to_pixel_true_center == SNAP_TO_PIXEL_TRUE_CENTER_PARENT_NODE) {
+		CanvasItem *parent_item = get_parent_item();
+		if (parent_item) {
+			snap_to_pixel_true_center_cache = parent_item->snap_to_pixel_true_center_cache;
+		} else {
+			snap_to_pixel_true_center_cache = RS::CANVAS_ITEM_SNAP_TO_PIXEL_TRUE_CENTER_DEFAULT;
+		}
+	} else {
+		snap_to_pixel_true_center_cache = RS::CanvasItemSnapToPixelTrueCenter(snap_to_pixel_true_center);
+	}
+}
+
+void CanvasItem::_update_self_snap_to_pixel_true_center(RS::CanvasItemSnapToPixelTrueCenter p_snap_to_pixel_true_center) {
+	RS::get_singleton()->canvas_item_set_snap_to_pixel_true_center(get_canvas_item(), p_snap_to_pixel_true_center);
+	queue_redraw();
+}
+
+void CanvasItem::_update_snap_to_pixel_true_center_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_snap_to_pixel_true_center_cache();
+	_update_self_snap_to_pixel_true_center(snap_to_pixel_true_center_cache);
+
+	if (p_propagate) {
+		for (CanvasItem *E : children_items) {
+			if (!E->top_level && E->snap_to_pixel_true_center == SNAP_TO_PIXEL_TRUE_CENTER_PARENT_NODE) {
+				E->_update_snap_to_pixel_true_center_changed(true);
+			}
+		}
+	}
+}
+
+void CanvasItem::set_snap_to_pixel_true_center(SnapToPixelTrueCenter p_snap_to_pixel_true_center) {
+	ERR_THREAD_GUARD;
+
+	if (snap_to_pixel_true_center == p_snap_to_pixel_true_center) {
+		return;
+	}
+
+	snap_to_pixel_true_center = p_snap_to_pixel_true_center;
+	_update_snap_to_pixel_true_center_changed(true);
+	notify_property_list_changed();
+}
+
+CanvasItem::SnapToPixelTrueCenter CanvasItem::get_snap_to_pixel_true_center() const {
+	ERR_READ_THREAD_GUARD_V(SNAP_TO_PIXEL_TRUE_CENTER_DISABLED);
+	return snap_to_pixel_true_center;
 }
 
 CanvasItem::CanvasItem() :
