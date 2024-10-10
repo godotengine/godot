@@ -39,7 +39,7 @@ class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);
 
 	bool disable_shortcuts = false;
-	PopupMenu *popup = nullptr;
+	ObjectID popup_id;
 	int current = -1;
 	bool fit_to_longest_item = true;
 	Vector2 _cached_size;

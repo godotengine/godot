@@ -671,6 +671,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 #define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
 #define IS_SAME_ROW(i, row) (i / current_columns == row)
 
+	VScrollBar *scroll_bar = Object::cast_to<VScrollBar>(ObjectDB::get_instance(scroll_bar_id));
+	ERR_FAIL_NULL(scroll_bar);
+
 	double prev_scroll = scroll_bar->get_value();
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1047,6 +1050,9 @@ void ItemList::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			VScrollBar *scroll_bar = Object::cast_to<VScrollBar>(ObjectDB::get_instance(scroll_bar_id));
+			ERR_FAIL_NULL(scroll_bar);
+
 			force_update_list_size();
 
 			int scroll_bar_minwidth = scroll_bar->get_minimum_size().x;
@@ -1373,6 +1379,9 @@ void ItemList::force_update_list_size() {
 		return;
 	}
 
+	VScrollBar *scroll_bar = Object::cast_to<VScrollBar>(ObjectDB::get_instance(scroll_bar_id));
+	ERR_FAIL_NULL(scroll_bar);
+
 	int scroll_bar_minwidth = scroll_bar->get_minimum_size().x;
 	Size2 size = get_size();
 	float max_column_width = 0.0;
@@ -1524,6 +1533,13 @@ void ItemList::force_update_list_size() {
 	shape_changed = false;
 }
 
+VScrollBar *ItemList::get_v_scroll_bar() {
+	VScrollBar *scroll_bar = Object::cast_to<VScrollBar>(ObjectDB::get_instance(scroll_bar_id));
+	ERR_FAIL_NULL_V(scroll_bar, nullptr);
+
+	return scroll_bar;
+}
+
 void ItemList::_scroll_changed(double) {
 	queue_redraw();
 }
@@ -1553,6 +1569,9 @@ String ItemList::_atr(int p_idx, const String &p_text) const {
 }
 
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
+	VScrollBar *scroll_bar = Object::cast_to<VScrollBar>(ObjectDB::get_instance(scroll_bar_id));
+	ERR_FAIL_NULL_V(scroll_bar, -1);
+
 	Vector2 pos = p_pos;
 	pos -= theme_cache.panel_style->get_offset();
 	pos.y += scroll_bar->get_value();
@@ -1587,6 +1606,9 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 }
 
 bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
+	VScrollBar *scroll_bar = Object::cast_to<VScrollBar>(ObjectDB::get_instance(scroll_bar_id));
+	ERR_FAIL_NULL_V(scroll_bar, false);
+
 	if (items.is_empty()) {
 		return true;
 	}
@@ -1978,9 +2000,10 @@ void ItemList::_bind_methods() {
 }
 
 ItemList::ItemList() {
-	scroll_bar = memnew(VScrollBar);
+	VScrollBar *scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar, false, INTERNAL_MODE_FRONT);
 	scroll_bar->connect(SceneStringName(value_changed), callable_mp(this, &ItemList::_scroll_changed));
+	scroll_bar_id = scroll_bar->get_instance_id();
 
 	connect(SceneStringName(mouse_exited), callable_mp(this, &ItemList::_mouse_exited));
 

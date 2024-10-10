@@ -111,7 +111,7 @@ private:
 
 	SelectMode select_mode = SELECT_SINGLE;
 	IconMode icon_mode = ICON_MODE_LEFT;
-	VScrollBar *scroll_bar = nullptr;
+	ObjectID scroll_bar_id;
 	TextServer::OverrunBehavior text_overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
 	uint64_t search_time_msec = 0;
@@ -306,7 +306,7 @@ public:
 
 	void force_update_list_size();
 
-	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
+	VScrollBar *get_v_scroll_bar();
 
 	ItemList();
 	~ItemList();

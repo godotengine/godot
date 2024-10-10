@@ -21,7 +21,7 @@
 			<return type="Popup" />
 			<description>
 				Returns the [Popup] node instance if one has been set already with [method set_popup].
-				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it will break some [TabContainer] functionality. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">
@@ -34,7 +34,7 @@
 			<return type="TabBar" />
 			<description>
 				Returns the [TabBar] contained in this container.
-				[b]Warning:[/b] This is a required internal node, removing and freeing it or editing its tabs may cause a crash. If you wish to edit the tabs, use the methods provided in [TabContainer].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it or editing its tabs will break [TabContainer] functionality. If you wish to edit the tabs, use the methods provided in [TabContainer].
 			</description>
 		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
