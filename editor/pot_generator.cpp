@@ -81,7 +81,8 @@ void POTGenerator::generate_pot(const String &p_file) {
 
 		for (int j = 0; j < msgids_context_plural.size(); j++) {
 			const Vector<String> &entry = msgids_context_plural[j];
-			_add_new_msgid(entry[0], entry[1], entry[2], file_path);
+			const String &comment = entry.size() > 3 ? entry[3] : String("");
+			_add_new_msgid(entry[0], entry[1], entry[2], file_path, comment);
 		}
 		for (int j = 0; j < msgids.size(); j++) {
 			_add_new_msgid(msgids[j], "", "", file_path);
@@ -135,10 +136,18 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 		for (int i = 0; i < v_msgid_data.size(); i++) {
 			String context = v_msgid_data[i].ctx;
 			String plural = v_msgid_data[i].plural;
+			const HashSet<String> &comments = v_msgid_data[i].comments;
 			const HashSet<String> &locations = v_msgid_data[i].locations;
 
 			// Put the blank line at the start, to avoid a double at the end when closing the file.
 			file->store_line("");
+
+			// Add comments if there are any
+			for (const String &comment : comments) {
+				for (const String &c : comment.split("\n")) {
+					file->store_line("# " + c);
+				}
+			}
 
 			// Write file locations.
 			for (const String &E : locations) {
@@ -199,7 +208,7 @@ void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool
 	}
 }
 
-void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context, const String &p_plural, const String &p_location) {
+void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context, const String &p_plural, const String &p_location, const String &p_comment) {
 	// Insert new location if msgid under same context exists already.
 	if (all_translation_strings.has(p_msgid)) {
 		Vector<MsgidData> &v_mdata = all_translation_strings[p_msgid];
@@ -209,6 +218,10 @@ void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context
 					WARN_PRINT("Redefinition of plural message (msgid_plural), under the same message (msgid) and context (msgctxt)");
 				}
 				v_mdata.write[i].locations.insert(p_location);
+				if (p_comment != "") {
+					v_mdata.write[i].comments.insert(p_comment);
+				}
+
 				return;
 			}
 		}
@@ -220,6 +233,9 @@ void POTGenerator::_add_new_msgid(const String &p_msgid, const String &p_context
 	mdata.ctx = p_context;
 	mdata.plural = p_plural;
 	mdata.locations.insert(p_location);
+	if (p_comment != "") {
+		mdata.comments.insert(p_comment);
+	}
 	all_translation_strings[p_msgid].push_back(mdata);
 }
 
