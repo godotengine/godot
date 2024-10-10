@@ -185,7 +185,6 @@ void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
 
 void EditorPropertyRootMotion::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Texture2D> t = get_editor_theme_icon(SNAME("Clear"));
 			clear->set_icon(t);

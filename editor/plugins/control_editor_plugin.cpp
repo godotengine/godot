@@ -105,7 +105,6 @@ void ControlPositioningWarning::gui_input(const Ref<InputEvent> &p_event) {
 
 void ControlPositioningWarning::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
 			_update_warning();
 			_update_toggler();
@@ -503,7 +502,6 @@ void ControlEditorPopupButton::_popup_visibility_changed(bool p_visible) {
 
 void ControlEditorPopupButton::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			arrow_icon = get_theme_icon("select_arrow", "Tree");
 		} break;
@@ -569,7 +567,6 @@ void AnchorPresetPicker::_preset_button_pressed(const int p_preset) {
 
 void AnchorPresetPicker::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			preset_buttons[PRESET_TOP_LEFT]->set_icon(get_editor_theme_icon(SNAME("ControlAlignTopLeft")));
 			preset_buttons[PRESET_CENTER_TOP]->set_icon(get_editor_theme_icon(SNAME("ControlAlignCenterTop")));
@@ -686,7 +683,6 @@ void SizeFlagPresetPicker::set_expand_flag(bool p_expand) {
 
 void SizeFlagPresetPicker::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vertical) {
 				preset_buttons[SIZE_SHRINK_BEGIN]->set_icon(get_editor_theme_icon(SNAME("ControlAlignCenterTop")));
@@ -1047,7 +1043,6 @@ void ControlEditorToolbar::_selection_changed() {
 
 void ControlEditorToolbar::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			anchors_button->set_icon(get_editor_theme_icon(SNAME("ControlLayout")));
 			anchor_mode_button->set_icon(get_editor_theme_icon(SNAME("Anchor")));
