@@ -170,12 +170,10 @@ public:
 		};
 
 		Type type = EMPTY;
-		Variant literal;
 		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
 		int leftmost_column = 0, rightmost_column = 0; // Column span for multiline tokens.
-		int cursor_position = -1;
 		CursorPlace cursor_place = CURSOR_NONE;
-		String source;
+		Variant literal;
 
 		const char *get_name() const;
 		bool can_precede_bin_op() const;
