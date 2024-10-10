@@ -138,6 +138,8 @@ public:
 
 	virtual String get_system_ca_certificates() override;
 
+	virtual String get_default_android_sdk_path() const override;
+
 	OS_LinuxBSD();
 	~OS_LinuxBSD();
 };

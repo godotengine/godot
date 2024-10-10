@@ -763,6 +763,10 @@ String OS_MacOS::get_system_ca_certificates() {
 	return certs;
 }
 
+String OS_MacOS::get_default_android_sdk_path() const {
+	return OS::get_singleton()->get_environment("HOME") + "/Library/Android/Sdk";
+}
+
 OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	// macOS supports both formats on ARM. Prefer S3TC/BPTC
 	// for better compatibility with x86 platforms.
