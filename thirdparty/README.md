@@ -351,6 +351,11 @@ a new version of the web instance.
 Some changes have been made in order to allow loading OpenGL and OpenGLES APIs at the same time.
 See the patches in the `patches` directory.
 
+## glm
+
+- Upstream: https://github.com/g-truc/glm.git
+- Version: 1.0.1 (0af55ccecd98d4e5a8d1fad7de25ba429d60e863, 2024)
+- License: MIT
 
 ## glslang
 
@@ -539,6 +544,17 @@ Files extracted from upstream source:
 Patch `godot-node-debug-fix.patch` workarounds shadowing of Godot's Node class
 in the MSVC debugger.
 
+
+## manifold
+
+- Upstream: https://github.com/elalish/manifold
+- Version: master (6f009ca13fab71e53f118179742cc2bb40455721, 2024)
+- License: Apache 2.0
+
+File extracted from upstream source:
+
+- `src/`
+- `AUTHORS`, `LICENSE`
 
 ## mbedtls
 
@@ -802,6 +818,16 @@ Files extracted from upstream source:
 - `src/sljit/`
 - `AUTHORS` and `LICENCE`
 
+
+## quickhull
+
+- Upstream: https://github.com/akuukka/quickhull.git
+- Version: master (1ffbc6f884ea1da89e104a5996cf8a726db673d5, 2023)
+- License: Public Domain
+
+Files extraced from upstream sources:
+
+- All `.cpp` and `.hpp` files
 
 ## recastnavigation
 
