@@ -919,7 +919,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 	//make blend more rounded
 	blend = mix(length(inner_pos), blend, blend);
 	blend *= blend;
-	blend = max(0.0, 1.0 - blend);
+	blend = clamp(reflections.data[ref_index].inv_fade_start - blend * reflections.data[ref_index].inv_fade_start, 0.0, 1.0);
 
 	if (reflections.data[ref_index].intensity > 0.0) { // compute reflection
 

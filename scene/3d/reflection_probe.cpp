@@ -39,6 +39,15 @@ float ReflectionProbe::get_intensity() const {
 	return intensity;
 }
 
+void ReflectionProbe::set_fade_start(float p_fade_start) {
+	fade_start = p_fade_start;
+	RS::get_singleton()->reflection_probe_set_fade_start(probe, p_fade_start);
+}
+
+float ReflectionProbe::get_fade_start() const {
+	return fade_start;
+}
+
 void ReflectionProbe::set_ambient_mode(AmbientMode p_mode) {
 	ambient_mode = p_mode;
 	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RS::ReflectionProbeAmbientMode(p_mode));
@@ -202,6 +211,9 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_intensity", "intensity"), &ReflectionProbe::set_intensity);
 	ClassDB::bind_method(D_METHOD("get_intensity"), &ReflectionProbe::get_intensity);
 
+	ClassDB::bind_method(D_METHOD("set_fade_start", "fade_start"), &ReflectionProbe::set_fade_start);
+	ClassDB::bind_method(D_METHOD("get_fade_start"), &ReflectionProbe::get_fade_start);
+
 	ClassDB::bind_method(D_METHOD("set_ambient_mode", "ambient"), &ReflectionProbe::set_ambient_mode);
 	ClassDB::bind_method(D_METHOD("get_ambient_mode"), &ReflectionProbe::get_ambient_mode);
 
@@ -243,6 +255,7 @@ void ReflectionProbe::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fade_start", "get_fade_start");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_origin_offset", "get_origin_offset");
