@@ -272,6 +272,7 @@ class EditorHelpBit : public VBoxContainer {
 		String experimental_message;
 		DocType doc_type; // For method return type.
 		Vector<ArgumentData> arguments; // For methods and signals.
+		bool is_vararg = false; // For methods.
 	};
 
 	inline static HashMap<StringName, HelpData> doc_class_cache;
