@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  plugin_config_dialog.h                                                */
+/*  project_settings_gdextension.h                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLUGIN_CONFIG_DIALOG_H
-#define PLUGIN_CONFIG_DIALOG_H
+#ifndef PROJECT_SETTINGS_GDEXTENSION_H
+#define PROJECT_SETTINGS_GDEXTENSION_H
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/box_container.h"
 
-class ConfigFile;
-class EditorValidationPanel;
+class GDExtensionCreateDialog;
+class GDExtensionEditDialog;
+class Tree;
 
-class PluginConfigDialog : public ConfirmationDialog {
-	GDCLASS(PluginConfigDialog, ConfirmationDialog);
+class ProjectSettingsGDExtension : public VBoxContainer {
+	GDCLASS(ProjectSettingsGDExtension, VBoxContainer);
 
 	enum {
-		MSG_ID_PLUGIN,
-		MSG_ID_SUBFOLDER,
-		MSG_ID_SCRIPT,
-		MSG_ID_ACTIVE,
+		COLUMN_PADDING_LEFT,
+		COLUMN_PATH,
+		COLUMN_EDIT,
+		COLUMN_PADDING_RIGHT,
+		COLUMN_MAX,
 	};
 
-	LineEdit *name_edit = nullptr;
-	LineEdit *subfolder_edit = nullptr;
-	TextEdit *desc_edit = nullptr;
-	LineEdit *author_edit = nullptr;
-	LineEdit *version_edit = nullptr;
-	OptionButton *script_option_edit = nullptr;
-	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
+	GDExtensionCreateDialog *create_dialog = nullptr;
+	GDExtensionEditDialog *config_dialog = nullptr;
+	Tree *extension_list = nullptr;
 
-	LocalVector<Control *> plugin_edit_hidden_controls;
-
-	EditorValidationPanel *validation_panel = nullptr;
-
-	bool _edit_mode = false;
-
-	void _clear_fields();
-	void _on_confirmed();
-	void _on_canceled();
-	void _on_required_text_changed();
-	void _create_script_for_plugin(const String &p_plugin_path, Ref<ConfigFile> p_config_file, int p_script_lang_index);
-	String _get_subfolder();
-
-	static String _to_absolute_plugin_path(const String &p_plugin_name);
+	void _on_create_gdextension_pressed();
+	void _on_gdextension_created();
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
+	void _update_extension_tree();
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
-	void config(const String &p_config_path);
-
-	PluginConfigDialog();
-	~PluginConfigDialog();
+	ProjectSettingsGDExtension();
 };
 
-#endif // PLUGIN_CONFIG_DIALOG_H
+#endif // PROJECT_SETTINGS_GDEXTENSION_H
