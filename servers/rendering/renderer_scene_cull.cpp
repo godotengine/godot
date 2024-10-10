@@ -1638,6 +1638,8 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 
 	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
 
+	_update_dirty_instance(instance);
+
 	HashMap<StringName, Instance::InstanceShaderParameter>::Iterator E = instance->instance_shader_uniforms.find(p_parameter);
 
 	if (!E) {
@@ -1647,7 +1649,15 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 		isp.value = p_value;
 		instance->instance_shader_uniforms[p_parameter] = isp;
 	} else {
-		E->value.value = p_value;
+		if (p_value.get_type() == E->value.info.type) {
+			E->value.value = p_value;
+		} else if (Variant::can_convert(p_value.get_type(), E->value.info.type)) {
+			Callable::CallError error;
+			const Variant *args[] = { &p_value };
+			Variant::construct(E->value.info.type, E->value.value, args, 1, error);
+		} else {
+			ERR_FAIL_MSG("Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type()));
+		}
 		if (E->value.index >= 0 && instance->instance_allocated_shader_uniforms) {
 			int flags_count = 0;
 			if (E->value.info.hint == PROPERTY_HINT_FLAGS) {
@@ -1665,7 +1675,7 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 				}
 			}
 			//update directly
-			RSG::material_storage->global_shader_parameters_instance_update(p_instance, E->value.index, p_value, flags_count);
+			RSG::material_storage->global_shader_parameters_instance_update(p_instance, E->value.index, E->value.value, flags_count);
 		}
 	}
 }
