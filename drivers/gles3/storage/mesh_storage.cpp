@@ -2046,6 +2046,67 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 	}
 }
 
+void MeshStorage::_multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+
+	// If we have a data cache, just update it.
+	if (multimesh->data_cache.size()) {
+		multimesh->data_cache.resize(Math::division_round_up(p_buffer.size(), (PackedByteArray::Size)sizeof(float)));
+		memcpy(multimesh->data_cache.ptrw(), p_buffer.ptr(), p_buffer.size());
+	}
+
+	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache) * (int)sizeof(float));
+	const uint8_t *r = p_buffer.ptr();
+	glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
+	glBufferData(GL_ARRAY_BUFFER, p_buffer.size(), r, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	multimesh->buffer_set = true;
+
+	if (multimesh->data_cache.size()) {
+		// Clear dirty since nothing will be dirty anymore.
+		uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
+		for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+			multimesh->data_cache_dirty_regions[i] = false;
+		}
+		multimesh->data_cache_used_dirty_regions = 0;
+
+		_multimesh_mark_all_dirty(multimesh, false, true); //update AABB
+	} else if (multimesh->mesh.is_valid()) {
+		//if we have a mesh set, we need to re-generate the AABB from the new data
+		const uint8_t *data = p_buffer.ptr();
+
+		if (multimesh->custom_aabb == AABB()) {
+			_multimesh_re_create_aabb(multimesh, reinterpret_cast<const float *>(data), multimesh->instances);
+			multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+		}
+	}
+}
+
+PackedByteArray MeshStorage::_multimesh_get_buffer_raw(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, PackedByteArray());
+	PackedByteArray ret;
+	if (multimesh->buffer == 0 || multimesh->instances == 0) {
+		return PackedByteArray();
+	} else if (multimesh->data_cache.size()) {
+		ret = multimesh->data_cache.to_byte_array();
+	} else {
+		// Buffer not cached, so fetch from GPU memory. This can be a stalling operation, avoid whenever possible.
+
+		Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+		ret.resize(multimesh->instances * multimesh->stride_cache * sizeof(float));
+		{
+			uint8_t *w = ret.ptrw();
+			const uint8_t *r = buffer.ptr();
+			memcpy(w, r, buffer.size());
+		}
+	}
+
+	return ret;
+}
+
 void MeshStorage::_multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);

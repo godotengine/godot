@@ -93,3 +93,19 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 
 	return multimesh->buffer;
 }
+
+void MeshStorage::_multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) {
+	DummyMultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+	multimesh->buffer.resize(p_buffer.size() / (PackedByteArray::Size)sizeof(float));
+	ERR_FAIL_COND(p_buffer.size() != multimesh->buffer.size() * (PackedByteArray::Size)sizeof(float));
+	float *cache_data = multimesh->buffer.ptrw();
+	memcpy(cache_data, p_buffer.ptr(), p_buffer.size());
+}
+
+PackedByteArray MeshStorage::_multimesh_get_buffer_raw(RID p_multimesh) const {
+	DummyMultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, PackedByteArray());
+
+	return multimesh->buffer.to_byte_array();
+}
