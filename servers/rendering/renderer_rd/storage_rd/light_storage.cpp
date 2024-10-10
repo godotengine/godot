@@ -70,6 +70,7 @@ LightStorage::LightStorage() {
 LightStorage::~LightStorage() {
 	free_reflection_data();
 	free_light_data();
+	free_directional_shadows();
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
 		RD::get_singleton()->free(E.value.cubemap);
@@ -489,20 +490,33 @@ void LightStorage::light_instance_set_aabb(RID p_light_instance, const AABB &p_a
 	light_instance->aabb = p_aabb;
 }
 
-void LightStorage::light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
+void LightStorage::light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale, RID p_viewport) {
 	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_NULL(light_instance);
 
-	ERR_FAIL_INDEX(p_pass, 6);
+	if (p_viewport.is_valid()) {
+		ERR_FAIL_INDEX(p_pass, 4);
 
-	light_instance->shadow_transform[p_pass].camera = p_projection;
-	light_instance->shadow_transform[p_pass].transform = p_transform;
-	light_instance->shadow_transform[p_pass].farplane = p_far;
-	light_instance->shadow_transform[p_pass].split = p_split;
-	light_instance->shadow_transform[p_pass].bias_scale = p_bias_scale;
-	light_instance->shadow_transform[p_pass].range_begin = p_range_begin;
-	light_instance->shadow_transform[p_pass].shadow_texel_size = p_shadow_texel_size;
-	light_instance->shadow_transform[p_pass].uv_scale = p_uv_scale;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].camera = p_projection;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].transform = p_transform;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].farplane = p_far;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].split = p_split;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].bias_scale = p_bias_scale;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].range_begin = p_range_begin;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].shadow_texel_size = p_shadow_texel_size;
+		light_instance->shadow_viewport[p_viewport].pass[p_pass].uv_scale = p_uv_scale;
+	} else {
+		ERR_FAIL_INDEX(p_pass, 6);
+
+		light_instance->shadow_transform[p_pass].camera = p_projection;
+		light_instance->shadow_transform[p_pass].transform = p_transform;
+		light_instance->shadow_transform[p_pass].farplane = p_far;
+		light_instance->shadow_transform[p_pass].split = p_split;
+		light_instance->shadow_transform[p_pass].bias_scale = p_bias_scale;
+		light_instance->shadow_transform[p_pass].range_begin = p_range_begin;
+		light_instance->shadow_transform[p_pass].shadow_texel_size = p_shadow_texel_size;
+		light_instance->shadow_transform[p_pass].uv_scale = p_uv_scale;
+	}
 }
 
 void LightStorage::light_instance_mark_visible(RID p_light_instance) {
@@ -684,11 +698,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						Projection rectm;
 						rectm.set_light_atlas_rect(atlas_rect);
 
-						Transform3D modelview = (inverse_transform * light_instance->shadow_transform[j].transform).inverse();
-
 						Projection shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
-						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
+						float bias_scale = shadow_transform->bias_scale * light_data.soft_shadow_scale;
 						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
@@ -696,7 +708,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						light_data.shadow_range_begin[j] = light_instance->shadow_transform[j].range_begin;
 						RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrices[j]);
 
-						Vector2 uv_scale = light_instance->shadow_transform[j].uv_scale;
+						Vector2 uv_scale = shadow_transform->uv_scale;
 						uv_scale *= atlas_rect.size; //adapt to atlas size
 						switch (j) {
 							case 0: {
@@ -1015,6 +1027,28 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 	if (r_directional_light_count) {
 		RD::get_singleton()->buffer_update(directional_light_buffer, 0, sizeof(DirectionalLightData) * r_directional_light_count, directional_lights);
+	}
+}
+
+void LightStorage::cleanup_directional_shadow_viewport(RID p_viewport) {
+	List<RID> owned;
+	light_instance_owner.get_owned_list(&owned);
+
+	for (RID &rid : owned) {
+		LightInstance *light_instance = light_instance_owner.get_or_null(rid);
+		if (light_instance) {
+			if (light_instance->shadow_viewport.has(p_viewport)) {
+				light_instance->shadow_viewport.erase(p_viewport);
+			}
+		}
+	}
+
+	if (directional_shadow_vp.has(p_viewport)) {
+		if (directional_shadow_vp[p_viewport].depth.is_valid()) {
+			RD::get_singleton()->free(directional_shadow_vp[p_viewport].depth);
+		}
+
+		directional_shadow_vp.erase(p_viewport);
 	}
 }
 
@@ -2415,8 +2449,25 @@ uint32_t LightStorage::get_shadow_atlas_depth_usage_bits() {
 
 /* DIRECTIONAL SHADOW */
 
-void LightStorage::update_directional_shadow_atlas() {
-	if (directional_shadow.depth.is_null() && directional_shadow.size > 0) {
+void LightStorage::update_directional_shadow_atlas(RID p_viewport) {
+	if (p_viewport.is_valid()) {
+		if (!directional_shadow_vp.has(p_viewport)) {
+			DirectionalShadowVP dsvp;
+
+			RD::TextureFormat tf;
+			tf.format = directional_shadow.use_16_bits ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_D32_SFLOAT;
+			tf.width = directional_shadow.size;
+			tf.height = directional_shadow.size;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+			dsvp.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			Vector<RID> fb_tex;
+			fb_tex.push_back(dsvp.depth);
+			dsvp.fb = RD::get_singleton()->framebuffer_create(fb_tex);
+
+			directional_shadow_vp[p_viewport] = dsvp;
+		}
+	} else if (directional_shadow.depth.is_null() && directional_shadow.size > 0) {
 		RD::TextureFormat tf;
 		tf.format = get_shadow_atlas_depth_format(directional_shadow.use_16_bits);
 		tf.width = directional_shadow.size;
@@ -2429,6 +2480,28 @@ void LightStorage::update_directional_shadow_atlas() {
 		directional_shadow.fb = RD::get_singleton()->framebuffer_create(fb_tex);
 	}
 }
+
+bool LightStorage::free_directional_shadows() {
+	bool freed_something = false;
+
+	if (directional_shadow.depth.is_valid()) {
+		RD::get_singleton()->free(directional_shadow.depth);
+		directional_shadow.depth = RID();
+
+		freed_something = true;
+	}
+
+	for (KeyValue<RID, DirectionalShadowVP> &key : directional_shadow_vp) {
+		if (key.value.depth.is_valid()) {
+			RD::get_singleton()->free(key.value.depth);
+			freed_something = true;
+		}
+	}
+	directional_shadow_vp.clear();
+
+	return freed_something;
+}
+
 void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits) {
 	p_size = nearest_power_of_2_templated(p_size);
 
@@ -2439,9 +2512,7 @@ void LightStorage::directional_shadow_atlas_set_size(int p_size, bool p_16_bits)
 	directional_shadow.size = p_size;
 	directional_shadow.use_16_bits = p_16_bits;
 
-	if (directional_shadow.depth.is_valid()) {
-		RD::get_singleton()->free(directional_shadow.depth);
-		directional_shadow.depth = RID();
+	if (free_directional_shadows()) {
 		RendererSceneRenderRD::get_singleton()->base_uniforms_changed();
 	}
 }

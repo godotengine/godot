@@ -3727,6 +3727,13 @@
 				[b]Note:[/b] The equivalent node is [Viewport].
 			</description>
 		</method>
+		<method name="viewport_get_cascade_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportCascadeMode" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Obtain the cascade step mode for a given viewport.
+			</description>
+		</method>
 		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
@@ -3830,6 +3837,14 @@
 			<param index="2" name="offset" type="Transform2D" />
 			<description>
 				Sets the transformation of a viewport's canvas.
+			</description>
+		</method>
+		<method name="viewport_set_cascade_mode">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportCascadeMode" />
+			<description>
+				Sets the cascade step mode of a viewport. See [enum ViewportCascadeMode] for options.
 			</description>
 		</method>
 		<method name="viewport_set_clear_mode">

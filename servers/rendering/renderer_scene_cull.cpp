@@ -3366,18 +3366,56 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 		// Directional Shadows
 
+		int viewports_pass = RSG::viewport->get_draw_viewports_pass(); // this is increases for every frame we draw
+		RS::ViewportCascadeMode cascade_mode = p_viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_viewport) : RS::VIEWPORT_CASCADE_ALL;
+		bool needs_full_update = RSG::light_storage->directional_shadow_get_needs_full_update(p_viewport);
+
 		for (uint32_t i = 0; i < cull.shadow_count; i++) {
 			for (uint32_t j = 0; j < cull.shadows[i].cascade_count; j++) {
-				const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
-				//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
-				RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale);
-				if (max_shadows_used == MAX_UPDATE_SHADOWS) {
-					continue;
+				bool skip = false;
+				if (cascade_mode == RS::VIEWPORT_CASCADE_TWOSTEP && !needs_full_update && cull.shadows[i].cascade_count == 4) {
+					// We only render 3 cascades per frame (pass)
+					// 0: 0 + 1 + 2
+					// 1: 0 + 1 + 3
+					// So cascade 0 and 1 are always renderered
+					// And cascades 2 and 3 are rendered overy other frame
+
+					if (j == 2 && (viewports_pass % 2) != 0) {
+						skip = true;
+					} else if (j == 3 && (viewports_pass % 2) != 1) {
+						skip = true;
+					}
+				} else if (cascade_mode == RS::VIEWPORT_CASCADE_FOURSTEP && !needs_full_update && cull.shadows[i].cascade_count == 4) {
+					// We only render 2 cascades per frame (pass)
+					// 0: 0 + 1
+					// 1: 0 + 2
+					// 2: 0 + 1
+					// 3: 0 + 3
+					// So cascade 0 is always renderered
+					// Cascade 1 is rendered every other frame
+					// And cascades 2 and 3 are rendered once every 4 frames
+
+					if (j == 1 && (viewports_pass % 2) != 0) {
+						skip = true;
+					} else if (j == 2 && (viewports_pass % 4) != 1) {
+						skip = true;
+					} else if (j == 3 && (viewports_pass % 4) != 3) {
+						skip = true;
+					}
 				}
-				render_shadow_data[max_shadows_used].light = cull.shadows[i].light_instance;
-				render_shadow_data[max_shadows_used].pass = j;
-				render_shadow_data[max_shadows_used].instances.merge_unordered(scene_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
-				max_shadows_used++;
+
+				if (!skip) {
+					const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
+					//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
+					RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale, p_viewport);
+					if (max_shadows_used == MAX_UPDATE_SHADOWS) {
+						continue;
+					}
+					render_shadow_data[max_shadows_used].light = cull.shadows[i].light_instance;
+					render_shadow_data[max_shadows_used].pass = j;
+					render_shadow_data[max_shadows_used].instances.merge_unordered(scene_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
+					max_shadows_used++;
+				}
 			}
 		}
 

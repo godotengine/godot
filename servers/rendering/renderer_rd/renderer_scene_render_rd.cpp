@@ -855,8 +855,16 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
-		if (RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture().is_valid()) {
-			RID shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture();
+		RID shadow_atlas_texture;
+
+		bool step_cascades = p_render_data->viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_render_data->viewport) != RS::VIEWPORT_CASCADE_ALL : false;
+		if (step_cascades) {
+			shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture(p_render_data->viewport);
+		} else {
+			shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture();
+		}
+
+		if (shadow_atlas_texture.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 			RID dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 
@@ -1211,6 +1219,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.decals = &p_decals;
 		render_data.lightmaps = &p_lightmaps;
 		render_data.fog_volumes = &p_fog_volumes;
+		render_data.viewport = p_viewport;
 		render_data.environment = p_environment;
 		render_data.compositor = p_compositor;
 		render_data.camera_attributes = p_camera_attributes;

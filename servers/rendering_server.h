@@ -1100,6 +1100,16 @@ public:
 	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
+	enum ViewportCascadeMode {
+		VIEWPORT_CASCADE_ALL,
+		VIEWPORT_CASCADE_TWOSTEP,
+		VIEWPORT_CASCADE_FOURSTEP,
+		VIEWPORT_CASCADE_MAX
+	};
+
+	virtual void viewport_set_cascade_mode(RID p_viewport, ViewportCascadeMode p_mode) = 0;
+	virtual ViewportCascadeMode viewport_get_cascade_mode(RID p_viewport) const = 0;
+
 	/* SKY API */
 
 	enum SkyMode {

@@ -351,6 +351,9 @@ private:
 	VRSUpdateMode vrs_update_mode = VRS_UPDATE_ONCE;
 	Ref<Texture2D> vrs_texture;
 
+	// Directional shadow cascade
+	CascadeMode cascade_mode = CASCADE_ALL;
+
 	struct GUI {
 		bool mouse_in_viewport = false;
 		HashMap<int, ObjectID> touch_focus;
@@ -658,6 +661,11 @@ public:
 
 	void set_vrs_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_vrs_texture() const;
+
+	// Directional shadow cascade
+
+	void set_cascade_mode(CascadeMode p_cascade_mode);
+	CascadeMode get_cascade_mode() const;
 
 	virtual DisplayServer::WindowID get_window_id() const = 0;
 

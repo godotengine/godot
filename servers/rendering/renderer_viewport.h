@@ -107,6 +107,7 @@ public:
 		RID shadow_atlas;
 		int shadow_atlas_size = 2048;
 		bool shadow_atlas_16_bits = true;
+		RS::ViewportCascadeMode cascade_mode = RS::VIEWPORT_CASCADE_ALL;
 
 		bool sdf_active = false;
 
@@ -306,6 +307,9 @@ public:
 	void viewport_set_vrs_mode(RID p_viewport, RS::ViewportVRSMode p_mode);
 	void viewport_set_vrs_update_mode(RID p_viewport, RS::ViewportVRSUpdateMode p_mode);
 	void viewport_set_vrs_texture(RID p_viewport, RID p_texture);
+
+	void viewport_set_cascade_mode(RID p_viewport, RS::ViewportCascadeMode p_mode);
+	RS::ViewportCascadeMode viewport_get_cascade_mode(RID p_viewport) const;
 
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 

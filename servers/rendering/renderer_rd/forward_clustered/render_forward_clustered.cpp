@@ -1240,8 +1240,10 @@ void RenderForwardClustered::_debug_draw_cluster(Ref<RenderSceneBuffersRD> p_ren
 ////////////////////////////////////////////////////////////////////////////////
 // FOG SHADER
 
-void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_viewport, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
+
+	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	Ref<RenderBufferDataForwardClustered> rb_data = p_render_buffers->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 	ERR_FAIL_COND(rb_data.is_null());
@@ -1289,16 +1291,22 @@ void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_
 		settings.rb_size = size;
 		settings.time = time;
 		settings.is_using_radiance_cubemap_array = is_using_radiance_cubemap_array();
-		settings.max_cluster_elements = RendererRD::LightStorage::get_singleton()->get_max_cluster_elements();
+		settings.max_cluster_elements = light_storage->get_max_cluster_elements();
 		settings.volumetric_fog_filter_active = get_volumetric_fog_filter_active();
 
 		settings.shadow_sampler = shadow_sampler;
-		settings.shadow_atlas_depth = RendererRD::LightStorage::get_singleton()->owns_shadow_atlas(p_shadow_atlas) ? RendererRD::LightStorage::get_singleton()->shadow_atlas_get_texture(p_shadow_atlas) : RID();
+		settings.shadow_atlas_depth = light_storage->owns_shadow_atlas(p_shadow_atlas) ? light_storage->shadow_atlas_get_texture(p_shadow_atlas) : RID();
 		settings.voxel_gi_buffer = rbgi->get_voxel_gi_buffer();
-		settings.omni_light_buffer = RendererRD::LightStorage::get_singleton()->get_omni_light_buffer();
-		settings.spot_light_buffer = RendererRD::LightStorage::get_singleton()->get_spot_light_buffer();
-		settings.directional_shadow_depth = RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture();
-		settings.directional_light_buffer = RendererRD::LightStorage::get_singleton()->get_directional_light_buffer();
+		settings.omni_light_buffer = light_storage->get_omni_light_buffer();
+		settings.spot_light_buffer = light_storage->get_spot_light_buffer();
+
+		bool step_cascades = p_viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_viewport) != RS::VIEWPORT_CASCADE_ALL : false;
+		if (step_cascades) {
+			settings.directional_shadow_depth = light_storage->directional_shadow_get_texture(p_viewport);
+		} else {
+			settings.directional_shadow_depth = light_storage->directional_shadow_get_texture();
+		}
+		settings.directional_light_buffer = light_storage->get_directional_light_buffer();
 
 		settings.vfog = fog;
 		settings.cluster_builder = rb_data->cluster_builder;
@@ -1572,7 +1580,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	if (rb_data.is_valid()) {
 		RENDER_TIMESTAMP("Update Volumetric Fog");
 		bool directional_shadows = RendererRD::LightStorage::get_singleton()->has_directional_shadows(directional_light_count);
-		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
+		_update_volumetric_fog(rb, p_render_data->viewport, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
 	}
 }
 
@@ -2493,8 +2501,8 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 		}
 
 		use_pancake = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0;
-		light_projection = light_storage->light_instance_get_shadow_camera(p_light, p_pass);
-		light_transform = light_storage->light_instance_get_shadow_transform(p_light, p_pass);
+		light_projection = light_storage->light_instance_get_shadow_camera(p_light, p_pass, p_viewport);
+		light_transform = light_storage->light_instance_get_shadow_transform(p_light, p_pass, p_viewport);
 
 		atlas_rect = light_storage->light_instance_get_directional_rect(p_light);
 
@@ -2522,14 +2530,24 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 		Rect2 atlas_rect_norm = atlas_rect;
 		atlas_rect_norm.position /= directional_shadow_size;
 		atlas_rect_norm.size /= directional_shadow_size;
-		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect_norm);
+		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect_norm, p_viewport);
 
 		zfar = RSG::light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE);
 
-		render_fb = light_storage->direction_shadow_get_fb();
+		bool step_cascades = p_viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_viewport) != RS::VIEWPORT_CASCADE_ALL : false;
+		if (step_cascades) {
+			// Clear each region as we render it
+			p_open_pass = p_pass == 0;
+			p_clear_region = true;
+
+			// Use the shadow map we created for our viewport
+			render_fb = light_storage->direction_shadow_get_fb(p_viewport);
+		} else {
+			// Use our shared shadow map
+			render_fb = light_storage->direction_shadow_get_fb();
+		}
 		render_texture = RID();
 		flip_y = true;
-
 	} else {
 		//set from shadow atlas
 
@@ -3202,7 +3220,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID texture;
 		if (p_render_data && p_render_data->shadow_atlas.is_valid()) {
-			texture = RendererRD::LightStorage::get_singleton()->shadow_atlas_get_texture(p_render_data->shadow_atlas);
+			texture = light_storage->shadow_atlas_get_texture(p_render_data->shadow_atlas);
 		}
 		if (!texture.is_valid()) {
 			texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_DEPTH);
@@ -3214,8 +3232,18 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 6;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		if (p_use_directional_shadow_atlas && RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture().is_valid()) {
-			u.append_id(RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture());
+
+		RID direction_shadow_texture;
+		if (p_use_directional_shadow_atlas) {
+			bool step_cascades = p_render_data->viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_render_data->viewport) != RS::VIEWPORT_CASCADE_ALL : false;
+			if (step_cascades) {
+				direction_shadow_texture = light_storage->directional_shadow_get_texture(p_render_data->viewport);
+			} else {
+				direction_shadow_texture = light_storage->directional_shadow_get_texture();
+			}
+		}
+		if (direction_shadow_texture.is_valid()) {
+			u.append_id(direction_shadow_texture);
 		} else {
 			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_DEPTH));
 		}

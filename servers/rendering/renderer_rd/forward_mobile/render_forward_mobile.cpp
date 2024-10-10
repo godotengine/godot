@@ -462,8 +462,18 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 5;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		if (p_use_directional_shadow_atlas && light_storage->directional_shadow_get_texture().is_valid()) {
-			u.append_id(light_storage->directional_shadow_get_texture());
+
+		RID direction_shadow_texture;
+		if (p_use_directional_shadow_atlas) {
+			bool step_cascades = p_render_data->viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_render_data->viewport) != RS::VIEWPORT_CASCADE_ALL : false;
+			if (step_cascades) {
+				direction_shadow_texture = light_storage->directional_shadow_get_texture(p_render_data->viewport);
+			} else {
+				direction_shadow_texture = light_storage->directional_shadow_get_texture();
+			}
+		}
+		if (direction_shadow_texture.is_valid()) {
+			u.append_id(direction_shadow_texture);
 		} else {
 			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_DEPTH));
 		}
@@ -661,6 +671,8 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 
 void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 
 	p_render_data->cube_shadows.clear();
 	p_render_data->shadows.clear();
@@ -1241,8 +1253,8 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 		}
 
 		use_pancake = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0;
-		light_projection = light_storage->light_instance_get_shadow_camera(p_light, p_pass);
-		light_transform = light_storage->light_instance_get_shadow_transform(p_light, p_pass);
+		light_projection = light_storage->light_instance_get_shadow_camera(p_light, p_pass, p_viewport);
+		light_transform = light_storage->light_instance_get_shadow_transform(p_light, p_pass, p_viewport);
 
 		atlas_rect = light_storage->light_instance_get_directional_rect(p_light);
 
@@ -1270,11 +1282,21 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 		Rect2 atlas_rect_norm = atlas_rect;
 		atlas_rect_norm.position /= directional_shadow_size;
 		atlas_rect_norm.size /= directional_shadow_size;
-		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect_norm);
+		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect_norm, p_viewport);
 
 		zfar = RSG::light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE);
 
-		render_fb = light_storage->direction_shadow_get_fb();
+		bool step_cascades = p_viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_viewport) != RS::VIEWPORT_CASCADE_ALL : false;
+		if (step_cascades) {
+			// Clear each region as we render it
+			p_open_pass = p_pass == 0;
+
+			// Use the shadow map we created for our viewport
+			render_fb = light_storage->direction_shadow_get_fb(p_viewport);
+		} else {
+			// Use our shared shadow map
+			render_fb = light_storage->direction_shadow_get_fb();
+		}
 		render_texture = RID();
 		flip_y = true;
 
