@@ -90,7 +90,7 @@ Point2 StyleBox::get_offset() const {
 }
 
 void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
-	GDVIRTUAL_REQUIRED_CALL(_draw, p_canvas_item, p_rect);
+	GDVIRTUAL_CALL(_draw, p_canvas_item, p_rect);
 }
 
 Rect2 StyleBox::get_draw_rect(const Rect2 &p_rect) const {

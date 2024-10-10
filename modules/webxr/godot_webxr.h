@@ -45,7 +45,7 @@ enum WebXRInputEvent {
 };
 
 typedef void (*GodotWebXRSupportedCallback)(char *p_session_mode, int p_supported);
-typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type, char *p_enabled_features);
+typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type, char *p_enabled_features, char *p_environment_blend_mode);
 typedef void (*GodotWebXREndedCallback)();
 typedef void (*GodotWebXRFailedCallback)(char *p_message);
 typedef void (*GodotWebXRInputEventCallback)(int p_event_type, int p_input_source_id);

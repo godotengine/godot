@@ -10,19 +10,23 @@
 # David Salcas <davisalcas@gmail.com>, 2023.
 # David Fernández Pérez <davidfernandezperez.thezombrex@gmail.com>, 2023.
 # Carlos Cortes Garcia <carlos.cortes.games@gmail.com>, 2023.
+# C H O P O <ograncthulhu@gmail.com>, 2024.
+# ninjum <ninhum@gmx.com>, 2024.
+# spukes <soyceltista@hotmail.com>, 2024.
+# "Aquiles T. M." <aquiles.sonido@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-12-11 21:00+0000\n"
-"Last-Translator: Carlos Cortes Garcia <carlos.cortes.games@gmail.com>\n"
+"PO-Revision-Date: 2024-09-05 14:09+0000\n"
+"Last-Translator: \"Aquiles T. M.\" <aquiles.sonido@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -173,6 +177,12 @@ msgstr "Botón Joystick %d"
 
 msgid "Pressure:"
 msgstr "Presión:"
+
+msgid "canceled"
+msgstr "cancelado"
+
+msgid "touched"
+msgstr "tocado"
 
 msgid "released"
 msgstr "liberado"
@@ -345,6 +355,9 @@ msgstr "Seleccionar Palabra Debaixo do Cursor"
 msgid "Add Selection for Next Occurrence"
 msgstr "Engadir selección para a próxima aparición"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Omitir selección para a próxima aparición"
+
 msgid "Clear Carets and Selection"
 msgstr "Borrar Cursores e Selección"
 
@@ -430,11 +443,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Xa existe unha acción co nome '%s'."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Non se pode reverter - A acción é igual ca inicial"
+
 msgid "Revert Action"
 msgstr "Revertir Acción"
 
 msgid "Add Event"
 msgstr "Engadir Evento"
+
+msgid "Remove Action"
+msgstr "Eliminar acción"
 
 msgid "Cannot Remove Action"
 msgstr "Non se pode eliminar a acción"
@@ -445,8 +464,14 @@ msgstr "Editar Evento"
 msgid "Remove Event"
 msgstr "Eliminar Evento"
 
+msgid "Filter by Name"
+msgstr "Filtrar por nome"
+
 msgid "Clear All"
 msgstr "Limpar Todo"
+
+msgid "Clear all search filters."
+msgstr "Limpar tódolos filtros de búsqueda."
 
 msgid "Add New Action"
 msgstr "Engadir Nova Acción"
@@ -478,6 +503,15 @@ msgstr "Introducir Clave Aquí"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplicar Clave(s) Seleccionadas(s)"
 
+msgid "Cut Selected Key(s)"
+msgstr "Cortar Clave(s) Seleccionada(s)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copiar Clave(s) Seleccionada(s)"
+
+msgid "Paste Key(s)"
+msgstr "Pegar Clave(s)"
+
 msgid "Delete Selected Key(s)"
 msgstr "Eliminar Clave(s) Seleccionada(s)"
 
@@ -490,6 +524,15 @@ msgstr "Facer os Manipuladores Lineais"
 msgid "Make Handles Balanced"
 msgstr "Facer os Manipuladores equilibrados"
 
+msgid "Make Handles Mirrored"
+msgstr "Facer os manipuladores simétricos"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Facer os Manipuladores equilibrados (Tanxente Automática)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Facer os Manipuladores espellados (Tanxente Automática)"
+
 msgid "Add Bezier Point"
 msgstr "Engadir Punto Bezier"
 
@@ -499,8 +542,17 @@ msgstr "Mover Punto Bezier"
 msgid "Animation Duplicate Keys"
 msgstr "Duplicar Claves de Animación"
 
+msgid "Animation Cut Keys"
+msgstr "Cortar Claves de Animación"
+
+msgid "Animation Paste Keys"
+msgstr "Pegar Claves de Animación"
+
 msgid "Animation Delete Keys"
 msgstr "Eliminar Claves de Animación"
+
+msgid "Focus"
+msgstr "Foco"
 
 msgid "Select All Keys"
 msgstr "Seleccionar Todas as Claves"
@@ -546,6 +598,42 @@ msgstr "Cambiar Lonxitude da Animación"
 
 msgid "Change Animation Loop"
 msgstr "Cambiar Ciclo da Animación"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"Non se pode cambiar o modo de bucle nunha animación creada a partires dunha "
+"escena importada."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Non se pode cambiar o modo de bucle na animación incorporada noutra escena."
+
+msgid "Property Track..."
+msgstr "Pista de Propiedades..."
+
+msgid "3D Position Track..."
+msgstr "Pista de Posición 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Pista de Rotación 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Pista de Escala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Pista de Forma Combinada..."
+
+msgid "Call Method Track..."
+msgstr "Pista de Chamadas de Métodos..."
+
+msgid "Bezier Curve Track..."
+msgstr "Pista de Curva Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Pista de Reprodución de audio..."
+
+msgid "Animation Playback Track..."
+msgstr "Pista de Reprodución de animación..."
 
 msgid "Animation length (frames)"
 msgstr "Lonxitude da Animacion (en fotogramas)"
@@ -613,17 +701,41 @@ msgstr "(Inválido, tipo esperado: %s)"
 msgid "Easing:"
 msgstr "Relaxación:"
 
+msgid "In-Handle:"
+msgstr "No manexo:"
+
+msgid "Out-Handle:"
+msgstr "Manipulador de saída:"
+
+msgid "Handle mode: Free\n"
+msgstr "Modo de manexo: Libre\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Modo de manexo: Lineal\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Modo de manexo: Equilibrado\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Modo de manexo: Espellado\n"
+
 msgid "Stream:"
 msgstr "Fluxo:"
 
 msgid "Start (s):"
 msgstr "Inicio (s):"
 
+msgid "End (s):"
+msgstr "Fin (s):"
+
 msgid "Animation Clip:"
 msgstr "Clip de Animación:"
 
 msgid "Toggle Track Enabled"
 msgstr "Act./Desact. Pista"
+
+msgid "Don't Use Blend"
+msgstr "Non usar mestura"
 
 msgid "Continuous"
 msgstr "Continuo"
@@ -655,8 +767,20 @@ msgstr "Interpolación de Bucle Recortado"
 msgid "Wrap Loop Interp"
 msgstr "Interpolación de Bucle Envolvente"
 
+msgid "Insert Key..."
+msgstr "Insertar Chave..."
+
 msgid "Duplicate Key(s)"
 msgstr "Duplicar Chave(s)"
+
+msgid "Cut Key(s)"
+msgstr "Cortar Nodo(s)"
+
+msgid "Copy Key(s)"
+msgstr "Copiar chave(s)"
+
+msgid "Add RESET Value(s)"
+msgstr "Engadir valor(es) de RESET"
 
 msgid "Delete Key(s)"
 msgstr "Eliminar Chave(s)"
@@ -673,6 +797,13 @@ msgstr "Cambiar Modo de Bucle da Animación"
 msgid "Change Animation Use Blend"
 msgstr "Cambiar Uso de Mezcla na Animación"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"As pistas comprimidas non poden editarse nin eliminarse. Volve a importar a "
+"animación coa compresión desactivada para poder editala."
+
 msgid "Remove Anim Track"
 msgstr "Eliminar Pista de Animación"
 
@@ -681,6 +812,11 @@ msgstr "Crear nova pista para %s e insertar clave?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Crear %d novas pistas e insertar claves?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Manteña premida a tecla Maiúsculas ao facer clic na icona da chave para "
+"omitir este cadro de diálogo."
 
 msgid "Create"
 msgstr "Crear"
@@ -743,17 +879,8 @@ msgstr "A ruta á pista é inválida, polo que non se poden engadir chaves."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "A pista non e do tipo Node3D, non se pode insertar a clave"
 
-msgid "Add Position Key"
-msgstr "Añadir Clave de Posición"
-
-msgid "Add Rotation Key"
-msgstr "Añadir Clave de Rotación"
-
-msgid "Add Scale Key"
-msgstr "Añadir Clave de Escala"
-
-msgid "Add Track Key"
-msgstr "Engadir Chave de Pista"
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "A pista non e do tipo MeshInstance3D, non se pode insertar a clave"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -783,6 +910,9 @@ msgstr "BlendShape"
 msgid "Methods"
 msgstr "Métodos"
 
+msgid "Bezier"
+msgstr "Bezier"
+
 msgid "Audio"
 msgstr "Son"
 
@@ -794,6 +924,15 @@ msgstr "Pegar Pistas"
 
 msgid "Animation Scale Keys"
 msgstr "Escalar Claves de Animación"
+
+msgid "Animation Set Start Offset"
+msgstr "Definir Offset Inicial da Animación"
+
+msgid "Animation Set End Offset"
+msgstr "Definir Offset Final da Animación"
+
+msgid "Make Easing Keys"
+msgstr "Crear Chaves de Interpolación"
 
 msgid "Animation Add RESET Keys"
 msgstr "Añadir Claves de Animación de RESET"
@@ -1206,6 +1345,9 @@ msgstr "Depuración"
 msgid "Copy Node Path"
 msgstr "Copiar Ruta do Nodo"
 
+msgid "Instance:"
+msgstr "Instancia:"
+
 msgid "Decompressing remote file system"
 msgstr "Descomprimindo sistema de ficheiros remoto"
 
@@ -1477,8 +1619,14 @@ msgstr "Crear Cartafol"
 msgid "Folder name is valid."
 msgstr "O nome do cartafol é válido."
 
+msgid "Double-click to open in browser."
+msgstr "Dobre-clic para abrir no navegador."
+
 msgid "Thanks from the Godot community!"
 msgstr "Moitas grazas de parte da comunidade de Godot!"
+
+msgid "(unknown)"
+msgstr "(descoñecido)"
 
 msgid "Godot Engine contributors"
 msgstr "Colaboradores de Godot Engine"
@@ -1498,6 +1646,9 @@ msgstr "Desenvolvedores"
 
 msgid "Authors"
 msgstr "Autores"
+
+msgid "Patrons"
+msgstr "Mecenas"
 
 msgid "Platinum Sponsors"
 msgstr "Patrocinadores Platino"
@@ -1940,6 +2091,12 @@ msgstr "Importar Perf(il/ís)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrar Perfils de Características de Godot"
+
+msgid "Restart"
+msgstr "Reiniciar"
+
+msgid "Save & Restart"
+msgstr "Gardar e Reinicar"
 
 msgid "ScanSources"
 msgstr "Escanear Fontes"
@@ -2404,10 +2561,6 @@ msgstr "Disposición das Ventás do Editor"
 msgid "Take Screenshot"
 msgstr "Captura de Pantalla"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
-"As capturas de pantalla gárdanse no cartafol de Datos/Configuración do Editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Act./Desact. Pantalla Completa"
 
@@ -2438,9 +2591,6 @@ msgstr "Reportar un Erro"
 msgid "Send Docs Feedback"
 msgstr "Reportar Problema ca Documentación"
 
-msgid "Save & Restart"
-msgstr "Gardar e Reinicar"
-
 msgid "Update Continuously"
 msgstr "Actualizar de Maneira Continua"
 
@@ -2464,12 +2614,6 @@ msgstr "Biblioteca de Exportación"
 
 msgid "Open & Run a Script"
 msgstr "Abrir e Executar un Script"
-
-msgid "Reload"
-msgstr "Recargar"
-
-msgid "Resave"
-msgstr "Volver a Gardar"
 
 msgid "New Inherited"
 msgstr "Nova Escena Herdada"
@@ -2584,9 +2728,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Escribe a túa lóxica no método '_run()'."
 
-msgid "There is an edited scene already."
-msgstr "Xa hai unha escena editada."
-
 msgid "General"
 msgstr "Xeral"
 
@@ -2625,6 +2766,12 @@ msgstr "A petición fallou."
 
 msgid "Cannot remove temporary file:"
 msgstr "Non se pode eliminar o arquivo temporal:"
+
+msgid "Connecting..."
+msgstr "Conectando..."
+
+msgid "Requesting..."
+msgstr "Solicitando..."
 
 msgid "Importing:"
 msgstr "Importando:"
@@ -2746,6 +2893,9 @@ msgstr "Eliminar de Favoritos"
 msgid "Reimport"
 msgstr "Reimportar"
 
+msgid "Open in File Manager"
+msgstr "Abrir no Explorador de Arquivos"
+
 msgid "New Folder..."
 msgstr "Novo Cartafol..."
 
@@ -2764,8 +2914,32 @@ msgstr "Duplicar..."
 msgid "Rename..."
 msgstr "Renomear..."
 
-msgid "Open in File Manager"
-msgstr "Abrir no Explorador de Arquivos"
+msgid "Yellow"
+msgstr "Amarelo"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Teal"
+msgstr "Verde Azulado"
+
+msgid "Blue"
+msgstr "Azul"
+
+msgid "Purple"
+msgstr "Morado"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Gris"
+
+msgid "Go to previous selected folder/file."
+msgstr "Ir ao cartafol previamente seleccionado."
+
+msgid "Go to next selected folder/file."
+msgstr "Ir ao seguinte cartafol seleccionado."
 
 msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Arquivos"
@@ -2832,6 +3006,19 @@ msgstr "Mover"
 msgid "Select Current Folder"
 msgstr "Seleccionar Cartafol Actual"
 
+msgid "Cannot save file with an empty filename."
+msgstr "Non pode gardar un ficheiro cun nome baleiro."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Non pode gardar un ficheiro cun nome que comeza cun punto."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"O ficheiro \"%s\" xa existe.\n"
+"Quere sobreescribilo?"
+
 msgid "Select This Folder"
 msgstr "Seleccionar Este Cartafol"
 
@@ -2855,6 +3042,9 @@ msgstr "Abrir un Arquivo ou Directorio"
 
 msgid "Save a File"
 msgstr "Gardar un Arquivo"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Non se puido crear o cartafol. Xa existe un ficheiro con ese nome."
 
 msgid "Go Back"
 msgstr "Retroceder"
@@ -2966,9 +3156,6 @@ msgid_plural "Node is in the following groups:"
 msgstr[0] "O nodo está neste grupo:"
 msgstr[1] "O nodo está nestes grupos:"
 
-msgid "Instance:"
-msgstr "Instancia:"
-
 msgid "Select a Node"
 msgstr "Seleccione un Nodo"
 
@@ -3004,9 +3191,6 @@ msgstr "Dispositivo:"
 
 msgid "Failed to load resource."
 msgstr "Fallou a carga do Recurso."
-
-msgid "Raw"
-msgstr "Sen Procesar (Raw)"
 
 msgid "Copy Resource"
 msgstr "Copiar Recurso"
@@ -3277,12 +3461,6 @@ msgstr "Descargando..."
 msgid "Resolving..."
 msgstr "Resolvendo..."
 
-msgid "Connecting..."
-msgstr "Conectando..."
-
-msgid "Requesting..."
-msgstr "Solicitando..."
-
 msgid "Idle"
 msgstr "Ocioso"
 
@@ -3378,6 +3556,11 @@ msgstr "Limpar Guías"
 
 msgid "Select Mode"
 msgstr "Elixir Modo"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
+"incluindo bloqueados."
 
 msgid "Move Mode"
 msgstr "Mover Modo"
@@ -3505,9 +3688,6 @@ msgstr "Dividir Dimensión da Cuadrícula por 2"
 msgid "Adding %s..."
 msgstr "Engadindo %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Non se pode instanciar varios nodos sen un nodo raíz."
-
 msgid "Create Node"
 msgstr "Crear Nodo"
 
@@ -3561,9 +3741,6 @@ msgstr "Dereito Alto"
 
 msgid "Full Rect"
 msgstr "Recta Completa"
-
-msgid "Restart"
-msgstr "Reiniciar"
 
 msgid "Deploy with Remote Debug"
 msgstr "Exportar con Depuración Remota"
@@ -3819,11 +3996,6 @@ msgstr ""
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "Non se puido encontrar chan sólido no que poder axustar a selección."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
-"incluindo bloqueados."
-
 msgid "Use Local Space"
 msgstr "Usar Espazo Local"
 
@@ -4067,6 +4239,12 @@ msgstr "Importar Tema"
 msgid "Error saving"
 msgstr "Erro ao gardar"
 
+msgid "Online Docs"
+msgstr "Documentación En Liña"
+
+msgid "Open Godot online documentation."
+msgstr "Abrir a documentación en liña de Godot."
+
 msgid "Find Next"
 msgstr "Atopar Seguinte"
 
@@ -4115,12 +4293,6 @@ msgstr "Executar"
 msgid "Search"
 msgstr "Buscar"
 
-msgid "Online Docs"
-msgstr "Documentación En Liña"
-
-msgid "Open Godot online documentation."
-msgstr "Abrir a documentación en liña de Godot."
-
 msgid "Search the reference documentation."
 msgstr "Buscar na documentación de referencia."
 
@@ -4132,6 +4304,15 @@ msgstr "Ir ao seguinte documento editado."
 
 msgid "Discard"
 msgstr "Descartar"
+
+msgid "Uppercase"
+msgstr "Maiúscula"
+
+msgid "Lowercase"
+msgstr "Minúscula"
+
+msgid "Capitalize"
+msgstr "Capitalizar"
 
 msgid "Standard"
 msgstr "Estándar"
@@ -4153,15 +4334,6 @@ msgstr "Elexir Cor"
 
 msgid "Line"
 msgstr "Liña"
-
-msgid "Uppercase"
-msgstr "Maiúscula"
-
-msgid "Lowercase"
-msgstr "Minúscula"
-
-msgid "Capitalize"
-msgstr "Capitalizar"
 
 msgid "Convert Case"
 msgstr "Convertir Mayúsculas/Minúsculas"
@@ -4285,6 +4457,12 @@ msgstr "Eliminar Animación"
 
 msgid "Zoom Reset"
 msgstr "Restablecer Zoom"
+
+msgid "Reload"
+msgstr "Recargar"
+
+msgid "Resave"
+msgstr "Volver a Gardar"
 
 msgid "Snap Mode:"
 msgstr "Modo de Axuste:"
@@ -4586,6 +4764,9 @@ msgstr ""
 "O arquivo de proxecto '.zip' non é válido; non conteñe ningún arquivo de "
 "configuración 'project.godot'."
 
+msgid "New Game Project"
+msgstr "Novo Proxecto de Xogo"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Non se pudo crear o arquivo 'project.godot' na ruta do proxecto."
 
@@ -4594,9 +4775,6 @@ msgstr "Erro ao abrir o arquivo comprimido, non está en formato ZIP."
 
 msgid "The following files failed extraction from package:"
 msgstr "Os seguintes arquivos non se poideron extraer do paquete:"
-
-msgid "New Game Project"
-msgstr "Novo Proxecto de Xogo"
 
 msgid "Import & Edit"
 msgstr "Importar e Editar"

@@ -38,7 +38,7 @@ import java.nio.channels.FileChannel
 /**
  * Implementation of [DataAccess] which handles regular (not scoped) file access and interactions.
  */
-internal class FileData(filePath: String, accessFlag: FileAccessFlags) : DataAccess(filePath) {
+internal class FileData(filePath: String, accessFlag: FileAccessFlags) : DataAccess.FileChannelDataAccess(filePath) {
 
 	companion object {
 		private val TAG = FileData::class.java.simpleName
@@ -53,7 +53,7 @@ internal class FileData(filePath: String, accessFlag: FileAccessFlags) : DataAcc
 
 		fun fileLastModified(filepath: String): Long {
 			return try {
-				File(filepath).lastModified()
+				File(filepath).lastModified() / 1000L
 			} catch (e: SecurityException) {
 				0L
 			}
@@ -80,10 +80,16 @@ internal class FileData(filePath: String, accessFlag: FileAccessFlags) : DataAcc
 	override val fileChannel: FileChannel
 
 	init {
-		if (accessFlag == FileAccessFlags.WRITE) {
-			fileChannel = FileOutputStream(filePath, !accessFlag.shouldTruncate()).channel
+		fileChannel = if (accessFlag == FileAccessFlags.WRITE) {
+			// Create parent directory is necessary
+			val parentDir = File(filePath).parentFile
+			if (parentDir != null && !parentDir.exists()) {
+				parentDir.mkdirs()
+			}
+
+			FileOutputStream(filePath, !accessFlag.shouldTruncate()).channel
 		} else {
-			fileChannel = RandomAccessFile(filePath, accessFlag.getMode()).channel
+			RandomAccessFile(filePath, accessFlag.getMode()).channel
 		}
 
 		if (accessFlag.shouldTruncate()) {

@@ -213,8 +213,8 @@ void EditorDebuggerNode::_bind_methods() {
 }
 
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {
-	p_undo_redo->set_method_notify_callback(_method_changeds, this);
-	p_undo_redo->set_property_notify_callback(_property_changeds, this);
+	p_undo_redo->set_method_notify_callback(_methods_changed, this);
+	p_undo_redo->set_property_notify_callback(_properties_changed, this);
 }
 
 EditorDebuggerRemoteObject *EditorDebuggerNode::get_inspected_remote_object() {
@@ -303,7 +303,7 @@ void EditorDebuggerNode::stop(bool p_force) {
 	});
 	_break_state_changed();
 	breakpoints.clear();
-	EditorUndoRedoManager::get_singleton()->clear_history(false, EditorUndoRedoManager::REMOTE_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::REMOTE_HISTORY, false);
 	set_process(false);
 }
 
@@ -416,20 +416,20 @@ void EditorDebuggerNode::_update_errors() {
 
 		if (error_count == 0 && warning_count == 0) {
 			debugger_button->set_text(TTR("Debugger"));
-			debugger_button->remove_theme_color_override("font_color");
+			debugger_button->remove_theme_color_override(SceneStringName(font_color));
 			debugger_button->set_icon(Ref<Texture2D>());
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
 				debugger_button->set_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
 				// Use error color to represent the highest level of severity reported.
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else if (error_count >= 1) {
 				debugger_button->set_icon(get_editor_theme_icon(SNAME("Error")));
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else {
 				debugger_button->set_icon(get_editor_theme_icon(SNAME("Warning")));
-				debugger_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			}
 		}
 		last_error_count = error_count;
@@ -720,7 +720,7 @@ void EditorDebuggerNode::_breakpoints_cleared_in_tree(int p_debugger) {
 }
 
 // Remote inspector/edit.
-void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
+void EditorDebuggerNode::_methods_changed(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!singleton) {
 		return;
 	}
@@ -729,7 +729,7 @@ void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const Stri
 	});
 }
 
-void EditorDebuggerNode::_property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value) {
+void EditorDebuggerNode::_properties_changed(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value) {
 	if (!singleton) {
 		return;
 	}

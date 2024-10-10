@@ -36,11 +36,14 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {
@@ -139,6 +142,16 @@ void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_prope
 
 	history.push_back(h);
 	current_elem_idx++;
+}
+
+void EditorSelectionHistory::replace_object(ObjectID p_old_object, ObjectID p_new_object) {
+	for (HistoryElement &element : history) {
+		for (int index = 0; index < element.path.size(); index++) {
+			if (element.path[index].object == p_old_object) {
+				element.path.write[index].object = p_new_object;
+			}
+		}
+	}
 }
 
 int EditorSelectionHistory::get_history_len() {

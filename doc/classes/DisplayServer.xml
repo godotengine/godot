@@ -20,6 +20,7 @@
 			<return type="Image" />
 			<description>
 				Returns the user's clipboard as an image if possible.
+				[b]Note:[/b] This method uses the copied pixel data, e.g. from a image editing software or a web browser, not an image file copied from file explorer.
 			</description>
 		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
@@ -879,11 +880,24 @@
 				Registers callables to emit when the menu is respectively about to show or closed. Callback methods should have zero arguments.
 			</description>
 		</method>
+		<method name="has_additional_outputs" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any additional outputs have been registered via [method register_additional_output].
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="DisplayServer.Feature" />
 			<description>
 				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="has_hardware_keyboard" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if hardware keyboard is connected.
+				[b]Note:[/b] This method is implemented on Android and iOS, on other platforms this method always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="help_set_search_callbacks">
@@ -1020,6 +1034,14 @@
 			<return type="void" />
 			<description>
 				Perform window manager processing, including input flushing. See also [method force_process_and_drop_events], [method Input.flush_buffered_events] and [member Input.use_accumulated_input].
+			</description>
+		</method>
+		<method name="register_additional_output">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Registers an [Object] which represents an additional output that will be rendered too, beyond normal windows. The [Object] is only used as an identifier, which can be later passed to [method unregister_additional_output].
+				This can be used to prevent Godot from skipping rendering when no normal windows are visible.
 			</description>
 		</method>
 		<method name="screen_get_dpi" qualifiers="const">
@@ -1350,6 +1372,13 @@
 				Stops synthesis in progress and removes all utterances from the queue.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Linux), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
+			</description>
+		</method>
+		<method name="unregister_additional_output">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Unregisters an [Object] representing an additional output, that was registered via [method register_additional_output].
 			</description>
 		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
@@ -1750,7 +1779,7 @@
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="parent_window_id" type="int" />
 			<description>
-				Sets window transient parent. Transient window is will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+				Sets window transient parent. Transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 				[b]Note:[/b] It's recommended to change this value using [member Window.transient] instead.
 				[b]Note:[/b] The behavior might be different depending on the platform.
 			</description>

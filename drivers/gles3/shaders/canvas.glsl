@@ -239,13 +239,6 @@ void main() {
 	model_matrix = model_matrix * transpose(mat4(instance_xform0, instance_xform1, vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0)));
 #endif // USE_INSTANCING
 
-#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(read_draw_data_flags & FLAGS_USING_PARTICLES)) {
-		//scale by texture size
-		vertex /= read_draw_data_color_texture_pixel_size;
-	}
-#endif
-
 	vec2 color_texture_pixel_size = read_draw_data_color_texture_pixel_size;
 
 #ifdef USE_POINT_SIZE
@@ -269,14 +262,14 @@ void main() {
 
 	color_interp = color;
 
+	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
+
 	if (use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid
 		uv += 1e-5;
 	}
-
-	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
 	vertex_interp = vertex;
 	uv_interp = uv;
@@ -346,14 +339,16 @@ uniform sampler2D color_texture; //texunit:0
 
 layout(location = 0) out vec4 frag_color;
 
+/* clang-format off */
+// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{
-//ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:4
 
 #MATERIAL_UNIFORMS
 
 };
 #endif
+/* clang-format on */
 
 #GLOBALS
 
@@ -584,7 +579,8 @@ void main() {
 
 #endif
 	if (bool(read_draw_data_flags & FLAGS_CLIP_RECT_UV)) {
-		uv = clamp(uv, read_draw_data_src_rect.xy, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw));
+		vec2 half_texpixel = read_draw_data_color_texture_pixel_size * 0.5;
+		uv = clamp(uv, read_draw_data_src_rect.xy + half_texpixel, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) - half_texpixel);
 	}
 
 #endif

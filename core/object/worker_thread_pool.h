@@ -41,8 +41,6 @@
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
 
-class CommandQueueMT;
-
 class WorkerThreadPool : public Object {
 	GDCLASS(WorkerThreadPool, Object)
 public:
@@ -114,21 +112,37 @@ private:
 
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting : 1;
 		bool signaled : 1;
 		bool yield_is_over : 1;
+		bool pre_exited_languages : 1;
+		bool exited_languages : 1;
 		Task *current_task = nullptr;
 		Task *awaited_task = nullptr; // Null if not awaiting the condition variable, or special value (YIELDING).
 		ConditionVariable cond_var;
 
 		ThreadData() :
-				ready_for_scripting(false),
 				signaled(false),
-				yield_is_over(false) {}
+				yield_is_over(false),
+				pre_exited_languages(false),
+				exited_languages(false) {}
 	};
 
 	TightLocalVector<ThreadData> threads;
-	bool exit_threads = false;
+	enum Runlevel {
+		RUNLEVEL_NORMAL,
+		RUNLEVEL_PRE_EXIT_LANGUAGES, // Block adding new tasks
+		RUNLEVEL_EXIT_LANGUAGES, // All threads detach from scripting threads.
+		RUNLEVEL_EXIT,
+	} runlevel = RUNLEVEL_NORMAL;
+	union { // Cleared on every runlevel change.
+		struct {
+			uint32_t num_idle_threads;
+		} pre_exit_languages;
+		struct {
+			uint32_t num_exited_threads;
+		} exit_languages;
+	} runlevel_data;
+	ConditionVariable control_cond_var;
 
 	HashMap<Thread::ID, int> thread_ids;
 	HashMap<
@@ -156,14 +170,21 @@ private:
 
 	void _process_task(Task *task);
 
-	void _post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority);
+	void _post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock);
 	void _notify_threads(const ThreadData *p_current_thread_data, uint32_t p_process_count, uint32_t p_promote_count);
 
 	bool _try_promote_low_priority_task();
 
 	static WorkerThreadPool *singleton;
 
-	static thread_local CommandQueueMT *flushing_cmd_queue;
+#ifdef THREADS_ENABLED
+	static const uint32_t MAX_UNLOCKABLE_LOCKS = 2;
+	struct UnlockableLocks {
+		THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> *ulock = nullptr;
+		uint32_t rc = 0;
+	};
+	static thread_local UnlockableLocks unlockable_locks[MAX_UNLOCKABLE_LOCKS];
+#endif
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
@@ -189,6 +210,16 @@ private:
 	};
 
 	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
+	void _switch_runlevel(Runlevel p_runlevel);
+	bool _handle_runlevel(ThreadData *p_thread_data, MutexLock<BinaryMutex> &p_lock);
+
+#ifdef THREADS_ENABLED
+	static uint32_t _thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock);
+#endif
+
+	void _lock_unlockable_mutexes();
+	void _unlock_unlockable_mutexes();
 
 protected:
 	static void _bind_methods();
@@ -231,11 +262,22 @@ public:
 
 	static WorkerThreadPool *get_singleton() { return singleton; }
 	static int get_thread_index();
+	static TaskID get_caller_task_id();
 
-	static void thread_enter_command_queue_mt_flush(CommandQueueMT *p_queue);
-	static void thread_exit_command_queue_mt_flush();
+#ifdef THREADS_ENABLED
+	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return _thread_enter_unlock_allowance_zone(p_lock._get_lock()); }
+	template <int Tag>
+	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return _thread_enter_unlock_allowance_zone(p_mutex._get_lock()); }
+	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id);
+#else
+	static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return UINT32_MAX; }
+	template <int Tag>
+	static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return UINT32_MAX; }
+	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {}
+#endif
 
 	void init(int p_thread_count = -1, float p_low_priority_task_ratio = 0.3);
+	void exit_languages_threads();
 	void finish();
 	WorkerThreadPool();
 	~WorkerThreadPool();

@@ -534,7 +534,6 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scenes_collection_source_inspector = memnew(EditorInspector);
 	scenes_collection_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	scenes_collection_source_inspector->set_use_doc_hints(true);
-	scenes_collection_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(scenes_collection_source_inspector);
 
 	// Tile inspector.
@@ -562,8 +561,8 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tiles_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	SET_DRAG_FORWARDING_CDU(scene_tiles_list, TileSetScenesCollectionSourceEditor);
-	scene_tiles_list->connect("item_selected", callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_tile_inspector).unbind(1));
-	scene_tiles_list->connect("item_selected", callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_action_buttons).unbind(1));
+	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_tile_inspector).unbind(1));
+	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_action_buttons).unbind(1));
 	scene_tiles_list->connect("item_activated", callable_mp(this, &TileSetScenesCollectionSourceEditor::_scenes_list_item_activated));
 	scene_tiles_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	right_vbox_container->add_child(scene_tiles_list);
@@ -581,6 +580,8 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);
+
+	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 }
 
 TileSetScenesCollectionSourceEditor::~TileSetScenesCollectionSourceEditor() {

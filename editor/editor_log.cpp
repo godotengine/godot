@@ -52,14 +52,10 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
 	}
 
-	if (p_editor_notify) {
-		err_str += " (User)";
-	}
-
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
 
-	if (self->current != Thread::get_caller_id()) {
-		callable_mp(self, &EditorLog::add_message).call_deferred(err_str, message_type);
+	if (!Thread::is_main_thread()) {
+		MessageQueue::get_main_singleton()->push_callable(callable_mp(self, &EditorLog::add_message), err_str, message_type);
 	} else {
 		self->add_message(err_str, message_type);
 	}
@@ -124,7 +120,7 @@ void EditorLog::_update_theme() {
 	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
 	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_editor_settings_changed() {
@@ -398,7 +394,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (p_replace_previous) {
 		// Force sync last line update (skip if number of unprocessed log messages is too large to avoid editor lag).
 		if (log->get_pending_paragraphs() < 100) {
-			while (!log->is_ready()) {
+			while (!log->is_finished()) {
 				::OS::get_singleton()->delay_usec(1);
 			}
 		}
@@ -471,7 +467,7 @@ EditorLog::EditorLog() {
 	search_box->set_placeholder(TTR("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
-	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
 	vb_left->add_child(search_box);
 
 	VBoxContainer *vb_right = memnew(VBoxContainer);
@@ -514,7 +510,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
-	collapse_button->connect("toggled", callable_mp(this, &EditorLog::_set_collapse));
+	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
 	hb_tools2->add_child(collapse_button);
 
 	// Show Search.
@@ -525,7 +521,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_pressed(true);
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
 	show_search_button->set_shortcut_context(this);
-	show_search_button->connect("toggled", callable_mp(this, &EditorLog::_set_search_visible));
+	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
 	hb_tools2->add_child(show_search_button);
 
 	// Message Type Filters.
@@ -557,8 +553,6 @@ EditorLog::EditorLog() {
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
 	add_error_handler(&eh);
-
-	current = Thread::get_caller_id();
 }
 
 void EditorLog::deinit() {

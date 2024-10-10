@@ -37,7 +37,7 @@ void SkeletonModifier3D::_validate_property(PropertyInfo &p_property) const {
 PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 	if (skeleton_id.is_null()) {
-		warnings.push_back(RTR("Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or set a path to an external skeleton."));
+		warnings.push_back(RTR("Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."));
 	}
 	return warnings;
 }
@@ -123,6 +123,8 @@ void SkeletonModifier3D::_notification(int p_what) {
 }
 
 void SkeletonModifier3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkeletonModifier3D::get_skeleton);
+
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &SkeletonModifier3D::set_active);
 	ClassDB::bind_method(D_METHOD("is_active"), &SkeletonModifier3D::is_active);
 

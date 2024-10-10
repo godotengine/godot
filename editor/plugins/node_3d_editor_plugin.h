@@ -31,6 +31,7 @@
 #ifndef NODE_3D_EDITOR_PLUGIN_H
 #define NODE_3D_EDITOR_PLUGIN_H
 
+#include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
@@ -65,7 +66,7 @@ class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
 
 	struct Axis2D {
-		Vector2i screen_point;
+		Vector2 screen_point;
 		float z_axis = -99.0;
 		int axis = -1;
 	};
@@ -124,6 +125,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
+		VIEW_TRANSFORM_GIZMO,
 		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
@@ -191,12 +193,19 @@ public:
 		NAVIGATION_GODOT,
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
+		NAVIGATION_CUSTOM,
 	};
 
 	enum FreelookNavigationScheme {
 		FREELOOK_DEFAULT,
 		FREELOOK_PARTIALLY_AXIS_LOCKED,
 		FREELOOK_FULLY_AXIS_LOCKED,
+	};
+
+	enum ViewportNavMouseButton {
+		NAVIGATION_LEFT_MOUSE,
+		NAVIGATION_MIDDLE_MOUSE,
+		NAVIGATION_RIGHT_MOUSE,
 	};
 
 private:
@@ -235,12 +244,14 @@ private:
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
+	bool transform_gizmo_visible = true;
 	real_t gizmo_scale;
 
 	bool freelook_active;
 	real_t freelook_speed;
 	Vector2 previous_mouse_position;
 
+	PanelContainer *info_panel = nullptr;
 	Label *info_label = nullptr;
 	Label *cinema_label = nullptr;
 	Label *locked_label = nullptr;
@@ -291,6 +302,10 @@ private:
 	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+
+	bool _is_shortcut_empty(const String &p_name);
+	bool _is_nav_modifier_pressed(const String &p_name);
+	int _get_shortcut_input_count(const String &p_name);
 
 	float get_znear() const;
 	float get_zfar() const;
@@ -388,6 +403,28 @@ private:
 	void reset_fov();
 	void scale_cursor_distance(real_t scale);
 
+	struct ShortcutCheckSet {
+		bool mod_pressed = false;
+		bool shortcut_not_empty = true;
+		int input_count = 0;
+		ViewportNavMouseButton mouse_preference = NAVIGATION_LEFT_MOUSE;
+		NavigationMode result_nav_mode = NAVIGATION_NONE;
+
+		ShortcutCheckSet() {}
+
+		ShortcutCheckSet(bool p_mod_pressed, bool p_shortcut_not_empty, int p_input_count, const ViewportNavMouseButton &p_mouse_preference, const NavigationMode &p_result_nav_mode) :
+				mod_pressed(p_mod_pressed), shortcut_not_empty(p_shortcut_not_empty), input_count(p_input_count), mouse_preference(p_mouse_preference), result_nav_mode(p_result_nav_mode) {
+		}
+	};
+
+	struct ShortcutCheckSetComparator {
+		_FORCE_INLINE_ bool operator()(const ShortcutCheckSet &A, const ShortcutCheckSet &B) const {
+			return A.input_count > B.input_count;
+		}
+	};
+
+	NavigationMode _get_nav_mode_from_shortcut_check(ViewportNavMouseButton p_mouse_button, Vector<ShortcutCheckSet> p_shortcut_check_sets, bool p_use_not_empty);
+
 	void set_freelook_active(bool active_now);
 	void scale_freelook_speed(real_t scale);
 
@@ -423,7 +460,7 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
-	bool _is_node_locked(const Node *p_node);
+	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
@@ -435,7 +472,7 @@ private:
 	Point2 _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static AABB _calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent = nullptr);
+	static AABB _calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level = false, const Transform3D *p_bounds_orientation = nullptr);
 
 	Node *_sanitize_preview_node(Node *p_node) const;
 
@@ -627,6 +664,8 @@ private:
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
 	bool current_hover_gizmo_handle_secondary;
+
+	DynamicBVH gizmo_bvh;
 
 	real_t snap_translate_value;
 	real_t snap_rotate_value;
@@ -931,6 +970,12 @@ public:
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
+
+	DynamicBVH::ID insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb);
+	void update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb);
+	void remove_gizmo_bvh_node(DynamicBVH::ID p_id);
+	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end);
+	Vector<Node3D *> gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum);
 
 	void edit(Node3D *p_spatial);
 	void clear();

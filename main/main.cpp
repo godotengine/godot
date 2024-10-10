@@ -49,7 +49,7 @@
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/register_core_types.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
 #include "main/app_icon.gen.h"
@@ -60,6 +60,7 @@
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/property_list_helper.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
@@ -79,9 +80,11 @@
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_2d_dummy.h"
 #include "servers/physics_server_2d.h"
+#include "servers/physics_server_2d_dummy.h"
 
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
+#include "servers/physics_server_3d_dummy.h"
 #include "servers/xr_server.h"
 #endif // _3D_DISABLED
 
@@ -113,6 +116,10 @@
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
 
+#if defined(STEAMAPI_ENABLED)
+#include "main/steam_tracker.h"
+#endif
+
 #include "modules/modules_enabled.gen.h" // For mono.
 
 #if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
@@ -142,6 +149,10 @@ static PackedData *packed_data = nullptr;
 static ZipArchive *zip_packed_data = nullptr;
 #endif
 static MessageQueue *message_queue = nullptr;
+
+#if defined(STEAMAPI_ENABLED)
+static SteamTracker *steam_tracker = nullptr;
+#endif
 
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
@@ -188,6 +199,7 @@ static bool found_project = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
 static bool wait_for_import = false;
+static bool restore_editor_window_layout = true;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
@@ -233,6 +245,7 @@ static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
+static bool editor_pseudolocalization = false;
 static bool dump_gdextension_interface = false;
 static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
@@ -310,7 +323,15 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_NULL(physics_server_3d);
+
+	// Fall back to dummy if no default server has been registered.
+	if (!physics_server_3d) {
+		WARN_PRINT(vformat("Falling back to dummy PhysicsServer3D; 3D physics functionality will be disabled. If this is intended, set the %s project setting to Dummy.", PhysicsServer3DManager::setting_property_name));
+		physics_server_3d = memnew(PhysicsServer3DDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(physics_server_3d, "Failed to initialize PhysicsServer3D.");
 	physics_server_3d->init();
 #endif // _3D_DISABLED
 
@@ -321,7 +342,15 @@ void initialize_physics() {
 		// Physics server not found, Use the default physics
 		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 	}
-	ERR_FAIL_NULL(physics_server_2d);
+
+	// Fall back to dummy if no default server has been registered.
+	if (!physics_server_2d) {
+		WARN_PRINT(vformat("Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the %s project setting to Dummy.", PhysicsServer2DManager::setting_property_name));
+		physics_server_2d = memnew(PhysicsServer2DDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(physics_server_2d, "Failed to initialize PhysicsServer2D.");
 	physics_server_2d->init();
 }
 
@@ -584,7 +613,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--position <X>,<Y>", "Request window position.\n");
 	print_help_option("--screen <N>", "Request window screen.\n");
 	print_help_option("--single-window", "Use a single window (no separate subwindows).\n");
+#ifndef _3D_DISABLED
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
+#endif
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -596,6 +627,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
 	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
+#endif
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
 #if defined(DEBUG_ENABLED)
@@ -616,6 +650,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--fixed-fps <fps>", "Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
 	print_help_option("--delta-smoothing <enable>", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].\n");
 	print_help_option("--print-fps", "Print the frames per second to the stdout.\n");
+#ifdef TOOLS_ENABLED
+	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n");
+#endif
 
 	print_help_title("Standalone tools");
 	print_help_option("-s, --script <script>", "Run a script.\n");
@@ -628,6 +665,8 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("", "The target directory must exist.\n");
 	print_help_option("--export-debug <preset> <path>", "Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-pack <preset> <path>", "Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--export-patch <preset> <path>", "Export pack with changed files only. See --export-pack description for other considerations.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--patches <paths>", "List of patches to use with --export-patch. The list is comma-separated.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--install-android-build-template", "Install the Android build template. Used in conjunction with --export-release or --export-debug.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifndef DISABLE_DEPRECATED
 	// Commands are long; split the description to a second line.
@@ -785,6 +824,7 @@ void Main::test_cleanup() {
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
+	PropertyListHelper::clear_base_helpers();
 
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -830,13 +870,15 @@ void Main::test_cleanup() {
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
@@ -899,13 +941,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Total");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup");
 
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
-	OS::get_singleton()->benchmark_begin_measure("Startup", "Core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -1023,7 +1063,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (arg == "--audio-driver" ||
 				arg == "--display-driver" ||
 				arg == "--rendering-method" ||
-				arg == "--rendering-driver") {
+				arg == "--rendering-driver" ||
+				arg == "--xr-mode") {
 			if (N) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
@@ -1194,6 +1235,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (arg == "--generate-spirv-debug-info") {
 			Engine::singleton->generate_spirv_debug_info = true;
+		} else if (arg == "--extra-gpu-memory-tracking") {
+			Engine::singleton->extra_gpu_memory_tracking = true;
 		} else if (arg == "--tablet-driver") {
 			if (N) {
 				tablet_driver = N->get();
@@ -1443,12 +1486,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			wait_for_import = true;
 			quit_after = 1;
 		} else if (arg == "--export-release" || arg == "--export-debug" ||
-				arg == "--export-pack") { // Export project
+				arg == "--export-pack" || arg == "--export-patch") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
 			wait_for_import = true;
 			main_args.push_back(arg);
+		} else if (arg == "--patches") {
+			if (N) {
+				// Actually handling is done in start().
+				main_args.push_back(arg);
+				main_args.push_back(N->get());
+
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing comma-separated list of patches after --patches, aborting.\n");
+				goto error;
+			}
 #ifndef DISABLE_DEPRECATED
 		} else if (arg == "--export") { // For users used to 3.x syntax.
 			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
@@ -1501,6 +1555,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				main_args.push_back(arg);
 				main_args.push_back(N->get());
 				N = N->next();
+				// GDScript docgen requires Autoloads, but loading those also creates a main loop.
+				// This forces main loop to quit without adding more GDScript-specific exceptions to setup.
+				quit_after = 1;
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
 				goto error;
@@ -1663,6 +1720,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			disable_vsync = true;
 		} else if (arg == "--print-fps") {
 			print_fps = true;
+#ifdef TOOLS_ENABLED
+		} else if (arg == "--editor-pseudolocalization") {
+			editor_pseudolocalization = true;
+#endif // TOOLS_ENABLED
 		} else if (arg == "--profile-gpu") {
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
@@ -1922,6 +1983,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String driver_hints = "";
 		String driver_hints_with_d3d12 = "";
+		String driver_hints_with_metal = "";
 
 		{
 			Vector<String> driver_hints_arr;
@@ -1934,18 +1996,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			driver_hints_arr.push_back("d3d12");
 #endif
 			driver_hints_with_d3d12 = String(",").join(driver_hints_arr);
+
+#ifdef METAL_ENABLED
+			// Make metal the preferred and default driver.
+			driver_hints_arr.insert(0, "metal");
+#endif
+			driver_hints_with_metal = String(",").join(driver_hints_arr);
 		}
 
 		String default_driver = driver_hints.get_slice(",", 0);
 		String default_driver_with_d3d12 = driver_hints_with_d3d12.get_slice(",", 0);
+		String default_driver_with_metal = driver_hints_with_metal.get_slice(",", 0);
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
 		GLOBAL_DEF_RST_NOVAL("rendering/rendering_device/driver", default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints_with_d3d12), default_driver_with_d3d12);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
+
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
+		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_opengl3", true);
 	}
 
 	{
@@ -2040,7 +2113,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P3000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P3000");
 		BLOCK_DEVICE("0x8086", "0x0112"); // HD Graphics P3000, Gen6, Sandy Bridge
-		BLOCK_DEVICE("0x8086", "0x0122"); // HD Graphics P3000, Gen6, Sandy Bridge
+		BLOCK_DEVICE("0x8086", "0x0122");
 		BLOCK_DEVICE("0x8086", "0x015A"); // HD Graphics, Gen7, Ivy Bridge
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 2500");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 2500");
@@ -2048,10 +2121,81 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		BLOCK_DEVICE("Intel", "Intel HD Graphics 4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4000");
 		BLOCK_DEVICE("0x8086", "0x0162"); // HD Graphics 4000, Gen7, Ivy Bridge
-		BLOCK_DEVICE("0x8086", "0x0166"); // HD Graphics 4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("0x8086", "0x0166");
 		BLOCK_DEVICE("Intel", "Intel HD Graphics P4000");
 		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4000");
 		BLOCK_DEVICE("0x8086", "0x016A"); // HD Graphics P4000, Gen7, Ivy Bridge
+		BLOCK_DEVICE("Intel", "Intel(R) Vallyview Graphics");
+		BLOCK_DEVICE("0x8086", "0x0F30"); // Intel(R) Vallyview Graphics, Gen7, Vallyview
+		BLOCK_DEVICE("0x8086", "0x0F31");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4200");
+		BLOCK_DEVICE("0x8086", "0x0A1E"); // Intel(R) HD Graphics 4200, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4400");
+		BLOCK_DEVICE("0x8086", "0x0A16"); // Intel(R) HD Graphics 4400, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 4600");
+		BLOCK_DEVICE("0x8086", "0x0412"); // Intel(R) HD Graphics 4600, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0416");
+		BLOCK_DEVICE("0x8086", "0x0426");
+		BLOCK_DEVICE("0x8086", "0x0D12");
+		BLOCK_DEVICE("0x8086", "0x0D16");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P4600/P4700");
+		BLOCK_DEVICE("0x8086", "0x041A"); // Intel(R) HD Graphics P4600/P4700, Gen7.5, Haswell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5000");
+		BLOCK_DEVICE("0x8086", "0x0422"); // Intel(R) HD Graphics 5000, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x042A");
+		BLOCK_DEVICE("0x8086", "0x0A26");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 5100");
+		BLOCK_DEVICE("0x8086", "0x0A22"); // Intel(R) Iris(TM) Graphics 5100, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0A2A");
+		BLOCK_DEVICE("0x8086", "0x0A2B");
+		BLOCK_DEVICE("0x8086", "0x0A2E");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 5200");
+		BLOCK_DEVICE("0x8086", "0x0D22"); // Intel(R) Iris(TM) Pro Graphics 5200, Gen7.5, Haswell
+		BLOCK_DEVICE("0x8086", "0x0D26");
+		BLOCK_DEVICE("0x8086", "0x0D2A");
+		BLOCK_DEVICE("0x8086", "0x0D2B");
+		BLOCK_DEVICE("0x8086", "0x0D2E");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 400");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 405");
+		BLOCK_DEVICE("0x8086", "0x22B0"); // Intel(R) HD Graphics, Gen8, Cherryview Braswell
+		BLOCK_DEVICE("0x8086", "0x22B1");
+		BLOCK_DEVICE("0x8086", "0x22B2");
+		BLOCK_DEVICE("0x8086", "0x22B3");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5300");
+		BLOCK_DEVICE("0x8086", "0x161E"); // Intel(R) HD Graphics 5300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5500");
+		BLOCK_DEVICE("0x8086", "0x1616"); // Intel(R) HD Graphics 5500, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 5600");
+		BLOCK_DEVICE("0x8086", "0x1612"); // Intel(R) HD Graphics 5600, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 6000");
+		BLOCK_DEVICE("0x8086", "0x1626"); // Intel(R) HD Graphics 6000, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Graphics 6100");
+		BLOCK_DEVICE("0x8086", "0x162B"); // Intel(R) Iris(TM) Graphics 6100, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics 6200");
+		BLOCK_DEVICE("0x8086", "0x1622"); // Intel(R) Iris(TM) Pro Graphics 6200, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) Iris(TM) Pro Graphics P6300");
+		BLOCK_DEVICE("0x8086", "0x162A"); // Intel(R) Iris(TM) Pro Graphics P6300, Gen8, Broadwell
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 500");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 505");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 510");
+		BLOCK_DEVICE("0x8086", "0x1902"); // Intel(R) HD Graphics 510, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1906");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 520");
+		BLOCK_DEVICE("0x8086", "0x1916"); // Intel(R) HD Graphics 520, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 530");
+		BLOCK_DEVICE("0x8086", "0x1912"); // Intel(R) HD Graphics 530, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x191B");
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics P530");
+		BLOCK_DEVICE("0x8086", "0x191D"); // Intel(R) HD Graphics P530, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) HD Graphics 515");
+		BLOCK_DEVICE("0x8086", "0x191E"); // Intel(R) HD Graphics 515, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Graphics 540");
+		BLOCK_DEVICE("0x8086", "0x1926"); // Intel(R) Iris Graphics 540, Gen9, Skylake
+		BLOCK_DEVICE("0x8086", "0x1927");
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics 580");
+		BLOCK_DEVICE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
+		BLOCK_DEVICE("Intel", "Intel(R) Iris Pro Graphics P580");
+		BLOCK_DEVICE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
 
 #undef BLOCK_DEVICE
 
@@ -2088,7 +2232,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (rendering_method != "forward_plus" &&
 				rendering_method != "mobile" &&
 				rendering_method != "gl_compatibility") {
-			OS::get_singleton()->print("Unknown renderer name '%s', aborting. Valid options are: %s\n", rendering_method.utf8().get_data(), renderer_hints.utf8().get_data());
+			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
+					rendering_method.utf8().get_data());
+
+			const Vector<String> rendering_method_hints = renderer_hints.split(",");
+			for (int i = 0; i < rendering_method_hints.size(); i++) {
+				if (i == rendering_method_hints.size() - 1) {
+					OS::get_singleton()->print(" and ");
+				} else if (i != 0) {
+					OS::get_singleton()->print(", ");
+				}
+				OS::get_singleton()->print("'%s'", rendering_method_hints[i].utf8().get_data());
+			}
+
+			OS::get_singleton()->print(".\n");
 			goto error;
 		}
 	}
@@ -2114,12 +2271,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
 					rendering_driver.utf8().get_data());
 
+			// Deduplicate driver entries, as a rendering driver may be supported by several display servers.
+			Vector<String> unique_rendering_drivers;
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
 				for (int d = 0; d < r_drivers.size(); d++) {
-					OS::get_singleton()->print("'%s', ", r_drivers[d].utf8().get_data());
+					if (!unique_rendering_drivers.has(r_drivers[d])) {
+						unique_rendering_drivers.append(r_drivers[d]);
+					}
 				}
+			}
+
+			for (int i = 0; i < unique_rendering_drivers.size(); i++) {
+				if (i == unique_rendering_drivers.size() - 1) {
+					OS::get_singleton()->print(" and ");
+				} else if (i != 0) {
+					OS::get_singleton()->print(", ");
+				}
+				OS::get_singleton()->print("'%s'", unique_rendering_drivers[i].utf8().get_data());
 			}
 
 			OS::get_singleton()->print(".\n");
@@ -2145,6 +2315,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 #ifdef D3D12_ENABLED
 			available_drivers.push_back("d3d12");
+#endif
+#ifdef METAL_ENABLED
+			available_drivers.push_back("metal");
 #endif
 		}
 #ifdef GLES3_ENABLED
@@ -2197,14 +2370,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	// note this is the desired rendering driver, it doesn't mean we will get it.
-	// TODO - make sure this is updated in the case of fallbacks, so that the user interface
-	// shows the correct driver string.
-	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-	OS::get_singleton()->set_current_rendering_method(rendering_method);
-
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
+
+	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+	OS::get_singleton()->set_current_rendering_method(rendering_method);
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -2316,12 +2486,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Make sure that headless is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
-	GLOBAL_DEF_RST_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
-	GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
+	GLOBAL_DEF_NOVAL("display/display_server/driver", "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
@@ -2372,6 +2542,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
 	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
 
 	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
@@ -2410,6 +2581,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
 
+#ifndef _3D_DISABLED
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
@@ -2424,7 +2596,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 	// OpenXR project extensions settings.
-	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", true);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/debug_utils", PROPERTY_HINT_ENUM, "Disabled,Error,Warning,Info,Verbose"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/debug_message_types", PROPERTY_HINT_FLAGS, "General,Validation,Performance,Conformance"), "15");
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 
@@ -2434,7 +2610,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// editor settings (it seems we're too early in the process when setting up rendering, to access editor settings...)
 	// EDITOR_DEF_RST("xr/openxr/in_editor", false);
 	// GLOBAL_DEF("xr/openxr/in_editor", false);
-#endif
+#endif // TOOLS_ENABLED
+#endif // _3D_DISABLED
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -2443,13 +2620,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
+#if defined(STEAMAPI_ENABLED)
+	if (editor || project_manager) {
+		steam_tracker = memnew(SteamTracker);
+	}
+#endif
+
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 	if (p_second_phase) {
-		return setup2();
+		exit_err = setup2();
+		if (exit_err != OK) {
+			goto error;
+		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
 	return OK;
 
 error:
@@ -2482,15 +2667,17 @@ error:
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 	if (packed_data) {
 		memdelete(packed_data);
 	}
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
+
+	if (engine) {
+		memdelete(engine);
+	}
+
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
@@ -2500,8 +2687,13 @@ error:
 		memdelete(message_queue);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Core");
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
+
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
@@ -2528,7 +2720,9 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 	return OK;
 }
 
-Error Main::setup2() {
+Error Main::setup2(bool p_show_boot_logo) {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup2");
+
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
@@ -2568,6 +2762,7 @@ Error Main::setup2() {
 					String screen_property;
 
 					bool prefer_wayland_found = false;
+					bool prefer_wayland = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2597,17 +2792,24 @@ Error Main::setup2() {
 							if (!screen_found && assign == screen_property) {
 								init_screen = value;
 								screen_found = true;
+
+								if (editor) {
+									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+								}
 							}
 
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
-								if (value) {
-									display_driver = "wayland";
-								} else {
-									display_driver = "default";
-								}
-
+								prefer_wayland = value;
 								prefer_wayland_found = true;
 							}
+						}
+					}
+
+					if (display_driver.is_empty()) {
+						if (prefer_wayland) {
+							display_driver = "wayland";
+						} else {
+							display_driver = "default";
 						}
 					}
 				}
@@ -2619,6 +2821,34 @@ Error Main::setup2() {
 				ERR_PRINT("You are trying to run a self-contained editor at the same location as a project. This is not allowed, since editor files will mix with project files.");
 				OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 				return FAILED;
+			}
+		}
+
+		bool has_command_line_window_override = init_use_custom_pos || init_use_custom_screen || init_windowed;
+		if (editor && !has_command_line_window_override && restore_editor_window_layout) {
+			Ref<ConfigFile> config;
+			config.instantiate();
+			// Load and amend existing config if it exists.
+			Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
+			if (err == OK) {
+				init_screen = config->get_value("EditorWindow", "screen", init_screen);
+				String mode = config->get_value("EditorWindow", "mode", "maximized");
+				window_size = config->get_value("EditorWindow", "size", window_size);
+				if (mode == "windowed") {
+					window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
+					init_windowed = true;
+				} else if (mode == "fullscreen") {
+					window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+					init_fullscreen = true;
+				} else {
+					window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+					init_maximized = true;
+				}
+
+				if (init_windowed) {
+					init_use_custom_pos = true;
+					init_custom_pos = config->get_value("EditorWindow", "position", Vector2i(0, 0));
+				}
 			}
 		}
 
@@ -2716,6 +2946,8 @@ Error Main::setup2() {
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 		if (err != OK || display_server == nullptr) {
+			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
+
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
 			// would expect if they didn't request it explicitly.
@@ -2723,6 +2955,9 @@ Error Main::setup2() {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
+				String name = DisplayServer::get_create_function_name(i);
+				WARN_PRINT(vformat("Display driver %s failed, falling back to %s.", last_name, name));
+
 				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
 				if (err == OK && display_server != nullptr) {
 					break;
@@ -2732,6 +2967,30 @@ Error Main::setup2() {
 
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
+
+			if (display_server) {
+				memdelete(display_server);
+			}
+
+			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+			unregister_server_types();
+
+			if (input) {
+				memdelete(input);
+			}
+			if (tsman) {
+				memdelete(tsman);
+			}
+#ifndef _3D_DISABLED
+			if (physics_server_3d_manager) {
+				memdelete(physics_server_3d_manager);
+			}
+#endif // _3D_DISABLED
+			if (physics_server_2d_manager) {
+				memdelete(physics_server_2d_manager);
+			}
+
 			return err;
 		}
 
@@ -2741,6 +3000,30 @@ Error Main::setup2() {
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Display");
 	}
+
+#ifdef TOOLS_ENABLED
+	// If the editor is running in windowed mode, ensure the window rect fits
+	// the screen in case screen count or position has changed.
+	if (editor && init_windowed) {
+		// We still need to check we are actually in windowed mode, because
+		// certain platform might only support one fullscreen window.
+		if (DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_WINDOWED) {
+			Vector2i current_size = DisplayServer::get_singleton()->window_get_size();
+			Vector2i current_pos = DisplayServer::get_singleton()->window_get_position();
+			int screen = DisplayServer::get_singleton()->window_get_current_screen();
+			Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
+
+			Vector2i adjusted_end = screen_rect.get_end().min(current_pos + current_size);
+			Vector2i adjusted_pos = screen_rect.get_position().max(adjusted_end - current_size);
+			Vector2i adjusted_size = DisplayServer::get_singleton()->window_get_min_size().max(adjusted_end - adjusted_pos);
+
+			if (current_pos != adjusted_end || current_size != adjusted_size) {
+				DisplayServer::get_singleton()->window_set_position(adjusted_pos);
+				DisplayServer::get_singleton()->window_set_size(adjusted_size);
+			}
+		}
+	}
+#endif
 
 	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
 		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
@@ -2872,12 +3155,6 @@ Error Main::setup2() {
 
 		MAIN_PRINT("Main: Setup Logo");
 
-#if !defined(TOOLS_ENABLED) && (defined(WEB_ENABLED) || defined(ANDROID_ENABLED))
-		bool show_logo = false;
-#else
-		bool show_logo = true;
-#endif
-
 		if (init_windowed) {
 			//do none..
 		} else if (init_maximized) {
@@ -2889,76 +3166,18 @@ Error Main::setup2() {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 		}
 
-		MAIN_PRINT("Main: Load Boot Image");
-
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
-		if (show_logo) { //boot logo!
-			const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-			const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
-			const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
-			const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
-
-			Ref<Image> boot_logo;
-
-			if (boot_logo_image) {
-				if (!boot_logo_path.is_empty()) {
-					boot_logo.instantiate();
-					Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-					if (load_err) {
-						ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
-					}
-				}
-			} else {
-				// Create a 1×1 transparent image. This will effectively hide the splash image.
-				boot_logo.instantiate();
-				boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
-				boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
-			}
-
-			Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
-
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-			boot_bg_color =
-					GLOBAL_DEF_BASIC("application/boot_splash/bg_color",
-							(editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
-#endif
-			if (boot_logo.is_valid()) {
-				RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
-						boot_logo_filter);
-
-			} else {
-#ifndef NO_DEFAULT_BOOT_LOGO
-				MAIN_PRINT("Main: Create bootsplash");
-#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
-				Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
-#else
-				Ref<Image> splash = memnew(Image(boot_splash_png));
-#endif
-
-				MAIN_PRINT("Main: ClearColor");
-				RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
-				MAIN_PRINT("Main: Image");
-				RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
-#endif
-			}
-
-#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
-				Ref<Image> icon = memnew(Image(app_icon_png));
-				DisplayServer::get_singleton()->set_icon(icon);
-			}
-#endif
+		if (p_show_boot_logo) {
+			setup_boot_logo();
 		}
 
 		MAIN_PRINT("Main: Clear Color");
 
 		DisplayServer::set_early_window_clear_color_override(false);
-		RenderingServer::get_singleton()->set_default_clear_color(
-				GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.bmp,*.hdr,*.jpg,*.jpeg,*.svg,*.tga,*.exr,*.webp"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"), String());
 
@@ -2966,7 +3185,8 @@ Error Main::setup2() {
 
 		Input *id = Input::get_singleton();
 		if (id) {
-			agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+			bool agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+			id->set_agile_input_event_flushing(agile_input_event_flushing);
 
 			if (bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 					!(editor || project_manager)) {
@@ -2979,9 +3199,6 @@ Error Main::setup2() {
 			id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 		}
 
-		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
-		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 
@@ -3094,6 +3311,14 @@ Error Main::setup2() {
 		OS::get_singleton()->benchmark_end_measure("Scene", "Modules and Extensions");
 	}
 
+	PackedStringArray extensions;
+	extensions.push_back("gd");
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions); // Note: should be defined after Scene level modules init to see .NET.
+
 	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
 
 #ifdef TOOLS_ENABLED
@@ -3121,7 +3346,7 @@ Error Main::setup2() {
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Platforms");
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"), String());
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.bmp,*.hdr,*.jpg,*.jpeg,*.svg,*.tga,*.exr,*.webp"), String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
 
@@ -3187,9 +3412,77 @@ Error Main::setup2() {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Setup");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup2");
 
 	return OK;
+}
+
+void Main::setup_boot_logo() {
+	MAIN_PRINT("Main: Load Boot Image");
+
+#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
+	bool show_logo = false;
+#else
+	bool show_logo = true;
+#endif
+
+	if (show_logo) { //boot logo!
+		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
+
+		Ref<Image> boot_logo;
+
+		if (boot_logo_image) {
+			if (!boot_logo_path.is_empty()) {
+				boot_logo.instantiate();
+				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
+				if (load_err) {
+					String msg = (boot_logo_path.ends_with(".png") ? "" : "The only supported format is PNG.");
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + +"'. " + msg + " Loading default splash.");
+				}
+			}
+		} else {
+			// Create a 1×1 transparent image. This will effectively hide the splash image.
+			boot_logo.instantiate();
+			boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
+		}
+
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
+
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+		boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", (editor || project_manager) ? boot_splash_editor_bg_color : boot_splash_bg_color);
+#endif
+		if (boot_logo.is_valid()) {
+			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+
+		} else {
+#ifndef NO_DEFAULT_BOOT_LOGO
+			MAIN_PRINT("Main: Create bootsplash");
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
+			Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
+#else
+			Ref<Image> splash = memnew(Image(boot_splash_png));
+#endif
+
+			MAIN_PRINT("Main: ClearColor");
+			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
+			MAIN_PRINT("Main: Image");
+			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+#endif
+		}
+
+#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+			Ref<Image> icon = memnew(Image(app_icon_png));
+			DisplayServer::get_singleton()->set_icon(icon);
+		}
+#endif
+	}
+	RenderingServer::get_singleton()->set_default_clear_color(
+			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 }
 
 String Main::get_rendering_driver_name() {
@@ -3203,6 +3496,8 @@ static MainTimerSync main_timer_sync;
 // and should move on to `OS::run`, and EXIT_FAILURE otherwise for
 // an early exit with that error code.
 int Main::start() {
+	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
+
 	ERR_FAIL_COND_V(!_start_success, false);
 
 	bool has_icon = false;
@@ -3217,9 +3512,11 @@ int Main::start() {
 	bool doc_tool_implicit_cwd = false;
 	BitField<DocTools::GenerateFlags> gen_flags;
 	String _export_preset;
+	Vector<String> patches;
 	bool export_debug = false;
 	bool export_pack_only = false;
 	bool install_android_build_template = false;
+	bool export_patch = false;
 #ifdef MODULE_GDSCRIPT_ENABLED
 	String gdscript_docs_path;
 #endif
@@ -3296,16 +3593,27 @@ int Main::start() {
 				gdscript_docs_path = E->next()->get();
 #endif
 			} else if (E->get() == "--export-release") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 			} else if (E->get() == "--export-debug") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true; //needs editor
 				_export_preset = E->next()->get();
 				export_debug = true;
 			} else if (E->get() == "--export-pack") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
 				editor = true;
 				_export_preset = E->next()->get();
 				export_pack_only = true;
+			} else if (E->get() == "--export-patch") {
+				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
+				editor = true;
+				_export_preset = E->next()->get();
+				export_pack_only = true;
+				export_patch = true;
+			} else if (E->get() == "--patches") {
+				patches = E->next()->get().split(",", false);
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -3314,6 +3622,8 @@ int Main::start() {
 			if (parsed_pair) {
 				E = E->next();
 			}
+		} else if (E->get().begins_with("--export-")) {
+			ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing export preset name, aborting.");
 		}
 #ifdef TOOLS_ENABLED
 		// Handle case where no path is given to --doctool.
@@ -3704,10 +4014,15 @@ int Main::start() {
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 			editor_node = memnew(EditorNode);
+
+			if (editor_pseudolocalization) {
+				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
+			}
+
 			sml->get_root()->add_child(editor_node);
 
 			if (!_export_preset.is_empty()) {
-				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template);
+				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template, export_patch, patches);
 				game_path = ""; // Do not load anything.
 			}
 
@@ -3791,6 +4106,7 @@ int Main::start() {
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
+			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
@@ -3897,6 +4213,11 @@ int Main::start() {
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
+
+			if (editor_pseudolocalization) {
+				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
+			}
+
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->benchmark_end_measure("Startup", "Project Manager");
 		}
@@ -3926,7 +4247,7 @@ int Main::start() {
 		}
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Startup", "Total");
+	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Start");
 	OS::get_singleton()->benchmark_dump();
 
 	return EXIT_SUCCESS;
@@ -3948,7 +4269,6 @@ uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
-bool Main::agile_input_event_flushing = false;
 
 bool Main::is_iterating() {
 	return iterating > 0;
@@ -4009,23 +4329,24 @@ bool Main::iteration() {
 	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
 		}
 
 		Engine::get_singleton()->_in_physics = true;
+		Engine::get_singleton()->_physics_frames++;
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
-
-#ifndef _3D_DISABLED
-		PhysicsServer3D::get_singleton()->sync();
-		PhysicsServer3D::get_singleton()->flush_queries();
-#endif // _3D_DISABLED
 
 		// Prepare the fixed timestep interpolated nodes BEFORE they are updated
 		// by the physics server, otherwise the current and previous transforms
 		// may be the same, and no interpolation takes place.
 		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
+#ifndef _3D_DISABLED
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
@@ -4036,6 +4357,7 @@ bool Main::iteration() {
 #endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
+			Engine::get_singleton()->_in_physics = false;
 			exit = true;
 			break;
 		}
@@ -4059,14 +4381,15 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+		OS::get_singleton()->get_main_loop()->iteration_end();
+
 		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
 		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-		Engine::get_singleton()->_physics_frames++;
 
 		Engine::get_singleton()->_in_physics = false;
 	}
 
-	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+	if (Input::get_singleton()->is_agile_input_event_flushing()) {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
@@ -4079,7 +4402,7 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if (DisplayServer::get_singleton()->can_any_window_draw() &&
+	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
@@ -4138,21 +4461,22 @@ bool Main::iteration() {
 
 	iterating--;
 
-	// Needed for OSs using input buffering regardless accumulation (like Android)
-	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
-		Input::get_singleton()->flush_buffered_events();
-	}
-
 	if (movie_writer) {
 		movie_writer->add_frame();
 	}
 
+#ifdef TOOLS_ENABLED
+	bool quit_after_timeout = false;
+#endif
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
+#ifdef TOOLS_ENABLED
+		quit_after_timeout = true;
+#endif
 		exit = true;
 	}
 
 #ifdef TOOLS_ENABLED
-	if (wait_for_import && EditorFileSystem::get_singleton()->doing_first_scan()) {
+	if (wait_for_import && EditorFileSystem::get_singleton() && EditorFileSystem::get_singleton()->doing_first_scan()) {
 		exit = false;
 	}
 #endif
@@ -4180,6 +4504,12 @@ bool Main::iteration() {
 	}
 #endif
 
+#ifdef TOOLS_ENABLED
+	if (exit && quit_after_timeout && EditorNode::get_singleton()) {
+		EditorNode::get_singleton()->unload_editor_addons();
+	}
+#endif
+
 	return exit;
 }
 
@@ -4194,7 +4524,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
-	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Total");
+	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -4217,6 +4547,7 @@ void Main::cleanup(bool p_force) {
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
+	PropertyListHelper::clear_base_helpers();
 
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
@@ -4230,6 +4561,8 @@ void Main::cleanup(bool p_force) {
 
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();
+
+	WorkerThreadPool::get_singleton()->exit_languages_threads();
 
 	ScriptServer::finish_languages();
 
@@ -4336,16 +4669,23 @@ void Main::cleanup(bool p_force) {
 	message_queue->flush();
 	memdelete(message_queue);
 
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+	}
+#endif
+
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	unregister_core_types();
 
 	if (engine) {
 		memdelete(engine);
 	}
 
-	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
+	unregister_core_types();
+
+	OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();

@@ -62,8 +62,8 @@ void TAA::resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_pr
 	memset(&push_constant, 0, sizeof(TAAResolvePushConstant));
 	push_constant.resolution_width = p_resolution.width;
 	push_constant.resolution_height = p_resolution.height;
-	push_constant.disocclusion_threshold = 0.025f;
-	push_constant.disocclusion_scale = 10.0f;
+	push_constant.disocclusion_threshold = 2.5f; // If velocity changes by less than this amount of texels we can retain the accumulation buffer.
+	push_constant.disocclusion_scale = 0.01f; // Scale the weight of this pixel calculated as (change in velocity - threshold) * scale.
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipeline);

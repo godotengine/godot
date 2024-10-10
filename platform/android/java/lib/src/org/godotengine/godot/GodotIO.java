@@ -121,7 +121,7 @@ public class GodotIO {
 
 			activity.startActivity(intent);
 			return 0;
-		} catch (ActivityNotFoundException e) {
+		} catch (Exception e) {
 			Log.e(TAG, "Unable to open uri " + uriString, e);
 			return 1;
 		}
@@ -214,6 +214,14 @@ public class GodotIO {
 			result[index++] = rect.height();
 		}
 		return result;
+	}
+
+	public boolean hasHardwareKeyboard() {
+		if (edit != null) {
+			return edit.hasHardwareKeyboard();
+		} else {
+			return false;
+		}
 	}
 
 	public void showKeyboard(String p_existing_text, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {

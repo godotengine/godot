@@ -143,7 +143,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	Rect2 rect;
 	while (running < time) {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
+		ep.step(TTR("Generating..."), int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		Rect2 capture = particles->capture_rect();
@@ -360,9 +360,6 @@ void GPUParticles2DEditorPlugin::_notification(int p_what) {
 	}
 }
 
-void GPUParticles2DEditorPlugin::_bind_methods() {
-}
-
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
 
@@ -401,7 +398,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(generate_visibility_rect);
 
-	generate_visibility_rect->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
+	generate_visibility_rect->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));
@@ -423,7 +420,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 GPUParticles2DEditorPlugin::~GPUParticles2DEditorPlugin() {

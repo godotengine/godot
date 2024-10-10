@@ -254,6 +254,7 @@ Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Label *label = memnew(Label(name));
 	label->set_theme_type_variation("HeaderSmall");
 	label->set_modulate(Color(1, 1, 1, 1.0f));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	action_tree->set_drag_preview(label);
 
 	Dictionary drag_data;
@@ -519,7 +520,7 @@ void ActionMapEditor::show_message(const String &p_message) {
 void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	memdelete(action_list_search);
 	action_list_search = p_searchbox;
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 }
 
 void ActionMapEditor::_on_filter_focused() {
@@ -543,7 +544,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search->set_placeholder(TTR("Filter by Name"));
 	action_list_search->set_clear_button_enabled(true);
-	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
+	action_list_search->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
 
 	action_list_search_by_event = memnew(EventListenerLineEdit);
@@ -569,7 +570,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
-	add_edit->connect("text_changed", callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
+	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
 	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
@@ -584,11 +585,11 @@ ActionMapEditor::ActionMapEditor() {
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
-	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
+	show_builtin_actions_checkbutton->set_pressed_no_signal(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);
 
@@ -614,7 +615,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);
-	event_config_dialog->connect("confirmed", callable_mp(this, &ActionMapEditor::_event_config_confirmed));
+	event_config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ActionMapEditor::_event_config_confirmed));
 	add_child(event_config_dialog);
 
 	message = memnew(AcceptDialog);

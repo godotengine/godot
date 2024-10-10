@@ -785,9 +785,6 @@ msgstr "Tambah Trek Bezier"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Laluan trek tidak sah, maka tidak boleh menambahkan kunci."
 
-msgid "Add Track Key"
-msgstr "Tambah Kunci Trek"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Laluan trek tidak sah, maka tidak boleh menambahkan kunci kaedah."
 
@@ -1160,6 +1157,9 @@ msgstr "Simpan Cabang sebagai Adengan"
 
 msgid "Copy Node Path"
 msgstr "Salin Laluan Nod"
+
+msgid "Instance:"
+msgstr "Tika:"
 
 msgid "Value"
 msgstr "Nilai"
@@ -1751,6 +1751,12 @@ msgstr "Import Profil"
 msgid "Manage Editor Feature Profiles"
 msgstr "Urus Profil Ciri Editor"
 
+msgid "Restart"
+msgstr "Mula semula"
+
+msgid "Save & Restart"
+msgstr "Simpan & Mula Semula"
+
 msgid "ScanSources"
 msgstr "Sumber Imbas"
 
@@ -2028,13 +2034,6 @@ msgid "Quick Open Script..."
 msgstr "Buka Cepat Skrip..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Adegan semasa tidak mempunyai nod akar, tetapi %d sumber luaran yang diubah "
-"suai telah disimpan juga."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2166,6 +2165,18 @@ msgstr "%d lebih banyak folder-folder"
 msgid "%d more files"
 msgstr "%d lebih banyak fail-fail"
 
+msgid "Lock Selected Node(s)"
+msgstr "Kunci Nod Terpilih"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Buka Kunci Nod Terpilih"
+
+msgid "Group Selected Node(s)"
+msgstr "Kumpulkan Nod Terpilih"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Nyahkumpulkan Nod Terpilih"
+
 msgid "Pan View"
 msgstr "Pandangan Pan"
 
@@ -2244,9 +2255,6 @@ msgstr "Editor Susun Atur"
 msgid "Take Screenshot"
 msgstr "Ambil Tangkapan Skrin"
 
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Tangkapan skrin disimpan dalam Folder Data/Tetapan Editor."
-
 msgid "Toggle Fullscreen"
 msgstr "Togol Skrin Penuh"
 
@@ -2285,9 +2293,6 @@ msgstr "Hantar Maklum Balas Dokumen"
 
 msgid "Support Godot Development"
 msgstr "Sokong Pembangunan Godot"
-
-msgid "Save & Restart"
-msgstr "Simpan & Mula Semula"
 
 msgid "Update Continuously"
 msgstr "Kemas Kini Secara Berterusan"
@@ -2334,12 +2339,6 @@ msgid ""
 msgstr ""
 "Fail berikut lebih baru pada cakera.\n"
 "Apakah tindakan yang harus diambil?"
-
-msgid "Reload"
-msgstr "Muatkan Semula"
-
-msgid "Resave"
-msgstr "Simpan Semula"
 
 msgid "New Inherited"
 msgstr "Baru Diwarisi"
@@ -2475,9 +2474,6 @@ msgstr ""
 msgid "Write your logic in the _run() method."
 msgstr "Tulis logik anda dalam kaedah _run()."
 
-msgid "There is an edited scene already."
-msgstr "Sudah ada adegan yang diedit."
-
 msgid "General"
 msgstr "Am"
 
@@ -2567,6 +2563,12 @@ msgid ""
 msgstr ""
 "Tiada pautan muat turun ditemui untuk versi ini. Muat turun langsung hanya "
 "tersedia untuk siaran rasmi."
+
+msgid "Connecting..."
+msgstr "Menyambung..."
+
+msgid "Requesting..."
+msgstr "Meminta..."
 
 msgid "Can't open the export templates file."
 msgstr "Tidak dapat membuka fail templat eksport."
@@ -2734,6 +2736,9 @@ msgstr "Alih keluar dari Kegemaran"
 msgid "Reimport"
 msgstr "Import semula"
 
+msgid "Open in File Manager"
+msgstr "Buka dalam Pengurus Fail"
+
 msgid "New Folder..."
 msgstr "Folder Baru..."
 
@@ -2769,9 +2774,6 @@ msgstr "Penduakan..."
 
 msgid "Rename..."
 msgstr "Namakan semula..."
-
-msgid "Open in File Manager"
-msgstr "Buka dalam Pengurus Fail"
 
 msgid "Re-Scan Filesystem"
 msgstr "Imbas Semula Sistem Fail"
@@ -2960,9 +2962,6 @@ msgstr "Tetingkap Baru"
 
 msgid "Add a new scene."
 msgstr "Tambah adegan baru."
-
-msgid "Instance:"
-msgstr "Tika:"
 
 msgid "Importing Scene..."
 msgstr "Mengimport Adegan..."
@@ -3510,12 +3509,6 @@ msgstr "Memuat turun..."
 msgid "Resolving..."
 msgstr "Menyelesaikan..."
 
-msgid "Connecting..."
-msgstr "Menyambung..."
-
-msgid "Requesting..."
-msgstr "Meminta..."
-
 msgid "Error making request"
 msgstr "Ralat membuat permintaan"
 
@@ -3730,6 +3723,11 @@ msgstr "Zum ke 1600%"
 msgid "Select Mode"
 msgstr "Pilih Mod"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+RMB: Tunjukkan senarai semua nod pada kedudukan yang diklik, termasuk "
+"yang dikunci."
+
 msgid "RMB: Add node at position clicked."
 msgstr "RMB: Tambah nod pada kedudukan yang diklik."
 
@@ -3801,18 +3799,6 @@ msgstr "Snap Pintar"
 
 msgid "Configure Snap..."
 msgstr "Konfigurasikan Snap..."
-
-msgid "Lock Selected Node(s)"
-msgstr "Kunci Nod Terpilih"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Buka Kunci Nod Terpilih"
-
-msgid "Group Selected Node(s)"
-msgstr "Kumpulkan Nod Terpilih"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Nyahkumpulkan Nod Terpilih"
 
 msgid "Skeleton Options"
 msgstr "Pilihan Rangka"
@@ -3897,9 +3883,6 @@ msgstr "Bahagikan langkah grid dengan 2"
 msgid "Adding %s..."
 msgstr "Menambah %s..."
 
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Tidak boleh instantiate berbilang nod tanpa akar."
-
 msgid "Create Node"
 msgstr "Cipta Nod"
 
@@ -3956,9 +3939,6 @@ msgstr "Kanan Lebar"
 
 msgid "Full Rect"
 msgstr "Penuh Rect"
-
-msgid "Restart"
-msgstr "Mula semula"
 
 msgid "Load Emission Mask"
 msgstr "Muatkan Topeng Pelepasan"
@@ -4120,11 +4100,6 @@ msgstr "Edit Poli"
 msgid "Edit Poly (Remove Point)"
 msgstr "Edit Poli (Alih Keluar Titik)"
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+RMB: Tunjukkan senarai semua nod pada kedudukan yang diklik, termasuk "
-"yang dikunci."
-
 msgid "Insert Animation Key"
 msgstr "Masukkan Kunci Animasi"
 
@@ -4155,14 +4130,14 @@ msgstr "Cipta Poligon3D"
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Tidak dapat membuka '% s'. Fail mungkin telah dipindahkan atau dipadam."
 
+msgid "Online Docs"
+msgstr "Dokumen Dalam Talian"
+
 msgid "Run"
 msgstr "Jalankan"
 
 msgid "Search"
 msgstr "Cari"
-
-msgid "Online Docs"
-msgstr "Dokumen Dalam Talian"
 
 msgid "Standard"
 msgstr "Piawai"
@@ -4184,6 +4159,12 @@ msgstr "Zum Set Semula"
 
 msgid "Size"
 msgstr "Saiz"
+
+msgid "Reload"
+msgstr "Muatkan Semula"
+
+msgid "Resave"
+msgstr "Simpan Semula"
 
 msgid "No constants found."
 msgstr "Tiada pemalar ditemui."

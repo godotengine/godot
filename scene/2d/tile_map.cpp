@@ -532,6 +532,18 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	}
 }
 
+bool TileMap::is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_H;
+}
+
+bool TileMap::is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_FLIP_V;
+}
+
+bool TileMap::is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	return get_cell_alternative_tile(p_layer, p_coords, p_use_proxies) & TileSetAtlasSource::TRANSFORM_TRANSPOSE;
+}
+
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, Ref<TileMapPattern>(), get_pattern, p_coords_array);
 }
@@ -815,7 +827,9 @@ TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &p_coords) {
 }
 
 PackedStringArray TileMap::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	warnings.push_back(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
 	RBSet<int> y_sorted_z_index;
@@ -924,6 +938,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_h", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_h, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_v, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_cell_transposed", "layer", "coords", "use_proxies"), &TileMap::is_cell_transposed, DEFVAL(false));
+
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
 
@@ -996,6 +1014,7 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
+		PropertyListHelper::register_base_helper(&base_property_helper);
 
 		memdelete(defaults);
 	}

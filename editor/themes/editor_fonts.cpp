@@ -36,6 +36,7 @@
 #include "editor/themes/builtin_fonts.gen.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/font.h"
+#include "scene/scene_string_names.h"
 
 Ref<FontFile> load_external_font(const String &p_path, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_font_disable_embedded_bitmaps, bool p_msdf = false, TypedArray<Font> *r_fallbacks = nullptr) {
 	Ref<FontFile> font;
@@ -116,6 +117,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	int font_hinting_setting = (int)EDITOR_GET("interface/editor/font_hinting");
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EDITOR_GET("interface/editor/font_subpixel_positioning");
 	bool font_disable_embedded_bitmaps = (bool)EDITOR_GET("interface/editor/font_disable_embedded_bitmaps");
+	bool font_allow_msdf = (bool)EDITOR_GET("interface/editor/font_allow_msdf");
 
 	TextServer::Hinting font_hinting;
 	TextServer::Hinting font_mono_hinting;
@@ -152,7 +154,19 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	const float embolden_strength = 0.6;
 
 	Ref<Font> default_font = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false);
-	Ref<Font> default_font_msdf = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, true);
+	Ref<Font> default_font_msdf = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
+
+	String noto_cjk_path;
+	String noto_cjk_bold_path;
+	String var_suffix[] = { "HK", "KR", "SC", "TC", "JP" }; // Note: All Noto Sans CJK versions support all glyph variations, it should not match current locale.
+	for (size_t i = 0; i < sizeof(var_suffix) / sizeof(String); i++) {
+		if (noto_cjk_path.is_empty()) {
+			noto_cjk_path = OS::get_singleton()->get_system_font_path("Noto Sans CJK " + var_suffix[i], 400, 100);
+		}
+		if (noto_cjk_bold_path.is_empty()) {
+			noto_cjk_bold_path = OS::get_singleton()->get_system_font_path("Noto Sans CJK " + var_suffix[i], 800, 100);
+		}
+	}
 
 	TypedArray<Font> fallbacks;
 	Ref<FontFile> arabic_font = load_internal_font(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
@@ -166,13 +180,16 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontFile> tamil_font = load_internal_font(_font_NotoSansTamilUI_Regular, _font_NotoSansTamilUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
 	Ref<FontFile> telugu_font = load_internal_font(_font_NotoSansTeluguUI_Regular, _font_NotoSansTeluguUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
 	Ref<FontFile> thai_font = load_internal_font(_font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
+	if (!noto_cjk_path.is_empty()) {
+		load_external_font(noto_cjk_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
+	}
 	Ref<FontFile> fallback_font = load_internal_font(_font_DroidSansFallback, _font_DroidSansFallback_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
 	Ref<FontFile> japanese_font = load_internal_font(_font_DroidSansJapanese, _font_DroidSansJapanese_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks);
 	default_font->set_fallbacks(fallbacks);
 	default_font_msdf->set_fallbacks(fallbacks);
 
 	Ref<FontFile> default_font_bold = load_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false);
-	Ref<FontFile> default_font_bold_msdf = load_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, true);
+	Ref<FontFile> default_font_bold_msdf = load_internal_font(_font_NotoSans_Bold, _font_NotoSans_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 
 	TypedArray<Font> fallbacks_bold;
 	Ref<FontFile> arabic_font_bold = load_internal_font(_font_NotoNaskhArabicUI_Bold, _font_NotoNaskhArabicUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks_bold);
@@ -186,6 +203,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontFile> tamil_font_bold = load_internal_font(_font_NotoSansTamilUI_Bold, _font_NotoSansTamilUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks_bold);
 	Ref<FontFile> telugu_font_bold = load_internal_font(_font_NotoSansTeluguUI_Bold, _font_NotoSansTeluguUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks_bold);
 	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThai_Bold, _font_NotoSansThai_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks_bold);
+	if (!noto_cjk_bold_path.is_empty()) {
+		load_external_font(noto_cjk_bold_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false, &fallbacks_bold);
+	}
 	Ref<FontVariation> fallback_font_bold = make_bold_font(fallback_font, embolden_strength, &fallbacks_bold);
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 
@@ -233,7 +253,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> default_fc_msdf;
 	default_fc_msdf.instantiate();
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_msdf);
@@ -276,7 +296,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> bold_fc_msdf;
 	bold_fc_msdf.instantiate();
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_bold_msdf);
@@ -284,7 +304,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 		}
 		bold_fc_msdf->set_base_font(custom_font);
 	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_bold_msdf);
@@ -401,24 +421,24 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
 
 	p_theme->set_type_variation("MainScreenButton", "Button");
-	p_theme->set_font("font", "MainScreenButton", bold_fc);
-	p_theme->set_font_size("font_size", "MainScreenButton", default_font_size + 2 * EDSCALE);
+	p_theme->set_font(SceneStringName(font), "MainScreenButton", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "MainScreenButton", default_font_size + 2 * EDSCALE);
 
 	// Labels.
 
-	p_theme->set_font("font", "Label", default_fc);
+	p_theme->set_font(SceneStringName(font), "Label", default_fc);
 
 	p_theme->set_type_variation("HeaderSmall", "Label");
-	p_theme->set_font("font", "HeaderSmall", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderSmall", default_font_size);
+	p_theme->set_font(SceneStringName(font), "HeaderSmall", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "HeaderSmall", default_font_size);
 
 	p_theme->set_type_variation("HeaderMedium", "Label");
-	p_theme->set_font("font", "HeaderMedium", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderMedium", default_font_size + 1 * EDSCALE);
+	p_theme->set_font(SceneStringName(font), "HeaderMedium", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "HeaderMedium", default_font_size + 1 * EDSCALE);
 
 	p_theme->set_type_variation("HeaderLarge", "Label");
-	p_theme->set_font("font", "HeaderLarge", bold_fc);
-	p_theme->set_font_size("font_size", "HeaderLarge", default_font_size + 3 * EDSCALE);
+	p_theme->set_font(SceneStringName(font), "HeaderLarge", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "HeaderLarge", default_font_size + 3 * EDSCALE);
 
 	p_theme->set_font("normal_font", "RichTextLabel", default_fc);
 	p_theme->set_font("bold_font", "RichTextLabel", bold_fc);
@@ -442,7 +462,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font("rulers", EditorStringName(EditorFonts), default_fc);
 
 	// Rotation widget font
-	p_theme->set_font_size("rotation_control_size", EditorStringName(EditorFonts), 14 * EDSCALE);
+	p_theme->set_font_size("rotation_control_size", EditorStringName(EditorFonts), 13 * EDSCALE);
 	p_theme->set_font("rotation_control", EditorStringName(EditorFonts), default_fc);
 
 	// Code font

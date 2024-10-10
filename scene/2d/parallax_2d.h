@@ -47,7 +47,6 @@ class Parallax2D : public Node2D {
 	Point2 limit_begin = Point2(-DEFAULT_LIMIT, -DEFAULT_LIMIT);
 	Point2 limit_end = Point2(DEFAULT_LIMIT, DEFAULT_LIMIT);
 	Point2 autoscroll;
-	Point2 autoscroll_offset;
 	bool follow_viewport = true;
 	bool ignore_camera_scroll = false;
 

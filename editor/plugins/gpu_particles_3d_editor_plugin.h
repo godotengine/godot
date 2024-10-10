@@ -59,10 +59,8 @@ protected:
 	Vector<Face3> geometry;
 
 	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
-	virtual void _generate_emission_points(){};
+	virtual void _generate_emission_points() {}
 	void _node_selected(const NodePath &p_path);
-
-	static void _bind_methods();
 
 public:
 	GPUParticles3DEditorBase();
@@ -95,7 +93,6 @@ class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 protected:
 	void _notification(int p_notification);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	void edit(GPUParticles3D *p_particles);

@@ -99,7 +99,7 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
 	sc.path = p_path;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		ERR_FAIL_COND(!FileAccess::exists(p_path));
+		ERR_FAIL_COND(!ResourceLoader::exists(p_path));
 	}
 	spawnable_scenes.push_back(sc);
 #ifdef TOOLS_ENABLED

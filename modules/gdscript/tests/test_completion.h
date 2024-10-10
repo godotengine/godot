@@ -130,6 +130,8 @@ static void test_directory(const String &p_dir) {
 #endif
 
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
+			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_node_path_literals", conf.get_value("input", "add_node_path_literals", false));
+			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_string_name_literals", conf.get_value("input", "add_string_name_literals", false));
 
 			List<Dictionary> include;
 			to_dict_list(conf.get_value("output", "include", Array()), include);

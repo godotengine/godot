@@ -258,9 +258,6 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	}
 }
 
-void CPUParticles2DEditorPlugin::_bind_methods() {
-}
-
 CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	particles = nullptr;
 
@@ -305,7 +302,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
+	emission_mask->connect(SceneStringName(confirmed), callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 CPUParticles2DEditorPlugin::~CPUParticles2DEditorPlugin() {

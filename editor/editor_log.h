@@ -102,7 +102,7 @@ private:
 			toggle_button->add_theme_color_override("icon_color_pressed", Color(1, 1, 1, 1));
 			toggle_button->set_focus_mode(FOCUS_NONE);
 			// When toggled call the callback and pass the MessageType this button is for.
-			toggle_button->connect("toggled", p_toggled_callback.bind(type));
+			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
 		}
 
 		int get_message_count() {
@@ -155,8 +155,6 @@ private:
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
 	ErrorHandlerList eh;
-
-	Thread::ID current;
 
 	//void _dragged(const Point2& p_ofs);
 	void _meta_clicked(const String &p_meta);

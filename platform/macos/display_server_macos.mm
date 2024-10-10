@@ -139,10 +139,18 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #ifdef VULKAN_ENABLED
 				RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
 #endif
+#ifdef METAL_ENABLED
+				RenderingContextDriverMetal::WindowPlatformData metal;
+#endif
 			} wpd;
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
+			}
+#endif
+#ifdef METAL_ENABLED
+			if (rendering_driver == "metal") {
+				wpd.metal.layer = (CAMetalLayer *)layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -568,23 +576,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 	}
 
 	GodotMenuItem *value = [p_sender representedObject];
-
 	if (value) {
-		if (value->max_states > 0) {
-			value->state++;
-			if (value->state >= value->max_states) {
-				value->state = 0;
-			}
-		}
-
-		if (value->checkable_type == CHECKABLE_TYPE_CHECK_BOX) {
-			if ([p_sender state] == NSControlStateValueOff) {
-				[p_sender setState:NSControlStateValueOn];
-			} else {
-				[p_sender setState:NSControlStateValueOff];
-			}
-		}
-
 		if (value->callback.is_valid()) {
 			MenuCall mc;
 			mc.tag = value->meta;
@@ -1421,11 +1413,25 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 	return Vector2i();
 }
 
-void DisplayServerMacOS::mouse_set_button_state(BitField<MouseButtonMask> p_state) {
-	last_button_state = p_state;
-}
-
 BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
+	BitField<MouseButtonMask> last_button_state = 0;
+
+	NSUInteger buttons = [NSEvent pressedMouseButtons];
+	if (buttons & (1 << 0)) {
+		last_button_state.set_flag(MouseButtonMask::LEFT);
+	}
+	if (buttons & (1 << 1)) {
+		last_button_state.set_flag(MouseButtonMask::RIGHT);
+	}
+	if (buttons & (1 << 2)) {
+		last_button_state.set_flag(MouseButtonMask::MIDDLE);
+	}
+	if (buttons & (1 << 3)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON1);
+	}
+	if (buttons & (1 << 4)) {
+		last_button_state.set_flag(MouseButtonMask::MB_XBUTTON2);
+	}
 	return last_button_state;
 }
 
@@ -1716,7 +1722,7 @@ Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
@@ -1730,6 +1736,12 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 		rendering_device->screen_create(id);
 	}
 #endif
+
+	window_set_exclusive(id, p_exclusive);
+	if (p_transient_parent != INVALID_WINDOW_ID) {
+		window_set_transient(id, p_transient_parent);
+	}
+
 	return id;
 }
 
@@ -1881,6 +1893,12 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 		was_fullscreen = true;
 	}
 
+	bool was_maximized = false;
+	if (!was_fullscreen && NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+		[wd.window_object zoom:nil];
+		was_maximized = true;
+	}
+
 	Rect2i srect = screen_get_usable_rect(p_screen);
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 	Size2i wsize = window_get_size(p_window);
@@ -1888,6 +1906,10 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 
 	wpos = wpos.clamp(srect.position, srect.position + srect.size - wsize / 3);
 	window_set_position(wpos, p_window);
+
+	if (was_maximized) {
+		[wd.window_object zoom:nil];
+	}
 
 	if (was_fullscreen) {
 		// Re-enter fullscreen mode.
@@ -2328,7 +2350,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	wd.wb_offset = p_offset / scale;
 	wd.wb_offset = wd.wb_offset.maxi(12);
 	if (wd.window_button_view) {
-		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+		[(GodotButtonView *)wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}
 }
 
@@ -2696,7 +2718,7 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 		gl_manager_legacy->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
@@ -2713,7 +2735,7 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 		return (gl_manager_legacy->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
 	}
@@ -2831,8 +2853,7 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			cursors_cache.erase(p_shape);
 		}
 
-		Rect2 atlas_rect;
-		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
 		ERR_FAIL_COND(image.is_null());
 		Vector2i texture_size = image->get_size();
 
@@ -2854,13 +2875,8 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 		int len = int(texture_size.width * texture_size.height);
 
 		for (int i = 0; i < len; i++) {
-			int row_index = floor(i / texture_size.width) + atlas_rect.position.y;
-			int column_index = (i % int(texture_size.width)) + atlas_rect.position.x;
-
-			if (atlas_rect.has_area()) {
-				column_index = MIN(column_index, atlas_rect.size.width - 1);
-				row_index = MIN(row_index, atlas_rect.size.height - 1);
-			}
+			int row_index = floor(i / texture_size.width);
+			int column_index = i % int(texture_size.width);
 
 			uint32_t color = image->get_pixel(column_index, row_index).to_argb32();
 
@@ -3158,42 +3174,13 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 
 DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	NSImage *nsimg = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:nullptr
-							  pixelsWide:img->get_width()
-							  pixelsHigh:img->get_height()
-						   bitsPerSample:8
-						 samplesPerPixel:4
-								hasAlpha:YES
-								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:img->get_width() * 4
-							bitsPerPixel:32];
-		if (imgrep) {
-			uint8_t *pixels = [imgrep bitmapData];
-
-			int len = img->get_width() * img->get_height();
-			const uint8_t *r = img->get_data().ptr();
-
-			/* Premultiply the alpha channel */
-			for (int i = 0; i < len; i++) {
-				uint8_t alpha = r[i * 4 + 3];
-				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
-				pixels[i * 4 + 3] = alpha;
-			}
-
-			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-			if (nsimg) {
-				[nsimg addRepresentation:imgrep];
-			}
+		if (img->is_compressed()) {
+			img->decompress();
 		}
+		nsimg = _convert_to_nsimg(img);
 	}
 
 	IndicatorData idat;
@@ -3221,42 +3208,13 @@ void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<T
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	NSImage *nsimg = nullptr;
-	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
-		img->convert(Image::FORMAT_RGBA8);
-
-		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-				initWithBitmapDataPlanes:nullptr
-							  pixelsWide:img->get_width()
-							  pixelsHigh:img->get_height()
-						   bitsPerSample:8
-						 samplesPerPixel:4
-								hasAlpha:YES
-								isPlanar:NO
-						  colorSpaceName:NSDeviceRGBColorSpace
-							 bytesPerRow:img->get_width() * 4
-							bitsPerPixel:32];
-		if (imgrep) {
-			uint8_t *pixels = [imgrep bitmapData];
-
-			int len = img->get_width() * img->get_height();
-			const uint8_t *r = img->get_data().ptr();
-
-			/* Premultiply the alpha channel */
-			for (int i = 0; i < len; i++) {
-				uint8_t alpha = r[i * 4 + 3];
-				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
-				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
-				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
-				pixels[i * 4 + 3] = alpha;
-			}
-
-			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
-			if (nsimg) {
-				[nsimg addRepresentation:imgrep];
-			}
+		if (img->is_compressed()) {
+			img->decompress();
 		}
+		nsimg = _convert_to_nsimg(img);
 	}
 
 	NSStatusItem *item = indicators[p_id].item;
@@ -3361,6 +3319,9 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
+#if defined(METAL_ENABLED)
+	drivers.push_back("metal");
+#endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
@@ -3416,8 +3377,11 @@ void DisplayServerMacOS::popup_open(WindowID p_window) {
 		}
 	}
 
+	// Detect tooltips and other similar popups that shouldn't block input to their parent.
+	bool ignores_input = window_get_flag(WINDOW_FLAG_NO_FOCUS, p_window) && window_get_flag(WINDOW_FLAG_MOUSE_PASSTHROUGH, p_window);
+
 	WindowData &wd = windows[p_window];
-	if (wd.is_popup || has_popup_ancestor) {
+	if (wd.is_popup || (has_popup_ancestor && !ignores_input)) {
 		bool was_empty = popup_list.is_empty();
 		// Find current popup parent, or root popup if new window is not transient.
 		List<WindowID>::Element *C = nullptr;
@@ -3655,8 +3619,13 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager_angle = nullptr;
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
-				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
+#ifdef EGL_STATIC
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
+#endif
 				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
@@ -3680,13 +3649,26 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
 #endif
+#if defined(METAL_ENABLED)
+	if (rendering_driver == "metal") {
+		rendering_context = memnew(RenderingContextDriverMetal);
+	}
+#endif
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
 			memdelete(rendering_context);
 			rendering_context = nullptr;
-			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize " + rendering_driver);
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else {
+				r_error = ERR_CANT_CREATE;
+				ERR_FAIL_MSG("Could not initialize " + rendering_driver);
+			}
 		}
 	}
 #endif

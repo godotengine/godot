@@ -73,6 +73,13 @@
 				[b]Note:[/b] The returned value is unreliable if called right after modifying the [ItemList], before it redraws in the next frame.
 			</description>
 		</method>
+		<method name="get_item_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns item's auto translate mode.
+			</description>
+		</method>
 		<method name="get_item_custom_bg_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="idx" type="int" />
@@ -230,6 +237,15 @@
 				[b]Note:[/b] This method does not trigger the item selection signal.
 			</description>
 		</method>
+		<method name="set_item_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the auto translate mode of the item associated with the specified index.
+				Items use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [ItemList] itself.
+			</description>
+		</method>
 		<method name="set_item_custom_bg_color">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
@@ -363,6 +379,9 @@
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
+		<member name="auto_width" type="bool" setter="set_auto_width" getter="has_auto_width" default="false">
+			If [code]true[/code], the control will automatically resize the width to fit its content.
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
 			The width all columns will be adjusted to.
@@ -407,13 +426,14 @@
 			<param index="0" name="at_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
-				Triggered when any mouse click is issued within the rect of the list but on empty space.
+				Emitted when any mouse click is issued within the rect of the list but on empty space.
+				[param at_position] is the click position in this control's local coordinate system.
 			</description>
 		</signal>
 		<signal name="item_activated">
 			<param index="0" name="index" type="int" />
 			<description>
-				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
+				Emitted when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
 		<signal name="item_clicked">
@@ -421,14 +441,14 @@
 			<param index="1" name="at_position" type="Vector2" />
 			<param index="2" name="mouse_button_index" type="int" />
 			<description>
-				Triggered when specified list item has been clicked with any mouse button.
-				The click position is also provided to allow appropriate popup of context menus at the correct location.
+				Emitted when specified list item has been clicked with any mouse button.
+				[param at_position] is the click position in this control's local coordinate system.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<param index="0" name="index" type="int" />
 			<description>
-				Triggered when specified item has been selected.
+				Emitted when specified item has been selected. Only applicable in single selection mode.
 				[member allow_reselect] must be enabled to reselect an item.
 			</description>
 		</signal>
@@ -436,7 +456,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="selected" type="bool" />
 			<description>
-				Triggered when a multiple selection is altered on a list allowing multiple selection.
+				Emitted when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
 	</signals>

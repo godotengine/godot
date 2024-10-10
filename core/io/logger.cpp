@@ -84,11 +84,7 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	if (p_editor_notify) {
-		logf_error("%s: %s\n", err_type, err_details);
-	} else {
-		logf_error("USER %s: %s\n", err_type, err_details);
-	}
+	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 }
 
@@ -212,7 +208,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
 		// before writing to file, as text editors cannot display those
 		// correctly.
-		file->store_string(strip_ansi_regex->sub(String(buf), "", true));
+		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
 #else
 		file->store_buffer((uint8_t *)buf, len);
 #endif // MODULE_REGEX_ENABLED

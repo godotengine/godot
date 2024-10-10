@@ -329,7 +329,9 @@ class EditorHelpBitTooltip : public PopupPanel {
 	int _pushing_input = 0;
 	bool _need_free = false;
 
+	void _start_timer();
 	void _safe_queue_free();
+	void _target_gui_input(const Ref<InputEvent> &p_event);
 
 protected:
 	void _notification(int p_what);

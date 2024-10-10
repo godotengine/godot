@@ -856,7 +856,7 @@ void ThemeItemImportTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			select_icons_warning_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
-			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+			select_icons_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 			import_items_filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
@@ -911,7 +911,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_items_filter->set_placeholder(TTR("Filter Items"));
 	import_items_filter->set_clear_button_enabled(true);
 	add_child(import_items_filter);
-	import_items_filter->connect("text_changed", callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
+	import_items_filter->connect(SceneStringName(text_changed), callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
 
 	HBoxContainer *import_main_hb = memnew(HBoxContainer);
 	import_main_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1935,7 +1935,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_list->set_columns(1);
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
-	edit_type_list->connect("item_selected", callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
+	edit_type_list->connect(SceneStringName(item_selected), callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
 	edit_type_list->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
 
 	Label *edit_add_type_label = memnew(Label);
@@ -2068,7 +2068,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	theme_item_name = memnew(LineEdit);
 	edit_theme_item_vb->add_child(theme_item_name);
 	theme_item_name->connect(SceneStringName(gui_input), callable_mp(this, &ThemeItemEditorDialog::_edit_theme_item_gui_input));
-	edit_theme_item_dialog->connect("confirmed", callable_mp(this, &ThemeItemEditorDialog::_confirm_edit_theme_item));
+	edit_theme_item_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_confirm_edit_theme_item));
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
@@ -2120,7 +2120,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	confirm_closing_dialog = memnew(ConfirmationDialog);
 	confirm_closing_dialog->set_autowrap(true);
 	add_child(confirm_closing_dialog);
-	confirm_closing_dialog->connect("confirmed", callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
+	confirm_closing_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
 }
 
 ///////////////////////
@@ -2174,8 +2174,20 @@ void ThemeTypeDialog::_add_type_filter_cbk(const String &p_value) {
 	_update_add_type_options(p_value);
 }
 
+void ThemeTypeDialog::_type_filter_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the item list.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			add_type_options->gui_input(key);
+			add_type_filter->accept_event();
+		}
+	}
+}
+
 void ThemeTypeDialog::_add_type_options_cbk(int p_index) {
 	add_type_filter->set_text(add_type_options->get_item_text(p_index));
+	add_type_filter->set_caret_column(add_type_filter->get_text().length());
 }
 
 void ThemeTypeDialog::_add_type_dialog_entered(const String &p_value) {
@@ -2243,8 +2255,9 @@ ThemeTypeDialog::ThemeTypeDialog() {
 
 	add_type_filter = memnew(LineEdit);
 	add_type_vb->add_child(add_type_filter);
-	add_type_filter->connect("text_changed", callable_mp(this, &ThemeTypeDialog::_add_type_filter_cbk));
+	add_type_filter->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeDialog::_add_type_filter_cbk));
 	add_type_filter->connect("text_submitted", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_entered));
+	add_type_filter->connect(SceneStringName(gui_input), callable_mp(this, &ThemeTypeDialog::_type_filter_input));
 
 	Label *add_type_options_label = memnew(Label);
 	add_type_options_label->set_text(TTR("Available Node-based types:"));
@@ -2254,13 +2267,13 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_type_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_type_vb->add_child(add_type_options);
-	add_type_options->connect("item_selected", callable_mp(this, &ThemeTypeDialog::_add_type_options_cbk));
+	add_type_options->connect(SceneStringName(item_selected), callable_mp(this, &ThemeTypeDialog::_add_type_options_cbk));
 	add_type_options->connect("item_activated", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_activated));
 
 	add_type_confirmation = memnew(ConfirmationDialog);
 	add_type_confirmation->set_title(TTR("Type name is empty!"));
 	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
-	add_type_confirmation->connect("confirmed", callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
+	add_type_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
 	add_child(add_type_confirmation);
 }
 
@@ -2298,7 +2311,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	item_add_hb->add_child(item_add_button);
 	item_add_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_add_cbk).bind(p_data_type, item_add_edit));
 	item_add_edit->set_meta("button", item_add_button);
-	item_add_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_update_add_button).bind(item_add_edit));
+	item_add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_update_add_button).bind(item_add_edit));
 
 	return items_list;
 }
@@ -2497,7 +2510,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_rename_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_canceled).bind(p_data_type, p_item_name, item_name_container));
 		item_rename_cancel_button->hide();
 	} else {
-		item_name->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+		item_name->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 		Button *item_override_button = memnew(Button);
 		item_override_button->set_icon(get_editor_theme_icon(SNAME("Add")));
@@ -2570,7 +2583,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 			if (E.value) {
 				item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
+				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_constant_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant(E.key, edited_type));
 				item_editor->set_editable(false);
@@ -2641,7 +2654,7 @@ void ThemeTypeEditor::_update_type_items() {
 
 			if (E.value) {
 				item_editor->set_value(edited_theme->get_font_size(E.key, edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
+				item_editor->connect(SceneStringName(value_changed), callable_mp(this, &ThemeTypeEditor::_font_size_item_changed).bind(E.key));
 			} else {
 				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_font_size(E.key, edited_type));
 				item_editor->set_editable(false);
@@ -3441,7 +3454,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	type_list_hb->add_child(theme_type_list);
-	theme_type_list->connect("item_selected", callable_mp(this, &ThemeTypeEditor::_list_type_selected));
+	theme_type_list->connect(SceneStringName(item_selected), callable_mp(this, &ThemeTypeEditor::_list_type_selected));
 
 	add_type_button = memnew(Button);
 	add_type_button->set_tooltip_text(TTR("Add a type from a list of available types or create a new one."));
@@ -3505,7 +3518,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_edit = memnew(LineEdit);
 	type_variation_hb->add_child(type_variation_edit);
 	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	type_variation_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
+	type_variation_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
 	type_variation_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ThemeTypeEditor::_update_type_items));
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);
@@ -3578,6 +3591,13 @@ void ThemeEditor::_theme_close_button_cbk() {
 	if (theme.is_valid() && InspectorDock::get_inspector_singleton()->get_edited_object() == theme.ptr()) {
 		EditorNode::get_singleton()->push_item(nullptr);
 	} else {
+		theme = Ref<Theme>();
+		EditorNode::get_singleton()->hide_unused_editors(plugin);
+	}
+}
+
+void ThemeEditor::_scene_closed(const String &p_path) {
+	if (theme.is_valid() && theme->is_built_in() && theme->get_path().get_slice("::", 0) == p_path) {
 		theme = Ref<Theme>();
 		EditorNode::get_singleton()->hide_unused_editors(plugin);
 	}
@@ -3666,7 +3686,10 @@ void ThemeEditor::_preview_control_picked(String p_class_name) {
 
 void ThemeEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_READY: {
+			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ThemeEditor::_scene_closed));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), EditorStringName(EditorStyles)));
 			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), EditorStringName(EditorStyles)));
@@ -3794,71 +3817,7 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 }
 
 bool ThemeEditorPlugin::can_auto_hide() const {
-	Ref<Theme> edited_theme = theme_editor->theme;
-	if (edited_theme.is_null()) {
-		return true;
-	}
-
-	Ref<Resource> edited_resource = Ref<Resource>(InspectorDock::get_inspector_singleton()->get_next_edited_object());
-	if (edited_resource.is_null()) {
-		return true;
-	}
-
-	// Don't hide if edited resource used by this theme.
-	Ref<StyleBox> sbox = edited_resource;
-	if (sbox.is_valid()) {
-		List<StringName> type_list;
-		edited_theme->get_stylebox_type_list(&type_list);
-
-		for (const StringName &E : type_list) {
-			List<StringName> list;
-			edited_theme->get_stylebox_list(E, &list);
-
-			for (const StringName &F : list) {
-				if (edited_theme->get_stylebox(F, E) == sbox) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	Ref<Texture2D> tex = edited_resource;
-	if (tex.is_valid()) {
-		List<StringName> type_list;
-		edited_theme->get_icon_type_list(&type_list);
-
-		for (const StringName &E : type_list) {
-			List<StringName> list;
-			edited_theme->get_icon_list(E, &list);
-
-			for (const StringName &F : list) {
-				if (edited_theme->get_icon(F, E) == tex) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	Ref<Font> fnt = edited_resource;
-	if (fnt.is_valid()) {
-		List<StringName> type_list;
-		edited_theme->get_font_type_list(&type_list);
-
-		for (const StringName &E : type_list) {
-			List<StringName> list;
-			edited_theme->get_font_list(E, &list);
-
-			for (const StringName &F : list) {
-				if (edited_theme->get_font(F, E) == fnt) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-	return true;
+	return theme_editor->theme.is_null();
 }
 
 ThemeEditorPlugin::ThemeEditorPlugin() {

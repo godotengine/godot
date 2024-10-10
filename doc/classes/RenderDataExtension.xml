@@ -12,24 +12,25 @@
 		<method name="_get_camera_attributes" qualifiers="virtual const">
 			<return type="RID" />
 			<description>
-				Implement this in GDExtension to return the [RID] for the implementations camera attributes object.
+				Implement this in GDExtension to return the [RID] for the implementation's camera attributes object.
 			</description>
 		</method>
 		<method name="_get_environment" qualifiers="virtual const">
 			<return type="RID" />
 			<description>
+				Implement this in GDExtension to return the [RID] of the implementation's environment object.
 			</description>
 		</method>
 		<method name="_get_render_scene_buffers" qualifiers="virtual const">
 			<return type="RenderSceneBuffers" />
 			<description>
-				Implement this in GDExtension to return the [RID] of the implementations environment object.
+				Implement this in GDExtension to return the implementation's [RenderSceneBuffers] object.
 			</description>
 		</method>
 		<method name="_get_render_scene_data" qualifiers="virtual const">
 			<return type="RenderSceneData" />
 			<description>
-				Implement this in GDExtension to return the implementations [RenderSceneDataExtension] object.
+				Implement this in GDExtension to return the implementation's [RenderSceneDataExtension] object.
 			</description>
 		</method>
 	</methods>

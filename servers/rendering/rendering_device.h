@@ -33,6 +33,7 @@
 
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/condition_variable.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
@@ -62,6 +63,10 @@ class RenderingDevice : public RenderingDeviceCommons {
 	GDCLASS(RenderingDevice, Object)
 
 	_THREAD_SAFE_CLASS_
+
+private:
+	Thread::ID render_thread_id;
+
 public:
 	enum ShaderLanguage {
 		SHADER_LANGUAGE_GLSL,
@@ -87,6 +92,9 @@ private:
 	RenderingContextDriver *context = nullptr;
 	RenderingDeviceDriver *driver = nullptr;
 	RenderingContextDriver::Device device;
+
+	bool local_device_processing = false;
+	bool is_main_instance = false;
 
 protected:
 	static void _bind_methods();
@@ -175,14 +183,22 @@ private:
 		uint32_t size = 0;
 		BitField<RDD::BufferUsageBits> usage;
 		RDG::ResourceTracker *draw_tracker = nullptr;
+		int32_t transfer_worker_index = -1;
+		uint64_t transfer_worker_operation = 0;
 	};
 
 	Buffer *_get_buffer_from_owner(RID p_buffer);
-	Error _buffer_update(Buffer *p_buffer, RID p_buffer_id, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_queue = false, uint32_t p_required_align = 32);
+	Error _buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align = 32);
 
-	RID_Owner<Buffer> uniform_buffer_owner;
-	RID_Owner<Buffer> storage_buffer_owner;
-	RID_Owner<Buffer> texture_buffer_owner;
+	void update_perf_report();
+
+	uint32_t gpu_copy_count = 0;
+	uint32_t copy_bytes_count = 0;
+	String perf_report_text;
+
+	RID_Owner<Buffer, true> uniform_buffer_owner;
+	RID_Owner<Buffer, true> storage_buffer_owner;
+	RID_Owner<Buffer, true> texture_buffer_owner;
 
 public:
 	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
@@ -245,6 +261,8 @@ public:
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
 		SharedFallback *shared_fallback = nullptr;
+		int32_t transfer_worker_index = -1;
+		uint64_t transfer_worker_operation = 0;
 
 		RDD::TextureSubresourceRange barrier_range() const {
 			RDD::TextureSubresourceRange r;
@@ -273,11 +291,13 @@ public:
 		}
 	};
 
-	RID_Owner<Texture> texture_owner;
+	RID_Owner<Texture, true> texture_owner;
 	uint32_t texture_upload_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
-	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_use_setup_queue, bool p_validate_can_update);
+	uint32_t _texture_layer_count(Texture *p_texture) const;
+	uint32_t _texture_alignment(Texture *p_texture) const;
+	Error _texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	void _texture_check_shared_fallback(Texture *p_texture);
 	void _texture_update_shared_fallback(RID p_texture_rid, Texture *p_texture, bool p_for_writing);
 	void _texture_free_shared_fallback(Texture *p_texture);
@@ -368,7 +388,9 @@ public:
 	// used for the render pipelines.
 
 	struct AttachmentFormat {
-		enum { UNUSED_ATTACHMENT = 0xFFFFFFFF };
+		enum : uint32_t {
+			UNUSED_ATTACHMENT = 0xFFFFFFFF
+		};
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;
@@ -561,7 +583,7 @@ private:
 		uint32_t view_count;
 	};
 
-	RID_Owner<Framebuffer> framebuffer_owner;
+	RID_Owner<Framebuffer, true> framebuffer_owner;
 
 public:
 	// This ID is warranted to be unique for the same formats, does not need to be freed
@@ -582,7 +604,7 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 private:
-	RID_Owner<RDD::SamplerID> sampler_owner;
+	RID_Owner<RDD::SamplerID, true> sampler_owner;
 
 public:
 	RID sampler_create(const SamplerState &p_state);
@@ -604,7 +626,7 @@ private:
 	// This mapping is done here internally, and it's not
 	// exposed.
 
-	RID_Owner<Buffer> vertex_buffer_owner;
+	RID_Owner<Buffer, true> vertex_buffer_owner;
 
 	struct VertexDescriptionKey {
 		Vector<VertexAttribute> vertex_formats;
@@ -684,10 +706,12 @@ private:
 		Vector<RDD::BufferID> buffers; // Not owned, just referenced.
 		Vector<RDG::ResourceTracker *> draw_trackers; // Not owned, just referenced.
 		Vector<uint64_t> offsets;
+		Vector<int32_t> transfer_worker_indices;
+		Vector<uint64_t> transfer_worker_operations;
 		HashSet<RID> untracked_buffers;
 	};
 
-	RID_Owner<VertexArray> vertex_array_owner;
+	RID_Owner<VertexArray, true> vertex_array_owner;
 
 	struct IndexBuffer : public Buffer {
 		uint32_t max_index = 0; // Used for validation.
@@ -696,7 +720,7 @@ private:
 		bool supports_restart_indices = false;
 	};
 
-	RID_Owner<IndexBuffer> index_buffer_owner;
+	RID_Owner<IndexBuffer, true> index_buffer_owner;
 
 	struct IndexArray {
 		uint32_t max_index = 0; // Remember the maximum index here too, for validation.
@@ -706,9 +730,11 @@ private:
 		uint32_t indices = 0;
 		IndexBufferFormat format = INDEX_BUFFER_FORMAT_UINT16;
 		bool supports_restart_indices = false;
+		int32_t transfer_worker_index = -1;
+		uint64_t transfer_worker_operation = 0;
 	};
 
-	RID_Owner<IndexArray> index_array_owner;
+	RID_Owner<IndexArray, true> index_array_owner;
 
 public:
 	RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false);
@@ -785,11 +811,11 @@ private:
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
 
-	RID_Owner<Shader> shader_owner;
+	RID_Owner<Shader, true> shader_owner;
 
 #ifndef DISABLE_DEPRECATED
 public:
-	enum BarrierMask{
+	enum BarrierMask {
 		BARRIER_MASK_VERTEX = 1,
 		BARRIER_MASK_FRAGMENT = 8,
 		BARRIER_MASK_COMPUTE = 2,
@@ -812,6 +838,7 @@ private:
 	void _draw_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
 	void _compute_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
 	void _barrier_bind_compat_81356(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to);
+
 	void _draw_list_end_bind_compat_84976(BitField<BarrierMask> p_post_barrier);
 	void _compute_list_end_bind_compat_84976(BitField<BarrierMask> p_post_barrier);
 	InitialAction _convert_initial_action_84976(InitialAction p_old_initial_action);
@@ -824,7 +851,10 @@ private:
 	Error _texture_copy_bind_compat_84976(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier);
 	Error _texture_clear_bind_compat_84976(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier);
 	Error _texture_resolve_multisample_bind_compat_84976(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier);
+
 	FramebufferFormatID _screen_get_framebuffer_format_bind_compat_87340() const;
+
+	DrawListID _draw_list_begin_bind_compat_90993(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
 #endif
 
 public:
@@ -853,6 +883,7 @@ public:
 	/******************/
 	/**** UNIFORMS ****/
 	/******************/
+	String get_perf_report() const;
 
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
@@ -961,7 +992,7 @@ private:
 		void *invalidated_callback_userdata = nullptr;
 	};
 
-	RID_Owner<UniformSet> uniform_set_owner;
+	RID_Owner<UniformSet, true> uniform_set_owner;
 
 	void _uniform_set_update_shared(UniformSet *p_uniform_set);
 
@@ -1008,7 +1039,7 @@ private:
 		uint32_t push_constant_size = 0;
 	};
 
-	RID_Owner<RenderPipeline> render_pipeline_owner;
+	RID_Owner<RenderPipeline, true> render_pipeline_owner;
 
 	bool pipeline_cache_enabled = false;
 	size_t pipeline_cache_size = 0;
@@ -1029,7 +1060,7 @@ private:
 		uint32_t local_group_size[3] = { 0, 0, 0 };
 	};
 
-	RID_Owner<ComputePipeline> compute_pipeline_owner;
+	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
 
 public:
 	RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
@@ -1085,6 +1116,7 @@ private:
 			RID pipeline_shader;
 			RDD::ShaderID pipeline_shader_driver_id;
 			uint32_t pipeline_shader_layout_hash = 0;
+			uint32_t pipeline_push_constant_size = 0;
 			RID vertex_array;
 			RID index_array;
 			uint32_t draw_count = 0;
@@ -1136,16 +1168,14 @@ private:
 
 	void _draw_list_insert_clear_region(DrawList *p_draw_list, Framebuffer *p_framebuffer, Point2i p_viewport_offset, Point2i p_viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil);
 	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, RDD::FramebufferID *r_framebuffer, RDD::RenderPassID *r_render_pass, uint32_t *r_subpass_count);
-	Error _draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass);
-	void _draw_list_set_viewport(Rect2i p_rect);
-	void _draw_list_set_scissor(Rect2i p_rect);
+	Error _draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass, uint32_t p_breadcrumb);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
 	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
 	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
 
 public:
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
@@ -1224,6 +1254,50 @@ public:
 	void compute_list_end();
 
 private:
+	/*************************/
+	/**** TRANSFER WORKER ****/
+	/*************************/
+
+	struct TransferWorker {
+		uint32_t index = 0;
+		RDD::BufferID staging_buffer;
+		uint32_t max_transfer_size = 0;
+		uint32_t staging_buffer_size_in_use = 0;
+		uint32_t staging_buffer_size_allocated = 0;
+		RDD::CommandBufferID command_buffer;
+		RDD::CommandPoolID command_pool;
+		RDD::FenceID command_fence;
+		RDD::SemaphoreID command_semaphore;
+		bool recording = false;
+		bool submitted = false;
+		BinaryMutex thread_mutex;
+		uint64_t operations_processed = 0;
+		uint64_t operations_submitted = 0;
+		uint64_t operations_counter = 0;
+		BinaryMutex operations_mutex;
+	};
+
+	LocalVector<TransferWorker *> transfer_worker_pool;
+	uint32_t transfer_worker_pool_max_size = 1;
+	LocalVector<uint64_t> transfer_worker_operation_used_by_draw;
+	LocalVector<uint32_t> transfer_worker_pool_available_list;
+	BinaryMutex transfer_worker_pool_mutex;
+	ConditionVariable transfer_worker_pool_condition;
+
+	TransferWorker *_acquire_transfer_worker(uint32_t p_transfer_size, uint32_t p_required_align, uint32_t &r_staging_offset);
+	void _release_transfer_worker(TransferWorker *p_transfer_worker);
+	void _end_transfer_worker(TransferWorker *p_transfer_worker);
+	void _submit_transfer_worker(TransferWorker *p_transfer_worker, bool p_signal_semaphore);
+	void _wait_for_transfer_worker(TransferWorker *p_transfer_worker);
+	void _check_transfer_worker_operation(uint32_t p_transfer_worker_index, uint64_t p_transfer_worker_operation);
+	void _check_transfer_worker_buffer(Buffer *p_buffer);
+	void _check_transfer_worker_texture(Texture *p_texture);
+	void _check_transfer_worker_vertex_array(VertexArray *p_vertex_array);
+	void _check_transfer_worker_index_array(IndexArray *p_index_array);
+	void _submit_transfer_workers(bool p_operations_used_by_draw);
+	void _wait_for_transfer_workers();
+	void _free_transfer_workers();
+
 	/***********************/
 	/**** COMMAND GRAPH ****/
 	/***********************/
@@ -1234,6 +1308,7 @@ private:
 	bool _index_array_make_mutable(IndexArray *p_index_array, RDG::ResourceTracker *p_resource_tracker);
 	bool _uniform_set_make_mutable(UniformSet *p_uniform_set, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
 	bool _dependency_make_mutable(RID p_id, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _dependencies_make_mutable_recursive(RID p_id, RDG::ResourceTracker *p_resource_tracker);
 	bool _dependencies_make_mutable(RID p_id, RDG::ResourceTracker *p_resource_tracker);
 
 	RenderingDeviceGraph draw_graph;
@@ -1243,8 +1318,10 @@ private:
 	/**************************/
 
 	RDD::CommandQueueFamilyID main_queue_family;
+	RDD::CommandQueueFamilyID transfer_queue_family;
 	RDD::CommandQueueFamilyID present_queue_family;
 	RDD::CommandQueueID main_queue;
+	RDD::CommandQueueID transfer_queue;
 	RDD::CommandQueueID present_queue;
 
 	/**************************/
@@ -1276,28 +1353,21 @@ private:
 		List<RenderPipeline> render_pipelines_to_dispose_of;
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
+		// The command pool used by the command buffer.
 		RDD::CommandPoolID command_pool;
 
-		// Used at the beginning of every frame for set-up.
-		// Used for filling up newly created buffers with data provided on creation.
-		// Primarily intended to be accessed by worker threads.
-		// Ideally this command buffer should use an async transfer queue.
-		RDD::CommandBufferID setup_command_buffer;
+		// The command buffer used by the main thread when recording the frame.
+		RDD::CommandBufferID command_buffer;
 
-		// The main command buffer for drawing and compute.
-		// Primarily intended to be used by the main thread to do most stuff.
-		RDD::CommandBufferID draw_command_buffer;
+		// Signaled by the command buffer submission. Present must wait on this semaphore.
+		RDD::SemaphoreID semaphore;
 
-		// Signaled by the setup submission. Draw must wait on this semaphore.
-		RDD::SemaphoreID setup_semaphore;
+		// Signaled by the command buffer submission. Must wait on this fence before beginning command recording for the frame.
+		RDD::FenceID fence;
+		bool fence_signaled = false;
 
-		// Signaled by the draw submission. Present must wait on this semaphore.
-		RDD::SemaphoreID draw_semaphore;
-
-		// Signaled by the draw submission. Must wait on this fence before beginning
-		// command recording for the frame.
-		RDD::FenceID draw_fence;
-		bool draw_fence_signaled = false;
+		// Semaphores the frame must wait on before executing the command buffer.
+		LocalVector<RDD::SemaphoreID> semaphores_to_wait_on;
 
 		// Swap chains prepared for drawing during the frame that must be presented.
 		LocalVector<RDD::SwapChainID> swap_chains_to_present;
@@ -1403,6 +1473,21 @@ public:
 
 	uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
 
+	String get_driver_and_device_memory_report() const;
+
+	String get_tracked_object_name(uint32_t p_type_index) const;
+	uint64_t get_tracked_object_type_count() const;
+
+	uint64_t get_driver_total_memory() const;
+	uint64_t get_driver_allocation_count() const;
+	uint64_t get_driver_memory_by_object_type(uint32_t p_type) const;
+	uint64_t get_driver_allocs_by_object_type(uint32_t p_type) const;
+
+	uint64_t get_device_total_memory() const;
+	uint64_t get_device_allocation_count() const;
+	uint64_t get_device_memory_by_object_type(uint32_t p_type) const;
+	uint64_t get_device_allocs_by_object_type(uint32_t p_type) const;
+
 	static RenderingDevice *get_singleton();
 
 	RenderingDevice();
@@ -1475,6 +1560,7 @@ VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
+VARIANT_ENUM_CAST(RenderingDevice::BreadcrumbMarker)
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);

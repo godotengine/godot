@@ -270,13 +270,18 @@ void AnimatedTexture::_bind_methods() {
 	BIND_CONSTANT(MAX_FRAMES);
 }
 
+void AnimatedTexture::_finish_non_thread_safe_setup() {
+	RenderingServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
+}
+
 AnimatedTexture::AnimatedTexture() {
 	//proxy = RS::get_singleton()->texture_create();
 	proxy_ph = RS::get_singleton()->texture_2d_placeholder_create();
 	proxy = RS::get_singleton()->texture_proxy_create(proxy_ph);
 
 	RenderingServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
-	RenderingServer::get_singleton()->connect("frame_pre_draw", callable_mp(this, &AnimatedTexture::_update_proxy));
+
+	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &AnimatedTexture::_finish_non_thread_safe_setup));
 }
 
 AnimatedTexture::~AnimatedTexture() {

@@ -651,7 +651,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
 	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
 
-	Color group_color = get_theme_color(SNAME("prop_category"), EditorStringName(Editor));
+	Color group_color = get_theme_color(SNAME("separator_color"), EditorStringName(Editor));
 
 	// List of editors.
 	// --- Rendering ---
@@ -929,7 +929,7 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 				if (tile_data_editor_dropdown_button->has_focus()) {
 					clr = get_theme_color(SNAME("font_focus_color"));
 				} else {
-					clr = get_theme_color(SNAME("font_color"));
+					clr = get_theme_color(SceneStringName(font_color));
 				}
 		}
 	}
@@ -1043,6 +1043,13 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 		tools_settings_erase_button->hide();
 		tool_advanced_menu_button->hide();
 	}
+}
+
+void TileSetAtlasSourceEditor::_update_buttons() {
+	tool_paint_button->set_disabled(read_only);
+	tool_paint_button->set_tooltip_text(read_only ? TTR("TileSet is in read-only mode. Make the resource unique to edit TileSet properties.") : TTR("Paint properties."));
+	tools_settings_erase_button->set_disabled(read_only);
+	tool_advanced_menu_button->set_disabled(read_only);
 }
 
 void TileSetAtlasSourceEditor::_tile_atlas_control_mouse_exited() {
@@ -2212,10 +2219,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 		tool_setup_atlas_source_button->set_pressed(true);
 	}
 
-	// Disable buttons in read-only mode.
-	tool_paint_button->set_disabled(read_only);
-	tools_settings_erase_button->set_disabled(read_only);
-	tool_advanced_menu_button->set_disabled(read_only);
+	_update_buttons();
 
 	// Update everything.
 	_update_source_inspector();
@@ -2447,6 +2451,8 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			resize_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 			resize_handle_disabled = get_editor_theme_icon(SNAME("EditorHandleDisabled"));
+
+			tile_data_editors_tree->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "PopupPanel"));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -2458,10 +2464,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 					read_only = EditorNode::get_singleton()->is_resource_read_only(tile_set);
 				}
 
-				// Disable buttons in read-only mode.
-				tool_paint_button->set_disabled(read_only);
-				tools_settings_erase_button->set_disabled(read_only);
-				tool_advanced_menu_button->set_disabled(read_only);
+				_update_buttons();
 
 				// Update everything.
 				_update_source_inspector();
@@ -2545,7 +2548,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_paint_button->set_theme_type_variation("FlatButton");
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
-	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
 	toolbox->add_child(tool_paint_button);
 
 	// Tile inspector.
@@ -2595,7 +2597,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_tree->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tile_data_editors_tree->set_h_scroll_enabled(false);
 	tile_data_editors_tree->set_v_scroll_enabled(false);
-	tile_data_editors_tree->connect("item_selected", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
+	tile_data_editors_tree->connect(SceneStringName(item_selected), callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
 	tile_data_editors_popup->add_child(tile_data_editors_tree);
 
 	tile_data_painting_editor_container = memnew(VBoxContainer);
@@ -2610,7 +2612,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(false, true);
 	atlas_source_inspector->set_use_doc_hints(true);
-	atlas_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
@@ -2647,6 +2648,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(outside_tiles_warning);
 
 	_update_toolbar();
+	_update_buttons();
 
 	// Right side of toolbar.
 	Control *middle_space = memnew(Control);
@@ -2732,14 +2734,13 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	confirm_auto_create_tiles->set_text(TTR("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
 	confirm_auto_create_tiles->set_ok_button_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
-	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
+	confirm_auto_create_tiles->connect(SceneStringName(confirmed), callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
 	confirm_auto_create_tiles->connect("canceled", callable_mp(this, &TileSetAtlasSourceEditor::_cancel_auto_create_tiles));
 	add_child(confirm_auto_create_tiles);
 
 	// Inspector plugin.
-	Ref<EditorInspectorPluginTileData> tile_data_inspector_plugin;
-	tile_data_inspector_plugin.instantiate();
-	EditorInspector::add_inspector_plugin(tile_data_inspector_plugin);
+	EditorInspector::add_inspector_plugin(memnew(EditorInspectorPluginTileData));
+	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 }
 
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
@@ -2767,15 +2768,7 @@ void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 
 void EditorPropertyTilePolygon::_polygons_changed() {
 	if (String(count_property).is_empty()) {
-		if (base_type == "OccluderPolygon2D") {
-			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder;
-			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
-				occluder.instantiate();
-				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(0));
-			}
-			emit_changed(get_edited_property(), occluder);
-		} else if (base_type == "NavigationPolygon") {
+		if (base_type == "NavigationPolygon") {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
 				navigation_polygon.instantiate();
@@ -2797,19 +2790,24 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			emit_changed(get_edited_property(), navigation_polygon);
 		}
 	} else {
-		if (base_type.is_empty()) {
-			// Multiple array of vertices.
-			Vector<String> changed_properties;
-			Array values;
-			int count = generic_tile_polygon_editor->get_polygon_count();
-			changed_properties.push_back(count_property);
-			values.push_back(count);
-			for (int i = 0; i < count; i++) {
-				changed_properties.push_back(vformat(element_pattern, i));
+		// Multiple array of vertices or OccluderPolygon2D.
+		Vector<String> changed_properties;
+		Array values;
+		int count = generic_tile_polygon_editor->get_polygon_count();
+		changed_properties.push_back(count_property);
+		values.push_back(count);
+		for (int i = 0; i < count; i++) {
+			changed_properties.push_back(vformat(element_pattern, i));
+			if (base_type.is_empty()) {
 				values.push_back(generic_tile_polygon_editor->get_polygon(i));
+			} else if (base_type == "OccluderPolygon2D") {
+				Ref<OccluderPolygon2D> occluder;
+				occluder.instantiate();
+				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(i));
+				values.push_back(occluder);
 			}
-			emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 		}
+		emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 	}
 }
 
@@ -2819,27 +2817,22 @@ void EditorPropertyTilePolygon::update_property() {
 	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
 
 	Ref<TileSetAtlasSource> tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();
-	generic_tile_polygon_editor->set_tile_set(Ref<TileSet>(tile_set_atlas_source->get_tile_set()));
+	Ref<TileSet> tile_set(tile_set_atlas_source->get_tile_set());
+
+	// Update the polyugon editor tile_set.
+	generic_tile_polygon_editor->set_tile_set(tile_set);
 
 	// Set the background
 	Vector2i coords = atlas_tile_proxy_object->get_edited_tiles().front()->get().tile;
 	int alternative = atlas_tile_proxy_object->get_edited_tiles().front()->get().alternative;
-	TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-	generic_tile_polygon_editor->set_background(tile_set_atlas_source->get_texture(), tile_set_atlas_source->get_tile_texture_region(coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	generic_tile_polygon_editor->set_background_tile(*tile_set_atlas_source, coords, alternative);
 
 	// Reset the polygons.
 	generic_tile_polygon_editor->clear_polygons();
 
 	if (String(count_property).is_empty()) {
-		if (base_type == "OccluderPolygon2D") {
-			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder = get_edited_property_value();
-			generic_tile_polygon_editor->clear_polygons();
-			if (occluder.is_valid()) {
-				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
-			}
-		} else if (base_type == "NavigationPolygon") {
-			// Single OccluderPolygon2D.
+		if (base_type == "NavigationPolygon") {
+			// Single NavigationPolygon.
 			Ref<NavigationPolygon> navigation_polygon = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (navigation_polygon.is_valid()) {
@@ -2855,6 +2848,15 @@ void EditorPropertyTilePolygon::update_property() {
 			generic_tile_polygon_editor->clear_polygons();
 			for (int i = 0; i < count; i++) {
 				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
+			}
+		} else if (base_type == "OccluderPolygon2D") {
+			// Multiple OccluderPolygon2D.
+			generic_tile_polygon_editor->clear_polygons();
+			for (int i = 0; i < count; i++) {
+				Ref<OccluderPolygon2D> occluder = get_edited_object()->get(vformat(element_pattern, i));
+				if (occluder.is_valid()) {
+					generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
+				}
 			}
 		}
 	}
@@ -2896,16 +2898,30 @@ bool EditorInspectorPluginTileData::can_handle(Object *p_object) {
 
 bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	Vector<String> components = String(p_path).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
+	if (components.size() >= 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
 		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components[1] == "polygon") {
+		if (components[1] == "polygons_count") {
 			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
-			ep->setup_single_mode(p_path, "OccluderPolygon2D");
-			add_property_editor(p_path, ep);
+			ep->setup_multiple_mode(vformat("occlusion_layer_%d/polygons", layer_index), vformat("occlusion_layer_%d/polygons_count", layer_index), vformat("occlusion_layer_%d/polygon_%%d/polygon", layer_index), "OccluderPolygon2D");
+			Vector<String> properties;
+			properties.push_back(p_path);
+			int count = p_object->get(vformat("occlusion_layer_%d/polygons_count", layer_index));
+			for (int i = 0; i < count; i++) {
+				properties.push_back(vformat("occlusion_layer_%d/polygon_%d/polygon", layer_index, i));
+			}
+			add_property_editor_for_multiple_properties("Polygons", properties, ep);
 			return true;
 		}
+		// We keep the original editor for now, but here is the code that could be used if we need a custom editor for each polygon:
+		/*else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
+			int polygon_index = components[1].trim_prefix("polygon_").to_int();
+			ERR_FAIL_COND_V(polygon_index < 0, false);
+			if (components[2] == "polygon") {
+				return true;
+			}
+		}*/
 	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		// Physics layers.
 		int layer_index = components[0].trim_prefix("physics_layer_").to_int();

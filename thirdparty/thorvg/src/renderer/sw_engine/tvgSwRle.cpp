@@ -197,7 +197,6 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-constexpr auto MAX_SPANS = 256;
 constexpr auto PIXEL_BITS = 8;   //must be at least 6 bits!
 constexpr auto ONE_PIXEL = (1L << PIXEL_BITS);
 
@@ -239,10 +238,6 @@ struct RleWorker
     int levStack[32];
 
     SwOutline* outline;
-
-    SwSpan spans[MAX_SPANS];
-    int spansCnt;
-    int ySpan;
 
     int bandSize;
     int bandShoot;
@@ -301,26 +296,6 @@ static inline SwCoord HYPOT(SwPoint pt)
     return ((pt.x > pt.y) ? (pt.x + (3 * pt.y >> 3)) : (pt.y + (3 * pt.x >> 3)));
 }
 
-static void _genSpan(SwRleData* rle, const SwSpan* spans, uint32_t count)
-{
-    auto newSize = rle->size + count;
-
-    /* allocate enough memory for new spans */
-    /* alloc is required to prevent free and reallocation */
-    /* when the rle needs to be regenerated because of attribute change. */
-    if (rle->alloc < newSize) {
-        rle->alloc = (newSize * 2);
-        //OPTIMIZE: use mempool!
-        rle->spans = static_cast<SwSpan*>(realloc(rle->spans, rle->alloc * sizeof(SwSpan)));
-    }
-
-    //copy the new spans to the allocated memory
-    SwSpan* lastSpan = rle->spans + rle->size;
-    memcpy(lastSpan, spans, count * sizeof(SwSpan));
-
-    rle->size = newSize;
-}
-
 
 static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoord acount)
 {
@@ -344,25 +319,26 @@ static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoor
         if (coverage > 255) coverage = 255;
     }
 
+    if (coverage == 0) return;
+
     //span has ushort coordinates. check limit overflow
     if (x >= SHRT_MAX) {
-        TVGERR("SW_ENGINE", "X-coordiante overflow!");
-        x = SHRT_MAX;
+        TVGERR("SW_ENGINE", "X-coordinate overflow!");
+        return;
     }
     if (y >= SHRT_MAX) {
-        TVGERR("SW_ENGINE", "Y Coordiante overflow!");
-        y = SHRT_MAX;
+        TVGERR("SW_ENGINE", "Y-coordinate overflow!");
+        return;
     }
 
-    if (coverage > 0) {
-        if (!rw.antiAlias) coverage = 255;
-        auto count = rw.spansCnt;
-        auto span = rw.spans + count - 1;
+    auto rle = rw.rle;
 
-        //see whether we can add this span to the current list
-        if ((count > 0) && (rw.ySpan == y) &&
-            (span->x + span->len == x) && (span->coverage == coverage)) {
+    if (!rw.antiAlias) coverage = 255;
 
+    //see whether we can add this span to the current list
+    if (rle->size > 0) {
+        auto span = rle->spans + rle->size - 1;
+        if ((span->coverage == coverage) && (span->y == y) && (span->x + span->len == x)) {
             //Clip x range
             SwCoord xOver = 0;
             if (x + acount >= rw.cellMax.x) xOver -= (x + acount - rw.cellMax.x);
@@ -372,44 +348,41 @@ static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoor
             span->len += (acount + xOver);
             return;
         }
-
-        if (count >= MAX_SPANS) {
-            _genSpan(rw.rle, rw.spans, count);
-            rw.spansCnt = 0;
-            rw.ySpan = 0;
-            span = rw.spans;
-        } else {
-            ++span;
-        }
-
-        //Clip x range
-        SwCoord xOver = 0;
-        if (x + acount >= rw.cellMax.x) xOver -= (x + acount - rw.cellMax.x);
-        if (x < rw.cellMin.x) {
-            xOver -= (rw.cellMin.x - x);
-            x = rw.cellMin.x;
-        }
-
-        //Nothing to draw
-        if (acount + xOver <= 0) return;
-
-        //add a span to the current list
-        span->x = x;
-        span->y = y;
-        span->len = (acount + xOver);
-        span->coverage = coverage;
-        ++rw.spansCnt;
-        rw.ySpan = y;
     }
+
+    //span pool is full, grow it.
+    if (rle->size >= rle->alloc) {
+        auto newSize = (rle->size > 0) ? (rle->size * 2) : 256;
+        if (rle->alloc < newSize) {
+            rle->alloc = newSize;
+            rle->spans = static_cast<SwSpan*>(realloc(rle->spans, rle->alloc * sizeof(SwSpan)));
+        }
+    }
+        
+    //Clip x range
+    SwCoord xOver = 0;
+    if (x + acount >= rw.cellMax.x) xOver -= (x + acount - rw.cellMax.x);
+    if (x < rw.cellMin.x) {
+        xOver -= (rw.cellMin.x - x);
+        x = rw.cellMin.x;
+    }
+
+    //Nothing to draw
+    if (acount + xOver <= 0) return;
+
+    //add a span to the current list
+    auto span = rle->spans + rle->size;
+    span->x = x;
+    span->y = y;
+    span->len = (acount + xOver);
+    span->coverage = coverage;
+    rle->size++;
 }
 
 
 static void _sweep(RleWorker& rw)
 {
     if (rw.cellsCnt == 0) return;
-
-    rw.spansCnt = 0;
-    rw.ySpan = 0;
 
     for (int y = 0; y < rw.yCnt; ++y) {
         auto cover = 0;
@@ -427,8 +400,6 @@ static void _sweep(RleWorker& rw)
 
         if (cover != 0) _horizLine(rw, x, y, cover * (ONE_PIXEL * 2), rw.cellXCnt - x);
     }
-
-    if (rw.spansCnt > 0) _genSpan(rw.rle, rw.spans, rw.spansCnt);
 }
 
 
@@ -851,46 +822,6 @@ static SwSpan* _intersectSpansRect(const SwBBox *bbox, const SwRleData *targetRl
 }
 
 
-static SwSpan* _mergeSpansRegion(const SwRleData *clip1, const SwRleData *clip2, SwSpan *outSpans)
-{
-    auto out = outSpans;
-    auto spans1 = clip1->spans;
-    auto end1 = clip1->spans + clip1->size;
-    auto spans2 = clip2->spans;
-    auto end2 = clip2->spans + clip2->size;
-
-    //list two spans up in y order
-    //TODO: Remove duplicated regions?
-    while (spans1 < end1 && spans2 < end2) {
-        while (spans1 < end1 && spans1->y <= spans2->y) {
-            *out = *spans1;
-            ++spans1;
-            ++out;
-        }
-        if (spans1 >= end1) break;
-        while (spans2 < end2 && spans2->y <= spans1->y) {
-            *out = *spans2;
-            ++spans2;
-            ++out;
-        }
-    }
-
-    //Leftovers
-    while (spans1 < end1) {
-        *out = *spans1;
-        ++spans1;
-        ++out;
-    }
-    while (spans2 < end2) {
-        *out = *spans2;
-        ++spans2;
-        ++out;
-    }
-
-    return out;
-}
-
-
 void _replaceClipSpan(SwRleData *rle, SwSpan* clippedSpans, uint32_t size)
 {
     free(rle->spans);
@@ -926,9 +857,8 @@ SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& ren
     rw.cellMax = renderRegion.max;
     rw.cellXCnt = rw.cellMax.x - rw.cellMin.x;
     rw.cellYCnt = rw.cellMax.y - rw.cellMin.y;
-    rw.ySpan = 0;
     rw.outline = const_cast<SwOutline*>(outline);
-    rw.bandSize = rw.bufferSize / (sizeof(Cell) * 8);  //bandSize: 64
+    rw.bandSize = rw.bufferSize / (sizeof(Cell) * 2);  //bandSize: 256
     rw.bandShoot = 0;
     rw.antiAlias = antiAlias;
 
@@ -966,10 +896,7 @@ SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& ren
 
             if (cellMod > 0) cellStart += sizeof(Cell) - cellMod;
 
-            auto cellEnd = rw.bufferSize;
-            cellEnd -= cellEnd % sizeof(Cell);
-
-            auto cellsMax = reinterpret_cast<Cell*>((char*)rw.buffer + cellEnd);
+            auto cellsMax = reinterpret_cast<Cell*>((char*)rw.buffer + rw.bufferSize);
             rw.cells = reinterpret_cast<Cell*>((char*)rw.buffer + cellStart);
 
             if (rw.cells >= cellsMax) goto reduce_bands;
@@ -1022,7 +949,6 @@ SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& ren
 
 error:
     free(rw.rle);
-    rw.rle = nullptr;
     return nullptr;
 }
 
@@ -1061,45 +987,6 @@ void rleFree(SwRleData* rle)
     if (!rle) return;
     if (rle->spans) free(rle->spans);
     free(rle);
-}
-
-
-void rleMerge(SwRleData* rle, SwRleData* clip1, SwRleData* clip2)
-{
-    if (!rle || (!clip1 && !clip2)) return;
-    if (clip1 && clip1->size == 0 && clip2 && clip2->size == 0) return;
-
-    TVGLOG("SW_ENGINE", "Unifying Rle!");
-
-    //clip1 is empty, just copy clip2
-    if (!clip1 || clip1->size == 0) {
-        if (clip2) {
-            auto spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * (clip2->size)));
-            memcpy(spans, clip2->spans, clip2->size);
-            _replaceClipSpan(rle, spans, clip2->size);
-        } else {
-            _replaceClipSpan(rle, nullptr, 0);
-        }
-        return;
-    }
-
-    //clip2 is empty, just copy clip1
-    if (!clip2 || clip2->size == 0) {
-        if (clip1) {
-            auto spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * (clip1->size)));
-            memcpy(spans, clip1->spans, clip1->size);
-            _replaceClipSpan(rle, spans, clip1->size);
-        } else {
-            _replaceClipSpan(rle, nullptr, 0);
-        }
-        return;
-    }
-
-    auto spanCnt = clip1->size + clip2->size;
-    auto spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * spanCnt));
-    auto spansEnd = _mergeSpansRegion(clip1, clip2, spans);
-
-    _replaceClipSpan(rle, spans, spansEnd - spans);
 }
 
 

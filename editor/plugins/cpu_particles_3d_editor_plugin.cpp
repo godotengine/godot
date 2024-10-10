@@ -109,7 +109,7 @@ void CPUParticles3DEditor::_generate_aabb() {
 
 	while (running < time) {
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step("Generating...", int(running), true);
+		ep.step(TTR("Generating..."), int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		AABB capture = node->capture_aabb();
@@ -157,9 +157,6 @@ void CPUParticles3DEditor::_generate_emission_points() {
 	}
 }
 
-void CPUParticles3DEditor::_bind_methods() {
-}
-
 CPUParticles3DEditor::CPUParticles3DEditor() {
 	particles_editor_hb = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
@@ -187,7 +184,7 @@ CPUParticles3DEditor::CPUParticles3DEditor() {
 
 	add_child(generate_aabb);
 
-	generate_aabb->connect("confirmed", callable_mp(this, &CPUParticles3DEditor::_generate_aabb));
+	generate_aabb->connect(SceneStringName(confirmed), callable_mp(this, &CPUParticles3DEditor::_generate_aabb));
 }
 
 void CPUParticles3DEditorPlugin::edit(Object *p_object) {
@@ -211,7 +208,7 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 
 CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin() {
 	particles_editor = memnew(CPUParticles3DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

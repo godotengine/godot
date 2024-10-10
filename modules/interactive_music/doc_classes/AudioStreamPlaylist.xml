@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaylist" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		[AudioStream] that includes sub-streams and plays them back like a playslit.
+		[AudioStream] that includes sub-streams and plays them back like a playlist.
 	</brief_description>
 	<description>
 	</description>
@@ -11,14 +11,14 @@
 		<method name="get_bpm" qualifiers="const">
 			<return type="float" />
 			<description>
-				Return the bpm of the playlist, which can vary depending on the clip being played.
+				Returns the BPM of the playlist, which can vary depending on the clip being played.
 			</description>
 		</method>
 		<method name="get_list_stream" qualifiers="const">
 			<return type="AudioStream" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Get the stream at playback position index.
+				Returns the stream at playback position index.
 			</description>
 		</method>
 		<method name="set_list_stream">
@@ -26,7 +26,7 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="audio_stream" type="AudioStream" />
 			<description>
-				Set the stream at playback position index.
+				Sets the stream at playback position index.
 			</description>
 		</method>
 	</methods>
@@ -35,10 +35,10 @@
 			Fade time used when a stream ends, when going to the next one. Streams are expected to have an extra bit of audio after the end to help with fading.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="true">
-			If true, the playlist will loop, otherwise the playlist when end when the last stream is played.
+			If [code]true[/code], the playlist will loop, otherwise the playlist will end when the last stream is finished.
 		</member>
 		<member name="shuffle" type="bool" setter="set_shuffle" getter="get_shuffle" default="false">
-			Shuffle the playlist. Streams are played in random order.
+			If [code]true[/code], the playlist will shuffle each time playback starts and each time it loops.
 		</member>
 		<member name="stream_count" type="int" setter="set_stream_count" getter="get_stream_count" default="0">
 			Amount of streams in the playlist.

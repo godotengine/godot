@@ -56,6 +56,8 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimum_width", "rid", "width"), &NativeMenu::set_minimum_width);
 	ClassDB::bind_method(D_METHOD("get_minimum_width", "rid"), &NativeMenu::get_minimum_width);
 
+	ClassDB::bind_method(D_METHOD("is_opened", "rid"), &NativeMenu::is_opened);
+
 	ClassDB::bind_method(D_METHOD("add_submenu_item", "rid", "label", "submenu_rid", "tag", "index"), &NativeMenu::add_submenu_item, DEFVAL(Variant()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_item", "rid", "label", "callback", "key_callback", "tag", "accelerator", "index"), &NativeMenu::add_item, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Variant()), DEFVAL(Key::NONE), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_check_item", "rid", "label", "callback", "key_callback", "tag", "accelerator", "index"), &NativeMenu::add_check_item, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Variant()), DEFVAL(Key::NONE), DEFVAL(-1));
@@ -198,6 +200,11 @@ void NativeMenu::set_popup_close_callback(const RID &p_rid, const Callable &p_ca
 Callable NativeMenu::get_popup_close_callback(const RID &p_rid) const {
 	WARN_PRINT("Global menus are not supported on this platform.");
 	return Callable();
+}
+
+bool NativeMenu::is_opened(const RID &p_rid) const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return false;
 }
 
 void NativeMenu::set_minimum_width(const RID &p_rid, float p_width) {

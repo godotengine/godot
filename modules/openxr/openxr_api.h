@@ -165,8 +165,16 @@ private:
 	XrSpace view_space = XR_NULL_HANDLE;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 
-	bool emulating_local_floor = false;
-	bool should_reset_emulated_floor_height = false;
+	// When LOCAL_FLOOR isn't supported, we use an approach based on the example code in the
+	// OpenXR spec in order to emulate it.
+	// See: https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_local_floor
+	struct LocalFloorEmulation {
+		bool enabled = false;
+		XrSpace local_space = XR_NULL_HANDLE;
+		XrSpace stage_space = XR_NULL_HANDLE;
+		bool should_reset_floor_height = false;
+	} local_floor_emulation;
+
 	bool reset_emulated_floor_height();
 
 	bool load_layer_properties();
@@ -328,6 +336,7 @@ private:
 		XrTime predicted_display_time = 0;
 		XrSpace play_space = XR_NULL_HANDLE;
 		double render_target_size_multiplier = 1.0;
+		uint64_t frame = 0;
 
 		uint32_t view_count = 0;
 		XrView *views = nullptr;
@@ -414,6 +423,10 @@ public:
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result) const;
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
+	void set_object_name(XrObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name);
+	void begin_debug_label_region(const String &p_label_name);
+	void end_debug_label_region();
+	void insert_debug_label(const String &p_label_name);
 
 	OpenXRInterface *get_xr_interface() const { return xr_interface; }
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
@@ -426,6 +439,7 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
+	uint32_t get_view_count();
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -446,7 +460,6 @@ public:
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {
-		ERR_ON_RENDER_THREAD_V(false);
 		return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && frame_state.shouldRender;
 	}
 

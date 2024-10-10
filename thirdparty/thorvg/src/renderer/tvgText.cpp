@@ -35,7 +35,7 @@
 /************************************************************************/
 
 
-Text::Text() : pImpl(new Impl)
+Text::Text() : pImpl(new Impl(this))
 {
     Paint::pImpl->id = TVG_CLASS_ID_TEXT;
 }
@@ -71,6 +71,21 @@ Result Text::load(const std::string& path) noexcept
 }
 
 
+Result Text::load(const char* name, const char* data, uint32_t size, const string& mimeType, bool copy) noexcept
+{
+    if (!name || (size == 0 && data)) return Result::InvalidArguments;
+
+    //unload font
+    if (!data) {
+        if (LoaderMgr::retrieve(name)) return Result::Success;
+        return Result::InsufficientCondition;
+    }
+
+    if (!LoaderMgr::loader(name, data, size, mimeType, copy)) return Result::NonSupport;
+    return Result::Success;
+}
+
+
 Result Text::unload(const std::string& path) noexcept
 {
     if (LoaderMgr::retrieve(path)) return Result::Success;
@@ -80,20 +95,13 @@ Result Text::unload(const std::string& path) noexcept
 
 Result Text::fill(uint8_t r, uint8_t g, uint8_t b) noexcept
 {
-    if (!pImpl->paint) return Result::InsufficientCondition;
-
-    return pImpl->fill(r, g, b);
+    return pImpl->shape->fill(r, g, b);
 }
 
 
 Result Text::fill(unique_ptr<Fill> f) noexcept
 {
-    if (!pImpl->paint) return Result::InsufficientCondition;
-
-    auto p = f.release();
-    if (!p) return Result::MemoryCorruption;
-
-    return pImpl->fill(p);
+    return pImpl->shape->fill(std::move(f));
 }
 
 

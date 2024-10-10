@@ -35,6 +35,7 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -46,7 +47,7 @@
 #include "scene/resources/image_texture.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
-	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	request->set_use_threads(EDITOR_GET("asset_library/use_threads"));
 
 	const String proxy_host = EDITOR_GET("network/http_proxy/host");
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
@@ -91,9 +92,9 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			icon->set_texture_normal(get_editor_theme_icon(SNAME("ProjectIconLoading")));
-			category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
-			author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
-			price->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
+			category->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
+			author->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
+			price->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
 
 			if (author->get_default_cursor_shape() == CURSOR_ARROW) {
 				// Disable visible feedback if author link isn't clickable.
@@ -457,7 +458,7 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("AssetLib")));
-			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
+			status->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
 			dismiss_button->set_texture_normal(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
 		} break;
 
@@ -620,7 +621,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	panel->add_child(asset_installer);
-	asset_installer->connect("confirmed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	asset_installer->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 
 	prev_status = -1;
 
@@ -702,6 +703,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 }
 
 void EditorAssetLibrary::_update_repository_options() {
+	// TODO: Move to editor_settings.cpp
 	Dictionary default_urls;
 	default_urls["godotengine.org (Official)"] = "https://godotengine.org/asset-library/api";
 	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
@@ -991,7 +993,8 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, String p
 		String url_host;
 		int url_port;
 		String url_path;
-		Error err = trimmed_url.parse_url(url_scheme, url_host, url_port, url_path);
+		String url_fragment;
+		Error err = trimmed_url.parse_url(url_scheme, url_host, url_port, url_path, url_fragment);
 		if (err != OK) {
 			if (is_print_verbose_enabled()) {
 				ERR_PRINT(vformat("Asset Library: Invalid image URL '%s' for asset # %d.", trimmed_url, p_asset_id));
@@ -1427,7 +1430,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
-			description->connect("confirmed", callable_mp(this, &EditorAssetLibrary::_install_asset));
+			description->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibrary::_install_asset));
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
@@ -1601,7 +1604,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
+	filter->connect(SceneStringName(text_changed), callable_mp(this, &EditorAssetLibrary::_search_text_changed));
 
 	// Perform a search automatically if the user hasn't entered any text for a certain duration.
 	// This way, the user doesn't need to press Enter to initiate their search.
@@ -1643,7 +1646,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
-	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1653,7 +1656,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	categories->set_clip_text(true);
-	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
+	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1662,7 +1665,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	_update_repository_options();
 
-	repository->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_repository_changed));
+	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1794,7 +1797,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(addon_library);
+	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }

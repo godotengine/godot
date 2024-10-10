@@ -95,6 +95,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_edge_merge_count = 0;
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
 
 public:
 	GodotNavigationServer3D();
@@ -177,6 +178,9 @@ public:
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
+	virtual Vector3 region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision = false) const override;
+	virtual Vector3 region_get_closest_point(RID p_region, const Vector3 &p_point) const override;
+	virtual Vector3 region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const override;
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
 	virtual RID link_create() override;

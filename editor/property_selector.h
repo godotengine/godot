@@ -36,6 +36,7 @@
 class EditorHelpBit;
 class LineEdit;
 class Tree;
+class TreeItem;
 
 class PropertySelector : public ConfirmationDialog {
 	GDCLASS(PropertySelector, ConfirmationDialog);
@@ -44,7 +45,7 @@ class PropertySelector : public ConfirmationDialog {
 	Tree *search_options = nullptr;
 
 	void _text_changed(const String &p_newtext);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _update_search();
 	void _confirmed();
 	void _item_selected();
@@ -61,6 +62,9 @@ class PropertySelector : public ConfirmationDialog {
 	bool virtuals_only = false;
 
 	Vector<Variant::Type> type_filter;
+
+	void _create_subproperties(TreeItem *p_parent_item, Variant::Type p_type);
+	void _create_subproperty(TreeItem *p_parent_item, const String &p_name, Variant::Type p_type);
 
 protected:
 	void _notification(int p_what);

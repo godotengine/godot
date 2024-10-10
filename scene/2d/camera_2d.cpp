@@ -74,6 +74,14 @@ void Camera2D::_update_scroll() {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void Camera2D::_project_settings_changed() {
+	if (screen_drawing_enabled) {
+		queue_redraw();
+	}
+}
+#endif
+
 void Camera2D::_update_process_callback() {
 	if (is_physics_interpolated_and_enabled()) {
 		set_process_internal(is_current());
@@ -267,6 +275,14 @@ void Camera2D::_ensure_update_interpolation_data() {
 
 void Camera2D::_notification(int p_what) {
 	switch (p_what) {
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_READY: {
+			if (Engine::get_singleton()->is_editor_hint() && is_part_of_edited_scene()) {
+				ProjectSettings::get_singleton()->connect(SNAME("settings_changed"), callable_mp(this, &Camera2D::_project_settings_changed));
+			}
+		} break;
+#endif
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			_update_scroll();
 		} break;
@@ -284,6 +300,12 @@ void Camera2D::_notification(int p_what) {
 			// Force the limits etc. to update.
 			_interpolation_data.xform_curr = get_camera_transform();
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+		} break;
+
+		case NOTIFICATION_PAUSED: {
+			if (is_physics_interpolated_and_enabled()) {
+				_update_scroll();
+			}
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {

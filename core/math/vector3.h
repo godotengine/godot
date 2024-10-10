@@ -39,7 +39,7 @@ struct Basis;
 struct Vector2;
 struct Vector3i;
 
-struct _NO_DISCARD_ Vector3 {
+struct [[nodiscard]] Vector3 {
 	static const int AXIS_COUNT = 3;
 
 	enum Axis {

@@ -160,8 +160,13 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.begins_with("res://addons/")) {
-			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
-				return true; // Plugin is not enabled.
+			int i = script_path.find("/", 13); // 13 is length of "res://addons/".
+			while (i > -1) {
+				const String plugin_path = script_path.substr(0, i).path_join("plugin.cfg");
+				if (FileAccess::exists(plugin_path)) {
+					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path);
+				}
+				i = script_path.find("/", i + 1);
 			}
 		}
 	}
@@ -420,26 +425,19 @@ void CreateDialog::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
-void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid() && k->is_pressed()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				search_options->gui_input(k);
-				search_box->accept_event();
-			} break;
-			case Key::SPACE: {
-				TreeItem *ti = search_options->get_selected();
-				if (ti) {
-					ti->set_collapsed(!ti->is_collapsed());
-				}
-				search_box->accept_event();
-			} break;
-			default:
-				break;
+void CreateDialog::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			search_options->gui_input(key);
+			search_box->accept_event();
+		} else if (key->is_action_pressed("ui_select", true)) {
+			TreeItem *ti = search_options->get_selected();
+			if (ti) {
+				ti->set_collapsed(!ti->is_collapsed());
+			}
+			search_box->accept_event();
 		}
 	}
 }
@@ -447,11 +445,11 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -617,6 +615,7 @@ Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 		tb->set_flat(true);
 		tb->set_icon(ti->get_icon(0));
 		tb->set_text(ti->get_text(0));
+		tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		favorites->set_drag_preview(tb);
 
 		return d;
@@ -777,7 +776,7 @@ CreateDialog::CreateDialog() {
 	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->set_allow_reselect(true);
-	recent->connect("item_selected", callable_mp(this, &CreateDialog::_history_selected));
+	recent->connect(SceneStringName(item_selected), callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
 	recent->add_theme_constant_override("draw_guides", 1);
 
@@ -789,7 +788,7 @@ CreateDialog::CreateDialog() {
 	search_box = memnew(LineEdit);
 	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &CreateDialog::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &CreateDialog::_sbox_input));
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);

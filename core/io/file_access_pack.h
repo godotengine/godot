@@ -111,12 +111,15 @@ private:
 public:
 	void add_pack_source(PackSource *p_source);
 	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
+	uint8_t *get_file_hash(const String &p_path);
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
 	Error add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset);
+
+	void clear();
 
 	_FORCE_INLINE_ Ref<FileAccess> try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
@@ -169,8 +172,6 @@ public:
 
 	virtual bool eof_reached() const override;
 
-	virtual uint8_t get_8() const override;
-
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual void set_big_endian(bool p_big_endian) override;
@@ -179,8 +180,6 @@ public:
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override;
-
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
 	virtual bool file_exists(const String &p_name) override;

@@ -42,8 +42,6 @@ class VisualShaderNode;
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
-	friend class VisualShaderNodeVersionChecker;
-
 public:
 	enum Type {
 		TYPE_VERTEX,
@@ -68,7 +66,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		List<Ref<Texture2D>> params;
+		List<Ref<Texture>> params;
 	};
 
 	enum VaryingMode {
@@ -142,6 +140,9 @@ private:
 	HashSet<StringName> flags;
 
 	HashMap<String, Varying> varyings;
+#ifdef TOOLS_ENABLED
+	HashMap<String, Variant> preview_params;
+#endif
 	List<Varying> varyings_list;
 
 	mutable SafeFlag dirty;
@@ -198,6 +199,10 @@ public: // internal methods
 
 	void set_varying_type(const String &p_name, VaryingType p_type);
 	VaryingType get_varying_type(const String &p_name);
+
+	void _set_preview_shader_parameter(const String &p_name, const Variant &p_value);
+	Variant _get_preview_shader_parameter(const String &p_name) const;
+	bool _has_preview_shader_parameter(const String &p_name) const;
 
 	Vector2 get_node_position(Type p_type, int p_id) const;
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
@@ -910,13 +915,16 @@ public:
 	};
 
 protected:
+	RID shader_rid;
 	VisualShader::VaryingType varying_type = VisualShader::VARYING_TYPE_FLOAT;
 	String varying_name = "[None]";
 
 public: // internal
-	static void add_varying(const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
-	static void clear_varyings();
-	static bool has_varying(const String &p_name);
+	static void add_varying(RID p_shader_rid, const String &p_name, VisualShader::VaryingMode p_mode, VisualShader::VaryingType p_type);
+	static void clear_varyings(RID p_shader_rid);
+	static bool has_varying(RID p_shader_rid, const String &p_name);
+
+	void set_shader_rid(const RID &p_shader);
 
 	int get_varyings_count() const;
 	String get_varying_name_by_index(int p_idx) const;

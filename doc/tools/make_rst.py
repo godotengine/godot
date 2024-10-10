@@ -150,7 +150,7 @@ PACKED_ARRAY_TYPES: List[str] = [
     "PackedByteArray",
     "PackedColorArray",
     "PackedFloat32Array",
-    "Packedfloat64Array",
+    "PackedFloat64Array",
     "PackedInt32Array",
     "PackedInt64Array",
     "PackedStringArray",
@@ -949,13 +949,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             inherits = class_def.inherits.strip()
             f.write(f'**{translate("Inherits:")}** ')
             first = True
-            while inherits in state.classes:
+            while inherits is not None:
                 if not first:
                     f.write(" **<** ")
                 else:
                     first = False
 
                 f.write(make_type(inherits, state))
+
+                if inherits not in state.classes:
+                    break  # Parent unknown.
+
                 inode = state.classes[inherits].inherits
                 if inode:
                     inherits = inode.strip()
@@ -1311,9 +1315,6 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 if property_def.text is not None and property_def.text.strip() != "":
                     f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
-                    if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
-                        tmp = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
-                        f.write(f"{format_text_block(tmp, property_def, state)}\n\n")
                 elif property_def.deprecated is None and property_def.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1322,6 +1323,11 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         )
                         + "\n\n"
                     )
+
+                # Add copy note to built-in properties returning `Packed*Array`.
+                if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
+                    copy_note = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
+                    f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
 
                 index += 1
 
@@ -1507,24 +1513,23 @@ def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
         return f"``{klass}``"
 
-    link_type = klass
-    is_array = False
+    def resolve_type(link_type: str) -> str:
+        if link_type in state.classes:
+            return f":ref:`{link_type}<class_{link_type}>`"
+        else:
+            print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
+            return f"``{link_type}``"
 
-    if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
-        link_type = link_type[:-2]
-        is_array = True
+    if klass.endswith("[]"):  # Typed array, strip [] to link to contained type.
+        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[:-len('[]')])}\\]"
 
-    if link_type in state.classes:
-        type_rst = f":ref:`{link_type}<class_{link_type}>`"
-        if is_array:
-            type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-        return type_rst
+    if klass.startswith("Dictionary["):  # Typed dictionary, split elements to link contained types.
+        parts = klass[len("Dictionary[") : -len("]")].partition(", ")
+        key = parts[0]
+        value = parts[2]
+        return f":ref:`Dictionary<class_Dictionary>`\\[{resolve_type(key)}, {resolve_type(value)}\\]"
 
-    print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
-    type_rst = f"``{link_type}``"
-    if is_array:
-        type_rst = f":ref:`Array<class_Array>`\\[{type_rst}\\]"
-    return type_rst
+    return resolve_type(klass)
 
 
 def make_enum(t: str, is_bitfield: bool, state: State) -> str:

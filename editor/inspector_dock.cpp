@@ -30,6 +30,7 @@
 
 #include "inspector_dock.h"
 
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -97,7 +98,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
-				EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 				emit_signal(SNAME("request_help"), current->get_class());
 			}
 		} break;
@@ -141,13 +142,14 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				unique_resources_list_tree->clear();
 				if (resource_propnames.size()) {
-					TreeItem *root = unique_resources_list_tree->create_item();
+					const EditorPropertyNameProcessor::Style name_style = inspector->get_property_name_style();
 
-					for (int i = 0; i < resource_propnames.size(); i++) {
-						String propname = resource_propnames[i].replace("/", " / ");
+					TreeItem *root = unique_resources_list_tree->create_item();
+					for (const String &E : resource_propnames) {
+						const String propname = EditorPropertyNameProcessor::get_singleton()->process_name(E, name_style);
 
 						TreeItem *ti = unique_resources_list_tree->create_item(root);
-						ti->set_text(0, bool(EDITOR_GET("interface/inspector/capitalize_properties")) ? propname.capitalize() : propname);
+						ti->set_text(0, propname);
 					}
 
 					unique_resources_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));
@@ -189,7 +191,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 
 				int history_id = EditorUndoRedoManager::get_singleton()->get_history_id_for_object(current);
-				EditorUndoRedoManager::get_singleton()->clear_history(true, history_id);
+				EditorUndoRedoManager::get_singleton()->clear_history(history_id);
 
 				EditorNode::get_singleton()->edit_item(current, inspector);
 			}
@@ -451,10 +453,10 @@ void InspectorDock::_notification(int p_what) {
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (info_is_warning) {
 				info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-				info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
 				info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
-				info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
 	}
@@ -481,10 +483,10 @@ void InspectorDock::set_info(const String &p_button_text, const String &p_messag
 
 	if (info_is_warning) {
 		info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-		info->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	} else {
 		info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
-		info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 
 	if (!p_button_text.is_empty() && !p_message.is_empty()) {
@@ -541,9 +543,10 @@ void InspectorDock::update(Object *p_object) {
 	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTR("Expand Non-Default")), EXPAND_REVERTABLE);
 
 	p->add_separator(TTR("Property Name Style"));
-	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
-	p->add_radio_check_item(TTR("Capitalized"), PROPERTY_NAME_STYLE_CAPITALIZED);
-	p->add_radio_check_item(TTR("Localized"), PROPERTY_NAME_STYLE_LOCALIZED);
+	p->add_radio_check_item(vformat(TTR("Raw (e.g. \"%s\")"), "z_index"), PROPERTY_NAME_STYLE_RAW);
+	p->add_radio_check_item(vformat(TTR("Capitalized (e.g. \"%s\")"), "Z Index"), PROPERTY_NAME_STYLE_CAPITALIZED);
+	// TRANSLATORS: "Z Index" should match the existing translated CanvasItem property name in the current language you're working on.
+	p->add_radio_check_item(TTR("Localized (e.g. \"Z Index\")"), PROPERTY_NAME_STYLE_LOCALIZED);
 
 	if (!EditorPropertyNameProcessor::is_localization_available()) {
 		const int index = p->get_item_index(PROPERTY_NAME_STYLE_LOCALIZED);
@@ -774,7 +777,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	bottom_label->set_text(TTR("This cannot be undone. Are you sure?"));
 	container->add_child(bottom_label);
 
-	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
+	unique_resources_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	info_dialog = memnew(AcceptDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(info_dialog);
@@ -797,7 +800,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
 
-	inspector->set_use_filter(true); // TODO: check me
+	inspector->set_use_filter(true);
 
 	inspector->connect("resource_selected", callable_mp(this, &InspectorDock::_resource_selected));
 

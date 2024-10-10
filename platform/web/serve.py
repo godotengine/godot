@@ -6,7 +6,7 @@ import os
 import socket
 import subprocess
 import sys
-from http.server import HTTPServer, SimpleHTTPRequestHandler, test  # type: ignore
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 
 
@@ -38,12 +38,24 @@ def shell_open(url):
 def serve(root, port, run_browser):
     os.chdir(root)
 
+    address = ("", port)
+    httpd = DualStackServer(address, CORSRequestHandler)
+
+    url = f"http://127.0.0.1:{port}"
     if run_browser:
         # Open the served page in the user's default browser.
-        print("Opening the served URL in the default browser (use `--no-browser` or `-n` to disable this).")
-        shell_open(f"http://127.0.0.1:{port}")
+        print(f"Opening the served URL in the default browser (use `--no-browser` or `-n` to disable this): {url}")
+        shell_open(url)
+    else:
+        print(f"Serving at: {url}")
 
-    test(CORSRequestHandler, DualStackServer, port=port)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received, stopping server.")
+    finally:
+        # Clean-up server
+        httpd.server_close()
 
 
 if __name__ == "__main__":

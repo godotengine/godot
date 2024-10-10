@@ -223,6 +223,7 @@
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
 			[PackedVector3Array] of vertex normals.
+			[b]Note:[/b] The array has to consist of normal vectors, otherwise they will be normalized by the engine, potentially causing visual discrepancies.
 		</constant>
 		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
 			[PackedFloat32Array] of vertex tangents. Each element in groups of 4 floats, first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.

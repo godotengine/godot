@@ -35,16 +35,11 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 
-// Version 2: Changed names for Basis, AABB, Vectors, etc.
-// Version 3: New string ID for ext/subresources, breaks forward compat.
-// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
-#define FORMAT_VERSION 4
-// For compat, save as version 3 if not using PackedVector4Array or no big PackedByteArray.
-#define FORMAT_VERSION_COMPAT 3
-
-#define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
-
 ///
+
+void ResourceLoaderText::_printerr() {
+	ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
+}
 
 Ref<Resource> ResourceLoaderText::get_resource() {
 	return resource;
@@ -191,8 +186,10 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 }
 
 Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
-	Ref<PackedScene> packed_scene;
-	packed_scene.instantiate();
+	Ref<PackedScene> packed_scene = ResourceLoader::get_resource_ref_override(local_path);
+	if (packed_scene.is_null()) {
+		packed_scene.instantiate();
+	}
 
 	while (true) {
 		if (next_tag.name == "node") {
@@ -627,6 +624,19 @@ Error ResourceLoaderText::load() {
 						}
 					}
 
+					if (value.get_type() == Variant::DICTIONARY) {
+						Dictionary set_dict = value;
+						bool is_get_valid = false;
+						Variant get_value = res->get(assign, &is_get_valid);
+						if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+							Dictionary get_dict = get_value;
+							if (!set_dict.is_same_typed(get_dict)) {
+								value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
+										get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+							}
+						}
+					}
+
 					if (set_valid) {
 						res->set(assign, value);
 					}
@@ -664,39 +674,42 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		Ref<Resource> cache = ResourceCache::get_ref(local_path);
-		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
-			cache->reset_state();
-			resource = cache;
-		}
-
 		MissingResource *missing_resource = nullptr;
 
-		if (!resource.is_valid()) {
-			Object *obj = ClassDB::instantiate(res_type);
-			if (!obj) {
-				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-					missing_resource = memnew(MissingResource);
-					missing_resource->set_original_class(res_type);
-					missing_resource->set_recording_properties(true);
-					obj = missing_resource;
-				} else {
-					error_text += "Can't create sub resource of type: " + res_type;
+		resource = ResourceLoader::get_resource_ref_override(local_path);
+		if (resource.is_null()) {
+			Ref<Resource> cache = ResourceCache::get_ref(local_path);
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
+				cache->reset_state();
+				resource = cache;
+			}
+
+			if (!resource.is_valid()) {
+				Object *obj = ClassDB::instantiate(res_type);
+				if (!obj) {
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(res_type);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource;
+					} else {
+						error_text += "Can't create sub resource of type: " + res_type;
+						_printerr();
+						error = ERR_FILE_CORRUPT;
+						return error;
+					}
+				}
+
+				Resource *r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					error_text += "Can't create sub resource of type, because not a resource: " + res_type;
 					_printerr();
 					error = ERR_FILE_CORRUPT;
 					return error;
 				}
-			}
 
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (!r) {
-				error_text += "Can't create sub resource of type, because not a resource: " + res_type;
-				_printerr();
-				error = ERR_FILE_CORRUPT;
-				return error;
+				resource = Ref<Resource>(r);
 			}
-
-			resource = Ref<Resource>(r);
 		}
 
 		Dictionary missing_resource_properties;
@@ -747,6 +760,19 @@ Error ResourceLoaderText::load() {
 						Array get_array = get_value;
 						if (!set_array.is_same_typed(get_array)) {
 							value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+						}
+					}
+				}
+
+				if (value.get_type() == Variant::DICTIONARY) {
+					Dictionary set_dict = value;
+					bool is_get_valid = false;
+					Variant get_value = resource->get(assign, &is_get_valid);
+					if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+						Dictionary get_dict = get_value;
+						if (!set_dict.is_same_typed(get_dict)) {
+							value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
+									get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
 						}
 					}
 				}
@@ -1642,6 +1668,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
+			_find_resources(d.get_typed_key_script());
+			_find_resources(d.get_typed_value_script());
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			for (const Variant &E : keys) {
@@ -1676,6 +1704,8 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 }
 
 Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+	Resource::seed_scene_unique_id(p_path.hash()); // Seeding for save path should make it deterministic for importers.
+
 	if (p_path.ends_with(".tscn")) {
 		packed_scene = p_resource;
 	}
@@ -1729,7 +1759,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		if (load_steps > 1) {
 			title += "load_steps=" + itos(load_steps) + " ";
 		}
-		title += "format=" + itos(use_compat ? FORMAT_VERSION_COMPAT : FORMAT_VERSION) + "";
+		title += "format=" + itos(use_compat ? ResourceLoaderText::FORMAT_VERSION_COMPAT : ResourceLoaderText::FORMAT_VERSION) + "";
 
 		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
 

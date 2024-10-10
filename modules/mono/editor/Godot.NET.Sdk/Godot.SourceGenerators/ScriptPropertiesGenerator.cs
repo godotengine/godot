@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -144,7 +145,7 @@ namespace Godot.SourceGenerators
                     .Append("' property.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(propertyName);
                 source.Append(" = \"");
                 source.Append(propertyName);
@@ -161,7 +162,7 @@ namespace Godot.SourceGenerators
                     .Append("' field.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(fieldName);
                 source.Append(" = \"");
                 source.Append(fieldName);
@@ -316,10 +317,10 @@ namespace Godot.SourceGenerators
         {
             source.Append("        ");
 
-            source.Append("if (name == PropertyName.")
+            source.Append("if (name == PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(") {\n")
-                .Append("            this.")
+                .Append("            this.@")
                 .Append(propertyMemberName)
                 .Append(" = ")
                 .AppendNativeVariantToManagedExpr("value", propertyTypeSymbol, propertyMarshalType)
@@ -337,11 +338,11 @@ namespace Godot.SourceGenerators
         {
             source.Append("        ");
 
-            source.Append("if (name == PropertyName.")
+            source.Append("if (name == PropertyName.@")
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            value = ")
-                .AppendManagedToNativeVariantExpr("this." + propertyMemberName,
+                .AppendManagedToNativeVariantExpr("this.@" + propertyMemberName,
                     propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("            return true;\n")
@@ -367,7 +368,7 @@ namespace Godot.SourceGenerators
         {
             source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
-                .Append(", name: PropertyName.")
+                .Append(", name: PropertyName.@")
                 .Append(propertyInfo.Name)
                 .Append(", hint: (global::Godot.PropertyHint)")
                 .Append((int)propertyInfo.Hint)
@@ -728,8 +729,72 @@ namespace Godot.SourceGenerators
 
             if (!isTypeArgument && variantType == VariantType.Dictionary)
             {
-                // TODO: Dictionaries are not supported in the inspector
-                return false;
+                var elementTypes = MarshalUtils.GetGenericElementTypes(type);
+
+                if (elementTypes == null)
+                    return false; // Non-generic Dictionary, so there's no hint to add
+                Debug.Assert(elementTypes.Length == 2);
+
+                var keyElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[0], typeCache)!.Value;
+                var keyElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(keyElementMarshalType)!.Value;
+                var keyIsPresetHint = false;
+                var keyHintString = (string?)null;
+
+                if (keyElementVariantType == VariantType.String || keyElementVariantType == VariantType.StringName)
+                    keyIsPresetHint = GetStringArrayEnumHint(keyElementVariantType, exportAttr, out keyHintString);
+
+                if (!keyIsPresetHint)
+                {
+                    bool hintRes = TryGetMemberExportHint(typeCache, elementTypes[0],
+                        exportAttr, keyElementVariantType, isTypeArgument: true,
+                        out var keyElementHint, out var keyElementHintString);
+
+                    // Format: type/hint:hint_string
+                    if (hintRes)
+                    {
+                        keyHintString = (int)keyElementVariantType + "/" + (int)keyElementHint + ":";
+
+                        if (keyElementHintString != null)
+                            keyHintString += keyElementHintString;
+                    }
+                    else
+                    {
+                        keyHintString = (int)keyElementVariantType + "/" + (int)PropertyHint.None + ":";
+                    }
+                }
+
+                var valueElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[1], typeCache)!.Value;
+                var valueElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(valueElementMarshalType)!.Value;
+                var valueIsPresetHint = false;
+                var valueHintString = (string?)null;
+
+                if (valueElementVariantType == VariantType.String || valueElementVariantType == VariantType.StringName)
+                    valueIsPresetHint = GetStringArrayEnumHint(valueElementVariantType, exportAttr, out valueHintString);
+
+                if (!valueIsPresetHint)
+                {
+                    bool hintRes = TryGetMemberExportHint(typeCache, elementTypes[1],
+                        exportAttr, valueElementVariantType, isTypeArgument: true,
+                        out var valueElementHint, out var valueElementHintString);
+
+                    // Format: type/hint:hint_string
+                    if (hintRes)
+                    {
+                        valueHintString = (int)valueElementVariantType + "/" + (int)valueElementHint + ":";
+
+                        if (valueElementHintString != null)
+                            valueHintString += valueElementHintString;
+                    }
+                    else
+                    {
+                        valueHintString = (int)valueElementVariantType + "/" + (int)PropertyHint.None + ":";
+                    }
+                }
+
+                hint = PropertyHint.DictionaryType;
+
+                hintString = keyHintString != null && valueHintString != null ? $"{keyHintString};{valueHintString}" : null;
+                return hintString != null;
             }
 
             return false;

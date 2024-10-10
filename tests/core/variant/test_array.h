@@ -597,6 +597,61 @@ TEST_CASE("[Array] Iteration and modification") {
 	a4.clear();
 }
 
+TEST_CASE("[Array] Typed copying") {
+	TypedArray<int> a1;
+	a1.push_back(1);
+
+	TypedArray<double> a2;
+	a2.push_back(1.0);
+
+	Array a3 = a1;
+	TypedArray<int> a4 = a3;
+
+	Array a5 = a2;
+	TypedArray<int> a6 = a5;
+
+	a3[0] = 2;
+	a4[0] = 3;
+
+	// Same typed TypedArray should be shared.
+	CHECK_EQ(a1[0], Variant(3));
+	CHECK_EQ(a3[0], Variant(3));
+	CHECK_EQ(a4[0], Variant(3));
+
+	a5[0] = 2.0;
+	a6[0] = 3.0;
+
+	// Different typed TypedArray should not be shared.
+	CHECK_EQ(a2[0], Variant(2.0));
+	CHECK_EQ(a5[0], Variant(2.0));
+	CHECK_EQ(a6[0], Variant(3.0));
+
+	a1.clear();
+	a2.clear();
+	a3.clear();
+	a4.clear();
+	a5.clear();
+	a6.clear();
+}
+
+static bool _find_custom_callable(const Variant &p_val) {
+	return (int)p_val % 2 == 0;
+}
+
+TEST_CASE("[Array] Test find_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find first even number.
+	int index = a1.find_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 2);
+}
+
+TEST_CASE("[Array] Test rfind_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find last even number.
+	int index = a1.rfind_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 4);
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H

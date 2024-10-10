@@ -606,7 +606,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 		type_menu->select(default_type);
 	}
 	current_type = default_type;
-	type_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_type_changed));
+	type_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_type_changed));
 
 	// Modes.
 
@@ -616,20 +616,20 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	}
 	gc->add_child(memnew(Label(TTR("Mode:"))));
 	gc->add_child(mode_menu);
-	mode_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_mode_changed));
+	mode_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_mode_changed));
 
 	// Templates.
 
 	template_menu = memnew(OptionButton);
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
-	template_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_template_changed));
+	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_template_changed));
 
 	// Built-in Shader.
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
-	internal->connect("toggled", callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
+	internal->connect(SceneStringName(toggled), callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
 
@@ -639,7 +639,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->connect(SceneStringName(sort_children), callable_mp(this, &ShaderCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
-	file_path->connect("text_changed", callable_mp(this, &ShaderCreateDialog::_path_changed));
+	file_path->connect(SceneStringName(text_changed), callable_mp(this, &ShaderCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	register_text_enter(file_path);

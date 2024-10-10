@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="Node2D" deprecated="Use multiple [TileMapLayer] nodes instead." keywords="gridmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileMap" inherits="Node2D" deprecated="Use multiple [TileMapLayer] nodes instead. To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with the node selected, click the toolbox icon in the top-right corner and choose &apos;Extract TileMap layers as individual TileMapLayer nodes&apos;." keywords="gridmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>
@@ -256,6 +256,33 @@
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
 			</description>
 		</method>
+		<method name="is_cell_flipped_h" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is flipped horizontally. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_flipped_v" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is flipped vertically. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the cell on layer [param layer] at coordinates [param coords] is transposed. The result is valid only for atlas sources.
+			</description>
+		</method>
 		<method name="is_layer_enabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
@@ -486,8 +513,8 @@
 			Show or hide the TileMap's navigation meshes. If set to [constant VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
 		</member>
 		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
-			The TileMap's quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quandrant size groups together [code]16 * 16 = 256[/code] tiles.
-			The quadrant size does not apply on Y-sorted layers, as tiles are be grouped by Y position instead in that case.
+			The TileMap's quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.
+			The quadrant size does not apply on Y-sorted layers, as tiles are grouped by Y position instead in that case.
 			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the TileMap's local coordinate system.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">

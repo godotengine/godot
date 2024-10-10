@@ -66,6 +66,7 @@ void EditorValidationPanel::add_line(int p_id, const String &p_valid_message) {
 	Label *label = memnew(Label);
 	message_container->add_child(label);
 	label->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 
 	valid_messages[p_id] = p_valid_message;
@@ -108,17 +109,17 @@ void EditorValidationPanel::set_message(int p_id, const String &p_text, MessageT
 
 	switch (p_type) {
 		case MSG_OK:
-			label->add_theme_color_override(SNAME("font_color"), theme_cache.valid_color);
+			label->add_theme_color_override(SceneStringName(font_color), theme_cache.valid_color);
 			break;
 		case MSG_WARNING:
-			label->add_theme_color_override(SNAME("font_color"), theme_cache.warning_color);
+			label->add_theme_color_override(SceneStringName(font_color), theme_cache.warning_color);
 			break;
 		case MSG_ERROR:
-			label->add_theme_color_override(SNAME("font_color"), theme_cache.error_color);
+			label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
 			valid = false;
 			break;
 		case MSG_INFO:
-			label->remove_theme_color_override(SNAME("font_color"));
+			label->remove_theme_color_override(SceneStringName(font_color));
 			break;
 	}
 }

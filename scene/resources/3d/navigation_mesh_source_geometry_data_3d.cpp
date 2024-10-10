@@ -31,12 +31,26 @@
 #include "navigation_mesh_source_geometry_data_3d.h"
 
 void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_vertices) {
+	RWLockWrite write_lock(geometry_rwlock);
 	vertices = p_vertices;
+	bounds_dirty = true;
+}
+
+const Vector<float> &NavigationMeshSourceGeometryData3D::get_vertices() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return vertices;
 }
 
 void NavigationMeshSourceGeometryData3D::set_indices(const Vector<int> &p_indices) {
 	ERR_FAIL_COND(vertices.size() < p_indices.size());
+	RWLockWrite write_lock(geometry_rwlock);
 	indices = p_indices;
+	bounds_dirty = true;
+}
+
+const Vector<int> &NavigationMeshSourceGeometryData3D::get_indices() const {
+	RWLockRead read_lock(geometry_rwlock);
+	return indices;
 }
 
 void NavigationMeshSourceGeometryData3D::append_arrays(const Vector<float> &p_vertices, const Vector<int> &p_indices) {
@@ -51,17 +65,26 @@ void NavigationMeshSourceGeometryData3D::append_arrays(const Vector<float> &p_ve
 	for (int64_t i = number_of_indices_before_merge; i < indices.size(); i++) {
 		indices.set(i, indices[i] + number_of_vertices_before_merge / 3);
 	}
+	bounds_dirty = true;
 }
 
+bool NavigationMeshSourceGeometryData3D::has_data() {
+	RWLockRead read_lock(geometry_rwlock);
+	return vertices.size() && indices.size();
+};
+
 void NavigationMeshSourceGeometryData3D::clear() {
+	RWLockWrite write_lock(geometry_rwlock);
 	vertices.clear();
 	indices.clear();
-	clear_projected_obstructions();
+	_projected_obstructions.clear();
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::clear_projected_obstructions() {
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_obstructions.clear();
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::_add_vertex(const Vector3 &p_vec3) {
@@ -187,40 +210,40 @@ void NavigationMeshSourceGeometryData3D::add_mesh(const Ref<Mesh> &p_mesh, const
 
 void NavigationMeshSourceGeometryData3D::add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform) {
 	ERR_FAIL_COND(p_mesh_array.size() != Mesh::ARRAY_MAX);
+	RWLockWrite write_lock(geometry_rwlock);
 	_add_mesh_array(p_mesh_array, root_node_transform * p_xform);
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform) {
 	ERR_FAIL_COND(p_faces.size() % 3 != 0);
+	RWLockWrite write_lock(geometry_rwlock);
 	_add_faces(p_faces, root_node_transform * p_xform);
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry) {
-	ERR_FAIL_NULL(p_other_geometry);
+	ERR_FAIL_COND(p_other_geometry.is_null());
 
-	append_arrays(p_other_geometry->vertices, p_other_geometry->indices);
+	Vector<float> other_vertices;
+	Vector<int> other_indices;
+	Vector<ProjectedObstruction> other_projected_obstructions;
 
-	if (p_other_geometry->_projected_obstructions.size() > 0) {
-		RWLockWrite write_lock(geometry_rwlock);
+	p_other_geometry->get_data(other_vertices, other_indices, other_projected_obstructions);
 
-		for (const ProjectedObstruction &other_projected_obstruction : p_other_geometry->_projected_obstructions) {
-			ProjectedObstruction projected_obstruction;
-			projected_obstruction.vertices.resize(other_projected_obstruction.vertices.size());
+	RWLockWrite write_lock(geometry_rwlock);
+	const int64_t number_of_vertices_before_merge = vertices.size();
+	const int64_t number_of_indices_before_merge = indices.size();
 
-			const float *other_obstruction_vertices_ptr = other_projected_obstruction.vertices.ptr();
-			float *obstruction_vertices_ptrw = projected_obstruction.vertices.ptrw();
+	vertices.append_array(other_vertices);
+	indices.append_array(other_indices);
 
-			for (int j = 0; j < other_projected_obstruction.vertices.size(); j++) {
-				obstruction_vertices_ptrw[j] = other_obstruction_vertices_ptr[j];
-			}
-
-			projected_obstruction.elevation = other_projected_obstruction.elevation;
-			projected_obstruction.height = other_projected_obstruction.height;
-			projected_obstruction.carve = other_projected_obstruction.carve;
-
-			_projected_obstructions.push_back(projected_obstruction);
-		}
+	for (int64_t i = number_of_indices_before_merge; i < indices.size(); i++) {
+		indices.set(i, indices[i] + number_of_vertices_before_merge / 3);
 	}
+
+	_projected_obstructions.append_array(other_projected_obstructions);
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::add_projected_obstruction(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, bool p_carve) {
@@ -244,6 +267,7 @@ void NavigationMeshSourceGeometryData3D::add_projected_obstruction(const Vector<
 
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_obstructions.push_back(projected_obstruction);
+	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::set_projected_obstructions(const Array &p_array) {
@@ -270,6 +294,7 @@ void NavigationMeshSourceGeometryData3D::set_projected_obstructions(const Array 
 
 		RWLockWrite write_lock(geometry_rwlock);
 		_projected_obstructions.push_back(projected_obstruction);
+		bounds_dirty = true;
 	}
 }
 
@@ -316,6 +341,60 @@ bool NavigationMeshSourceGeometryData3D::_get(const StringName &p_name, Variant 
 	return false;
 }
 
+void NavigationMeshSourceGeometryData3D::set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions) {
+	RWLockWrite write_lock(geometry_rwlock);
+	vertices = p_vertices;
+	indices = p_indices;
+	_projected_obstructions = p_projected_obstructions;
+	bounds_dirty = true;
+}
+
+void NavigationMeshSourceGeometryData3D::get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions) {
+	RWLockRead read_lock(geometry_rwlock);
+	r_vertices = vertices;
+	r_indices = indices;
+	r_projected_obstructions = _projected_obstructions;
+}
+
+AABB NavigationMeshSourceGeometryData3D::get_bounds() {
+	geometry_rwlock.read_lock();
+
+	if (bounds_dirty) {
+		geometry_rwlock.read_unlock();
+		RWLockWrite write_lock(geometry_rwlock);
+
+		bounds_dirty = false;
+		bounds = AABB();
+		bool first_vertex = true;
+
+		for (int i = 0; i < vertices.size() / 3; i++) {
+			const Vector3 vertex = Vector3(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]);
+			if (first_vertex) {
+				first_vertex = false;
+				bounds.position = vertex;
+			} else {
+				bounds.expand_to(vertex);
+			}
+		}
+		for (const ProjectedObstruction &projected_obstruction : _projected_obstructions) {
+			for (int i = 0; i < projected_obstruction.vertices.size() / 3; i++) {
+				const Vector3 vertex = Vector3(projected_obstruction.vertices[i * 3], projected_obstruction.vertices[i * 3 + 1], projected_obstruction.vertices[i * 3 + 2]);
+				if (first_vertex) {
+					first_vertex = false;
+					bounds.position = vertex;
+				} else {
+					bounds.expand_to(vertex);
+				}
+			}
+		}
+	} else {
+		geometry_rwlock.read_unlock();
+	}
+
+	RWLockRead read_lock(geometry_rwlock);
+	return bounds;
+}
+
 void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationMeshSourceGeometryData3D::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationMeshSourceGeometryData3D::get_vertices);
@@ -337,6 +416,8 @@ void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_projected_obstructions"), &NavigationMeshSourceGeometryData3D::clear_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("set_projected_obstructions", "projected_obstructions"), &NavigationMeshSourceGeometryData3D::set_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("get_projected_obstructions"), &NavigationMeshSourceGeometryData3D::get_projected_obstructions);
+
+	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshSourceGeometryData3D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_indices", "get_indices");

@@ -188,6 +188,8 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
+	const String locked_transform_warning = TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed.");
+
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
@@ -430,7 +432,7 @@ private:
 	ThemePreviewMode theme_preview = THEME_PREVIEW_PROJECT;
 	void _switch_theme_preview(int p_mode);
 
-	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
+	List<CanvasItem *> _get_edited_canvas_items(bool p_retrieve_locked = false, bool p_remove_canvas_item_if_parent_in_selection = true, bool *r_has_locked_items = nullptr) const;
 	Rect2 _get_encompassing_rect_from_list(const List<CanvasItem *> &p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);

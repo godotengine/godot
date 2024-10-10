@@ -754,6 +754,8 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_omit_force_integration", "body", "enable"), &PhysicsServer2D::body_set_omit_force_integration);
 	ClassDB::bind_method(D_METHOD("body_is_omitting_force_integration", "body"), &PhysicsServer2D::body_is_omitting_force_integration);
 
+	ClassDB::bind_method(D_METHOD("body_set_state_sync_callback", "body", "callable"), &PhysicsServer2D::body_set_state_sync_callback);
+
 	ClassDB::bind_method(D_METHOD("body_set_force_integration_callback", "body", "callable", "userdata"), &PhysicsServer2D::body_set_force_integration_callback, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "parameters", "result"), &PhysicsServer2D::_body_test_motion, DEFVAL(Variant()));
@@ -970,7 +972,9 @@ String PhysicsServer2DManager::get_server_name(int p_id) {
 }
 
 PhysicsServer2D *PhysicsServer2DManager::new_default_server() {
-	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
+	if (default_server_id == -1) {
+		return nullptr;
+	}
 	Variant ret;
 	Callable::CallError ce;
 	physics_2d_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);

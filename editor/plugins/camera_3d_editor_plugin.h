@@ -45,7 +45,6 @@ class Camera3DEditor : public Control {
 
 protected:
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	void edit(Node *p_camera);

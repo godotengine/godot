@@ -103,6 +103,8 @@ void EditorVisualProfiler::clear() {
 	variables->clear();
 	//activate->set_pressed(false);
 
+	graph_limit = 1000.0f / CLAMP(int(EDITOR_GET("debugger/profiler_target_fps")), 1, 1000);
+
 	updating_frame = true;
 	cursor_metric_edit->set_min(0);
 	cursor_metric_edit->set_max(0);
@@ -146,8 +148,8 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-	const int w = graph->get_size().width;
-	const int h = graph->get_size().height;
+	const int w = graph->get_size().width + 1; // `+1` is to prevent from crashing when visual profiler is auto started.
+	const int h = graph->get_size().height + 1;
 
 	bool reset_texture = false;
 
@@ -425,6 +427,10 @@ void EditorVisualProfiler::_clear_pressed() {
 	_update_plot();
 }
 
+void EditorVisualProfiler::_autostart_toggled(bool p_toggled_on) {
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_visual_profiler", p_toggled_on);
+}
+
 void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -446,9 +452,9 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		return;
 	}
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	const Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	const Color color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
 	if (seeking) {
 		int max_frames = frame_metrics.size();
@@ -666,9 +672,10 @@ void EditorVisualProfiler::set_enabled(bool p_enable) {
 	activate->set_disabled(!p_enable);
 }
 
-void EditorVisualProfiler::set_pressed(bool p_pressed) {
-	activate->set_pressed(p_pressed);
+void EditorVisualProfiler::set_profiling(bool p_profiling) {
+	activate->set_pressed(p_profiling);
 	_update_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 bool EditorVisualProfiler::is_profiling() {
@@ -745,12 +752,18 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
+	CheckBox *autostart_checkbox = memnew(CheckBox);
+	autostart_checkbox->set_text(TTR("Autostart"));
+	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false));
+	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorVisualProfiler::_autostart_toggled));
+	hb->add_child(autostart_checkbox);
+
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
-	display_mode->connect("item_selected", callable_mp(this, &EditorVisualProfiler::_combo_changed));
+	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
 	hb->add_child(display_mode);
 
@@ -770,7 +783,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
+	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
 
 	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 
@@ -811,6 +824,8 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
+
+	graph_limit = 1000.0f / CLAMP(int(EDITOR_GET("debugger/profiler_target_fps")), 1, 1000);
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);

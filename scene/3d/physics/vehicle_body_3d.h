@@ -130,6 +130,10 @@ public:
 
 	bool is_in_contact() const;
 
+	Vector3 get_contact_point() const;
+
+	Vector3 get_contact_normal() const;
+
 	Node3D *get_contact_body() const;
 
 	void set_roll_influence(real_t p_value);

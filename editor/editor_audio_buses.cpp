@@ -105,7 +105,7 @@ void EditorAudioBus::_notification(int p_what) {
 
 			bus_options->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-			audio_value_preview_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("TooltipLabel")));
+			audio_value_preview_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("TooltipLabel")));
 			audio_value_preview_label->add_theme_color_override("font_shadow_color", get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
 			audio_value_preview_box->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TooltipPanel")));
 
@@ -127,7 +127,7 @@ void EditorAudioBus::_notification(int p_what) {
 			} else if (has_focus()) {
 				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Button")), Rect2(Vector2(), get_size()));
 			} else {
-				draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)), Rect2(Vector2(), get_size()));
 			}
 
 			if (get_index() != 0 && hovering_drop) {
@@ -657,6 +657,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 		Label *l = memnew(Label);
 		l->set_text(item->get_text(0));
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		effects->set_drag_preview(l);
 
 		return fxd;
@@ -799,6 +800,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_tooltip_text(TTR("Drag & drop to rearrange."));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->add_theme_constant_override("separation", 4 * EDSCALE);
 	add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -854,8 +856,17 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	separator->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(separator);
 
+	Control *spacer_top = memnew(Control);
+	spacer_top->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
+	vb->add_child(spacer_top);
+
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
+
+	Control *spacer_bottom = memnew(Control);
+	spacer_bottom->set_custom_minimum_size(Size2(0, 2 * EDSCALE));
+	vb->add_child(spacer_bottom);
+
 	slider = memnew(VSlider);
 	slider->set_min(0.0);
 	slider->set_max(1.0);
@@ -884,8 +895,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	preview_timer->set_one_shot(true);
 	add_child(preview_timer);
 
-	slider->connect("value_changed", callable_mp(this, &EditorAudioBus::_volume_changed));
-	slider->connect("value_changed", callable_mp(this, &EditorAudioBus::_show_value));
+	slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorAudioBus::_volume_changed));
+	slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorAudioBus::_show_value));
 	preview_timer->connect("timeout", callable_mp(this, &EditorAudioBus::_hide_value_preview));
 	hb->add_child(slider);
 
@@ -919,6 +930,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hb->add_child(scale);
 
 	effects = memnew(Tree);
+	effects->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	effects->set_hide_root(true);
 	effects->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 	effects->set_hide_folding(true);
@@ -938,12 +950,13 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	send = memnew(OptionButton);
 	send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	send->set_clip_text(true);
-	send->connect("item_selected", callable_mp(this, &EditorAudioBus::_send_selected));
+	send->connect(SceneStringName(item_selected), callable_mp(this, &EditorAudioBus::_send_selected));
 	vb->add_child(send);
 
 	set_focus_mode(FOCUS_CLICK);
 
 	effect_options = memnew(PopupMenu);
+	effect_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate class names.
 	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
 	List<StringName> effect_list;
@@ -1252,7 +1265,7 @@ void EditorAudioBuses::_load_default_layout() {
 	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
-	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
@@ -1268,7 +1281,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_rebuild_buses();
-		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+		EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 
 	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
@@ -1288,7 +1301,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		edited_path = p_string;
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_rebuild_buses();
-		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+		EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 	}
 }
@@ -1387,7 +1400,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	file->set_text(p_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
-	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
@@ -1419,8 +1432,8 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 }
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	float font_height = font->get_height(font_size);
 
 	float width = 0;
@@ -1440,10 +1453,10 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 void EditorAudioMeterNotches::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.notch_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	theme_cache.notch_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
-	theme_cache.font = get_theme_font(SNAME("font"), SNAME("Label"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	theme_cache.font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	theme_cache.font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 }
 
 void EditorAudioMeterNotches::_bind_methods() {

@@ -50,7 +50,7 @@
 
 #define LONG_BITS (sizeof(long) * 8)
 #define test_bit(nr, addr) (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
-#define NBITS(x) ((((x)-1) / LONG_BITS) + 1)
+#define NBITS(x) ((((x) - 1) / LONG_BITS) + 1)
 
 #ifdef UDEV_ENABLED
 static const char *ignore_str = "/dev/input/js";
@@ -372,6 +372,12 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		input_id inpid;
 		if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
 			name = namebuf;
+		}
+
+		for (const String &word : name.to_lower().split(" ")) {
+			if (banned_words.has(word)) {
+				return;
+			}
 		}
 
 		if (ioctl(fd, EVIOCGID, &inpid) < 0) {

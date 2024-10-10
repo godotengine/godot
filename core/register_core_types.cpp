@@ -79,6 +79,7 @@
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
+#include "core/string/translation_server.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -232,6 +233,7 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
+	GDREGISTER_CLASS(TranslationDomain);
 	GDREGISTER_CLASS(OptimizedTranslation);
 	GDREGISTER_CLASS(UndoRedo);
 	GDREGISTER_CLASS(TriangleMesh);
@@ -444,8 +446,8 @@ void unregister_core_types() {
 
 	unregister_global_constants();
 
-	ClassDB::cleanup();
 	ResourceCache::clear();
+	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
 

@@ -35,10 +35,11 @@
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	RWLockWrite write_lock(rwlock);
 	ERR_FAIL_COND(p_mesh.is_null());
 
 	vertices = Vector<Vector3>();
-	clear_polygons();
+	polygons.clear();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -60,14 +61,13 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		int rlen = iarr.size();
 		const int *r = iarr.ptr();
 
+		Vector<int> polygon;
 		for (int j = 0; j < rlen; j += 3) {
-			Vector<int> vi;
-			vi.resize(3);
-			vi.write[0] = r[j + 0] + from;
-			vi.write[1] = r[j + 1] + from;
-			vi.write[2] = r[j + 2] + from;
-
-			add_polygon(vi);
+			polygon.resize(3);
+			polygon.write[0] = r[j + 0] + from;
+			polygon.write[1] = r[j + 1] + from;
+			polygon.write[2] = r[j + 2] + from;
+			polygons.push_back(polygon);
 		}
 	}
 }
@@ -304,55 +304,85 @@ Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
 }
 
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
+	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	notify_property_list_changed();
 }
 
 Vector<Vector3> NavigationMesh::get_vertices() const {
+	RWLockRead read_lock(rwlock);
 	return vertices;
 }
 
 void NavigationMesh::_set_polygons(const Array &p_array) {
+	RWLockWrite write_lock(rwlock);
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons.write[i].indices = p_array[i];
+		polygons.write[i] = p_array[i];
 	}
 	notify_property_list_changed();
 }
 
 Array NavigationMesh::_get_polygons() const {
+	RWLockRead read_lock(rwlock);
 	Array ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i] = polygons[i].indices;
+		ret[i] = polygons[i];
 	}
 
 	return ret;
 }
 
+void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	polygons = p_polygons;
+	notify_property_list_changed();
+}
+
+Vector<Vector<int>> NavigationMesh::get_polygons() const {
+	RWLockRead read_lock(rwlock);
+	return polygons;
+}
+
 void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
-	Polygon polygon;
-	polygon.indices = p_polygon;
-	polygons.push_back(polygon);
+	RWLockWrite write_lock(rwlock);
+	polygons.push_back(p_polygon);
 	notify_property_list_changed();
 }
 
 int NavigationMesh::get_polygon_count() const {
+	RWLockRead read_lock(rwlock);
 	return polygons.size();
 }
 
 Vector<int> NavigationMesh::get_polygon(int p_idx) {
+	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
-	return polygons[p_idx].indices;
+	return polygons[p_idx];
 }
 
 void NavigationMesh::clear_polygons() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 }
 
 void NavigationMesh::clear() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	vertices.clear();
+}
+
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons = p_polygons;
+}
+
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons) {
+	RWLockRead read_lock(rwlock);
+	r_vertices = vertices;
+	r_polygons = polygons;
 }
 
 #ifdef DEBUG_ENABLED
@@ -371,6 +401,8 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	if (vertices.size() == 0) {
 		return debug_mesh;
 	}
+
+	RWLockRead read_lock(rwlock);
 
 	int polygon_count = get_polygon_count();
 

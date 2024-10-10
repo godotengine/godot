@@ -218,9 +218,6 @@ void ShaderFileEditor::_editor_settings_changed() {
 	}
 }
 
-void ShaderFileEditor::_bind_methods() {
-}
-
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {
@@ -258,7 +255,7 @@ ShaderFileEditor::ShaderFileEditor() {
 
 	versions = memnew(ItemList);
 	versions->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	versions->connect("item_selected", callable_mp(this, &ShaderFileEditor::_version_selected));
+	versions->connect(SceneStringName(item_selected), callable_mp(this, &ShaderFileEditor::_version_selected));
 	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
 	main_hs->add_child(versions);
 

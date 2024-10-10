@@ -93,24 +93,6 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	}
 }
 
-void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				pick_node->get_scene_tree()->get_scene_tree()->gui_input(k);
-				pick_node->get_filter_line_edit()->accept_event();
-			} break;
-			default:
-				break;
-		}
-	}
-}
-
 void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 	Node *root = current->get_node(current->get_root_path());
 	ERR_FAIL_NULL(root);
@@ -175,7 +157,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
-	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -184,11 +166,9 @@ ReplicationEditor::ReplicationEditor() {
 
 	pick_node = memnew(SceneTreeDialog);
 	add_child(pick_node);
-	pick_node->register_text_enter(pick_node->get_filter_line_edit());
 	pick_node->set_title(TTR("Pick a node to synchronize:"));
 	pick_node->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_selected));
-	pick_node->get_filter_line_edit()->connect("text_changed", callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
-	pick_node->get_filter_line_edit()->connect("gui_input", callable_mp(this, &ReplicationEditor::_pick_node_filter_input));
+	pick_node->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ReplicationEditor::_pick_node_filter_text_changed));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
@@ -430,7 +410,7 @@ void ReplicationEditor::_tree_item_edited() {
 		undo_redo->add_do_method(config.ptr(), "property_set_spawn", prop, value);
 		undo_redo->add_undo_method(config.ptr(), "property_set_spawn", prop, !value);
 		undo_redo->add_do_method(this, "_update_value", prop, column, value ? 1 : 0);
-		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 1 : 0);
+		undo_redo->add_undo_method(this, "_update_value", prop, column, value ? 0 : 1);
 		undo_redo->commit_action();
 	} else if (column == 2) {
 		undo_redo->create_action(TTR("Set sync property"));

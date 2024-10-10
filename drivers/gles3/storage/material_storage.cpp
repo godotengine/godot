@@ -348,7 +348,7 @@ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_
 	}
 }
 
-_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::ConstantNode::Value> &value, uint8_t *data) {
+_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::Scalar> &value, uint8_t *data) {
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
@@ -572,7 +572,7 @@ void ShaderData::set_default_texture_parameter(const StringName &p_name, RID p_t
 Variant ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		Vector<ShaderLanguage::Scalar> default_value = uniform.default_value;
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
@@ -586,11 +586,7 @@ void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
 			continue;
 		}
-		if (E.value.texture_order >= 0) {
-			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.texture_order + 100000));
-		} else {
-			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.order));
-		}
+		filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.prop_order));
 	}
 	int uniform_count = filtered_uniforms.size();
 	sorter.sort(filtered_uniforms.ptr(), uniform_count);
@@ -640,7 +636,7 @@ bool ShaderData::is_parameter_texture(const StringName &p_param) const {
 		return false;
 	}
 
-	return uniforms[p_param].texture_order >= 0;
+	return uniforms[p_param].is_texture();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -679,6 +675,7 @@ static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
 	GL_TEXTURE_3D, // TYPE_USAMPLER3D,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBE,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBEARRAY,
+	_GL_TEXTURE_EXTERNAL_OES, // TYPE_SAMPLEREXT
 	GL_TEXTURE_2D, // TYPE_STRUCT
 };
 
@@ -719,7 +716,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 	bool uses_global_buffer = false;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : p_uniforms) {
-		if (E.value.order < 0) {
+		if (E.value.is_texture()) {
 			continue; // texture, does not go here
 		}
 
@@ -874,7 +871,8 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				if (V->value.is_array()) {
 					Array array = (Array)V->value;
 					if (uniform_array_size > 0) {
-						for (int j = 0; j < array.size(); j++) {
+						int size = MIN(uniform_array_size, array.size());
+						for (int j = 0; j < size; j++) {
 							textures.push_back(array[j]);
 						}
 					} else {
@@ -948,6 +946,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 					ERR_PRINT_ONCE("Type: SamplerCubeArray not supported in GL Compatibility rendering backend, please use another type.");
+				} break;
+				case ShaderLanguage::TYPE_SAMPLEREXT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_EXT);
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
@@ -1055,6 +1056,7 @@ void MaterialData::update_parameters_internal(const HashMap<StringName, Variant>
 
 		ubo_data.resize(p_ubo_size);
 		if (ubo_data.size()) {
+			ERR_FAIL_COND(p_ubo_size > uint32_t(Config::get_singleton()->max_uniform_buffer_size));
 			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
 		}
 	}
@@ -1108,17 +1110,17 @@ MaterialStorage::MaterialStorage() {
 
 	static_assert(sizeof(GlobalShaderUniforms::Value) == 16);
 
-	global_shader_uniforms.buffer_size = MAX(4096, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
-	if (global_shader_uniforms.buffer_size > uint32_t(Config::get_singleton()->max_uniform_buffer_size)) {
-		global_shader_uniforms.buffer_size = uint32_t(Config::get_singleton()->max_uniform_buffer_size);
-		WARN_PRINT("Project setting \"rendering/limits/global_shader_variables/buffer_size\" exceeds maximum uniform buffer size of: " + itos(Config::get_singleton()->max_uniform_buffer_size));
+	global_shader_uniforms.buffer_size = MAX(16, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
+	if (global_shader_uniforms.buffer_size * sizeof(GlobalShaderUniforms::Value) > uint32_t(Config::get_singleton()->max_uniform_buffer_size)) {
+		// Limit to maximum support UBO size.
+		global_shader_uniforms.buffer_size = uint32_t(Config::get_singleton()->max_uniform_buffer_size) / sizeof(GlobalShaderUniforms::Value);
 	}
 
 	global_shader_uniforms.buffer_values = memnew_arr(GlobalShaderUniforms::Value, global_shader_uniforms.buffer_size);
 	memset(global_shader_uniforms.buffer_values, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 	global_shader_uniforms.buffer_usage = memnew_arr(GlobalShaderUniforms::ValueUsage, global_shader_uniforms.buffer_size);
-	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
-	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
+	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE));
+	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)));
 	glGenBuffers(1, &global_shader_uniforms.buffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, global_shader_uniforms.buffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, nullptr, GL_DYNAMIC_DRAW);
@@ -1275,11 +1277,12 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
 		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "model_matrix[3].xyz";
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
-		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
+		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.inv_view_matrix[2].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * model_matrix)[3].xyz";
 
@@ -1365,6 +1368,10 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		if (!GLES3::Config::get_singleton()->force_vertex_shading) {
+			// If forcing vertex shading, this will be defined already.
+			actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
+		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
@@ -1372,6 +1379,7 @@ MaterialStorage::MaterialStorage() {
 
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.instance_uniform_index_variable = "instance_offset";
 
 		shaders.compiler_scene.initialize(actions);
 	}
@@ -1787,7 +1795,7 @@ void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RS::
 
 		//is vector, allocate in buffer and update index
 		gv.buffer_index = _global_shader_uniform_allocate(gv.buffer_elements);
-		ERR_FAIL_COND_MSG(gv.buffer_index < 0, vformat("Failed allocating global variable '%s' out of buffer memory. Consider increasing it in the Project Settings.", String(p_name)));
+		ERR_FAIL_COND_MSG(gv.buffer_index < 0, vformat("Failed allocating global variable '%s' out of buffer memory. Consider increasing rendering/limits/global_shader_variables/buffer_size in the Project Settings. Maximum items supported by this hardware is: %d.", String(p_name), Config::get_singleton()->max_uniform_buffer_size / sizeof(GlobalShaderUniforms::Value)));
 		global_shader_uniforms.buffer_usage[gv.buffer_index].elements = gv.buffer_elements;
 		_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
 		_global_shader_uniform_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
@@ -1950,6 +1958,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 				"sampler2DArray",
 				"sampler3D",
 				"samplerCube",
+				"samplerExternalOES"
 			};
 
 			RS::GlobalShaderParameterType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
@@ -1998,7 +2007,7 @@ int32_t MaterialStorage::global_shader_parameters_instance_allocate(RID p_instan
 	ERR_FAIL_COND_V(global_shader_uniforms.instance_buffer_pos.has(p_instance), -1);
 	int32_t pos = _global_shader_uniform_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
 	global_shader_uniforms.instance_buffer_pos[p_instance] = pos; //save anyway
-	ERR_FAIL_COND_V_MSG(pos < 0, -1, "Too many instances using shader instance variables. Increase buffer size in Project Settings.");
+	ERR_FAIL_COND_V_MSG(pos < 0, -1, vformat("Too many instances using shader instance variables. Consider increasing rendering/limits/global_shader_variables/buffer_size in the Project Settings. Maximum items supported by this hardware is: %d.", Config::get_singleton()->max_uniform_buffer_size / sizeof(GlobalShaderUniforms::Value)));
 	global_shader_uniforms.buffer_usage[pos].elements = ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES;
 	return pos;
 }
@@ -2078,7 +2087,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 void MaterialStorage::_update_global_shader_uniforms() {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	if (global_shader_uniforms.buffer_dirty_region_count > 0) {
-		uint32_t total_regions = global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
+		uint32_t total_regions = 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
 		if (total_regions / global_shader_uniforms.buffer_dirty_region_count <= 4) {
 			// 25% of regions dirty, just update all buffer
 			glBindBuffer(GL_UNIFORM_BUFFER, global_shader_uniforms.buffer);
@@ -2662,7 +2671,11 @@ static void bind_uniforms_generic(const Vector<RID> &p_textures, const Vector<Sh
 		const ShaderCompiler::GeneratedCode::Texture &texture_uniform = texture_uniforms[texture_uniform_index];
 		if (texture) {
 			glActiveTexture(GL_TEXTURE0 + texture_offset + ti);
-			glBindTexture(target_from_type[texture_uniform.type], texture->tex_id);
+			GLenum target = target_from_type[texture_uniform.type];
+			if (target == _GL_TEXTURE_EXTERNAL_OES && !GLES3::Config::get_singleton()->external_texture_supported) {
+				target = GL_TEXTURE_2D;
+			}
+			glBindTexture(target, texture->tex_id);
 			if (texture->render_target) {
 				texture->render_target->used_in_frame = true;
 			}

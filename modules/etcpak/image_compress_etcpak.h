@@ -51,6 +51,6 @@ void _compress_etc1(Image *r_img);
 void _compress_etc2(Image *r_img, Image::UsedChannels p_channels);
 void _compress_bc(Image *r_img, Image::UsedChannels p_channels);
 
-void _compress_etcpak(EtcpakType p_compresstype, Image *r_img);
+void _compress_etcpak(EtcpakType p_compress_type, Image *r_img);
 
 #endif // IMAGE_COMPRESS_ETCPAK_H

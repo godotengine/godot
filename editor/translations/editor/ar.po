@@ -89,13 +89,19 @@
 # 7D <miuatoro.exe@gmail.com>, 2023.
 # Emad Alhaddad <emad142240@gmail.com>, 2023.
 # Varga <vancouver_cliparf@simplelogin.com>, 2024.
+# Ahmed Nehad <nmkao333@gmail.com>, 2024.
+# Rashid Al Haqbany <haqbany@gmail.com>, 2024.
+# cat lover <mongo@users.noreply.hosted.weblate.org>, 2024.
+# Mohammed Almosawy <nairex1212m1@gmail.com>, 2024.
+# Ali al khawaja <ali.al.khuwaja@gmail.com>, 2024.
+# Spirit <spirit@programmer.net>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-21 13:46+0000\n"
-"Last-Translator: \"Mr.k\" <mineshtine28546271@gmail.com>\n"
+"PO-Revision-Date: 2024-09-02 12:09+0000\n"
+"Last-Translator: Spirit <spirit@programmer.net>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -104,7 +110,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "النظيمة الرئيسة"
@@ -258,6 +264,12 @@ msgstr "زرّ عصا التحكم %d"
 
 msgid "Pressure:"
 msgstr "الضغط:"
+
+msgid "canceled"
+msgstr "ملغي"
+
+msgid "touched"
+msgstr "تم لمسها"
 
 msgid "released"
 msgstr "تُركت"
@@ -428,6 +440,9 @@ msgstr "حدد كلمة تحت علامة الإقحام"
 msgid "Add Selection for Next Occurrence"
 msgstr "أضف اختيار للتكرار التالي"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "تخطى الاختيار للتكرار التالي"
+
 msgid "Clear Carets and Selection"
 msgstr "مسح التحديد و علامات الإقحام"
 
@@ -513,11 +528,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "فعالية action بهذا الاسم '%s' موجودة سلفاً."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "لا يمكن الإرجاع - الفعل مثل الذي قبله"
+
 msgid "Revert Action"
 msgstr "التراجع عن الإجراء"
 
 msgid "Add Event"
 msgstr "إضافة حَدث"
+
+msgid "Remove Action"
+msgstr "إزالة الإجراء"
 
 msgid "Cannot Remove Action"
 msgstr "لا يمكن مسح الاجراء"
@@ -528,8 +549,14 @@ msgstr "تعديل الحدث"
 msgid "Remove Event"
 msgstr "حذف الحدث"
 
+msgid "Filter by Name"
+msgstr "تصفية بواسطة الاسم"
+
 msgid "Clear All"
 msgstr "مسح الكل"
+
+msgid "Clear all search filters."
+msgstr "إزالة كل تصفيات البحث."
 
 msgid "Add New Action"
 msgstr "إضافة إجراء جديد"
@@ -600,6 +627,12 @@ msgstr "تحريك نقاط بيزية"
 msgid "Animation Duplicate Keys"
 msgstr "تكرار مفاتيح الرسوم المتحركة"
 
+msgid "Animation Cut Keys"
+msgstr "مفاتيح قطع الرسوم المتحركة"
+
+msgid "Animation Paste Keys"
+msgstr "مفاتيح لصق الرسوم المتحركة"
+
 msgid "Animation Delete Keys"
 msgstr "حذف مفاتيح الرسوم المتحركة"
 
@@ -659,6 +692,27 @@ msgstr "لا يمكن تغيير وضع الحلقة التكرارية في ا�
 
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "لا يمكن تغيير وضع التكرار على الرسوم المتحركة المضمنة في مشهد آخر."
+
+msgid "Property Track..."
+msgstr "مسار الملكية..."
+
+msgid "3D Position Track..."
+msgstr "مسار الموقع ثلاثي الأبعاد..."
+
+msgid "3D Rotation Track..."
+msgstr "مسار الدوران ثلاثي الأبعاد..."
+
+msgid "3D Scale Track..."
+msgstr "مسار التحجيم ثلاثي الأبعاد..."
+
+msgid "Blend Shape Track..."
+msgstr "مسار مزج الأشكال..."
+
+msgid "Bezier Curve Track..."
+msgstr "مسار منحنى بيزييه..."
+
+msgid "Animation Playback Track..."
+msgstr "مسار تشغيل الرسوم المتحركة..."
 
 msgid "Animation length (frames)"
 msgstr "مدة الرسم المتحرك (بالإطارات)"
@@ -792,8 +846,17 @@ msgstr "تفسير الحلقة المثبتة"
 msgid "Wrap Loop Interp"
 msgstr "التفاف الحلقة المثبتة"
 
+msgid "Insert Key..."
+msgstr "أدخل مفتاح..."
+
 msgid "Duplicate Key(s)"
 msgstr "تكرار المفتاح (المفاتيح)"
+
+msgid "Cut Key(s)"
+msgstr "قطع المفتاح (المفاتيح)"
+
+msgid "Copy Key(s)"
+msgstr "نسخ المفتاح (المفاتيح)"
 
 msgid "Add RESET Value(s)"
 msgstr "أضفْ قيمة(قيم) إعادة تعيين (RESET)"
@@ -823,14 +886,14 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "إزالة مقطع التحريك"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr "أستمر بالضغط على Shift لحظة ضغط أيقونة المفتاح لتخطي مربع الحوار هذا."
-
 msgid "Create new track for %s and insert key?"
 msgstr "إنشاء مقطع جديد لـ %s وإدخال مفتاح ؟"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "أنشئ %d مقاطع جديدة و مفاتيح الإدخال؟"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "أستمر بالضغط على Shift لحظة ضغط أيقونة المفتاح لتخطي مربع الحوار هذا."
 
 msgid "Create"
 msgstr "أنشئ"
@@ -895,18 +958,6 @@ msgstr "مسار المقطع غير صالح, إذن لا يمكن إضافة �
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "المقطع ليس عقدة ثلاثية الأبعاد، لا يمكن إضافة مفتاح"
 
-msgid "Add Position Key"
-msgstr "إضافة مفتاح الموقع"
-
-msgid "Add Rotation Key"
-msgstr "إضافة مفتاح زاوية الدوران"
-
-msgid "Add Scale Key"
-msgstr "إضافة مفتاح الحجم"
-
-msgid "Add Track Key"
-msgstr "أضفْ مفتاح المقطع"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "مسار المقطع غير صالح, إذن لا يمكن إضافة دالة المفتاح (Method key)."
 
@@ -948,6 +999,12 @@ msgstr "لصق المقاطع"
 
 msgid "Animation Scale Keys"
 msgstr "مفاتيح حجم التحريك"
+
+msgid "Animation Set Start Offset"
+msgstr "تحديد انحياز بداية التحريك"
+
+msgid "Animation Set End Offset"
+msgstr "تحديد انحياز نهاية التحريك"
 
 msgid "Make Easing Keys"
 msgstr "جعل مفاتيح التيسير"
@@ -1036,14 +1093,50 @@ msgstr "ثواني"
 msgid "FPS"
 msgstr "ط/ث"
 
+msgid "Fit to panel"
+msgstr "المناسبة للإطار"
+
 msgid "Edit"
 msgstr "تعديل"
 
 msgid "Animation properties."
 msgstr "خاصيات الحركة."
 
+msgid "Scale Selection..."
+msgstr "تكبير/تصغير المحدد..."
+
+msgid "Scale From Cursor..."
+msgstr "تكبير/تصغير من المؤشر..."
+
+msgid "Set Start Offset (Audio)"
+msgstr "تعيين إزاحة البداية (الصوتيات)"
+
+msgid "Set End Offset (Audio)"
+msgstr "تعيين إزاحة النهاية (الصوتيات)"
+
+msgid "Make Easing Selection..."
+msgstr "تحديد التنعيم..."
+
+msgid "Duplicate Selected Keys"
+msgstr "استنساخ المفاتيح المحددة"
+
+msgid "Cut Selected Keys"
+msgstr "قص المفاتيح المختارة"
+
+msgid "Copy Selected Keys"
+msgstr "انسخ المفاتيح المختارة"
+
+msgid "Paste Keys"
+msgstr "لصق المفاتيح"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "حرك المفتاح الأول الى المؤشر"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "حرك المفتاح الأخير الى المؤشر"
+
 msgid "Delete Selection"
-msgstr "احذف المختار"
+msgstr "احذف المحدد"
 
 msgid "Go to Next Step"
 msgstr "اذهب إلى الخطوة التالية"
@@ -1053,6 +1146,15 @@ msgstr "عُد إلى الخطوة السابقة"
 
 msgid "Apply Reset"
 msgstr "إعادة تعيين"
+
+msgid "Bake Animation..."
+msgstr "الحساب المسبق للتحريك..."
+
+msgid "Optimize Animation (no undo)..."
+msgstr "تحسين التحريك (لا يوجد تراجع)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "إعادة ضبط التحريك (لا تراجع)..."
 
 msgid "Pick a node to animate:"
 msgstr "اخترْ غُقدة لتحريكها:"
@@ -1077,6 +1179,12 @@ msgstr "أقصى خطأ للدقة:"
 
 msgid "Optimize"
 msgstr "تحسين"
+
+msgid "Trim keys placed in negative time"
+msgstr "مفاتيح التشذيب الموضوعة في الوقت السلبي"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "مفاتيح القطع الموضوعة تتجاوز طول الرسوم المتحركة"
 
 msgid "Remove invalid keys"
 msgstr "امسح المفاتيح الفاسدة"
@@ -1232,6 +1340,15 @@ msgstr[3] "%d من %d تطابقات"
 msgstr[4] "%d من %d تطابقات"
 msgstr[5] "%d من %d تطابقات"
 
+msgid "Find"
+msgstr "بحث"
+
+msgid "Previous Match"
+msgstr "تطابق السابق"
+
+msgid "Next Match"
+msgstr "تطابق التالي"
+
 msgid "Match Case"
 msgstr "حالة مطابقة"
 
@@ -1249,6 +1366,10 @@ msgstr "المحدد فقط"
 
 msgid "Hide"
 msgstr "اخفاء"
+
+msgctxt "Indentation"
+msgid "Spaces"
+msgstr "المسافات"
 
 msgctxt "Indentation"
 msgid "Tabs"
@@ -1272,6 +1393,9 @@ msgstr "أخطاء"
 msgid "Warnings"
 msgstr "تحذيرات"
 
+msgid "Zoom factor"
+msgstr "معدل التكبير"
+
 msgid "Line and column numbers."
 msgstr "أرقام الخط و العمود."
 
@@ -1293,6 +1417,9 @@ msgstr ""
 
 msgid "Attached Script"
 msgstr "النص البرمجي الملحق"
+
+msgid "%s: Callback code won't be generated, please add it manually."
+msgstr "%s: لن يتم إنشاء رمز الاسترجاع، يرجى إضافته يدويًا."
 
 msgid "Connect to Node:"
 msgstr "صلها بالعقدة:"
@@ -1436,6 +1563,9 @@ msgstr "تم وضع علامة على هذه الفئة على أنها مهمل
 msgid "This class is marked as experimental."
 msgstr "تم وضع علامة على هذه الفئة على أنها تجريبية."
 
+msgid "The selected class can't be instantiated."
+msgstr "لايمكن تشكيل نسخة من القالب المحدد."
+
 msgid "Favorites:"
 msgstr "المفضلة:"
 
@@ -1468,6 +1598,9 @@ msgstr "حفظ الفرع مشهدًا"
 
 msgid "Copy Node Path"
 msgstr "نسخ مسار العُقدة"
+
+msgid "Instance:"
+msgstr "نمذجة:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -1562,6 +1695,9 @@ msgstr ""
 "تستدعيها تلك الدالة.\n"
 "استخدم هذا للعثور على دوال محددة لتحسينها."
 
+msgid "Display internal functions"
+msgstr "إظهار الدوال الداخلية"
+
 msgid "Frame #:"
 msgstr "إطار #:"
 
@@ -1591,6 +1727,9 @@ msgstr "استئناف التنفيذ."
 
 msgid "Bytes:"
 msgstr "Bytes:"
+
+msgid "Warning:"
+msgstr "تحذير:"
 
 msgid "Error:"
 msgstr "خطأ:"
@@ -1871,8 +2010,18 @@ msgstr "أنشئ مجلد"
 msgid "Folder name is valid."
 msgstr "اسم المجلد صالح."
 
+msgid "Double-click to open in browser."
+msgstr "ضغطة مضاعفة لفتح متصفح الانترنت."
+
 msgid "Thanks from the Godot community!"
 msgstr "شكراً من مجتمع جوْدَتْ!"
+
+msgid ""
+"Git commit date: %s\n"
+"Click to copy the version number."
+msgstr ""
+"تاريخ المصادقة في Git ل : %s\n"
+"اضغط لنسخ رقم الاصدار."
 
 msgid "Godot Engine contributors"
 msgstr "المساهمون في محرك جوْدَتْ"
@@ -1977,6 +2126,9 @@ msgstr "فشل استخراج الملفات التالية من الحزمة \"
 
 msgid "(and %s more files)"
 msgstr "(و %s ملفات اخرى)"
+
+msgid "Asset \"%s\" installed successfully!"
+msgstr "تم تحميل الملحق \"s%\" بنجاح!"
 
 msgid "Success!"
 msgstr "تم بشكل ناجح!"
@@ -2144,6 +2296,21 @@ msgstr "أنشِئْ تخطيط صوت."
 msgid "Audio Bus Layout"
 msgstr "تخطيط مقطع الصوت"
 
+msgid "Valid characters:"
+msgstr "الرموز المقبولة:"
+
+msgid "Must not collide with an existing engine class name."
+msgstr "لا يجب ان"
+
+msgid "Must not collide with an existing global script class name."
+msgstr "يجب ألا يتعارض مع اسم صف الخاص بالترميز العام المتواجد."
+
+msgid "Must not collide with an existing built-in type name."
+msgstr "يجب ألا يتعارض مع اسم النوع المدمج الموجود مسبقاً."
+
+msgid "Must not collide with an existing global constant name."
+msgstr "يجب ألا يتعارض مع اسم ثابت عام موجود مسبقاً."
+
 msgid "Autoload '%s' already exists!"
 msgstr "التحميل التلقائي '%s' موجود أصلا!"
 
@@ -2179,6 +2346,9 @@ msgstr "إضافة \"تلقائي التحميل\""
 
 msgid "Path:"
 msgstr "المسار:"
+
+msgid "Set path or press \"%s\" to create a script."
+msgstr "قم بتعيين المسار أو اضغط على %s لإنشاء نص برمجي ."
 
 msgid "Node Name:"
 msgstr "اسم العقدة:"
@@ -2302,8 +2472,17 @@ msgstr "المزايا الرئيسية:"
 msgid "Text Rendering and Font Options:"
 msgstr "إخراج النص وإعدادات الخط:"
 
+msgid "Reset the edited profile?"
+msgstr "إعادة تعيين الإعداد المعدل؟"
+
 msgid "File saving failed."
 msgstr "فشل حفظ الملف."
+
+msgid "Create a new profile?"
+msgstr "إنشاء حساب جديد؟"
+
+msgid "This will scan all files in the current project to detect used classes."
+msgstr "هذا سيفحص جميع ملفات المشروع الحالي للكشف عن الصفوف المستخدمة."
 
 msgid "Nodes and Classes:"
 msgstr "العُقد (Nodes) والفئات (Classes):"
@@ -2335,11 +2514,20 @@ msgstr "الإجراءات:"
 msgid "Please Confirm:"
 msgstr "أكّد من فضلك:"
 
+msgid "Engine Compilation Profile"
+msgstr "تهيئة إعداد بناء المحرك"
+
 msgid "Load Profile"
 msgstr "حمّل التعريفة"
 
 msgid "Export Profile"
 msgstr "تصدير التعريفة"
+
+msgid "Forced Classes on Detect:"
+msgstr "القوالب المُجبرة عند الكشف:"
+
+msgid "Edit Compilation Configuration Profile"
+msgstr "تعديل تهيئة إعداد البناء"
 
 msgid ""
 "Failed to execute command \"%s\":\n"
@@ -2372,11 +2560,29 @@ msgstr "[غير محفوظ]"
 msgid "%s - Godot Engine"
 msgstr "%s - محرك جَوْدَتْ"
 
+msgid "Move this dock right one tab."
+msgstr "انقل مساحة العمل هذه تبويباً واحداً إلى اليمين."
+
+msgid "Move this dock left one tab."
+msgstr "انقل مساحة العمل هذه تبويباً واحداً إلى اليسار."
+
 msgid "Dock Position"
 msgstr "مكان الرصيف"
 
 msgid "Make Floating"
 msgstr "اجعلها عائمة"
+
+msgid "Make this dock floating."
+msgstr "عوّم مساحة العمل هذه."
+
+msgid "Move to Bottom"
+msgstr "انقل إلى الأسفل"
+
+msgid "Move this dock to the bottom panel."
+msgstr "انقل هذا المرسى إلى اللوحة السفلية."
+
+msgid "Close this dock."
+msgstr "اغلق مساحة العمل هذه."
 
 msgid "3D Editor"
 msgstr "المحرر الثلاثي"
@@ -2516,8 +2722,23 @@ msgstr "استيراد التعريفات"
 msgid "Manage Editor Feature Profiles"
 msgstr "إدارة تعريفة مزايا المحرر"
 
+msgid "Some extensions need the editor to restart to take effect."
+msgstr "بعض الإضافات تحتاج إلى إعادة تشغيل المُحرر لتحدث تغييراً."
+
+msgid "Restart"
+msgstr "إعادة التشغيل"
+
+msgid "Save & Restart"
+msgstr "حفظ و إعادة تشغيل"
+
 msgid "ScanSources"
 msgstr "البحث في المصادر"
+
+msgid "Update Scene Groups"
+msgstr "تحديث مجموعات المشهد"
+
+msgid "Updating Scene Groups..."
+msgstr "مجموعات المشهد تُحَدّث..."
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -2582,6 +2803,15 @@ msgstr "أوصاف المنشئ"
 msgid "Operator Descriptions"
 msgstr "أوصاف العمليات"
 
+msgid "This method may be changed or removed in future versions."
+msgstr "قد تُحذف هذه الدالة أو تغير في الإصدارات المُقبلة."
+
+msgid "This constructor may be changed or removed in future versions."
+msgstr "قد يُحذف هذا البنّاء أو يغير في الإصدارات المُقبلة."
+
+msgid "This operator may be changed or removed in future versions."
+msgstr "قد يُحذف هذا المُعامِل أو يغير في الإصدارات المُقبلة."
+
 msgid "Error codes returned:"
 msgstr "رموز الخطأ التي تم إرجاعها:"
 
@@ -2621,6 +2851,9 @@ msgstr "فوق"
 msgid "Class:"
 msgstr "صنف:"
 
+msgid "This class may be changed or removed in future versions."
+msgstr "قد يُحذف هذا القالب أو يغير في الإصدارات المُقبلة."
+
 msgid "Inherits:"
 msgstr "يرث:"
 
@@ -2639,6 +2872,9 @@ msgid ""
 msgstr ""
 "لا يوجد حاليا وصف لهذه الطريقة. الرجاء المساعدة من خلال [color=$color]"
 "[url=$url]المساهمة واحد[/url][/color] !"
+
+msgid "Note:"
+msgstr "ملاحظة:"
 
 msgid ""
 "There are notable differences when using this API with C#. See [url=%s]C# API "
@@ -2683,6 +2919,29 @@ msgstr "الأيقونات"
 msgid "Styles"
 msgstr "مظاهر"
 
+msgid "There is currently no description for this theme property."
+msgstr "خاصية الثِمة هذه لم تُصف بعد."
+
+msgid ""
+"There is currently no description for this theme property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"خاصية الثِمة هذه لم تُصف بعد. ساهم في [color=$color][url=$url]إضافة وصف[/url][/"
+"color]!"
+
+msgid "This signal may be changed or removed in future versions."
+msgstr "قد تُحذف هذه الإشارة أو تغير في الإصدارات المُقبلة."
+
+msgid "There is currently no description for this signal."
+msgstr "هذه الإشارة لم تُصف بعد."
+
+msgid ""
+"There is currently no description for this signal. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"هذه الإشارة لم تُصف بعد. ساهم في [color=$color][url=$url]إضافة وصف[/url][/"
+"color]!"
+
 msgid "Enumerations"
 msgstr "حسابات"
 
@@ -2705,6 +2964,13 @@ msgstr "أوصاف المُلكية"
 msgid "(value)"
 msgstr "(القيمة)"
 
+msgid ""
+"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
+"not update the original property value. See [%s] for more details."
+msgstr ""
+"[b]ملاحظة:[/b] المصفوفة المرتجعة [i]منسوخة[/i] وأي تغييرات عليها لن تؤدي إلى "
+"تحديث قيمة المصفوفة الأصلية. راجع [%s] لمزيد من التفاصيل."
+
 msgid "There is currently no description for this property."
 msgstr "لا يوجد حالياً وصف لهذه الخاصية."
 
@@ -2717,6 +2983,9 @@ msgstr ""
 
 msgid "Editor"
 msgstr "المحرّر"
+
+msgid "Click to copy."
+msgstr "انقر للنسخ ."
 
 msgid "No description available."
 msgstr "لا يوجد وصف متاح."
@@ -2799,8 +3068,11 @@ msgstr "نوع العضو"
 msgid "(constructors)"
 msgstr "(المُستَهِلّات)"
 
+msgid "Keywords"
+msgstr "كلمات مفتاحية"
+
 msgid "Class"
-msgstr "الصنف"
+msgstr "قالب"
 
 msgid "This member is marked as deprecated."
 msgstr "تم وسم هذا العنصر بأنه مُهمل."
@@ -3029,8 +3301,14 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "يدور عند إعادة رسم نافذة المحرّر."
 
+msgid "Imported resources can't be saved."
+msgstr "الموارد المستوردة لا يمكن تخزينها"
+
 msgid "OK"
 msgstr "حسنا"
+
+msgid "Error saving resource!"
+msgstr "خطأ في حفظ المورد."
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -3047,6 +3325,28 @@ msgstr "لا يمكن حفظ هذا المورد لأنه تم استيراده 
 msgid "Save Resource As..."
 msgstr "حفظ المورد باسم..."
 
+msgid "Can't open file for writing:"
+msgstr "تعذر فتح الملف للكتابة :"
+
+msgid "Error while saving."
+msgstr "خطأ خلال الحفظ."
+
+msgid "Error while parsing file '%s'."
+msgstr "خطأ خلال تحميل الملف '%s'."
+
+msgid "Scene file '%s' appears to be invalid/corrupt."
+msgstr "يبدو أن ملف المشهد '%s' غير صالح/تالف."
+
+msgid ""
+"File '%s' is saved in a format that is newer than the formats supported by "
+"this version of Godot, so it can't be opened."
+msgstr ""
+"الملف '%s' تم حفظه بصيغة أحدث من الصيغ المدعومة بواسطة هذا الإصدار من جودوت، "
+"لذا لا يمكن فتحه."
+
+msgid "Error while loading file '%s'."
+msgstr "خطأ في تحميل الملف '%s'."
+
 msgid "Saving Scene"
 msgstr "حفظ المشهد"
 
@@ -3056,8 +3356,18 @@ msgstr "جاري التحليل"
 msgid "Creating Thumbnail"
 msgstr "ينشئ الصورة المصغرة"
 
+msgid ""
+"This scene can't be saved because there is a cyclic instance inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+"لا يمكن حفظ هذا المشهد بسبب إدراج نسخة دورية.\n"
+"يُرجى حل المشكلة ثم محاولة الحفظ مرة أخرى."
+
 msgid "Save scene before running..."
 msgstr "احفظ المشهد قبل التشغيل..."
+
+msgid "Could not save one or more scenes!"
+msgstr "لا يستطع حفظ مشهد أو أكثر !"
 
 msgid "Save All Scenes"
 msgstr "حفظ جميع المشاهد"
@@ -3070,6 +3380,9 @@ msgstr "دمج مع الموجود"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "تطبيق الهيئة ل MeshInstance"
+
+msgid "Can't load MeshLibrary for merging!"
+msgstr "لا يمكن تحميل MeshLibrary للدمج!"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3144,12 +3457,8 @@ msgstr "فتح سريع للمشهد..."
 msgid "Quick Open Script..."
 msgstr "فتح سريع للرمز..."
 
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"المشهد الحالي لا يملك عقدة رئيسة، ولكن %d المصدر الخارجي المعدل قد حُفظ على "
-"أية حال."
+msgid "%s no longer exists! Please specify a new save location."
+msgstr "لم يعد %s موجودًا! يُرجى تحديد موقع حفظ جديد."
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
@@ -3226,6 +3535,13 @@ msgstr ""
 "هل تود حفظ التغييرات التي اجريت على المشاهد الحالية قبل فتح نافذة ادارة "
 "المشروع؟"
 
+msgid ""
+"This option is deprecated. Situations where refresh must be forced are now "
+"considered a bug. Please report."
+msgstr ""
+"هذا الخيار مهمل ، تعتبر المواقف التي تتطلب التحديث القسري بمثابة ثغرة. يرجى "
+"الإبلاغ عنها."
+
 msgid "Pick a Main Scene"
 msgstr "اخترْ المشهد الأساسي"
 
@@ -3268,11 +3584,34 @@ msgstr ""
 "المشهد '%s' تم استيراده تلقائياً، لذا لا يمكن تعديله.\n"
 "لكي تجري أي تغيير عليه، قد ينشأ مشهد مورث جديد."
 
+msgid ""
+"Error loading scene, it must be inside the project path. Use 'Import' to open "
+"the scene, then save it inside the project path."
+msgstr ""
+"حدث خطأ أثناء تحميل المشهد، يجب أن يكون داخل مسار المشروع. استخدم \"استيراد\" "
+"لفتح المشهد، ثم احفظه داخل مسار المشروع."
+
 msgid "Scene '%s' has broken dependencies:"
 msgstr "المشهد '%s' لدية تبعيات معطوبة:"
 
+msgid ""
+"Multi-window support is not available because the `--single-window` command "
+"line argument was used to start the editor."
+msgstr ""
+"دعم النوافذ المتعددة غير متاح لأنه تم استخدام الأمر `--single-window` لبدء "
+"تشغيل المحرر."
+
+msgid ""
+"Multi-window support is not available because the current platform doesn't "
+"support multiple windows."
+msgstr ""
+"لا يتوفر دعم النوافذ المتعددة لأن المنصة الحالية لا تدعم النوافذ المتعددة."
+
 msgid "Clear Recent Scenes"
 msgstr "إخلاء المشاهد الحالية"
+
+msgid "There is no defined scene to run."
+msgstr "لا يوجد مشهد معدل للتشغيل."
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -3365,6 +3704,21 @@ msgstr ""
 "غير قادر على الكتابة إلى الملف '%s', الملف يُستعمل الآن إما أنه مغلق أو أنه "
 "ينقصه الأذونات."
 
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"يجب اعادة تشغيل المحرر لتغيير مقدم الرسوميات.\n"
+"\n"
+"اختيار حفظ و اعادة التشغيل سيغير عملية تشغيل الرسوميات ل:\n"
+"- منصات الحاسوب%s\n"
+"- منصات الجوال%s\n"
+"- منصة الويب: gl_compatibility"
+
 msgid "Forward+"
 msgstr "المتقدم"
 
@@ -3373,6 +3727,24 @@ msgstr "المتنقل (كالجوال والأجهزة اللوحية والح�
 
 msgid "Compatibility"
 msgstr "المتوافق"
+
+msgid "(Overridden)"
+msgstr "(متجاوزة (Overridden))"
+
+msgid "Lock Selected Node(s)"
+msgstr "قفل العُقد المختارة"
+
+msgid "Unlock Selected Node(s)"
+msgstr "تحرير العُقد المختارة"
+
+msgid "Group Selected Node(s)"
+msgstr "جمع العُقد المختارة"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "تفكيك العُقد المختارة"
+
+msgid "Restart Emission"
+msgstr "إعادة التشغيل الانبعاثات"
 
 msgid "Pan View"
 msgstr "إظهار شامل"
@@ -3440,11 +3812,17 @@ msgstr "إعدادات المحرّر…"
 msgid "Project"
 msgstr "المشروع"
 
+msgid "Project Settings..."
+msgstr "إعدادات المشروع..."
+
 msgid "Project Settings"
 msgstr "إعدادات المشروع"
 
 msgid "Version Control"
 msgstr "إدارة الإصدارات (Version Control)"
+
+msgid "Export..."
+msgstr "تصدير بنوع..."
 
 msgid "Install Android Build Template..."
 msgstr "تحميل قالب البناء للأندرويد..."
@@ -3458,6 +3836,9 @@ msgstr "أدوات"
 msgid "Orphan Resource Explorer..."
 msgstr "متصفح الموارد اليتيمة..."
 
+msgid "Engine Compilation Configuration Editor..."
+msgstr "محرر لتهيئة مجمع المحرك..."
+
 msgid "Upgrade Mesh Surfaces..."
 msgstr "ترقية أسطح المجسم..."
 
@@ -3470,14 +3851,14 @@ msgstr "العودة إلى قائمة المشاريع"
 msgid "Command Palette..."
 msgstr "منتخِب الأوامر..."
 
+msgid "Editor Docks"
+msgstr "ارصفة المحرر"
+
 msgid "Editor Layout"
 msgstr "تنسيق المحرّر"
 
 msgid "Take Screenshot"
 msgstr "أخذ صورة للشاشة"
-
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "لقطات الشاشة تكون محفوظة في مجلّد بيانات/إعدادات المحرّر."
 
 msgid "Toggle Fullscreen"
 msgstr "تبديل وضع الشاشة الكاملة"
@@ -3509,6 +3890,9 @@ msgstr "البحث المساعد..."
 msgid "Online Documentation"
 msgstr "الوثائق الإلكترونية"
 
+msgid "Forum"
+msgstr "المنتدى (Forum)"
+
 msgid "Community"
 msgstr "المجتمع"
 
@@ -3527,11 +3911,11 @@ msgstr "اقترح ميزة"
 msgid "Send Docs Feedback"
 msgstr "إرسال الاستدراكات على \"التوثيقات\""
 
+msgid "About Godot..."
+msgstr "حول Godot..."
+
 msgid "Support Godot Development"
 msgstr "ادعم تطوير جَوْدَتْ"
-
-msgid "Save & Restart"
-msgstr "حفظ و إعادة تشغيل"
 
 msgid "Update Continuously"
 msgstr "تحديث متواصل"
@@ -3541,6 +3925,9 @@ msgstr "تحديث عند أي تغيير"
 
 msgid "Hide Update Spinner"
 msgstr "إخفاء دوران التحديث"
+
+msgid "FileSystem"
+msgstr "نظام الملفات"
 
 msgid "Inspector"
 msgstr "الفاحص"
@@ -3581,6 +3968,9 @@ msgstr "تصدير المكتبة"
 msgid "Open & Run a Script"
 msgstr "فتح و تشغيل كود"
 
+msgid "Files have been modified on disk"
+msgstr "تم تعديل الملفات على مساحة التخزين"
+
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?"
@@ -3588,11 +3978,8 @@ msgstr ""
 "الملفات التالية هي الأحدث على القرص.\n"
 "ما الإجراء الذي ينبغي اتخاذه؟"
 
-msgid "Reload"
-msgstr "إعادة تحميل"
-
-msgid "Resave"
-msgstr "إعادة حفظ"
+msgid "Discard local changes and reload"
+msgstr "إلغاء التعديلات المحلية و اعادة التحميل"
 
 msgid "Version Control Settings..."
 msgstr "إعدادات التحكم في الإصدارات..."
@@ -3623,6 +4010,9 @@ msgstr "افتح المُحرر التالي"
 
 msgid "Open the previous Editor"
 msgstr "افتح المُحرر السابق"
+
+msgid "Ok"
+msgstr "حسنا"
 
 msgid "Warning!"
 msgstr "تحذيرات!"
@@ -3677,6 +4067,9 @@ msgstr ""
 "كـ كواتيرنيون مع تحويل لا رجعة فيه.\n"
 "ويرجع ذلك إلى حقيقة أن نتيجة أويلر -> كواتيرنيون يمكن تحديدها بشكل فريد، ولكن "
 "نتيجة كواترنيون -> أويلر يمكن أن تكون متعددة الوجود."
+
+msgid "Temporary Euler"
+msgstr "اولر المؤقتة"
 
 msgid "Assign..."
 msgstr "إلحاق..."
@@ -3815,15 +4208,6 @@ msgstr "تشغيل المشروع"
 msgid "Write your logic in the _run() method."
 msgstr "أكتب منطقك في الطريقة ()run_."
 
-msgid "There is an edited scene already."
-msgstr "يوجد مشهد معدل عليه بالفعل."
-
-msgid "Undo: %s"
-msgstr "تراجع: %s"
-
-msgid "Redo: %s"
-msgstr "إلغاء التراجع: %s"
-
 msgid "Edit Built-in Action: %s"
 msgstr "تحرير الإجراء المضمن: %s"
 
@@ -3850,6 +4234,12 @@ msgstr "الاختصارات"
 
 msgid "Binding"
 msgstr "الربط"
+
+msgid "Update checks disabled."
+msgstr "تم تعطيل عمليات التحقق من التحديثات."
+
+msgid "Click to open download page."
+msgstr "اضغط لفتح صفحة التحميلات."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "العصا اليسرى لليسار، عصا التحكم 0 لليسار"
@@ -3928,6 +4318,60 @@ msgstr "الجهاز"
 
 msgid "Listening for Input"
 msgstr "الاستماع للمدخلات"
+
+msgid "Can't get filesystem access."
+msgstr "لم يتكمن من الحصول على حَقّ الدّخُول لملف النظام."
+
+msgid "Failed to get Info.plist hash."
+msgstr "فشل بلوغ المعلومات هاش."
+
+msgid "Invalid Info.plist, no exe name."
+msgstr "اسم مشروع غير صالح."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "معلومات غير صحيحه, الهوية غير موجودة."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "معلومات غير صالحة، لا يمكن التحميل."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "فشل إنشاء \"%s\" مجلد فرعي."
+
+msgid "Failed to extract thin binary."
+msgstr "فشل استخراج البناء الأولي."
+
+msgid "Invalid binary format."
+msgstr "صيغة ثنائية خاطئة."
+
+msgid "Already signed!"
+msgstr "تم توقيعها مسبقا!"
+
+msgid "Failed to process nested resources."
+msgstr "فشل معالجة المورد المتداخل."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "فشل إنشاء _بصمة الكود للمجلد فرعي."
+
+msgid "Failed to get CodeResources hash."
+msgstr "فشل تحميل المورد هاش."
+
+msgid "Invalid entitlements file."
+msgstr "صيغة غير صالحة للملف."
+
+msgid "Invalid executable file."
+msgstr "البرامج القابلة للتنفيذ غير صالحة."
+
+msgid "Can't resize signature load command."
+msgstr "لا يمكن تغيير حجم أمر تحميل التوقيع."
+
+msgid "Failed to create fat binary."
+msgstr "فشل إنشاء كود ثنائية سمين."
+
+msgid "Unknown bundle type."
+msgstr "نوع الحزمة غير معروف."
+
+msgid "Unknown object type."
+msgstr "نوع كائن غير معروف."
 
 msgid "Project export for platform:"
 msgstr "تصدير المشروع لمنصة:"
@@ -4065,6 +4509,18 @@ msgstr ""
 "لا روابط تحميل تم إيجادها لهذه النسخة. التحميل المباشر متوفر فقط للنسخ "
 "الرسمية."
 
+msgid "Resolving"
+msgstr "جاري الحل..."
+
+msgid "Connecting..."
+msgstr "الاتصال..."
+
+msgid "Requesting..."
+msgstr "جار الطلب..."
+
+msgid "Downloading"
+msgstr "‫جاري التنزيل"
+
 msgid "Can't open the export templates file."
 msgstr "لا نستطيع فتح ملف القوالب."
 
@@ -4115,6 +4571,9 @@ msgstr "إزالة قوالب النسخة الحالية."
 
 msgid "Download from:"
 msgstr "التحميل من:"
+
+msgid "(no templates for development builds)"
+msgstr "(لا يوجد قوالب التصدير الرسمية لأجل البناء الخاص بالتطوير)."
 
 msgid "Open in Web Browser"
 msgstr "افتحه في المتصفح"
@@ -4524,6 +4983,9 @@ msgstr "إعادة الاستيراد"
 msgid "Open Containing Folder in Terminal"
 msgstr "افتح المجلد الحاوي في الطرفية"
 
+msgid "Open in File Manager"
+msgstr "افتح في مدير الملفات"
+
 msgid "New Folder..."
 msgstr "مجلد جديد..."
 
@@ -4568,9 +5030,6 @@ msgstr "مضاعفة..."
 
 msgid "Rename..."
 msgstr "إعادة تسمية..."
-
-msgid "Open in File Manager"
-msgstr "افتح في مدير الملفات"
 
 msgid "Open in External Program"
 msgstr "افتح في برنامج خارجي"
@@ -4704,6 +5163,9 @@ msgstr "إعادة تسمية المجموعة"
 
 msgid "Remove Group"
 msgstr "إزالة المجموعة"
+
+msgid "Delete references from all scenes"
+msgstr "مسح المراجع من جميع"
 
 msgid "Delete group \"%s\"?"
 msgstr "حذف المجموعة \"%s\"؟"
@@ -4891,6 +5353,9 @@ msgstr "أعد تشغيل المشهد الذي تم تشغيله."
 msgid "Quick Run Scene..."
 msgstr "تشغيل مشهد بسرعة..."
 
+msgid "Could not start subprocess(es)!"
+msgstr "تعذر بدء العملية/العمليات الفرعية!"
+
 msgid "Run the project's default scene."
 msgstr "شغّل المشهد الافتراضي للمشروع."
 
@@ -5050,9 +5515,6 @@ msgstr ""
 
 msgid "Open in Editor"
 msgstr "افتح في المُحرر"
-
-msgid "Instance:"
-msgstr "نمذجة:"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" ليست تصفية معروفة."
@@ -5230,6 +5692,12 @@ msgstr "المواد"
 
 msgid "Selected Animation Play/Pause"
 msgstr "تشغيل/إيقاف مؤقت للرسوم المتحركة المحددة"
+
+msgid "Primary Light"
+msgstr "الاضاءة الاساسية"
+
+msgid "Secondary Light"
+msgstr "اضاءة ثانوية"
 
 msgid "Status"
 msgstr "الحالة"
@@ -5545,6 +6013,9 @@ msgstr "رمز المفتاح الفعلي (الموضع على لوحة مفا�
 msgid "Key Label (Unicode, Case-Insensitive)"
 msgstr "تسمية المفتاح (يونيكود، حساس لحالة الأحرف)"
 
+msgid "Any"
+msgstr "أي شيء"
+
 msgid ""
 "The following resources will be duplicated and embedded within this resource/"
 "object."
@@ -5564,15 +6035,6 @@ msgstr "توسيع غير الافتراضي"
 
 msgid "Property Name Style"
 msgstr "شكل اسم الخاصية"
-
-msgid "Raw"
-msgstr "خام"
-
-msgid "Capitalized"
-msgstr "تكبير الحروف"
-
-msgid "Localized"
-msgstr "محلي"
 
 msgid "Localization not available for current language."
 msgstr "الترجمة غير متوفرة للغة الحالية."
@@ -5687,6 +6149,9 @@ msgstr "الملفات ذات سلاسل الترجمة:"
 
 msgid "Generate POT"
 msgstr "POT المولدة"
+
+msgid "Add strings from built-in components such as certain Control nodes."
+msgstr "أضف أسماء من العناصر المدمجة كبعض عُقد التحكم."
 
 msgid "Set %s on %d nodes"
 msgstr "اجعل %s في %d العقد"
@@ -5898,6 +6363,9 @@ msgstr "إضافة عُقدة..."
 msgid "Enable Filtering"
 msgstr "تفعيل التصفية"
 
+msgid "Invert"
+msgstr "اقْلبْ"
+
 msgid "Library Name:"
 msgstr "اسم المكتبة:"
 
@@ -5979,6 +6447,9 @@ msgstr "حفظ مكتبة التحريك في الملف: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "حفظ التحريك في الملف: %s"
+
+msgid "Load Animations into Library"
+msgstr "تنزيل التحريك إلى المكتبة"
 
 msgid "Load Animation into Library: %s"
 msgstr "تنزيل التحريك إلى المكتبة: %s"
@@ -6099,6 +6570,9 @@ msgstr "أدوات التحريك"
 
 msgid "Animation"
 msgstr "التحريك"
+
+msgid "New..."
+msgstr "جديد..."
 
 msgid "Manage Animations..."
 msgstr "إدارة التحريكات..."
@@ -6323,12 +6797,6 @@ msgstr "‫جاري التنزيل..."
 
 msgid "Resolving..."
 msgstr "جاري الحل..."
-
-msgid "Connecting..."
-msgstr "الاتصال..."
-
-msgid "Requesting..."
-msgstr "جار الطلب..."
 
 msgid "Error making request"
 msgstr "خطأ في إنشاء الطلب"
@@ -6627,6 +7095,14 @@ msgstr "عرض بالمنتصف"
 msgid "Select Mode"
 msgstr "وضع الاختيار"
 
+msgid "Alt+Drag: Move selected node."
+msgstr "Alt+حرك: تحريك العُقد المحددة"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"البديل(Alt) + الزر-الأيمن: أظهرْ قائمة العقد في الموضع المنقور عليه، بما فيها "
+"العقد المقفولة."
+
 msgid "RMB: Add node at position clicked."
 msgstr "زر-الفأرة-الأيمن: ضف العقد عند موقع الضغط."
 
@@ -6710,14 +7186,8 @@ msgstr "تعديل المحاذاة..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "قفل العُقدة المختارة، ومنع الحركة والاختيار."
 
-msgid "Lock Selected Node(s)"
-msgstr "قفل العُقد المختارة"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "فتح العُقدة المختارة، وتجويز الحركة والاختيار."
-
-msgid "Unlock Selected Node(s)"
-msgstr "تحرير العُقد المختارة"
 
 msgid ""
 "Groups the selected node with its children. This causes the parent to be "
@@ -6726,18 +7196,12 @@ msgstr ""
 "يجمع العقدة المحددة مع فروعها. وهذا يعني أن الأصل سوف يُحدد عند النقر على أي "
 "عقدة فرعية له في المنظر الثنائي أو الثلاثي."
 
-msgid "Group Selected Node(s)"
-msgstr "جمع العُقد المختارة"
-
 msgid ""
 "Ungroups the selected node from its children. Child nodes will be individual "
 "items in 2D and 3D view."
 msgstr ""
 "يفرق العقدة المختارة عن فروعها. العقد الفرعية ستكون عناصر مستقلة في المنظر "
 "الثنائي والثلاثي."
-
-msgid "Ungroup Selected Node(s)"
-msgstr "تفكيك العُقد المختارة"
 
 msgid "Skeleton Options"
 msgstr "إعدادات الهكيل العظمي"
@@ -6854,12 +7318,6 @@ msgstr "قسم خطوة الشبكة ب 2"
 
 msgid "Adding %s..."
 msgstr "يتم إضافة %s..."
-
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr "اضغط مع الاستمرار على Shift عند الإسقاط للإضافة كأخ للعقدة المحددة."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "لا يمكن تنسيخ عُقد عديدة بدون أصل تقوم عليه."
 
 msgid "Create Node"
 msgstr "إنشاء عُقدة"
@@ -6978,9 +7436,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "بعض العُقد الأصلية المختارة لا تدعم عَلَم التوسيع."
 
-msgid "Align with Expand"
-msgstr "محاذاة مع التوسيع"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "تغيير المراسي والإزاحات والاتجاه النامي"
 
@@ -7021,9 +7476,6 @@ msgstr "محاذاة عمودية"
 
 msgid "Convert to GPUParticles3D"
 msgstr "التحويل إلى جسيمات-بطاقة-ثلاثية"
-
-msgid "Restart"
-msgstr "إعادة التشغيل"
 
 msgid "Load Emission Mask"
 msgstr "حمل قناع الانبعاث"
@@ -7304,9 +7756,6 @@ msgstr "تغيير طول شعاع الانفصال"
 
 msgid "Change Decal Size"
 msgstr "تغيير حجم الطبعة"
-
-msgid "Change Particles AABB"
-msgstr "تعديل جُزيئات AABB"
 
 msgid "Change Radius"
 msgstr "تغيير نصف القُطر"
@@ -8172,11 +8621,6 @@ msgstr ""
 "بيئة-العالم.\n"
 "المعاينة معطلة."
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"البديل(Alt) + الزر-الأيمن: أظهرْ قائمة العقد في الموضع المنقور عليه، بما فيها "
-"العقد المقفولة."
-
 msgid ""
 "Groups the selected node with its children. This selects the parent when any "
 "child node is clicked in 2D and 3D view."
@@ -8449,14 +8893,14 @@ msgstr "أزل Out-Control من المنحنى"
 msgid "Remove In-Control from Curve"
 msgstr "أزل In-Control من المنحنى"
 
+msgid "Move Point in Curve"
+msgstr "حرك النقطة داخل المنحنى"
+
 msgid "Add Point to Curve"
 msgstr "أضف نقطة للمنحنى"
 
 msgid "Split Curve"
 msgstr "تقسيم المنحنى"
-
-msgid "Move Point in Curve"
-msgstr "حرك النقطة داخل المنحنى"
 
 msgid "Move In-Control in Curve"
 msgstr "حرك In-Control داخل المنحنى"
@@ -8797,9 +9241,6 @@ msgstr ""
 "مشغل الرسومات المتحركة الخاصة باللاعب لا تملك مسار عُقدة صالح، غير قادر على "
 "استرجاع أسماء المقاطع."
 
-msgid "Clear Recent Files"
-msgstr "إزالة الملفات الحديثة"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "لا يمكن فتح '%s'. ربما تم حذف الملف أو نقله."
 
@@ -8855,6 +9296,12 @@ msgstr "خطأ في الحفظ"
 msgid "Save Theme As..."
 msgstr "حفظ الموضوع Theme ك..."
 
+msgid "Online Docs"
+msgstr "مستندات الإنترنت"
+
+msgid "Open Godot online documentation."
+msgstr "افتح وثائق جوْدَتْ على الشبكة."
+
 msgid "Unsaved file."
 msgstr "الملف غير محفوظ."
 
@@ -8887,9 +9334,6 @@ msgstr "ملف"
 
 msgid "Open..."
 msgstr "افتح..."
-
-msgid "Reopen Closed Script"
-msgstr "إعادة فتح النص البرمجي المُغلق"
 
 msgid "Save All"
 msgstr "حفظ الكل"
@@ -8930,12 +9374,6 @@ msgstr "تشغيل"
 msgid "Search"
 msgstr "بحث"
 
-msgid "Online Docs"
-msgstr "مستندات الإنترنت"
-
-msgid "Open Godot online documentation."
-msgstr "افتح وثائق جوْدَتْ على الشبكة."
-
 msgid "Search the reference documentation."
 msgstr "ابحث في الوثائق المرجعية."
 
@@ -8951,13 +9389,6 @@ msgstr "تعويم المحرر البرمجي."
 msgid "Discard"
 msgstr "تجاهل"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"الملفات التالية أحدث على القرص.\n"
-"ما الإجراء الذي ينبغي اتخاذه؟:"
-
 msgid "There are unsaved changes in the following built-in script(s):"
 msgstr ""
 "توجد تغييرات غير محفوظة في البرنامج النصي (البرامج النصية) المضمن التالي:"
@@ -8967,8 +9398,20 @@ msgstr ""
 "هل تريد حفظ التغييرات التي تم إجراؤها على البرنامج النصي (النصوص البرمجية) "
 "التالي قبل الخروج؟"
 
+msgid "Reopen Closed Script"
+msgstr "إعادة فتح النص البرمجي المُغلق"
+
 msgid "Clear Recent Scripts"
 msgstr "إخلاء النصوص البرمجية الحديثة"
+
+msgid "Uppercase"
+msgstr "الأحرف الكبيرة (Uppercase)"
+
+msgid "Lowercase"
+msgstr "الأحرف الصغيرة (Lowercase)"
+
+msgid "Capitalize"
+msgstr "تكبير الحروف Capitalize"
 
 msgid "Standard"
 msgstr "معياري"
@@ -9028,15 +9471,6 @@ msgstr "خط"
 
 msgid "Folding"
 msgstr "الطي"
-
-msgid "Uppercase"
-msgstr "الأحرف الكبيرة (Uppercase)"
-
-msgid "Lowercase"
-msgstr "الأحرف الصغيرة (Lowercase)"
-
-msgid "Capitalize"
-msgstr "تكبير الحروف Capitalize"
 
 msgid "Convert Case"
 msgstr "حالة التحويل"
@@ -9233,12 +9667,6 @@ msgid ""
 msgstr ""
 "نَمَط التحرير\n"
 "إظهار الأزرار على المفاصل."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "أدخل مفتاح العظام في وضعيات المسار الموجودة بالفعل."
-
-msgid "Insert key of all bone poses."
-msgstr "أدخل المفتاح لجميع أوضاع العظام."
 
 msgid "Insert Key (All Bones)"
 msgstr "أدخل المفتاح (جميع العظام)"
@@ -9471,6 +9899,12 @@ msgid ""
 msgstr ""
 "لقد تم تعديل هذا المُظلل على القرص.\n"
 "ما الإجراء الذي ينبغي اتخاذه؟"
+
+msgid "Reload"
+msgstr "إعادة تحميل"
+
+msgid "Resave"
+msgstr "إعادة حفظ"
 
 msgid "Memory: %s"
 msgstr "الذاكرة: %s"
@@ -10167,9 +10601,6 @@ msgstr "خاصية طلاء البلاط"
 msgid "Painting:"
 msgstr "طلاء:"
 
-msgid "Picker"
-msgstr "ملقاط"
-
 msgid "No terrains"
 msgstr "لا تضاريس"
 
@@ -10240,28 +10671,12 @@ msgstr "لصق البلاط"
 msgid "Selection"
 msgstr "الاختيار"
 
-msgid "Paint"
-msgstr "طلاء"
-
 msgid "Shift: Draw rectangle."
 msgstr "التحول: رسم المستطيل."
-
-msgctxt "Tool"
-msgid "Line"
-msgstr "خط"
-
-msgid "Rect"
-msgstr "مستطيل"
-
-msgid "Bucket"
-msgstr "سطل"
 
 msgid "Alternatively hold %s with other tools to pick tile."
 msgstr ""
 "بدلاً من ذلك، اضغط مع الاستمرار على %s باستخدام أدوات أخرى لاختيار المربع."
-
-msgid "Eraser"
-msgstr "مسّاحة"
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "وبدلاً من ذلك، استخدم RMB لمسح البلاط."
@@ -10498,6 +10913,9 @@ msgstr "قم بإنشاء وتخصيص طبقات البيانات المخصص�
 msgid "Select a property editor"
 msgstr "حدد محرر خاصية"
 
+msgid "Paint properties."
+msgstr "خصائص الطلاء."
+
 msgid "Create tiles"
 msgstr "إنشاء بلاطات"
 
@@ -10544,8 +10962,8 @@ msgstr ""
 msgid "Select tiles."
 msgstr "حدد البلاط."
 
-msgid "Paint properties."
-msgstr "خصائص الطلاء."
+msgid "Paint"
+msgstr "طلاء"
 
 msgid ""
 "No tiles selected.\n"
@@ -10650,6 +11068,22 @@ msgstr "خصائص جميع المشاهد:"
 
 msgid "Tile properties:"
 msgstr "خصائص البلاطة:"
+
+msgctxt "Tool"
+msgid "Line"
+msgstr "خط"
+
+msgid "Rect"
+msgstr "مستطيل"
+
+msgid "Bucket"
+msgstr "سطل"
+
+msgid "Eraser"
+msgstr "مسّاحة"
+
+msgid "Picker"
+msgstr "ملقاط"
 
 msgid "Error"
 msgstr "خطأ"
@@ -11152,17 +11586,17 @@ msgid "Not Equal (!=)"
 msgstr "لا يُعادل (!=)"
 
 msgid ""
-"Returns an associated 3D vector if the provided boolean value is true or "
-"false."
-msgstr ""
-"إرجاع متجه ثلاثي الأبعاد مرتبط إذا كانت القيمة المنطقية المقدمة صحيحة أو "
-"خاطئة."
-
-msgid ""
 "Returns an associated 2D vector if the provided boolean value is true or "
 "false."
 msgstr ""
 "إرجاع متجه ثنائي الأبعاد مرتبط إذا كانت القيمة المنطقية المقدمة صحيحة أو "
+"خاطئة."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"إرجاع متجه ثلاثي الأبعاد مرتبط إذا كانت القيمة المنطقية المقدمة صحيحة أو "
 "خاطئة."
 
 msgid ""
@@ -11708,9 +12142,6 @@ msgstr "إرجاع قيمة عشوائية بين الحد الأدنى والح
 
 msgid "Remaps a given input from the input range to the output range."
 msgstr "يعيد تعيين مدخلات معينة من نطاق الإدخال إلى نطاق الإخراج."
-
-msgid "Rotates an input vector by a given angle."
-msgstr "تدوير متجه الإدخال بزاوية معينة."
 
 msgid "Vector function."
 msgstr "وظيفة المُتجه Vector ."
@@ -12280,6 +12711,9 @@ msgid ""
 "recommended."
 msgstr "المسار المحدد ليس فارغاً. يوصى بشدة باختيار مجلد فارغ."
 
+msgid "New Game Project"
+msgstr "مشروع لعبة جديد"
+
 msgid "Supports desktop platforms only."
 msgstr "يدعم منصات سطح المكتب فقط."
 
@@ -12351,9 +12785,6 @@ msgstr "فشل استخراج الملفات التالية من الحزمة:"
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "تعذر تحميل المشروع في '%s' (الخطأ %d). قد يكون مفقودًا أو تالفًا."
-
-msgid "New Game Project"
-msgstr "مشروع لعبة جديد"
 
 msgid "Import & Edit"
 msgstr "استيراد و تعديل"
@@ -12656,9 +13087,6 @@ msgid ""
 "Cannot instantiate the scene '%s' because the current scene exists within one "
 "of its nodes."
 msgstr "لا يمكن تنسيخ المشهد '%s' لأن المشهد الحالي مُضَمّن في واحد من عُقده."
-
-msgid "Instantiate Scene(s)"
-msgstr "تنسيخ المشهد(المشاهد)"
 
 msgid "Replace with Branch Scene"
 msgstr "استبدال بمشهد فرعي"
@@ -13201,21 +13629,8 @@ msgstr "إعدادات التصدير:"
 msgid "glTF 2.0 Scene..."
 msgstr "مشهد glTF 2.0..."
 
-msgid "Path to Blender installation is valid (Autodetected)."
-msgstr "المسار إلى تثبيت Blender صالح (تم اكتشافه تلقائيًا)."
-
-msgid "Path to Blender installation is valid."
-msgstr "المسار إلى تثبيت Blender صالح."
-
 msgid "Configure Blender Importer"
 msgstr "تحرير إعدادات مستورد Blender"
-
-msgid ""
-"Blender 3.0+ is required to import '.blend' files.\n"
-"Please provide a valid path to a Blender installation:"
-msgstr ""
-"مطلوب Blender 3.0+ لاستيراد ملفات \".blend\".\n"
-"يرجى توفير مسار صالح لتثبيت Blender:"
 
 msgid "Disable '.blend' Import"
 msgstr "تعطيل استيراد '.blend'"
@@ -13542,11 +13957,11 @@ msgstr "إزالة مجموعة الإجراءات"
 msgid "Add interaction profile"
 msgstr "إضافة ملف تعريف التفاعل"
 
-msgid "Error saving file %s: %s"
-msgstr "خطأ في حفظ الملف %s: %s"
-
 msgid "Error loading %s: %s."
 msgstr "خطأ في تحميل %s: %s."
+
+msgid "Error saving file %s: %s"
+msgstr "خطأ في حفظ الملف %s: %s"
 
 msgid "OpenXR Action map:"
 msgstr "خريطة عمل OpenXR:"
@@ -13901,11 +14316,11 @@ msgstr "تصدير الأيقونات"
 msgid "Exporting for iOS"
 msgstr "التصدير لنظام iOS"
 
-msgid "Export template not found."
-msgstr "لم يتم العثور على قالب التصدير."
-
 msgid "Prepare Templates"
 msgstr "إعداد القوالب"
+
+msgid "Export template not found."
+msgstr "لم يتم العثور على قالب التصدير."
 
 msgid "Code signing failed, see editor log for details."
 msgstr "فشل توقيع الرمز، راجع سجل المحرر للحصول على التفاصيل."
@@ -13995,60 +14410,6 @@ msgstr "بدء المشروع..."
 msgid "All Files"
 msgstr "كل الملفات"
 
-msgid "Can't get filesystem access."
-msgstr "لم يتكمن من الحصول على حَقّ الدّخُول لملف النظام."
-
-msgid "Failed to get Info.plist hash."
-msgstr "فشل بلوغ المعلومات هاش."
-
-msgid "Invalid Info.plist, no exe name."
-msgstr "اسم مشروع غير صالح."
-
-msgid "Invalid Info.plist, no bundle id."
-msgstr "معلومات غير صحيحه, الهوية غير موجودة."
-
-msgid "Invalid Info.plist, can't load."
-msgstr "معلومات غير صالحة، لا يمكن التحميل."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "فشل إنشاء \"%s\" مجلد فرعي."
-
-msgid "Failed to extract thin binary."
-msgstr "فشل استخراج البناء الأولي."
-
-msgid "Invalid binary format."
-msgstr "صيغة ثنائية خاطئة."
-
-msgid "Already signed!"
-msgstr "تم توقيعها مسبقا!"
-
-msgid "Failed to process nested resources."
-msgstr "فشل معالجة المورد المتداخل."
-
-msgid "Failed to create _CodeSignature subfolder."
-msgstr "فشل إنشاء _بصمة الكود للمجلد فرعي."
-
-msgid "Failed to get CodeResources hash."
-msgstr "فشل تحميل المورد هاش."
-
-msgid "Invalid entitlements file."
-msgstr "صيغة غير صالحة للملف."
-
-msgid "Invalid executable file."
-msgstr "البرامج القابلة للتنفيذ غير صالحة."
-
-msgid "Can't resize signature load command."
-msgstr "لا يمكن تغيير حجم أمر تحميل التوقيع."
-
-msgid "Failed to create fat binary."
-msgstr "فشل إنشاء كود ثنائية سمين."
-
-msgid "Unknown bundle type."
-msgstr "نوع الحزمة غير معروف."
-
-msgid "Unknown object type."
-msgstr "نوع كائن غير معروف."
-
 msgid "Invalid bundle identifier:"
 msgstr "معرف الحزمة غير صالح:"
 
@@ -14126,6 +14487,9 @@ msgstr "تم تمكين الوصول إلى التقويم، ولكن لم يت�
 msgid "Photo library access is enabled, but usage description is not specified."
 msgstr "تم تمكين الوصول إلى مكتبة الصور، ولكن لم يتم تحديد وصف الاستخدام."
 
+msgid "Notarization"
+msgstr "توطين/تصديق"
+
 msgid ""
 "rcodesign path is not set. Configure rcodesign path in the Editor Settings "
 "(Export > macOS > rcodesign)."
@@ -14149,9 +14513,6 @@ msgid ""
 "You can check progress manually by opening a Terminal and running the "
 "following command:"
 msgstr "يمكنك متابعت حالة التقدم يدويا عن طريق الترمنال بستخدام الأمر التالي:"
-
-msgid "Notarization"
-msgstr "توطين/تصديق"
 
 msgid ""
 "Run the following command to staple the notarization ticket to the exported "
@@ -14471,13 +14832,6 @@ msgstr "تشغيل على نظام ويندوز عن بعد"
 
 msgid "Run exported project on remote Windows system"
 msgstr "تشغيل المشروع المُصدَّر على نظام ويندوز عن بعد"
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite2D to display frames."
-msgstr ""
-"يجب إنشاء مصدر إطارات الرسم (SpriteFrames) أو تعيينه في خاصية \"الإطارات\" "
-"حتى يتمكن الرسوم المتحركة للرسم ثلاثي الُعد (AnimatedSprite3D) من عرض الإطارات."
 
 msgid ""
 "Only one visible CanvasModulate is allowed per canvas.\n"
@@ -14967,13 +15321,6 @@ msgid "This body will be ignored until you set a mesh."
 msgstr "سيتم تجاهل هذا الجسم حتى تضع تحدد له مجسمًا."
 
 msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"يجب إنشاء مصدر إطارات الرسم (SpriteFrames) أو تعيينه في خاصية \"الإطارات\" "
-"حتى يتمكن الرسوم المتحركة للرسم ثلاثي الُعد (AnimatedSprite3D) من عرض الإطارات."
-
-msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
 "value, but is lower than the Begin distance.\n"
 "This means the GeometryInstance3D will never be visible.\n"
@@ -15260,19 +15607,15 @@ msgstr "التعبير المستمر المتوقع."
 msgid "Expected ',' or ')' after argument."
 msgstr "من المتوقع '،' أو ')' بعد المعامل."
 
+msgid "Constants cannot be modified."
+msgstr "لا يمكن تعديل الثوابت."
+
 msgid ""
 "Sampler argument %d of function '%s' called more than once using both built-"
 "ins and uniform textures, this is not supported (use either one or the other)."
 msgstr ""
 "تم استدعاء وسيطة جهاز أخذ العينات %d للدالة '%s' أكثر من مرة باستخدام كل من "
 "الأنسجة المضمنة والموحدة، وهذا غير مدعوم (استخدم أحدهما أو الآخر)."
-
-msgid ""
-"Sampler argument %d of function '%s' called more than once using textures "
-"that differ in either filter or repeat setting."
-msgstr ""
-"تم استدعاء وسيطة جهاز أخذ العينات %d للدالة '%s' أكثر من مرة باستخدام مواد "
-"تختلف في إعداد التصفية أو التكرار."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
@@ -15347,9 +15690,6 @@ msgstr ""
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "لا يمكن استخدام دلة كمعرف: '%s'."
-
-msgid "Constants cannot be modified."
-msgstr "لا يمكن تعديل الثوابت."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "الافراز يسمح فقط بتعابير الاعداد الصحيحة."

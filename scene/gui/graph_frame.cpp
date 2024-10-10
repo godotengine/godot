@@ -262,6 +262,10 @@ HBoxContainer *GraphFrame::get_titlebar_hbox() {
 	return titlebar_hbox;
 }
 
+Size2 GraphFrame::get_titlebar_size() const {
+	return titlebar_hbox->get_size() + theme_cache.titlebar->get_minimum_size();
+}
+
 void GraphFrame::set_drag_margin(int p_margin) {
 	drag_margin = p_margin;
 }

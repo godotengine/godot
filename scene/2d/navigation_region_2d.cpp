@@ -452,12 +452,14 @@ void NavigationRegion2D::_update_debug_mesh() {
 	const Transform2D region_gt = get_global_transform();
 
 	rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
+	rs->canvas_item_set_z_index(debug_instance_rid, RS::CANVAS_ITEM_Z_MAX - 2);
 	rs->canvas_item_set_transform(debug_instance_rid, region_gt);
 
 	if (!debug_mesh_dirty) {
 		return;
 	}
 
+	rs->canvas_item_clear(debug_instance_rid);
 	rs->mesh_clear(debug_mesh_rid);
 	debug_mesh_dirty = false;
 

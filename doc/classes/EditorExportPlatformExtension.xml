@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformExtension" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for custom [EditorExportPlatform] implementations (plugins).
+	</brief_description>
+	<description>
+		External [EditorExportPlatform] implementations should inherit from this class.
+		To use [EditorExportPlatform], register it using the [method EditorPlugin.add_export_platform] method first.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_can_export" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				[b]Optional.[/b]
+				Returns [code]true[/code], if specified [param preset] is valid and can be exported. Use [method set_config_error] and [method set_config_missing_templates] to set error details.
+				Usual implementation can call [method _has_valid_export_configuration] and [method _has_valid_project_configuration] to determine if export is possible.
+			</description>
+		</method>
+		<method name="_cleanup" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				[b]Optional.[/b]
+				Called by the editor before platform is unregistered.
+			</description>
+		</method>
+		<method name="_export_pack" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				Creates a PCK archive at [param path] for the specified [param preset].
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" disabled, and PCK is selected as a file type.
+			</description>
+		</method>
+		<method name="_export_pack_patch" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				Creates a patch PCK archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" enabled, and PCK is selected as a file type.
+				[b]Note:[/b] The patches provided in [param patches] have already been loaded when this method is called and are merely provided as context. When empty the patches defined in the export preset have been loaded instead.
+			</description>
+		</method>
+		<method name="_export_project" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Required.[/b]
+				Creates a full project at [param path] for the specified [param preset].
+				This method is called when "Export" button is pressed in the export dialog.
+				This method implementation can call [method EditorExportPlatform.save_pack] or [method EditorExportPlatform.save_zip] to use default PCK/ZIP export process, or calls [method EditorExportPlatform.export_project_files] and implement custom callback for processing each exported file.
+			</description>
+		</method>
+		<method name="_export_zip" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				Create a ZIP archive at [param path] for the specified [param preset].
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" disabled, and ZIP is selected as a file type.
+			</description>
+		</method>
+		<method name="_export_zip_patch" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				Create a ZIP archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" enabled, and ZIP is selected as a file type.
+				[b]Note:[/b] The patches provided in [param patches] have already been loaded when this method is called and are merely provided as context. When empty the patches defined in the export preset have been loaded instead.
+			</description>
+		</method>
+		<method name="_get_binary_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<description>
+				[b]Required.[/b]
+				Returns array of supported binary extensions for the full project export.
+			</description>
+		</method>
+		<method name="_get_debug_protocol" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				[b]Optional.[/b]
+				Returns protocol used for remote debugging. Default implementation return [code]tcp://[/code].
+			</description>
+		</method>
+		<method name="_get_device_architecture" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="device" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns device architecture for one-click deploy.
+			</description>
+		</method>
+		<method name="_get_export_option_visibility" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="option" type="String" />
+			<description>
+				[b]Optional.[/b]
+				Validates [param option] and returns visibility for the specified [param preset]. Default implementation return [code]true[/code] for all options.
+			</description>
+		</method>
+		<method name="_get_export_option_warning" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="option" type="StringName" />
+			<description>
+				[b]Optional.[/b]
+				Validates [param option] and returns warning message for the specified [param preset]. Default implementation return empty string for all options.
+			</description>
+		</method>
+		<method name="_get_export_options" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+				[b]Optional.[/b]
+				Returns a property list, as an [Array] of dictionaries. Each [Dictionary] must at least contain the [code]name: StringName[/code] and [code]type: Variant.Type[/code] entries.
+				Additionally, the following keys are supported:
+				- [code]hint: PropertyHint[/code]
+				- [code]hint_string: String[/code]
+				- [code]usage: PropertyUsageFlags[/code]
+				- [code]class_name: StringName[/code]
+				- [code]default_value: Variant[/code], default value of the property.
+				- [code]update_visibility: bool[/code], if set to [code]true[/code], [method _get_export_option_visibility] is called for each property when this property is changed.
+				- [code]required: bool[/code], if set to [code]true[/code], this property warnings are critical, and should be resolved to make export possible. This value is a hint for the [method _has_valid_export_configuration] implementation, and not used by the engine directly.
+				See also [method Object._get_property_list].
+			</description>
+		</method>
+		<method name="_get_logo" qualifiers="virtual const">
+			<return type="Texture2D" />
+			<description>
+				[b]Required.[/b]
+				Returns platform logo displayed in the export dialog, logo should be 32x32 adjusted to the current editor scale, see [method EditorInterface.get_editor_scale].
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				[b]Required.[/b]
+				Returns export platform name.
+			</description>
+		</method>
+		<method name="_get_option_icon" qualifiers="virtual const">
+			<return type="ImageTexture" />
+			<param index="0" name="device" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns one-click deploy menu item icon for the specified [param device], icon should be 16x16 adjusted to the current editor scale, see [method EditorInterface.get_editor_scale].
+			</description>
+		</method>
+		<method name="_get_option_label" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="device" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns one-click deploy menu item label for the specified [param device].
+			</description>
+		</method>
+		<method name="_get_option_tooltip" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="device" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns one-click deploy menu item tooltip for the specified [param device].
+			</description>
+		</method>
+		<method name="_get_options_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns number one-click deploy devices (or other one-click option displayed in the menu).
+			</description>
+		</method>
+		<method name="_get_options_tooltip" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				[b]Optional.[/b]
+				Returns tooltip of the one-click deploy menu button.
+			</description>
+		</method>
+		<method name="_get_os_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				[b]Required.[/b]
+				Returns target OS name.
+			</description>
+		</method>
+		<method name="_get_platform_features" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				[b]Required.[/b]
+				Returns array of platform specific features.
+			</description>
+		</method>
+		<method name="_get_preset_features" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<description>
+				[b]Required.[/b]
+				Returns array of platform specific features for the specified [param preset].
+			</description>
+		</method>
+		<method name="_get_run_icon" qualifiers="virtual const">
+			<return type="Texture2D" />
+			<description>
+				[b]Optional.[/b]
+				Returns icon of the one-click deploy menu button, icon should be 16x16 adjusted to the current editor scale, see [method EditorInterface.get_editor_scale].
+			</description>
+		</method>
+		<method name="_has_valid_export_configuration" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				[b]Required.[/b]
+				Returns [code]true[/code] if export configuration is valid.
+			</description>
+		</method>
+		<method name="_has_valid_project_configuration" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<description>
+				[b]Required.[/b]
+				Returns [code]true[/code] if project configuration is valid.
+			</description>
+		</method>
+		<method name="_is_executable" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				[b]Optional.[/b]
+				Returns [code]true[/code] if specified file is a valid executable (native executable or script) for the target platform.
+			</description>
+		</method>
+		<method name="_poll_export" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				[b]Optional.[/b]
+				Returns [code]true[/code] if one-click deploy options are changed and editor interface should be updated.
+			</description>
+		</method>
+		<method name="_run" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="device" type="int" />
+			<param index="2" name="debug_flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				This method is called when [param device] one-click deploy menu option is selected.
+				Implementation should export project to a temporary location, upload and run it on the specific [param device], or perform another action associated with the menu item.
+			</description>
+		</method>
+		<method name="_should_update_export_options" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				[b]Optional.[/b]
+				Returns [code]true[/code] if export options list is changed and presets should be updated.
+			</description>
+		</method>
+		<method name="get_config_error" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns current configuration error message text. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
+			</description>
+		</method>
+		<method name="get_config_missing_templates" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] is export templates are missing from the current configuration. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
+			</description>
+		</method>
+		<method name="set_config_error" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="error_text" type="String" />
+			<description>
+				Sets current configuration error message text. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
+			</description>
+		</method>
+		<method name="set_config_missing_templates" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="missing_templates" type="bool" />
+			<description>
+				Set to [code]true[/code] is export templates are missing from the current configuration. This method should be called only from the [method _can_export], [method _has_valid_export_configuration], or [method _has_valid_project_configuration] implementations.
+			</description>
+		</method>
+	</methods>
+</class>

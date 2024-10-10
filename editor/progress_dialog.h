@@ -71,13 +71,13 @@ class ProgressDialog : public PopupPanel {
 		VBoxContainer *vb = nullptr;
 		ProgressBar *progress = nullptr;
 		Label *state = nullptr;
+		uint64_t last_progress_tick = 0;
 	};
 	HBoxContainer *cancel_hb = nullptr;
 	Button *cancel = nullptr;
 
 	HashMap<String, Task> tasks;
 	VBoxContainer *main = nullptr;
-	uint64_t last_progress_tick;
 
 	LocalVector<Window *> host_windows;
 
@@ -85,6 +85,8 @@ class ProgressDialog : public PopupPanel {
 	void _popup();
 
 	void _cancel_pressed();
+
+	void _update_ui();
 	bool canceled = false;
 
 public:

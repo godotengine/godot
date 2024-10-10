@@ -37,6 +37,7 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
+#include "editor/debugger/editor_expression_evaluator.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -250,6 +251,13 @@ void ScriptEditorDebugger::request_remote_tree() {
 
 const SceneDebuggerTree *ScriptEditorDebugger::get_remote_tree() {
 	return scene_tree;
+}
+
+void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, int p_stack_frame) {
+	Array msg;
+	msg.push_back(p_expression);
+	msg.push_back(p_stack_frame);
+	_put_msg("evaluate", msg);
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value) {
@@ -811,6 +819,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		if (EditorFileSystem::get_singleton()) {
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}
+	} else if (p_msg == "evaluation_return") {
+		expression_evaluator->add_value(p_data);
 	} else {
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
@@ -825,13 +835,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 	}
 	reason->set_text(p_reason);
 
@@ -840,7 +850,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	for (int i = 0; i < boundaries.size(); i += 2) {
 		const int start = boundaries[i];
 		const int end = boundaries[i + 1];
-		lines.append(p_reason.substr(start, end - start + 1));
+		lines.append(p_reason.substr(start, end - start));
 	}
 
 	reason->set_tooltip_text(String("\n").join(lines));
@@ -851,11 +861,12 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
-			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
+			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
-			[[fallthrough]];
-		}
+			connect("started", callable_mp(expression_evaluator, &EditorExpressionEvaluator::on_start));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
@@ -869,7 +880,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
@@ -1012,6 +1023,14 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
+		profiler->set_profiling(true);
+	}
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
+		visual_profiler->set_profiling(true);
+	}
 }
 
 void ScriptEditorDebugger::_update_buttons_state() {
@@ -1076,10 +1095,10 @@ void ScriptEditorDebugger::stop() {
 	profiler_signature.clear();
 
 	profiler->set_enabled(false, false);
-	profiler->set_pressed(false);
+	profiler->set_profiling(false);
 
 	visual_profiler->set_enabled(false);
-	visual_profiler->set_pressed(false);
+	visual_profiler->set_profiling(false);
 
 	inspector->edit(nullptr);
 	_update_buttons_state();
@@ -1886,7 +1905,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads = memnew(OptionButton);
 		thread_hb->add_child(threads);
 		threads->set_h_size_flags(SIZE_EXPAND_FILL);
-		threads->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_select_thread));
+		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
 		stack_dump->set_allow_reselect(true);
@@ -2000,6 +2019,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		file_dialog = memnew(EditorFileDialog);
 		file_dialog->connect("file_selected", callable_mp(this, &ScriptEditorDebugger::_file_selected));
 		add_child(file_dialog);
+	}
+
+	{ // Expression evaluator
+		expression_evaluator = memnew(EditorExpressionEvaluator);
+		expression_evaluator->set_name(TTR("Evaluator"));
+		expression_evaluator->set_editor_debugger(this);
+		tabs->add_child(expression_evaluator);
 	}
 
 	{ //profiler

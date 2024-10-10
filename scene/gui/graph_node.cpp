@@ -130,8 +130,8 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::IGNORE);
+		if (!child) {
 			continue;
 		}
 
@@ -208,7 +208,7 @@ void GraphNode::_resort() {
 	// Avoid negative stretch space.
 	stretch_diff = MAX(stretch_diff, 0);
 
-	available_stretch_space += stretch_diff - sb_panel->get_margin(SIDE_BOTTOM) - sb_panel->get_margin(SIDE_TOP);
+	available_stretch_space += stretch_diff - sb_panel->get_margin(SIDE_BOTTOM) - sb_panel->get_margin(SIDE_TOP) - titlebar_min_size.height - sb_titlebar->get_minimum_size().height;
 
 	// Second pass, discard elements that can't be stretched, this will run while stretchable elements exist.
 
@@ -658,8 +658,8 @@ void GraphNode::_port_pos_update() {
 	int slot_index = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::IGNORE);
+		if (!child) {
 			continue;
 		}
 

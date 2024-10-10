@@ -749,44 +749,54 @@ Error ResourceLoaderBinary::load() {
 		String t = get_unicode_string();
 
 		Ref<Resource> res;
-
-		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
-			//use the existing one
-			Ref<Resource> cached = ResourceCache::get_ref(path);
-			if (cached->get_class() == t) {
-				cached->reset_state();
-				res = cached;
-			}
-		}
+		Resource *r = nullptr;
 
 		MissingResource *missing_resource = nullptr;
 
-		if (res.is_null()) {
-			//did not replace
-
-			Object *obj = ClassDB::instantiate(t);
-			if (!obj) {
-				if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-					//create a missing resource
-					missing_resource = memnew(MissingResource);
-					missing_resource->set_original_class(t);
-					missing_resource->set_recording_properties(true);
-					obj = missing_resource;
-				} else {
-					error = ERR_FILE_CORRUPT;
-					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+		if (main) {
+			res = ResourceLoader::get_resource_ref_override(local_path);
+			r = res.ptr();
+		}
+		if (!r) {
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
+				//use the existing one
+				Ref<Resource> cached = ResourceCache::get_ref(path);
+				if (cached->get_class() == t) {
+					cached->reset_state();
+					res = cached;
 				}
 			}
 
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (!r) {
-				String obj_class = obj->get_class();
-				error = ERR_FILE_CORRUPT;
-				memdelete(obj); //bye
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
-			}
+			if (res.is_null()) {
+				//did not replace
 
-			res = Ref<Resource>(r);
+				Object *obj = ClassDB::instantiate(t);
+				if (!obj) {
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						//create a missing resource
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(t);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource;
+					} else {
+						error = ERR_FILE_CORRUPT;
+						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+					}
+				}
+
+				r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					String obj_class = obj->get_class();
+					error = ERR_FILE_CORRUPT;
+					memdelete(obj); //bye
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+				}
+
+				res = Ref<Resource>(r);
+			}
+		}
+
+		if (r) {
 			if (!path.is_empty()) {
 				if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 					r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); // If got here because the resource with same path has different type, replace it.
@@ -843,6 +853,19 @@ Error ResourceLoaderBinary::load() {
 					Array get_array = get_value;
 					if (!set_array.is_same_typed(get_array)) {
 						value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+					}
+				}
+			}
+
+			if (value.get_type() == Variant::DICTIONARY) {
+				Dictionary set_dict = value;
+				bool is_get_valid = false;
+				Variant get_value = res->get(name, &is_get_valid);
+				if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+					Dictionary get_dict = get_value;
+					if (!set_dict.is_same_typed(get_dict)) {
+						value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
+								get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
 					}
 				}
 			}
@@ -2054,6 +2077,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
+			_find_resources(d.get_typed_key_script());
+			_find_resources(d.get_typed_value_script());
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			for (const Variant &E : keys) {
@@ -2109,6 +2134,8 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 }
 
 Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+	Resource::seed_scene_unique_id(p_path.hash());
+
 	Error err;
 	Ref<FileAccess> f;
 	if (p_flags & ResourceSaver::FLAG_COMPRESS) {

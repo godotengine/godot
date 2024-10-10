@@ -47,7 +47,7 @@ namespace Godot.NativeInterop
         public static partial IntPtr godotsharp_method_bind_get_method_with_compatibility(
             in godot_string_name p_classname, in godot_string_name p_methodname, ulong p_hash);
 
-        public static partial delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
+        public static partial delegate* unmanaged<godot_bool, IntPtr> godotsharp_get_class_constructor(
             in godot_string_name p_classname);
 
         public static partial IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
@@ -59,7 +59,7 @@ namespace Godot.NativeInterop
         internal static partial void godotsharp_stack_info_vector_destroy(
             ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
-        internal static partial void godotsharp_internal_editor_file_system_update_file(in godot_string p_script_path);
+        internal static partial void godotsharp_internal_editor_file_system_update_files(in godot_packed_string_array p_script_paths);
 
         internal static partial void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
             in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,

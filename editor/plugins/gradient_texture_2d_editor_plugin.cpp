@@ -213,7 +213,7 @@ void GradientTexture2DEdit::_draw() {
 	}
 
 	// Draw handles.
-	const Color focus_modulate = Color(0.5, 1, 2);
+	const Color focus_modulate = Color(0.4, 1, 1);
 	bool modulate_handle_from = grabbed == HANDLE_FROM || hovered == HANDLE_FROM;
 	bool modulate_handle_to = grabbed == HANDLE_TO || hovered == HANDLE_TO;
 	draw_texture(fill_from_icon, (_get_handle_pos(HANDLE_FROM) - handle_size / 2).round(), modulate_handle_from ? focus_modulate : Color(1, 1, 1));
@@ -290,7 +290,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));
+	snap_button->connect(SceneStringName(toggled), callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));
 
 	snap_count_edit = memnew(EditorSpinSlider);
 	snap_count_edit->set_min(2);
@@ -298,7 +298,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &GradientTexture2DEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &GradientTexture2DEditor::_set_snap_count));
 
 	texture_editor_rect = memnew(GradientTexture2DEdit);
 	add_child(texture_editor_rect);

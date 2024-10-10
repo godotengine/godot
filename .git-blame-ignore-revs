@@ -54,3 +54,6 @@ df61dc4b2bd54a5a40c515493c76f5a458e5b541
 
 # Enforce template syntax `typename` over `class`
 9903e6779b70fc03aae70a37b9cf053f4f355b91
+
+# Style: Apply new `clang-format` fixes
+b37fc1014abf7adda70dc30b0822d775b3a4433f

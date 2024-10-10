@@ -3,7 +3,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-static
   cancel-in-progress: true
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
           fi
           echo "$files" >> changed.txt
           cat changed.txt
-          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
+          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
           echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
       # This needs to happen before Python and npm execution; it must happen before any extra files are written.
@@ -48,7 +48,7 @@ jobs:
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
         with:
-          extra_args: --verbose --files ${{ env.CHANGED_FILES }}
+          extra_args: --files ${{ env.CHANGED_FILES }}
 
       - name: Python builders checks via pytest
         run: |
@@ -57,3 +57,7 @@ jobs:
       - name: Class reference schema checks
         run: |
           xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
+
+      - name: Run C compiler on `gdextension_interface.h`
+        run: |
+          gcc -c core/extension/gdextension_interface.h

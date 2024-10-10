@@ -163,12 +163,14 @@ TEST_CASE("[OS] Processor count and memory information") {
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_processor_count() >= 1,
 			"The returned processor count should be greater than zero.");
+#ifdef DEBUG_ENABLED
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_static_memory_usage() >= 1,
 			"The returned static memory usage should be greater than zero.");
 	CHECK_MESSAGE(
 			OS::get_singleton()->get_static_memory_peak_usage() >= 1,
 			"The returned static memory peak usage should be greater than zero.");
+#endif // DEBUG_ENABLED
 }
 
 TEST_CASE("[OS] Execute") {

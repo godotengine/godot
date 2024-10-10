@@ -90,7 +90,7 @@ public:
 
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
-	TerrainConstraint(){};
+	TerrainConstraint() {}
 };
 
 #ifdef DEBUG_ENABLED
@@ -108,7 +108,7 @@ struct CellData {
 	// Rendering.
 	Ref<RenderingQuadrant> rendering_quadrant;
 	SelfList<CellData> rendering_quadrant_list_element;
-	LocalVector<RID> occluders;
+	LocalVector<LocalVector<RID>> occluders;
 
 	// Physics.
 	LocalVector<RID> bodies;
@@ -160,8 +160,8 @@ struct CellData {
 	}
 };
 
-// For compatibility reasons, we use another comparator for Y-sorted layers.
-struct CellDataYSortedComparator {
+// We use another comparator for Y-sorted layers with reversed X drawing order.
+struct CellDataYSortedXReversedComparator {
 	_FORCE_INLINE_ bool operator()(const CellData &p_a, const CellData &p_b) const {
 		return p_a.coords.x == p_b.coords.x ? (p_a.coords.y < p_b.coords.y) : (p_a.coords.x > p_b.coords.x);
 	}
@@ -245,6 +245,7 @@ public:
 		DIRTY_FLAGS_LAYER_SELF_MODULATE,
 		DIRTY_FLAGS_LAYER_Y_SORT_ENABLED,
 		DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN,
+		DIRTY_FLAGS_LAYER_X_DRAW_ORDER_REVERSED,
 		DIRTY_FLAGS_LAYER_Z_INDEX,
 		DIRTY_FLAGS_LAYER_LIGHT_MASK,
 		DIRTY_FLAGS_LAYER_TEXTURE_FILTER,
@@ -253,6 +254,7 @@ public:
 		DIRTY_FLAGS_LAYER_COLLISION_ENABLED,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
 		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
+		DIRTY_FLAGS_LAYER_OCCLUSION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
 		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
@@ -280,11 +282,14 @@ private:
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
 
 	int y_sort_origin = 0;
+	bool x_draw_order_reversed = false;
 	int rendering_quadrant_size = 16;
 
 	bool collision_enabled = true;
 	bool use_kinematic_bodies = false;
 	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
+
+	bool occlusion_enabled = true;
 
 	bool navigation_enabled = true;
 	RID navigation_map_override;
@@ -379,15 +384,22 @@ private:
 	void _deferred_internal_update();
 	void _internal_update(bool p_force_cleanup);
 
+	virtual void _physics_interpolated_changed() override;
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) override;
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) override;
 
 public:
+#ifdef TOOLS_ENABLED
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#endif
+
 	// TileMap node.
 	void set_as_tile_map_internal_node(int p_index);
 	int get_index_in_tile_map() const {
@@ -428,6 +440,10 @@ public:
 	TypedArray<Vector2i> get_used_cells() const;
 	TypedArray<Vector2i> get_used_cells_by_id(int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
 	Rect2i get_used_rect() const;
+
+	bool is_cell_flipped_h(const Vector2i &p_coords) const;
+	bool is_cell_flipped_v(const Vector2i &p_coords) const;
+	bool is_cell_transposed(const Vector2i &p_coords) const;
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
@@ -470,6 +486,8 @@ public:
 	virtual void set_y_sort_enabled(bool p_y_sort_enabled) override;
 	void set_y_sort_origin(int p_y_sort_origin);
 	int get_y_sort_origin() const;
+	void set_x_draw_order_reversed(bool p_x_draw_order_reversed);
+	bool is_x_draw_order_reversed() const;
 	virtual void set_z_index(int p_z_index) override;
 	virtual void set_light_mask(int p_light_mask) override;
 	void set_rendering_quadrant_size(int p_size);
@@ -481,6 +499,9 @@ public:
 	bool is_using_kinematic_bodies() const;
 	void set_collision_visibility_mode(DebugVisibilityMode p_show_collision);
 	DebugVisibilityMode get_collision_visibility_mode() const;
+
+	void set_occlusion_enabled(bool p_enabled);
+	bool is_occlusion_enabled() const;
 
 	void set_navigation_enabled(bool p_enabled);
 	bool is_navigation_enabled() const;

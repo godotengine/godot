@@ -168,11 +168,11 @@ layout(set = 2, binding = 1) uniform texture2D height_field_texture;
 /* SET 3: MATERIAL */
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
-
+/* clang-format off */
+layout(set = 3, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
 } material;
+/* clang-format on */
 #endif
 
 layout(push_constant, std430) uniform Params {
@@ -292,6 +292,24 @@ void main() {
 			PARTICLE.velocity = particles.data[src_idx].velocity;
 			PARTICLE.flags = PARTICLE_FLAG_TRAILED | ((frame_history.data[0].frame & PARTICLE_FRAME_MASK) << PARTICLE_FRAME_SHIFT); //mark it as trailed, save in which frame it will start
 			PARTICLE.xform = particles.data[src_idx].xform;
+#ifdef USERDATA1_USED
+			PARTICLE.userdata1 = particles.data[src_idx].userdata1;
+#endif
+#ifdef USERDATA2_USED
+			PARTICLE.userdata2 = particles.data[src_idx].userdata2;
+#endif
+#ifdef USERDATA3_USED
+			PARTICLE.userdata3 = particles.data[src_idx].userdata3;
+#endif
+#ifdef USERDATA4_USED
+			PARTICLE.userdata4 = particles.data[src_idx].userdata4;
+#endif
+#ifdef USERDATA5_USED
+			PARTICLE.userdata5 = particles.data[src_idx].userdata5;
+#endif
+#ifdef USERDATA6_USED
+			PARTICLE.userdata6 = particles.data[src_idx].userdata6;
+#endif
 		}
 		if (!bool(particles.data[src_idx].flags & PARTICLE_FLAG_ACTIVE)) {
 			// Disable the entire trail if the parent is no longer active.

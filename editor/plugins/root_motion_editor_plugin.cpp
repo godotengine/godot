@@ -193,9 +193,6 @@ void EditorPropertyRootMotion::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyRootMotion::_bind_methods() {
-}
-
 EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
@@ -212,7 +209,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	filter_dialog = memnew(ConfirmationDialog);
 	add_child(filter_dialog);
 	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
-	filter_dialog->connect("confirmed", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
+	filter_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);

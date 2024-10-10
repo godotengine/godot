@@ -259,10 +259,7 @@ void AudioStreamPlaybackPlaylist::seek(double p_time) {
 
 int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (!active) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0.0, 0.0);
-		}
-		return p_frames;
+		return 0;
 	}
 
 	double time_dec = (1.0 / AudioServer::get_singleton()->get_mix_rate());

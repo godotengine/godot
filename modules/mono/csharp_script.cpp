@@ -148,7 +148,7 @@ void CSharpLanguage::finalize() {
 
 	finalizing = true;
 
-	// Make sure all script binding gchandles are released before finalizing GDMono
+	// Make sure all script binding gchandles are released before finalizing GDMono.
 	for (KeyValue<Object *, CSharpScriptBinding> &E : script_bindings) {
 		CSharpScriptBinding &script_binding = E.value;
 
@@ -156,6 +156,10 @@ void CSharpLanguage::finalize() {
 			script_binding.gchandle.release();
 			script_binding.inited = false;
 		}
+
+		// Make sure we clear all the instance binding callbacks so they don't get called
+		// after finalizing the C# language.
+		script_binding.owner->free_instance_binding(this);
 	}
 
 	if (gdmono) {
@@ -1227,6 +1231,11 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 }
 
 GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference) {
+	// Instance bindings callbacks can only be called if the C# language is available.
+	// Failing this assert usually means that we didn't clear the instance binding in some Object
+	// and the C# language has already been finalized.
+	DEV_ASSERT(CSharpLanguage::get_singleton() != nullptr);
+
 	CRASH_COND(!p_binding);
 
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
@@ -1488,11 +1497,23 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 
 void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	List<PropertyInfo> props;
-	script->get_script_property_list(&props);
+	ERR_FAIL_COND(!script.is_valid());
+#ifdef TOOLS_ENABLED
+	for (const PropertyInfo &prop : script->exported_members_cache) {
+		props.push_back(prop);
+	}
+#else
+	for (const KeyValue<StringName, PropertyInfo> &E : script->member_info) {
+		props.push_front(E.value);
+	}
+#endif
+
+	for (PropertyInfo &prop : props) {
+		validate_property(prop);
+		p_properties->push_back(prop);
+	}
 
 	// Call _get_property_list
-
-	ERR_FAIL_COND(!script.is_valid());
 
 	StringName method = SNAME("_get_property_list");
 
@@ -1515,9 +1536,25 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		}
 	}
 
-	for (PropertyInfo &prop : props) {
-		validate_property(prop);
-		p_properties->push_back(prop);
+	CSharpScript *top = script.ptr()->base_script.ptr();
+	while (top != nullptr) {
+		props.clear();
+#ifdef TOOLS_ENABLED
+		for (const PropertyInfo &prop : top->exported_members_cache) {
+			props.push_back(prop);
+		}
+#else
+		for (const KeyValue<StringName, PropertyInfo> &E : top->member_info) {
+			props.push_front(E.value);
+		}
+#endif
+
+		for (PropertyInfo &prop : props) {
+			validate_property(prop);
+			p_properties->push_back(prop);
+		}
+
+		top = top->base_script.ptr();
 	}
 }
 
@@ -1662,7 +1699,7 @@ bool CSharpInstance::_reference_owner_unsafe() {
 	// but the managed instance is alive, the refcount will be 1 instead of 0.
 	// See: _unreference_owner_unsafe()
 
-	// May not me referenced yet, so we must use init_ref() instead of reference()
+	// May not be referenced yet, so we must use init_ref() instead of reference()
 	if (static_cast<RefCounted *>(owner)->init_ref()) {
 		CSharpLanguage::get_singleton()->post_unsafe_reference(owner);
 		unsafe_referenced = true;
@@ -2351,8 +2388,8 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 	if (!ok) {
 		// Important to clear this before destroying the script instance here
 		instance->script = Ref<CSharpScript>();
-		instance->owner = nullptr;
 		p_owner->set_script_instance(nullptr);
+		instance->owner = nullptr;
 
 		return nullptr;
 	}
@@ -2707,7 +2744,7 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-const Variant CSharpScript::get_rpc_config() const {
+Variant CSharpScript::get_rpc_config() const {
 	return rpc_config;
 }
 
@@ -2787,7 +2824,7 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 
 	if (GDMonoCache::godot_api_cache_updated) {
 		GDMonoCache::managed_callbacks.ScriptManagerBridge_GetOrCreateScriptBridgeForPath(&p_path, &scr);
-		ERR_FAIL_NULL_V_MSG(scr, Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
+		ERR_FAIL_COND_V_MSG(scr.is_null(), Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
 	} else {
 		scr = Ref<CSharpScript>(memnew(CSharpScript));
 	}

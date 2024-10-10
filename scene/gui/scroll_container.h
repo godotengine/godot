@@ -44,6 +44,7 @@ public:
 		SCROLL_MODE_AUTO,
 		SCROLL_MODE_SHOW_ALWAYS,
 		SCROLL_MODE_SHOW_NEVER,
+		SCROLL_MODE_RESERVE,
 	};
 
 private:
@@ -74,6 +75,9 @@ private:
 	} theme_cache;
 
 	void _cancel_drag();
+
+	bool _is_h_scroll_visible() const;
+	bool _is_v_scroll_visible() const;
 
 protected:
 	Size2 get_minimum_size() const override;

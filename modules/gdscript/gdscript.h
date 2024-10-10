@@ -169,9 +169,7 @@ private:
 	GDScriptFunction *static_initializer = nullptr;
 
 	Error _static_init();
-#ifdef TOOLS_ENABLED
 	void _static_default_init(); // Initialize static variables with default values based on their types.
-#endif
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
@@ -336,7 +334,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual const Variant get_rpc_config() const override;
+	virtual Variant get_rpc_config() const override;
 
 	void unload_static() const;
 
@@ -413,10 +411,13 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	static GDScriptLanguage *singleton;
 
+	bool finishing = false;
+
 	Variant *_global_array = nullptr;
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;
 	HashMap<StringName, Variant> named_globals;
+	Vector<int> global_array_empty_indexes;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -448,6 +449,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	int _debug_max_call_stack = 0;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
+	void _remove_global(const StringName &p_name);
 
 	friend class GDScriptInstance;
 
@@ -459,11 +461,18 @@ class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunction;
 
 	SelfList<GDScriptFunction>::List function_list;
+#ifdef DEBUG_ENABLED
 	bool profiling;
 	bool profile_native_calls;
 	uint64_t script_frame_time;
+#endif
 
 	HashMap<String, ObjectID> orphan_subclasses;
+
+#ifdef TOOLS_ENABLED
+	void _extension_loaded(const Ref<GDExtension> &p_extension);
+	void _extension_unloading(const Ref<GDExtension> &p_extension);
+#endif
 
 public:
 	int calls;

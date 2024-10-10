@@ -214,7 +214,7 @@ EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
+	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyAnchorsPreset::_option_selected));
 }
 
 void EditorPropertySizeFlags::_set_read_only(bool p_read_only) {
@@ -360,9 +360,9 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 	}
 
 	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
-	String wide_preset_icon = SNAME("ControlAlignHCenterWide");
-	String begin_preset_icon = SNAME("ControlAlignCenterLeft");
-	String end_preset_icon = SNAME("ControlAlignCenterRight");
+	StringName wide_preset_icon = SNAME("ControlAlignHCenterWide");
+	StringName begin_preset_icon = SNAME("ControlAlignCenterLeft");
+	StringName end_preset_icon = SNAME("ControlAlignCenterRight");
 	if (vertical) {
 		wide_preset_icon = SNAME("ControlAlignVCenterWide");
 		begin_preset_icon = SNAME("ControlAlignCenterTop");
@@ -397,7 +397,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
 	set_label_reference(flag_presets);
-	flag_presets->connect("item_selected", callable_mp(this, &EditorPropertySizeFlags::_preset_selected));
+	flag_presets->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertySizeFlags::_preset_selected));
 
 	flag_options = memnew(VBoxContainer);
 	flag_options->hide();
@@ -1084,7 +1084,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	anchor_mode_button->set_toggle_mode(true);
 	anchor_mode_button->set_tooltip_text(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
 	add_child(anchor_mode_button);
-	anchor_mode_button->connect("toggled", callable_mp(this, &ControlEditorToolbar::_anchor_mode_toggled));
+	anchor_mode_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_anchor_mode_toggled));
 
 	// Container tools.
 	containers_button = memnew(ControlEditorPopupButton);

@@ -307,8 +307,10 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			int len = p_packet_len - SYS_CMD_SIZE;
 			bool should_process = false;
 			if (get_unique_id() == 1) { // I am the server.
-				// Direct messages to server should not go through relay.
-				ERR_FAIL_COND(peer > 0 && !connected_peers.has(peer));
+				// The requested target might have disconnected while the packet was in transit.
+				if (unlikely(peer > 0 && !connected_peers.has(peer))) {
+					return;
+				}
 				// Send relay packet.
 				relay_buffer->seek(0);
 				relay_buffer->put_u8(NETWORK_COMMAND_SYS);
@@ -319,21 +321,24 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 				multiplayer_peer->set_transfer_mode(p_mode);
 				multiplayer_peer->set_transfer_channel(p_channel);
 				if (peer > 0) {
+					// Single destination.
 					multiplayer_peer->set_target_peer(peer);
 					_send(data.ptr(), relay_buffer->get_position());
 				} else {
+					// Multiple destinations.
 					for (const int &P : connected_peers) {
 						// Not to sender, nor excluded.
-						if (P == p_from || (peer < 0 && P != -peer)) {
+						if (P == p_from || P == -peer) {
 							continue;
 						}
 						multiplayer_peer->set_target_peer(P);
 						_send(data.ptr(), relay_buffer->get_position());
 					}
-				}
-				if (peer == 0 || peer == -1) {
-					should_process = true;
-					peer = p_from; // Process as the source.
+					if (peer != -1) {
+						// The server is one of the targets, process the packet with sender as source.
+						should_process = true;
+						peer = p_from;
+					}
 				}
 			} else {
 				ERR_FAIL_COND(p_from != 1); // Bug.
@@ -425,11 +430,11 @@ void SceneMultiplayer::_del_peer(int p_id) {
 
 void SceneMultiplayer::disconnect_peer(int p_id) {
 	ERR_FAIL_COND(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED);
-	if (pending_peers.has(p_id)) {
-		pending_peers.erase(p_id);
-	} else if (connected_peers.has(p_id)) {
-		connected_peers.erase(p_id);
-	}
+	// Block signals to avoid emitting peer_disconnected.
+	bool blocking = is_blocking_signals();
+	set_block_signals(true);
+	_del_peer(p_id);
+	set_block_signals(blocking);
 	multiplayer_peer->disconnect_peer(p_id);
 }
 

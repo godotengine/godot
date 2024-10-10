@@ -81,7 +81,6 @@ void EditorPropertyText::_text_submitted(const String &p_string) {
 	}
 
 	if (text->has_focus()) {
-		text->release_focus();
 		_text_changed(p_string);
 	}
 }
@@ -129,9 +128,6 @@ void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
 
-void EditorPropertyText::_bind_methods() {
-}
-
 EditorPropertyText::EditorPropertyText() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -140,7 +136,7 @@ EditorPropertyText::EditorPropertyText() {
 	hb->add_child(text);
 	add_focusable(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
-	text->connect("text_changed", callable_mp(this, &EditorPropertyText::_text_changed));
+	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyText::_text_changed));
 	text->connect("text_submitted", callable_mp(this, &EditorPropertyText::_text_submitted));
 }
 
@@ -165,10 +161,10 @@ void EditorPropertyMultilineText::_open_big_text() {
 		big_text = memnew(TextEdit);
 		if (expression) {
 			big_text->set_syntax_highlighter(text->get_syntax_highlighter());
-			big_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
-			big_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
+			big_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
+			big_text->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
 		}
-		big_text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
+		big_text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
 		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
@@ -204,22 +200,19 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 				font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				font_size = get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts));
 
-				text->add_theme_font_override("font", font);
-				text->add_theme_font_size_override("font_size", font_size);
+				text->add_theme_font_override(SceneStringName(font), font);
+				text->add_theme_font_size_override(SceneStringName(font_size), font_size);
 				if (big_text) {
-					big_text->add_theme_font_override("font", font);
-					big_text->add_theme_font_size_override("font_size", font_size);
+					big_text->add_theme_font_override(SceneStringName(font), font);
+					big_text->add_theme_font_size_override(SceneStringName(font_size), font_size);
 				}
 			} else {
-				font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
-				font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
+				font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+				font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
 			}
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 		} break;
 	}
-}
-
-void EditorPropertyMultilineText::_bind_methods() {
 }
 
 EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
@@ -228,7 +221,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	add_child(hb);
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
-	text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_text_changed));
+	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_text_changed));
 	text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 	add_focusable(text);
 	hb->add_child(text);
@@ -343,9 +336,6 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 	}
 }
 
-void EditorPropertyTextEnum::_bind_methods() {
-}
-
 void EditorPropertyTextEnum::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -376,7 +366,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_flat(true);
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
-	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
+	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
@@ -445,9 +435,6 @@ void EditorPropertyLocale::_notification(int p_what) {
 
 void EditorPropertyLocale::_locale_focus_exited() {
 	_locale_selected(locale->get_text());
-}
-
-void EditorPropertyLocale::_bind_methods() {
 }
 
 EditorPropertyLocale::EditorPropertyLocale() {
@@ -586,9 +573,6 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	return false;
 }
 
-void EditorPropertyPath::_bind_methods() {
-}
-
 EditorPropertyPath::EditorPropertyPath() {
 	HBoxContainer *path_hb = memnew(HBoxContainer);
 	add_child(path_hb);
@@ -637,9 +621,6 @@ void EditorPropertyClassName::_dialog_created() {
 	update_property();
 }
 
-void EditorPropertyClassName::_bind_methods() {
-}
-
 EditorPropertyClassName::EditorPropertyClassName() {
 	property = memnew(Button);
 	property->set_clip_text(true);
@@ -667,9 +648,6 @@ void EditorPropertyCheck::update_property() {
 	bool c = get_edited_property_value();
 	checkbox->set_pressed(c);
 	checkbox->set_disabled(is_read_only());
-}
-
-void EditorPropertyCheck::_bind_methods() {
 }
 
 EditorPropertyCheck::EditorPropertyCheck() {
@@ -709,23 +687,25 @@ void EditorPropertyEnum::update_property() {
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	options->clear();
+	HashMap<int64_t, Vector<String>> items;
 	int64_t current_val = 0;
-	for (int i = 0; i < p_options.size(); i++) {
-		Vector<String> text_split = p_options[i].split(":");
+	for (const String &option : p_options) {
+		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		}
-		options->add_item(text_split[0]);
-		options->set_item_metadata(i, current_val);
+		items[current_val].push_back(text_split[0]);
 		current_val += 1;
+	}
+
+	for (const KeyValue<int64_t, Vector<String>> &K : items) {
+		options->add_item(String(", ").join(K.value));
+		options->set_item_metadata(-1, K.key);
 	}
 }
 
 void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
-}
-
-void EditorPropertyEnum::_bind_methods() {
 }
 
 EditorPropertyEnum::EditorPropertyEnum() {
@@ -735,7 +715,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyEnum::_option_selected));
+	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyEnum::_option_selected));
 }
 
 ///////////////////// FLAGS /////////////////////////
@@ -804,9 +784,6 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	}
 }
 
-void EditorPropertyFlags::_bind_methods() {
-}
-
 EditorPropertyFlags::EditorPropertyFlags() {
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);
@@ -850,7 +827,7 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 	rename_dialog->set_ok_button_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
-	rename_dialog->connect("confirmed", callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
+	rename_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
 	layer_rename = memnew(PopupMenu);
 	layer_rename->add_item(TTR("Rename layer"), 0);
 	add_child(layer_rename);
@@ -858,8 +835,8 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 }
 
 Size2 EditorPropertyLayersGrid::get_grid_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	return Vector2(0, font->get_height(font_size) * 3);
 }
 
@@ -998,7 +975,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 			Color color = get_theme_color(read_only ? SNAME("highlight_disabled_color") : SNAME("highlight_color"), EditorStringName(Editor));
 
-			Color text_color = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_color"), EditorStringName(Editor));
+			Color text_color = get_theme_color(read_only ? SNAME("font_disabled_color") : SceneStringName(font_color), EditorStringName(Editor));
 			text_color.a *= 0.5;
 
 			Color text_color_on = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_hover_color"), EditorStringName(Editor));
@@ -1029,8 +1006,8 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 						draw_rect(rect2, color);
 						flag_rects.push_back(rect2);
 
-						Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-						int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+						Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+						int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 						Vector2 offset;
 						offset.y = rect2.size.y * 0.75;
 
@@ -1280,9 +1257,6 @@ void EditorPropertyLayers::_refresh_names() {
 	setup(layer_type);
 }
 
-void EditorPropertyLayers::_bind_methods() {
-}
-
 EditorPropertyLayers::EditorPropertyLayers() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_clip_contents(true);
@@ -1330,9 +1304,6 @@ void EditorPropertyInteger::update_property() {
 #endif
 }
 
-void EditorPropertyInteger::_bind_methods() {
-}
-
 void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_hide_slider, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
@@ -1348,7 +1319,7 @@ EditorPropertyInteger::EditorPropertyInteger() {
 	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
-	spin->connect("value_changed", callable_mp(this, &EditorPropertyInteger::_value_changed));
+	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyInteger::_value_changed));
 }
 
 ///////////////////// OBJECT ID /////////////////////////
@@ -1385,9 +1356,6 @@ void EditorPropertyObjectID::setup(const String &p_base_type) {
 	base_type = p_base_type;
 }
 
-void EditorPropertyObjectID::_bind_methods() {
-}
-
 EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
 	add_child(edit);
@@ -1413,9 +1381,6 @@ void EditorPropertySignal::update_property() {
 	edit->set_icon(get_editor_theme_icon(SNAME("Signals")));
 }
 
-void EditorPropertySignal::_bind_methods() {
-}
-
 EditorPropertySignal::EditorPropertySignal() {
 	edit = memnew(Button);
 	add_child(edit);
@@ -1433,9 +1398,6 @@ void EditorPropertyCallable::update_property() {
 	edit->set_text("Callable");
 	edit->set_disabled(true);
 	edit->set_icon(get_editor_theme_icon(SNAME("Callable")));
-}
-
-void EditorPropertyCallable::_bind_methods() {
 }
 
 EditorPropertyCallable::EditorPropertyCallable() {
@@ -1465,9 +1427,6 @@ void EditorPropertyFloat::update_property() {
 	spin->set_value_no_signal(val);
 }
 
-void EditorPropertyFloat::_bind_methods() {
-}
-
 void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
 	radians_as_degrees = p_radians_as_degrees;
 	spin->set_min(p_min);
@@ -1485,7 +1444,7 @@ EditorPropertyFloat::EditorPropertyFloat() {
 	spin->set_flat(true);
 	add_child(spin);
 	add_focusable(spin);
-	spin->connect("value_changed", callable_mp(this, &EditorPropertyFloat::_value_changed));
+	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyFloat::_value_changed));
 }
 
 ///////////////////// EASING /////////////////////////
@@ -1570,14 +1529,14 @@ void EditorPropertyEasing::_draw_easing() {
 
 	const float exp = get_edited_property_value();
 
-	const Ref<Font> f = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
+	const Ref<Font> f = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	const Color font_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
 	Color line_color;
 	if (dragging) {
 		line_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	} else {
-		line_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit")) * Color(1, 1, 1, 0.9);
+		line_color = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit")) * Color(1, 1, 1, 0.9);
 	}
 
 	Vector<Point2> points;
@@ -1670,12 +1629,9 @@ void EditorPropertyEasing::_notification(int p_what) {
 				preset->add_icon_item(get_editor_theme_icon(SNAME("CurveInOut")), "Ease In-Out", EASING_IN_OUT);
 				preset->add_icon_item(get_editor_theme_icon(SNAME("CurveOutIn")), "Ease Out-In", EASING_OUT_IN);
 			}
-			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SNAME("font"), SNAME("Label"))->get_height(get_theme_font_size(SNAME("font_size"), SNAME("Label"))) * 2));
+			easing_draw->set_custom_minimum_size(Size2(0, get_theme_font(SceneStringName(font), SNAME("Label"))->get_height(get_theme_font_size(SceneStringName(font_size), SNAME("Label"))) * 2));
 		} break;
 	}
-}
-
-void EditorPropertyEasing::_bind_methods() {
 }
 
 EditorPropertyEasing::EditorPropertyEasing() {
@@ -1697,7 +1653,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->set_hide_slider(true);
 	spin->set_allow_lesser(true);
 	spin->set_allow_greater(true);
-	spin->connect("value_changed", callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
+	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
 	spin->get_line_edit()->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyEasing::_spin_focus_exited));
 	spin->hide();
 	add_child(spin);
@@ -1738,9 +1694,6 @@ void EditorPropertyRect2::_notification(int p_what) {
 			}
 		} break;
 	}
-}
-
-void EditorPropertyRect2::_bind_methods() {
 }
 
 void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
@@ -1789,7 +1742,7 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		}
 
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyRect2::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1837,9 +1790,6 @@ void EditorPropertyRect2i::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyRect2i::_bind_methods() {
-}
-
 void EditorPropertyRect2i::setup(int p_min, int p_max, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
@@ -1885,7 +1835,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		}
 
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2i::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyRect2i::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1933,9 +1883,6 @@ void EditorPropertyPlane::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyPlane::_bind_methods() {
-}
-
 void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
@@ -1972,7 +1919,7 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyPlane::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyPlane::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2078,14 +2025,11 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
 			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			euler_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
+			euler_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-			warning->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
-}
-
-void EditorPropertyQuaternion::_bind_methods() {
 }
 
 void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix, bool p_hide_editor) {
@@ -2145,7 +2089,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		spin[i]->set_label(desc[i]);
 		default_layout->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyQuaternion::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2172,7 +2116,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		euler[i]->set_label(desc[i]);
 		edit_custom_layout->add_child(euler[i]);
 		add_focusable(euler[i]);
-		euler[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_custom_value_changed));
+		euler[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyQuaternion::_custom_value_changed));
 		if (horizontal) {
 			euler[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2232,9 +2176,6 @@ void EditorPropertyAABB::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyAABB::_bind_methods() {
-}
-
 void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 6; i++) {
 		spin[i]->set_min(p_min);
@@ -2261,7 +2202,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyAABB::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2313,9 +2254,6 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyTransform2D::_bind_methods() {
-}
-
 void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 6; i++) {
 		spin[i]->set_min(p_min);
@@ -2345,7 +2283,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		}
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyTransform2D::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2398,9 +2336,6 @@ void EditorPropertyBasis::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyBasis::_bind_methods() {
-}
-
 void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 9; i++) {
 		spin[i]->set_min(p_min);
@@ -2428,7 +2363,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyBasis::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2490,9 +2425,6 @@ void EditorPropertyTransform3D::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyTransform3D::_bind_methods() {
-}
-
 void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 12; i++) {
 		spin[i]->set_min(p_min);
@@ -2520,7 +2452,7 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyTransform3D::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2590,9 +2522,6 @@ void EditorPropertyProjection::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyProjection::_bind_methods() {
-}
-
 void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 16; i++) {
 		spin[i]->set_min(p_min);
@@ -2620,7 +2549,7 @@ EditorPropertyProjection::EditorPropertyProjection() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyProjection::_value_changed).bind(desc[i]));
+		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyProjection::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2778,7 +2707,11 @@ void EditorPropertyNodePath::_update_menu() {
 void EditorPropertyNodePath::_menu_option(int p_idx) {
 	switch (p_idx) {
 		case ACTION_CLEAR: {
-			emit_changed(get_edited_property(), NodePath());
+			if (editing_node) {
+				emit_changed(get_edited_property(), Variant());
+			} else {
+				emit_changed(get_edited_property(), NodePath());
+			}
 			update_property();
 		} break;
 
@@ -3246,6 +3179,10 @@ void EditorPropertyResource::_update_preferred_shader() {
 	}
 }
 
+bool EditorPropertyResource::_should_stop_editing() const {
+	return !resource_picker->is_toggle_pressed();
+}
+
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Node *to_node = get_node(p_path);
 	if (!Object::cast_to<Viewport>(to_node)) {
@@ -3313,7 +3250,10 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 				sub_inspector->set_use_doc_hints(true);
 
-				sub_inspector->set_sub_inspector(true);
+				EditorInspector *parent_inspector = get_parent_inspector();
+				ERR_FAIL_NULL(parent_inspector);
+				sub_inspector->set_root_inspector(parent_inspector->get_root_inspector());
+
 				sub_inspector->set_property_name_style(InspectorDock::get_singleton()->get_property_name_style());
 
 				sub_inspector->connect("property_keyed", callable_mp(this, &EditorPropertyResource::_sub_inspector_property_keyed));
@@ -3417,11 +3357,16 @@ void EditorPropertyResource::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			const EditorInspector *ei = get_parent_inspector();
-			if (ei && !ei->is_main_editor_inspector()) {
+			const EditorInspector *main_ei = InspectorDock::get_inspector_singleton();
+			if (ei && main_ei && ei != main_ei && !main_ei->is_ancestor_of(ei)) {
 				fold_resource();
 			}
 		} break;
 	}
+}
+
+void EditorPropertyResource::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_should_stop_editing"), &EditorPropertyResource::_should_stop_editing);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
@@ -3846,7 +3791,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
-				editor->setup(p_hint);
+				editor->setup(p_hint, p_hint_text);
 				return editor;
 			}
 		} break;

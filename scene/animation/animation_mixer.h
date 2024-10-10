@@ -48,6 +48,7 @@ class AnimationMixer : public Node {
 #endif // TOOLS_ENABLED
 
 	bool reset_on_save = true;
+	bool is_GDVIRTUAL_CALL_post_process_key_value = true;
 
 public:
 	enum AnimationCallbackModeProcess {
@@ -84,6 +85,8 @@ public:
 	struct PlaybackInfo {
 		double time = 0.0;
 		double delta = 0.0;
+		double start = 0.0;
+		double end = 0.0;
 		bool seeked = false;
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
@@ -279,12 +282,15 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
+		AudioServer::PlaybackType playback_type;
+		StringName bus;
 
 		TrackCacheAudio(const TrackCacheAudio &p_other) :
 				TrackCache(p_other),
 				audio_stream(p_other.audio_stream),
 				audio_stream_playback(p_other.audio_stream_playback),
-				playing_streams(p_other.playing_streams) {}
+				playing_streams(p_other.playing_streams),
+				playback_type(p_other.playback_type) {}
 
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
@@ -312,6 +318,9 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+
+	/* ---- Audio ---- */
+	AudioServer::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
@@ -425,6 +434,7 @@ public:
 	void set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode);
 	AnimationCallbackModeDiscrete get_callback_mode_discrete() const;
 
+	/* ---- Audio ---- */
 	void set_audio_max_polyphony(int p_audio_max_polyphony);
 	int get_audio_max_polyphony() const;
 

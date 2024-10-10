@@ -44,14 +44,6 @@
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
-#define ERR_ON_RENDER_THREAD                                              \
-	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
-	ERR_FAIL_NULL(rendering_server);                                      \
-	ERR_FAIL_COND(rendering_server->is_on_render_thread());
-#define ERR_ON_RENDER_THREAD_V(m_ret)                                     \
-	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
-	ERR_FAIL_NULL_V(rendering_server, m_ret);                             \
-	ERR_FAIL_COND_V(rendering_server->is_on_render_thread(), m_ret);
 #define ERR_NOT_ON_RENDER_THREAD                                          \
 	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
 	ERR_FAIL_NULL(rendering_server);                                      \
@@ -61,8 +53,6 @@
 	ERR_FAIL_NULL_V(rendering_server, m_ret);                             \
 	ERR_FAIL_COND_V(!rendering_server->is_on_render_thread(), m_ret);
 #else
-#define ERR_ON_RENDER_THREAD
-#define ERR_ON_RENDER_THREAD_V(m_ret)
 #define ERR_NOT_ON_RENDER_THREAD
 #define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
 #endif
@@ -123,6 +113,12 @@ public:
 
 	/* TEXTURE API */
 
+	enum TextureType {
+		TEXTURE_TYPE_2D,
+		TEXTURE_TYPE_LAYERED,
+		TEXTURE_TYPE_3D,
+	};
+
 	enum TextureLayeredType {
 		TEXTURE_LAYERED_2D_ARRAY,
 		TEXTURE_LAYERED_CUBEMAP,
@@ -141,10 +137,14 @@ public:
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_external_create(int p_width, int p_height, uint64_t p_external_buffer = 0) = 0;
 	virtual RID texture_proxy_create(RID p_base) = 0;
+
+	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) = 0;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
+	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer = 0) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
 
 	// These two APIs can be used together or in combination with the others.
@@ -186,7 +186,7 @@ public:
 		uint32_t height;
 		uint32_t depth;
 		Image::Format format;
-		int bytes;
+		int64_t bytes;
 		String path;
 	};
 
@@ -198,6 +198,17 @@ public:
 	virtual RID texture_rd_create(const RID &p_rd_texture, const RenderingServer::TextureLayeredType p_layer_type = RenderingServer::TEXTURE_LAYERED_2D_ARRAY) = 0;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
+
+	/* PIPELINES API */
+
+	enum PipelineSource {
+		PIPELINE_SOURCE_CANVAS,
+		PIPELINE_SOURCE_MESH,
+		PIPELINE_SOURCE_SURFACE,
+		PIPELINE_SOURCE_DRAW,
+		PIPELINE_SOURCE_SPECIALIZATION,
+		PIPELINE_SOURCE_MAX
+	};
 
 	/* SHADER API */
 
@@ -211,6 +222,7 @@ public:
 	};
 
 	virtual RID shader_create() = 0;
+	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
@@ -242,6 +254,7 @@ public:
 	};
 
 	virtual RID material_create() = 0;
+	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
 
@@ -436,6 +449,11 @@ public:
 		MULTIMESH_TRANSFORM_3D,
 	};
 
+	enum MultimeshPhysicsInterpolationQuality {
+		MULTIMESH_INTERP_QUALITY_FAST,
+		MULTIMESH_INTERP_QUALITY_HIGH,
+	};
+
 	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
@@ -458,6 +476,12 @@ public:
 
 	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
 	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
+
+	// Interpolation.
+	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev) = 0;
+	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) = 0;
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, MultimeshPhysicsInterpolationQuality p_quality) = 0;
+	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index) = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -697,6 +721,8 @@ public:
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create() = 0;
@@ -934,6 +960,7 @@ public:
 	virtual void viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset) = 0;
 	virtual void viewport_set_transparent_background(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr) = 0;
+	virtual bool viewport_is_using_hdr_2d(RID p_viewport) const = 0;
 	virtual void viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled) = 0;
 
@@ -1344,6 +1371,8 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
+	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
+	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id) = 0;
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) = 0;
@@ -1633,6 +1662,7 @@ public:
 		GLOBAL_VAR_TYPE_SAMPLER2DARRAY,
 		GLOBAL_VAR_TYPE_SAMPLER3D,
 		GLOBAL_VAR_TYPE_SAMPLERCUBE,
+		GLOBAL_VAR_TYPE_SAMPLEREXT,
 		GLOBAL_VAR_TYPE_MAX
 	};
 
@@ -1657,7 +1687,6 @@ public:
 
 	/* INTERPOLATION */
 
-	virtual void tick() = 0;
 	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
 	/* EVENT QUEUING */
@@ -1669,6 +1698,8 @@ public:
 	virtual bool has_changed() const = 0;
 	virtual void init();
 	virtual void finish() = 0;
+	virtual void tick() = 0;
+	virtual void pre_draw(bool p_will_draw) = 0;
 
 	/* STATUS INFORMATION */
 
@@ -1679,6 +1710,11 @@ public:
 		RENDERING_INFO_TEXTURE_MEM_USED,
 		RENDERING_INFO_BUFFER_MEM_USED,
 		RENDERING_INFO_VIDEO_MEM_USED,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_MESH,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION,
 		RENDERING_INFO_MAX
 	};
 
@@ -1722,7 +1758,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	// Never actually used, should be removed when we can break compatibility.
-	enum Features{
+	enum Features {
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};
@@ -1786,8 +1822,10 @@ private:
 };
 
 // Make variant understand the enums.
+VARIANT_ENUM_CAST(RenderingServer::TextureType);
 VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
+VARIANT_ENUM_CAST(RenderingServer::PipelineSource);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
 VARIANT_ENUM_CAST(RenderingServer::ArrayType);
 VARIANT_BITFIELD_CAST(RenderingServer::ArrayFormat);
@@ -1795,6 +1833,7 @@ VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
 VARIANT_ENUM_CAST(RenderingServer::PrimitiveType);
 VARIANT_ENUM_CAST(RenderingServer::BlendShapeMode);
 VARIANT_ENUM_CAST(RenderingServer::MultimeshTransformFormat);
+VARIANT_ENUM_CAST(RenderingServer::MultimeshPhysicsInterpolationQuality);
 VARIANT_ENUM_CAST(RenderingServer::LightType);
 VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);

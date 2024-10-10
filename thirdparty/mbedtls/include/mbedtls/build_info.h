@@ -26,16 +26,16 @@
  */
 #define MBEDTLS_VERSION_MAJOR  3
 #define MBEDTLS_VERSION_MINOR  6
-#define MBEDTLS_VERSION_PATCH  0
+#define MBEDTLS_VERSION_PATCH  1
 
 /**
  * The single version number has the following structure:
  *    MMNNPP00
  *    Major version | Minor version | Patch version
  */
-#define MBEDTLS_VERSION_NUMBER         0x03060000
-#define MBEDTLS_VERSION_STRING         "3.6.0"
-#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 3.6.0"
+#define MBEDTLS_VERSION_NUMBER         0x03060100
+#define MBEDTLS_VERSION_STRING         "3.6.1"
+#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 3.6.1"
 
 /* Macros for build-time platform detection */
 
@@ -101,6 +101,13 @@
 #define inline __inline
 #endif
 
+#if defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Something went wrong: MBEDTLS_CONFIG_FILES_READ defined before reading the config files!"
+#endif
+#if defined(MBEDTLS_CONFIG_IS_FINALIZED)
+#error "Something went wrong: MBEDTLS_CONFIG_IS_FINALIZED defined before reading the config files!"
+#endif
+
 /* X.509, TLS and non-PSA crypto configuration */
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/mbedtls_config.h"
@@ -134,6 +141,12 @@
 #include MBEDTLS_PSA_CRYPTO_USER_CONFIG_FILE
 #endif
 #endif /* defined(MBEDTLS_PSA_CRYPTO_CONFIG) */
+
+/* Indicate that all configuration files have been read.
+ * It is now time to adjust the configuration (follow through on dependencies,
+ * make PSA and legacy crypto consistent, etc.).
+ */
+#define MBEDTLS_CONFIG_FILES_READ
 
 /* Auto-enable MBEDTLS_CTR_DRBG_USE_128_BIT_KEY if
  * MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH and MBEDTLS_CTR_DRBG_C defined
@@ -169,8 +182,13 @@
 
 #include "mbedtls/config_adjust_ssl.h"
 
-/* Make sure all configuration symbols are set before including check_config.h,
- * even the ones that are calculated programmatically. */
+/* Indicate that all configuration symbols are set,
+ * even the ones that are calculated programmatically.
+ * It is now safe to query the configuration (to check it, to size buffers,
+ * etc.).
+ */
+#define MBEDTLS_CONFIG_IS_FINALIZED
+
 #include "mbedtls/check_config.h"
 
 #endif /* MBEDTLS_BUILD_INFO_H */

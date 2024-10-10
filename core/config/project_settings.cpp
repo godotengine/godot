@@ -329,9 +329,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			String path = p_value;
 			if (path.begins_with("*")) {
 				autoload.is_singleton = true;
-				autoload.path = path.substr(1);
+				autoload.path = path.substr(1).simplify_path();
 			} else {
-				autoload.path = path;
+				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
@@ -348,7 +348,6 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
 	if (!props.has(p_name)) {
-		WARN_PRINT("Property not found: " + String(p_name));
 		return false;
 	}
 	r_ret = props[p_name].variant;
@@ -1016,7 +1015,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	// Check for the existence of a csproj file.
-	if (_csproj_exists(p_path.get_base_dir())) {
+	if (_csproj_exists(get_resource_path())) {
 		// If there is a csproj file, add the C# feature if it doesn't already exist.
 		if (!project_features.has("C#")) {
 			project_features.append("C#");
@@ -1398,7 +1397,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			}
 
 			Dictionary action;
-			action["deadzone"] = Variant(0.5f);
+			action["deadzone"] = Variant(0.2f);
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
@@ -1472,29 +1471,18 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
-#ifdef TOOLS_ENABLED
-	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor_hint", false);
-#endif
-
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type.web", PROPERTY_HINT_ENUM, "Stream,Sample"), 1);
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01"), 0.5f);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/ios/session_category", PROPERTY_HINT_ENUM, "Ambient,Multi Route,Play and Record,Playback,Record,Solo Ambient"), 0);
 	GLOBAL_DEF("audio/general/ios/mix_with_others", false);
-
-	PackedStringArray extensions;
-	extensions.push_back("gd");
-	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
-		extensions.push_back("cs");
-	}
-	extensions.push_back("gdshader");
-
-	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
 
 	_add_builtin_input_map();
 
@@ -1513,6 +1501,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/scale_mode", PROPERTY_HINT_ENUM, "fractional,integer"), "fractional");
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1"), 16384);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/profiler/max_timestamp_query_elements", PROPERTY_HINT_RANGE, "256,65535,1"), 256);
 
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching"), Compression::zstd_long_distance_matching);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zstd/compression_level", PROPERTY_HINT_RANGE, "1,22,1"), Compression::zstd_level);
@@ -1567,6 +1556,11 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("collada/use_ambient", false);
 
+	// Input settings
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
+
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
@@ -1579,6 +1573,7 @@ ProjectSettings::ProjectSettings() {
 
 ProjectSettings::ProjectSettings(const String &p_path) {
 	if (load_custom(p_path) == OK) {
+		resource_path = p_path.get_base_dir();
 		project_loaded = true;
 	}
 }

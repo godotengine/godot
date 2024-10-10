@@ -16,7 +16,7 @@ def parse_template(inherits, source, delimiter):
     meta_prefix = delimiter + " meta-"
     meta = ["name", "description", "version", "space-indent"]
 
-    with open(source) as f:
+    with open(source, "r", encoding="utf-8") as f:
         lines = f.readlines()
         for line in lines:
             if line.startswith(meta_prefix):
