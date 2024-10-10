@@ -657,16 +657,31 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 	real_t closest_point_distance_squared = FLT_MAX;
 
 	for (const gd::Polygon &polygon : p_polygons) {
-		for (size_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
-			const Face3 face(polygon.points[0].pos, polygon.points[point_id - 1].pos, polygon.points[point_id].pos);
-			const Vector3 closest_point_on_face = face.get_closest_point_to(p_point);
-			const real_t distance_squared_to_point = closest_point_on_face.distance_squared_to(p_point);
-			if (distance_squared_to_point < closest_point_distance_squared) {
-				result.point = closest_point_on_face;
-				result.normal = face.get_plane().normal;
-				result.owner = polygon.owner->get_self();
-				closest_point_distance_squared = distance_squared_to_point;
+		Vector3 planeNormal = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
+		bool inside = true;
+		for (size_t point_id = 1; point_id < polygon.points.size(); point_id += 1) {
+			Vector3 edge = polygon.points[point_id].pos - polygon.points[point_id - 1].pos;
+			Vector3 cr = edge.cross(p_point - polygon.points[point_id].pos);
+			bool clockwise = cr.dot(planeNormal) > 0;
+			if (clockwise == false) {
+				inside = false;
+				real_t v = edge.dot(p_point - polygon.points[point_id - 1].pos);
+				Vector3 d = polygon.points[point_id - 1].pos + CLAMP(v / edge.length_squared(), 0.f, 1.f) * edge;
+				real_t dd = d.distance_squared_to(p_point);
+				if (dd < closest_point_distance_squared) {
+					closest_point_distance_squared = dd;
+					result.point = d;
+					result.normal = planeNormal;
+					result.owner = polygon.owner->get_self();
+				}
 			}
+		}
+
+		if (inside) {
+			result.point = p_point;
+			result.normal = planeNormal;
+			result.owner = polygon.owner->get_self();
+			break;
 		}
 	}
 
