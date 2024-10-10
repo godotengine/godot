@@ -37,6 +37,7 @@
 
 const int InputEvent::DEVICE_ID_EMULATION = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;
+const int InputEvent::DEVICE_ID_ALL_DEVICES = -99;
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
