@@ -170,16 +170,51 @@
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
+		<method name="get_dictionary_from_headers">
+			<return type="Dictionary" />
+			<param index="0" name="headers" type="PackedStringArray" />
+			<description>
+				Returns all response headers as a [Dictionary] of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity is ignored and converted to lower-case keys. A value is a simple [String], this string can have more than one value where "; " is used as separator.
+				[b]Example:[/b]
+				[codeblock]
+				{
+				    "content-length": 12,
+				    "content-type": "application/json; charset=UTF-8",
+				}
+				[/codeblock]
+				[b]Note:[/b] [param headers] are meant to be supplied with [param headers] returned via [signal request_completed].
+			</description>
+		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of bytes this HTTPRequest downloaded.
 			</description>
 		</method>
+		<method name="get_header_value">
+			<return type="String" />
+			<param index="0" name="headers" type="PackedStringArray" />
+			<param index="1" name="header_name" type="String" />
+			<description>
+				Returns the value of the header with the [param header_name] as [String] if found in [param headers]. Otherwise returns an empty [String].
+				[b]Note:[/b] [param headers] are meant to be supplied with [param headers] returned via [signal request_completed].
+				[b]Note:[/b] Header names are case-insensitive.
+			</description>
+		</method>
 		<method name="get_http_client_status" qualifiers="const">
 			<return type="int" enum="HTTPClient.Status" />
 			<description>
 				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
+			</description>
+		</method>
+		<method name="has_header">
+			<return type="bool" />
+			<param index="0" name="headers" type="PackedStringArray" />
+			<param index="1" name="header_name" type="String" />
+			<description>
+				Returns [code]true[/code] if given [param header_name] is found in [param headers]. Otherwise returns [code]false[/code].
+				[b]Note:[/b] [param headers] are meant to be supplied with [param headers] returned via [signal request_completed].
+				[b]Note:[/b] Header names are case-insensitive.
 			</description>
 		</method>
 		<method name="request">
