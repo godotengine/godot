@@ -40,9 +40,11 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "modules/multiplayer/editor/replication_editor.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -112,10 +114,14 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {
-			AnimationPlayerEditor::get_singleton()->unpin();
-			_update_tree();
+			AnimationPlayerEditor::get_singleton()->unpin(n);
+			if (n->is_class("AnimationTree")) {
+				AnimationTreeEditor::get_singleton()->unpin(n);
+			}
+		} else if (n->is_class("MultiplayerSynchronizer")) {
+			ReplicationEditor::get_singleton()->unpin(n);
 		}
-
+		_update_tree();
 	} else if (p_id == BUTTON_GROUP) {
 		undo_redo->create_action(TTR("Ungroup Children"));
 
@@ -239,6 +245,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	TreeItem *item = tree->create_item(p_parent);
+	ERR_FAIL_NULL(item);
 
 	item->set_text(0, p_node->get_name());
 	item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
@@ -424,9 +431,12 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 
+		int pin_count = 0;
+
 		if (p_node->has_meta("_edit_lock_")) {
 			item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 		}
+
 		if (p_node->has_meta("_edit_group_")) {
 			item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 		}
@@ -446,10 +456,26 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (p_node->is_class("AnimationMixer")) {
-			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
+			if (AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned()) {
+				pin_count++;
+			}
 
-			if (is_pinned) {
-				item->add_button(0, get_editor_theme_icon(SNAME("Pin")), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
+			if (p_node->is_class("AnimationTree")) {
+				if (AnimationTreeEditor::get_singleton()->get_animation_tree() == p_node && AnimationTreeEditor::get_singleton()->is_pinned()) {
+					pin_count++;
+				}
+			}
+		} else if (p_node->is_class("MultiplayerSynchronizer")) {
+			if (ReplicationEditor::get_singleton()->get_current() == p_node && ReplicationEditor::get_singleton()->is_pinned()) {
+				pin_count++;
+			}
+		}
+
+		if (pin_count) {
+			if (pin_count > 1) {
+				item->add_button(0, get_editor_theme_icon(SNAME("MultiplePins")), BUTTON_PIN, false, TTR("Node is pinned.\nClick to unpin."));
+			} else {
+				item->add_button(0, get_editor_theme_icon(SNAME("Pin")), BUTTON_PIN, false, TTR("Node is pinned.\nClick to unpin."));
 			}
 		}
 	}
