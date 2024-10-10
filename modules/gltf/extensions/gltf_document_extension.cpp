@@ -34,6 +34,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	// Import process.
 	GDVIRTUAL_BIND(_import_preflight, "state", "extensions");
 	GDVIRTUAL_BIND(_get_supported_extensions);
+	GDVIRTUAL_BIND(_remap_custom_attribute, "name");
 	GDVIRTUAL_BIND(_parse_node_extensions, "state", "gltf_node", "extensions");
 	GDVIRTUAL_BIND(_parse_image_data, "state", "image_data", "mime_type", "ret_image");
 	GDVIRTUAL_BIND(_get_image_file_extension);
@@ -62,6 +63,12 @@ Error GLTFDocumentExtension::import_preflight(Ref<GLTFState> p_state, Vector<Str
 	Error err = OK;
 	GDVIRTUAL_CALL(_import_preflight, p_state, p_extensions, err);
 	return err;
+}
+
+int GLTFDocumentExtension::remap_custom_attribute(const String &p_name) {
+	int ret = -1;
+	GDVIRTUAL_CALL(_remap_custom_attribute, p_name, ret);
+	return ret;
 }
 
 Vector<String> GLTFDocumentExtension::get_supported_extensions() {
