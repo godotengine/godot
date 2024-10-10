@@ -4771,7 +4771,13 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 			// Look for the native base type in the editor theme. This is relevant for
 			// scripts extending other scripts and for built-in classes.
 			String script_class_name = p_script->get_language()->get_global_class_name(p_script->get_path());
-			String base_type = ScriptServer::get_global_class_native_base(script_class_name);
+			String base_type;
+			if (script_class_name.is_empty()) {
+				base_type = p_script->get_instance_base_type();
+			} else {
+				base_type = ScriptServer::get_global_class_native_base(script_class_name);
+			}
+
 			if (theme.is_valid() && theme->has_icon(base_type, EditorStringName(EditorIcons))) {
 				return theme->get_icon(base_type, EditorStringName(EditorIcons));
 			}
@@ -4836,6 +4842,8 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	Ref<Script> scr;
 	if (ScriptServer::is_global_class(p_class)) {
 		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
+	} else if (ResourceLoader::exists(p_class)) { // If the script is not a class_name we check if the script resource exists.
+		scr = ResourceLoader::load(p_class);
 	}
 
 	return _get_class_or_script_icon(p_class, scr, p_fallback, true);
