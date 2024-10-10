@@ -1736,9 +1736,8 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	vp_container->add_child(viewport_hbox);
 	viewport_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
-	viewport_hbox->add_spacer();
-
 	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	vb_light->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	viewport_hbox->add_child(vb_light);
 
@@ -1897,8 +1896,9 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	save_path->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 	HBoxContainer *extension_hb = memnew(HBoxContainer);
 	save_path->get_vbox()->add_child(extension_hb);
-	extension_hb->add_spacer();
-	extension_hb->add_child(memnew(Label(TTR("Save Extension:"))));
+	Label *save_ext_label = memnew(Label(TTR("Save Extension:")));
+	save_ext_label->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
+	extension_hb->add_child(save_ext_label);
 	external_extension_type = memnew(OptionButton);
 	extension_hb->add_child(external_extension_type);
 	external_extension_type->add_item(TTR("Text: *.tres"));

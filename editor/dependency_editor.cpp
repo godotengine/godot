@@ -260,8 +260,8 @@ DependencyEditor::DependencyEditor() {
 	label->set_theme_type_variation("HeaderSmall");
 
 	hbc->add_child(label);
-	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
+	fixdeps->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	hbc->add_child(fixdeps);
 	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 

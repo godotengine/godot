@@ -140,9 +140,8 @@ MeshEditor::MeshEditor() {
 	add_child(hb);
 	hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
-	hb->add_spacer();
-
 	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	hb->add_child(vb_light);
 
 	light_1_switch = memnew(Button);

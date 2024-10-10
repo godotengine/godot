@@ -210,8 +210,8 @@ EditorPluginSettings::EditorPluginSettings() {
 	Label *label = memnew(Label(TTR("Installed Plugins:")));
 	label->set_theme_type_variation("HeaderSmall");
 	title_hb->add_child(label);
-	title_hb->add_spacer();
 	Button *create_plugin_button = memnew(Button(TTR("Create New Plugin")));
+	create_plugin_button->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin_button);
 	add_child(title_hb);

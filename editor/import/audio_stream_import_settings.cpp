@@ -539,8 +539,9 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop->set_tooltip_text(TTR("Enable looping."));
 	loop->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop);
-	loop_hb->add_spacer();
-	loop_hb->add_child(memnew(Label(TTR("Offset:"))));
+	Label *offset_label = memnew(Label(TTR("Offset:")));
+	offset_label->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
+	loop_hb->add_child(offset_label);
 	loop_offset = memnew(SpinBox);
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);

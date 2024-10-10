@@ -1612,10 +1612,10 @@ ConnectionsDock::ConnectionsDock() {
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 
-	connect_button = memnew(Button);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vbc->add_child(hb);
-	hb->add_spacer();
+	connect_button = memnew(Button);
+	connect_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	hb->add_child(connect_button);
 	connect_button->connect(SceneStringName(pressed), callable_mp(this, &ConnectionsDock::_connect_pressed));
 

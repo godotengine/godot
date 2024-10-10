@@ -211,9 +211,9 @@ EditorDirDialog::EditorDirDialog() {
 	vb->add_child(hb);
 
 	hb->add_child(memnew(Label(TTR("Choose target directory:"))));
-	hb->add_spacer();
 
 	makedir = memnew(Button(TTR("Create Folder")));
+	makedir->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	hb->add_child(makedir);
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorDirDialog::_make_dir));
 

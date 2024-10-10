@@ -203,9 +203,9 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	hb->add_child(memnew(Label(TTR("Importer:"))));
 	importers = memnew(OptionButton);
 	hb->add_child(importers);
-	hb->add_spacer();
 	importers->connect(SceneStringName(item_selected), callable_mp(this, &ImportDefaultsEditor::_importer_selected));
 	reset_defaults = memnew(Button);
+	reset_defaults->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	reset_defaults->set_text(TTR("Reset to Defaults"));
 	reset_defaults->set_disabled(true);
 	reset_defaults->connect(SceneStringName(pressed), callable_mp(this, &ImportDefaultsEditor::_reset));

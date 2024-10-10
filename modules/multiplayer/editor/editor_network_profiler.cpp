@@ -319,9 +319,8 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorNetworkProfiler::_autostart_toggled));
 	hb->add_child(autostart_checkbox);
 
-	hb->add_spacer();
-
 	Label *lb = memnew(Label);
+	lb->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	// TRANSLATORS: This is the label for the network profiler's incoming bandwidth.
 	lb->set_text(TTR("Down", "Network"));
 	hb->add_child(lb);
