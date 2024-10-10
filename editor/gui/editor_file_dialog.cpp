@@ -1021,7 +1021,7 @@ void EditorFileDialog::update_file_list() {
 	sort_file_info_list(file_infos, file_sort);
 
 	while (!dirs.is_empty()) {
-		const String &dir_name = dirs.front()->get();
+		const String &dir_name = dirs.get_front();
 
 		item_list->add_item(dir_name);
 
@@ -1071,7 +1071,7 @@ void EditorFileDialog::update_file_list() {
 	while (!file_infos.is_empty()) {
 		bool match = patterns.is_empty();
 
-		FileInfo file_info = file_infos.front()->get();
+		FileInfo file_info = file_infos.get_front();
 		for (const String &E : patterns) {
 			if (file_info.name.matchn(E)) {
 				match = true;
