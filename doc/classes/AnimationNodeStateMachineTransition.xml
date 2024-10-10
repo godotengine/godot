@@ -26,7 +26,7 @@
 			Use an expression as a condition for state machine transitions. It is possible to create complex animation advance conditions for switching between states and gives much greater flexibility for creating complex state machines by directly interfacing with the script code.
 		</member>
 		<member name="advance_mode" type="int" setter="set_advance_mode" getter="get_advance_mode" enum="AnimationNodeStateMachineTransition.AdvanceMode" default="1">
-			Determines whether the transition should disabled, enabled when using [method AnimationNodeStateMachinePlayback.travel], or traversed automatically if the [member advance_condition] and [member advance_expression] checks are true (if assigned).
+			Determines whether the transition should be disabled, enabled when using [method AnimationNodeStateMachinePlayback.travel], or traversed automatically if the [member advance_condition] and [member advance_expression] checks are [code]true[/code] (if assigned).
 		</member>
 		<member name="break_loop_at_end" type="bool" setter="set_break_loop_at_end" getter="is_loop_broken_at_end" default="false">
 			If [code]true[/code], breaks the loop at the end of the loop cycle for transition, even if the animation is looping.
@@ -72,7 +72,7 @@
 			Only use this transition during [method AnimationNodeStateMachinePlayback.travel].
 		</constant>
 		<constant name="ADVANCE_MODE_AUTO" value="2" enum="AdvanceMode">
-			Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are true (if assigned).
+			Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are [code]true[/code] (if assigned).
 		</constant>
 	</constants>
 </class>
