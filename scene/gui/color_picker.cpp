@@ -148,6 +148,7 @@ void ColorPicker::_notification(int p_what) {
 			if (!is_picking_color) {
 				return;
 			}
+			// This is only executed if previously is was checked, that the DisplayServer supports these functions.
 			set_pick_color(DisplayServer::get_singleton()->screen_get_pixel(DisplayServer::get_singleton()->mouse_get_position()));
 		}
 	}
