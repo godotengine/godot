@@ -444,5 +444,5 @@ String get_jni_sig(const String &p_type) {
 		idx++;
 	}
 
-	return "L" + p_type.replace(".", "/") + ";";
+	return "L" + p_type.replace_char('.', '/') + ";";
 }

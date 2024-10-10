@@ -188,9 +188,9 @@ String OS_Web::get_user_data_dir() const {
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
-			return userfs.path_join(custom_dir).replace("\\", "/");
+			return userfs.path_join(custom_dir).replace_char('\\', '/');
 		} else {
-			return userfs.path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace("\\", "/");
+			return userfs.path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace_char('\\', '/');
 		}
 	}
 
