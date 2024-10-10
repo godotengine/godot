@@ -445,6 +445,11 @@ private:
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
+	// these 3 allow tool script to set location of 3d cursor by updating camera transform
+	Transform3D last_cam_transform;
+	bool _camera_moved_externally();
+	void _apply_cam_transform_to_cursor();
+
 	void _surface_mouse_enter();
 	void _surface_mouse_exit();
 	void _surface_focus_enter();
