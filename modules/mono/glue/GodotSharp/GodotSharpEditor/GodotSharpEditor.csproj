@@ -35,6 +35,11 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
+  <!-- Check API for breaking compatibility changes -->
+  <PropertyGroup>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>4.0.0</PackageValidationBaselineVersion>
+  </PropertyGroup>
   <!-- Compat Sources -->
   <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />
