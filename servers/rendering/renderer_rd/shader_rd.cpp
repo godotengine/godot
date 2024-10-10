@@ -46,7 +46,8 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 
 	String text;
 
-	for (int i = 0; i < lines.size(); i++) {
+	int line_count = lines.size();
+	for (int i = 0; i < line_count; i++) {
 		const String &l = lines[i];
 		bool push_chunk = false;
 
@@ -78,6 +79,29 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 			chunk.type = StageTemplate::Chunk::TYPE_CODE;
 			push_chunk = true;
 			chunk.code = l.replace_first("#CODE", String()).replace(":", "").strip_edges().to_upper();
+		} else if (l.begins_with("#include \"")) {
+			int start_pos = 10;
+			int end_pos = l.find("\"", start_pos);
+			if (end_pos != -1) {
+				String include_file = l.substr(start_pos, end_pos - start_pos);
+
+				if (RenderingDevice::has_built_in_include_file(include_file)) {
+					String include_code = RenderingDevice::get_built_in_include_file(include_file);
+					Vector<String> include_lines = String(include_code).split("\n");
+
+					for (int j = include_lines.size() - 1; j >= 0; j--) {
+						lines.insert(i + 1, include_lines[j]);
+					}
+
+					line_count = lines.size();
+				} else {
+					// Add it in as is.
+					text += l + "\n";
+				}
+			} else {
+				// Add it in as is.
+				text += l + "\n";
+			}
 		} else {
 			text += l + "\n";
 		}
