@@ -33,6 +33,7 @@
 EditorStringNames *EditorStringNames::singleton = nullptr;
 
 EditorStringNames::EditorStringNames() {
+	configuration_info_changed = StaticCString::create("configuration_info_changed");
 	Editor = StaticCString::create("Editor");
 	EditorFonts = StaticCString::create("EditorFonts");
 	EditorIcons = StaticCString::create("EditorIcons");

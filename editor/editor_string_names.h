@@ -47,6 +47,7 @@ public:
 
 	_FORCE_INLINE_ static EditorStringNames *get_singleton() { return singleton; }
 
+	StringName configuration_info_changed;
 	StringName Editor;
 	StringName EditorFonts;
 	StringName EditorIcons;

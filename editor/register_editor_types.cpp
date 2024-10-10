@@ -75,6 +75,7 @@
 #include "editor/plugins/cast_2d_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/collision_shape_2d_editor_plugin.h"
+#include "editor/plugins/configuration_info_editor_plugin.h"
 #include "editor/plugins/control_editor_plugin.h"
 #include "editor/plugins/cpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_3d_editor_plugin.h"
@@ -213,6 +214,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<BitMapEditorPlugin>();
 	EditorPlugins::add_by_type<BoneMapEditorPlugin>();
 	EditorPlugins::add_by_type<Camera3DEditorPlugin>();
+	EditorPlugins::add_by_type<ConfigurationInfoEditorPlugin>();
 	EditorPlugins::add_by_type<ControlEditorPlugin>();
 	EditorPlugins::add_by_type<CPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<CurveEditorPlugin>();
