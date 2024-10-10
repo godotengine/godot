@@ -888,6 +888,8 @@ Error GDScript::reload(bool p_keep_state) {
 #endif
 
 	reloading = false;
+	emit_reloaded();
+
 	return OK;
 }
 
