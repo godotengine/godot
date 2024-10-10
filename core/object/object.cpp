@@ -738,21 +738,41 @@ void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid)
 }
 
 Variant Object::callv(const StringName &p_method, const Array &p_args) {
+	int argcount = p_args.size();
 	const Variant **argptrs = nullptr;
+	Variant *args = nullptr;
 
-	if (p_args.size() > 0) {
-		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
-		for (int i = 0; i < p_args.size(); i++) {
-			argptrs[i] = &p_args[i];
+	if (argcount > 0) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+
+		// Make copies of the arguments if the array is read-only, otherwise the address of p_arguments->read_only will be copied for each.
+		if (p_args.is_read_only()) {
+			args = (Variant *)alloca(sizeof(Variant) * argcount);
+			for (int i = 0; i < argcount; i++) {
+				memnew_placement(args + i, Variant(p_args[i]));
+				argptrs[i] = &args[i];
+			}
+		} else {
+			for (int i = 0; i < argcount; i++) {
+				argptrs[i] = &p_args[i];
+			}
 		}
 	}
 
 	Callable::CallError ce;
 	const Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(Variant(), "Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
+		ERR_PRINT("Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce) + ".");
 	}
-	return ret;
+
+	// Destroy the copies of the arguments if any.
+	if (args) {
+		for (int i = 0; i < argcount; i++) {
+			args[i].~Variant();
+		}
+	}
+
+	return (ce.error != Callable::CallError::CALL_OK) ? Variant() : ret;
 }
 
 Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
