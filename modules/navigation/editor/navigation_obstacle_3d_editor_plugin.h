@@ -32,86 +32,122 @@
 #define NAVIGATION_OBSTACLE_3D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics/collision_polygon_3d.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/gui/box_container.h"
-#include "scene/resources/immediate_mesh.h"
 
-#include "scene/3d/navigation_obstacle_3d.h"
-
-class CanvasItemEditor;
-class MenuButton;
+class Button;
+class ConfirmationDialog;
+class NavigationObstacle3D;
+class NavigationObstacle3DGizmoPlugin;
 
 class NavigationObstacle3DEditor : public HBoxContainer {
+	friend class NavigationObstacle3DEditorPlugin;
 	GDCLASS(NavigationObstacle3DEditor, HBoxContainer);
 
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,
-
+		MODE_DELETE,
+		ACTION_FLIP,
+		ACTION_CLEAR,
 	};
 
-	Mode mode;
+	int mode;
 
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
+	Button *button_flip = nullptr;
+	Button *button_clear = nullptr;
+
+	ConfirmationDialog *button_clear_dialog = nullptr;
 
 	Ref<StandardMaterial3D> line_material;
 	Ref<StandardMaterial3D> handle_material;
 
-	Panel *panel = nullptr;
 	NavigationObstacle3D *obstacle_node = nullptr;
-	Ref<ImmediateMesh> point_lines_mesh;
-	MeshInstance3D *point_lines_meshinstance = nullptr;
-	MeshInstance3D *point_handles_meshinstance = nullptr;
-	Ref<ArrayMesh> point_handle_mesh;
 
-	MenuButton *options = nullptr;
+	RID point_lines_mesh_rid;
+	RID point_lines_instance_rid;
+	RID point_handle_mesh_rid;
+	RID point_handles_instance_rid;
 
 	int edited_point = 0;
-	Vector2 edited_point_pos;
-	PackedVector2Array pre_move_edit;
-	PackedVector2Array wip;
-	bool wip_active;
-	bool snap_ignore;
-
-	float prev_depth = 0.0f;
+	Vector3 edited_point_pos;
+	Vector<Vector3> pre_move_edit;
+	Vector<Vector3> wip_vertices;
+	bool wip_active = false;
+	bool snap_ignore = false;
 
 	void _wip_close();
+	void _wip_cancel();
 	void _polygon_draw();
 	void _menu_option(int p_option);
-
-	PackedVector2Array _get_polygon();
-	void _set_polygon(const PackedVector2Array &p_poly);
+	void _update_theme();
 
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
-	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+
 	void edit(Node *p_node);
+	NavigationObstacle3D *get_node_3d() const { return obstacle_node; }
+
+	void redraw();
+
 	NavigationObstacle3DEditor();
 	~NavigationObstacle3DEditor();
+};
+
+class NavigationObstacle3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(NavigationObstacle3DGizmoPlugin, EditorNode3DGizmoPlugin);
+
+	Ref<StandardMaterial3D> line_material;
+
+public:
+	virtual bool has_gizmo(Node3D *p_spatial) override;
+	virtual String get_gizmo_name() const override;
+
+	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	bool can_be_hidden() const override;
+	int get_priority() const override;
+
+	virtual int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;
+	virtual Vector<int> subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const override;
+	virtual Transform3D get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	virtual void set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) override;
+	virtual void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel = false) override;
+
+	NavigationObstacle3DGizmoPlugin();
 };
 
 class NavigationObstacle3DEditorPlugin : public EditorPlugin {
 	GDCLASS(NavigationObstacle3DEditorPlugin, EditorPlugin);
 
-	NavigationObstacle3DEditor *obstacle_editor = nullptr;
+	Ref<NavigationObstacle3DGizmoPlugin> obstacle_3d_gizmo_plugin;
 
 public:
+	NavigationObstacle3DEditor *obstacle_editor = nullptr;
+	static NavigationObstacle3DEditorPlugin *singleton;
+
+	NavigationObstacle3D *edited_node = nullptr;
+
+	int get_mode() { return obstacle_editor->mode; }
+	void action_flip_vertices();
+	void action_clear_vertices();
+
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return obstacle_editor->forward_3d_gui_input(p_camera, p_event); }
 
-	virtual String get_name() const override { return "NavigationObstacle3DEditor"; }
+	virtual String get_name() const override { return "NavigationObstacle3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	NavigationObstacle3DEditorPlugin();
-	~NavigationObstacle3DEditorPlugin();
 };
 
 #endif // NAVIGATION_OBSTACLE_3D_EDITOR_PLUGIN_H
