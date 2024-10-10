@@ -601,6 +601,7 @@ bool SceneTree::process(double p_time) {
 
 	process_tweens(p_time, false);
 
+	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();
