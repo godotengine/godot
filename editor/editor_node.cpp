@@ -6809,7 +6809,7 @@ EditorNode::EditorNode() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
-	int ed_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
+	const ResolvedLayoutDirection ed_root_dir = (ResolvedLayoutDirection)EDITOR_GET("interface/editor/ui_layout_direction").operator int();
 	Control::set_root_layout_direction(ed_root_dir);
 	Window::set_root_layout_direction(ed_root_dir);
 
