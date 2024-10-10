@@ -30,6 +30,9 @@
 
 #include "egl_manager.h"
 
+#include "core/string/string_builder.h"
+#include "core/version.h"
+
 #ifdef EGL_ENABLED
 
 #if defined(EGL_STATIC)
@@ -411,15 +414,24 @@ Error EGLManager::initialize(void *p_native_display) {
 		ERR_PRINT("EGL: Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 		shader_cache_dir = String();
 	} else {
-		err = da->change_dir(String("shader_cache").path_join("EGL"));
+		StringBuilder tohash;
+		tohash.append("[GodotVersionNumber]");
+		tohash.append(VERSION_NUMBER);
+		tohash.append("[GodotVersionHash]");
+		tohash.append(VERSION_HASH);
+		tohash.append("[GodotArchitecture]");
+		tohash.append(Engine::get_singleton()->get_architecture_name());
+		String base_sha256 = tohash.as_string().sha256_text();
+
+		err = da->change_dir(String("shader_cache").path_join("EGL").path_join(base_sha256));
 		if (err != OK) {
-			err = da->make_dir_recursive(String("shader_cache").path_join("EGL"));
+			err = da->make_dir_recursive(String("shader_cache").path_join("EGL").path_join(base_sha256));
 		}
 		if (err != OK) {
 			ERR_PRINT("EGL: Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 			shader_cache_dir = String();
 		} else {
-			shader_cache_dir = shader_cache_dir.path_join(String("shader_cache").path_join("EGL"));
+			shader_cache_dir = shader_cache_dir.path_join(String("shader_cache").path_join("EGL").path_join(base_sha256));
 		}
 	}
 #endif
