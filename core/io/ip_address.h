@@ -33,7 +33,7 @@
 
 #include "core/string/ustring.h"
 
-struct IPAddress {
+struct [[nodiscard]] IPAddress {
 private:
 	union {
 		uint8_t field8[16];
