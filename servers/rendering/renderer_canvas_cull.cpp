@@ -284,7 +284,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		ci->repeat_source_item = repeat_source_item;
 	}
 
-	if (snapping_2d_transforms_to_pixel) {
+	if ((p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_DEFAULT && snapping_2d_transforms_to_pixel) || (p_canvas_item->snap_to_pixel == RS::CANVAS_ITEM_SNAP_TO_PIXEL_ENABLED)) {
 		final_xform.columns[2] = (final_xform.columns[2] + Point2(0.5, 0.5)).floor();
 		parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
 	}
@@ -2337,6 +2337,12 @@ void RendererCanvasCull::canvas_item_set_default_texture_repeat(RID p_item, RS::
 	Item *ci = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(ci);
 	ci->texture_repeat = p_repeat;
+}
+
+void RendererCanvasCull::canvas_item_set_snap_to_pixel(RID p_item, RS::CanvasItemSnapToPixel p_snap) {
+	Item *ci = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(ci);
+	ci->snap_to_pixel = p_snap;
 }
 
 void RendererCanvasCull::update_visibility_notifiers() {

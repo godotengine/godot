@@ -73,6 +73,13 @@ public:
 		CLIP_CHILDREN_MAX,
 	};
 
+	enum SnapToPixel {
+		SNAP_TO_PIXEL_PARENT_NODE,
+		SNAP_TO_PIXEL_DISABLED,
+		SNAP_TO_PIXEL_ENABLED,
+		SNAP_TO_PIXEL_MAX,
+	};
+
 private:
 	mutable SelfList<Node>
 			xform_change;
@@ -112,8 +119,10 @@ private:
 
 	mutable RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	mutable RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	mutable RS::CanvasItemSnapToPixel snap_to_pixel_cache = RS::CANVAS_ITEM_SNAP_TO_PIXEL_DISABLED;
 	TextureFilter texture_filter = TEXTURE_FILTER_PARENT_NODE;
 	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
+	SnapToPixel snap_to_pixel = SNAP_TO_PIXEL_PARENT_NODE;
 
 	Ref<Material> material;
 
@@ -148,12 +157,15 @@ private:
 	void _update_texture_repeat_changed(bool p_propagate);
 	void _refresh_texture_filter_cache() const;
 	void _update_texture_filter_changed(bool p_propagate);
+	void _refresh_snap_to_pixel_cache() const;
+	void _update_snap_to_pixel_changed(bool p_propagate);
 
 	void _notify_transform_deferred();
 
 protected:
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);
+	virtual void _update_self_snap_to_pixel(RS::CanvasItemSnapToPixel p_snap);
 
 	_FORCE_INLINE_ void _notify_transform() {
 		_notify_transform(this);
@@ -380,6 +392,9 @@ public:
 	int get_canvas_layer() const;
 	CanvasLayer *get_canvas_layer_node() const;
 
+	virtual void set_snap_to_pixel(SnapToPixel p_snap_to_pixel);
+	SnapToPixel get_snap_to_pixel() const;
+
 	CanvasItem();
 	~CanvasItem();
 };
@@ -387,6 +402,7 @@ public:
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
 VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
+VARIANT_ENUM_CAST(CanvasItem::SnapToPixel)
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);
