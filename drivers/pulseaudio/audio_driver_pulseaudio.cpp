@@ -269,8 +269,8 @@ Error AudioDriverPulseAudio::init_output_device() {
 	samples_out.resize(pa_buffer_size);
 
 	// Reset audio input to keep synchronization.
-	input_position = 0;
-	input_size = 0;
+	input_read = SizePosition(0, 0);
+	input_write = SizePosition(0, 0);
 
 	return OK;
 }
@@ -546,6 +546,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 							ad->input_buffer_write(sample);
 						}
 					}
+					ad->input_buffer_end_write();
 
 					read_bytes += bytes;
 					ret = pa_stream_drop(ad->pa_rec_str);
