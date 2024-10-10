@@ -1675,6 +1675,12 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_user_signal", "signal"), &Object::_has_user_signal);
 	ClassDB::bind_method(D_METHOD("remove_user_signal", "signal"), &Object::_remove_user_signal);
 
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("set_edited", "edited"), &Object::set_edited);
+	ClassDB::bind_method(D_METHOD("is_edited"), &Object::is_edited);
+	ClassDB::bind_method(D_METHOD("get_edited_version"), &Object::get_edited_version);
+#endif
+
 	{
 		MethodInfo mi;
 		mi.name = "emit_signal";
