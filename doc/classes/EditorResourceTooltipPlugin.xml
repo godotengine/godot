@@ -30,10 +30,10 @@
 				[b]Note:[/b] If you decide to discard the [param base], make sure to call [method Node.queue_free], because it's not freed automatically.
 				[codeblock]
 				func _make_tooltip_for_path(path, metadata, base):
-				    var t_rect = TextureRect.new()
-				    request_thumbnail(path, t_rect)
-				    base.add_child(t_rect) # The TextureRect will appear at the bottom of the tooltip.
-				    return base
+					var t_rect = TextureRect.new()
+					request_thumbnail(path, t_rect)
+					base.add_child(t_rect) # The TextureRect will appear at the bottom of the tooltip.
+					return base
 				[/codeblock]
 			</description>
 		</method>

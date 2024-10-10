@@ -116,9 +116,9 @@
 
 				# Client
 				while socket.wait() == OK:
-				    var data = socket.get_packet().get_string_from_ascii()
-				    if data == "Time to stop":
-				        return
+					var data = socket.get_packet().get_string_from_ascii()
+					if data == "Time to stop":
+						return
 				[/gdscript]
 				[csharp]
 				var socket = new PacketPeerUdp();
@@ -129,11 +129,11 @@
 				// Client
 				while (socket.Wait() == OK)
 				{
-				    string data = socket.GetPacket().GetStringFromASCII();
-				    if (data == "Time to stop")
-				    {
-				        return;
-				    }
+					string data = socket.GetPacket().GetStringFromASCII();
+					if (data == "Time to stop")
+					{
+						return;
+					}
 				}
 				[/csharp]
 				[/codeblocks]

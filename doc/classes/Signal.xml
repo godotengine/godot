@@ -62,10 +62,10 @@
 				A signal can only be connected once to the same [Callable]. If the signal is already connected, returns [constant ERR_INVALID_PARAMETER] and pushes an error message, unless the signal is connected with [constant Object.CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[codeblock]
 				for button in $Buttons.get_children():
-				    button.pressed.connect(_on_pressed.bind(button))
+					button.pressed.connect(_on_pressed.bind(button))
 
 				func _on_pressed(button):
-				    print(button.name, " was pressed")
+					print(button.name, " was pressed")
 				[/codeblock]
 			</description>
 		</method>

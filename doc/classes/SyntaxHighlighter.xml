@@ -46,12 +46,12 @@
 				[b]Example return:[/b]
 				[codeblock]
 				var color_map = {
-				    0: {
-				        "color": Color(1, 0, 0)
-				    },
-				    5: {
-				        "color": Color(0, 1, 0)
-				    }
+					0: {
+						"color": Color(1, 0, 0)
+					},
+					5: {
+						"color": Color(0, 1, 0)
+					}
 				}
 				[/codeblock]
 				This will color columns 0-4 red, and columns 5-eol in green.
