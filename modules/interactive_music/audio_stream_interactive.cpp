@@ -1018,6 +1018,10 @@ int AudioStreamPlaybackInteractive::get_loop_count() const {
 }
 
 double AudioStreamPlaybackInteractive::get_playback_position() const {
+	if (playback_current != -1) {
+		const State &current_state = states[playback_current];
+		return current_state.playback->get_playback_position();
+	}
 	return 0.0;
 }
 
