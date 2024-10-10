@@ -287,8 +287,12 @@ String OS::get_bundle_icon_path() const {
 }
 
 // OS specific path for user://
-String OS::get_user_data_dir() const {
+String OS::get_user_data_dir(const String &p_appname) const {
 	return ".";
+}
+
+String OS::get_user_data_dir() const {
+	return get_user_data_dir(get_safe_dir_name(GLOBAL_GET("application/config/name")));
 }
 
 // Absolute path to res://
@@ -299,6 +303,23 @@ String OS::get_resource_dir() const {
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
+}
+
+void OS::create_lock_file() {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
+	String lock_file_path = get_user_data_dir().path_join(".safe_mode_lock");
+	Ref<FileAccess> lock_file = FileAccess::open(lock_file_path, FileAccess::WRITE);
+	if (lock_file.is_valid()) {
+		lock_file->close();
+	}
+}
+
+void OS::remove_lock_file() {
+	String lock_file_path = get_user_data_dir().path_join(".safe_mode_lock");
+	DirAccess::remove_absolute(lock_file_path);
 }
 
 Error OS::shell_open(const String &p_uri) {
