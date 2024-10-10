@@ -105,6 +105,9 @@ public:
 	real_t get_max_value() const { return _max_value; }
 	void set_max_value(real_t p_max);
 
+	Array get_limits() const;
+	void set_limits(Array input);
+
 	real_t get_range() const { return _max_value - _min_value; }
 
 	real_t sample(real_t p_offset) const;
@@ -156,7 +159,6 @@ private:
 	int _bake_resolution = 100;
 	real_t _min_value = 0.0;
 	real_t _max_value = 1.0;
-	int _minmax_set_once = 0b00; // Encodes whether min and max have been set a first time, first bit for min and second for max.
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)

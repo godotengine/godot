@@ -307,11 +307,34 @@ void Curve::update_auto_tangents(int p_index) {
 
 #define MIN_Y_RANGE 0.01
 
+Array Curve::get_limits() const {
+	Array output;
+	output.resize(2);
+
+	output[0] = _min_value;
+	output[1] = _max_value;
+
+	return output;
+}
+
+void Curve::set_limits(const Array p_input) {
+	if (p_input.size() != 2) {
+		ERR_PRINT_ED(vformat(R"(Could not find Curve limit values when deserializing "%s". Resetting limits to default values.)", this->get_path()));
+		_min_value = 0;
+		_max_value = 1;
+		return;
+	}
+
+	// Don't need to check min < max because set_min/max_value already do this. When de/serializing, we simply read/write
+	// previously validated limits. This ensures those checks don't interfere with serialization.
+	_min_value = p_input[0];
+	_max_value = p_input[1];
+}
+
 void Curve::set_min_value(real_t p_min) {
-	if (_minmax_set_once & 0b11 && p_min > _max_value - MIN_Y_RANGE) {
+	if (p_min > _max_value - MIN_Y_RANGE) {
 		_min_value = _max_value - MIN_Y_RANGE;
 	} else {
-		_minmax_set_once |= 0b10; // first bit is "min set"
 		_min_value = p_min;
 	}
 	// Note: min and max are indicative values,
@@ -320,10 +343,9 @@ void Curve::set_min_value(real_t p_min) {
 }
 
 void Curve::set_max_value(real_t p_max) {
-	if (_minmax_set_once & 0b11 && p_max < _min_value + MIN_Y_RANGE) {
+	if (p_max < _min_value + MIN_Y_RANGE) {
 		_max_value = _min_value + MIN_Y_RANGE;
 	} else {
-		_minmax_set_once |= 0b01; // second bit is "max set"
 		_max_value = p_max;
 	}
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
@@ -628,6 +650,8 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_min_value", "min"), &Curve::set_min_value);
 	ClassDB::bind_method(D_METHOD("get_max_value"), &Curve::get_max_value);
 	ClassDB::bind_method(D_METHOD("set_max_value", "max"), &Curve::set_max_value);
+	ClassDB::bind_method(D_METHOD("_get_limits"), &Curve::get_limits);
+	ClassDB::bind_method(D_METHOD("_set_limits", "data"), &Curve::set_limits);
 	ClassDB::bind_method(D_METHOD("clean_dupes"), &Curve::clean_dupes);
 	ClassDB::bind_method(D_METHOD("bake"), &Curve::bake);
 	ClassDB::bind_method(D_METHOD("get_bake_resolution"), &Curve::get_bake_resolution);
@@ -635,8 +659,9 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve::get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve::set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_min_value", "get_min_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01", PROPERTY_USAGE_EDITOR), "set_min_value", "get_min_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01", PROPERTY_USAGE_EDITOR), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(Variant::NIL, "_limits", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_limits", "_get_limits");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
