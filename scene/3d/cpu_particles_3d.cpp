@@ -1360,84 +1360,84 @@ void CPUParticles3D::_notification(int p_what) {
 }
 
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
-	GPUParticles3D *gpu_particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_NULL_MSG(gpu_particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
+    GPUParticles3D *gpu_particles = Object::cast_to<GPUParticles3D>(p_particles);
+    ERR_FAIL_NULL_MSG(gpu_particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
-	set_emitting(gpu_particles->is_emitting());
-	set_amount(gpu_particles->get_amount());
-	set_lifetime(gpu_particles->get_lifetime());
-	set_one_shot(gpu_particles->get_one_shot());
-	set_pre_process_time(gpu_particles->get_pre_process_time());
-	set_explosiveness_ratio(gpu_particles->get_explosiveness_ratio());
-	set_randomness_ratio(gpu_particles->get_randomness_ratio());
-	set_visibility_aabb(gpu_particles->get_visibility_aabb());
-	set_use_local_coordinates(gpu_particles->get_use_local_coordinates());
-	set_fixed_fps(gpu_particles->get_fixed_fps());
-	set_fractional_delta(gpu_particles->get_fractional_delta());
-	set_speed_scale(gpu_particles->get_speed_scale());
-	set_draw_order(DrawOrder(gpu_particles->get_draw_order()));
-	set_mesh(gpu_particles->get_draw_pass_mesh(0));
+    set_emitting(gpu_particles->is_emitting());
+    set_amount((int)ceilf(gpu_particles->get_amount() * gpu_particles->get_speed_scale()));
+    set_lifetime(gpu_particles->get_lifetime());
+    set_one_shot(gpu_particles->get_one_shot());
+    set_pre_process_time(gpu_particles->get_pre_process_time());
+    set_explosiveness_ratio(gpu_particles->get_explosiveness_ratio());
+    set_randomness_ratio(gpu_particles->get_randomness_ratio());
+    set_visibility_aabb(gpu_particles->get_visibility_aabb());
+    set_use_local_coordinates(gpu_particles->get_use_local_coordinates());
+    set_fixed_fps(gpu_particles->get_fixed_fps());
+    set_fractional_delta(gpu_particles->get_fractional_delta());
+    set_speed_scale(gpu_particles->get_speed_scale());
+    set_draw_order(DrawOrder(gpu_particles->get_draw_order()));
+    set_mesh(gpu_particles->get_draw_pass_mesh(0));
 
-	Ref<ParticleProcessMaterial> material = gpu_particles->get_process_material();
-	if (material.is_null()) {
-		return;
-	}
+    Ref<ParticleProcessMaterial> material = gpu_particles->get_process_material();
+    if (material.is_null()) {
+        return;
+    }
 
-	set_direction(material->get_direction());
-	set_spread(material->get_spread());
-	set_flatness(material->get_flatness());
+    set_direction(material->get_direction());
+    set_spread(material->get_spread());
+    set_flatness(material->get_flatness());
 
-	set_color(material->get_color());
+    set_color(material->get_color());
 
-	Ref<GradientTexture1D> gt = material->get_color_ramp();
-	if (gt.is_valid()) {
-		set_color_ramp(gt->get_gradient());
-	}
+    Ref<GradientTexture1D> gt = material->get_color_ramp();
+    if (gt.is_valid()) {
+        set_color_ramp(gt->get_gradient());
+    }
 
-	Ref<GradientTexture1D> gti = material->get_color_initial_ramp();
-	if (gti.is_valid()) {
-		set_color_initial_ramp(gti->get_gradient());
-	}
+    Ref<GradientTexture1D> gti = material->get_color_initial_ramp();
+    if (gti.is_valid()) {
+        set_color_initial_ramp(gti->get_gradient());
+    }
 
-	set_particle_flag(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
-	set_particle_flag(PARTICLE_FLAG_ROTATE_Y, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ROTATE_Y));
-	set_particle_flag(PARTICLE_FLAG_DISABLE_Z, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_DISABLE_Z));
+    set_particle_flag(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
+    set_particle_flag(PARTICLE_FLAG_ROTATE_Y, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ROTATE_Y));
+    set_particle_flag(PARTICLE_FLAG_DISABLE_Z, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_DISABLE_Z));
 
-	set_emission_shape(EmissionShape(material->get_emission_shape()));
-	set_emission_sphere_radius(material->get_emission_sphere_radius());
-	set_emission_box_extents(material->get_emission_box_extents());
-	Ref<CurveXYZTexture> scale3D = material->get_param_texture(ParticleProcessMaterial::PARAM_SCALE);
-	if (scale3D.is_valid()) {
-		split_scale = true;
-		scale_curve_x = scale3D->get_curve_x();
-		scale_curve_y = scale3D->get_curve_y();
-		scale_curve_z = scale3D->get_curve_z();
-	}
+    set_emission_shape(EmissionShape(material->get_emission_shape()));
+    set_emission_sphere_radius(material->get_emission_sphere_radius());
+    set_emission_box_extents(material->get_emission_box_extents());
+    Ref<CurveXYZTexture> scale3D = material->get_param_texture(ParticleProcessMaterial::PARAM_SCALE);
+    if (scale3D.is_valid()) {
+        split_scale = true;
+        scale_curve_x = scale3D->get_curve_x();
+        scale_curve_y = scale3D->get_curve_y();
+        scale_curve_z = scale3D->get_curve_z();
+    }
 
-	set_gravity(material->get_gravity());
-	set_lifetime_randomness(material->get_lifetime_randomness());
+    set_gravity(material->get_gravity());
+    set_lifetime_randomness(material->get_lifetime_randomness());
 
 #define CONVERT_PARAM(m_param)                                                                  \
-	set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param));          \
-	{                                                                                           \
-		Ref<CurveTexture> ctex = material->get_param_texture(ParticleProcessMaterial::m_param); \
-		if (ctex.is_valid())                                                                    \
-			set_param_curve(m_param, ctex->get_curve());                                        \
-	}                                                                                           \
-	set_param_max(m_param, material->get_param_max(ParticleProcessMaterial::m_param));
+    set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param));          \
+    {                                                                                           \
+        Ref<CurveTexture> ctex = material->get_param_texture(ParticleProcessMaterial::m_param); \
+        if (ctex.is_valid())                                                                    \
+            set_param_curve(m_param, ctex->get_curve());                                        \
+    }                                                                                           \
+    set_param_max(m_param, material->get_param_max(ParticleProcessMaterial::m_param));
 
-	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
-	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
-	CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
-	CONVERT_PARAM(PARAM_LINEAR_ACCEL);
-	CONVERT_PARAM(PARAM_RADIAL_ACCEL);
-	CONVERT_PARAM(PARAM_TANGENTIAL_ACCEL);
-	CONVERT_PARAM(PARAM_DAMPING);
-	CONVERT_PARAM(PARAM_ANGLE);
-	CONVERT_PARAM(PARAM_SCALE);
-	CONVERT_PARAM(PARAM_HUE_VARIATION);
-	CONVERT_PARAM(PARAM_ANIM_SPEED);
-	CONVERT_PARAM(PARAM_ANIM_OFFSET);
+    CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
+    CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
+    CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
+    CONVERT_PARAM(PARAM_LINEAR_ACCEL);
+    CONVERT_PARAM(PARAM_RADIAL_ACCEL);
+    CONVERT_PARAM(PARAM_TANGENTIAL_ACCEL);
+    CONVERT_PARAM(PARAM_DAMPING);
+    CONVERT_PARAM(PARAM_ANGLE);
+    CONVERT_PARAM(PARAM_SCALE);
+    CONVERT_PARAM(PARAM_HUE_VARIATION);
+    CONVERT_PARAM(PARAM_ANIM_SPEED);
+    CONVERT_PARAM(PARAM_ANIM_OFFSET);
 
 #undef CONVERT_PARAM
 }
