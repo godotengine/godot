@@ -52,6 +52,8 @@ struct InstanceData {
 #endif
 	vec2 color_texture_pixel_size;
 	uint lights[4];
+	uint instance_uniforms_ofs;
+	uint pad2[3];
 };
 
 layout(push_constant, std430) uniform Params {

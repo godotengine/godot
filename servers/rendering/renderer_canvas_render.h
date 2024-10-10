@@ -343,6 +343,8 @@ public:
 		RID material;
 		RID skeleton;
 
+		int32_t instance_allocated_shader_uniforms_offset = -1;
+
 		Item *next = nullptr;
 
 		struct CopyBackBuffer {

@@ -1762,6 +1762,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_varying_index = 5;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
+		actions.instance_uniform_index_variable = "draw_data.instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}
@@ -2286,6 +2287,8 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 		instance_data->color_texture_pixel_size[0] = r_current_batch->tex_info.texpixel_size.width;
 		instance_data->color_texture_pixel_size[1] = r_current_batch->tex_info.texpixel_size.height;
 		instance_data->specular_shininess = r_current_batch->tex_info.specular_shininess;
+
+		instance_data->instance_uniforms_ofs = uint32_t(p_item->instance_allocated_shader_uniforms_offset);
 
 		return instance_data;
 	};
