@@ -112,9 +112,13 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 			return Ref<Texture2D>();
 		}
 
-		const int mid_depth = (tex_3d->get_depth() - 1) / 2;
-
 		Vector<Ref<Image>> data = tex_3d->get_data();
+		if (data.size() != tex_3d->get_depth()) {
+			return Ref<Texture2D>();
+		}
+
+		// Use the middle slice for the thumbnail.
+		const int mid_depth = (tex_3d->get_depth() - 1) / 2;
 		if (!data.is_empty() && data[mid_depth].is_valid()) {
 			img = data[mid_depth]->duplicate();
 		}
@@ -124,6 +128,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 			return Ref<Texture2D>();
 		}
 
+		// Use the middle slice for the thumbnail.
 		const int mid_layer = (tex_lyr->get_layers() - 1) / 2;
 
 		Ref<Image> data = tex_lyr->get_layer_data(mid_layer);
