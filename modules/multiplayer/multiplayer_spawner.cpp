@@ -31,6 +31,7 @@
 #include "multiplayer_spawner.h"
 
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
 
@@ -276,8 +277,9 @@ void MultiplayerSpawner::_node_exit(ObjectID p_id) {
 }
 
 int MultiplayerSpawner::find_spawnable_scene_index_from_path(const String &p_scene) const {
+	ResourceUID *resource_uid = ResourceUID::get_singleton();
 	for (uint32_t i = 0; i < spawnable_scenes.size(); i++) {
-		if (spawnable_scenes[i].path == p_scene) {
+		if (spawnable_scenes[i].path == p_scene || resource_uid->get_id_path(resource_uid->text_to_id(spawnable_scenes[i].path)) == p_scene) {
 			return i;
 		}
 	}
