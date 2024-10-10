@@ -566,7 +566,7 @@ EditorToaster::EditorToaster() {
 
 	eh.errfunc = _error_handler;
 	add_error_handler(&eh);
-};
+}
 
 EditorToaster::~EditorToaster() {
 	singleton = nullptr;

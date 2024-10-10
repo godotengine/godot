@@ -40,7 +40,7 @@ struct [[nodiscard]] Plane {
 	real_t d = 0;
 
 	void set_normal(const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 get_normal() const { return normal; };
+	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }
 
 	void normalize();
 	Plane normalized() const;

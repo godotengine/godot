@@ -161,7 +161,7 @@ bool CameraLinux::_can_query_format(int p_file_descriptor, int p_type) {
 
 CameraLinux::CameraLinux() {
 	camera_thread.start(CameraLinux::camera_thread_func, this);
-};
+}
 
 CameraLinux::~CameraLinux() {
 	exit_flag.set();

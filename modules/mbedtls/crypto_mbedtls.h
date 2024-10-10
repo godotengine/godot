@@ -57,7 +57,7 @@ public:
 	virtual Error save(const String &p_path, bool p_public_only);
 	virtual String save_to_string(bool p_public_only);
 	virtual Error load_from_string(const String &p_string_key, bool p_public_only);
-	virtual bool is_public_only() const { return public_only; };
+	virtual bool is_public_only() const { return public_only; }
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
