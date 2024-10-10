@@ -72,7 +72,7 @@ public:
 				return false;
 			}
 
-			float min_depth = -closest_point_view.z * 0.95f;
+			float min_depth = FLT_MAX;
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
@@ -85,6 +85,7 @@ public:
 
 				Plane vp = Plane(view, 1.0);
 				Plane projected = p_cam_projection.xform4(vp);
+				min_depth = MIN(min_depth, -view.z);
 
 				float w = projected.d;
 				if (w < 1.0) {
