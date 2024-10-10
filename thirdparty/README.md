@@ -179,6 +179,18 @@ Files extracted from upstream source:
 - `doctest/doctest.h` as `doctest.h`
 - `LICENSE.txt`
 
+## dr_libs
+
+- Upstream: https://github.com/mackron/dr_libs
+- Version: git (da35f9d6c7374a95353fd1df1d394d44ab66cf01, 2024)
+- License: Public Domain or Unlicense or MIT
+- Modifications: Added pointer check before free.
+
+Files extracted from upstream source:
+
+- `dr_wav.h`
+- `LICENSE`
+
 
 ## embree
 
