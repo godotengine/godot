@@ -390,7 +390,7 @@ abstract class BaseGodotEditor : GodotActivity() {
 	 * If the launch policy is [LaunchPolicy.AUTO], resolve it into a specific policy based on the
 	 * editor setting or device and screen metrics.
 	 *
-	 * If the launch policy is [LaunchPolicy.PIP] but PIP is not supported, fallback to the default
+	 * If the launch policy is [LaunchPolicy.SAME_AND_LAUNCH_IN_PIP_MODE] but PIP is not supported, fallback to the default
 	 * launch policy.
 	 */
 	private fun resolveLaunchPolicyIfNeeded(policy: LaunchPolicy): LaunchPolicy {
@@ -453,12 +453,22 @@ abstract class BaseGodotEditor : GodotActivity() {
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
 		// Check if we got the MANAGE_EXTERNAL_STORAGE permission
-		if (requestCode == PermissionsUtil.REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				if (!Environment.isExternalStorageManager()) {
+		when (requestCode) {
+			PermissionsUtil.REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE -> {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
 					Toast.makeText(
 						this,
 						R.string.denied_storage_permission_error_msg,
+						Toast.LENGTH_LONG
+					).show()
+				}
+			}
+
+			PermissionsUtil.REQUEST_INSTALL_PACKAGES_REQ_CODE -> {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !packageManager.canRequestPackageInstalls()) {
+					Toast.makeText(
+						this,
+						R.string.denied_install_packages_permission_error_msg,
 						Toast.LENGTH_LONG
 					).show()
 				}
@@ -514,7 +524,7 @@ abstract class BaseGodotEditor : GodotActivity() {
 
 	override fun supportsFeature(featureTag: String): Boolean {
 		if (featureTag == "xr_editor") {
-			return isNativeXRDevice();
+			return isNativeXRDevice()
 		}
 
 		if (featureTag == "horizonos") {
