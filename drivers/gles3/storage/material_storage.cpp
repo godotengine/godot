@@ -1373,6 +1373,7 @@ MaterialStorage::MaterialStorage() {
 			actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
 		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
+		actions.render_mode_defines["clearcoat_normal_map"] = "#define CLEARCOAT_NORMAL_MAP\n";
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
