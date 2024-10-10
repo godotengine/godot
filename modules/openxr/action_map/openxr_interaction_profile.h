@@ -32,6 +32,7 @@
 #define OPENXR_INTERACTION_PROFILE_H
 
 #include "openxr_action.h"
+#include "openxr_binding_modifier.h"
 #include "openxr_interaction_profile_metadata.h"
 
 #include "core/io/resource.h"
@@ -73,6 +74,7 @@ class OpenXRInteractionProfile : public Resource {
 private:
 	String interaction_profile_path;
 	Array bindings;
+	Array binding_modifiers;
 
 protected:
 	static void _bind_methods();
@@ -95,6 +97,11 @@ public:
 	void add_new_binding(const Ref<OpenXRAction> p_action, const char *p_paths); // Create a new binding for this profile
 	void remove_binding_for_action(const Ref<OpenXRAction> p_action); // Remove all bindings for this action
 	bool has_binding_for_action(const Ref<OpenXRAction> p_action); // Returns true if we have a binding for this action
+
+	int get_binding_modifier_count() const; // Retrieve the number of binding modifiers in this profile path
+	Ref<OpenXRBindingModifier> get_binding_modifier(int p_index) const;
+	void set_binding_modifiers(Array p_bindings); // Set the binding modifiers (for loading from a resource)
+	Array get_binding_modifiers() const; // Get the binding modifiers (for saving to a resource)
 
 	~OpenXRInteractionProfile();
 };

@@ -115,6 +115,12 @@ void OpenXRInteractionProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bindings", "bindings"), &OpenXRInteractionProfile::set_bindings);
 	ClassDB::bind_method(D_METHOD("get_bindings"), &OpenXRInteractionProfile::get_bindings);
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRIPBinding", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
+
+	ClassDB::bind_method(D_METHOD("get_binding_modifier_count"), &OpenXRInteractionProfile::get_binding_modifier_count);
+	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRInteractionProfile::get_binding_modifier);
+	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRInteractionProfile::set_binding_modifiers);
+	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRInteractionProfile::get_binding_modifiers);
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRBindingModifier", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
 }
 
 Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *p_input_profile_path) {
@@ -216,6 +222,25 @@ bool OpenXRInteractionProfile::has_binding_for_action(const Ref<OpenXRAction> p_
 	}
 
 	return false;
+}
+
+int OpenXRInteractionProfile::get_binding_modifier_count() const {
+	return binding_modifiers.size();
+}
+
+Ref<OpenXRBindingModifier> OpenXRInteractionProfile::get_binding_modifier(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, binding_modifiers.size(), nullptr);
+
+	return binding_modifiers[p_index];
+}
+
+void OpenXRInteractionProfile::set_binding_modifiers(Array p_binding_modifiers) {
+	binding_modifiers = p_binding_modifiers;
+	emit_changed();
+}
+
+Array OpenXRInteractionProfile::get_binding_modifiers() const {
+	return binding_modifiers;
 }
 
 OpenXRInteractionProfile::~OpenXRInteractionProfile() {

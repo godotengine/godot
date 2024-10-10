@@ -300,6 +300,7 @@ private:
 		String name; // Name of the interaction profile (i.e. "/interaction_profiles/valve/index_controller")
 		XrPath path; // OpenXR path for this profile
 		Vector<XrActionSuggestedBinding> bindings; // OpenXR action bindings
+		Vector<XrBindingModificationBaseHeaderKHR *> modifiers; // OpenXR binding modifiers
 	};
 	RID_Owner<InteractionProfile, true> interaction_profile_owner;
 	RID get_interaction_profile_rid(XrPath p_path);
@@ -410,8 +411,8 @@ public:
 	XRPose::TrackingConfidence transform_from_location(const XrSpaceLocation &p_location, Transform3D &r_transform);
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
-
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	XrPath get_xr_path(const String &p_path);
 	bool is_top_level_path_supported(const String &p_toplevel_path);
 	bool is_interaction_profile_supported(const String &p_ip_path);
 	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
@@ -515,22 +516,26 @@ public:
 
 	RID action_set_create(const String p_name, const String p_localized_name, const int p_priority);
 	String action_set_get_name(RID p_action_set);
+	XrActionSet action_set_get_handle(RID p_action_set);
 	bool attach_action_sets(const Vector<RID> &p_action_sets);
 	void action_set_free(RID p_action_set);
 
 	RID action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers);
 	String action_get_name(RID p_action);
+	XrAction action_get_handle(RID p_action);
 	void action_free(RID p_action);
 
 	RID interaction_profile_create(const String p_name);
 	String interaction_profile_get_name(RID p_interaction_profile);
 	void interaction_profile_clear_bindings(RID p_interaction_profile);
 	bool interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path);
+	bool interaction_profile_add_modifier(RID p_interaction_profile, const XrBindingModificationBaseHeaderKHR *p_modifier, uint32_t p_size);
 	bool interaction_profile_suggest_bindings(RID p_interaction_profile);
 	void interaction_profile_free(RID p_interaction_profile);
 
 	RID find_tracker(const String &p_name);
-	RID find_action(const String &p_name);
+	RID find_action_set(const String p_name);
+	RID find_action(const String &p_name, const RID &p_action_set = RID());
 
 	bool sync_action_sets(const Vector<RID> p_active_sets);
 	bool get_action_bool(RID p_action, RID p_tracker);

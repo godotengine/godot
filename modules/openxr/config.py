@@ -27,6 +27,9 @@ def get_doc_classes():
         "OpenXRCompositionLayerQuad",
         "OpenXRCompositionLayerCylinder",
         "OpenXRCompositionLayerEquirect",
+        "OpenXRBindingModifier",
+        "OpenXRAnalogThresholdModifier",
+        "OpenXRDpadBindingModifier",
     ]
 
 

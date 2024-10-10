@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRDpadBindingModifier" inherits="OpenXRBindingModifier" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The DPad binding modifier converts an axis input to a dpad output.
+	</brief_description>
+	<description>
+		The DPad binding modifier converts an axis input to a dpad output. New input paths for each dpad direction will be added to the interaction profile.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
