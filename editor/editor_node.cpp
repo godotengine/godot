@@ -4570,8 +4570,6 @@ void EditorNode::_update_recent_scenes() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
-
-
 	if (rc.size() > 0) {
 		String path;
 		for (int i = 0; i < rc.size(); i++) {
