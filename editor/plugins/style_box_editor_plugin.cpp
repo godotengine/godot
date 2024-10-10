@@ -58,7 +58,7 @@ void StyleBoxPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
-			grid_preview->set_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
+			grid_preview->set_button_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
 		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();

@@ -48,7 +48,7 @@ void CPUParticles3DEditor::_node_removed(Node *p_node) {
 void CPUParticles3DEditor::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			options->set_icon(get_editor_theme_icon(SNAME("CPUParticles3D")));
+			options->set_button_icon(get_editor_theme_icon(SNAME("CPUParticles3D")));
 		} break;
 	}
 }

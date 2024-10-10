@@ -468,7 +468,7 @@ void CreateDialog::_notification(int p_what) {
 			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
 
 			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			favorite->set_icon(get_editor_theme_icon(SNAME("Favorites")));
+			favorite->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
 		} break;
 	}
 }
@@ -613,7 +613,7 @@ Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
 		Button *tb = memnew(Button);
 		tb->set_flat(true);
-		tb->set_icon(ti->get_icon(0));
+		tb->set_button_icon(ti->get_icon(0));
 		tb->set_text(ti->get_text(0));
 		tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		favorites->set_drag_preview(tb);

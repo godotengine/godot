@@ -63,7 +63,7 @@ void CSGShapeEditor::edit(CSGShape3D *p_csg_shape) {
 void CSGShapeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_editor_theme_icon(SNAME("CSGCombiner3D")));
+			options->set_button_icon(get_editor_theme_icon(SNAME("CSGCombiner3D")));
 		} break;
 	}
 }

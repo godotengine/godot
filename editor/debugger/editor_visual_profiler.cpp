@@ -410,12 +410,12 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 void EditorVisualProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
+		activate->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed(); //always clear on start
 		clear_button->set_disabled(false);
 	} else {
-		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+		activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
@@ -438,11 +438,11 @@ void EditorVisualProfiler::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_layout_rtl()) {
-				activate->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
+				activate->set_button_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 			} else {
-				activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+				activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			}
-			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
 	}
 }
@@ -660,10 +660,10 @@ void EditorVisualProfiler::_bind_methods() {
 
 void EditorVisualProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
+		activate->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+		activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 }

@@ -45,7 +45,7 @@ void GroupSettingsEditor::_notification(int p_what) {
 			update_groups();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }

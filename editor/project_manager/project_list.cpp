@@ -67,9 +67,9 @@ void ProjectListItemControl::_notification(int p_what) {
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
 			if (project_is_missing) {
-				explore_button->set_icon(get_editor_theme_icon(SNAME("FileBroken")));
+				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 			} else {
-				explore_button->set_icon(get_editor_theme_icon(SNAME("Load")));
+				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			}
 		} break;
 
@@ -196,12 +196,12 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 	if (project_is_missing) {
 		project_icon->set_modulate(Color(1, 1, 1, 0.5));
 
-		explore_button->set_icon(get_editor_theme_icon(SNAME("FileBroken")));
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 	} else {
 		project_icon->set_modulate(Color(1, 1, 1, 1.0));
 
-		explore_button->set_icon(get_editor_theme_icon(SNAME("Load")));
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		explore_button->set_tooltip_text(TTR("Show in File Manager"));
 #else

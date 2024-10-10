@@ -119,7 +119,7 @@ void ParallaxBackgroundEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ParallaxBackgroundEditorPlugin::_menu_callback));
-			menu->set_icon(menu->get_editor_theme_icon(SNAME("ParallaxBackground")));
+			menu->set_button_icon(menu->get_editor_theme_icon(SNAME("ParallaxBackground")));
 		} break;
 	}
 }

@@ -192,7 +192,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			Ref<Texture2D> df = get_editor_theme_icon(SNAME("DistractionFree"));
-			open_big_text->set_icon(df);
+			open_big_text->set_button_icon(df);
 
 			Ref<Font> font;
 			int font_size;
@@ -340,9 +340,9 @@ void EditorPropertyTextEnum::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			accept_button->set_icon(get_editor_theme_icon(SNAME("ImportCheck")));
-			cancel_button->set_icon(get_editor_theme_icon(SNAME("ImportFail")));
+			edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+			accept_button->set_button_icon(get_editor_theme_icon(SNAME("ImportCheck")));
+			cancel_button->set_button_icon(get_editor_theme_icon(SNAME("ImportFail")));
 		} break;
 	}
 }
@@ -428,7 +428,7 @@ void EditorPropertyLocale::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			locale_edit->set_icon(get_editor_theme_icon(SNAME("Translation")));
+			locale_edit->set_button_icon(get_editor_theme_icon(SNAME("Translation")));
 		} break;
 	}
 }
@@ -522,9 +522,9 @@ void EditorPropertyPath::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (folder) {
-				path_edit->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+				path_edit->set_button_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
 			} else {
-				path_edit->set_icon(get_editor_theme_icon(SNAME("FileBrowse")));
+				path_edit->set_button_icon(get_editor_theme_icon(SNAME("FileBrowse")));
 			}
 		} break;
 	}
@@ -1343,12 +1343,12 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_text(type + " ID: " + uitos(id));
 		edit->set_tooltip_text(type + " ID: " + uitos(id));
 		edit->set_disabled(false);
-		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));
+		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
 		edit->set_text(TTR("<empty>"));
 		edit->set_tooltip_text("");
 		edit->set_disabled(true);
-		edit->set_icon(Ref<Texture2D>());
+		edit->set_button_icon(Ref<Texture2D>());
 	}
 }
 
@@ -1378,7 +1378,7 @@ void EditorPropertySignal::update_property() {
 
 	edit->set_text("Signal: " + signal.get_name());
 	edit->set_disabled(false);
-	edit->set_icon(get_editor_theme_icon(SNAME("Signals")));
+	edit->set_button_icon(get_editor_theme_icon(SNAME("Signals")));
 }
 
 EditorPropertySignal::EditorPropertySignal() {
@@ -1397,7 +1397,7 @@ void EditorPropertyCallable::update_property() {
 
 	edit->set_text("Callable");
 	edit->set_disabled(true);
-	edit->set_icon(get_editor_theme_icon(SNAME("Callable")));
+	edit->set_button_icon(get_editor_theme_icon(SNAME("Callable")));
 }
 
 EditorPropertyCallable::EditorPropertyCallable() {
@@ -2024,9 +2024,9 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 			for (int i = 0; i < 3; i++) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
-			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			euler_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
-			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
@@ -2829,7 +2829,7 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_tooltip_text(p);
 
 	if (p.is_empty()) {
-		assign->set_icon(Ref<Texture2D>());
+		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
 		return;
@@ -2837,7 +2837,7 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_flat(true);
 
 	if (!base_node || !base_node->has_node(p)) {
-		assign->set_icon(Ref<Texture2D>());
+		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
 	}
@@ -2846,13 +2846,13 @@ void EditorPropertyNodePath::update_property() {
 	ERR_FAIL_NULL(target_node);
 
 	if (String(target_node->get_name()).contains("@")) {
-		assign->set_icon(Ref<Texture2D>());
+		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;
 	}
 
 	assign->set_text(target_node->get_name());
-	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
+	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
 void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
@@ -2865,7 +2865,7 @@ void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			menu->get_popup()->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
 			menu->get_popup()->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
 			menu->get_popup()->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));

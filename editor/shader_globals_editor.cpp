@@ -438,7 +438,7 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			variable_add->set_icon(get_editor_theme_icon(SNAME("Add")));
+			variable_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {

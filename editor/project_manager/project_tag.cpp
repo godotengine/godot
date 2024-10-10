@@ -36,7 +36,7 @@
 
 void ProjectTag::_notification(int p_what) {
 	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
-		button->set_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
+		button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	}
 }
 

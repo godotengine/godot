@@ -618,7 +618,7 @@ void TileAtlasView::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			button_center_view->set_icon(theme_cache.center_view_icon);
+			button_center_view->set_button_icon(theme_cache.center_view_icon);
 		} break;
 	}
 }

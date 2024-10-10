@@ -95,9 +95,9 @@ void ScriptEditorDebugger::debug_copy() {
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
 	if (skip_breakpoints_value) {
-		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOn")));
+		skip_breakpoints->set_button_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOn")));
 	} else {
-		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff")));
+		skip_breakpoints->set_button_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff")));
 	}
 
 	Array msg;
@@ -870,14 +870,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
-			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
-			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
-			step->set_icon(get_editor_theme_icon(SNAME("DebugStep")));
-			next->set_icon(get_editor_theme_icon(SNAME("DebugNext")));
-			dobreak->set_icon(get_editor_theme_icon(SNAME("Pause")));
-			docontinue->set_icon(get_editor_theme_icon(SNAME("DebugContinue")));
-			vmem_refresh->set_icon(get_editor_theme_icon(SNAME("Reload")));
-			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
+			skip_breakpoints->set_button_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
+			copy->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			step->set_button_icon(get_editor_theme_icon(SNAME("DebugStep")));
+			next->set_button_icon(get_editor_theme_icon(SNAME("DebugNext")));
+			dobreak->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			docontinue->set_button_icon(get_editor_theme_icon(SNAME("DebugContinue")));
+			vmem_refresh->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
+			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));

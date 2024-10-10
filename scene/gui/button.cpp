@@ -649,7 +649,7 @@ String Button::get_language() const {
 	return language;
 }
 
-void Button::set_icon(const Ref<Texture2D> &p_icon) {
+void Button::set_button_icon(const Ref<Texture2D> &p_icon) {
 	if (icon == p_icon) {
 		return;
 	}
@@ -673,7 +673,7 @@ void Button::_texture_changed() {
 	update_minimum_size();
 }
 
-Ref<Texture2D> Button::get_icon() const {
+Ref<Texture2D> Button::get_button_icon() const {
 	return icon;
 }
 
@@ -769,8 +769,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Button::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &Button::get_language);
-	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
-	ClassDB::bind_method(D_METHOD("get_button_icon"), &Button::get_icon);
+	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_button_icon);
+	ClassDB::bind_method(D_METHOD("get_button_icon"), &Button::get_button_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &Button::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &Button::is_flat);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enabled"), &Button::set_clip_text);

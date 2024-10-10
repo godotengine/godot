@@ -177,7 +177,7 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake->set_theme_type_variation("FlatButton");
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
-	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake Lightmaps"));
 
 #ifdef MODULE_LIGHTMAPPER_RD_ENABLED
