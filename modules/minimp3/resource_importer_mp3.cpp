@@ -87,32 +87,32 @@ bool ResourceImporterMP3::has_advanced_options() const {
 	return true;
 }
 void ResourceImporterMP3::show_advanced_options(const String &p_path) {
-	Ref<AudioStreamMP3> mp3_stream = import_mp3(p_path);
+	Ref<AudioStreamMP3> mp3_stream = load_from_file(p_path);
 	if (mp3_stream.is_valid()) {
 		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "mp3", mp3_stream);
 	}
 }
 #endif
 
-Ref<AudioStreamMP3> ResourceImporterMP3::import_mp3(const String &p_path) {
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(f.is_null(), Ref<AudioStreamMP3>());
+void ResourceImporterMP3::_bind_methods() {
+	ClassDB::bind_static_method("ResourceImporterMP3", D_METHOD("load_from_buffer", "buffer"), &ResourceImporterMP3::load_from_buffer);
+	ClassDB::bind_static_method("ResourceImporterMP3", D_METHOD("load_from_file", "path"), &ResourceImporterMP3::load_from_file);
+}
 
-	uint64_t len = f->get_length();
-
-	Vector<uint8_t> data;
-	data.resize(len);
-	uint8_t *w = data.ptrw();
-
-	f->get_buffer(w, len);
-
+Ref<AudioStreamMP3> ResourceImporterMP3::load_from_buffer(const Vector<uint8_t> &p_file_data) {
 	Ref<AudioStreamMP3> mp3_stream;
 	mp3_stream.instantiate();
 
-	mp3_stream->set_data(data);
+	mp3_stream->set_data(p_file_data);
 	ERR_FAIL_COND_V(mp3_stream->get_data().is_empty(), Ref<AudioStreamMP3>());
 
 	return mp3_stream;
+}
+
+Ref<AudioStreamMP3> ResourceImporterMP3::load_from_file(const String &p_path) {
+	Vector<uint8_t> file_data = FileAccess::get_file_as_bytes(p_path);
+	ERR_FAIL_COND_V_MSG(file_data.is_empty(), Ref<AudioStreamMP3>(), "Cannot open file '" + p_path + "'.");
+	return load_from_buffer(file_data);
 }
 
 Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -122,7 +122,7 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	float beat_count = p_options["beat_count"];
 	float bar_beats = p_options["bar_beats"];
 
-	Ref<AudioStreamMP3> mp3_stream = import_mp3(p_source_file);
+	Ref<AudioStreamMP3> mp3_stream = load_from_file(p_source_file);
 	if (mp3_stream.is_null()) {
 		return ERR_CANT_OPEN;
 	}
