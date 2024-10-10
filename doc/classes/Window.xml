@@ -592,7 +592,7 @@
 		</member>
 		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
-			[b]Note:[/b] This property is implemented only on macOS.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
 			[b]Note:[/b] This property only works with native windows.
 		</member>
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
@@ -835,8 +835,9 @@
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
-			[b]Note:[/b] This flag is implemented only on macOS.
+			[b]Note:[/b] This flag is implemented only on macOS and Windows.
 			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] On Windows, the window buttons (minimize, maximize and close) are not displayed.
 		</constant>
 		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
 			All mouse events are passed to the underlying window of the same application.
@@ -907,6 +908,18 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="decoration_button_hover_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Window button modulation color, when the button is hovered.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="decoration_button_normal_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Window button modulation color.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="decoration_button_pressed_modulate" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Window button modulation color, when the button is pressed.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color of the title's text.
 		</theme_item>
@@ -916,8 +929,24 @@
 		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">
 			Horizontal position offset of the close button.
 		</theme_item>
-		<theme_item name="close_v_offset" data_type="constant" type="int" default="24">
+		<theme_item name="close_v_offset" data_type="constant" type="int" default="20">
 			Vertical position offset of the close button.
+		</theme_item>
+		<theme_item name="maximize_h_offset" data_type="constant" type="int" default="36">
+			Horizontal position offset of the maximize/restore button.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="maximize_v_offset" data_type="constant" type="int" default="20">
+			Vertical position offset of the maximize/restore button.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="minimize_h_offset" data_type="constant" type="int" default="54">
+			Horizontal position offset of the minimize button.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="minimize_v_offset" data_type="constant" type="int" default="20">
+			Vertical position offset of the minimize button.
+			[b]Note:[/b] Used only when extend to title is active.
 		</theme_item>
 		<theme_item name="resize_margin" data_type="constant" type="int" default="4">
 			Defines the outside margin at which the window border can be grabbed with mouse and resized.
@@ -939,6 +968,46 @@
 		</theme_item>
 		<theme_item name="close_pressed" data_type="icon" type="Texture2D">
 			The icon for the close button when it's being pressed.
+		</theme_item>
+		<theme_item name="maximize" data_type="icon" type="Texture2D">
+			The icon for the maximize button.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="maximize_disabled" data_type="icon" type="Texture2D">
+			The icon for the maximize button when disabled (window not resizable).
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="maximize_pressed" data_type="icon" type="Texture2D">
+			The icon for the maximize button when it's being pressed.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="minimize" data_type="icon" type="Texture2D">
+			The icon for the minimize button.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="minimize_pressed" data_type="icon" type="Texture2D">
+			The icon for the minimize button when it's being pressed.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="restore" data_type="icon" type="Texture2D">
+			The icon for the restore button.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="restore_pressed" data_type="icon" type="Texture2D">
+			The icon for the restore button when it's being pressed.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="decoration_button_hover" data_type="style" type="StyleBox">
+			The background style used of the window buttons when the mouse pointer is hovering them.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="decoration_button_normal" data_type="style" type="StyleBox">
+			The background style used of the window buttons.
+			[b]Note:[/b] Used only when extend to title is active.
+		</theme_item>
+		<theme_item name="decoration_button_pressed" data_type="style" type="StyleBox">
+			The background style used of the window buttons when they are being pressed.
+			[b]Note:[/b] Used only when extend to title is active.
 		</theme_item>
 		<theme_item name="embedded_border" data_type="style" type="StyleBox">
 			The background style used when the [Window] is embedded. Note that this is drawn only under the window's content, excluding the title. For proper borders and title bar style, you can use [code]expand_margin_*[/code] properties of [StyleBoxFlat].

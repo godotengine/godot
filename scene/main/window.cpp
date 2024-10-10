@@ -36,6 +36,7 @@
 #include "core/string/translation_server.h"
 #include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
+#include "scene/resources/world_2d.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 
@@ -790,6 +791,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			emit_signal(SNAME("dpi_changed"));
 		} break;
 		case DisplayServer::WINDOW_EVENT_TITLEBAR_CHANGE: {
+			_update_decoration();
 			emit_signal(SNAME("titlebar_changed"));
 		} break;
 	}
@@ -820,6 +822,11 @@ void Window::show() {
 void Window::hide() {
 	ERR_MAIN_THREAD_GUARD;
 	set_visible(false);
+}
+
+void Window::send_close_request() {
+	_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
+	emit_signal(SNAME("close_requested"));
 }
 
 void Window::set_visible(bool p_visible) {
@@ -1215,6 +1222,8 @@ void Window::_update_viewport_size() {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServer::INVALID_WINDOW_ID);
 	}
 
+	_update_decoration();
+
 	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
@@ -1387,6 +1396,7 @@ void Window::_notification(int p_what) {
 			emit_signal(SceneStringName(theme_changed));
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
+			_update_decoration();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1663,6 +1673,13 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (exclusive_child != nullptr) {
 		if (!is_embedding_subwindows()) { // Not embedding, no need for event.
+			return;
+		}
+	}
+
+	if (_get_decoration_visible()) {
+		if (_handle_window_buttons(p_ev)) {
+			set_input_as_handled();
 			return;
 		}
 	}
@@ -2803,6 +2820,250 @@ void Window::_mouse_leave_viewport() {
 	}
 }
 
+void Window::_create_decoration_canvas() {
+	decoration_canvas = RenderingServer::get_singleton()->canvas_item_create();
+	RenderingServer::get_singleton()->canvas_item_set_visible(decoration_canvas, true);
+	RenderingServer::get_singleton()->canvas_item_set_parent(decoration_canvas, find_world_2d()->get_canvas());
+	RenderingServer::get_singleton()->canvas_item_set_draw_index(decoration_canvas, std::numeric_limits<int>::max());
+
+	// That should force to draw the decoration the first time.
+	callable_mp(this, &Window::_update_decoration).call_deferred();
+}
+
+bool Window::_get_decoration_visible() const {
+	// Without the extend to title flag, we don't need the decoration canvas.
+	// And in borderless mode or fullscreen, there's not decorations.
+	return get_flag(Window::FLAG_EXTEND_TO_TITLE) && mode != MODE_FULLSCREEN && MODE_WINDOWED != MODE_EXCLUSIVE_FULLSCREEN && !get_flag(Window::FLAG_BORDERLESS);
+}
+
+void Window::_update_decoration() {
+	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+
+	// Without the extend to title flag, we don't need the decoration canvas.
+	// And in borderless mode or fullscreen, there's not decorations.
+	if (!_get_decoration_visible()) {
+		if (decoration_canvas.is_valid()) {
+			// Not needed anymore.
+			RenderingServer::get_singleton()->free(decoration_canvas);
+			decoration_canvas = RID();
+		}
+		return;
+	}
+
+	if (!decoration_canvas.is_valid()) {
+		_create_decoration_canvas();
+	}
+
+	Size2i window_size = get_size();
+	Size2i viewport_size = get_visible_rect().size;
+	RenderingServer::get_singleton()->canvas_item_clear(decoration_canvas);
+	Vector2i offset = _get_window_buttons_offset();
+
+	// Calculate each button emplacement.
+	if (is_layout_rtl()) {
+		close_button_rect = Rect2i(offset.x, offset.y, theme_cache.close_h_offset, theme_cache.close_v_offset);
+		maximize_button_rect = Rect2i(theme_cache.close_h_offset + offset.x, offset.y, theme_cache.maximize_h_offset - theme_cache.close_h_offset, theme_cache.maximize_v_offset);
+		minimize_button_rect = Rect2i(theme_cache.maximize_h_offset + offset.x, offset.y, theme_cache.minimize_h_offset - theme_cache.maximize_h_offset, theme_cache.minimize_v_offset);
+	} else {
+		minimize_button_rect = Rect2i(viewport_size.x - theme_cache.minimize_h_offset - offset.x, offset.y, theme_cache.minimize_h_offset - theme_cache.maximize_h_offset, theme_cache.minimize_v_offset);
+		maximize_button_rect = Rect2i(viewport_size.x - theme_cache.maximize_h_offset - offset.x, offset.y, theme_cache.maximize_h_offset - theme_cache.close_h_offset, theme_cache.maximize_v_offset);
+		close_button_rect = Rect2i(viewport_size.x - theme_cache.close_h_offset - offset.x, offset.y, theme_cache.close_h_offset, theme_cache.close_v_offset);
+	}
+
+	// Drawing buttons.
+	_draw_window_button_decoration(minimize_button_rect, WINDOW_BUTTON_MINIMIZE);
+	_draw_window_button_decoration(maximize_button_rect, WINDOW_BUTTON_MAXIMIZE);
+	_draw_window_button_decoration(close_button_rect, WINDOW_BUTTON_CLOSE);
+
+	// We need to translate the coords from the viewport to the real window coords
+	// when the stretch mode is enabled.
+	if (window_size != viewport_size) {
+		Transform2D transform = get_final_transform();
+		minimize_button_rect = _translate_decoration_rect(minimize_button_rect, transform);
+		maximize_button_rect = _translate_decoration_rect(maximize_button_rect, transform);
+		close_button_rect = _translate_decoration_rect(close_button_rect, transform);
+	}
+}
+
+Rect2 Window::_translate_decoration_rect(const Rect2 &p_rect, const Transform2D &p_window_transform) {
+	Vector2 new_position = p_window_transform.translated_local(p_rect.position).get_origin();
+	Vector2 new_end_position = p_window_transform.translated_local(p_rect.get_end()).get_origin();
+
+	return Rect2(new_position, new_end_position - new_position);
+}
+
+void Window::_draw_window_button_decoration(const Rect2 &p_button_rect, WindowButton p_window_button) {
+	Ref<StyleBox> style_box = _get_decoration_button_style_box(p_window_button);
+	if (style_box.is_valid()) {
+		style_box->draw(decoration_canvas, p_button_rect);
+	}
+
+	Ref<Texture2D> icon = _get_decoration_button_icon(p_window_button);
+	if (icon.is_valid()) {
+		Size2 icon_size = icon->get_size();
+		int ofs_x = (p_button_rect.size.x - icon_size.x) / 2.0;
+		int ofs_y = (p_button_rect.size.y - icon_size.y) / 2.0;
+		icon->draw_rect(decoration_canvas, Rect2(p_button_rect.position.x + ofs_x, p_button_rect.position.y + ofs_y, icon_size.x, icon_size.y), false, _get_decoration_button_modulate(p_window_button));
+	}
+}
+
+Ref<Texture2D> Window::_get_decoration_button_icon(WindowButton p_window_button) {
+	switch (p_window_button) {
+		case WINDOW_BUTTON_MINIMIZE:
+			return window_button_hover == WINDOW_BUTTON_MINIMIZE ? theme_cache.minimize_pressed : theme_cache.minimize;
+		case WINDOW_BUTTON_MAXIMIZE:
+			if (get_flag(FLAG_RESIZE_DISABLED)) {
+				return theme_cache.maximize_disabled;
+			} else if (get_mode() == MODE_WINDOWED) {
+				return window_button_hover == WINDOW_BUTTON_MAXIMIZE ? theme_cache.maximize_pressed : theme_cache.maximize;
+			} else {
+				return window_button_hover == WINDOW_BUTTON_MAXIMIZE ? theme_cache.restore_pressed : theme_cache.restore;
+			}
+		default:
+			return window_button_hover == WINDOW_BUTTON_CLOSE ? theme_cache.close_pressed : theme_cache.close;
+	}
+}
+
+Ref<StyleBox> Window::_get_decoration_button_style_box(WindowButton p_window_button) {
+	if (p_window_button == window_button_pressed) {
+		return theme_cache.decoration_button_pressed;
+	}
+
+	if (p_window_button == window_button_hover) {
+		return theme_cache.decoration_button_hover;
+	}
+
+	return theme_cache.decoration_button_normal;
+}
+
+Color Window::_get_decoration_button_modulate(WindowButton p_window_button) {
+	if (p_window_button == window_button_pressed) {
+		return theme_cache.decoration_button_normal_modulate;
+	}
+
+	if (p_window_button == window_button_hover) {
+		return theme_cache.decoration_button_hover_modulate;
+	}
+
+	return theme_cache.decoration_button_normal_modulate;
+}
+
+bool Window::_handle_window_buttons(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		WindowButton new_button_state = WINDOW_BUTTON_NONE;
+		Vector2 mouse_position = mm->get_position();
+		if (minimize_button_rect.has_point(mouse_position)) {
+			new_button_state = WINDOW_BUTTON_MINIMIZE;
+		} else if (maximize_button_rect.has_point(mouse_position)) {
+			if (!get_flag(FLAG_RESIZE_DISABLED)) {
+				new_button_state = WINDOW_BUTTON_MAXIMIZE;
+			}
+		} else if (close_button_rect.has_point(mouse_position)) {
+			new_button_state = WINDOW_BUTTON_CLOSE;
+		}
+
+		if (new_button_state != window_button_hover) {
+			window_button_hover = new_button_state;
+			window_button_pressed = WINDOW_BUTTON_NONE;
+			callable_mp(this, &Window::_update_decoration).call_deferred();
+		}
+
+		if (window_button_hover != WINDOW_BUTTON_NONE) {
+			return true;
+		}
+	}
+
+	if (window_button_hover == WINDOW_BUTTON_NONE) {
+		return false;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->is_pressed()) {
+				// Note the pressed button put take action only on release.
+				window_button_pressed = window_button_hover;
+			} else if (window_button_pressed == window_button_hover) {
+				// Released on the same button.
+				switch (window_button_pressed) {
+					case WINDOW_BUTTON_MINIMIZE: {
+						set_mode(MODE_MINIMIZED);
+					} break;
+					case WINDOW_BUTTON_MAXIMIZE: {
+						if (get_mode() == MODE_WINDOWED) {
+							set_mode(MODE_MAXIMIZED);
+						} else {
+							set_mode(MODE_WINDOWED);
+						}
+					} break;
+					case WINDOW_BUTTON_CLOSE: {
+						send_close_request();
+					} break;
+					case WINDOW_BUTTON_NONE: {
+						// Just to pass the CI validations.
+					} break;
+				}
+				window_button_pressed = WINDOW_BUTTON_NONE;
+			}
+			callable_mp(this, &Window::_update_decoration).call_deferred();
+		}
+		// Even if we don't use this event, it was over on of the window button, return true
+		// to prevent propagation of the event.
+		return true;
+	}
+
+	return false;
+}
+
+Vector2i Window::_get_window_buttons_offset() const {
+	// The method set_window_buttons_offset receives the center of the first button.
+	// This method calculates the offset to the left and right of the window buttons.
+	if (!window_buttons_offset_customized) {
+		return Vector2i();
+	}
+	return Vector2i(window_buttons_offset.x - (theme_cache.close_h_offset / 2), window_buttons_offset.y - (theme_cache.close_v_offset / 2));
+}
+
+void Window::set_window_buttons_offset(const Vector2i &p_offset) {
+	window_buttons_offset = p_offset;
+	window_buttons_offset_customized = true;
+
+	if (DisplayServer::get_singleton()->window_is_extend_to_title_show_window_buttons()) {
+		// Window buttons are managed by the OS.
+		DisplayServer::get_singleton()->window_set_window_buttons_offset(p_offset, window_id);
+	}
+}
+
+Vector2i Window::get_window_buttons_offset() const {
+	return window_buttons_offset;
+}
+
+Vector2i Window::get_safe_title_margins_left() const {
+	if (DisplayServer::get_singleton()->window_is_extend_to_title_show_window_buttons()) {
+		// Window buttons are managed by the OS.
+		const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(window_id);
+		return Vector2i(is_layout_rtl() ? margin.y : margin.x, margin.z);
+	} else {
+		return Vector2i();
+	}
+}
+
+Vector2i Window::get_safe_title_margins_right() const {
+	if (DisplayServer::get_singleton()->window_is_extend_to_title_show_window_buttons()) {
+		// Window buttons are managed by the OS.
+		const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(window_id);
+		return Vector2i(is_layout_rtl() ? margin.x : margin.y, margin.z);
+	} else if (_get_decoration_visible()) {
+		// Window buttons are managed by ourself.
+		return Vector2i(theme_cache.minimize_h_offset, MAX(MAX(theme_cache.minimize_v_offset, theme_cache.maximize_v_offset), theme_cache.close_v_offset)) + _get_window_buttons_offset();
+	} else {
+		return Vector2i();
+	}
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -3086,12 +3347,33 @@ void Window::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, embedded_border);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, embedded_unfocused_border);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, decoration_button_normal);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, decoration_button_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, decoration_button_pressed);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, decoration_button_normal_modulate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, decoration_button_hover_modulate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, decoration_button_pressed_modulate);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Window, title_font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Window, title_font_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, title_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, title_height);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Window, title_outline_modulate);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, title_outline_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, minimize);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, minimize_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, minimize_h_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, minimize_v_offset);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, maximize);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, maximize_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, maximize_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, restore);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, restore_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, maximize_h_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Window, maximize_v_offset);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, close);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Window, close_pressed);
@@ -3113,6 +3395,10 @@ Window::Window() {
 }
 
 Window::~Window() {
+	if (decoration_canvas.is_valid() && RenderingServer::get_singleton()) {
+		RenderingServer::get_singleton()->free(decoration_canvas);
+	}
+
 	memdelete(theme_owner);
 
 	// Resources need to be disconnected.

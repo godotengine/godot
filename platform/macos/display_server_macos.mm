@@ -2375,6 +2375,10 @@ Vector3i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) co
 	}
 }
 
+bool DisplayServerMacOS::window_is_extend_to_title_show_window_buttons() const {
+	return true;
+}
+
 void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled) {
 	if (p_wd.window_button_view) {
 		[p_wd.window_button_view removeFromSuperview];

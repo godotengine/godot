@@ -1267,19 +1267,52 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	// Window and dialogs.
 	{
 		// Window.
-
 		p_theme->set_stylebox("embedded_border", "Window", p_config.window_style);
 		p_theme->set_stylebox("embedded_unfocused_border", "Window", p_config.window_style);
 
-		p_theme->set_color("title_color", "Window", p_config.font_color);
-		p_theme->set_icon("close", "Window", p_theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
-		p_theme->set_icon("close_pressed", "Window", p_theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
-		p_theme->set_constant("close_h_offset", "Window", 22 * EDSCALE);
-		p_theme->set_constant("close_v_offset", "Window", 20 * EDSCALE);
-		p_theme->set_constant("title_height", "Window", 24 * EDSCALE);
-		p_theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
 		p_theme->set_font("title_font", "Window", p_theme->get_font(SNAME("title"), EditorStringName(EditorFonts)));
+		p_theme->set_color("title_color", "Window", p_config.font_color);
+		p_theme->set_constant("title_height", "Window", 24 * EDSCALE);
 		p_theme->set_font_size("title_font_size", "Window", p_theme->get_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
+		p_theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
+
+		Ref<StyleBoxFlat> decoration_button_normal = p_config.button_style->duplicate();
+		decoration_button_normal->set_bg_color(Color(1, 1, 1, 0));
+		decoration_button_normal->set_content_margin_all(0);
+		decoration_button_normal->set_corner_radius_all(0);
+		p_theme->set_stylebox("decoration_button_normal", "Window", decoration_button_normal);
+
+		Ref<StyleBoxFlat> decoration_button_hover = p_config.button_style_hover->duplicate();
+		decoration_button_hover->set_content_margin_all(0);
+		decoration_button_hover->set_corner_radius_all(0);
+		p_theme->set_stylebox("decoration_button_hover", "Window", decoration_button_hover);
+
+		Ref<StyleBoxFlat> decoration_button_pressed = p_config.button_style_pressed->duplicate();
+		decoration_button_pressed->set_content_margin_all(0);
+		decoration_button_pressed->set_corner_radius_all(0);
+		p_theme->set_stylebox("decoration_button_pressed", "Window", decoration_button_pressed);
+
+		p_theme->set_color("decoration_button_normal_modulate", "Window", p_config.font_color);
+		p_theme->set_color("decoration_button_hover_modulate", "Window", p_config.font_hover_color);
+		p_theme->set_color("decoration_button_pressed_modulate", "Window", p_config.font_pressed_color);
+
+		float window_button_width = MIN(20 + (p_config.widget_margin.x * 2), 32);
+		float window_button_height = MIN(20 + (p_config.widget_margin.y * 2), 32);
+		p_theme->set_icon("minimize", "Window", p_theme->get_icon(SNAME("WindowMinimize"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("minimize_pressed", "Window", p_theme->get_icon(SNAME("WindowMinimize"), EditorStringName(EditorIcons)));
+		p_theme->set_constant("minimize_h_offset", "Window", window_button_width * 3);
+		p_theme->set_constant("minimize_v_offset", "Window", window_button_height);
+		p_theme->set_icon("maximize", "Window", p_theme->get_icon(SNAME("WindowMaximize"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("maximize_pressed", "Window", p_theme->get_icon(SNAME("WindowMaximize"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("maximize_disabled", "Window", p_theme->get_icon(SNAME("WindowMaximize"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("restore", "Window", p_theme->get_icon(SNAME("WindowRestore"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("restore_pressed", "Window", p_theme->get_icon(SNAME("WindowRestore"), EditorStringName(EditorIcons)));
+		p_theme->set_constant("maximize_h_offset", "Window", window_button_width * 2);
+		p_theme->set_constant("maximize_v_offset", "Window", window_button_height);
+		p_theme->set_icon("close", "Window", p_theme->get_icon(SNAME("WindowClose"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("close_pressed", "Window", p_theme->get_icon(SNAME("WindowClose"), EditorStringName(EditorIcons)));
+		p_theme->set_constant("close_h_offset", "Window", window_button_width);
+		p_theme->set_constant("close_v_offset", "Window", window_button_height);
 
 		// AcceptDialog.
 		p_theme->set_stylebox(SceneStringName(panel), "AcceptDialog", p_config.dialog_style);

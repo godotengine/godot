@@ -139,6 +139,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_EXTEND_TO_TITLE:
 			return true;
 		case FEATURE_SCREEN_CAPTURE:
 			return !xwayland;
@@ -2214,7 +2215,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 
 	int x = 0;
 	int y = 0;
-	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
+	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && !window_get_flag(WINDOW_FLAG_EXTEND_TO_TITLE, p_window)) {
 		//exclude window decorations
 		XSync(x11_display, False);
 		Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
@@ -2640,7 +2641,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (p_enabled && !window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
+	if (p_enabled && !window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && !window_get_flag(WINDOW_FLAG_EXTEND_TO_TITLE, p_window)) {
 		// remove decorations if the window is not already borderless
 		Hints hints;
 		Atom property;
@@ -2697,7 +2698,7 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, boo
 		Hints hints;
 		Atom property;
 		hints.flags = 2;
-		hints.decorations = wd.borderless ? 0 : 1;
+		hints.decorations = wd.borderless || wd.extend_to_title ? 0 : 1;
 		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 		if (property != None) {
 			XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
@@ -2775,6 +2776,9 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			_set_wm_maximized(p_window, true);
 		} break;
 	}
+
+	// Notify a possible change in the titlebar.
+	_send_window_event(wd, DisplayServerX11::WINDOW_EVENT_TITLEBAR_CHANGE);
 }
 
 DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) const {
@@ -2883,6 +2887,24 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			wd.is_popup = p_enabled;
 		} break;
+		case WINDOW_FLAG_EXTEND_TO_TITLE: {
+			Hints hints;
+			Atom property;
+			hints.flags = 2;
+			hints.decorations = p_enabled ? 0 : 1;
+			property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+			if (property != None) {
+				XChangeProperty(x11_display, wd.x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+			}
+
+			// Preserve window size
+			window_set_size(window_get_size(p_window), p_window);
+
+			wd.extend_to_title = p_enabled;
+
+			// Notify a possible change in the titlebar.
+			_send_window_event(wd, DisplayServerX11::WINDOW_EVENT_TITLEBAR_CHANGE);
+		} break;
 		default: {
 		}
 	}
@@ -2899,24 +2921,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return wd.resize_disabled;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-			bool borderless = wd.borderless;
-			Atom prop = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-			if (prop != None) {
-				Atom type;
-				int format;
-				unsigned long len;
-				unsigned long remaining;
-				unsigned char *data = nullptr;
-				if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, sizeof(Hints), False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
-					if (data && (format == 32) && (len >= 5)) {
-						borderless = !(reinterpret_cast<Hints *>(data)->decorations);
-					}
-					if (data) {
-						XFree(data);
-					}
-				}
-			}
-			return borderless;
+			return wd.borderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.on_top;
@@ -2933,6 +2938,10 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
 		} break;
+		case WINDOW_FLAG_EXTEND_TO_TITLE: {
+			return wd.extend_to_title;
+		} break;
+
 		default: {
 		}
 	}
@@ -4780,6 +4789,28 @@ void DisplayServerX11::process_events() {
 					event.xbutton.y = last_mouse_pos.y;
 				}
 
+				WindowData &wd = windows[window_id];
+
+				// Handle left mouse button press and release to resize the window in extend_to_title mode.
+				if (wd.extend_to_title && !wd.maximized && !wd.minimized && !wd.resize_disabled && mouse_mode == MOUSE_MODE_VISIBLE && (MouseButton)event.xbutton.button == MouseButton::LEFT) {
+					if (event.type == ButtonPress) {
+						int resize_edge = _detect_resize_edge(event.xbutton.x, event.xbutton.y, wd);
+						if (resize_edge != RESIZE_EDGE_NONE) {
+							wd.resize_edge = resize_edge;
+							wd.resize_origin_mouse_x = event.xbutton.x_root;
+							wd.resize_origin_mouse_y = event.xbutton.y_root;
+							wd.resize_origin_width = wd.size.x;
+							wd.resize_origin_height = wd.size.y;
+							wd.resize_origin_position_x = wd.position.x;
+							wd.resize_origin_position_y = wd.position.y;
+							break;
+						}
+					} else if (wd.resize_edge != RESIZE_EDGE_NONE) {
+						wd.resize_edge = RESIZE_EDGE_NONE;
+						break;
+					}
+				}
+
 				Ref<InputEventMouseButton> mb;
 				mb.instantiate();
 
@@ -4804,8 +4835,6 @@ void DisplayServerX11::process_events() {
 				} else {
 					mb->set_button_mask(mouse_get_button_state());
 				}
-
-				const WindowData &wd = windows[window_id];
 
 				if (event.type == ButtonPress) {
 					DEBUG_LOG_X11("[%u] ButtonPress window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
@@ -4882,6 +4911,19 @@ void DisplayServerX11::process_events() {
 				if (ime_window_event || ignore_events) {
 					break;
 				}
+
+				WindowData &wd = windows[window_id];
+				if (wd.extend_to_title && !wd.maximized && !wd.minimized && !wd.resize_disabled && mouse_mode == MOUSE_MODE_VISIBLE) {
+					if (wd.resize_edge != RESIZE_EDGE_NONE) {
+						_handle_resize(&event, wd);
+						break;
+					} else {
+						if (_handle_border_motion(&event, wd)) {
+							break;
+						}
+					}
+				}
+
 				// The X11 API requires filtering one-by-one through the motion
 				// notify events, in order to figure out which event is the one
 				// generated by warping the mouse pointer.
@@ -4929,7 +4971,6 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
 				bool focused = wd.focused;
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -5199,6 +5240,90 @@ void DisplayServerX11::process_events() {
 	Input::get_singleton()->flush_buffered_events();
 }
 
+int DisplayServerX11::_detect_resize_edge(int p_mouse_x, int p_mouse_y, const WindowData &p_wd) {
+	int edge = RESIZE_EDGE_NONE;
+
+	if (p_mouse_x < RESIZE_BORDER) {
+		edge |= RESIZE_EDGE_LEFT;
+	}
+	if (p_mouse_x > p_wd.size.x - RESIZE_BORDER) {
+		edge |= RESIZE_EDGE_RIGHT;
+	}
+	if (p_mouse_y < RESIZE_BORDER) {
+		edge |= RESIZE_EDGE_TOP;
+	}
+	if (p_mouse_y > p_wd.size.y - RESIZE_BORDER) {
+		edge |= RESIZE_EDGE_BOTTOM;
+	}
+
+	return edge;
+}
+
+void DisplayServerX11::_handle_resize(XEvent *p_event, WindowData &p_wd) {
+	int new_width = p_wd.resize_origin_width;
+	int new_height = p_wd.resize_origin_height;
+	int new_position_x = p_wd.resize_origin_position_x;
+	int new_position_y = p_wd.resize_origin_position_y;
+	int delta_x = p_event->xmotion.x_root - p_wd.resize_origin_mouse_x;
+	int delta_y = p_event->xmotion.y_root - p_wd.resize_origin_mouse_y;
+
+	if (p_wd.resize_edge & RESIZE_EDGE_RIGHT) {
+		new_width = std::max(100, new_width + delta_x);
+	} else if (p_wd.resize_edge & RESIZE_EDGE_LEFT) {
+		new_width = std::max(100, new_width - delta_x);
+		new_position_x += delta_x;
+	}
+
+	if (p_wd.resize_edge & RESIZE_EDGE_BOTTOM) {
+		new_height = std::max(100, new_height + delta_y);
+	} else if (p_wd.resize_edge & RESIZE_EDGE_TOP) {
+		new_height = std::max(100, new_height - delta_y);
+		new_position_y += delta_y;
+	}
+
+	if (p_wd.position.x != new_position_x || p_wd.position.y != new_position_y) {
+		p_wd.position = Size2i(new_position_x, new_position_y);
+		XMoveWindow(x11_display, p_wd.x11_window, new_position_x, new_position_y);
+	}
+
+	if (p_wd.size.x != new_width || p_wd.size.y != new_height) {
+		p_wd.size = Size2i(new_width, new_height);
+		XResizeWindow(x11_display, p_wd.x11_window, new_width, new_height);
+	}
+}
+
+bool DisplayServerX11::_handle_border_motion(XEvent *event, WindowData &p_wd) {
+	int edge = _detect_resize_edge(event->xmotion.x, event->xmotion.y, p_wd);
+
+	Cursor cursor = None;
+	if (edge & RESIZE_EDGE_LEFT || edge & RESIZE_EDGE_RIGHT) {
+		cursor = cursors[DisplayServer::CursorShape::CURSOR_HSIZE];
+	}
+	if (edge & RESIZE_EDGE_TOP || edge & RESIZE_EDGE_BOTTOM) {
+		cursor = cursors[DisplayServer::CursorShape::CURSOR_VSIZE];
+	}
+	if ((edge & RESIZE_EDGE_TOP && edge & RESIZE_EDGE_LEFT) || (edge & RESIZE_EDGE_BOTTOM && edge & RESIZE_EDGE_RIGHT)) {
+		cursor = cursors[DisplayServer::CursorShape::CURSOR_FDIAGSIZE];
+	}
+	if ((edge & RESIZE_EDGE_TOP && edge & RESIZE_EDGE_RIGHT) || (edge & RESIZE_EDGE_BOTTOM && edge & RESIZE_EDGE_LEFT)) {
+		cursor = cursors[DisplayServer::CursorShape::CURSOR_BDIAGSIZE];
+	}
+
+	if (cursor != None) {
+		if (p_wd.resize_border_cursor != cursor) {
+			XDefineCursor(x11_display, p_wd.x11_window, cursor);
+			p_wd.resize_border_cursor = cursor;
+		}
+		return true;
+	} else if (p_wd.resize_border_cursor != None) {
+		// Reset previous cursor, not resizing anymore.
+		XDefineCursor(x11_display, p_wd.x11_window, current_cursor);
+		p_wd.resize_border_cursor = None;
+	}
+
+	return false;
+}
+
 void DisplayServerX11::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
@@ -5410,6 +5535,10 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+bool DisplayServerX11::window_maximize_on_title_dbl_click() const {
+	return true;
 }
 
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {
@@ -5691,7 +5820,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		_update_context(wd);
 
-		if (p_flags & WINDOW_FLAG_BORDERLESS_BIT) {
+		if (p_flags & WINDOW_FLAG_BORDERLESS_BIT || p_flags & WINDOW_FLAG_EXTEND_TO_TITLE_BIT) {
 			Hints hints;
 			Atom property;
 			hints.flags = 2;
