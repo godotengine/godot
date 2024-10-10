@@ -36,6 +36,16 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
+#include "scene/resources/3d/primitive_meshes.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
+#endif // TOOLS_ENABLED
+
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
 	//add to it that it's probably found on first call to _set anyway.
@@ -87,6 +97,96 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		DocData::ClassDoc class_doc;
+		List<String> code_list;
+
+		class_doc.name = "GeometryInstance3D";
+		class_doc.is_script_doc = true;
+
+		if (get_material_override().is_valid()) {
+			Ref<ShaderMaterial> shader_material = Object::cast_to<ShaderMaterial>(get_material_override().ptr());
+			if (shader_material.is_valid()) {
+				Ref<Shader> shader = shader_material->get_shader();
+				if (shader.is_valid()) {
+					code_list.push_back(shader->get_code());
+				}
+			}
+		} else {
+			bool found = false;
+
+			for (const Ref<Material> &material : surface_override_materials) {
+				if (material.ptr()) {
+					found = true;
+				}
+
+				const Ref<ShaderMaterial> shader_material = Object::cast_to<ShaderMaterial>(material.ptr());
+				if (shader_material.is_valid()) {
+					const Ref<Shader> shader = shader_material->get_shader();
+					if (shader.is_valid()) {
+						code_list.push_back(shader->get_code());
+					}
+				}
+			}
+
+			if (!found && mesh.is_valid()) {
+				const Ref<PrimitiveMesh> primitive_mesh = Object::cast_to<PrimitiveMesh>(mesh.ptr());
+				if (primitive_mesh.is_valid()) {
+					const Ref<ShaderMaterial> shader_material = Object::cast_to<ShaderMaterial>(primitive_mesh->get_material().ptr());
+					if (shader_material.is_valid()) {
+						const Ref<Shader> shader = shader_material->get_shader();
+						if (shader.is_valid()) {
+							code_list.push_back(shader->get_code());
+						}
+					}
+				}
+			}
+		}
+
+		if (get_material_overlay().is_valid()) {
+			Ref<ShaderMaterial> shader_material = Object::cast_to<ShaderMaterial>(get_material_overlay().ptr());
+			if (shader_material.is_valid()) {
+				Ref<Shader> shader = shader_material->get_shader();
+				if (shader.is_valid()) {
+					code_list.push_back(shader->get_code());
+				}
+			}
+		}
+
+		List<PropertyInfo> pinfo;
+		RS::get_singleton()->instance_geometry_get_shader_parameter_list(get_instance(), &pinfo);
+
+		for (PropertyInfo &pi : pinfo) {
+			DocData::PropertyDoc prop_doc;
+			prop_doc.name = "instance_shader_parameters/" + pi.name;
+#ifdef MODULE_REGEX_ENABLED
+			const RegEx pattern(R"(/\*\*\s([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/\s*instance\s+uniform\s+\w+\s+)" + pi.name + R"((?=[\s:;=]))");
+
+			for (const String &code : code_list) {
+				Ref<RegExMatch> pattern_ref = pattern.search(code);
+				if (pattern_ref != nullptr) {
+					RegExMatch *match = pattern_ref.ptr();
+					const RegEx pattern_tip(R"(\/\*\*([\s\S]*?)\*/)");
+					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
+					RegExMatch *match_tip = pattern_tip_ref.ptr();
+					const RegEx pattern_stripped(R"(\n\s*\*\s*)");
+					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+					if (!prop_doc.description.is_empty()) {
+						break;
+					}
+				}
+			}
+#endif // MODULE_REGEX_ENABLED
+			class_doc.properties.push_back(prop_doc);
+		}
+
+		if (EditorHelp::get_doc_data() != nullptr && p_list) {
+			EditorHelp::get_doc_data()->add_doc(class_doc);
+		}
+	}
+#endif // TOOLS_ENABLED
+
 	List<String> ls;
 	for (const KeyValue<StringName, int> &E : blend_shape_properties) {
 		ls.push_back(E.key);
