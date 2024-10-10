@@ -124,6 +124,11 @@ void OS_Android::initialize_joypads() {
 	godot_java->init_input_devices();
 }
 
+void OS_Android::initialize_platform_text() {
+	platform_text_implementation = memnew(PlatformTextAndroid);
+	PlatformText::get_singleton()->set_implementation(platform_text_implementation);
+}
+
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
