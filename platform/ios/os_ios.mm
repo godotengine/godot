@@ -131,9 +131,15 @@ void OS_IOS::initialize_modules() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	joypad_ios = memnew(JoypadIOS);
+
+	virtual_controller = memnew(IOSVirtualController);
 }
 
 void OS_IOS::deinitialize_modules() {
+	if (virtual_controller) {
+		memdelete(virtual_controller);
+	}
+
 	if (joypad_ios) {
 		memdelete(joypad_ios);
 	}
@@ -179,6 +185,10 @@ void OS_IOS::start() {
 
 	if (joypad_ios) {
 		joypad_ios->start_processing();
+	}
+
+	if (virtual_controller) {
+		virtual_controller->update_state();
 	}
 }
 
@@ -591,6 +601,10 @@ bool OS_IOS::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
+VirtualController *OS_IOS::get_virtual_controller() const {
+	return virtual_controller;
+}
+
 void OS_IOS::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
@@ -644,6 +658,18 @@ void OS_IOS::on_exit_background() {
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 		}
+	}
+}
+
+void OS_IOS::controller_connected() {
+	if (virtual_controller) {
+		virtual_controller->controller_connected();
+	}
+}
+
+void OS_IOS::controller_disconnected() {
+	if (virtual_controller) {
+		virtual_controller->controller_disconnected();
 	}
 }
 
