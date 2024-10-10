@@ -15,11 +15,21 @@ run/main_scene="res://control.tscn"
 config/features=PackedStringArray("4.3")
 config/icon="res://icon.svg"
 
+[audio]
+
+driver/enable_input=true
+driver/mix_rate=48000
+
 [display]
 
 window/size/viewport_width=720
 window/size/viewport_height=1280
 window/handheld/orientation=1
+
+[editor]
+
+movie_writer/movie_file="test.ogv"
+movie_writer/fps=15
 
 [rendering]
 

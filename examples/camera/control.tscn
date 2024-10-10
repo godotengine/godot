@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://wcx5rx1sckqy"]
+[gd_scene load_steps=7 format=3 uid="uid://wcx5rx1sckqy"]
 
 [ext_resource type="Shader" path="res://camera_nv12.gdshader" id="2_7jche"]
 [ext_resource type="Script" path="res://capture.gd" id="3_e3a7h"]
@@ -8,6 +8,7 @@ shader = ExtResource("2_7jche")
 
 [sub_resource type="CameraTexture" id="CameraTexture_nlxrt"]
 camera_feed_id = 1
+camera_is_active = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iy0nj"]
 content_margin_left = 8.0
@@ -17,6 +18,8 @@ content_margin_bottom = 8.0
 bg_color = Color(0, 0, 0, 0.686275)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
+
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_qfag3"]
 
 [node name="Control" type="Control"]
 clip_children = 1
@@ -68,5 +71,8 @@ toggle_mode = true
 text = "Loading..."
 flat = true
 script = ExtResource("3_e3a7h")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamMicrophone_qfag3")
 
 [connection signal="property_list_changed" from="TextureRect" to="ScrollContainer/VBoxContainer/Start capture" method="_on_texture_rect_property_list_changed"]
