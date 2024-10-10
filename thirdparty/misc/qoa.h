@@ -626,12 +626,14 @@ unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa
 			qoa_uint64_t slice = qoa_read_u64(bytes, &p);
 
 			int scalefactor = (slice >> 60) & 0xf;
+			slice <<= 4;
+
 			int slice_start = sample_index * channels + c;
 			int slice_end = qoa_clamp(sample_index + QOA_SLICE_LEN, 0, samples) * channels + c;
 
 			for (int si = slice_start; si < slice_end; si += channels) {
 				int predicted = qoa_lms_predict(&qoa->lms[c]);
-				int quantized = (slice >> 57) & 0x7;
+				int quantized = (slice >> 61) & 0x7;
 				int dequantized = qoa_dequant_tab[scalefactor][quantized];
 				int reconstructed = qoa_clamp_s16(predicted + dequantized);
 				
