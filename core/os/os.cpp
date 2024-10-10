@@ -504,6 +504,10 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "wasm") {
 		return true;
 	}
+#elif defined(__loongarch__)
+	if (p_feature == "loongarch64") {
+		return true;
+	}
 #endif
 
 #if defined(IOS_SIMULATOR)
