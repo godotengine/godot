@@ -178,6 +178,14 @@ void SceneMultiplayer::clear() {
 	relay_buffer->clear();
 }
 
+void SceneMultiplayer::set_delete_spawned_nodes_on_peer_exit(bool value) {
+    replicator->set_delete_spawned_nodes_on_peer_exit(value);
+}
+
+bool SceneMultiplayer::get_delete_spawned_nodes_on_peer_exit() const {
+    return replicator->get_delete_spawned_nodes_on_peer_exit();
+}
+
 void SceneMultiplayer::set_root_path(const NodePath &p_path) {
 	ERR_FAIL_COND_MSG(!p_path.is_absolute() && !p_path.is_empty(), "SceneMultiplayer root path must be absolute.");
 	root_path = p_path;
@@ -665,6 +673,9 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_sync_packet_size", "size"), &SceneMultiplayer::set_max_sync_packet_size);
 	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneMultiplayer::get_max_delta_packet_size);
 	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneMultiplayer::set_max_delta_packet_size);
+
+	ClassDB::bind_method(D_METHOD("set_delete_spawned_nodes_on_peer_exit", "value"), &SceneMultiplayer::set_delete_spawned_nodes_on_peer_exit);
+	ClassDB::bind_method(D_METHOD("get_delete_spawned_nodes_on_peer_exit"), &SceneMultiplayer::get_delete_spawned_nodes_on_peer_exit);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
