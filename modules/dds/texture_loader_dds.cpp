@@ -470,17 +470,49 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 			ERR_FAIL_COND_V_MSG(pitch != 0, Ref<Resource>(), "DDS header flags specify that no linear size will given for the top-level image, but a non-zero linear size value is present in the header.");
 		}
 
+		uint32_t last_mip_offset = 0u;
 		for (uint32_t i = 1; i < mipmaps; i++) {
 			w = MAX(1u, w >> 1);
 			h = MAX(1u, h >> 1);
 
 			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
+			last_mip_offset = size;
 			size += bsize;
 		}
 
 		src_data.resize(size);
 		uint8_t *wb = src_data.ptrw();
 		f->get_buffer(wb, size);
+
+		const uint32_t last_mip_w = w;
+		const uint32_t last_mip_h = h;
+		if ((mipmaps >= 2u) && ((last_mip_w >= 2u) || (last_mip_h >= 2u))) {
+			// The source image's mipmap chain ends above the 1x1 base-case, however the renderer expects textures to have complete mipmap chains.
+			// Thus, we generate (very crude) mipmaps for the missing levels.
+			uint32_t mip_gen_offset = size;
+			while ((w >= 2u) || (h >= 2u)) {
+				w = MAX(1u, w >> 1);
+				h = MAX(1u, h >> 1);
+
+				uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
+				size += bsize;
+			}
+			src_data.resize(size);
+			w = last_mip_w;
+			h = last_mip_h;
+			while ((w >= 2u) || (h >= 2u)) {
+				w = MAX(1u, w >> 1);
+				h = MAX(1u, h >> 1);
+
+				uint32_t blocks_width = MAX(info.divisor, w) / info.divisor;
+				uint32_t blocks_height = MAX(info.divisor, h) / info.divisor;
+				for (uint32_t idx = 0u; idx < (blocks_width * blocks_height); idx++) {
+					// Use copies of the corner of the last mipmap present in the DDS, as data for the smaller mip levels
+					memcpy(&wb[mip_gen_offset], &wb[last_mip_offset], info.block_size);
+					mip_gen_offset += info.block_size;
+				}
+			}
+		}
 
 	} else {
 		// Generic uncompressed.
