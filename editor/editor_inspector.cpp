@@ -3453,7 +3453,15 @@ void EditorInspector::update_tree() {
 				ep->set_checked(checked);
 				ep->set_keying(keying);
 				ep->set_read_only(property_read_only || all_read_only);
-				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
+				if (p.name.begins_with("metadata/")) {
+					Node *node = Object::cast_to<Node>(object);
+					Node *es = EditorNode::get_singleton()->get_edited_scene();
+					Vector<SceneState::PackState> sstack = PropertyUtils::get_node_states_stack(node, es);
+					Variant _default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
+					ep->set_deletable(_default == Variant());
+				} else {
+					ep->set_deletable(deletable_properties);
+				}
 			}
 
 			current_vbox->add_child(editors[i].property_editor);
