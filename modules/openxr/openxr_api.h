@@ -46,7 +46,7 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_pose.h"
 
 #include <openxr/openxr.h>

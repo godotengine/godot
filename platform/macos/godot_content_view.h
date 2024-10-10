@@ -31,7 +31,7 @@
 #ifndef GODOT_CONTENT_VIEW_H
 #define GODOT_CONTENT_VIEW_H
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>

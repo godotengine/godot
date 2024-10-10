@@ -52,7 +52,7 @@
 #include "main/main.h"
 
 #ifndef _3D_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED

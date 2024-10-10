@@ -42,7 +42,7 @@
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #endif
 
 #ifdef TOOLS_ENABLED

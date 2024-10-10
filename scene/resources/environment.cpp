@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/resources/gradient_texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 RID Environment::get_rid() const {
 	return environment;

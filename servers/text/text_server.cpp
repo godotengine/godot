@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #include "text_server.compat.inc"
 
 #include "core/variant/typed_array.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 TextServerManager *TextServerManager::singleton = nullptr;
 

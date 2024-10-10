@@ -38,7 +38,7 @@
 
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #if defined(RD_ENABLED)

@@ -32,7 +32,7 @@
 #define SOFT_BODY_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsBody3D;
 class SoftBody3D;

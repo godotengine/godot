@@ -30,7 +30,7 @@
 
 #include "image_compress_basisu.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <transcoder/basisu_transcoder.h>
 #ifdef TOOLS_ENABLED

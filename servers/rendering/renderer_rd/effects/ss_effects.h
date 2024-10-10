@@ -46,7 +46,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/subsurface_scattering.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #define RB_SCOPE_SSDS SNAME("rb_ssds")
 #define RB_SCOPE_SSIL SNAME("rb_ssil")

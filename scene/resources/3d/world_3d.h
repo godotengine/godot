@@ -34,8 +34,8 @@
 #include "core/io/resource.h"
 #include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 class CameraAttributes;
 class Camera3D;

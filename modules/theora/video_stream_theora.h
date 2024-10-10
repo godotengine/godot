@@ -38,7 +38,7 @@
 #include "core/templates/ring_buffer.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/resources/video_stream.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #include <theora/theoradec.h>
 #include <vorbis/codec.h>

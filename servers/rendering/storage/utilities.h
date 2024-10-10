@@ -31,7 +31,7 @@
 #ifndef RENDERER_UTILITIES_H
 #define RENDERER_UTILITIES_H
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class DependencyTracker;
 

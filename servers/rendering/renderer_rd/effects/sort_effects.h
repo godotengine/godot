@@ -35,7 +35,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/sort.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 

@@ -42,7 +42,7 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "shader_gles3.h"
 #include "storage/light_storage.h"
 #include "storage/material_storage.h"

@@ -45,9 +45,9 @@
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/file_access_windows_pipe.h"
 #include "main/main.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 #include <avrt.h>
 #include <bcrypt.h>

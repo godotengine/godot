@@ -41,7 +41,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class EGLManager {
 private:

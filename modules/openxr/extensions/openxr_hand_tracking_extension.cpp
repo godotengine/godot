@@ -34,7 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 #include <openxr/openxr.h>
 

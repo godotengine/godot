@@ -31,7 +31,7 @@
 #include "renderer_compositor.h"
 
 #include "core/config/project_settings.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 RendererCompositor *RendererCompositor::singleton = nullptr;
 

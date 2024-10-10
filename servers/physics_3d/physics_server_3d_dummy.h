@@ -31,7 +31,7 @@
 #ifndef PHYSICS_SERVER_3D_DUMMY_H
 #define PHYSICS_SERVER_3D_DUMMY_H
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsDirectBodyState3DDummy : public PhysicsDirectBodyState3D {
 	GDCLASS(PhysicsDirectBodyState3DDummy, PhysicsDirectBodyState3D);

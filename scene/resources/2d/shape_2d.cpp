@@ -32,7 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 RID Shape2D::get_rid() const {
 	return shape;

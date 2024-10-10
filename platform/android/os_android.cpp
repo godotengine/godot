@@ -45,7 +45,7 @@
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <dlfcn.h>
 #include <sys/system_properties.h>

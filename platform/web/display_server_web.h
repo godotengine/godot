@@ -31,7 +31,7 @@
 #ifndef DISPLAY_SERVER_WEB_H
 #define DISPLAY_SERVER_WEB_H
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include "godot_js.h"
 

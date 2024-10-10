@@ -37,7 +37,7 @@
 #include "../nav_obstacle.h"
 #include "../nav_region.h"
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 #ifdef CLIPPER2_ENABLED
 class NavMeshGenerator2D;

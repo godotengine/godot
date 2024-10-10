@@ -31,7 +31,7 @@
 #include "video_stream.h"
 
 #include "core/config/project_settings.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 // VideoStreamPlayback starts here.
 

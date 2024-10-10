@@ -32,7 +32,7 @@
 
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/navigation_region_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d.h"
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
 	create_material("face_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color(), false, false, true);
