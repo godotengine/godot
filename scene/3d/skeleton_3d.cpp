@@ -272,8 +272,6 @@ void Skeleton3D::_update_process_order() {
 		}
 	}
 
-	bones_backup.resize(bones.size());
-
 	concatenated_bone_names = StringName();
 
 	process_order_dirty = false;
@@ -335,11 +333,14 @@ void Skeleton3D::_notification(int p_what) {
 			int len = bones.size();
 
 			// Process modifiers.
+
+			thread_local LocalVector<BonePoseBackup> bones_backup;
 			_find_modifiers();
 			if (!modifiers.is_empty()) {
+				bones_backup.resize(bones.size());
 				// Store unmodified bone poses.
 				for (int i = 0; i < bones.size(); i++) {
-					bones_backup[i].save(bones[i]);
+					bones_backup.ptr()[i].save(bones.ptr()[i]);
 				}
 				_process_modifiers();
 			}
