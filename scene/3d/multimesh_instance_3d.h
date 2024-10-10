@@ -50,7 +50,7 @@ public:
 	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
 	Ref<MultiMesh> get_multimesh() const;
 
-	Array get_meshes() const;
+	Array get_meshes(bool swap_array_order = false) const;
 
 	virtual AABB get_aabb() const override;
 

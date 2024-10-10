@@ -35,6 +35,7 @@
 #include "core/math/delaunay_3d.h"
 #include "lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
@@ -354,7 +355,16 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 
 	if (!mi && s) {
-		Array bmeshes = p_at_node->call("get_bake_meshes");
+		Array bmeshes;
+		MultiMeshInstance3D *multi_mesh = Object::cast_to<MultiMeshInstance3D>(p_at_node);
+		if (multi_mesh) {
+			// By default, get_meshes returns an Array with the transform first where the code
+			// below expects the mesh first.  Request the order swapped so baking works.
+			bmeshes = multi_mesh->get_meshes(true);
+		} else {
+			bmeshes = p_at_node->call("get_bake_meshes");
+		}
+
 		if (bmeshes.size() && (bmeshes.size() & 1) == 0) {
 			Transform3D xf = get_global_transform().affine_inverse() * s->get_global_transform();
 			for (int i = 0; i < bmeshes.size(); i += 2) {
