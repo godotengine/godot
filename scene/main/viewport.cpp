@@ -647,6 +647,7 @@ void Viewport::_notification(int p_what) {
 
 		case NOTIFICATION_VP_MOUSE_EXIT: {
 			gui.mouse_in_viewport = false;
+			gui.drag_mouse_over = nullptr;
 			_drop_physics_mouseover();
 			// When the mouse exits the viewport, we don't want to end
 			// mouse_focus, because, for example, we want to continue
@@ -2906,6 +2907,12 @@ void Viewport::_update_mouse_over() {
 	if (is_attached_in_viewport()) {
 		// Execute this function only, when it is processed by a native Window or a SubViewport, that has no SubViewportContainer as parent.
 		return;
+	}
+
+	if (!gui.mouse_in_viewport) {
+		// This is a hack, that makes pushing mouse motion events to SubViewports more user-friendly.
+		// Without this, a user needs to take care of sending mouse-enter/exit notifications to SubViewports.
+		notification(NOTIFICATION_VP_MOUSE_ENTER);
 	}
 
 	if (get_tree()->get_root()->is_embedding_subwindows() || is_sub_viewport()) {
