@@ -61,9 +61,9 @@ class StringName {
 #endif
 		String get_name() const { return cname ? String(cname) : name; }
 		bool operator==(const String &p_name) const;
-		bool operator!=(const String &p_name) const;
+		INEQUALITY_OPERATOR(const String &)
 		bool operator==(const char *p_name) const;
-		bool operator!=(const char *p_name) const;
+		INEQUALITY_OPERATOR(const char *)
 
 		int idx = 0;
 		uint32_t hash = 0;
@@ -102,8 +102,8 @@ public:
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
-	bool operator!=(const String &p_name) const;
-	bool operator!=(const char *p_name) const;
+	INEQUALITY_OPERATOR(const String &)
+	INEQUALITY_OPERATOR(const char *)
 
 	char32_t operator[](int p_index) const;
 	int length() const;
@@ -146,7 +146,7 @@ public:
 	_FORCE_INLINE_ const void *data_unique_pointer() const {
 		return (void *)_data;
 	}
-	bool operator!=(const StringName &p_name) const;
+	INEQUALITY_OPERATOR(const StringName &)
 
 	_FORCE_INLINE_ operator String() const {
 		if (_data) {
@@ -204,10 +204,12 @@ public:
 #endif
 };
 
-bool operator==(const String &p_name, const StringName &p_string_name);
-bool operator!=(const String &p_name, const StringName &p_string_name);
-bool operator==(const char *p_name, const StringName &p_string_name);
-bool operator!=(const char *p_name, const StringName &p_string_name);
+#if __cplusplus < 202002L
+_ALWAYS_INLINE_ bool operator==(const String &p_name, const StringName &p_string_name) { return p_string_name == p_name; }
+_ALWAYS_INLINE_ bool operator==(const char *p_name, const StringName &p_string_name) { return p_string_name == p_name; }
+INEQUALITY_OPERATOR_GLOBAL(const String &, const StringName &)
+INEQUALITY_OPERATOR_GLOBAL(const char *, const StringName &)
+#endif
 
 StringName _scs_create(const char *p_chr, bool p_static = false);
 
