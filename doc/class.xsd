@@ -196,6 +196,37 @@
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
+				<xs:element name="structs" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="struct" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="member" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute type="xs:string" name="name" use="required"/>
+														<xs:attribute type="xs:string" name="type" use="required"/>
+														<xs:attribute type="xs:string" name="default" use="required"/>
+														<xs:attribute type="xs:string" name="enum" use="optional" />
+														<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+														<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+														<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+										<xs:element type="xs:string" name="description" minOccurs="0"/>
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="required"/>
+									<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+									<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
 				<xs:element name="annotations" minOccurs="0">
 					<xs:complexType>
 						<xs:sequence>

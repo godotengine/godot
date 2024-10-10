@@ -44,6 +44,7 @@ BASE_STRINGS = [
     "Theme Properties",
     "Signals",
     "Enumerations",
+    "Structs",
     "Constants",
     "Annotations",
     "Property Descriptions",
@@ -69,6 +70,7 @@ BASE_STRINGS = [
     "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this enum. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this struct. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this constant. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
     "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
@@ -342,6 +344,30 @@ class State:
 
                     enum_def.values[constant_name] = constant_def
 
+        structs = class_root.find("structs")
+        if structs is not None:
+            for struct in structs:
+                assert struct.tag == "struct"
+
+                struct_name = struct.attrib["name"]
+                if struct_name in class_def.structs:
+                    print_error(f'{class_name}.xml: Duplicate struct "{struct_name}".', self)
+                    continue
+                struct_def = StructDef(struct_name)
+
+                for member in struct.findall("member"):
+                    member_name = member.attrib["name"]
+                    if member_name in class_def.structs:
+                        print_error(f'{class_name}.xml: Duplicate struct "{struct_name}".', self)
+                        continue
+                    member_type = TypeName(member.attrib["type"])
+                    member_default = member.attrib.get("default", None)
+                    if member_default is not None:
+                        member_default = f"``{member_default}``"
+                    struct_def.members[member_name] = ParameterDef(method_name, member_type, member_default)
+
+                class_def.structs[struct_name] = struct_def
+
         annotations = class_root.find("annotations")
         if annotations is not None:
             for annotation in annotations:
@@ -577,6 +603,13 @@ class EnumDef(DefinitionBase):
         self.is_bitfield = bitfield
 
 
+class StructDef(DefinitionBase):
+    def __init__(self, name: str) -> None:
+        super().__init__("struct", name)
+
+        self.members: OrderedDict[str, ParameterDef] = OrderedDict()
+
+
 class ThemeItemDef(DefinitionBase):
     def __init__(
         self, name: str, type_name: TypeName, data_name: str, text: Optional[str], default_value: Optional[str]
@@ -598,6 +631,7 @@ class ClassDef(DefinitionBase):
 
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
+        self.structs: OrderedDict[str, StructDef] = OrderedDict()
         self.properties: OrderedDict[str, PropertyDef] = OrderedDict()
         self.constructors: OrderedDict[str, List[MethodDef]] = OrderedDict()
         self.methods: OrderedDict[str, List[MethodDef]] = OrderedDict()
@@ -1223,6 +1257,32 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 f.write("\n\n")
 
+        # Struct descriptions
+        if len(class_def.structs) > 0:
+            f.write(make_separator(True))
+            f.write(".. rst-class:: classref-descriptions-group\n\n")
+            f.write(make_heading("Structs", "-"))
+
+            index = 0
+
+            for struct_def in class_def.structs.values():
+                if index != 0:
+                    f.write(make_separator())
+
+                # Create struct signature and anchor point.
+
+                f.write(f".. _struct_{class_name}_{struct_def.name}:\n\n")
+                f.write(".. rst-class:: classref-struct\n\n")
+                f.write(f"struct **{struct_def.name}**:\n\n")
+
+                # Write struct members
+                for member_name, member in struct_def.members.items():
+                    f.write(f".. _struct_{class_name}_{struct_def.name}_member_{member_name}:\n\n")
+                    f.write(".. rst-class:: classref-struct-member\n\n")
+                    f.write(f"{member.type_name.to_rst(state)} **{member_name}** = ``{member.default_value}``\n\n")
+
+                index += 1
+
         # Annotation descriptions
         if len(class_def.annotations) > 0:
             f.write(make_separator(True))
@@ -1516,9 +1576,13 @@ def make_type(klass: str, state: State) -> str:
     def resolve_type(link_type: str) -> str:
         if link_type in state.classes:
             return f":ref:`{link_type}<class_{link_type}>`"
-        else:
-            print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
-            return f"``{link_type}``"
+
+        for class_name, class_def in state.classes.items():  # Check structs
+            if link_type in class_def.structs:
+                return f":ref:`{link_type}<struct_{class_name}_link_type>`"
+
+        print_error(f'{state.current_class}.xml: Unresolved type "{link_type}".', state)
+        return f"``{link_type}``"
 
     if klass.endswith("[]"):  # Typed array, strip [] to link to contained type.
         return f":ref:`Array<class_Array>`\\[{resolve_type(klass[:-len('[]')])}\\]"
@@ -1558,6 +1622,27 @@ def make_enum(t: str, is_bitfield: bool, state: State) -> str:
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if f"{c}.{e}" != "Vector3.Axis":
         print_error(f'{state.current_class}.xml: Unresolved enum "{t}".', state)
+
+    return t
+
+
+def make_struct(t: str, state: State) -> str:
+    p = t.find(".")
+    if p >= 0:
+        c = t[0:p]
+        e = t[p + 1 :]
+        # Variant structs live in GlobalScope but still use periods.
+        if c == "Variant":
+            c = "@GlobalScope"
+            e = "Variant." + e
+    else:
+        c = state.current_class
+        e = t
+        if c in state.classes and e not in state.classes[c].structs:
+            c = "@GlobalScope"
+
+    if c in state.classes and e in state.classes[c].structs:
+        return f":ref:`{e}<struct_{c}_{e}>`"
 
     return t
 
@@ -1801,6 +1886,7 @@ RESERVED_CROSSLINK_TAGS = [
     "signal",
     "constant",
     "enum",
+    "struct",
     "annotation",
     "theme_item",
     "param",
@@ -2117,6 +2203,12 @@ def format_text_block(
                                 state,
                             )
 
+                        elif target_name in class_def.structs:
+                            print_warning(
+                                f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches the {target_class_name}.{target_name} struct in {context_name}. {code_warning_if_intended_string}',
+                                state,
+                            )
+
                         else:
                             for enum in class_def.enums.values():
                                 if target_name in enum.values:
@@ -2155,6 +2247,7 @@ def format_text_block(
                         or tag_state.name == "member"
                         or tag_state.name == "signal"
                         or tag_state.name == "annotation"
+                        or tag_state.name == "struct"
                         or tag_state.name == "theme_item"
                         or tag_state.name == "constant"
                     ):
@@ -2215,6 +2308,12 @@ def format_text_block(
                                     state,
                                 )
 
+                            elif tag_state.name == "struct" and target_name not in class_def.structs:
+                                print_error(
+                                    f'{state.current_class}.xml: Unresolved struct reference "{link_target}" in {context_name}.',
+                                    state,
+                                )
+
                             elif tag_state.name == "theme_item":
                                 if target_name not in class_def.theme_items:
                                     print_error(
@@ -2269,6 +2368,11 @@ def format_text_block(
 
                     elif tag_state.name == "enum":
                         tag_text = make_enum(link_target, False, state)
+                        escape_pre = True
+                        escape_post = True
+
+                    elif tag_state.name == "struct":
+                        tag_text = make_struct(link_target, state)
                         escape_pre = True
                         escape_post = True
 
