@@ -424,6 +424,9 @@
 			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant TONE_MAPPER_REINHARDT] and [constant TONE_MAPPER_FILMIC].
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
+		<constant name="TONE_MAPPER_TONY_MC_MAPFACE" value="4" enum="ToneMapper">
+			Tony McMapface is an artist-friendly tonemapper designed to stay close to the input color in order to achieve a neutral look that does not increase contrast or saturation. It can prevent hue shift issues common with other tonemappers. It samples its own custom lookup table (LUT) to determine the output color.
+		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
