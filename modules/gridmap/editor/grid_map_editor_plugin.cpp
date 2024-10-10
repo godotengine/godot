@@ -904,10 +904,12 @@ void GridMapEditor::update_palette() {
 			continue;
 		}
 
+		String tooltip_text = vformat(TTR("%s (Item ID: %d)"), name, id);
+
 		mesh_library_palette->add_item("");
 		if (!preview.is_null()) {
 			mesh_library_palette->set_item_icon(item, preview);
-			mesh_library_palette->set_item_tooltip(item, name);
+			mesh_library_palette->set_item_tooltip(item, tooltip_text);
 		}
 		mesh_library_palette->set_item_text(item, name);
 		mesh_library_palette->set_item_metadata(item, id);
