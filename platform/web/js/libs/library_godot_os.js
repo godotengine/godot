@@ -233,7 +233,7 @@ const GodotOS = {
 		'GodotOS._fs_sync_promise = Promise.resolve();',
 	].join(''),
 	$GodotOS: {
-		request_quit: function () {},
+		request_quit: function () { },
 		_async_cbs: [],
 		_fs_sync_promise: null,
 
@@ -441,8 +441,12 @@ const GodotPWA = {
 	godot_js_pwa_cb__sig: 'vi',
 	godot_js_pwa_cb: function (p_update_cb) {
 		if ('serviceWorker' in navigator) {
-			const cb = GodotRuntime.get_func(p_update_cb);
-			navigator.serviceWorker.getRegistration().then(GodotPWA.updateState.bind(null, cb));
+			try {
+				const cb = GodotRuntime.get_func(p_update_cb);
+				navigator.serviceWorker.getRegistration().then(GodotPWA.updateState.bind(null, cb));
+			} catch (e) {
+				console.error('Failed to assign PWA callback', e); // eslint-disable-line no-console
+			}
 		}
 	},
 
@@ -450,12 +454,17 @@ const GodotPWA = {
 	godot_js_pwa_update__sig: 'i',
 	godot_js_pwa_update: function () {
 		if ('serviceWorker' in navigator && GodotPWA.hasUpdate) {
-			navigator.serviceWorker.getRegistration().then(function (reg) {
-				if (!reg || !reg.waiting) {
-					return;
-				}
-				reg.waiting.postMessage('update');
-			});
+			try {
+				navigator.serviceWorker.getRegistration().then(function (reg) {
+					if (!reg || !reg.waiting) {
+						return;
+					}
+					reg.waiting.postMessage('update');
+				});
+			} catch (e) {
+				console.error(e); // eslint-disable-line no-console
+				return 1;
+			}
 			return 0;
 		}
 		return 1;
