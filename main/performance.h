@@ -37,9 +37,6 @@
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
 
-template <typename T>
-class TypedArray;
-
 class Performance : public Object {
 	GDCLASS(Performance, Object);
 

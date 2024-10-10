@@ -31,15 +31,11 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
 
-class Variant;
-
-struct DictionaryPrivate;
-
 class Dictionary {
+	struct DictionaryPrivate;
 	mutable DictionaryPrivate *_p;
 
 	void _ref(const Dictionary &p_from) const;
@@ -114,6 +110,15 @@ public:
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
 	~Dictionary();
+};
+
+template <typename K, typename V>
+class TypedDictionary : public Dictionary {
+public:
+	_FORCE_INLINE_ void operator=(const Dictionary &p_dictionary);
+	_FORCE_INLINE_ TypedDictionary(const Variant &p_variant);
+	_FORCE_INLINE_ TypedDictionary(const Dictionary &p_dictionary);
+	_FORCE_INLINE_ TypedDictionary();
 };
 
 #endif // DICTIONARY_H

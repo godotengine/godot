@@ -39,7 +39,6 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/variant/native_ptr.h"
-#include "core/variant/typed_array.h"
 
 class AudioStream;
 

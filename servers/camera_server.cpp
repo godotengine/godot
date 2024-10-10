@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "camera_server.h"
-#include "core/variant/typed_array.h"
 #include "rendering_server.h"
 #include "servers/camera/camera_feed.h"
 

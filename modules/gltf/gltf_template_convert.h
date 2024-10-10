@@ -34,7 +34,6 @@
 #include "core/templates/hash_set.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
 
 namespace GLTFTemplateConvert {
 template <typename T>

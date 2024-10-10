@@ -54,6 +54,11 @@ static_assert(__cplusplus >= 201703L);
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 
+// Allow comma separators within macros.
+#ifndef _COMMA
+#define _COMMA ,
+#endif
+
 // Should always inline no matter what.
 #ifndef _ALWAYS_INLINE_
 #if defined(__GNUC__)
