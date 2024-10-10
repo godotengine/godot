@@ -4570,13 +4570,14 @@ void EditorNode::_update_recent_scenes() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
-	String path;
-	for (int i = 0; i < rc.size(); i++) {
-		path = rc[i];
-		recent_scenes->add_item(path.replace("res://", ""), i);
-	}
+
 
 	if (rc.size() > 0) {
+		String path;
+		for (int i = 0; i < rc.size(); i++) {
+			path = rc[i];
+			recent_scenes->add_item(path.replace("res://", ""), i);
+		}
 		recent_scenes->add_separator();
 	}
 
