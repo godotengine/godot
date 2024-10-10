@@ -663,6 +663,9 @@ private:
 
 	Object(bool p_reference);
 
+	template <bool t_reversed>
+	void _notification_fast(int p_notification);
+
 protected:
 	StringName _translation_domain;
 
