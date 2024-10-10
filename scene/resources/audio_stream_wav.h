@@ -31,9 +31,6 @@
 #ifndef AUDIO_STREAM_WAV_H
 #define AUDIO_STREAM_WAV_H
 
-#define QOA_IMPLEMENTATION
-#define QOA_NO_STDIO
-
 #include "servers/audio/audio_stream.h"
 #include "thirdparty/misc/qoa.h"
 

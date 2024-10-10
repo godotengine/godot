@@ -455,13 +455,13 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		is16 = false;
 	}
 
-	Vector<uint8_t> pcm_data;
+	Vector<uint8_t> dst_data;
 	AudioStreamWAV::Format dst_format;
 
 	if (compression == 1) {
 		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
 		if (format_channels == 1) {
-			_compress_ima_adpcm(data, pcm_data);
+			_compress_ima_adpcm(data, dst_data);
 		} else {
 			//byte interleave
 			Vector<float> left;
@@ -483,9 +483,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			_compress_ima_adpcm(right, bright);
 
 			int dl = bleft.size();
-			pcm_data.resize(dl * 2);
+			dst_data.resize(dl * 2);
 
-			uint8_t *w = pcm_data.ptrw();
+			uint8_t *w = dst_data.ptrw();
 			const uint8_t *rl = bleft.ptr();
 			const uint8_t *rr = bright.ptr();
 
@@ -495,16 +495,25 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			}
 		}
 
+	} else if (compression == 2) {
+		dst_format = AudioStreamWAV::FORMAT_QOA;
+
+		qoa_desc desc = {};
+		desc.samplerate = rate;
+		desc.samples = frames;
+		desc.channels = format_channels;
+
+		_compress_qoa(data, dst_data, &desc);
+
 	} else {
 		dst_format = is16 ? AudioStreamWAV::FORMAT_16_BITS : AudioStreamWAV::FORMAT_8_BITS;
-		bool enforce16 = is16 || compression == 2;
-		pcm_data.resize(data.size() * (enforce16 ? 2 : 1));
+		dst_data.resize(data.size() * (is16 ? 2 : 1));
 		{
-			uint8_t *w = pcm_data.ptrw();
+			uint8_t *w = dst_data.ptrw();
 
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {
-				if (enforce16) {
+				if (is16) {
 					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
 					encode_uint16(v, &w[i * 2]);
 				} else {
@@ -513,26 +522,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				}
 			}
 		}
-	}
-
-	Vector<uint8_t> dst_data;
-	if (compression == 2) {
-		dst_format = AudioStreamWAV::FORMAT_QOA;
-		qoa_desc desc = {};
-		uint32_t qoa_len = 0;
-
-		desc.samplerate = rate;
-		desc.samples = frames;
-		desc.channels = format_channels;
-
-		void *encoded = qoa_encode((short *)pcm_data.ptr(), &desc, &qoa_len);
-		if (encoded) {
-			dst_data.resize(qoa_len);
-			memcpy(dst_data.ptrw(), encoded, qoa_len);
-			QOA_FREE(encoded);
-		}
-	} else {
-		dst_data = pcm_data;
 	}
 
 	Ref<AudioStreamWAV> sample;
