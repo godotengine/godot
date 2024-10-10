@@ -130,7 +130,7 @@ public:
 		return search.bisect(ptrw(), size(), p_value, p_before);
 	}
 
-	Vector<T> duplicate() {
+	Vector<T> duplicate() const {
 		return *this;
 	}
 

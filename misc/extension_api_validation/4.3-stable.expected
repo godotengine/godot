@@ -95,3 +95,29 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 
 Default deadzone value was changed. No adjustments should be necessary.
 Compatibility method registered.
+
+
+GH-79140
+--------
+Validate extension JSON: Error: Field 'builtin_classes/PackedByteArray/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedColorArray/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat32Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat64Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt32Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt64Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedStringArray/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector2Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedByteArray/methods/duplicate', from 32C526A8 to 0EC26674. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedColorArray/methods/duplicate', from 3C506BBD to B71B693D. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedFloat32Array/methods/duplicate', from 3189CE20 to D517D0F3. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedFloat64Array/methods/duplicate', from 3894A88D to 60FEC131. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedInt32Array/methods/duplicate', from 7714AAB9 to BC482404. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedInt64Array/methods/duplicate', from 8DA48760 to 74E6F928. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedStringArray/methods/duplicate', from B24A91B2 to 2C891259. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedVector2Array/methods/duplicate', from E054B15C to 62F74D55. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedVector3Array/methods/duplicate', from A42961E9 to F89F931C. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'builtin_classes/PackedVector4Array/methods/duplicate', from BDEB27F5 to 08B6E3EC. This means that the function has changed and no compatibility function was provided.
+
+Make Vector<T>::duplicate() const.
