@@ -421,6 +421,9 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 
 	for (int i = p_from_line; i < p_to_line; i++) {
 		const Line &text_line = text[i];
+		if (text_line.hidden) {
+			continue;
+		}
 		if (text_line.height == max_line_height) {
 			max_line_height_dirty = true;
 		}
