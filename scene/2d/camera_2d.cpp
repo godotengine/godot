@@ -31,6 +31,7 @@
 #include "camera_2d.h"
 
 #include "core/config/project_settings.h"
+#include "scene/main/node.h"
 #include "scene/main/window.h"
 
 bool Camera2D::_is_editing_in_editor() const {
@@ -302,6 +303,7 @@ void Camera2D::_notification(int p_what) {
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled()) {
 				_update_scroll();
