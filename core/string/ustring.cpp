@@ -1103,7 +1103,7 @@ const char32_t *String::get_data() const {
 	return size() ? &operator[](0) : &zero;
 }
 
-String String::_camelcase_to_underscore() const {
+String String::_separate_compound_words() const {
 	const char32_t *cstr = get_data();
 	String new_string;
 	int start_index = 0;
@@ -1128,17 +1128,17 @@ String String::_camelcase_to_underscore() const {
 		const bool cond_d = (is_prev_upper || is_prev_lower) && is_curr_digit; // A2, a2
 
 		if (cond_a || cond_b || cond_c || cond_d) {
-			new_string += substr(start_index, i - start_index) + "_";
+			new_string += substr(start_index, i - start_index) + " ";
 			start_index = i;
 		}
 	}
 
 	new_string += substr(start_index, size() - start_index);
-	return new_string.to_lower();
+	return new_string.replace("_", " ").replace("-", " ").to_lower();
 }
 
 String String::capitalize() const {
-	String aux = _camelcase_to_underscore().replace("_", " ").strip_edges();
+	String aux = _separate_compound_words().strip_edges();
 	String cap;
 	for (int i = 0; i < aux.get_slice_count(" "); i++) {
 		String slice = aux.get_slicec(' ', i);
@@ -1167,7 +1167,11 @@ String String::to_pascal_case() const {
 }
 
 String String::to_snake_case() const {
-	return _camelcase_to_underscore().replace(" ", "_").strip_edges();
+	return _separate_compound_words().replace(" ", "_").strip_edges();
+}
+
+String String::to_kebab_case() const {
+	return _separate_compound_words().replace(" ", "-").strip_edges();
 }
 
 String String::get_with_code_lines() const {
