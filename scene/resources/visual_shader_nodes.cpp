@@ -3180,14 +3180,47 @@ String VisualShaderNodeColorFunc::get_caption() const {
 }
 
 int VisualShaderNodeColorFunc::get_input_port_count() const {
-	return 1;
+	switch (func) {
+		case FUNC_POSTERIZE:
+			return 2;
+		default:
+			return 1;
+	}
 }
 
 VisualShaderNodeColorFunc::PortType VisualShaderNodeColorFunc::get_input_port_type(int p_port) const {
+	switch (func) {
+		case FUNC_POSTERIZE:
+			switch (p_port) {
+				case 0:
+					return PORT_TYPE_VECTOR_3D;
+				case 1:
+					return PORT_TYPE_SCALAR_INT;
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
 	return PORT_TYPE_VECTOR_3D;
 }
 
 String VisualShaderNodeColorFunc::get_input_port_name(int p_port) const {
+	switch (func) {
+		case FUNC_POSTERIZE:
+			switch (p_port) {
+				case 0:
+					return "";
+				case 1:
+					return "Steps";
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
 	return "";
 }
 
@@ -3243,6 +3276,13 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 			code += "		" + p_output_vars[0] + " = vec3(r, g, b);\n";
 			code += "	}\n";
 			break;
+		case FUNC_POSTERIZE:
+			code += "	{\n";
+			code += "		vec3 c = " + p_input_vars[0] + ";\n";
+			code += "		int s = " + p_input_vars[1] + ";\n";
+			code += "		" + p_output_vars[0] + " = (floor(c * float(s)) / float(s - 1));\n";
+			code += "	}\n";
+			break;
 		default:
 			break;
 	}
@@ -3273,18 +3313,20 @@ void VisualShaderNodeColorFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeColorFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeColorFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Grayscale,HSV2RGB,RGB2HSV,Sepia"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Grayscale,HSV2RGB,RGB2HSV,Sepia, Posterize"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_GRAYSCALE);
 	BIND_ENUM_CONSTANT(FUNC_HSV2RGB);
 	BIND_ENUM_CONSTANT(FUNC_RGB2HSV);
 	BIND_ENUM_CONSTANT(FUNC_SEPIA);
+	BIND_ENUM_CONSTANT(FUNC_POSTERIZE);
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
 
 VisualShaderNodeColorFunc::VisualShaderNodeColorFunc() {
 	simple_decl = false;
 	set_input_port_default_value(0, Vector3());
+	set_input_port_default_value(1, 2);
 }
 
 ////////////// Transform Func
