@@ -2,6 +2,9 @@ name: 🏁 Windows Builds
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
