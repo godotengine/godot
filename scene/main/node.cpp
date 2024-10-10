@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/string/print_string.h"
@@ -1702,6 +1703,12 @@ void Node::remove_child(Node *p_child) {
 
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
+	}
+}
+
+void Node::clear_children(bool p_include_internal) {
+	for (Object *n : get_children(p_include_internal)) {
+		((Node *)n)->queue_free();
 	}
 }
 
@@ -3585,6 +3592,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_parent", "pattern"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
+	ClassDB::bind_method(D_METHOD("clear_children", "include_internal"), &Node::clear_children, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
 	ClassDB::bind_method(D_METHOD("is_part_of_edited_scene"), &Node::is_part_of_edited_scene);
