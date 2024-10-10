@@ -24,6 +24,7 @@ common_win = [
     "gl_manager_windows_angle.cpp",
     "wgl_detect_version.cpp",
     "rendering_context_driver_vulkan_windows.cpp",
+    "drop_target_windows.cpp",
 ]
 
 if env.msvc:
