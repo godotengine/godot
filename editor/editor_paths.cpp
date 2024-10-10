@@ -105,6 +105,7 @@ void EditorPaths::create() {
 void EditorPaths::free() {
 	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
+	singleton = nullptr;
 }
 
 void EditorPaths::_bind_methods() {
