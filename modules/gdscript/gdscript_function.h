@@ -54,6 +54,7 @@ public:
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
+		GDTRAIT,
 	};
 
 	Kind kind = UNINITIALIZED;
@@ -153,7 +154,8 @@ public:
 				return true;
 			} break;
 			case SCRIPT:
-			case GDSCRIPT: {
+			case GDSCRIPT:
+			case GDTRAIT: {
 				if (p_variant.get_type() == Variant::NIL) {
 					return true;
 				}

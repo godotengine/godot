@@ -139,6 +139,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.script_type = result.script_type_ref.ptr();
 			result.native_type = p_datatype.native_type;
 		} break;
+		case GDScriptParser::DataType::TRAIT:
 		case GDScriptParser::DataType::CLASS: {
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::NATIVE;
@@ -148,6 +149,9 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 
 			result.kind = GDScriptDataType::GDSCRIPT;
+			if (p_datatype.kind == GDScriptParser::DataType::TRAIT) {
+				result.kind = GDScriptDataType::GDTRAIT;
+			}
 			result.builtin_type = p_datatype.builtin_type;
 			result.native_type = p_datatype.native_type;
 
@@ -252,7 +256,7 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 }
 
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer) {
-	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS)) {
+	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && (p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS || p_expression->get_datatype().kind == GDScriptParser::DataType::TRAIT))) {
 		return codegen.add_constant(p_expression->reduced_value);
 	}
 
@@ -358,6 +362,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 				} break;
 				case GDScriptParser::IdentifierNode::MEMBER_CONSTANT:
+				case GDScriptParser::IdentifierNode::MEMBER_TRAIT:
 				case GDScriptParser::IdentifierNode::MEMBER_CLASS: {
 					// Try class constants.
 					GDScript *owner = codegen.script;
@@ -2719,7 +2724,8 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 		case GDScriptDataType::NATIVE:
 			// Nothing more to do.
 			break;
-		case GDScriptDataType::GDSCRIPT: {
+		case GDScriptDataType::GDSCRIPT:
+		case GDScriptDataType::GDTRAIT: {
 			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
 			if (base.is_null()) {
 				return ERR_COMPILATION_FAILED;
@@ -3071,6 +3077,7 @@ void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::Cl
 	p_script->local_name = p_class->identifier ? p_class->identifier->name : StringName();
 	p_script->global_name = p_class->get_global_name();
 	p_script->simplified_icon_path = p_class->simplified_icon_path;
+	p_script->traits_path = p_class->traits_path;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;
 

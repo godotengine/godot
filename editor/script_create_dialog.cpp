@@ -128,16 +128,15 @@ void ScriptCreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				Ref<Texture2D> language_icon = get_editor_theme_icon(ScriptServer::get_language(i)->get_type());
-				if (language_icon.is_valid()) {
-					language_menu->set_item_icon(i, language_icon);
-				}
-			}
+			set_languages_list(is_languages_list_only_attachable);
 
 			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 			parent_browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 			parent_search_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
+		} break;
+
+		case NOTIFICATION_POSTINITIALIZE: {
+			set_languages_list(is_languages_list_only_attachable);
 		} break;
 	}
 }
@@ -192,6 +191,38 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 
 void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
 	base_type = p_base;
+}
+
+void ScriptCreateDialog::set_languages_list(const bool p_only_attachable) {
+	is_languages_list_only_attachable = p_only_attachable;
+	String previous_default;
+	if (language_menu->get_selected_id() > -1) {
+		previous_default = language_menu->get_item_text(language_menu->get_selected_id());
+	}
+	default_language = -1;
+	language_menu->clear();
+	int skipped_lang = 0;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptLanguage *lang = ScriptServer::get_language(i);
+		if (p_only_attachable && !lang->is_language_script_attachable()) {
+			skipped_lang++;
+			continue;
+		}
+		language_menu->add_item(lang->get_name());
+		Ref<Texture2D> language_icon = get_editor_theme_icon(lang->get_type());
+		if (language_icon.is_valid()) {
+			language_menu->set_item_icon(i - skipped_lang, language_icon);
+		}
+		if (lang->get_name() == previous_default) {
+			default_language = i - skipped_lang;
+		}
+		if (default_language == -1 && lang->get_name() == "GDScript") {
+			default_language = i - skipped_lang;
+		}
+	}
+	if (default_language >= 0) {
+		language_menu->select(default_language);
+	}
 }
 
 bool ScriptCreateDialog::_validate_parent(const String &p_string) {
@@ -853,18 +884,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);
-
-	default_language = -1;
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		String lang = ScriptServer::get_language(i)->get_name();
-		language_menu->add_item(lang);
-		if (lang == "GDScript") {
-			default_language = i;
-		}
-	}
-	if (default_language >= 0) {
-		language_menu->select(default_language);
-	}
 
 	language_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_language_changed));
 
