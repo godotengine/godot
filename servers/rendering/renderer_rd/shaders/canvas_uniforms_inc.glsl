@@ -37,7 +37,7 @@ struct InstanceData {
 	vec2 world_y;
 	vec2 world_ofs;
 	uint flags;
-	uint specular_shininess;
+	uint batch_indices;
 #ifdef USE_PRIMITIVE
 	vec2 points[3];
 	vec2 uvs[3];
@@ -47,18 +47,18 @@ struct InstanceData {
 	vec4 ninepatch_margins;
 	vec4 dst_rect; //for built-in rect and UV
 	vec4 src_rect;
-	vec2 pad;
+	vec2 color_texture_pixel_size;
 
 #endif
-	vec2 color_texture_pixel_size;
+	uint texture_data_index;
+	uint pad;
 	uint lights[4];
 };
 
 layout(push_constant, std430) uniform Params {
 	uint base_instance_index; // base index to instance data
 	uint sc_packed_0;
-	uint pad2;
-	uint pad3;
+	uint pad[2];
 }
 params;
 
@@ -68,7 +68,7 @@ params;
 
 // Pull the constants from the draw call's push constants.
 uint sc_packed_0() {
-	return draw_call.sc_packed_0;
+	return params.sc_packed_0;
 }
 
 #else
@@ -158,8 +158,6 @@ layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 layout(set = 0, binding = 6) uniform texture2D color_buffer;
 layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
-#include "samplers_inc.glsl"
-
 layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
@@ -178,12 +176,41 @@ transforms;
 
 /* SET3: Texture */
 
-layout(set = 3, binding = 0) uniform texture2D color_texture;
-layout(set = 3, binding = 1) uniform texture2D normal_texture;
-layout(set = 3, binding = 2) uniform texture2D specular_texture;
-layout(set = 3, binding = 3) uniform sampler texture_sampler;
+layout(set = 3, binding = 0) uniform texture2D texture_array[BATCH_MAX_TEXTURES];
 
-layout(set = 3, binding = 4, std430) restrict readonly buffer DrawData {
+#define SAMPLER_LINEAR_CLAMP material_samplers[1]
+
+/// This shader uses a max of 16 samplers
+///
+/// - 1 shadow_sampler
+/// - 12 base samplers, SAMPLER_NEAREST_CLAMP, SAMPLER_LINEAR_CLAMP, etc
+/// - 3 dynamic samplers
+layout(set = 3, binding = 1) uniform sampler material_samplers[15];
+
+#define color_texture texture_array[BATCH_COLOR_INDEX]
+#define normal_texture texture_array[BATCH_NORMAL_INDEX]
+#define specular_texture texture_array[BATCH_SPECULAR_INDEX]
+#define texture_sampler material_samplers[BATCH_SAMPLER_INDEX]
+
+layout(set = 3, binding = 2, std430) restrict readonly buffer DrawData {
 	InstanceData data[];
 }
 instances;
+
+#ifdef USE_NINEPATCH
+// ninepatch has per-instance color_texture_pixel_size
+#define _color_texture_pixel_size draw_data.color_texture_pixel_size
+#else
+#define _color_texture_pixel_size texture_data.data[draw_data.texture_data_index].color_texture_pixel_size
+#endif
+
+struct TextureData {
+	vec2 color_texture_pixel_size;
+	uint specular_shininess;
+	uint pad;
+};
+
+layout(set = 3, binding = 3, std430) restrict readonly buffer TextureDrawData {
+	TextureData data[];
+}
+texture_data;
