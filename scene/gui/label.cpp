@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
@@ -117,12 +117,13 @@ void Label::_shape() {
 		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 		ERR_FAIL_COND(font.is_null());
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		const String &lang = language.is_empty() ? TranslationServer::get_singleton()->get_or_add_domain(get_translation_domain())->get_locale() : language;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			txt = txt.substr(0, visible_chars);
 		}
 		if (dirty) {
-			TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
+			TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), lang);
 		} else {
 			int spans = TS->shaped_get_span_count(text_rid);
 			for (int i = 0; i < spans; i++) {
