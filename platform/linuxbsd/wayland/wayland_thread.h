@@ -81,6 +81,19 @@
 #include "core/os/thread.h"
 #include "servers/display_server.h"
 
+#define WAYLAND_THREAD_DEBUG_LOGS_ENABLED
+#ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
+#define DEBUG_LOG_WAYLAND_THREAD(...) print_verbose(__VA_ARGS__)
+#else
+#define DEBUG_LOG_WAYLAND_THREAD(...)
+#endif
+
+// Fix the wl_array_for_each macro to work with C++. This is based on the
+// original from `wayland-util.h` in the Wayland client library.
+#undef wl_array_for_each
+#define wl_array_for_each(pos, array) \
+	for (pos = (decltype(pos))(array)->data; (const char *)pos < ((const char *)(array)->data + (array)->size); (pos)++)
+
 class WaylandThread {
 public:
 	// Messages used for exchanging information between Godot's and Wayland's thread.
