@@ -2339,6 +2339,7 @@ typedef GDExtensionVariantPtr (*GDExtensionInterfaceArrayOperatorIndexConst)(GDE
 /**
  * @name array_ref
  * @since 4.1
+ * @deprecated in Godot 4.4. use `Array::operator=` instead.
  *
  * Sets an Array to be a reference to another Array object.
  *
