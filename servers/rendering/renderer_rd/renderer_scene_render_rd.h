@@ -138,6 +138,7 @@ private:
 	int directional_soft_shadow_samples = 0;
 	int penumbra_shadow_samples = 0;
 	int soft_shadow_samples = 0;
+	RS::ReflectionFilter reflections_filter = RS::REFLECTION_FILTER_LINEAR;
 	RS::DecalFilter decals_filter = RS::DECAL_FILTER_LINEAR_MIPMAPS;
 	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
 
@@ -261,6 +262,7 @@ public:
 	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 
+	virtual void reflections_set_filter(RS::ReflectionFilter p_filter) override;
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
@@ -307,6 +309,9 @@ public:
 		return soft_shadow_samples;
 	}
 
+	_FORCE_INLINE_ RS::ReflectionFilter reflections_get_filter() const {
+		return reflections_filter;
+	}
 	_FORCE_INLINE_ RS::LightProjectorFilter light_projectors_get_filter() const {
 		return light_projectors_filter;
 	}

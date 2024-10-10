@@ -288,18 +288,20 @@ layout(set = 1, binding = 11) uniform sampler decal_sampler;
 
 layout(set = 1, binding = 12) uniform sampler light_projector_sampler;
 
-layout(set = 1, binding = 13 + 0) uniform sampler SAMPLER_NEAREST_CLAMP;
-layout(set = 1, binding = 13 + 1) uniform sampler SAMPLER_LINEAR_CLAMP;
-layout(set = 1, binding = 13 + 2) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
-layout(set = 1, binding = 13 + 3) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
-layout(set = 1, binding = 13 + 4) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 1, binding = 13 + 5) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 1, binding = 13 + 6) uniform sampler SAMPLER_NEAREST_REPEAT;
-layout(set = 1, binding = 13 + 7) uniform sampler SAMPLER_LINEAR_REPEAT;
-layout(set = 1, binding = 13 + 8) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
-layout(set = 1, binding = 13 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
-layout(set = 1, binding = 13 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
-layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 1, binding = 13) uniform sampler reflection_sampler;
+
+layout(set = 1, binding = 14 + 0) uniform sampler SAMPLER_NEAREST_CLAMP;
+layout(set = 1, binding = 14 + 1) uniform sampler SAMPLER_LINEAR_CLAMP;
+layout(set = 1, binding = 14 + 2) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
+layout(set = 1, binding = 14 + 3) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+layout(set = 1, binding = 14 + 4) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
+layout(set = 1, binding = 14 + 5) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
+layout(set = 1, binding = 14 + 6) uniform sampler SAMPLER_NEAREST_REPEAT;
+layout(set = 1, binding = 14 + 7) uniform sampler SAMPLER_LINEAR_REPEAT;
+layout(set = 1, binding = 14 + 8) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
+layout(set = 1, binding = 14 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
+layout(set = 1, binding = 14 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 1, binding = 14 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 
