@@ -337,6 +337,12 @@ WindowWrapper::WindowWrapper() {
 	ProgressDialog::get_singleton()->add_host_window(window);
 }
 
+WindowWrapper::~WindowWrapper() {
+	if (window) {
+		ProgressDialog::get_singleton()->remove_host_window(window);
+	}
+}
+
 // ScreenSelect
 
 void ScreenSelect::_build_advanced_menu() {
