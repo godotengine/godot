@@ -56,6 +56,8 @@ public:
 	const Variant *getptr(const Variant &p_key) const;
 	Variant *getptr(const Variant &p_key);
 
+	void set(const Variant &p_key, const Variant &p_value);
+	Error set_safe(const Variant &p_key, const Variant &p_value);
 	Variant get_valid(const Variant &p_key) const;
 	Variant get(const Variant &p_key, const Variant &p_default) const;
 	Variant get_or_add(const Variant &p_key, const Variant &p_default);
