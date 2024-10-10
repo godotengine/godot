@@ -99,6 +99,7 @@ private:
 	int close_code = -1;
 	String close_reason;
 	uint8_t was_string = 0;
+	uint64_t last_heartbeat = 0;
 
 	// WebSocket configuration.
 	bool use_tls = true;
