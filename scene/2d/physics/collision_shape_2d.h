@@ -42,13 +42,20 @@ class CollisionShape2D : public Node2D {
 	Rect2 rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	uint32_t owner_id = 0;
 	CollisionObject2D *collision_object = nullptr;
+	Transform2D transform_to_col_obj_cache;
 	bool disabled = false;
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;
 	Color debug_color;
 
+	CollisionObject2D *_get_ancestor_collision_object() const;
+	Transform2D _get_transform_to_collision_object() const;
+	void _set_transform_notifications();
+
 	void _shape_changed();
-	void _update_in_shape_owner(bool p_xform_only = false);
+	void _update_transform_in_shape_owner();
+	void _update_in_shape_owner();
+	void _create_shape_owner_in_collision_object();
 	Color _get_default_debug_color() const;
 
 protected:
