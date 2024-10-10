@@ -366,6 +366,16 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 		} break;
 	}
 
+	Ref<FontVariation> mono_fc_bold = mono_fc->duplicate();
+	mono_fc_bold->set_variation_embolden(0.8);
+
+	Ref<FontVariation> mono_fc_italic = mono_fc->duplicate();
+	mono_fc_italic->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
+	Ref<FontVariation> mono_fc_bold_italic = mono_fc->duplicate();
+	mono_fc_bold_italic->set_variation_embolden(0.8);
+	mono_fc_bold_italic->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
 	{
 		// Disable contextual alternates (coding ligatures).
 		Dictionary ftrs;
@@ -468,6 +478,9 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	// Code font
 	p_theme->set_font_size("source_size", EditorStringName(EditorFonts), int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", EditorStringName(EditorFonts), mono_fc);
+	p_theme->set_font("source_bold", EditorStringName(EditorFonts), mono_fc_bold);
+	p_theme->set_font("source_italics", EditorStringName(EditorFonts), mono_fc_italic);
+	p_theme->set_font("source_bold_italics", EditorStringName(EditorFonts), mono_fc_bold_italic);
 
 	p_theme->set_font_size("expression_size", EditorStringName(EditorFonts), (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
 	p_theme->set_font("expression", EditorStringName(EditorFonts), mono_other_fc);

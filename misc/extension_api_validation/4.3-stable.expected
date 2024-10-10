@@ -95,3 +95,12 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 
 Default deadzone value was changed. No adjustments should be necessary.
 Compatibility method registered.
+
+
+GH-96588
+--------
+Validate extension JSON: API was removed: classes/CodeHighlighter/properties/color_regions
+Validate extension JSON: API was removed: classes/CodeHighlighter/properties/keyword_colors
+Validate extension JSON: API was removed: classes/CodeHighlighter/properties/member_keyword_colors
+
+Properties replaced with new 'regions', 'keywords', and 'member_keywords'. Compatibility getters/setters for old properties preserved.

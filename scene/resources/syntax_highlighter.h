@@ -38,6 +38,13 @@ class TextEdit;
 
 class SyntaxHighlighter : public Resource {
 	GDCLASS(SyntaxHighlighter, Resource)
+public:
+	enum SyntaxFontStyle {
+		SYNTAX_STYLE_REGULAR,
+		SYNTAX_STYLE_BOLD,
+		SYNTAX_STYLE_ITALIC,
+		SYNTAX_STYLE_BOLD_ITALIC,
+	};
 
 private:
 	RBMap<int, Dictionary> highlighting_cache;
@@ -56,6 +63,8 @@ public:
 	Dictionary get_line_syntax_highlighting(int p_line);
 	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) { return Dictionary(); }
 
+	void clear_line_highlighting_cache(int p_line);
+
 	void clear_highlighting_cache();
 	virtual void _clear_highlighting_cache() {}
 
@@ -69,6 +78,8 @@ public:
 	virtual ~SyntaxHighlighter() {}
 };
 
+VARIANT_ENUM_CAST(SyntaxHighlighter::SyntaxFontStyle);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class CodeHighlighter : public SyntaxHighlighter {
@@ -77,6 +88,8 @@ class CodeHighlighter : public SyntaxHighlighter {
 private:
 	struct ColorRegion {
 		Color color;
+		SyntaxHighlighter::SyntaxFontStyle style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
+		bool text_segment = false;
 		String start_key;
 		String end_key;
 		bool line_only = false;
@@ -84,14 +97,23 @@ private:
 	Vector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
 
-	Dictionary keywords;
-	Dictionary member_keywords;
+	struct ColorRec {
+		Color color;
+		SyntaxHighlighter::SyntaxFontStyle style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
+	};
+	HashMap<String, ColorRec> keywords;
+	HashMap<String, ColorRec> member_keywords;
 
 	Color font_color;
+	SyntaxHighlighter::SyntaxFontStyle font_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color member_color;
+	SyntaxHighlighter::SyntaxFontStyle member_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color function_color;
+	SyntaxHighlighter::SyntaxFontStyle function_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color symbol_color;
+	SyntaxHighlighter::SyntaxFontStyle symbol_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color number_color;
+	SyntaxHighlighter::SyntaxFontStyle number_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 
 	bool uint_suffix_enabled = false;
 
@@ -104,43 +126,75 @@ public:
 	virtual void _clear_highlighting_cache() override;
 	virtual void _update_cache() override;
 
+#ifndef DISABLE_DEPRECATED
 	void add_keyword_color(const String &p_keyword, const Color &p_color);
-	void remove_keyword_color(const String &p_keyword);
-	bool has_keyword_color(const String &p_keyword) const;
+#endif
+	void add_keyword(const String &p_keyword, const Color &p_color, SyntaxHighlighter::SyntaxFontStyle p_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR);
+	void remove_keyword(const String &p_keyword);
+	bool has_keyword(const String &p_keyword) const;
+
 	Color get_keyword_color(const String &p_keyword) const;
+	SyntaxHighlighter::SyntaxFontStyle get_keyword_style(const String &p_member_keyword) const;
 
-	void set_keyword_colors(const Dictionary p_keywords);
-	void clear_keyword_colors();
+#ifndef DISABLE_DEPRECATED
+	void set_keyword_colors(const Dictionary &p_keywords);
 	Dictionary get_keyword_colors() const;
+#endif
+	void set_keywords(const Dictionary &p_keywords);
+	void clear_keywords();
+	Dictionary get_keywords() const;
 
+#ifndef DISABLE_DEPRECATED
 	void add_member_keyword_color(const String &p_member_keyword, const Color &p_color);
-	void remove_member_keyword_color(const String &p_member_keyword);
-	bool has_member_keyword_color(const String &p_member_keyword) const;
+#endif
+	void add_member_keyword(const String &p_keyword, const Color &p_color, SyntaxHighlighter::SyntaxFontStyle p_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR);
+	void remove_member_keyword(const String &p_keyword);
+	bool has_member_keyword(const String &p_keyword) const;
+
 	Color get_member_keyword_color(const String &p_member_keyword) const;
+	SyntaxHighlighter::SyntaxFontStyle get_member_keyword_style(const String &p_member_keyword) const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_member_keyword_colors(const Dictionary &p_color_regions);
-	void clear_member_keyword_colors();
 	Dictionary get_member_keyword_colors() const;
+#endif
+	void set_member_keywords(const Dictionary &p_color_regions);
+	void clear_member_keywords();
+	Dictionary get_member_keywords() const;
 
+#ifndef DISABLE_DEPRECATED
 	void add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false);
-	void remove_color_region(const String &p_start_key);
-	bool has_color_region(const String &p_start_key) const;
 
 	void set_color_regions(const Dictionary &p_member_keyword);
-	void clear_color_regions();
 	Dictionary get_color_regions() const;
+#endif
+	void add_region(const String &p_start_key, const String &p_end_key, const Color &p_color, SyntaxHighlighter::SyntaxFontStyle p_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR, bool p_line_only = false, bool p_is_text_segment = false);
+	void remove_region(const String &p_start_key);
+	bool has_region(const String &p_start_key) const;
+
+	void set_regions(const Dictionary &p_regions);
+	void clear_regions();
+	Dictionary get_regions() const;
 
 	void set_number_color(Color p_color);
 	Color get_number_color() const;
+	void set_number_style(SyntaxHighlighter::SyntaxFontStyle p_style);
+	SyntaxHighlighter::SyntaxFontStyle get_number_style() const;
 
 	void set_symbol_color(Color p_color);
 	Color get_symbol_color() const;
+	void set_symbol_style(SyntaxHighlighter::SyntaxFontStyle p_style);
+	SyntaxHighlighter::SyntaxFontStyle get_symbol_style() const;
 
 	void set_function_color(Color p_color);
 	Color get_function_color() const;
+	void set_function_style(SyntaxHighlighter::SyntaxFontStyle p_style);
+	SyntaxHighlighter::SyntaxFontStyle get_function_style() const;
 
 	void set_member_variable_color(Color p_color);
 	Color get_member_variable_color() const;
+	void set_member_variable_style(SyntaxHighlighter::SyntaxFontStyle p_style);
+	SyntaxHighlighter::SyntaxFontStyle get_member_variable_style() const;
 
 	void set_uint_suffix_enabled(bool p_enabled);
 };

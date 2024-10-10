@@ -39,34 +39,42 @@
 
 void EditorNativeShaderSourceVisualizer::_load_theme_settings() {
 	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	syntax_highlighter->set_number_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/number_style"));
 	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	syntax_highlighter->set_symbol_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/symbol_style"));
 	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	syntax_highlighter->set_function_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/function_style"));
 	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
+	syntax_highlighter->set_member_variable_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/member_variable_style"));
 
-	syntax_highlighter->clear_keyword_colors();
+	syntax_highlighter->clear_keywords();
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
-	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
-	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+	Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	SyntaxHighlighter::SyntaxFontStyle keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/keyword_style");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+	SyntaxHighlighter::SyntaxFontStyle control_flow_keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_style");
 
 	for (const String &keyword : keywords) {
 		if (ShaderLanguage::is_control_flow_keyword(keyword)) {
-			syntax_highlighter->add_keyword_color(keyword, control_flow_keyword_color);
+			syntax_highlighter->add_keyword(keyword, control_flow_keyword_color, control_flow_keyword_style);
 		} else {
-			syntax_highlighter->add_keyword_color(keyword, keyword_color);
+			syntax_highlighter->add_keyword(keyword, keyword_color, keyword_style);
 		}
 	}
 
 	// Colorize comments.
-	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-	syntax_highlighter->clear_color_regions();
-	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-	syntax_highlighter->add_color_region("//", "", comment_color, true);
+	Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	SyntaxHighlighter::SyntaxFontStyle comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/comment_style");
+	syntax_highlighter->clear_regions();
+	syntax_highlighter->add_region("/*", "*/", comment_color, comment_style, false, true);
+	syntax_highlighter->add_region("//", "", comment_color, comment_style, true, true);
 
 	// Colorize preprocessor statements.
-	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
-	syntax_highlighter->add_color_region("#", "", user_type_color, true);
+	Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+	SyntaxHighlighter::SyntaxFontStyle user_type_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/user_type_style");
+	syntax_highlighter->add_region("#", "", user_type_color, user_type_style, true);
 
 	syntax_highlighter->set_uint_suffix_enabled(true);
 }

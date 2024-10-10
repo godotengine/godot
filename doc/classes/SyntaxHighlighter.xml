@@ -71,4 +71,14 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="SYNTAX_STYLE_REGULAR" value="0" enum="SyntaxFontStyle">
+		</constant>
+		<constant name="SYNTAX_STYLE_BOLD" value="1" enum="SyntaxFontStyle">
+		</constant>
+		<constant name="SYNTAX_STYLE_ITALIC" value="2" enum="SyntaxFontStyle">
+		</constant>
+		<constant name="SYNTAX_STYLE_BOLD_ITALIC" value="3" enum="SyntaxFontStyle">
+		</constant>
+	</constants>
 </class>
