@@ -1132,6 +1132,16 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 		_unpair_instance(instance);
 	}
 
+	if (instance->base_type == RS::INSTANCE_LIGHTMAP) {
+		if (instance->scenario && p_visible) {
+			for (SelfList<Instance> *i = instance->scenario->instances.first(); i != nullptr; i = i->next()) {
+				if ((1 << i->self()->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
+					_instance_pair(instance, i->self());
+				}
+			}
+		}
+	}
+
 	if (instance->base_type == RS::INSTANCE_LIGHT) {
 		InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
 		if (instance->scenario && RSG::light_storage->light_get_type(instance->base) != RS::LIGHT_DIRECTIONAL && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {

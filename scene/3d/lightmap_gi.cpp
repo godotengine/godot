@@ -1400,6 +1400,11 @@ void LightmapGI::_assign_lightmaps() {
 			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
 		}
 	}
+
+	if (is_visible()) { // notify dynamic objects
+		set_visible(false);
+		set_visible(true);
+	}
 }
 
 void LightmapGI::_clear_lightmaps() {
