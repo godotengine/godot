@@ -1120,6 +1120,63 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 	event_dispatch_function = p_function;
 }
 
+bool Input::has_mapping(const StringName &p_guid) {
+	for (int i = 0; i < map_db.size(); i++) {
+		if (map_db[i].uid == p_guid) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Input::set_unknown_gamepad_auto_mapped(bool p_auto) {
+	unknown_gamepad_auto_mapped = p_auto;
+}
+
+bool Input::is_unknown_gamepad_auto_mapped() {
+	return unknown_gamepad_auto_mapped;
+}
+
+void Input::unknown_gamepad_auto_map(const StringName &p_guid, const String &p_name, const int *p_key_map, const int *p_axis_map, bool p_trigger_is_key) {
+	JoyDeviceMapping mapping;
+	mapping.uid = p_guid;
+	mapping.name = p_name + "[auto]";
+
+	for (int i = 0; i < int(JoyButton::SDL_MAX); i++) {
+		JoyBinding binding;
+
+		binding.outputType = TYPE_BUTTON;
+		binding.output.button = JoyButton(i);
+
+		binding.inputType = TYPE_BUTTON;
+		binding.input.button = JoyButton(p_key_map[i]);
+
+		mapping.bindings.push_back(binding);
+	}
+
+	for (int i = 0; i < int(JoyAxis::SDL_MAX); i++) {
+		JoyBinding binding;
+
+		binding.outputType = TYPE_AXIS;
+		binding.output.axis.axis = JoyAxis(i);
+		binding.output.axis.range = JoyAxisRange::FULL_AXIS;
+
+		if (p_trigger_is_key && i >= int(JoyAxis::SDL_MAX) - 2) {
+			binding.inputType = TYPE_BUTTON;
+			binding.input.button = JoyButton(p_axis_map[i]);
+		} else {
+			binding.inputType = TYPE_AXIS;
+			binding.input.axis.axis = JoyAxis(p_axis_map[i]);
+			binding.input.axis.range = JoyAxisRange::FULL_AXIS;
+			binding.input.axis.invert = false;
+		}
+
+		mapping.bindings.push_back(binding);
+	}
+
+	map_db.push_back(mapping);
+}
+
 void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
@@ -1619,7 +1676,7 @@ void Input::set_fallback_mapping(const String &p_guid) {
 bool Input::is_joy_known(int p_device) {
 	if (joy_names.has(p_device)) {
 		int mapping = joy_names[p_device].mapping;
-		if (mapping != -1 && mapping != fallback_mapping) {
+		if (mapping != -1 && mapping != fallback_mapping && !map_db[mapping].name.ends_with("[auto]")) {
 			return true;
 		}
 	}
