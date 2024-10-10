@@ -41,6 +41,7 @@ class EditorZoomWidget;
 class MenuButton;
 class Panel;
 class ViewPanner;
+class CheckBox;
 
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);
@@ -81,6 +82,7 @@ class Sprite2DEditor : public Control {
 	SpinBox *simplification = nullptr;
 	SpinBox *grow_pixels = nullptr;
 	SpinBox *shrink_pixels = nullptr;
+	CheckBox *enable_star_rdp = nullptr;
 	Button *update_preview = nullptr;
 
 	void _menu_option(int p_option);
