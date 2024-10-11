@@ -385,7 +385,7 @@ int Array::find_custom(const Callable &p_callable, int p_from) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, res, ce);
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_FAIL_V_MSG(ret, "Error calling method from 'find_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(ret, vformat("Error calling method from 'find_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, ret, "Error on method from 'find_custom': Return type of callable must be boolean.");
@@ -445,7 +445,7 @@ int Array::rfind_custom(const Callable &p_callable, int p_from) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, res, ce);
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_FAIL_V_MSG(-1, "Error calling method from 'rfind_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(-1, vformat("Error calling method from 'rfind_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, -1, "Error on method from 'rfind_custom': Return type of callable must be boolean.");
@@ -574,7 +574,7 @@ Array Array::filter(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Array(), "Error calling method from 'filter': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'filter': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (result.operator bool()) {
@@ -600,7 +600,7 @@ Array Array::map(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Array(), "Error calling method from 'map': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'map': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		new_arr[i] = result;
@@ -626,7 +626,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 2, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Variant(), "Error calling method from 'reduce': " + Variant::get_callable_error_text(p_callable, argptrs, 2, ce));
+			ERR_FAIL_V_MSG(Variant(), vformat("Error calling method from 'reduce': %s.", Variant::get_callable_error_text(p_callable, argptrs, 2, ce)));
 		}
 		ret = result;
 	}
@@ -643,7 +643,7 @@ bool Array::any(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from 'any': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'any': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (result.operator bool()) {
@@ -665,7 +665,7 @@ bool Array::all(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from 'all': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'all': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (!(result.operator bool())) {
