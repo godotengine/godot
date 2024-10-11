@@ -409,6 +409,10 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	parse_program();
 	pop_multiline();
 
+#ifdef TOOLS_ENABLED
+	comment_data = tokenizer->get_comments();
+#endif
+
 	memdelete(text_tokenizer);
 	tokenizer = nullptr;
 
