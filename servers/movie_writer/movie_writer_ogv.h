@@ -48,15 +48,14 @@ class MovieWriterOGV : public MovieWriter {
 	uint32_t fps = 0;
 	int audio_ch = 0;
 	uint32_t audio_frames = 0;
-	float quality = 0.75;
 
 	Ref<FileAccess> f;
 
-	// Vorbis quality -0.1 to 1 (-0.1 yields smallest files but lowest fidelity; 1 yields highest fidelity but large files. '0.2' is a reasonable default)
-	float audio_q = 0.2f;
-
 	// Bitrate target for Vorbis audio
 	int audio_r = 0;
+
+	// Vorbis quality -0.1 to 1 (-0.1 yields smallest files but lowest fidelity; 1 yields highest fidelity but large files. '0.2' is a reasonable default)
+	float audio_q = 0.2;
 
 	// VP3 strict compatibility
 	int vp3_compatible = 0;
@@ -64,8 +63,8 @@ class MovieWriterOGV : public MovieWriter {
 	// Bitrate target for Theora video
 	int video_r = 0;
 
-	// Theora quality selector from 0 to 63 (0 yields smallest files but lowest video quality. 63 yields highest fidelity but large files)
-	int video_q = 0;
+	// Theora quality selector from 0 to 1.0 (0 yields smallest files but lowest video quality. 1.0 yields highest fidelity but large files)
+	float video_q = 0.75;
 
 	// Streaming video
 	ogg_uint32_t keyframe_frequency = 64;
@@ -74,6 +73,16 @@ class MovieWriterOGV : public MovieWriter {
 	// client side buffering and add latency. The default value is the keyframe interval for one-pass encoding (or somewhat larger if
 	// soft-target is used)
 	int buf_delay = -1;
+
+	// Sets the encoder speed level. Higher speed levels favor quicker encoding over better quality per bit. Depending on the encoding
+	// mode, and the internal algorithms used, quality may actually improve with higher speeds, but in this case bitrate will also
+	// likely increase. The maximum value, and the meaning of each value, are implementation-specific and may change depending on the
+	// current encoding mode
+	int speed = 4;
+
+	/* Use a large reservoir and treat the rate as a soft target; rate control is less strict but resulting quality is usually
+	higher/smoother overall. Soft target also allows an optional setting to specify a minimum allowed quality. */
+	int soft_target = 1;
 
 	// Take physical pages, weld into a logical stream of packets
 	ogg_stream_state to;
@@ -101,16 +110,6 @@ class MovieWriterOGV : public MovieWriter {
 
 	// local working space for packet->PCM decode
 	vorbis_block vb;
-
-	// Sets the encoder speed level. Higher speed levels favor quicker encoding over better quality per bit. Depending on the encoding
-	// mode, and the internal algorithms used, quality may actually improve with higher speeds, but in this case bitrate will also
-	// likely increase. The maximum value, and the meaning of each value, are implementation-specific and may change depending on the
-	// current encoding mode
-	int speed = -1;
-
-	/* Use a large reservoir and treat the rate as a soft target; rate control is less strict but resulting quality is usually
-	higher/smoother overall. Soft target also allows an optional -v setting to specify a minimum allowed quality. */
-	int soft_target = 0;
 
 	// Video buffer
 	uint8_t *y, *u, *v;

@@ -142,8 +142,7 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
 
 	fps = p_fps;
-	audio_q = quality;
-	video_q = quality * 63;
+	speed = 4;
 
 	audio_ch = 2;
 	switch (speaker_mode) {
@@ -213,7 +212,7 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 	   the page header, plus approximately 1/2 byte per packet (not accounted for
 	   here).*/
 	ti.target_bitrate = (int)(64870 * (ogg_int64_t)video_r >> 16);
-	ti.quality = video_q;
+	ti.quality = video_q * 63;
 	ti.pixel_fmt = TH_PF_420;
 	td = th_encode_alloc(&ti);
 	th_info_clear(&ti);
@@ -238,10 +237,10 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 			ERR_PRINT("Could not set encoder flags for soft-target");
 
 		if (buf_delay < 0) {
-			if ((keyframe_frequency * 7 >> 1) > 5 * p_fps)
+			if ((keyframe_frequency * 7 >> 1) > 5 * fps)
 				arg = keyframe_frequency * 7 >> 1;
 			else
-				arg = 5 * p_fps;
+				arg = 5 * fps;
 			ret = th_encode_ctl(td, TH_ENCCTL_SET_RATE_BUFFER, &arg, sizeof(arg));
 			if (ret < 0)
 				ERR_PRINT("Could not set rate control buffer for soft-target");
@@ -422,5 +421,6 @@ void MovieWriterOGV::write_end() {
 MovieWriterOGV::MovieWriterOGV() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
 	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
-	quality = GLOBAL_GET("editor/movie_writer/mjpeg_quality");
+	video_q = GLOBAL_GET("editor/movie_writer/video_quality");
+	audio_q = GLOBAL_GET("editor/movie_writer/audio_quality");
 }

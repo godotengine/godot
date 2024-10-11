@@ -380,4 +380,4 @@ $RECYCLE.BIN/
 .vscode/c_cpp_properties.json
 .vscode/settings.json
 *.generated.props
-examples/camera/test.ogv
+*.ogv
