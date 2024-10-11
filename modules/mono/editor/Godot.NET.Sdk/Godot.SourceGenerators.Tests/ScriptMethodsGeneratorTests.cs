@@ -7,7 +7,7 @@ public class ScriptMethodsGeneratorTests
     [Fact]
     public async void Methods()
     {
-        await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptMethodsGeneratorRunner>.Verify(
             "Methods.cs",
             "Methods_ScriptMethods.generated.cs"
         );
@@ -16,7 +16,7 @@ public class ScriptMethodsGeneratorTests
     [Fact]
     public async void ScriptBoilerplate()
     {
-        await CSharpSourceGeneratorVerifier<ScriptMethodsGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptMethodsGeneratorRunner>.Verify(
             "ScriptBoilerplate.cs",
             "ScriptBoilerplate_ScriptMethods.generated.cs", "OuterClass.NestedClass_ScriptMethods.generated.cs"
         );

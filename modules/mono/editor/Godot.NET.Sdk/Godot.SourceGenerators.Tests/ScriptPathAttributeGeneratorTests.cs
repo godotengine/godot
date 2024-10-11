@@ -24,7 +24,7 @@ public class ScriptPathAttributeGeneratorTests
     [Fact]
     public async void ScriptBoilerplate()
     {
-        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGeneratorRunner>.MakeVerifier(
             new string[] { "ScriptBoilerplate.cs" },
             new string[] { "ScriptBoilerplate_ScriptPath.generated.cs" }
         );
@@ -35,7 +35,7 @@ public class ScriptPathAttributeGeneratorTests
     [Fact]
     public async void FooBar()
     {
-        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGeneratorRunner>.MakeVerifier(
             new string[] { "Foo.cs", "Bar.cs" },
             new string[] { "Foo_ScriptPath.generated.cs", "Bar_ScriptPath.generated.cs" }
         );
@@ -46,7 +46,7 @@ public class ScriptPathAttributeGeneratorTests
     [Fact]
     public async void Generic()
     {
-        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGeneratorRunner>.MakeVerifier(
             new string[] { "Generic.cs" },
             new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
         );
@@ -57,7 +57,7 @@ public class ScriptPathAttributeGeneratorTests
     [Fact]
     public async void GenericMultipleClassesSameName()
     {
-        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGeneratorRunner>.MakeVerifier(
             Array.Empty<string>(),
             new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
         );
@@ -69,7 +69,7 @@ public class ScriptPathAttributeGeneratorTests
     [Fact]
     public async void NamespaceMultipleClassesSameName()
     {
-        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGeneratorRunner>.MakeVerifier(
             Array.Empty<string>(),
             new string[] { "NamespaceA.SameName_ScriptPath.generated.cs" }
         );
