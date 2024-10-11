@@ -257,7 +257,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 			}
 		}
 	} else {
-		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
+		ERR_PRINT(vformat("AudioUnitRender failed, code: %d.", result));
 	}
 
 	ad->stop_counting_ticks();
@@ -270,7 +270,7 @@ void AudioDriverCoreAudio::start() {
 	if (!active && audio_unit != nullptr) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
-			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
+			ERR_PRINT(vformat("AudioOutputUnitStart failed, code: %d.", result));
 		} else {
 			active = true;
 		}
@@ -281,7 +281,7 @@ void AudioDriverCoreAudio::stop() {
 	if (active) {
 		OSStatus result = AudioOutputUnitStop(audio_unit);
 		if (result != noErr) {
-			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
+			ERR_PRINT(vformat("AudioOutputUnitStop failed, code: %d.", result));
 		} else {
 			active = false;
 		}
@@ -522,7 +522,7 @@ Error AudioDriverCoreAudio::input_start() {
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
 	if (result != noErr) {
-		ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
+		ERR_PRINT(vformat("AudioOutputUnitStart failed, code: %d.", result));
 	}
 
 	return OK;
@@ -532,7 +532,7 @@ Error AudioDriverCoreAudio::input_stop() {
 	if (input_unit) {
 		OSStatus result = AudioOutputUnitStop(input_unit);
 		if (result != noErr) {
-			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
+			ERR_PRINT(vformat("AudioOutputUnitStop failed, code: %d.", result));
 		}
 	}
 

@@ -93,7 +93,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	if (is_path_invalid(p_path)) {
 #ifdef DEBUG_ENABLED
 		if (p_mode_flags != READ) {
-			WARN_PRINT("The path :" + p_path + " is a reserved Windows system pipe, so it can't be used for creating files.");
+			WARN_PRINT(vformat("The path :%s is a reserved Windows system pipe, so it can't be used for creating files.", p_path));
 		}
 #endif
 		return ERR_INVALID_PARAMETER;
@@ -180,7 +180,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		}
 
 		if (mismatch) {
-			WARN_PRINT("Case mismatch opening requested file '" + p_path + "', stored as '" + proper_path + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+			WARN_PRINT(vformat("Case mismatch opening requested file '%s', stored as '%s' in the filesystem. This file will not open when exported to other case-sensitive platforms.", p_path, proper_path));
 		}
 	}
 #endif
@@ -460,7 +460,7 @@ bool FileAccessWindows::_get_hidden_attribute(const String &p_file) {
 	String file = fix_path(p_file);
 
 	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
-	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, vformat("Failed to get attributes for: '%s'.", p_file));
 	return (attrib & FILE_ATTRIBUTE_HIDDEN);
 }
 
@@ -469,7 +469,7 @@ Error FileAccessWindows::_set_hidden_attribute(const String &p_file, bool p_hidd
 	const Char16String &file_utf16 = file.utf16();
 
 	DWORD attrib = GetFileAttributesW((LPCWSTR)file_utf16.get_data());
-	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, vformat("Failed to get attributes for: '%s'.", p_file));
 	BOOL ok;
 	if (p_hidden) {
 		ok = SetFileAttributesW((LPCWSTR)file_utf16.get_data(), attrib | FILE_ATTRIBUTE_HIDDEN);
@@ -485,7 +485,7 @@ bool FileAccessWindows::_get_read_only_attribute(const String &p_file) {
 	String file = fix_path(p_file);
 
 	DWORD attrib = GetFileAttributesW((LPCWSTR)file.utf16().get_data());
-	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, false, vformat("Failed to get attributes for: '%s'.", p_file));
 	return (attrib & FILE_ATTRIBUTE_READONLY);
 }
 
@@ -494,7 +494,7 @@ Error FileAccessWindows::_set_read_only_attribute(const String &p_file, bool p_r
 	const Char16String &file_utf16 = file.utf16();
 
 	DWORD attrib = GetFileAttributesW((LPCWSTR)file_utf16.get_data());
-	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(attrib == INVALID_FILE_ATTRIBUTES, FAILED, vformat("Failed to get attributes for: '%s'.", p_file));
 	BOOL ok;
 	if (p_ro) {
 		ok = SetFileAttributesW((LPCWSTR)file_utf16.get_data(), attrib | FILE_ATTRIBUTE_READONLY);

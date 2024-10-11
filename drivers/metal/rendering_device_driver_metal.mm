@@ -130,7 +130,7 @@ RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitFiel
 	}
 
 	id<MTLBuffer> obj = [device newBufferWithLength:p_size options:options];
-	ERR_FAIL_NULL_V_MSG(obj, BufferID(), "Can't create buffer of size: " + itos(p_size));
+	ERR_FAIL_NULL_V_MSG(obj, BufferID(), vformat("Can't create buffer of size: %d.", p_size));
 	return rid::make(obj);
 }
 
@@ -742,7 +742,7 @@ RDD::VertexFormatID RenderingDeviceDriverMetal::vertex_format_create(VectorView<
 		VertexAttribute const &vf = p_vertex_attribs[i];
 
 		ERR_FAIL_COND_V_MSG(get_format_vertex_size(vf.format) == 0, VertexFormatID(),
-				"Data format for attachment (" + itos(i) + "), '" + FORMAT_NAMES[vf.format] + "', is not valid for a vertex array.");
+				vformat("Data format for attachment (%d), '%s', is not valid for a vertex array.", i, FORMAT_NAMES[vf.format]));
 
 		desc.attributes[vf.location].format = pixel_formats->getMTLVertexFormat(vf.format);
 		desc.attributes[vf.location].offset = vf.offset;
@@ -1002,13 +1002,13 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 		id<MTLTexture> tex = rid::get(p_attachments[i]);
 		if (tex == nil) {
 #if DEV_ENABLED
-			WARN_PRINT("Invalid texture for attachment " + itos(i));
+			WARN_PRINT(vformat("Invalid texture for attachment %d.", i));
 #endif
 		}
 		if (a.samples > 1) {
 			if (tex.sampleCount != a.samples) {
 #if DEV_ENABLED
-				WARN_PRINT("Mismatched sample count for attachment " + itos(i) + "; expected " + itos(a.samples) + ", got " + itos(tex.sampleCount));
+				WARN_PRINT(vformat("Mismatched sample count for attachment %d; expected %d, got %d.", i, a.samples, tex.sampleCount));
 #endif
 			}
 		}
@@ -1596,7 +1596,7 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Failed to parse IR at stage " + String(SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, vformat("Failed to parse IR at stage '%s': %s.", String(SHADER_STAGE_NAMES[stage]), e.what()));
 		}
 
 		ShaderStage stage_flag = (ShaderStage)(1 << p_spirv[i].shader_stage);
@@ -1650,7 +1650,7 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 				std::string const &name = compiler.get_name(res.id);
 				uint32_t set = get_decoration(res.id, spv::DecorationDescriptorSet);
 				ERR_FAIL_COND_V_MSG(set == (uint32_t)-1, FAILED, "No descriptor set found");
-				ERR_FAIL_COND_V_MSG(set >= MAX_UNIFORM_SETS, FAILED, "On shader stage '" + String(SHADER_STAGE_NAMES[stage]) + "', uniform '" + name.c_str() + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").");
+				ERR_FAIL_COND_V_MSG(set >= MAX_UNIFORM_SETS, FAILED, vformat("On shader stage '%s', uniform '%s' uses a set (%d) index larger than what is supported (%d).", String(SHADER_STAGE_NAMES[stage]), name.c_str(), set, MAX_UNIFORM_SETS));
 
 				uniform.binding = get_decoration(res.id, spv::DecorationBinding);
 				ERR_FAIL_COND_V_MSG(uniform.binding == (uint32_t)-1, FAILED, "No binding found");
@@ -1701,15 +1701,15 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 						if (r_reflection.uniform_sets[set][k].binding == uniform.binding) {
 							// Already exists, verify that it's the same type.
 							ERR_FAIL_COND_V_MSG(r_reflection.uniform_sets[set][k].type != uniform.type, FAILED,
-									"On shader stage '" + String(SHADER_STAGE_NAMES[stage]) + "', uniform '" + name.c_str() + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different uniform type.");
+									vformat("On shader stage '%s', uniform '%s' trying to reuse location for set=%d, binding=%d with different uniform type.", String(SHADER_STAGE_NAMES[stage]), name.c_str(), set, uniform.binding));
 
 							// Also, verify that it's the same size.
 							ERR_FAIL_COND_V_MSG(r_reflection.uniform_sets[set][k].length != uniform.length, FAILED,
-									"On shader stage '" + String(SHADER_STAGE_NAMES[stage]) + "', uniform '" + name.c_str() + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different uniform size.");
+									vformat("On shader stage '%s', uniform '%s' trying to reuse location for set=%d, binding=%d with different uniform size.", String(SHADER_STAGE_NAMES[stage]), name.c_str(), set, uniform.binding));
 
 							// Also, verify that it has the same writability.
 							ERR_FAIL_COND_V_MSG(r_reflection.uniform_sets[set][k].writable != uniform.writable, FAILED,
-									"On shader stage '" + String(SHADER_STAGE_NAMES[stage]) + "', uniform '" + name.c_str() + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different writability.");
+									vformat("On shader stage '%s', uniform '%s' trying to reuse location for set=%d, binding=%d with different writability.", String(SHADER_STAGE_NAMES[stage]), name.c_str(), set, uniform.binding));
 
 							// Just append stage mask and continue.
 							r_reflection.uniform_sets.write[set].write[k].stages.set_flag(stage_flag);
@@ -1786,7 +1786,7 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 
 			size_t push_constant_size = round_up_to_alignment(compiler.get_declared_struct_size(compiler.get_type(res.base_type_id)), SPIRV_DATA_ALIGNMENT);
 			ERR_FAIL_COND_V_MSG(r_reflection.push_constant_size && r_reflection.push_constant_size != push_constant_size, FAILED,
-					"Reflection of SPIR-V shader stage '" + String(SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
+					vformat("Reflection of SPIR-V shader stage '%s': Push constant block must be the same across shader stages.", String(SHADER_STAGE_NAMES[p_spirv[i].shader_stage])));
 
 			r_reflection.push_constant_size = push_constant_size;
 			r_reflection.push_constant_stages.set_flag(stage_flag);
@@ -1862,8 +1862,8 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 
 			for (uint32_t k = 0; k < r_reflection.specialization_constants.size(); k++) {
 				if (r_reflection.specialization_constants[k].constant_id == sconst.constant_id) {
-					ERR_FAIL_COND_V_MSG(r_reflection.specialization_constants[k].type != sconst.type, FAILED, "More than one specialization constant used for id (" + itos(sconst.constant_id) + "), but their types differ.");
-					ERR_FAIL_COND_V_MSG(r_reflection.specialization_constants[k].int_value != sconst.int_value, FAILED, "More than one specialization constant used for id (" + itos(sconst.constant_id) + "), but their default values differ.");
+					ERR_FAIL_COND_V_MSG(r_reflection.specialization_constants[k].type != sconst.type, FAILED, vformat("More than one specialization constant used for id (%s), but their types differ.", sconst.constant_id));
+					ERR_FAIL_COND_V_MSG(r_reflection.specialization_constants[k].int_value != sconst.int_value, FAILED, vformat("More than one specialization constant used for id (%s), but their default values differ.", sconst.constant_id));
 					existing = k;
 					break;
 				}
@@ -1991,7 +1991,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 		try {
 			parser.parse();
 		} catch (CompilerError &e) {
-			ERR_FAIL_V_MSG(Result(), "Failed to parse IR at stage " + String(SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+			ERR_FAIL_V_MSG(Result(), vformat("Failed to parse IR at stage %s: %s.", String(SHADER_STAGE_NAMES[stage]), e.what()));
 		}
 
 		CompilerMSL compiler(std::move(parser.get_parsed_ir()));
@@ -2020,7 +2020,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 					++res;
 				}
 				if (res == bin_data.constants.end()) {
-					WARN_PRINT(String(stage_name) + ": unable to find constant_id: " + itos(constant.constant_id));
+					WARN_PRINT(vformat("%s: unable to find constant_id: %d.", String(stage_name), constant.constant_id));
 				}
 			}
 		}
@@ -3219,7 +3219,7 @@ RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::
 	function = [library newFunctionWithName:@"main0"
 							 constantValues:constantValues
 									  error:&err];
-	ERR_FAIL_NULL_V_MSG(function, ERR_CANT_CREATE, String("specialized function failed: ") + err.localizedDescription.UTF8String);
+	ERR_FAIL_NULL_V_MSG(function, ERR_CANT_CREATE, vformat("specialized function failed: %s.", String::utf8(err.localizedDescription.UTF8String)));
 
 	return function;
 }

@@ -203,7 +203,7 @@ Error RenderingContextDriverD3D12::_initialize_devices() {
 		if (SUCCEEDED(res)) {
 			tearing_supported = feature_supported;
 		} else {
-			ERR_PRINT("CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+			ERR_PRINT(vformat("CheckFeatureSupport failed with error 0x%08ux.", (uint64_t)res));
 		}
 	}
 

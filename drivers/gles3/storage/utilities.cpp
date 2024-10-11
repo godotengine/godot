@@ -74,14 +74,14 @@ Utilities::~Utilities() {
 		uint32_t leaked_data_size = 0;
 		for (const KeyValue<GLuint, ResourceAllocation> &E : texture_allocs_cache) {
 #ifdef DEV_ENABLED
-			ERR_PRINT(E.value.name + ": leaked " + itos(E.value.size) + " bytes.");
+			ERR_PRINT(vformat("%s: leaked %d bytes.", E.value.name, E.value.size));
 #else
-			ERR_PRINT("Texture with GL ID of " + itos(E.key) + ": leaked " + itos(E.value.size) + " bytes.");
+			ERR_PRINT(vformat("Texture with GL ID of %d: leaked %s bytes.", E.key, E.value.size));
 #endif
 			leaked_data_size += E.value.size;
 		}
 		if (leaked_data_size < texture_mem_cache) {
-			ERR_PRINT("Texture cache is not empty. There may be an additional texture leak of " + itos(texture_mem_cache - leaked_data_size) + " bytes.");
+			ERR_PRINT(vformat("Texture cache is not empty. There may be an additional texture leak of %d bytes.", texture_mem_cache - leaked_data_size));
 		}
 	}
 
@@ -89,14 +89,14 @@ Utilities::~Utilities() {
 		uint32_t leaked_data_size = 0;
 		for (const KeyValue<GLuint, ResourceAllocation> &E : render_buffer_allocs_cache) {
 #ifdef DEV_ENABLED
-			ERR_PRINT(E.value.name + ": leaked " + itos(E.value.size) + " bytes.");
+			ERR_PRINT(vformat("%s: leaked %d bytes.", E.value.name, E.value.size));
 #else
-			ERR_PRINT("Render buffer with GL ID of " + itos(E.key) + ": leaked " + itos(E.value.size) + " bytes.");
+			ERR_PRINT(vformat("Render buffer with GL ID of %d: leaked %d bytes.", E.key, E.value.size));
 #endif
 			leaked_data_size += E.value.size;
 		}
 		if (leaked_data_size < render_buffer_mem_cache) {
-			ERR_PRINT("Render buffer cache is not empty. There may be an additional render buffer leak of " + itos(render_buffer_mem_cache - leaked_data_size) + " bytes.");
+			ERR_PRINT(vformat("Render buffer cache is not empty. There may be an additional render buffer leak of %d bytes.", render_buffer_mem_cache - leaked_data_size));
 		}
 	}
 
@@ -105,14 +105,14 @@ Utilities::~Utilities() {
 
 		for (const KeyValue<GLuint, ResourceAllocation> &E : buffer_allocs_cache) {
 #ifdef DEV_ENABLED
-			ERR_PRINT(E.value.name + ": leaked " + itos(E.value.size) + " bytes.");
+			ERR_PRINT(vformat("%s: leaked %d bytes.", E.value.name, E.value.size));
 #else
-			ERR_PRINT("Buffer with GL ID of " + itos(E.key) + ": leaked " + itos(E.value.size) + " bytes.");
+			ERR_PRINT(vformat("Buffer with GL ID of %d: leaked %d bytes.", E.key, E.value.size));
 #endif
 			leaked_data_size += E.value.size;
 		}
 		if (leaked_data_size < buffer_mem_cache) {
-			ERR_PRINT("Buffer cache is not empty. There may be an additional buffer leak of " + itos(buffer_mem_cache - leaked_data_size) + " bytes.");
+			ERR_PRINT(vformat("Buffer cache is not empty. There may be an additional buffer leak of %d bytes.", buffer_mem_cache - leaked_data_size));
 		}
 	}
 }

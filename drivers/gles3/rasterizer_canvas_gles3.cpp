@@ -1880,7 +1880,7 @@ void RasterizerCanvasGLES3::_update_shadow_atlas() {
 			state.shadow_fb = 0;
 			state.shadow_texture = 0;
 			state.shadow_depth_buffer = 0;
-			WARN_PRINT("Could not create CanvasItem shadow atlas, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+			WARN_PRINT(vformat("Could not create CanvasItem shadow atlas, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
 		}
 		GLES3::Utilities::get_singleton()->texture_allocated_data(state.shadow_texture, state.shadow_texture_size * data.max_lights_per_render * 2 * 4, "2D shadow atlas texture");
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
@@ -2143,7 +2143,7 @@ void RasterizerCanvasGLES3::set_shadow_texture_size(int p_size) {
 
 	if (p_size > config->max_texture_size) {
 		p_size = config->max_texture_size;
-		WARN_PRINT("Attempting to set CanvasItem shadow atlas size to " + itos(p_size) + " which is beyond limit of " + itos(config->max_texture_size) + "supported by hardware.");
+		WARN_PRINT(vformat("Attempting to set CanvasItem shadow atlas size to %d which is beyond limit of %d supported by hardware.", p_size, config->max_texture_size));
 	}
 
 	if (p_size == state.shadow_texture_size) {

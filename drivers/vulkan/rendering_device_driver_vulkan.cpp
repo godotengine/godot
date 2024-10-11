@@ -597,7 +597,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	for (KeyValue<CharString, bool> &requested_extension : requested_device_extensions) {
 		if (!enabled_device_extension_names.has(requested_extension.key)) {
 			if (requested_extension.value) {
-				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				ERR_FAIL_V_MSG(ERR_BUG, vformat("Required extension %s not found.", String::utf8(requested_extension.key)));
 			} else {
 				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found"));
 			}
@@ -1113,7 +1113,7 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 		allocator_info.flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
 	}
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
-	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateAllocator failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, vformat("vmaCreateAllocator failed with error %d.", err));
 
 	return OK;
 }
@@ -1460,7 +1460,7 @@ VmaPool RenderingDeviceDriverVulkan::_find_or_create_small_allocs_pool(uint32_t 
 	VmaPool pool = VK_NULL_HANDLE;
 	VkResult res = vmaCreatePool(allocator, &pci, &pool);
 	small_allocs_pools[p_mem_type_index] = pool; // Don't try to create it again if failed the first time.
-	ERR_FAIL_COND_V_MSG(res, pool, "vmaCreatePool failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, pool, vformat("vmaCreatePool failed with error %d.", res));
 
 	return pool;
 }
@@ -1516,11 +1516,11 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	VmaAllocationInfo alloc_info = {};
 
 	VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
-	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't create buffer of size: %d error %d.", p_size, err));
 	err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
-	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't allocate memory for buffer of size: %d, error %d.", p_size, err));
 	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
-	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, BufferID(), vformat("Can't bind memory to buffer of size: %d, error %d.", p_size, err));
 
 	// Bookkeep.
 	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
@@ -1544,7 +1544,7 @@ bool RenderingDeviceDriverVulkan::buffer_set_texel_format(BufferID p_buffer, Dat
 	view_create_info.range = buf_info->allocation.size;
 
 	VkResult res = vkCreateBufferView(vk_device, &view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW), &buf_info->vk_view);
-	ERR_FAIL_COND_V_MSG(res, false, "Unable to create buffer view, error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, false, vformat("Unable to create buffer view, error %d.", res));
 
 	return true;
 }
@@ -1570,7 +1570,7 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	void *data_ptr = nullptr;
 	VkResult err = vmaMapMemory(allocator, buf_info->allocation.handle, &data_ptr);
-	ERR_FAIL_COND_V_MSG(err, nullptr, "vmaMapMemory failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, nullptr, vformat("vmaMapMemory failed with error %d.", err));
 	return (uint8_t *)data_ptr;
 }
 
@@ -1742,11 +1742,11 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VmaAllocationInfo alloc_info = {};
 
 	VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("vkCreateImage failed with error %d.", err));
 	err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Can't allocate memory for image, error: %d.", err));
 	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Can't bind memory to image, error: %d.", err));
 
 	// Create view.
 
@@ -1782,7 +1782,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (err) {
 		vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
 		vmaFreeMemory(allocator, allocation);
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("vkCreateImageView failed with error %d.", err));
 	}
 
 	// Bookkeep.
@@ -1824,7 +1824,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
-		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("vkCreateImageView failed with error %d.", err));
 	}
 
 	// Bookkeep.
@@ -1879,7 +1879,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("vkCreateImageView failed with error %d.", err));
 
 	// Bookkeep.
 
@@ -1932,7 +1932,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
 	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("vkCreateImageView failed with error %d.", err));
 
 	// Bookkeep.
 
@@ -2027,7 +2027,7 @@ uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const Tex
 			&data_ptr);
 
 	vmaMapMemory(allocator, tex_info->allocation.handle, &data_ptr);
-	ERR_FAIL_COND_V_MSG(err, nullptr, "vkMapMemory failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, nullptr, vformat("vkMapMemory failed with error %d.", err));
 	return (uint8_t *)data_ptr;
 }
 
@@ -2115,7 +2115,7 @@ RDD::SamplerID RenderingDeviceDriverVulkan::sampler_create(const SamplerState &p
 
 	VkSampler vk_sampler = VK_NULL_HANDLE;
 	VkResult res = vkCreateSampler(vk_device, &sampler_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &vk_sampler);
-	ERR_FAIL_COND_V_MSG(res, SamplerID(), "vkCreateSampler failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, SamplerID(), vformat("vkCreateSampler failed with error %d.", res));
 
 	return SamplerID(vk_sampler);
 }
@@ -2614,7 +2614,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		ERR_FAIL_COND_V_MSG(
 				err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR,
 				FAILED,
-				"QueuePresentKHR failed with error: " + get_vulkan_result(err));
+				vformat("QueuePresentKHR failed with error: %s.", get_vulkan_result(err)));
 	}
 
 	return OK;
@@ -2661,7 +2661,7 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 
 	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
 	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL), &vk_command_pool);
-	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), "vkCreateCommandPool failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, CommandPoolID(), vformat("vkCreateCommandPool failed with error %d.", res));
 
 	CommandPool *command_pool = memnew(CommandPool);
 	command_pool->vk_command_pool = vk_command_pool;
@@ -2696,7 +2696,7 @@ RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandP
 
 	VkCommandBuffer vk_cmd_buffer = VK_NULL_HANDLE;
 	VkResult err = vkAllocateCommandBuffers(vk_device, &cmd_buf_info, &vk_cmd_buffer);
-	ERR_FAIL_COND_V_MSG(err, CommandBufferID(), "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, CommandBufferID(), vformat("vkAllocateCommandBuffers failed with error %d.", err));
 
 	return CommandBufferID(vk_cmd_buffer);
 }
@@ -2709,7 +2709,7 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buf
 	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 	VkResult err = vkBeginCommandBuffer((VkCommandBuffer)p_cmd_buffer.id, &cmd_buf_begin_info);
-	ERR_FAIL_COND_V_MSG(err, false, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, false, vformat("vkBeginCommandBuffer failed with error %d.", err));
 
 	return true;
 }
@@ -2731,7 +2731,7 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID
 	cmd_buf_begin_info.pInheritanceInfo = &inheritance_info;
 
 	VkResult err = vkBeginCommandBuffer((VkCommandBuffer)p_cmd_buffer.id, &cmd_buf_begin_info);
-	ERR_FAIL_COND_V_MSG(err, false, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, false, vformat("vkBeginCommandBuffer failed with error %d.", err));
 
 	return true;
 }
@@ -3020,7 +3020,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			swap_chain->pre_transform_rotation_degrees = 270;
 			break;
 		default:
-			WARN_PRINT("Unexpected swap_create_info.preTransform = " + itos(swap_create_info.preTransform) + ".");
+			WARN_PRINT(vformat("Unexpected swap_create_info.preTransform = %d.", swap_create_info.preTransform));
 			swap_chain->pre_transform_rotation_degrees = 0;
 			break;
 	}
@@ -3267,7 +3267,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 
 	VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
 	VkResult err = vkCreateFramebuffer(vk_device, &framebuffer_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_FRAMEBUFFER), &vk_framebuffer);
-	ERR_FAIL_COND_V_MSG(err, FramebufferID(), "vkCreateFramebuffer failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, FramebufferID(), vformat("vkCreateFramebuffer failed with error %d.", err));
 
 #if PRINT_NATIVE_COMMANDS
 	print_line(vformat("vkCreateFramebuffer 0x%uX with %d attachments", uint64_t(vk_framebuffer), p_attachments.size()));
@@ -3311,7 +3311,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 	}
 
 	ERR_FAIL_COND_V_MSG((uint32_t)shader_refl.uniform_sets.size() > physical_device_properties.limits.maxBoundDescriptorSets, Vector<uint8_t>(),
-			"Number of uniform sets is larger than what is supported by the hardware (" + itos(physical_device_properties.limits.maxBoundDescriptorSets) + ").");
+			vformat("Number of uniform sets is larger than what is supported by the hardware (%d).", physical_device_properties.limits.maxBoundDescriptorSets));
 
 	// Collect reflection data into binary data.
 	ShaderBinary::Data binary_data;
@@ -3368,7 +3368,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		smolv::ByteArray smolv;
 		if (!smolv::Encode(p_spirv[i].spirv.ptr(), p_spirv[i].spirv.size(), smolv, strip_debug ? smolv::kEncodeFlagStripDebugInfo : 0)) {
-			ERR_FAIL_V_MSG(Vector<uint8_t>(), "Error compressing shader stage :" + String(SHADER_STAGE_NAMES[p_spirv[i].shader_stage]));
+			ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("Error compressing shader stage: %s.", String(SHADER_STAGE_NAMES[p_spirv[i].shader_stage])));
 		} else {
 			smolv_size.push_back(smolv.size());
 			{ // zstd.
@@ -3639,7 +3639,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 		uint32_t spirv_size = smolv::GetDecodedBufferSize(src_smolv, smolv_size);
 		spirv.resize(spirv_size);
 		if (!smolv::Decode(src_smolv, smolv_size, spirv.ptrw(), spirv_size)) {
-			ERR_FAIL_V_MSG(ShaderID(), "Malformed smolv input uncompressing shader stage:" + String(SHADER_STAGE_NAMES[stage]));
+			ERR_FAIL_V_MSG(ShaderID(), vformat("Malformed smolv input uncompressing shader stage: %s.", String(SHADER_STAGE_NAMES[stage])));
 		}
 
 		r_shader_desc.stages.set(i, ShaderStage(stage));
@@ -3867,7 +3867,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 	VkDescriptorPool vk_pool = VK_NULL_HANDLE;
 	VkResult res = vkCreateDescriptorPool(vk_device, &descriptor_set_pool_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL), &vk_pool);
 	if (res) {
-		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
+		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, vformat("vkCreateDescriptorPool failed with error %d.", res));
 	}
 
 	// Bookkeep.
@@ -4047,7 +4047,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		vk_writes[i].descriptorCount = num_descriptors;
 
 		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[uniform.type] == MAX_UNIFORM_POOL_ELEMENT, UniformSetID(),
-				"Uniform set reached the limit of bindings for the same type (" + itos(MAX_UNIFORM_POOL_ELEMENT) + ").");
+				vformat("Uniform set reached the limit of bindings for the same type (%d).", MAX_UNIFORM_POOL_ELEMENT));
 		pool_key.uniform_type[uniform.type] += num_descriptors;
 	}
 
@@ -4068,7 +4068,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
 	if (res) {
 		_descriptor_set_pool_unreference(pool_sets_it, vk_pool);
-		ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+		ERR_FAIL_V_MSG(UniformSetID(), vformat("Cannot allocate descriptor sets, error %d.", res));
 	}
 
 	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
@@ -4293,7 +4293,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 
 		VkResult err = vkCreatePipelineCache(vk_device, &cache_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_CACHE), &pipelines_cache.vk_cache);
 		if (err != VK_SUCCESS) {
-			WARN_PRINT("vkCreatePipelinecache failed with error " + itos(err) + ".");
+			WARN_PRINT(vformat("vkCreatePipelinecache failed with error %d.", err));
 			return false;
 		}
 	}
@@ -4318,7 +4318,7 @@ size_t RenderingDeviceDriverVulkan::pipeline_cache_query_size() {
 	// We're letting the cache grow unboundedly. We may want to set at limit and see if implementations use LRU or the like.
 	// If we do, we won't be able to assume any longer that the cache is dirty if, and only if, it has grown.
 	VkResult err = vkGetPipelineCacheData(vk_device, pipelines_cache.vk_cache, &pipelines_cache.current_size, nullptr);
-	ERR_FAIL_COND_V_MSG(err, 0, "vkGetPipelineCacheData failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, 0, vformat("vkGetPipelineCacheData failed with error %d.", err));
 
 	return pipelines_cache.current_size;
 }
@@ -4489,7 +4489,7 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 	VkResult res = _create_render_pass(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
-	ERR_FAIL_COND_V_MSG(res, RenderPassID(), "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, RenderPassID(), vformat("vkCreateRenderPass2KHR failed with error %d.", res));
 
 	return RenderPassID(vk_render_pass);
 }
@@ -4997,7 +4997,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
-	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("vkCreateGraphicsPipelines failed with error %d.", err));
 
 	return PipelineID(vk_pipeline);
 }
@@ -5058,7 +5058,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
-	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateComputePipelines failed with error " + itos(err) + ".");
+	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("vkCreateComputePipelines failed with error %d.", err));
 
 	return PipelineID(vk_pipeline);
 }
@@ -5250,7 +5250,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 	VkResult vkres = device_functions.GetDeviceFaultInfoEXT(vk_device, &fault_counts, nullptr);
 
 	if (vkres != VK_SUCCESS) {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, vformat("vkGetDeviceFaultInfoEXT returned %d when getting fault count, skipping VK_EXT_device_fault report...", vkres));
 		return;
 	}
 
@@ -5267,7 +5267,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 	fault_counts.vendorBinarySize = 0;
 	vkres = device_functions.GetDeviceFaultInfoEXT(vk_device, &fault_counts, &fault_info);
 	if (vkres != VK_SUCCESS) {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, vformat("vkGetDeviceFaultInfoEXT returned %d when getting fault info, skipping VK_EXT_device_fault report...", vkres));
 	} else {
 		err_msg += "** Report from VK_EXT_device_fault **";
 		err_msg += "\nDescription: " + String(fault_info.description);
@@ -5431,7 +5431,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 		vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
 		breadcrumb_ptr = nullptr;
 	} else {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Couldn't map breadcrumb buffer. VkResult = " + itos(map_result));
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, vformat("Couldn't map breadcrumb buffer. VkResult = %d.", map_result));
 	}
 #endif
 	on_device_lost();

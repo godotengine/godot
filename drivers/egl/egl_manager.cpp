@@ -495,7 +495,7 @@ Error EGLManager::initialize(void *p_native_display) {
 	Error err = OK;
 	Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
 	if (da.is_null()) {
-		ERR_PRINT("EGL: Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+		ERR_PRINT(vformat("EGL: Can't create shader cache folder, no shader caching will happen: '%s'.", shader_cache_dir));
 		shader_cache_dir = String();
 	} else {
 		err = da->change_dir(String("shader_cache").path_join("EGL"));
@@ -503,7 +503,7 @@ Error EGLManager::initialize(void *p_native_display) {
 			err = da->make_dir_recursive(String("shader_cache").path_join("EGL"));
 		}
 		if (err != OK) {
-			ERR_PRINT("EGL: Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+			ERR_PRINT(vformat("EGL: Can't create shader cache folder, no shader caching will happen: '%s'.", shader_cache_dir));
 			shader_cache_dir = String();
 		} else {
 			shader_cache_dir = shader_cache_dir.path_join(String("shader_cache").path_join("EGL"));

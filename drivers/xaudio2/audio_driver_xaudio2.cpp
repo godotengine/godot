@@ -72,7 +72,7 @@ Error AudioDriverXAudio2::init() {
 	wave_format.nAvgBytesPerSec = mix_rate * wave_format.nBlockAlign;
 
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
-	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
+	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, vformat("Error creating XAudio2 source voice. Error code: %d.", hr));
 
 	thread.start(AudioDriverXAudio2::thread_func, this);
 
@@ -120,7 +120,7 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 void AudioDriverXAudio2::start() {
 	active.set();
 	HRESULT hr = source_voice->Start(0);
-	ERR_FAIL_COND_MSG(hr != S_OK, "Error starting XAudio2 driver. Error code: " + itos(hr) + ".");
+	ERR_FAIL_COND_MSG(hr != S_OK, vformat("Error starting XAudio2 driver. Error code: %d.", hr));
 }
 
 int AudioDriverXAudio2::get_mix_rate() const {

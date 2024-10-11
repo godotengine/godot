@@ -111,7 +111,7 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		WARN_PRINT("Could not create 3D MSAA framebuffer, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+		WARN_PRINT(vformat("Could not create 3D MSAA framebuffer, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
 
 		glDeleteFramebuffers(1, &new_fbo.fbo);
 
@@ -261,7 +261,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			_clear_intermediate_buffers();
-			WARN_PRINT("Could not create 3D internal buffers, status: " + texture_storage->get_framebuffer_error(status));
+			WARN_PRINT(vformat("Could not create 3D internal buffers, status: %s.", texture_storage->get_framebuffer_error(status)));
 		}
 
 		glBindTexture(texture_target, 0);
@@ -312,7 +312,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
 				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-				WARN_PRINT("Could not create 3D MSAA buffers, status: " + texture_storage->get_framebuffer_error(status));
+				WARN_PRINT(vformat("Could not create 3D MSAA buffers, status: %s.", texture_storage->get_framebuffer_error(status)));
 			}
 
 			glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -358,7 +358,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
 				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-				WARN_PRINT("Could not create 3D MSAA buffers, status: " + texture_storage->get_framebuffer_error(status));
+				WARN_PRINT(vformat("Could not create 3D MSAA buffers, status: %s.", texture_storage->get_framebuffer_error(status)));
 			}
 
 			glBindTexture(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 0);
@@ -387,7 +387,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
 				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-				WARN_PRINT("Could not create 3D MSAA framebuffer, status: " + texture_storage->get_framebuffer_error(status));
+				WARN_PRINT(vformat("Could not create 3D MSAA framebuffer, status: %s.", texture_storage->get_framebuffer_error(status)));
 			}
 
 			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
@@ -534,7 +534,7 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		_clear_back_buffers();
-		WARN_PRINT("Could not create 3D back buffers, status: " + texture_storage->get_framebuffer_error(status));
+		WARN_PRINT(vformat("Could not create 3D back buffers, status: %s.", texture_storage->get_framebuffer_error(status)));
 	}
 
 	glBindTexture(texture_target, 0);
@@ -600,7 +600,7 @@ void RenderSceneBuffersGLES3::check_glow_buffers() {
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("Could not create glow buffers, status: " + texture_storage->get_framebuffer_error(status));
+			WARN_PRINT(vformat("Could not create glow buffers, status: %s.", texture_storage->get_framebuffer_error(status)));
 			_clear_glow_buffers();
 			break;
 		}

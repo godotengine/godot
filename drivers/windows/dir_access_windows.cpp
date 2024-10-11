@@ -190,7 +190,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 	if (FileAccessWindows::is_path_invalid(p_dir)) {
 #ifdef DEBUG_ENABLED
-		WARN_PRINT("The path :" + p_dir + " is a reserved Windows system pipe, so it can't be used for creating directories.");
+		WARN_PRINT(vformat("The path :%s is a reserved Windows system pipe, so it can't be used for creating directories.", p_dir));
 #endif
 		return ERR_INVALID_PARAMETER;
 	}

@@ -681,7 +681,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			}
 		} break;
 		default: {
-			ERR_FAIL_V_MSG(Ref<Image>(), "The image format " + itos(p_format) + " is not supported by the GL Compatibility rendering backend.");
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("The image format %d is not supported by the GL Compatibility rendering backend.", p_format));
 		}
 	}
 
@@ -1530,7 +1530,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	ERR_FAIL_COND(img.is_null());
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {
-			ERR_PRINT("Texture '" + texture->path + "' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.");
+			ERR_PRINT(vformat("Texture '%s' is required to be a power of 2 because it uses either mipmaps or repeat, so it was decompressed. This will hurt performance and memory usage.", texture->path));
 		}
 
 		if (img == p_image) {
@@ -1985,7 +1985,7 @@ void TextureStorage::update_texture_atlas() {
 			texture_atlas.framebuffer = 0;
 			GLES3::Utilities::get_singleton()->texture_free_data(texture_atlas.texture);
 			texture_atlas.texture = 0;
-			WARN_PRINT("Could not create texture atlas, status: " + get_framebuffer_error(status));
+			WARN_PRINT(vformat("Could not create texture atlas, status: %s.", get_framebuffer_error(status)));
 			return;
 		}
 		glViewport(0, 0, texture_atlas.size.width, texture_atlas.size.height);
@@ -2186,7 +2186,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 				texture->tex_id = 0;
 				texture->active = false;
 			}
-			WARN_PRINT("Could not create render target, status: " + get_framebuffer_error(status));
+			WARN_PRINT(vformat("Could not create render target, status: %s.", get_framebuffer_error(status)));
 			return;
 		}
 

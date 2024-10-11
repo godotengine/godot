@@ -575,7 +575,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	}
 
 	int cache_variant_count = static_cast<int>(f->get_32());
-	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
+	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, vformat("Shader cache variant count mismatch, expected %d got %d.", variant_count, cache_variant_count)); //should not happen but check
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
@@ -845,7 +845,7 @@ ShaderGLES3::~ShaderGLES3() {
 	List<RID> remaining;
 	version_owner.get_owned_list(&remaining);
 	if (remaining.size()) {
-		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
+		ERR_PRINT(vformat("%d shaders of type %s were never freed", remaining.size(), name));
 		while (remaining.size()) {
 			version_free(remaining.front()->get());
 			remaining.pop_front();

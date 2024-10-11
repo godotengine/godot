@@ -347,7 +347,7 @@ BitField<FileAccess::UnixPermissionFlags> FileAccessUnix::_get_unix_permissions(
 	if (!err) {
 		return status.st_mode & 0xFFF; //only permissions
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
+		ERR_FAIL_V_MSG(0, vformat("Failed to get unix permissions for: '%s'.", p_file));
 	}
 }
 
@@ -368,7 +368,7 @@ bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
 
 	struct stat st = {};
 	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(err, false, vformat("Failed to get attributes for: '%s'.", p_file));
 
 	return (st.st_flags & UF_HIDDEN);
 #else
@@ -382,14 +382,14 @@ Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden)
 
 	struct stat st = {};
 	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(err, FAILED, vformat("Failed to get attributes for: '%s'.", p_file));
 
 	if (p_hidden) {
 		err = chflags(file.utf8().get_data(), st.st_flags | UF_HIDDEN);
 	} else {
 		err = chflags(file.utf8().get_data(), st.st_flags & ~UF_HIDDEN);
 	}
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(err, FAILED, vformat("Failed to set attributes for: '%s'.", p_file));
 	return OK;
 #else
 	return ERR_UNAVAILABLE;
@@ -402,7 +402,7 @@ bool FileAccessUnix::_get_read_only_attribute(const String &p_file) {
 
 	struct stat st = {};
 	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(err, false, vformat("Failed to get attributes for: '%s'.", p_file));
 
 	return st.st_flags & UF_IMMUTABLE;
 #else
@@ -416,14 +416,14 @@ Error FileAccessUnix::_set_read_only_attribute(const String &p_file, bool p_ro) 
 
 	struct stat st = {};
 	int err = stat(file.utf8().get_data(), &st);
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to get attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(err, FAILED, vformat("Failed to get attributes for: '%s'.", p_file));
 
 	if (p_ro) {
 		err = chflags(file.utf8().get_data(), st.st_flags | UF_IMMUTABLE);
 	} else {
 		err = chflags(file.utf8().get_data(), st.st_flags & ~UF_IMMUTABLE);
 	}
-	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
+	ERR_FAIL_COND_V_MSG(err, FAILED, vformat("Failed to set attributes for: '%s'.", p_file));
 	return OK;
 #else
 	return ERR_UNAVAILABLE;

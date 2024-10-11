@@ -69,10 +69,10 @@ Error MIDIDriverWinMidi::open() {
 		} else {
 			char err[256];
 			midiInGetErrorText(open_res, err, 256);
-			ERR_PRINT("midiInOpen error: " + String(err));
+			ERR_PRINT(vformat("midiInOpen error: %s.", String(err)));
 
 			if (caps_res == MMSYSERR_NOERROR) {
-				ERR_PRINT("Can't open MIDI device \"" + String(caps.szPname) + "\", is it being used by another application?");
+				ERR_PRINT(vformat(R"(Can't open MIDI device "%s", is it being used by another application?)", String(caps.szPname)));
 			}
 		}
 	}

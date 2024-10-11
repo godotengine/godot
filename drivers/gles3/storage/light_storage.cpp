@@ -916,7 +916,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 				// Validate framebuffer
 				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 				if (status != GL_FRAMEBUFFER_COMPLETE) {
-					WARN_PRINT("Could not create reflections framebuffer, status: " + texture_storage->get_framebuffer_error(status));
+					WARN_PRINT(vformat("Could not create reflections framebuffer, status: %s.", texture_storage->get_framebuffer_error(status)));
 				}
 
 				atlas->reflections.write[i].fbos[side] = fbo;
@@ -1502,7 +1502,7 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 #ifdef DEBUG_ENABLED
 				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 				if (status != GL_FRAMEBUFFER_COMPLETE) {
-					ERR_PRINT("Could not create omni light shadow framebuffer, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+					ERR_PRINT(vformat("Could not create omni light shadow framebuffer, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
 				}
 #endif
 				glBindTexture(GL_TEXTURE_CUBE_MAP, 0);

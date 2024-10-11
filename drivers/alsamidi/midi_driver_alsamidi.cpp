@@ -49,7 +49,7 @@ void MIDIDriverALSAMidi::InputConnection::read() {
 
 		if (read_count < 0) {
 			if (read_count != -EAGAIN) {
-				ERR_PRINT("snd_rawmidi_read error: " + String(snd_strerror(read_count)));
+				ERR_PRINT(vformat("snd_rawmidi_read error: %s.", String(snd_strerror(read_count))));
 			}
 		} else {
 			for (int i = 0; i < read_count; i++) {

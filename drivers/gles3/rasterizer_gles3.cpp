@@ -332,14 +332,14 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
 		if (da.is_null()) {
-			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+			ERR_PRINT(vformat("Can't create shader cache folder, no shader caching will happen: '%s'.", shader_cache_dir));
 		} else {
 			Error err = da->change_dir("shader_cache");
 			if (err != OK) {
 				err = da->make_dir("shader_cache");
 			}
 			if (err != OK) {
-				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
+				ERR_PRINT(vformat("Can't create shader cache folder, no shader caching will happen: '%s'.", shader_cache_dir));
 			} else {
 				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
 

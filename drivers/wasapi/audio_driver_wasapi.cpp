@@ -312,7 +312,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		audioProps.eCategory = AudioCategory_GameEffects;
 
 		hr = ((IAudioClient3 *)p_device->audio_client)->SetClientProperties(&audioProps);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: SetClientProperties failed with error 0x" + String::num_uint64(hr, 16) + ".");
+		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, vformat("WASAPI: SetClientProperties failed with error 0x%s.", String::num_uint64(hr, 16)));
 	}
 
 	hr = p_device->audio_client->GetMixFormat(&pwfex);
@@ -376,7 +376,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
 		}
 		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
+		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, vformat("WASAPI: Initialize failed with error 0x%s.", String::num_uint64(hr, 16)));
 		UINT32 max_frames;
 		hr = p_device->audio_client->GetBufferSize(&max_frames);
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -399,7 +399,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		// AUDCLNT_STREAMFLAGS_RATEADJUST is an invalid flag with IAudioClient3, therefore we have to use
 		// the closest supported mix rate supported by the audio driver.
 		mix_rate = pwfex->nSamplesPerSec;
-		print_verbose("WASAPI: mix_rate = " + itos(mix_rate));
+		print_verbose(vformat("WASAPI: mix_rate = %d.", mix_rate));
 
 		UINT32 default_period_frames, fundamental_period_frames, min_period_frames, max_period_frames;
 		hr = device_audio_client_3->GetSharedModeEnginePeriod(
@@ -409,7 +409,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 				&min_period_frames,
 				&max_period_frames);
 		if (hr != S_OK) {
-			print_verbose("WASAPI: GetSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
+			print_verbose(vformat("WASAPI: GetSharedModeEnginePeriod failed with error 0x%s, falling back to IAudioClient.", String::num_uint64(hr, 16)));
 			CoTaskMemFree(pwfex);
 			return audio_device_init(p_device, p_input, p_reinit, true);
 		}
@@ -484,7 +484,7 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 			break;
 
 		default:
-			WARN_PRINT("WASAPI: Unsupported number of channels: " + itos(audio_output.channels));
+			WARN_PRINT(vformat("WASAPI: Unsupported number of channels: %d.", audio_output.channels));
 			channels = 2;
 			break;
 	}

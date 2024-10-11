@@ -3956,7 +3956,7 @@ TypedArray<Image> RasterizerSceneGLES3::bake_render_uv2(RID p_base, const TypedA
 		GLES3::Utilities::get_singleton()->texture_free_data(emission_tex);
 		GLES3::Utilities::get_singleton()->texture_free_data(depth_tex);
 
-		WARN_PRINT("Could not create render target, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+		WARN_PRINT(vformat("Could not create render target, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
 		return TypedArray<Image>();
 	}
 

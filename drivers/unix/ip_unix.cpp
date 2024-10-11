@@ -150,7 +150,7 @@ void IPUnix::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces)
 			continue; // will go back and alloc the right size
 		}
 
-		ERR_FAIL_MSG("Call to GetAdaptersAddresses failed with error " + itos(err) + ".");
+		ERR_FAIL_MSG(vformat("Call to GetAdaptersAddresses failed with error %d.", err));
 	}
 
 	IP_ADAPTER_ADDRESSES *adapter = addrs;

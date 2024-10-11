@@ -484,7 +484,7 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 	for (KeyValue<CharString, bool> &requested_extension : requested_instance_extensions) {
 		if (!enabled_instance_extension_names.has(requested_extension.key)) {
 			if (requested_extension.value) {
-				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				ERR_FAIL_V_MSG(ERR_BUG, vformat("Required extension %s not found.", String::utf8(requested_extension.key)));
 			} else {
 				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			}

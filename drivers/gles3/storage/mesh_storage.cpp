@@ -176,18 +176,18 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		}
 
 		int expected_size = stride * p_surface.vertex_count;
-		ERR_FAIL_COND_MSG(expected_size != p_surface.vertex_data.size(), "Size of vertex data provided (" + itos(p_surface.vertex_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+		ERR_FAIL_COND_MSG(expected_size != p_surface.vertex_data.size(), vformat("Size of vertex data provided (%d) does not match expected (%d).", p_surface.vertex_data.size(), expected_size));
 
 		int bs_expected_size = expected_size * mesh->blend_shape_count;
 
-		ERR_FAIL_COND_MSG(bs_expected_size != p_surface.blend_shape_data.size(), "Size of blend shape data provided (" + itos(p_surface.blend_shape_data.size()) + ") does not match expected (" + itos(bs_expected_size) + ")");
+		ERR_FAIL_COND_MSG(bs_expected_size != p_surface.blend_shape_data.size(), vformat("Size of blend shape data provided (%d) does not match expected (%d).", p_surface.blend_shape_data.size(), bs_expected_size));
 
 		int expected_attrib_size = attrib_stride * p_surface.vertex_count;
-		ERR_FAIL_COND_MSG(expected_attrib_size != p_surface.attribute_data.size(), "Size of attribute data provided (" + itos(p_surface.attribute_data.size()) + ") does not match expected (" + itos(expected_attrib_size) + ")");
+		ERR_FAIL_COND_MSG(expected_attrib_size != p_surface.attribute_data.size(), vformat("Size of attribute data provided (%d) does not match expected (%d).", p_surface.attribute_data.size(), expected_attrib_size));
 
 		if ((p_surface.format & RS::ARRAY_FORMAT_WEIGHTS) && (p_surface.format & RS::ARRAY_FORMAT_BONES)) {
 			expected_size = skin_stride * p_surface.vertex_count;
-			ERR_FAIL_COND_MSG(expected_size != p_surface.skin_data.size(), "Size of skin data provided (" + itos(p_surface.skin_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+			ERR_FAIL_COND_MSG(expected_size != p_surface.skin_data.size(), vformat("Size of skin data provided (%d) does not match expected (%d).", p_surface.skin_data.size(), expected_size));
 		}
 	}
 
@@ -197,7 +197,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	RS::SurfaceData new_surface = p_surface;
 #ifdef DISABLE_DEPRECATED
 
-	ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION, "Surface version provided (" + itos(int(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT)) + ") does not match current version (" + itos(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) + ")");
+	ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION, vformat("Surface version provided (%d) does not match current version (%d).", int(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT), RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT));
 
 #else
 
@@ -2076,7 +2076,7 @@ int MeshStorage::_multimesh_get_visible_instances(RID p_multimesh) const {
 
 MeshStorage::MultiMeshInterpolator *MeshStorage::_multimesh_get_interpolator(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
-	ERR_FAIL_NULL_V_MSG(multimesh, nullptr, "Multimesh not found: " + itos(p_multimesh.get_id()));
+	ERR_FAIL_NULL_V_MSG(multimesh, nullptr, vformat("Multimesh not found: %d.", p_multimesh.get_id()));
 
 	return &multimesh->interpolator;
 }
