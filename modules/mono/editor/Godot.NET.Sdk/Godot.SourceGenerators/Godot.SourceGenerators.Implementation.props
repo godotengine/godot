@@ -1,6 +1,0 @@
-<Project>
-    <Import Project="Godot.SourceGenerators.props"/>
-    <PropertyGroup>
-        <DisableImplicitGodotGeneratorReferences>true</DisableImplicitGodotGeneratorReferences>
-    </PropertyGroup>
-</Project>
