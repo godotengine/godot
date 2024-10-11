@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -13,6 +14,16 @@ public static class GeneratorInvoker
 {
     public static void RunAll(IGeneratorExecutionContext context, CancellationToken cancellationToken)
     {
+        Parallel.Invoke(
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount - 1, CancellationToken = cancellationToken
+            },
+            GetGeneratorInstances().Select(g => (Action)(() => g.Execute(context))).ToArray());
+    }
+
+    public static IEnumerable<IGeneratorImplementation> GetGeneratorInstances()
+    {
         Type[] types;
         try
         {
@@ -25,22 +36,10 @@ public static class GeneratorInvoker
 
         var implementations = types
             .Where(t => typeof(IGeneratorImplementation).IsAssignableFrom(t));
-        var iGeneratorImplementations = implementations
+        var generators = implementations
             .Where(t => t is { IsAbstract: false, IsInterface: false })
-            .Select(t => (IGeneratorImplementation)t.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>()));
-        var generators = iGeneratorImplementations
+            .Select(t => (IGeneratorImplementation)t.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>()))
             .ToArray();
-
-        if (generators.Length == 0)
-        {
-            throw new InvalidOperationException("Did not find any generators to run.");
-        }
-
-        Parallel.Invoke(
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount - 1, CancellationToken = cancellationToken
-            },
-            generators.Select(g => (Action)(() => g.Execute(context))).ToArray());
+        return generators;
     }
 }
