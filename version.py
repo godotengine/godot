@@ -7,3 +7,7 @@ status = "rc"
 module_config = ""
 website = "https://redotengine.org"
 docs = "4.3"
+godot_major = 4
+godot_minor = 3
+godot_patch = 1
+godot_status = "dev"
