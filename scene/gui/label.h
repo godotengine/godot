@@ -91,11 +91,16 @@ private:
 		int font_shadow_outline_size;
 	} theme_cache;
 
+	void _ensure_shaped() const;
 	void _update_visible();
 	void _shape();
 	void _invalidate();
 
 protected:
+	RID get_line_rid(int p_line) const;
+	Rect2 get_line_rect(int p_line) const;
+	void get_layout_data(Vector2 &r_offset, int &r_line_limit, int &r_line_spacing) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
