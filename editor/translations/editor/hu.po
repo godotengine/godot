@@ -1,4 +1,5 @@
-# Hungarian translation of the Godot Engine editor interface.
+# Hungarian translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -39,7 +40,7 @@
 # TheFocusDev <thefocusdev@protonmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-07-30 16:40+0000\n"
@@ -1217,11 +1218,11 @@ msgstr "Nem sikerült létrehozni a mappát."
 msgid "Create Folder"
 msgstr "Mappa Létrehozása"
 
-msgid "Thanks from the Godot community!"
-msgstr "Köszönet a Godot közösségétől!"
+msgid "Thanks from the Redot community!"
+msgstr "Köszönet a Redot közösségétől!"
 
-msgid "Godot Engine contributors"
-msgstr "Godot Engine közreműködők"
+msgid "Redot Engine contributors"
+msgstr "Redot Engine közreműködők"
 
 msgid "Project Founders"
 msgstr "Projekt Alapítói"
@@ -1254,12 +1255,12 @@ msgid "Third-party Licenses"
 msgstr "Harmadik féltől származó licencek"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"A Godot Engine több harmadik fél ingyenes és nyílt forráskódú könyvtáraira "
+"A Redot Engine több harmadik fél ingyenes és nyílt forráskódú könyvtáraira "
 "támaszkodik, amelyek mindegyike kompatibilis az MIT licenc feltételeivel. Az "
 "alábbiakban felsoroljuk az összes ilyen harmadik fél összetevőjét, a "
 "vonatkozó szerzői jogi nyilatkozatokkal és licencfeltételekkel együtt."
@@ -1569,8 +1570,8 @@ msgstr "Exportálás"
 msgid "New profile name:"
 msgstr "Új profilnév:"
 
-msgid "Godot Feature Profile"
-msgstr "Godot funkcióprofil"
+msgid "Redot Feature Profile"
+msgstr "Redot funkcióprofil"
 
 msgid "Import Profile(s)"
 msgstr "Profil(ok) importálása"
@@ -2266,8 +2267,8 @@ msgstr "Eltávolítás"
 msgid "Select Template File"
 msgstr "Válasszon sablonfájlt"
 
-msgid "Godot Export Templates"
-msgstr "Godot export sablonok"
+msgid "Redot Export Templates"
+msgstr "Redot export sablonok"
 
 msgid "Exporting All"
 msgstr "Összes exportálása"
@@ -3828,8 +3829,8 @@ msgstr "Téma Mentése Másként..."
 msgid "Online Docs"
 msgstr "Online Dokumentáció"
 
-msgid "Open Godot online documentation."
-msgstr "Godot online dokumentáció megnyitása."
+msgid "Open Redot online documentation."
+msgstr "Redot online dokumentáció megnyitása."
 
 msgid "Find Next"
 msgstr "Következő Keresése"

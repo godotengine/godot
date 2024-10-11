@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -87,7 +89,7 @@ void SurfaceUpgradeTool::_show_popup() {
 
 	// These messages are supposed to be translated as they are critical to users migrating their projects.
 
-	const String confirmation_message = TTR("This project uses meshes with an outdated mesh format from previous Godot versions. The engine needs to update the format in order to use those meshes. Please use the 'Upgrade Mesh Surfaces' tool from the 'Project > Tools' menu. You can ignore this message and keep using outdated meshes, but keep in mind that this leads to increased load times every time you load the project.");
+	const String confirmation_message = TTR("This project uses meshes with an outdated mesh format from previous Redot versions. The engine needs to update the format in order to use those meshes. Please use the 'Upgrade Mesh Surfaces' tool from the 'Project > Tools' menu. You can ignore this message and keep using outdated meshes, but keep in mind that this leads to increased load times every time you load the project.");
 	EditorNode::get_log()->add_message(confirmation_message, EditorLog::MSG_TYPE_WARNING);
 
 	const String toast_message = TTR("This project uses meshes with an outdated mesh format. Check the output log.");
@@ -179,7 +181,7 @@ SurfaceUpgradeTool::~SurfaceUpgradeTool() {
 }
 
 void SurfaceUpgradeDialog::popup_on_demand() {
-	const String confirmation_message = TTR("The mesh format has changed in Godot 4.2, which affects both imported meshes and meshes authored inside of Godot. The engine needs to update the format in order to use those meshes.\n\nIf your project predates Godot 4.2 and contains meshes, we recommend you run this one time conversion tool. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Godot.\n\nYou can still use your existing meshes as is. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
+	const String confirmation_message = TTR("The mesh format has changed in Redot 4.2, which affects both imported meshes and meshes authored inside of Redot. The engine needs to update the format in order to use those meshes.\n\nIf your project predates Redot 4.2 and contains meshes, we recommend you run this one time conversion tool. This update will restart the editor and may take several minutes. Upgrading will make the meshes incompatible with previous versions of Redot.\n\nYou can still use your existing meshes as is. The engine will update each mesh in memory, but the update will not be saved. Choosing this option will lead to slower load times every time this project is loaded.");
 	set_text(confirmation_message);
 	get_ok_button()->set_text(TTR("Restart & Upgrade"));
 

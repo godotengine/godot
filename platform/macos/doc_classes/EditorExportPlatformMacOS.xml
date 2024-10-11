@@ -7,7 +7,7 @@
 	</description>
 	<tutorials>
 		<link title="Exporting for macOS">$DOCS_URL/tutorials/export/exporting_for_macos.html</link>
-		<link title="Running Godot apps on macOS">$DOCS_URL/tutorials//export/running_on_macos.html</link>
+		<link title="Running Redot apps on macOS">$DOCS_URL/tutorials//export/running_on_macos.html</link>
 	</tutorials>
 	<members>
 		<member name="application/additional_plist_content" type="String" setter="" getter="">

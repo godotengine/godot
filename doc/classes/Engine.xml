@@ -34,7 +34,8 @@
 		<method name="get_author_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the engine author information as a [Dictionary], where each entry is an [Array] of strings with the names of notable contributors to the Godot Engine: [code]lead_developers[/code], [code]founders[/code], [code]project_managers[/code], and [code]developers[/code].
+				Returns the engine author information as a [Dictionary], where each entry is an [Array] of strings with the names of notable contributors to the Redot Engine: [code]lead_developers[/code], [code]founders[/code], [code]project_managers[/code], and [code]developers[/code].
+				See also [method get_godot_author_info] for Godot's author info.
 			</description>
 		</method>
 		<method name="get_copyright_info" qualifiers="const">
@@ -52,6 +53,8 @@
 			<description>
 				Returns a [Dictionary] of categorized donor names. Each entry is an [Array] of strings:
 				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
+				See also [method get_godot_donor_info] for Godot's donor info.
+				[b]Warning:[/b] All donor names are empty. This currently maintained for compatibility with Godot.
 			</description>
 		</method>
 		<method name="get_frames_drawn">
@@ -65,6 +68,54 @@
 			<return type="float" />
 			<description>
 				Returns the average frames rendered every second (FPS), also known as the framerate.
+			</description>
+		</method>
+		<method name="get_godot_author_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the engine author information for Godot as a [Dictionary], where each entry is an [Array] of strings with the names of notable contributors to the Godot Engine: [code]lead_developers[/code], [code]founders[/code], [code]project_managers[/code], and [code]developers[/code].
+				See also [method get_author_info] for Redot's author info.
+			</description>
+		</method>
+		<method name="get_godot_compatible_version_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the current engine minimal version compatibility info in relation to Godot as a [Dictionary] containing the following entries:
+				- [code]major[/code] - Major version number as an int;
+				- [code]minor[/code] - Minor version number as an int;
+				- [code]patch[/code] - Patch version number as an int;
+				- [code]hex[/code] - Full version encoded as a hexadecimal int with one byte (2 hex digits) per number (see example below);
+				- [code]status[/code] - Status (such as "beta", "rc1", "rc2", "stable", etc.) as a String;
+				- [code]string[/code] - [code]major[/code], [code]minor[/code], [code]patch[/code], and [code]status[/code] in a single String.
+				The [code]hex[/code] value is encoded as follows, from left to right: one byte for the major, one byte for the minor, one byte for the patch version. For example, "3.1.12" would be [code]0x03010C[/code].
+				[b]Note:[/b] The [code]hex[/code] value is still an [int] internally, and printing it will give you its decimal representation, which is not particularly meaningful. Use hexadecimal literals for quick version comparisons from code:
+				[codeblocks]
+				[gdscript]
+				if Engine.get_version_info().hex &gt;= 0x040100:
+				    pass # Do things specific to version 4.1 or later.
+				else:
+				    pass # Do things specific to versions before 4.1.
+				[/gdscript]
+				[csharp]
+				if ((int)Engine.GetVersionInfo()["hex"] &gt;= 0x040100)
+				{
+				    // Do things specific to version 4.1 or later.
+				}
+				else
+				{
+				    // Do things specific to versions before 4.1.
+				}
+				[/csharp]
+				[/codeblocks]
+				See also [method get_version_info] for Redot's version info.
+			</description>
+		</method>
+		<method name="get_godot_donor_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] of categorized donor names for Godot. Each entry is an [Array] of strings:
+				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
+				See also [method get_donor_info] for Redot's donor info.
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
@@ -202,6 +253,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				See also [method get_godot_compatible_version_info] for Redot's minimal compatibility version info.
 			</description>
 		</method>
 		<method name="get_write_movie_path" qualifiers="const">

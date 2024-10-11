@@ -4,7 +4,7 @@
 # This file is distributed under the same license as the Godot source code.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine extractable strings\n"
+"Project-Id-Version: Redot Engine extractable strings\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "PO-Revision-Date: 2023-09-16 22:13+0000\n"
 "Last-Translator: Andrea Toska <toskaandrea@gmail.com>\n"

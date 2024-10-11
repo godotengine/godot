@@ -15,7 +15,7 @@ partial class Methods
     }
     /// <summary>
     /// Get the method information for all the methods declared in this class.
-    /// This method is used by Godot to register the available methods in the editor.
+    /// This method is used by Redot to register the available methods in the editor.
     /// Do not call this method.
     /// </summary>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]

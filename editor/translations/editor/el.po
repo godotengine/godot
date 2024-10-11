@@ -1,4 +1,5 @@
-# Greek translation of the Godot Engine editor interface.
+# Greek translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -32,7 +33,7 @@
 # "Anthony V." <anthonyv156@outlook.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-09-09 10:11+0000\n"
@@ -1467,11 +1468,11 @@ msgstr "Δημιουργία νέου φακέλου στο %s:"
 msgid "Create Folder"
 msgstr "Δημιουργία φακέλου"
 
-msgid "Thanks from the Godot community!"
-msgstr "Ευχαριστίες από την κοινότητα της Godot!"
+msgid "Thanks from the Redot community!"
+msgstr "Ευχαριστίες από την κοινότητα της Redot!"
 
-msgid "Godot Engine contributors"
-msgstr "Συνεισφέροντες στην Godot Engine"
+msgid "Redot Engine contributors"
+msgstr "Συνεισφέροντες στην Redot Engine"
 
 msgid "Project Founders"
 msgstr "Ιδρυτές του έργου"
@@ -1504,12 +1505,12 @@ msgid "Third-party Licenses"
 msgstr "Άδειες τρίτων κατασκευαστών"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Η μηχανή Godot βασίζεται σε μια σειρά από δωρεάν και ανοιχτού κώδικα "
+"Η μηχανή Redot βασίζεται σε μια σειρά από δωρεάν και ανοιχτού κώδικα "
 "βιβλιοθήκες τρίτων κατασκευαστών, όλες συμβατές με τους όρους της άδειας MIT. "
 "Ακολουθεί μία εκτενής λίστα με όλα τα σχετικά συστατικά της μηχανής μαζί με "
 "όλες τις αντοίστοιχες δηλώσεις προστασίας πνευματικών δικαιωμάτων και τους "
@@ -1843,8 +1844,8 @@ msgstr "Επιπλέον Επιλογές:"
 msgid "New profile name:"
 msgstr "Νέο όνομα προφίλ:"
 
-msgid "Godot Feature Profile"
-msgstr "Προφίλ Χαρακτηριστικών του Godot"
+msgid "Redot Feature Profile"
+msgstr "Προφίλ Χαρακτηριστικών του Redot"
 
 msgid "Import Profile(s)"
 msgstr "Εισαγωγή Προφίλ"
@@ -2461,8 +2462,8 @@ msgstr "Αναφορά Σφάλματος"
 msgid "Send Docs Feedback"
 msgstr "Αποστολή Σχολίων Τεκμηρίωσης"
 
-msgid "Support Godot Development"
-msgstr "Υποστηρίξτε την ανάπτυξη του Godot"
+msgid "Support Redot Development"
+msgstr "Υποστηρίξτε την ανάπτυξη του Redot"
 
 msgid "Update Continuously"
 msgstr "Συνεχόμενη Ανανέωση"
@@ -2785,8 +2786,8 @@ msgstr "Τα επίσημα πρότυπα εξαγωγής δεν είναι δ
 msgid "Select Template File"
 msgstr "Επιλογή Αρχείου Προτύπων"
 
-msgid "Godot Export Templates"
-msgstr "Προτύπων Εξαγωγής Godot"
+msgid "Redot Export Templates"
+msgstr "Προτύπων Εξαγωγής Redot"
 
 msgid "Runnable"
 msgstr "Εκτελέσιμο"
@@ -5032,8 +5033,8 @@ msgstr "Αποθήκευση θέματος ως..."
 msgid "Online Docs"
 msgstr "Ηλεκτρονική τεκμηρίωση"
 
-msgid "Open Godot online documentation."
-msgstr "Άνοιγμα ηλεκτρονικής τεκμηρίωσης της Godot."
+msgid "Open Redot online documentation."
+msgstr "Άνοιγμα ηλεκτρονικής τεκμηρίωσης της Redot."
 
 msgid "%s Class Reference"
 msgstr "Αναφορά Κλάσης %s"
@@ -6135,11 +6136,11 @@ msgstr ""
 "«x» και «y»."
 
 msgid ""
-"Custom Godot Shader Language expression, with custom amount of input and "
+"Custom Redot Shader Language expression, with custom amount of input and "
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
-"Προσαρμοσμένη έκφραση γλώσσας σκίασης της Godot, με προσαρμοσμένο αριθμό "
+"Προσαρμοσμένη έκφραση γλώσσας σκίασης της Redot, με προσαρμοσμένο αριθμό "
 "εισόδων και εξόδων. Αυτό είναι μία άμεση παρεμβολή κώδικα στην συνάρτηση "
 "κορυφής/τμήματος/φωτός, μην γράψετε μέσα ορισμούς συναρτήσεων."
 

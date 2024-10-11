@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-/* This configuration file is custom written for Godot.
+/* This configuration file is custom written for Redot.
  * When updating the library, generate it with CMake upstream and compare
  * the contents to see if new options should be backported here.
  */

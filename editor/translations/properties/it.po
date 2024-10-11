@@ -1,4 +1,5 @@
 # Italian translation of the Godot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -90,7 +91,7 @@
 # Stefano siser <stefano.siser@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-09-10 14:09+0000\n"
@@ -3496,8 +3497,8 @@ msgstr "Articolazioni"
 msgid "Roots"
 msgstr "Radici"
 
-msgid "Godot Bone Node"
-msgstr "Nodo d'osso di Godot"
+msgid "Redot Bone Node"
+msgstr "Nodo d'osso di Redot"
 
 msgid "Skin Root"
 msgstr "Radice della Skin"
@@ -3505,8 +3506,8 @@ msgstr "Radice della Skin"
 msgid "Non Joints"
 msgstr "Non articolazioni"
 
-msgid "Godot Skin"
-msgstr "Skin Godot"
+msgid "Redot Skin"
+msgstr "Skin Redot"
 
 msgid "Src Image"
 msgstr "Immagine sorgente"

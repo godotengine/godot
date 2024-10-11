@@ -376,7 +376,7 @@ def main():
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser(description="Builds all Godot .NET solutions")
+    parser = argparse.ArgumentParser(description="Builds all Redot .NET solutions")
     parser.add_argument("--godot-output-dir", type=str, required=True)
     parser.add_argument(
         "--dev-debug",

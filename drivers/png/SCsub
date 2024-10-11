@@ -61,7 +61,7 @@ if env["builtin_libpng"]:
     env.drivers_sources += thirdparty_obj
 
 
-# Godot source files
+# Redot source files
 
 driver_obj = []
 

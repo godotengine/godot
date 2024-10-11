@@ -1,0 +1,17 @@
+diff a/COPYRIGHT.txt b/COPYRIGHT.txt	(rejected hunks)
+@@ -84,6 +86,7 @@ Files: ./modules/godot_physics_3d/gjk_epa.cpp
+  ./modules/godot_physics_3d/godot_shape_3d.h
+ Comment: Bullet Continuous Collision Detection and Physics Library
+ Copyright: 2003-2008, Erwin Coumans
++ 2024-present, Redot Engine contributors
+  2014-present, Godot Engine contributors
+  2007-2014, Juan Linietsky, Ariel Manzur
+ License: Expat and Zlib
+@@ -97,6 +100,7 @@ Files: ./modules/godot_physics_3d/joints/godot_cone_twist_joint_3d.cpp
+  ./modules/godot_physics_3d/joints/godot_cone_twist_joint_3d.h
+ Comment: Bullet Continuous Collision Detection and Physics Library
+ Copyright: 2007, Starbreeze Studios
++ 2024-present, Redot Engine contributors
+  2014-present, Godot Engine contributors
+  2007-2014, Juan Linietsky, Ariel Manzur
+ License: Expat and Zlib

@@ -1,0 +1,24 @@
+diff a/editor/export/project_export.cpp b/editor/export/project_export.cpp	(rejected hunks)
+@@ -1551,7 +1553,7 @@ ProjectExportDialog::ProjectExportDialog() {
+ 	patch_vb->add_margin_child(TTR("Base Packs:"), patches, true);
+ 
+ 	patch_dialog = memnew(EditorFileDialog);
+-	patch_dialog->add_filter("*.pck", TTR("Godot Project Pack"));
++	patch_dialog->add_filter("*.pck", TTR("Redot Project Pack"));
+ 	patch_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+ 	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+ 	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_file_selected));
+@@ -1670,11 +1672,11 @@ ProjectExportDialog::ProjectExportDialog() {
+ 
+ 	set_cancel_button_text(TTR("Close"));
+ 	set_ok_button_text(TTR("Export PCK/ZIP..."));
+-	get_ok_button()->set_tooltip_text(TTR("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
++	get_ok_button()->set_tooltip_text(TTR("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Redot executable."));
+ 	get_ok_button()->set_disabled(true);
+ 
+ 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+-	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
++	export_button->set_tooltip_text(TTR("Export the project as a playable build (Redot executable and project data) for the selected preset."));
+ 	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
+ 	// Disable initially before we select a valid preset
+ 	export_button->set_disabled(true);

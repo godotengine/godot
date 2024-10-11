@@ -53,7 +53,7 @@ env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 env.drivers_sources += thirdparty_obj
 
 
-# Godot source files
+# Redot source files
 
 driver_obj = []
 

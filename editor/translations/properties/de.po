@@ -1,4 +1,5 @@
 # German translation of the Godot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -106,7 +107,7 @@
 # tct123 <tct1234@protonmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-07-30 16:40+0000\n"
@@ -3643,8 +3644,8 @@ msgstr "Gelenke"
 msgid "Roots"
 msgstr "Wurzeln"
 
-msgid "Godot Bone Node"
-msgstr "Godot Knochen-Node"
+msgid "Redot Bone Node"
+msgstr "Redot Knochen-Node"
 
 msgid "Skin Root"
 msgstr "Skin-Wurzel"
@@ -3655,8 +3656,8 @@ msgstr "Gelenkoriginal"
 msgid "Non Joints"
 msgstr "Nicht-Gelenke"
 
-msgid "Godot Skin"
-msgstr "Godot-Skin"
+msgid "Redot Skin"
+msgstr "Redot-Skin"
 
 msgid "Src Image"
 msgstr "Quellbild"

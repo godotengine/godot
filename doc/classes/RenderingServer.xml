@@ -1594,7 +1594,7 @@
 		<method name="get_video_adapter_api_version" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the version of the graphics video adapter [i]currently in use[/i] (e.g. "1.2.189" for Vulkan, "3.3.0 NVIDIA 510.60.02" for OpenGL). This version may be different from the actual latest version supported by the hardware, as Godot may not always request the latest version. See also [method OS.get_video_adapter_driver_info].
+				Returns the version of the graphics video adapter [i]currently in use[/i] (e.g. "1.2.189" for Vulkan, "3.3.0 NVIDIA 510.60.02" for OpenGL). This version may be different from the actual latest version supported by the hardware, as Redot may not always request the latest version. See also [method OS.get_video_adapter_driver_info].
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
 			</description>
 		</method>
@@ -1701,7 +1701,7 @@
 				Returns [code]true[/code] if changes have been made to the RenderingServer's data. [method force_draw] is usually called if this happens.
 			</description>
 		</method>
-		<method name="has_feature" qualifiers="const" deprecated="This method has not been used since Godot 3.0.">
+		<method name="has_feature" qualifiers="const" deprecated="This method has not been used since Redot 3.0.">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="RenderingServer.Features" />
 			<description>
@@ -3419,7 +3419,7 @@
 				Creates a 2-dimensional texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				[b]Note:[/b] The equivalent resource is [Texture2D].
-				[b]Note:[/b] Not to be confused with [method RenderingDevice.texture_create], which creates the graphics API's own texture type as opposed to the Godot-specific [Texture2D] resource.
+				[b]Note:[/b] Not to be confused with [method RenderingDevice.texture_create], which creates the graphics API's own texture type as opposed to the Redot-specific [Texture2D] resource.
 			</description>
 		</method>
 		<method name="texture_2d_get" qualifiers="const">
@@ -3545,14 +3545,14 @@
 				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
-		<method name="texture_proxy_create" deprecated="ProxyTexture was removed in Godot 4.">
+		<method name="texture_proxy_create" deprecated="ProxyTexture was removed in Redot 4.">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
 				This method does nothing and always returns an invalid [RID].
 			</description>
 		</method>
-		<method name="texture_proxy_update" deprecated="ProxyTexture was removed in Godot 4.">
+		<method name="texture_proxy_update" deprecated="ProxyTexture was removed in Redot 4.">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
@@ -5128,7 +5128,7 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant ENV_TONE_MAPPER_REINHARD] and [constant ENV_TONE_MAPPER_FILMIC].
-			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
+			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Redot 3.x.
 		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.

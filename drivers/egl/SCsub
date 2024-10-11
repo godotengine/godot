@@ -2,5 +2,5 @@
 
 Import("env")
 
-# Godot source files
+# Redot source files
 env.add_source_files(env.drivers_sources, "*.cpp")

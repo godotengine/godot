@@ -1,0 +1,10 @@
+diff a/core/object/script_language.h b/core/object/script_language.h	(rejected hunks)
+@@ -112,7 +114,7 @@ class Script : public Resource {
+ 	OBJ_SAVE_TYPE(Script);
+ 
+ protected:
+-	// Scripts are reloaded via the Script Editor when edited in Godot,
++	// Scripts are reloaded via the Script Editor when edited in Redot,
+ 	// the LSP server when edited in a connected external editor, or
+ 	// through EditorFileSystem::_update_script_documentation when updated directly on disk.
+ 	virtual bool editor_can_reload_from_file() override { return false; }

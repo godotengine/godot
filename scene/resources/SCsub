@@ -13,7 +13,7 @@ env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.scene_sources += thirdparty_obj
 
-# Godot source files
+# Redot source files
 
 scene_obj = []
 

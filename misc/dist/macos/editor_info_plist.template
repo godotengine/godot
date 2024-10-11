@@ -5,13 +5,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Godot</string>
+	<string>Redot</string>
 	<key>CFBundleName</key>
-	<string>Godot</string>
+	<string>Redot</string>
 	<key>CFBundleIconFile</key>
-	<string>Godot.icns</string>
+	<string>Redot.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.godotengine.godot</string>
+	<string>org.redotengine.redot</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$short_version</string>
 	<key>CFBundleSignature</key>
-	<string>godot</string>
+	<string>redot</string>
 	<key>CFBundleVersion</key>
 	<string>$version</string>
 	<key>NSMicrophoneUsageDescription</key>
@@ -29,7 +29,7 @@
 	<key>NSRequiresAquaSystemAppearance</key>
 	<false/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-present Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
+	<string>© 2007-present Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors &amp; Redot Engine contributors</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
@@ -73,6 +73,18 @@
 				<string>public.godot</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.redot</string>
+			</array>
+			<key>NSExportableTypes</key>
+			<array>
+				<string>public.redot</string>
+			</array>
+		</dict>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
@@ -82,7 +94,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Engine scene</string>
+			<string>Redot Engine scene</string>
 			<key>UTTypeIconFile</key>
 			<string>Scene.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -130,7 +142,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Engine resource</string>
+			<string>Redot Engine resource</string>
 			<key>UTTypeIconFile</key>
 			<string>Resource.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -154,7 +166,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Engine shader</string>
+			<string>Redot Engine shader</string>
 			<key>UTTypeIconFile</key>
 			<string>Shader.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -189,6 +201,29 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>godot</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-godot-project</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.redot</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeDescription</key>
+			<string>Redot Engine project</string>
+			<key>UTTypeIconFile</key>
+			<string>Project.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>redot</string>
 				</array>
 				<key>public.mime-type</key>
 				<string>application/x-godot-project</string>

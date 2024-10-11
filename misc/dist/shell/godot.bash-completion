@@ -109,7 +109,7 @@ _complete_godot_bash() {
   else
     local IFS=$'\n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -f -X "!*.@(scn|tscn|escn|godot)" -- "$cur"))
+    COMPREPLY=($(compgen -f -X "!*.@(scn|tscn|escn|godot|redot)" -- "$cur"))
   fi
 
   # If the array is accessed out of bounds (which will happen for the first argument),

@@ -8,7 +8,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine extractable strings\n"
+"Project-Id-Version: Redot Engine extractable strings\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"

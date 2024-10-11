@@ -1,4 +1,5 @@
 # Georgian translation of the Godot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -9,7 +10,7 @@
 # Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-08-03 08:09+0000\n"
@@ -2241,8 +2242,8 @@ msgstr "მსუბუქი"
 msgid "Joints"
 msgstr "შეერთებები"
 
-msgid "Godot Bone Node"
-msgstr "Godot ძვლის კვანძი"
+msgid "Redot Bone Node"
+msgstr "Redot ძვლის კვანძი"
 
 msgid "Mag Filter"
 msgstr "მაქს ფილტრი"

@@ -210,7 +210,7 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols relative (if supported)", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
-opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
+opts.Add(BoolVariable("production", "Set defaults to build Redot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
 
 # Components
@@ -241,7 +241,7 @@ opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
-opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
+opts.Add("vsproj_name", "Name of the Visual Studio solution", "redot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
@@ -340,24 +340,24 @@ if env["platform"] == "":
 
 if env["platform"] == "osx":
     # Deprecated alias kept for compatibility.
-    print_warning('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
+    print_warning('Platform "osx" has been renamed to "macos" in Redot 4. Building for platform "macos".')
     env["platform"] = "macos"
 
 if env["platform"] == "iphone":
     # Deprecated alias kept for compatibility.
-    print_warning('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
+    print_warning('Platform "iphone" has been renamed to "ios" in Redot 4. Building for platform "ios".')
     env["platform"] = "ios"
 
 if env["platform"] in ["linux", "bsd", "x11"]:
     if env["platform"] == "x11":
         # Deprecated alias kept for compatibility.
-        print_warning('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
+        print_warning('Platform "x11" has been renamed to "linuxbsd" in Redot 4. Building for platform "linuxbsd".')
     # Alias for convenience.
     env["platform"] = "linuxbsd"
 
 if env["platform"] == "javascript":
     # Deprecated alias kept for compatibility.
-    print_warning('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
+    print_warning('Platform "javascript" has been renamed to "web" in Redot 4. Building for platform "web".')
     env["platform"] = "web"
 
 if env["platform"] not in platform_list:

@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -164,9 +166,12 @@ public:
 #endif
 
 	Dictionary get_version_info() const;
+	Dictionary get_godot_compatible_version_info() const;
 	Dictionary get_author_info() const;
+	Dictionary get_godot_author_info() const;
 	TypedArray<Dictionary> get_copyright_info() const;
 	Dictionary get_donor_info() const;
+	Dictionary get_godot_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;
 

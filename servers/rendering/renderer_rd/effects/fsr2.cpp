@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -543,7 +545,7 @@ FSR2Effect::FSR2Effect() {
 	Vector<String> modes;
 	modes.push_back("");
 
-	// Since Godot currently lacks a shader reflection mechanism to persist the name of the bindings in the shader cache and
+	// Since Redot currently lacks a shader reflection mechanism to persist the name of the bindings in the shader cache and
 	// there's also no mechanism to compile the shaders offline, the bindings are created manually by looking at the GLSL
 	// files included in FSR2 and mapping the macro bindings (#define FSR2_BIND_*) to their respective implementation names.
 	//

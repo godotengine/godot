@@ -25,14 +25,14 @@ for file in sys.argv[1:]:
             if sline == "":  # Skip empty lines at the top.
                 continue
 
-            if sline.startswith("/**********"):  # Godot header starts this way.
+            if sline.startswith("/**********"):  # Redot header starts this way.
                 header_start = idx
             else:
-                HEADER_CHECK_OFFSET = 0  # There is no Godot header.
+                HEADER_CHECK_OFFSET = 0  # There is no Redot header.
                 break
         else:
-            if not sline.startswith("*") and not sline.startswith("/*"):  # Not in the Godot header anymore.
-                HEADER_CHECK_OFFSET = idx + 1  # The include should be two lines below the Godot header.
+            if not sline.startswith("*") and not sline.startswith("/*"):  # Not in the Redot header anymore.
+                HEADER_CHECK_OFFSET = idx + 1  # The include should be two lines below the Redot header.
                 break
 
     if HEADER_CHECK_OFFSET < 0:

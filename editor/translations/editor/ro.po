@@ -1,4 +1,5 @@
-# Romanian translation of the Godot Engine editor interface.
+# Romanian translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -32,7 +33,7 @@
 # Vasile Milea <milea.vasile959@gmail.com>, 2023.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-02-10 09:01+0000\n"
@@ -902,11 +903,11 @@ msgstr "Directorul nu a putut fi creat."
 msgid "Create Folder"
 msgstr "Creare folder"
 
-msgid "Thanks from the Godot community!"
-msgstr "Mulțumesc din partea comunităţii Godot!"
+msgid "Thanks from the Redot community!"
+msgstr "Mulțumesc din partea comunităţii Redot!"
 
-msgid "Godot Engine contributors"
-msgstr "Contribuabili Motor Godot"
+msgid "Redot Engine contributors"
+msgstr "Contribuabili Motor Redot"
 
 msgid "Project Founders"
 msgstr "Fondatorii Proiectului"
@@ -943,12 +944,12 @@ msgid "Third-party Licenses"
 msgstr "Licenţe Thirdparty"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Motorul Godot se bazează pe un număr de biblioteci thirdparty gratis și "
+"Motorul Redot se bazează pe un număr de biblioteci thirdparty gratis și "
 "opensource, toate compatibile cu termenii licenţei MIT ai lui. Mai jos este o "
 "listă exhaustivă a tuturor acestor componente de thirdparty cu declaraţiile "
 "de autor respective şi termenii licenței."
@@ -1272,7 +1273,7 @@ msgstr ""
 msgid "New profile name:"
 msgstr "Nume de profil nou:"
 
-msgid "Godot Feature Profile"
+msgid "Redot Feature Profile"
 msgstr "Administrează Șabloanele de Export"
 
 msgid "Import Profile(s)"
@@ -1917,8 +1918,8 @@ msgstr "Dezinstalează"
 msgid "Download from:"
 msgstr "Descărcați din:"
 
-msgid "Godot Export Templates"
-msgstr "Șabloane de export Godot"
+msgid "Redot Export Templates"
+msgstr "Șabloane de export Redot"
 
 msgid "Duplicate"
 msgstr "Duplicat"
@@ -3211,8 +3212,8 @@ msgstr "Eroare la importare"
 msgid "Online Docs"
 msgstr "Documentație Online"
 
-msgid "Open Godot online documentation."
-msgstr "Deschideți documentația online Godot."
+msgid "Open Redot online documentation."
+msgstr "Deschideți documentația online Redot."
 
 msgid "File"
 msgstr "Fișier"

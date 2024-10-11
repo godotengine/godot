@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -1005,7 +1007,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "\n";
 		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
 
-		// Godot detects when the COLLIDED keyword is used. If it's used anywhere in the shader then Godot will generate the screen space SDF for collisions.
+		// Redot detects when the COLLIDED keyword is used. If it's used anywhere in the shader then Redot will generate the screen space SDF for collisions.
 		// We don't need it as long as collision is disabled. Refer to GH-83744 for more info.
 		if (collision_mode == COLLISION_RIGID) {
 			code += "	if (!COLLIDED) {\n";

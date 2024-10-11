@@ -272,7 +272,7 @@ def generate_scu_files(max_includes_per_scu):
 
     # check we are running from the correct folder
     if folder_not_found("core") or folder_not_found("platform") or folder_not_found("scene"):
-        raise RuntimeError("scu_builders.py must be run from the godot folder.")
+        raise RuntimeError("scu_builders.py must be run from the redot folder.")
         return
 
     process_folder(["core"])

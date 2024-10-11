@@ -1,4 +1,5 @@
-# Norwegian Bokmål translation of the Godot Engine editor interface.
+# Norwegian Bokmål translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -28,7 +29,7 @@
 # Fragment Ventures <lasse@fragmentventures.com>, 2023.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2023-11-06 00:35+0000\n"
@@ -1047,11 +1048,11 @@ msgstr "Kunne ikke opprette mappe."
 msgid "Create Folder"
 msgstr "Opprett mappe"
 
-msgid "Thanks from the Godot community!"
-msgstr "Takk fra Godot-samfunnet!"
+msgid "Thanks from the Redot community!"
+msgstr "Takk fra Redot-samfunnet!"
 
-msgid "Godot Engine contributors"
-msgstr "Godot Engine sine bidragsytere"
+msgid "Redot Engine contributors"
+msgstr "Redot Engine sine bidragsytere"
 
 msgid "Project Founders"
 msgstr "Prosjektgrunnleggere"

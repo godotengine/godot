@@ -211,7 +211,7 @@ namespace GodotTools.Ides
             {
                 if (!IsAnyConnected(identity))
                 {
-                    _logger.LogError("Cannot write request. No client connected to the Godot Ide Server.");
+                    _logger.LogError("Cannot write request. No client connected to the Redot Ide Server.");
                     return;
                 }
 

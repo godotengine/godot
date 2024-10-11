@@ -1,4 +1,5 @@
-# Russian translation of the Godot Engine properties.
+# Russian translation of the Redot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -178,7 +179,7 @@
 # Olesya_Gerasimenko <gammaray@basealt.ru>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-08-08 16:10+0000\n"
@@ -3727,8 +3728,8 @@ msgstr "Суставы"
 msgid "Roots"
 msgstr "Корни"
 
-msgid "Godot Bone Node"
-msgstr "Узел кости Godot"
+msgid "Redot Bone Node"
+msgstr "Узел кости Redot"
 
 msgid "Skin Root"
 msgstr "Корень скина"
@@ -3739,8 +3740,8 @@ msgstr "Суставы (оригинал)"
 msgid "Non Joints"
 msgstr "Не суставы"
 
-msgid "Godot Skin"
-msgstr "Скин Godot"
+msgid "Redot Skin"
+msgstr "Скин Redot"
 
 msgid "Src Image"
 msgstr "Исходное изображение"

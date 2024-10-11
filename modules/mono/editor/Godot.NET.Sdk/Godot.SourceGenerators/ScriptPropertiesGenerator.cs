@@ -243,7 +243,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
-                    .Append("    /// This method is used by Godot to register the available properties in the editor.\n")
+                    .Append("    /// This method is used by Redot to register the available properties in the editor.\n")
                     .Append("    /// Do not call this method.\n")
                     .Append("    /// </summary>\n");
 

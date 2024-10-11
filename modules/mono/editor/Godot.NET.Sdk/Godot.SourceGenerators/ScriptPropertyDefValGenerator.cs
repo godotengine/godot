@@ -352,7 +352,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the default values for all properties declared in this class.\n")
-                    .Append("    /// This method is used by Godot to determine the value that will be\n")
+                    .Append("    /// This method is used by Redot to determine the value that will be\n")
                     .Append("    /// used by the inspector when resetting properties.\n")
                     .Append("    /// Do not call this method.\n")
                     .Append("    /// </summary>\n");

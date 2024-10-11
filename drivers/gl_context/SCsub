@@ -25,5 +25,5 @@ if env["platform"] in ["macos", "windows", "linuxbsd"]:
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.drivers_sources, thirdparty_sources)
 
-# Godot source files
+# Redot source files
 env.add_source_files(env.drivers_sources, "*.cpp")

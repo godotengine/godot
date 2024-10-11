@@ -17,7 +17,7 @@ if sys.platform == "win32":
     mode = c_int(mode.value | 4)
     windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
-# Base Godot dependencies path
+# Base Redot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
 deps_folder = os.getenv("LOCALAPPDATA")
 if deps_folder:
@@ -124,4 +124,4 @@ print(f"DirectX 12 Agility SDK {agility_sdk_version} installed successfully.\n")
 
 # Complete message
 print(f'\x1b[92mAll Direct3D 12 SDK components were installed to "{deps_folder}" successfully!\x1b[0m')
-print('\x1b[92mYou can now build Godot with Direct3D 12 support enabled by running "scons d3d12=yes".\x1b[0m')
+print('\x1b[92mYou can now build Redot with Direct3D 12 support enabled by running "scons d3d12=yes".\x1b[0m')

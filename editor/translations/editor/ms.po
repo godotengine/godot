@@ -1,4 +1,5 @@
-# Malay translation of the Godot Engine editor interface.
+# Malay translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -15,7 +16,7 @@
 # ghakindye vv <ghaffur2013@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-03-01 21:04+0000\n"
@@ -1343,11 +1344,11 @@ msgstr "Tidak dapat mencipta folder."
 msgid "Create Folder"
 msgstr "Cipta Folder"
 
-msgid "Thanks from the Godot community!"
-msgstr "Terima kasih dari komuniti Godot!"
+msgid "Thanks from the Redot community!"
+msgstr "Terima kasih dari komuniti Redot!"
 
-msgid "Godot Engine contributors"
-msgstr "Penyumbang Enjin Godot"
+msgid "Redot Engine contributors"
+msgstr "Penyumbang Enjin Redot"
 
 msgid "Project Founders"
 msgstr "Pengasas Projek"
@@ -1380,12 +1381,12 @@ msgid "Third-party Licenses"
 msgstr "Lesen Pihak Ketiga"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Enjin Godot bergantung kepada beberapa perpustakaan sumber terbuka dan bebas "
+"Enjin Redot bergantung kepada beberapa perpustakaan sumber terbuka dan bebas "
 "pihak ketiga, semuanya serasi dengan syarat-syarat lesen MITnya. Berikut "
 "adalah senarai lengkap semua komponen pihak ketiga tersebut dengan pernyataan "
 "hak cipta dan syarat lesen masing-masing."
@@ -1742,8 +1743,8 @@ msgstr ""
 msgid "New profile name:"
 msgstr "Nama profil baru:"
 
-msgid "Godot Feature Profile"
-msgstr "Profil Ciri Godot"
+msgid "Redot Feature Profile"
+msgstr "Profil Ciri Redot"
 
 msgid "Import Profile(s)"
 msgstr "Import Profil"
@@ -2291,8 +2292,8 @@ msgstr "Cadangkan Ciri"
 msgid "Send Docs Feedback"
 msgstr "Hantar Maklum Balas Dokumen"
 
-msgid "Support Godot Development"
-msgstr "Sokong Pembangunan Godot"
+msgid "Support Redot Development"
+msgstr "Sokong Pembangunan Redot"
 
 msgid "Update Continuously"
 msgstr "Kemas Kini Secara Berterusan"
@@ -2656,8 +2657,8 @@ msgstr "Nyahpasang Templat"
 msgid "Select Template File"
 msgstr "Pilih Fail Templat"
 
-msgid "Godot Export Templates"
-msgstr "Templat Eksport Godot"
+msgid "Redot Export Templates"
+msgstr "Templat Eksport Redot"
 
 msgid ""
 "The templates will continue to download.\n"

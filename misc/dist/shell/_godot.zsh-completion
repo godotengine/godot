@@ -1,6 +1,6 @@
 #compdef godot
 
-# zsh completion for the Godot editor
+# zsh completion for the Redot editor
 # To use it, install this file as `_godot` in a directory specified in your
 # `fpath` environment variable then restart your shell.
 #
@@ -26,7 +26,7 @@
 # SOFTWARE.
 
 _arguments \
-  "1::path to scene or 'project.godot' file:_files" \
+  "1::path to scene or 'project.godot' or 'project.redot' file:_files" \
   '(-h --help)'{-h,--help}'[display the full help message]' \
   '--version[display the version string]' \
   '(-v --verbose)'{-v,--verbose}'[use verbose stdout mode]' \
@@ -86,11 +86,11 @@ _arguments \
   '--export-pack[export the project data only as a PCK or ZIP file using the given preset and output path]:export preset name then path' \
   '--convert-3to4[converts project from Godot 3.x to Godot 4.x]' \
   '--validate-conversion-3to4[shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x]' \
-  '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory (optional):_dirs' \
+  '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Redot build directory (optional):_dirs' \
   '--no-docbase[disallow dumping the base types (used with --doctool)]' \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
   '--dump-gdextension-interface[generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.]' \
-  '--dump-extension-api[generate JSON dump of the Godot API for GDExtension bindings named "extension_api.json" in the current folder]' \
+  '--dump-extension-api[generate JSON dump of the Redot API for GDExtension bindings named "extension_api.json" in the current folder]' \
   '--benchmark[benchmark the run time and print it to console]' \
   '--benchmark-file[benchmark the run time and save it to a given file in JSON format]:path to output JSON file' \
   '--test[run all unit tests; run with "--test --help" for more information]'

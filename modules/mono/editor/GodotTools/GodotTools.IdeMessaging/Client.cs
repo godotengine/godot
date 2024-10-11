@@ -282,18 +282,18 @@ namespace GodotTools.IdeMessaging
 
             try
             {
-                logger.LogInfo("Connecting to Godot Ide Server");
+                logger.LogInfo("Connecting to Redot Ide Server");
 
                 await tcpClient.ConnectAsync(IPAddress.Loopback, godotIdeMetadata.Port);
 
-                logger.LogInfo("Connection open with Godot Ide Server");
+                logger.LogInfo("Connection open with Redot Ide Server");
 
                 await AcceptClient(tcpClient);
             }
             catch (SocketException e)
             {
                 if (e.SocketErrorCode == SocketError.ConnectionRefused)
-                    logger.LogError("The connection to the Godot Ide Server was refused");
+                    logger.LogError("The connection to the Redot Ide Server was refused");
                 else
                     throw;
             }
@@ -317,7 +317,7 @@ namespace GodotTools.IdeMessaging
 
                 if (!File.Exists(MetaFilePath))
                 {
-                    logger.LogInfo("There is no Godot Ide Server running");
+                    logger.LogInfo("There is no Redot Ide Server running");
                     return;
                 }
 
@@ -330,7 +330,7 @@ namespace GodotTools.IdeMessaging
                 }
                 else
                 {
-                    logger.LogError("Failed to read Godot Ide metadata file");
+                    logger.LogError("Failed to read Redot Ide metadata file");
                 }
             }
         }
@@ -340,7 +340,7 @@ namespace GodotTools.IdeMessaging
         {
             if (!IsConnected)
             {
-                logger.LogError("Cannot write request. Not connected to the Godot Ide Server.");
+                logger.LogError("Cannot write request. Not connected to the Redot Ide Server.");
                 return null;
             }
 
@@ -353,7 +353,7 @@ namespace GodotTools.IdeMessaging
         {
             if (!IsConnected)
             {
-                logger.LogError("Cannot write request. Not connected to the Godot Ide Server.");
+                logger.LogError("Cannot write request. Not connected to the Redot Ide Server.");
                 return null;
             }
 

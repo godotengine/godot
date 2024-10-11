@@ -151,7 +151,7 @@ env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
 env.drivers_sources += thirdparty_obj
 
 
-# Godot source files.
+# Redot source files.
 
 driver_obj = []
 env_d3d12_rdd.add_source_files(driver_obj, "*.cpp")

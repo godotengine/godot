@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -176,7 +178,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 }
 
 EditorAbout::EditorAbout() {
-	set_title(TTR("Thanks from the Godot community!"));
+	set_title(TTR("Thanks from the Redot community!"));
 	set_hide_on_ok(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -221,7 +223,8 @@ EditorAbout::EditorAbout() {
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(
-			String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
+			String::utf8("\xc2\xa9 2024-present ") + TTR("Redot Engine contributors") + "." +
+			String::utf8("\n\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
 			String::utf8("\n\xc2\xa9 2007-2014 Juan Linietsky, Ariel Manzur.\n"));
 	version_info_vbc->add_child(about_text);
 
@@ -243,14 +246,30 @@ EditorAbout::EditorAbout() {
 	dev_sections.push_back(TTR("Project Manager", "Job Title"));
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = {
+		REDOT_AUTHORS_FOUNDERS,
+		REDOT_AUTHORS_LEAD_DEVELOPERS,
+		REDOT_AUTHORS_PROJECT_MANAGERS,
+		REDOT_AUTHORS_DEVELOPERS,
+	};
+	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 0b1)); // First section (Project Founders) is always one column.
+
+	// Godot Authors.
+
+	List<String> godot_dev_sections;
+	godot_dev_sections.push_back(TTR("Project Founders"));
+	godot_dev_sections.push_back(TTR("Lead Developer"));
+	// TRANSLATORS: This refers to a job title.
+	godot_dev_sections.push_back(TTR("Project Manager", "Job Title"));
+	godot_dev_sections.push_back(TTR("Developers"));
+	const char *const *godot_dev_src[] = {
 		AUTHORS_FOUNDERS,
 		AUTHORS_LEAD_DEVELOPERS,
 		AUTHORS_PROJECT_MANAGERS,
 		AUTHORS_DEVELOPERS,
 	};
-	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 0b1)); // First section (Project Founders) is always one column.
+	tc->add_child(_populate_list(TTR("Godot Authors"), godot_dev_sections, godot_dev_src, 0b1)); // First section (Project Founders) is always one column.
 
-	// Donors.
+	// Godot Donors.
 
 	List<String> donor_sections;
 	donor_sections.push_back(TTR("Patrons"));
@@ -271,7 +290,7 @@ EditorAbout::EditorAbout() {
 		DONORS_MEMBERS_PLATINUM,
 		DONORS_MEMBERS_GOLD,
 	};
-	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 0b1, true)); // First section (Patron) is one column.
+	tc->add_child(_populate_list(TTR("Godot Donors"), donor_sections, donor_src, 0b1, true)); // First section (Patron) is one column.
 
 	// License.
 
@@ -293,7 +312,7 @@ EditorAbout::EditorAbout() {
 	Label *tpl_label = memnew(Label);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
+	tpl_label->set_text(TTR("Redot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
 	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 

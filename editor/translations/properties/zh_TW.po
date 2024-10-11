@@ -1,4 +1,5 @@
-# Chinese (Taiwan) translation of the Godot Engine properties.
+# Chinese (Taiwan) translation of the Redot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -50,7 +51,7 @@
 # Chang-Chia Tseng <pswo10680@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-02-12 23:45+0000\n"
@@ -3115,8 +3116,8 @@ msgstr "關節"
 msgid "Roots"
 msgstr "根"
 
-msgid "Godot Bone Node"
-msgstr "Godot 骨骼節點"
+msgid "Redot Bone Node"
+msgstr "Redot 骨骼節點"
 
 msgid "Skin Root"
 msgstr "蒙皮根"
@@ -3127,8 +3128,8 @@ msgstr "原關節"
 msgid "Non Joints"
 msgstr "非關節"
 
-msgid "Godot Skin"
-msgstr "Godot 外觀"
+msgid "Redot Skin"
+msgstr "Redot 外觀"
 
 msgid "Src Image"
 msgstr "來源圖像"

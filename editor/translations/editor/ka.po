@@ -1,4 +1,5 @@
-# Georgian translation of the Godot Engine editor interface.
+# Georgian translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -9,7 +10,7 @@
 # Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-08-14 12:59+0000\n"
@@ -1091,11 +1092,11 @@ msgstr "საქაღალდის შექმნა"
 msgid "Folder name is valid."
 msgstr "საქაღალდის სახელი სწორია."
 
-msgid "Thanks from the Godot community!"
-msgstr "მადლობა Godot საზოგადოებისგან!"
+msgid "Thanks from the Redot community!"
+msgstr "მადლობა Redot საზოგადოებისგან!"
 
-msgid "Godot Engine contributors"
-msgstr "Godot ძრავის ხელშემწყობები"
+msgid "Redot Engine contributors"
+msgstr "Redot ძრავის ხელშემწყობები"
 
 msgid "Project Founders"
 msgstr "პროექტის დამფუძნებლები"

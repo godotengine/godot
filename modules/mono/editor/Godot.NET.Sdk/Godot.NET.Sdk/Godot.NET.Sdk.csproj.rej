@@ -1,0 +1,12 @@
+diff a/modules/mono/editor/Godot.NET.Sdk/Godot.NET.Sdk/Godot.NET.Sdk.csproj b/modules/mono/editor/Godot.NET.Sdk/Godot.NET.Sdk/Godot.NET.Sdk.csproj	(rejected hunks)
+@@ -3,8 +3,8 @@
+     <TargetFramework>netstandard2.0</TargetFramework>
+     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+ 
+-    <Description>MSBuild .NET Sdk for Godot projects.</Description>
+-    <Authors>Godot Engine contributors</Authors>
++    <Description>MSBuild .NET Sdk for Redot  projects.</Description>
++    <Authors>Redot  Engine contributors</Authors>
+ 
+     <PackageId>Godot.NET.Sdk</PackageId>
+     <Version>4.4.0</Version>

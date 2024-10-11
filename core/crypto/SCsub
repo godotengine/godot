@@ -53,7 +53,7 @@ elif is_builtin:
     # Needed to force rebuilding the core files when the configuration file is updated.
     thirdparty_obj = ["#thirdparty/mbedtls/include/godot_module_mbedtls_config.h"]
 
-# Godot source files
+# Redot source files
 
 core_obj = []
 

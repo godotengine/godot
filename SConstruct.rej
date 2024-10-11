@@ -1,0 +1,32 @@
+diff a/SConstruct b/SConstruct	(rejected hunks)
+@@ -653,7 +653,7 @@ elif methods.using_gcc(env):
+     if cc_version_major < 9:
+         print_error(
+             "Detected GCC version older than 9, which does not fully support "
+-            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
++            "C++17, or has bugs when compiling Redot. Supported versions are 9 "
+             "and later. Use a newer GCC version, or Clang 6 or later by passing "
+             '"use_llvm=yes" to the SCons command line.'
+         )
+@@ -706,18 +706,18 @@ elif env.msvc:
+     if cc_version_major == 16 and cc_version_minor < 11:
+         print_error(
+             "Detected Visual Studio 2019 version older than 16.11, which has bugs "
+-            "when compiling Godot. Use a newer VS2019 version, or VS2022."
++            "when compiling Redot. Use a newer VS2019 version, or VS2022."
+         )
+         Exit(255)
+     if cc_version_major == 15 and cc_version_minor < 9:
+         print_error(
+             "Detected Visual Studio 2017 version older than 15.9, which has bugs "
+-            "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
++            "when compiling Redot. Use a newer VS2017 version, or VS2019/VS2022."
+         )
+         Exit(255)
+     if cc_version_major < 15:
+         print_error(
+-            "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
++            "Detected Visual Studio 2015 or earlier, which is unsupported in Redot. "
+             "Supported versions are Visual Studio 2017 and later."
+         )
+         Exit(255)

@@ -1,0 +1,39 @@
+diff a/.github/workflows/windows_builds.yml b/.github/workflows/windows_builds.yml	(rejected hunks)
+@@ -29,7 +29,19 @@ jobs:
+             tests: true
+             # Skip debug symbols, they're way too big with MSVC.
+             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
+-            bin: ./bin/godot.windows.editor.x86_64.exe
++            bin: ./bin/redot.windows.editor.x86_64.exe
++            artifact: true
++
++          - name: Editor w/ Mono (target=editor)
++            cache-name: windows-editor-mono
++            target: editor
++            sconsflags: module_mono_enabled=yes
++            bin: ./bin/redot.windows.editor.x86_64.mono.exe
++            build-mono: true
++            tests: false # Disabled due freeze caused by mix Mono build and CI
++            doc-test: true
++            proj-conv: true
++            api-compat: true
+             artifact: true
+ 
+           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
+@@ -37,14 +49,14 @@ jobs:
+             target: editor
+             tests: true
+             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
+-            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
++            bin: ./bin/redot.windows.editor.x86_64.llvm.exe
+ 
+           - name: Template (target=template_release, tests=yes)
+             cache-name: windows-template
+             target: template_release
+             tests: true
+             sconsflags: debug_symbols=no
+-            bin: ./bin/godot.windows.template_release.x86_64.console.exe
++            bin: ./bin/redot.windows.template_release.x86_64.console.exe
+             artifact: true
+ 
+     steps:

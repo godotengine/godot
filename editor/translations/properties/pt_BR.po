@@ -1,4 +1,5 @@
-# Portuguese (Brazil) translation of the Godot Engine properties.
+# Portuguese (Brazil) translation of the Redot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -167,7 +168,7 @@
 # Marcia Perez <cristianemarcia50@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
 "PO-Revision-Date: 2024-05-28 16:22+0000\n"
@@ -3061,8 +3062,8 @@ msgstr "Pontos"
 msgid "Roots"
 msgstr "Raízes"
 
-msgid "Godot Bone Node"
-msgstr "Nó de Osso Godot"
+msgid "Redot Bone Node"
+msgstr "Nó de Osso Redot"
 
 msgid "Skin Root"
 msgstr "Raiz da Skin"
@@ -3073,8 +3074,8 @@ msgstr "Pontos Originais"
 msgid "Non Joints"
 msgstr "Não-Juntas"
 
-msgid "Godot Skin"
-msgstr "Skin Godot"
+msgid "Redot Skin"
+msgstr "Skin Redot"
 
 msgid "Src Image"
 msgstr "Imagem fonte"

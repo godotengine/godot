@@ -1,4 +1,5 @@
-# Galician translation of the Godot Engine editor interface.
+# Galician translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -16,7 +17,7 @@
 # "Aquiles T. M." <aquiles.sonido@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "PO-Revision-Date: 2024-09-05 14:09+0000\n"
 "Last-Translator: \"Aquiles T. M.\" <aquiles.sonido@gmail.com>\n"
@@ -1622,14 +1623,14 @@ msgstr "O nome do cartafol é válido."
 msgid "Double-click to open in browser."
 msgstr "Dobre-clic para abrir no navegador."
 
-msgid "Thanks from the Godot community!"
-msgstr "Moitas grazas de parte da comunidade de Godot!"
+msgid "Thanks from the Redot community!"
+msgstr "Moitas grazas de parte da comunidade de Redot!"
 
 msgid "(unknown)"
 msgstr "(descoñecido)"
 
-msgid "Godot Engine contributors"
-msgstr "Colaboradores de Godot Engine"
+msgid "Redot Engine contributors"
+msgstr "Colaboradores de Redot Engine"
 
 msgid "Project Founders"
 msgstr "Fundadores do Proxecto"
@@ -1669,12 +1670,12 @@ msgid "Third-party Licenses"
 msgstr "Licenzas de Terceiros"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Godot Engine depende dun número de bibliotecas de terceiros, gratis e open "
+"Redot Engine depende dun número de bibliotecas de terceiros, gratis e open "
 "source; todas compatibles cos termos da licenza MIT. A seguinte e unha lista "
 "exhaustiva dos devanditos compoñentes de terceiros, coas suas respectivas "
 "declaracións de copyright e termos de licenza."
@@ -2083,14 +2084,14 @@ msgstr "Opcions adicionais:"
 msgid "New profile name:"
 msgstr "Novo nome de perfil:"
 
-msgid "Godot Feature Profile"
-msgstr "Perfil de Características de Godot"
+msgid "Redot Feature Profile"
+msgstr "Perfil de Características de Redot"
 
 msgid "Import Profile(s)"
 msgstr "Importar Perf(il/ís)"
 
 msgid "Manage Editor Feature Profiles"
-msgstr "Administrar Perfils de Características de Godot"
+msgstr "Administrar Perfils de Características de Redot"
 
 msgid "Restart"
 msgstr "Reiniciar"
@@ -4242,8 +4243,8 @@ msgstr "Erro ao gardar"
 msgid "Online Docs"
 msgstr "Documentación En Liña"
 
-msgid "Open Godot online documentation."
-msgstr "Abrir a documentación en liña de Godot."
+msgid "Open Redot online documentation."
+msgstr "Abrir a documentación en liña de Redot."
 
 msgid "Find Next"
 msgstr "Atopar Seguinte"
@@ -4668,24 +4669,24 @@ msgid "Are you sure to run %d projects at once?"
 msgstr "Seguro que queres executar %d proxectos ao mesmo tempo?"
 
 msgid ""
-"The selected project \"%s\" does not specify its supported Godot version in "
+"The selected project \"%s\" does not specify its supported Redot version in "
 "its configuration file (\"project.godot\").\n"
 "\n"
 "Project path: %s\n"
 "\n"
-"If you proceed with opening it, it will be converted to Godot's current "
+"If you proceed with opening it, it will be converted to Redot's current "
 "configuration file format.\n"
 "\n"
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"O proxecto seleccionado \"%s\" non especifica a súa versión de Godot "
+"O proxecto seleccionado \"%s\" non especifica a súa versión de Redot "
 "compatible no seu ficheiro de configuración (\"project.godot\").\n"
 "\n"
 "Ruta do proxecto: %s\n"
 "\n"
 "Se continúa coa súa apertura, converterase ao formato de ficheiro de "
-"configuración actual de Godot.\n"
+"configuración actual de Redot.\n"
 "\n"
 "Aviso: xa non poderás abrir o proxecto con versións anteriores do motor."
 

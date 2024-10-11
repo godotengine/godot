@@ -1,4 +1,5 @@
 # Japanese translation of the Godot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -56,7 +57,7 @@
 # Komaru Bomaru <ohmanhowwillithink@gmail.com>, 2023.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-07-22 14:23+0000\n"
@@ -2923,7 +2924,7 @@ msgstr "ジョイント"
 msgid "Roots"
 msgstr "ルート"
 
-msgid "Godot Bone Node"
+msgid "Redot Bone Node"
 msgstr "ボーンノード"
 
 msgid "Skin Root"

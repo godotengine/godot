@@ -1,4 +1,5 @@
-# Slovak translation of the Godot Engine editor interface.
+# Slovak translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -24,7 +25,7 @@
 # Bobo <ctiborboborkapor@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-08-30 21:09+0000\n"
@@ -1526,11 +1527,11 @@ msgstr "Vytvoriť adresár"
 msgid "Folder name is valid."
 msgstr "Názov priečinku je platný."
 
-msgid "Thanks from the Godot community!"
-msgstr "Vďaka z Godot komunity!"
+msgid "Thanks from the Redot community!"
+msgstr "Vďaka z Redot komunity!"
 
-msgid "Godot Engine contributors"
-msgstr "Godot Engine prispievatelia"
+msgid "Redot Engine contributors"
+msgstr "Redot Engine prispievatelia"
 
 msgid "Project Founders"
 msgstr "Zakladatelia Projektu"
@@ -1567,12 +1568,12 @@ msgid "Third-party Licenses"
 msgstr "Thirdparty Licencie"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Godot Engine sa spolieha na množstvo bezplatných a otvorených knižníc tretích "
+"Redot Engine sa spolieha na množstvo bezplatných a otvorených knižníc tretích "
 "strán, ktoré sú kompatibilné s podmienkami licencie MIT. Nasleduje "
 "vyčerpávajúci zoznam všetkých takýchto komponentov tretích strán s ich "
 "príslušnými prehláseniami o autorských právach a licenčnými podmienkami."
@@ -1937,8 +1938,8 @@ msgstr "[prázdne]"
 msgid "[unsaved]"
 msgstr "[neuložené]"
 
-msgid "%s - Godot Engine"
-msgstr "%s - Godot Engine"
+msgid "%s - Redot Engine"
+msgstr "%s - Redot Engine"
 
 msgid "Dock Position"
 msgstr "Pozícia Dock-u"
@@ -2075,8 +2076,8 @@ msgstr ""
 msgid "New profile name:"
 msgstr "Meno nového profilu:"
 
-msgid "Godot Feature Profile"
-msgstr "Godot Feature Profil"
+msgid "Redot Feature Profile"
+msgstr "Redot Feature Profil"
 
 msgid "Import Profile(s)"
 msgstr "Importovať Profil(y)"
@@ -2919,8 +2920,8 @@ msgstr "Navrhnúť funkcionalitu"
 msgid "Send Docs Feedback"
 msgstr "Poslať spätnú väzbu Dokumentácie"
 
-msgid "Support Godot Development"
-msgstr "Podporte vývoj Godot"
+msgid "Support Redot Development"
+msgstr "Podporte vývoj Redot"
 
 msgid "Update Continuously"
 msgstr "Aktualizovať priebežne"
@@ -3352,8 +3353,8 @@ msgstr "Inštalácia šablón z lokálneho súboru."
 msgid "Select Template File"
 msgstr "Vybrať Súbor Šablóny"
 
-msgid "Godot Export Templates"
-msgstr "Godot Exportovanie Šablón"
+msgid "Redot Export Templates"
+msgstr "Redot Exportovanie Šablón"
 
 msgid ""
 "The templates will continue to download.\n"
@@ -6005,8 +6006,8 @@ msgstr "Uložiť súbor ako..."
 msgid "Online Docs"
 msgstr "Online Dokumentácie"
 
-msgid "Open Godot online documentation."
-msgstr "Otvoriť online dokumentáciu Godotu."
+msgid "Open Redot online documentation."
+msgstr "Otvoriť online dokumentáciu Redotu."
 
 msgid "Open..."
 msgstr "Otvoriť..."
@@ -6987,10 +6988,10 @@ msgstr ""
 
 msgid ""
 "This node is marked as deprecated and will be removed in future versions.\n"
-"Please check the Godot documentation for information about migration."
+"Please check the Redot documentation for information about migration."
 msgstr ""
 "Tento node je označený ako zastaralý a bude vymazaný v budúcich verziách.\n"
-"Prosím skontrolujte Godot dokumentáciu pre informácie o migrácii."
+"Prosím skontrolujte Redot dokumentáciu pre informácie o migrácii."
 
 msgid ""
 "This node is marked as experimental and may be subject to removal or major "

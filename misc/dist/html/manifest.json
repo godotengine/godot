@@ -1,6 +1,6 @@
 {
-  "name": "Godot Engine Web Editor",
-  "short_name": "Godot",
+  "name": "Redot Engine Web Editor",
+  "short_name": "Redot",
   "description": "Multi-platform 2D and 3D game engine with a feature-rich editor (Web edition)",
   "lang": "en",
   "start_url": "./godot.editor.html",

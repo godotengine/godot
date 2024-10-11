@@ -10,7 +10,7 @@ env_thirdparty = env.Clone()
 env_thirdparty.disable_warnings()
 env.scene_sources += thirdparty_obj
 
-# Godot source files
+# Redot source files
 
 scene_obj = []
 

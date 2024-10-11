@@ -1,4 +1,5 @@
-# Polish translation of the Godot Engine properties.
+# Polish translation of the Redot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -95,7 +96,7 @@
 # User <user938193@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-09-02 17:25+0000\n"
@@ -3184,8 +3185,8 @@ msgstr "Światło"
 msgid "Roots"
 msgstr "Korzenie"
 
-msgid "Godot Skin"
-msgstr "Skórka Godot"
+msgid "Redot Skin"
+msgstr "Skórka Redot"
 
 msgid "Src Image"
 msgstr "Obraz źródłowy"

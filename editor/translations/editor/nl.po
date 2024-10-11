@@ -1,4 +1,5 @@
-# Dutch translation of the Godot Engine editor interface.
+# Dutch translation of the Redot Engine editor interface.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -81,7 +82,7 @@
 # pim wagemans <pimwagemans09@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine editor interface\n"
+"Project-Id-Version: Redot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-09-10 14:09+0000\n"
@@ -2010,8 +2011,8 @@ msgstr "Mapnaam is ongeldig."
 msgid "Double-click to open in browser."
 msgstr "Dubbelklik om in een browser te openen."
 
-msgid "Thanks from the Godot community!"
-msgstr "Bedankt van de Godot-gemeenschap!"
+msgid "Thanks from the Redot community!"
+msgstr "Bedankt van de Redot-gemeenschap!"
 
 msgid "(unknown)"
 msgstr "(onbekend)"
@@ -2023,8 +2024,8 @@ msgstr ""
 "Git commit datum: %s\n"
 "Klik om het versienummer te kopiëeren."
 
-msgid "Godot Engine contributors"
-msgstr "Bijdragers aan Godot Engine"
+msgid "Redot Engine contributors"
+msgstr "Bijdragers aan Redot Engine"
 
 msgid "Project Founders"
 msgstr "Projectoprichters"
@@ -2076,12 +2077,12 @@ msgid "Third-party Licenses"
 msgstr "Licenties van derden"
 
 msgid ""
-"Godot Engine relies on a number of third-party free and open source "
+"Redot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following is "
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Godot Engine maakt gebruik van een aantal gratis en open-source bibliotheken, "
+"Redot Engine maakt gebruik van een aantal gratis en open-source bibliotheken, "
 "ontwikkeld door derden, die compatibel zijn met de MIT-licentie. Wat volgt is "
 "een uitputtende lijst van alle componenten van derde partijen met hun "
 "respectievelijke copyrightberichten en licentietermen."
@@ -2578,8 +2579,8 @@ msgstr "[leeg]"
 msgid "[unsaved]"
 msgstr "[niet opgeslagen]"
 
-msgid "%s - Godot Engine"
-msgstr "%s - Godot Engine"
+msgid "%s - Redot Engine"
+msgstr "%s - Redot Engine"
 
 msgid "Move this dock right one tab."
 msgstr "Beweeg dit paneel een tabblad naar links."
@@ -2740,8 +2741,8 @@ msgstr ""
 msgid "New profile name:"
 msgstr "Nieuwe profielnaam:"
 
-msgid "Godot Feature Profile"
-msgstr "Godot-eigenschappenprofiel"
+msgid "Redot Feature Profile"
+msgstr "Redot-eigenschappenprofiel"
 
 msgid "Import Profile(s)"
 msgstr "Profiel(en) importeren"
@@ -3325,10 +3326,10 @@ msgstr "Scène bestand \"%s\" lijkt invalide of corrupt te zijn."
 
 msgid ""
 "File '%s' is saved in a format that is newer than the formats supported by "
-"this version of Godot, so it can't be opened."
+"this version of Redot, so it can't be opened."
 msgstr ""
 "Bestand \"%s\" is in een bestandsformaat opgeslagen dat nieuwer is dan de "
-"bestandsformaten die ondersteund worden door deze versie van Godot, dus kan "
+"bestandsformaten die ondersteund worden door deze versie van Redot, dus kan "
 "het niet opgeslagen worden."
 
 msgid "Saving Scene"
@@ -3808,11 +3809,11 @@ msgstr "Stel een functie voor"
 msgid "Send Docs Feedback"
 msgstr "Stuur documentatie­feedback"
 
-msgid "About Godot..."
-msgstr "Over Godot…"
+msgid "About Redot..."
+msgstr "Over Redot…"
 
-msgid "Support Godot Development"
-msgstr "Steun Godot-ontwikkeling"
+msgid "Support Redot Development"
+msgstr "Steun Redot-ontwikkeling"
 
 msgid ""
 "Choose a rendering method.\n"
@@ -4400,8 +4401,8 @@ msgstr "Sjabloon verwijderen"
 msgid "Select Template File"
 msgstr "Selecteer sjabloonbestand"
 
-msgid "Godot Export Templates"
-msgstr "Godot Export Templates"
+msgid "Redot Export Templates"
+msgstr "Redot Export Templates"
 
 msgid ""
 "The templates will continue to download.\n"
@@ -4545,19 +4546,19 @@ msgstr "Exporteer PCK/Zip..."
 
 msgid ""
 "Export the project resources as a PCK or ZIP package. This is not a playable "
-"build, only the project data without a Godot executable."
+"build, only the project data without a Redot executable."
 msgstr ""
 "Exporteer de project resources als een PCK of ZIP pakket. Dit is geen "
-"uitvoerbare build, alleen de project data zonder Godot executable."
+"uitvoerbare build, alleen de project data zonder Redot executable."
 
 msgid "Export Project..."
 msgstr "Exporteer project..."
 
 msgid ""
-"Export the project as a playable build (Godot executable and project data) "
+"Export the project as a playable build (Redot executable and project data) "
 "for the selected preset."
 msgstr ""
-"Exporteer het project als een speelbare build (Godot ecxecutable en project "
+"Exporteer het project als een speelbare build (Redot ecxecutable en project "
 "data) voor de geselecteerde voorinstelling."
 
 msgid "Export All"
@@ -5186,7 +5187,7 @@ msgid "History of recently edited objects."
 msgstr "Geschiedenis van recent bewerkte objecten."
 
 msgid "Open documentation for this object."
-msgstr "Open Godot online documentatie."
+msgstr "Open Redot online documentatie."
 
 msgid "Remove Translation"
 msgstr "Verwijder vertaling"
@@ -7190,8 +7191,8 @@ msgstr "Thema Opslaan Als..."
 msgid "Online Docs"
 msgstr "Online Documentatie"
 
-msgid "Open Godot online documentation."
-msgstr "Open Godot online documentatie."
+msgid "Open Redot online documentation."
+msgstr "Open Redot online documentatie."
 
 msgid "%s Class Reference"
 msgstr "%s Klassereferentie"
@@ -8450,11 +8451,11 @@ msgstr ""
 "en 'y''."
 
 msgid ""
-"Custom Godot Shader Language expression, with custom amount of input and "
+"Custom Redot Shader Language expression, with custom amount of input and "
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
-"Aangepaste Godot Shader Language expressie, met aangepast aantal in- en "
+"Aangepaste Redot Shader Language expressie, met aangepast aantal in- en "
 "uitvoerpoorten. Dit is een directe injectie van code in de vertex/fragment/"
 "light functie, niet gebruiken om functie declaraties in te schrijven."
 

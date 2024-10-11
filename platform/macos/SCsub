@@ -126,7 +126,7 @@ files = [
     "gl_manager_macos_legacy.mm",
 ]
 
-prog = env.add_program("#bin/godot", files)
+prog = env.add_program("#bin/redot", files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))

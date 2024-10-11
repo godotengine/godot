@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -58,10 +60,10 @@ TEST_CASE("[Time] Unix time conversion to/from datetime string") {
 	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("1234-05-06 07:08:09") == -23215049511, "Time get_unix_time_from_datetime_string: The timestamp for an arbitrary datetime with space is as expected.");
 	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("1234-05-06") == -23215075200, "Time get_unix_time_from_datetime_string: The timestamp for an arbitrary date without time is as expected.");
 	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("07:08:09") == 25689, "Time get_unix_time_from_datetime_string: The timestamp for an arbitrary time without date is as expected.");
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("2014-02-09T22:10:30") == 1391983830, "Time get_unix_time_from_datetime_string: The timestamp for GODOT IS OPEN SOURCE is as expected.");
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("2014-02-09 22:10:30") == 1391983830, "Time get_unix_time_from_datetime_string: The timestamp for GODOT IS OPEN SOURCE with space is as expected.");
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("2014-02-09") == 1391904000, "Time get_unix_time_from_datetime_string: The date for GODOT IS OPEN SOURCE without time is as expected.");
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("22:10:30") == 79830, "Time get_unix_time_from_datetime_string: The time for GODOT IS OPEN SOURCE without date is as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("2014-02-09T22:10:30") == 1391983830, "Time get_unix_time_from_datetime_string: The timestamp for REDOT IS OPEN SOURCE is as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("2014-02-09 22:10:30") == 1391983830, "Time get_unix_time_from_datetime_string: The timestamp for REDOT IS OPEN SOURCE with space is as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("2014-02-09") == 1391904000, "Time get_unix_time_from_datetime_string: The date for REDOT IS OPEN SOURCE without time is as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("22:10:30") == 79830, "Time get_unix_time_from_datetime_string: The time for REDOT IS OPEN SOURCE without date is as expected.");
 	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("-1000000000-01-01T00:00:00") == -31557014167219200, "Time get_unix_time_from_datetime_string: In the year negative a billion, Japan might not have been here.");
 	CHECK_MESSAGE(time->get_unix_time_from_datetime_string("1000000-01-01T00:00:00") == 31494784780800, "Time get_unix_time_from_datetime_string: The timestamp for the year a million is as expected.");
 
@@ -74,10 +76,10 @@ TEST_CASE("[Time] Unix time conversion to/from datetime string") {
 	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(-23215049511, true) == "1234-05-06 07:08:09", "Time get_datetime_string_from_unix_time: The timestamp for an arbitrary datetime with space is as expected.");
 	CHECK_MESSAGE(time->get_date_string_from_unix_time(-23215075200) == "1234-05-06", "Time get_date_string_from_unix_time: The timestamp for an arbitrary date without time is as expected.");
 	CHECK_MESSAGE(time->get_time_string_from_unix_time(25689) == "07:08:09", "Time get_time_string_from_unix_time: The timestamp for an arbitrary time without date is as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(1391983830) == "2014-02-09T22:10:30", "Time get_datetime_string_from_unix_time: The timestamp for GODOT IS OPEN SOURCE is as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(1391983830, true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_unix_time: The timestamp for GODOT IS OPEN SOURCE with space is as expected.");
-	CHECK_MESSAGE(time->get_date_string_from_unix_time(1391904000) == "2014-02-09", "Time get_date_string_from_unix_time: The date for GODOT IS OPEN SOURCE without time is as expected.");
-	CHECK_MESSAGE(time->get_time_string_from_unix_time(79830) == "22:10:30", "Time get_time_string_from_unix_time: The time for GODOT IS OPEN SOURCE without date is as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(1391983830) == "2014-02-09T22:10:30", "Time get_datetime_string_from_unix_time: The timestamp for REDOT IS OPEN SOURCE is as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(1391983830, true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_unix_time: The timestamp for REDOT IS OPEN SOURCE with space is as expected.");
+	CHECK_MESSAGE(time->get_date_string_from_unix_time(1391904000) == "2014-02-09", "Time get_date_string_from_unix_time: The date for REDOT IS OPEN SOURCE without time is as expected.");
+	CHECK_MESSAGE(time->get_time_string_from_unix_time(79830) == "22:10:30", "Time get_time_string_from_unix_time: The time for REDOT IS OPEN SOURCE without date is as expected.");
 	CHECK_MESSAGE(time->get_datetime_string_from_unix_time(31494784780800) == "1000000-01-01T00:00:00", "Time get_datetime_string_from_unix_time: The timestamp for the year a million is as expected.");
 	CHECK_MESSAGE(time->get_offset_string_from_offset_minutes(0) == "+00:00", "Time get_offset_string_from_offset_minutes: The offset string is as expected.");
 	CHECK_MESSAGE(time->get_offset_string_from_offset_minutes(-600) == "-10:00", "Time get_offset_string_from_offset_minutes: The offset string is as expected.");
@@ -107,22 +109,22 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	time_only[MINUTE_KEY] = 10;
 	time_only[SECOND_KEY] = 30;
 
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_dict(datetime) == 1391983830, "Time get_unix_time_from_datetime_dict: The datetime dictionary for GODOT IS OPEN SOURCE is converted to a timestamp as expected.");
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_dict(date_only) == 1391904000, "Time get_unix_time_from_datetime_dict: The date dictionary for GODOT IS OPEN SOURCE is converted to a timestamp as expected.");
-	CHECK_MESSAGE(time->get_unix_time_from_datetime_dict(time_only) == 79830, "Time get_unix_time_from_datetime_dict: The time dictionary for GODOT IS OPEN SOURCE is converted to a timestamp as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_dict(datetime) == 1391983830, "Time get_unix_time_from_datetime_dict: The datetime dictionary for REDOT IS OPEN SOURCE is converted to a timestamp as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_dict(date_only) == 1391904000, "Time get_unix_time_from_datetime_dict: The date dictionary for REDOT IS OPEN SOURCE is converted to a timestamp as expected.");
+	CHECK_MESSAGE(time->get_unix_time_from_datetime_dict(time_only) == 79830, "Time get_unix_time_from_datetime_dict: The time dictionary for REDOT IS OPEN SOURCE is converted to a timestamp as expected.");
 
-	CHECK_MESSAGE(time->get_datetime_dict_from_unix_time(1391983830).hash() == datetime.hash(), "Time get_datetime_dict_from_unix_time: The datetime timestamp for GODOT IS OPEN SOURCE is converted to a dictionary as expected.");
-	CHECK_MESSAGE(time->get_date_dict_from_unix_time(1391904000).hash() == date_only.hash(), "Time get_date_dict_from_unix_time: The date timestamp for GODOT IS OPEN SOURCE is converted to a dictionary as expected.");
-	CHECK_MESSAGE(time->get_time_dict_from_unix_time(79830).hash() == time_only.hash(), "Time get_time_dict_from_unix_time: The time timestamp for GODOT IS OPEN SOURCE is converted to a dictionary as expected.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_unix_time(1391983830).hash() == datetime.hash(), "Time get_datetime_dict_from_unix_time: The datetime timestamp for REDOT IS OPEN SOURCE is converted to a dictionary as expected.");
+	CHECK_MESSAGE(time->get_date_dict_from_unix_time(1391904000).hash() == date_only.hash(), "Time get_date_dict_from_unix_time: The date timestamp for REDOT IS OPEN SOURCE is converted to a dictionary as expected.");
+	CHECK_MESSAGE(time->get_time_dict_from_unix_time(79830).hash() == time_only.hash(), "Time get_time_dict_from_unix_time: The time timestamp for REDOT IS OPEN SOURCE is converted to a dictionary as expected.");
 
 	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(0)[WEEKDAY_KEY] == Weekday::WEEKDAY_THURSDAY, "Time get_datetime_dict_from_unix_time: The weekday for the Unix epoch is a Thursday as expected.");
-	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(1391983830)[WEEKDAY_KEY] == Weekday::WEEKDAY_SUNDAY, "Time get_datetime_dict_from_unix_time: The weekday for GODOT IS OPEN SOURCE is a Sunday as expected.");
+	CHECK_MESSAGE((Weekday)(int)time->get_datetime_dict_from_unix_time(1391983830)[WEEKDAY_KEY] == Weekday::WEEKDAY_SUNDAY, "Time get_datetime_dict_from_unix_time: The weekday for REDOT IS OPEN SOURCE is a Sunday as expected.");
 
-	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30").hash() == datetime.hash(), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(!time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_string: The dictionary from string for GODOT IS OPEN SOURCE without weekday doesn't contain the weekday key as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(datetime) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The string from dictionary for GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30")) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE works as expected.");
-	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09 22:10:30"), true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string GODOT IS OPEN SOURCE with spaces works as expected.");
+	CHECK_MESSAGE(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30").hash() == datetime.hash(), "Time get_datetime_dict_from_string: The dictionary from string for REDOT IS OPEN SOURCE works as expected.");
+	CHECK_MESSAGE(!time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30", false).has(WEEKDAY_KEY), "Time get_datetime_dict_from_string: The dictionary from string for REDOT IS OPEN SOURCE without weekday doesn't contain the weekday key as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(datetime) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The string from dictionary for REDOT IS OPEN SOURCE works as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09T22:10:30")) == "2014-02-09T22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string REDOT IS OPEN SOURCE works as expected.");
+	CHECK_MESSAGE(time->get_datetime_string_from_datetime_dict(time->get_datetime_dict_from_datetime_string("2014-02-09 22:10:30"), true) == "2014-02-09 22:10:30", "Time get_datetime_string_from_dict: The round-trip string to dict to string REDOT IS OPEN SOURCE with spaces works as expected.");
 }
 
 TEST_CASE("[Time] System time methods") {

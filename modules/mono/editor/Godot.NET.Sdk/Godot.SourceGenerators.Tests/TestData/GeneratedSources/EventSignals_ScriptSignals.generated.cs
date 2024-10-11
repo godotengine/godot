@@ -15,7 +15,7 @@ partial class EventSignals
     }
     /// <summary>
     /// Get the signal information for all the signals declared in this class.
-    /// This method is used by Godot to register the available signals in the editor.
+    /// This method is used by Redot to register the available signals in the editor.
     /// Do not call this method.
     /// </summary>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]

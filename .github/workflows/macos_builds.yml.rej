@@ -1,0 +1,18 @@
+diff a/.github/workflows/macos_builds.yml b/.github/workflows/macos_builds.yml	(rejected hunks)
+@@ -24,14 +24,14 @@ jobs:
+             cache-name: macos-editor
+             target: editor
+             tests: true
+-            bin: ./bin/godot.macos.editor.universal
++            bin: ./bin/redot.macos.editor.universal
+ 
+           - name: Template (target=template_release, tests=yes)
+             cache-name: macos-template
+             target: template_release
+             tests: true
+             sconsflags: debug_symbols=no
+-            bin: ./bin/godot.macos.template_release.universal
++            bin: ./bin/redot.macos.template_release.universal
+ 
+     steps:
+       - name: Checkout

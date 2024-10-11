@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -643,7 +645,7 @@ uint8_t RenderingLightCuller::Data::LUT_entries[LUT_SIZE][8] = {
 
 // See e.g. http://lspiroengine.com/?p=153 for reference.
 // Principles are the same, but differences to the article:
-// * Order of planes / points is different in Godot.
+// * Order of planes / points is different in Redot.
 // * We use a lookup table at runtime.
 void RenderingLightCuller::create_LUT() {
 	// Each pair of planes that are opposite can have an edge.

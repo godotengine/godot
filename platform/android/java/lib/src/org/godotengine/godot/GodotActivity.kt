@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -72,10 +74,10 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 		val currentFragment = supportFragmentManager.findFragmentById(R.id.godot_fragment_container)
 		if (currentFragment is GodotFragment) {
-			Log.v(TAG, "Reusing existing Godot fragment instance.")
+			Log.v(TAG, "Reusing existing Redot fragment instance.")
 			godotFragment = currentFragment
 		} else {
-			Log.v(TAG, "Creating new Godot fragment instance.")
+			Log.v(TAG, "Creating new Redot fragment instance.")
 			godotFragment = initGodotInstance()
 			supportFragmentManager.beginTransaction().replace(R.id.godot_fragment_container, godotFragment!!).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss()
 		}
@@ -85,7 +87,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	protected open fun getGodotAppLayout() = R.layout.godot_app_layout
 
 	override fun onDestroy() {
-		Log.v(TAG, "Destroying GodotActivity $this...")
+		Log.v(TAG, "Destroying RedotActivity $this...")
 		super.onDestroy()
 	}
 
@@ -96,7 +98,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	private fun terminateGodotInstance(instance: Godot) {
 		godotFragment?.let {
 			if (instance === it.godot) {
-				Log.v(TAG, "Force quitting Godot instance")
+				Log.v(TAG, "Force quitting Redot instance")
 				ProcessPhoenix.forceQuit(this)
 			}
 		}
@@ -111,7 +113,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 					//
 					// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
 					// releasing and reloading native libs or resetting their state somehow and clearing static data).
-					Log.v(TAG, "Restarting Godot instance...")
+					Log.v(TAG, "Restarting Redot instance...")
 					ProcessPhoenix.triggerRebirth(this)
 				}
 			}

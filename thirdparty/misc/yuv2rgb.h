@@ -26,7 +26,7 @@ ship it.
 
 /*
  * Please note that this version has been modified for various reasons:
- * 1. Using the Godot core typedefs
+ * 1. Using the Redot core typedefs
  * 2. At some point or another the code relied on the byte order of a uint32_t, this has been fixed
  * 3. Output has been reordered to struct { uint8_t r, g, b, a; } precisely in accordance with the function names
  * 4. Removing unused 'dither' parameter

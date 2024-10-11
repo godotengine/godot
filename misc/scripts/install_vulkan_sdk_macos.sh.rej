@@ -1,0 +1,7 @@
+diff a/misc/scripts/install_vulkan_sdk_macos.sh b/misc/scripts/install_vulkan_sdk_macos.sh	(rejected hunks)
+@@ -13,4 +13,4 @@ unzip /tmp/vulkan-sdk.zip -d /tmp
+ rm -rf /tmp/InstallVulkan.app
+ rm -f /tmp/vulkan-sdk.zip
+ 
+-echo 'Vulkan SDK installed successfully! You can now build Godot by running "scons".'
++echo 'Vulkan SDK installed successfully! You can now build Redot by running "scons".'

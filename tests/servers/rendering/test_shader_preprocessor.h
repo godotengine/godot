@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -229,7 +231,7 @@ TEST_CASE("[ShaderPreprocessor] Concatenation") {
 
 TEST_CASE("[ShaderPreprocessor] Nested concatenation") {
 	// Concatenation ## should not expand adjacent tokens if they are macros,
-	// but this is currently not implemented in Godot's shader preprocessor.
+	// but this is currently not implemented in Redot's shader preprocessor.
 	// To force expanding, an extra macro should be required (B in this case).
 
 	String code(

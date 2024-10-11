@@ -69,7 +69,7 @@
 
 		func _webxr_session_started():
 		    $Button.visible = false
-		    # This tells Godot to start rendering to the headset.
+		    # This tells Redot to start rendering to the headset.
 		    get_viewport().use_xr = true
 		    # This will be the reference space type you ultimately got, out of the
 		    # types that you requested above. This is useful if you want the game to
@@ -81,7 +81,7 @@
 
 		func _webxr_session_ended():
 		    $Button.visible = true
-		    # If the user exits immersive mode, then we tell Godot to render to the web
+		    # If the user exits immersive mode, then we tell Redot to render to the web
 		    # page again.
 		    get_viewport().use_xr = false
 
@@ -89,12 +89,12 @@
 		    OS.alert("Failed to initialize: " + message)
 		[/codeblock]
 		There are a couple ways to handle "controller" input:
-		- Using [XRController3D] nodes and their [signal XRController3D.button_pressed] and [signal XRController3D.button_released] signals. This is how controllers are typically handled in XR apps in Godot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example.
+		- Using [XRController3D] nodes and their [signal XRController3D.button_pressed] and [signal XRController3D.button_released] signals. This is how controllers are typically handled in XR apps in Redot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example.
 		- Using the [signal select], [signal squeeze] and related signals. This method will work for both advanced VR controllers, and non-traditional input sources like a tap on the screen, a spoken voice command or a button press on the device itself.
 		You can use both methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interactions with more advanced devices.
 	</description>
 	<tutorials>
-		<link title="How to make a VR game for WebXR with Godot 4">https://www.snopekgames.com/tutorial/2023/how-make-vr-game-webxr-godot-4</link>
+		<link title="How to make a VR game for WebXR with Redot 4">https://www.snopekgames.com/tutorial/2023/how-make-vr-game-webxr-godot-4</link>
 	</tutorials>
 	<methods>
 		<method name="get_available_display_refresh_rates" qualifiers="const">
@@ -231,7 +231,7 @@
 		<signal name="session_ended">
 			<description>
 				Emitted when the user ends the WebXR session (which can be done using UI from the browser or device).
-				At this point, you should do [code]get_viewport().use_xr = false[/code] to instruct Godot to resume rendering to the screen.
+				At this point, you should do [code]get_viewport().use_xr = false[/code] to instruct Redot to resume rendering to the screen.
 			</description>
 		</signal>
 		<signal name="session_failed">
@@ -244,7 +244,7 @@
 		<signal name="session_started">
 			<description>
 				Emitted by [method XRInterface.initialize] if the session is successfully started.
-				At this point, it's safe to do [code]get_viewport().use_xr = true[/code] to instruct Godot to start rendering to the XR device.
+				At this point, it's safe to do [code]get_viewport().use_xr = true[/code] to instruct Redot to start rendering to the XR device.
 			</description>
 		</signal>
 		<signal name="session_supported">

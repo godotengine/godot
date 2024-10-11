@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -61,7 +63,7 @@ Error MIDIDriverCoreMidi::open() {
 	ERR_FAIL_COND_V_MSG(client || core_midi_closed, FAILED,
 			"MIDIDriverCoreMidi cannot be reopened.");
 
-	CFStringRef name = CFStringCreateWithCString(nullptr, "Godot", kCFStringEncodingASCII);
+	CFStringRef name = CFStringCreateWithCString(nullptr, "Redot", kCFStringEncodingASCII);
 	OSStatus result = MIDIClientCreate(name, nullptr, nullptr, &client);
 	CFRelease(name);
 	if (result != noErr) {
@@ -69,7 +71,7 @@ Error MIDIDriverCoreMidi::open() {
 		return ERR_CANT_OPEN;
 	}
 
-	result = MIDIInputPortCreate(client, CFSTR("Godot Input"), MIDIDriverCoreMidi::read, (void *)this, &port_in);
+	result = MIDIInputPortCreate(client, CFSTR("Redot Input"), MIDIDriverCoreMidi::read, (void *)this, &port_in);
 	if (result != noErr) {
 		ERR_PRINT("MIDIInputPortCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;

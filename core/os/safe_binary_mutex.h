@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -43,7 +45,7 @@
 // - Must have recursive semnantics (or simulate, as this one does).
 // The implementation keeps the lock count in TS. Therefore, only
 // one object of each version of the template can exists; hence the Tag argument.
-// Tags must be unique across the Godot codebase.
+// Tags must be unique across the Redot codebase.
 // Also, don't forget to declare the thread_local variable on each use.
 template <int Tag>
 class SafeBinaryMutex {

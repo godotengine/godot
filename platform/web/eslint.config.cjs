@@ -130,6 +130,7 @@ module.exports = [
 				...globals.browser,
 				'Features': true,
 				'Godot': true,
+				'Redot': true,
 				'InternalConfig': true,
 				'Preloader': true,
 			},

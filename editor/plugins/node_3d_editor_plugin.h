@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -807,6 +809,7 @@ private:
 	Label *environ_title = nullptr;
 	VBoxContainer *environ_vb = nullptr;
 	ColorPickerButton *environ_sky_color = nullptr;
+	ColorPickerButton *environ_hz_color = nullptr;
 	ColorPickerButton *environ_ground_color = nullptr;
 	EditorSpinSlider *environ_energy = nullptr;
 	Button *environ_ao_button = nullptr;

@@ -1,4 +1,5 @@
 # Korean translation of the Godot Engine properties.
+# Copyright (c) 2024-present Redot Engine contributors.
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
@@ -54,7 +55,7 @@
 # Sovlus Haesaun <josuke4832@gmail.com>, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: Godot Engine properties\n"
+"Project-Id-Version: Redot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-09-16 08:50+0000\n"
@@ -3098,8 +3099,8 @@ msgstr "관절"
 msgid "Roots"
 msgstr "루트"
 
-msgid "Godot Bone Node"
-msgstr "Godot 본 노드"
+msgid "Redot Bone Node"
+msgstr "Redot 본 노드"
 
 msgid "Skin Root"
 msgstr "스킨 루트"
@@ -3110,8 +3111,8 @@ msgstr "관절 원본"
 msgid "Non Joints"
 msgstr "비 관절"
 
-msgid "Godot Skin"
-msgstr "Godot 스킨"
+msgid "Redot Skin"
+msgstr "Redot 스킨"
 
 msgid "Src Image"
 msgstr "SRC 이미지"

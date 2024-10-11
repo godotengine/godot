@@ -5,6 +5,8 @@
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
+/* Copyright (c) 2024-present Redot Engine contributors                   */
+/*                                          (see REDOT_AUTHORS.md)        */
 /* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
 /*                                                                        */
@@ -147,11 +149,11 @@ public final class GodotPluginRegistry {
 					pluginName = metaDataName.substring(GODOT_PLUGIN_V2_NAME_PREFIX.length()).trim();
 				} else if (metaDataName.startsWith(GODOT_PLUGIN_V1_NAME_PREFIX)) {
 					pluginName = metaDataName.substring(GODOT_PLUGIN_V1_NAME_PREFIX.length()).trim();
-					Log.w(TAG, "Godot v1 plugin are deprecated in Godot 4.2 and higher: " + pluginName);
+					Log.w(TAG, "Redot v1 plugin are deprecated in Redot 4.2 and higher: " + pluginName);
 				}
 
 				if (!TextUtils.isEmpty(pluginName)) {
-					Log.i(TAG, "Initializing Godot plugin " + pluginName);
+					Log.i(TAG, "Initializing Redot plugin " + pluginName);
 
 					// Retrieve the plugin class full name.
 					String pluginHandleClassFullName = metaData.getString(metaDataName);
@@ -171,9 +173,9 @@ public final class GodotPluginRegistry {
 										"Meta-data plugin name does not match the value returned by the plugin handle: " + pluginName + " =/= " + pluginHandle.getPluginName());
 							}
 							registry.put(pluginName, pluginHandle);
-							Log.i(TAG, "Completed initialization for Godot plugin " + pluginHandle.getPluginName());
+							Log.i(TAG, "Completed initialization for Redot plugin " + pluginHandle.getPluginName());
 						} catch (Exception e) {
-							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
+							Log.w(TAG, "Unable to load Redot plugin " + pluginName, e);
 						}
 					} else {
 						Log.w(TAG, "Invalid plugin loader class for " + pluginName);
@@ -181,7 +183,7 @@ public final class GodotPluginRegistry {
 				}
 			}
 		} catch (Exception e) {
-			Log.e(TAG, "Unable load Godot Android plugins from the manifest file.", e);
+			Log.e(TAG, "Unable load Redot Android plugins from the manifest file.", e);
 		}
 	}
 }

@@ -1,21 +1,22 @@
 <?xml version="1.0"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-godot-project">
-    <comment>Godot Engine project</comment>
+    <comment>Redot Engine project</comment>
     <sub-class-of type="text/plain"/>
     <icon name="x-godot-project"/>
-    <glob pattern="project.godot"/>
+    <glob pattern="*.godot"/>
+    <glob pattern="*.redot"/>
   </mime-type>
 
   <mime-type type="application/x-godot-resource">
-    <comment>Godot Engine resource</comment>
+    <comment>Redot Engine resource</comment>
     <icon name="x-godot-resource"/>
     <glob pattern="*.res"/>
     <glob pattern="*.tres"/>
   </mime-type>
 
   <mime-type type="application/x-godot-scene">
-    <comment>Godot Engine scene</comment>
+    <comment>Redot Engine scene</comment>
     <icon name="x-godot-scene"/>
     <glob pattern="*.scn"/>
     <glob pattern="*.tscn"/>
@@ -23,7 +24,7 @@
   </mime-type>
 
   <mime-type type="application/x-godot-shader">
-    <comment>Godot Engine shader</comment>
+    <comment>Redot Engine shader</comment>
     <sub-class-of type="text/plain"/>
     <icon name="x-godot-shader"/>
     <glob pattern="*.gdshader"/>

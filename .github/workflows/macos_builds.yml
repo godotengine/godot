@@ -75,10 +75,10 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ./bin/godot.macos.${{ matrix.target }}.universal
-          rm ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64
-          strip bin/godot.*
-          chmod +x bin/godot.*
+          lipo -create ./bin/redot.macos.${{ matrix.target }}.x86_64 ./bin/redot.macos.${{ matrix.target }}.arm64 -output ./bin/redot.macos.${{ matrix.target }}.universal
+          rm ./bin/redot.macos.${{ matrix.target }}.x86_64 ./bin/redot.macos.${{ matrix.target }}.arm64
+          strip bin/redot.*
+          chmod +x bin/redot.*
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
