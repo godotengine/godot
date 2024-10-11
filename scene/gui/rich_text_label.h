@@ -457,6 +457,7 @@ private:
 	std::atomic<bool> updating;
 	std::atomic<bool> validating;
 	std::atomic<double> loaded;
+	std::atomic<bool> parsing_bbcode;
 
 	uint64_t loading_started = 0;
 	int progress_delay = 1000;
@@ -507,6 +508,7 @@ private:
 	void _texture_changed(RID p_item);
 
 	RID_PtrOwner<Item> items;
+	List<String> tag_stack;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;

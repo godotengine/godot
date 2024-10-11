@@ -3187,6 +3187,10 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 		stack_externally_modified = true;
 	}
 
+	if (p_enter && !parsing_bbcode.load() && !tag_stack.is_empty()) {
+		tag_stack.push_back(U"?");
+	}
+
 	p_item->parent = current;
 	p_item->E = current->subitems.push_back(p_item);
 	p_item->index = current_idx++;
@@ -4065,6 +4069,9 @@ void RichTextLabel::pop() {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
 	}
 	current = current->parent;
+	if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
+		tag_stack.pop_back();
+	}
 }
 
 void RichTextLabel::pop_context() {
@@ -4077,8 +4084,14 @@ void RichTextLabel::pop_context() {
 		if (current->type == ITEM_FRAME) {
 			current_frame = static_cast<ItemFrame *>(current)->parent_frame;
 		} else if (current->type == ITEM_CONTEXT) {
+			if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
+				tag_stack.pop_back();
+			}
 			current = current->parent;
 			return;
+		}
+		if (!parsing_bbcode.load() && !tag_stack.is_empty()) {
+			tag_stack.pop_back();
 		}
 		current = current->parent;
 	}
@@ -4099,6 +4112,7 @@ void RichTextLabel::clear() {
 
 	stack_externally_modified = false;
 
+	tag_stack.clear();
 	main->_clear_children();
 	current = main;
 	current_frame = main;
@@ -4278,10 +4292,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	parsing_bbcode.store(true);
+
 	int pos = 0;
-
-	List<String> tag_stack;
-
 	int indent_level = 0;
 
 	bool in_bold = false;
@@ -5425,6 +5438,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 		}
 	}
+
+	parsing_bbcode.store(false);
 }
 
 void RichTextLabel::scroll_to_selection() {
@@ -6866,6 +6881,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	updating.store(false);
 	validating.store(false);
 	stop_thread.store(false);
+	parsing_bbcode.store(false);
 
 	set_clip_contents(true);
 }
