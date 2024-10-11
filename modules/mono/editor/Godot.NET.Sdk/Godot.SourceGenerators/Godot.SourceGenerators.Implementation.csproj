@@ -8,9 +8,6 @@
   <ItemGroup>
     <Compile Remove="Runners\**" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Remove="Runners\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <!-- Package the props files -->

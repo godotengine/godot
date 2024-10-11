@@ -24,7 +24,4 @@
   <ItemGroup>
     <Compile Remove="Implementations\**" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Remove="Implementations\**" />
-  </ItemGroup>
 </Project>
