@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    public class ScriptSerializationGeneratorImplementation : IGeneratorImplementation
+    public class ScriptSerializationGenerator : IGeneratorImplementation
     {
         public void Execute(IGeneratorExecutionContext context)
         {
@@ -136,12 +136,12 @@ namespace Godot.SourceGenerators
 
             foreach (var signalDelegateSymbol in signalDelegateSymbols)
             {
-                if (!signalDelegateSymbol.Name.EndsWith(ScriptSignalsGeneratorImplementation.SignalDelegateSuffix))
+                if (!signalDelegateSymbol.Name.EndsWith(ScriptSignalsGenerator.SignalDelegateSuffix))
                     continue;
 
                 string signalName = signalDelegateSymbol.Name;
                 signalName = signalName.Substring(0,
-                    signalName.Length - ScriptSignalsGeneratorImplementation.SignalDelegateSuffix.Length);
+                    signalName.Length - ScriptSignalsGenerator.SignalDelegateSuffix.Length);
 
                 var invokeMethodData = signalDelegateSymbol
                     .DelegateInvokeMethod?.HasGodotCompatibleSignature(typeCache);

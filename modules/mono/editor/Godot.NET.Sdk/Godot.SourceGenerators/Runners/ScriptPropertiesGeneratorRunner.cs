@@ -3,9 +3,9 @@ using Microsoft.CodeAnalysis;
 namespace Godot.SourceGenerators;
 
 [Generator]
-public class ScriptPropertiesGenerator : ISourceGenerator
+public class ScriptPropertiesGeneratorRunner : ISourceGenerator
 {
-    private readonly ScriptPropertiesGeneratorImplementation _implementation = new();
+    private readonly ScriptPropertiesGenerator _implementation = new();
 
     public void Initialize(GeneratorInitializationContext context)
     {

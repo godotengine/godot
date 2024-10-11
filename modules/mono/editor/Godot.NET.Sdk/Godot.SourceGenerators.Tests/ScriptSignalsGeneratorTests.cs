@@ -7,7 +7,7 @@ public class ScriptSignalsGeneratorTests
     [Fact]
     public async void EventSignals()
     {
-        await CSharpSourceGeneratorVerifier<ScriptSignalsGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptSignalsGeneratorRunner>.Verify(
             "EventSignals.cs",
             "EventSignals_ScriptSignals.generated.cs"
         );

@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators;
 
-public class ScriptPropertiesGeneratorImplementation : IGeneratorImplementation
+public class ScriptPropertiesGenerator : IGeneratorImplementation
 {
     public void Execute(IGeneratorExecutionContext context)
     {

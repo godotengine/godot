@@ -6,10 +6,10 @@
 
   <!--  Generators should not be run when assembly is loaded.-->
   <ItemGroup>
-    <Compile Remove="Generators\**" />
+    <Compile Remove="Runners\**" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Remove="Generators\**" />
+    <EmbeddedResource Remove="Runners\**" />
   </ItemGroup>
 
   <ItemGroup>

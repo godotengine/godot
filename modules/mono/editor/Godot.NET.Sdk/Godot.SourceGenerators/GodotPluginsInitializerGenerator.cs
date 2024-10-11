@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    public class GodotPluginsInitializerGeneratorImplementation
+    public class GodotPluginsInitializerGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
         {

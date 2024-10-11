@@ -7,7 +7,7 @@ public class ScriptSerializationGeneratorTests
     [Fact]
     public async void ScriptBoilerplate()
     {
-        await CSharpSourceGeneratorVerifier<ScriptSerializationGenerator>.VerifyNoCompilerDiagnostics(
+        await CSharpSourceGeneratorVerifier<ScriptSerializationGeneratorRunner>.VerifyNoCompilerDiagnostics(
             "ScriptBoilerplate.cs",
             "ScriptBoilerplate_ScriptSerialization.generated.cs", "OuterClass.NestedClass_ScriptSerialization.generated.cs"
         );

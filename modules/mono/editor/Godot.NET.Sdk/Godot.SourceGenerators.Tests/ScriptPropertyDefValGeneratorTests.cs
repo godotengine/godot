@@ -7,7 +7,7 @@ public class ScriptPropertyDefValGeneratorTests
     [Fact]
     public async void ExportedFields()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGeneratorRunner>.Verify(
             new string[] { "ExportedFields.cs", "MoreExportedFields.cs" },
             new string[] { "ExportedFields_ScriptPropertyDefVal.generated.cs" }
         );
@@ -16,7 +16,7 @@ public class ScriptPropertyDefValGeneratorTests
     [Fact]
     public async void ExportedProperties()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGeneratorRunner>.Verify(
             "ExportedProperties.cs",
             "ExportedProperties_ScriptPropertyDefVal.generated.cs"
         );
@@ -25,7 +25,7 @@ public class ScriptPropertyDefValGeneratorTests
     [Fact]
     public async void ExportedComplexStrings()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGeneratorRunner>.Verify(
             "ExportedComplexStrings.cs",
             "ExportedComplexStrings_ScriptPropertyDefVal.generated.cs"
         );

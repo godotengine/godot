@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators
 {
-    public class ScriptSignalsGeneratorImplementation : IGeneratorImplementation
+    public class ScriptSignalsGenerator : IGeneratorImplementation
     {
         public void Execute(IGeneratorExecutionContext context)
         {
