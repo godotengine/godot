@@ -210,6 +210,12 @@ void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel 
 	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->initialize_library(p_level);
+
+		if (p_level == GDExtension::INITIALIZATION_LEVEL_EDITOR) {
+			for (const KeyValue<String, String> &kv : E.value->class_icon_paths) {
+				gdextension_class_icon_paths[kv.key] = kv.value;
+			}
+		}
 	}
 	level = p_level;
 }
