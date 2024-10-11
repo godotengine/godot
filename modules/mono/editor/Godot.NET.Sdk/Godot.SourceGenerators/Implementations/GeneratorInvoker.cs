@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Godot.SourceGenerators.Implementations;
+namespace Godot.SourceGenerators.Implementation;
 
 /// <summary>
 /// Allows chaining source generators.

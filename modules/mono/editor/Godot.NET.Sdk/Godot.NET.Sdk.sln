@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharp", "..\..\glue\GodotSharp\GodotSharp\GodotSharp.csproj", "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Implementation", "Godot.SourceGenerators\Godot.SourceGenerators.Implementation.csproj", "{37AE2466-9D88-4D7F-885C-E8629C9E8834}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37AE2466-9D88-4D7F-885C-E8629C9E8834}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37AE2466-9D88-4D7F-885C-E8629C9E8834}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37AE2466-9D88-4D7F-885C-E8629C9E8834}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{37AE2466-9D88-4D7F-885C-E8629C9E8834}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
