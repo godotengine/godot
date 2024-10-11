@@ -42,6 +42,7 @@
 class MIDIDriverCoreMidi : public MIDIDriver {
 	MIDIClientRef client = 0;
 	MIDIPortRef port_in;
+	MIDIPortRef port_out;
 
 	struct InputConnection {
 		InputConnection() = default;
@@ -60,6 +61,7 @@ class MIDIDriverCoreMidi : public MIDIDriver {
 public:
 	virtual Error open() override;
 	virtual void close() override;
+	virtual Error send(Ref<InputEventMIDI> p_event) override;
 
 	MIDIDriverCoreMidi() = default;
 	virtual ~MIDIDriverCoreMidi();

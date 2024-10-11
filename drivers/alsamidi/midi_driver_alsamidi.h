@@ -60,6 +60,7 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 	};
 
 	Vector<InputConnection> connected_inputs;
+	Vector<snd_rawmidi_t *> connected_outputs;
 
 	SafeFlag exit_thread;
 
@@ -71,6 +72,7 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 public:
 	virtual Error open() override;
 	virtual void close() override;
+	virtual Error send(Ref<InputEventMIDI> p_event) override;
 
 	MIDIDriverALSAMidi();
 	virtual ~MIDIDriverALSAMidi();
