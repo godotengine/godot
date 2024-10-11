@@ -857,7 +857,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 	if (!p_state->json.has("bufferViews")) {
 		return OK;
 	}
-	const Vector<Vector<uint8_t>> &buffersData = p_state->buffers;
+	const Vector<Vector<uint8_t>> &buffers_data = p_state->buffers;
 	const Array &buffers = p_state->json["bufferViews"];
 	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
 		const Dictionary &d = buffers[i];
@@ -869,7 +869,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 		buffer_view->buffer = d["buffer"];
 
 		// Check if the buffer actually exists.
-		// ! This assumes that we've parsed the buffers (p_state->buffers) before!
+		// This assumes that we've parsed the buffers (p_state->buffers) before!
 		ERR_FAIL_COND_V_MSG((buffersData.size() < buffer_view->buffer), ERR_PARSE_ERROR,
 				"glTF: Missing buffer at index referenced by bufferview (" + itos(buffer_view->buffer) + ")");
 
@@ -878,13 +878,14 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 
 		if (d.has("byteOffset")) {
 			buffer_view->byte_offset = d["byteOffset"];
-			ERR_FAIL_COND_V_MSG(buffer_view->byte_offset < 0, ERR_PARSE_ERROR, "glTF: Bufferview byte_offset < 0 (" + itos(buffer_view->byte_offset) + ")");
+			ERR_FAIL_COND_V_MSG(buffer_view->byte_offset < 0, ERR_PARSE_ERROR, "glTF: Buffer view byte_offset is not allowed to be negative (was " + itos(buffer_view->byte_offset) + ")");
 		}
 
 		if (d.has("byteStride")) {
 			buffer_view->byte_stride = d["byteStride"];
 
-			// Some magic numbers from the gltf bufferview schema.
+			// The glTF bufferView schema specifies byteStride, if present, must be a multiple of 4, between 4 and 252.
+			// https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/bufferView.schema.json
 			ERR_FAIL_COND_V_MSG((buffer_view->byte_stride % 4 != 0) || (buffer_view->byte_stride < 4) || (buffer_view->byte_stride > 252),
 					ERR_PARSE_ERROR, "glTF: Incorrect byte_stride (" + itos(buffer_view->byte_stride) + ")");
 		}
