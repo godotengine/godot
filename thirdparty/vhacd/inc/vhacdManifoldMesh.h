@@ -19,9 +19,9 @@ All rights reserved.
 #include "vhacdSArray.h"
 #include "vhacdVector.h"
 
-// -- GODOT start --
+// -- BLAZIUM start --
 #include <cstdint>
-// -- GODOT end --
+// -- BLAZIUM end --
 
 namespace VHACD {
 class TMMTriangle;

@@ -32,7 +32,7 @@
 #define GODOT_PIN_JOINT_3D_H
 
 /*
-Adapted to Godot from the Bullet library.
+Adapted to Blazium from the Bullet library.
 */
 
 #include "servers/physics_3d/godot_joint_3d.h"

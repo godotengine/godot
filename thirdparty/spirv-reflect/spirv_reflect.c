@@ -1571,10 +1571,10 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
       } break;
 
       case SpvDecorationSpecId: {
-// -- GODOT begin --
+// -- BLAZIUM begin --
         uint32_t word_offset = p_node->word_offset + member_offset+ 3;
         CHECKED_READU32(p_parser, word_offset, p_target_decorations->spec_id);
-// -- GODOT end --
+// -- BLAZIUM end --
         spec_constant_count++;
       } break;
 
@@ -1696,7 +1696,7 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
   }
   for (uint32_t i = 0; i < p_parser->node_count; ++i) {
     SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
-// -- GODOT begin --
+// -- BLAZIUM begin --
     const uint32_t count = p_module->spec_constant_count;
     switch(p_node->op) {
       default: continue;
@@ -1734,7 +1734,7 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
     p_module->spec_constants[count].spirv_id = p_node->result_id;
 
     p_module->spec_constant_count++;
-// -- GODOT end --
+// -- BLAZIUM end --
   }
 
   return SPV_REFLECT_RESULT_SUCCESS;

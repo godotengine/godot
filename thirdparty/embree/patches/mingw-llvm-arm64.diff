@@ -7,9 +7,9 @@ index b18d41e783..c54d0b7951 100644
  #include <stdlib.h>
  
 -#if defined(_WIN32)
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#if defined(_WIN32) && !defined(__MINGW32__)
-+// -- GODOT end --
++// -- BLAZIUM end --
  /* Definitions for _mm_{malloc,free} are provided by <malloc.h>
   * from both MinGW-w64 and MSVC.
   */
@@ -18,7 +18,7 @@ index b18d41e783..c54d0b7951 100644
      if (align == 2 || (sizeof(void *) == 8 && align == 4))
          align = sizeof(void *);
 -    if (!posix_memalign(&ptr, align, size))
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#if defined(_WIN32)
 +    ptr = _aligned_malloc(size, align);
 +    if (ptr)
@@ -27,7 +27,7 @@ index b18d41e783..c54d0b7951 100644
 +    if (!posix_memalign(&ptr, align, size))
 +        return ptr;
 +#endif
-+// -- GODOT end --
++// -- BLAZIUM end --
      return NULL;
  }
  #endif
@@ -35,12 +35,12 @@ index b18d41e783..c54d0b7951 100644
  #if !defined(SSE2NEON_ALLOC_DEFINED)
  FORCE_INLINE void _mm_free(void *addr)
  {
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#if defined(_WIN32)
 +    _aligned_free(addr);
 +#else
      free(addr);
 +#endif
-+// -- GODOT end --
++// -- BLAZIUM end --
  }
  #endif
