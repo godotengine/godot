@@ -39,10 +39,7 @@ public static class CSharpCodeFixVerifier<TCodeFix, TAnalyzer>
         verifier.TestCode = File.ReadAllText(Path.Combine(Constants.SourceFolderPath, source));
         verifier.FixedCode = File.ReadAllText(Path.Combine(Constants.GeneratedSourceFolderPath, results));
 
-        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
-        is_global = true
-        build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
-        """));
+        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"is_global = true\nbuild_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}"));
 
         return verifier;
     }

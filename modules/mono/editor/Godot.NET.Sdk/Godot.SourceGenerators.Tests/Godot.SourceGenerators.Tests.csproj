@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <LangVersion>11</LangVersion>
 
     <Nullable>enable</Nullable>

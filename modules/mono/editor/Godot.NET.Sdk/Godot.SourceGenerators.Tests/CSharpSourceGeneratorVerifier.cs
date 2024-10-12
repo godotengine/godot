@@ -56,10 +56,7 @@ where TSourceGenerator : ISourceGenerator, new()
     {
         var verifier = new Test();
 
-        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
-        is_global = true
-        build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
-        """));
+        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"is_global = true\nbuild_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}"));
 
         verifier.TestState.Sources.AddRange(sources.Select(source => (
             source,
