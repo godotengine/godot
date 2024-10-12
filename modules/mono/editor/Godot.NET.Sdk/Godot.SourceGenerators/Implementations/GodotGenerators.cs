@@ -11,14 +11,6 @@ namespace Godot.SourceGenerators.Implementation;
 /// </summary>
 public static class GodotGenerators
 {
-    public static void RunAll(IGeneratorExecutionContext context)
-    {
-        foreach (var generator in CreateInstances())
-        {
-            generator.Execute(context);
-        }
-    }
-
     public static IEnumerable<IGeneratorImplementation> CreateInstances() => _generatorsConstructor();
 
     private static readonly Func<IEnumerable<IGeneratorImplementation>> _generatorsConstructor =
