@@ -11,12 +11,11 @@ namespace Godot.SourceGenerators.Implementation;
 /// </summary>
 public static class GodotGenerators
 {
-    public static IEnumerable<IGeneratorImplementation> CreateInstances() => _generatorsConstructor();
+    public static IEnumerable<Func<IGeneratorImplementation>> GetConstructors() => _generatorsConstructor;
 
-    private static readonly Func<IEnumerable<IGeneratorImplementation>> _generatorsConstructor =
-        GetGeneratorsConstructor();
+    private static readonly Func<IGeneratorImplementation>[] _generatorsConstructor = GetGeneratorConstructors();
 
-    private static Func<IEnumerable<IGeneratorImplementation>> GetGeneratorsConstructor()
+    private static Func<IGeneratorImplementation>[] GetGeneratorConstructors()
     {
         Type[] types;
         try
@@ -35,9 +34,8 @@ public static class GodotGenerators
             .Select(t => t.GetConstructor(Array.Empty<Type>()) ?? throw new InvalidOperationException())
             .ToArray();
 
-        return Expression.Lambda<Func<IEnumerable<IGeneratorImplementation>>>(
-                Expression.NewArrayInit(typeof(IGeneratorImplementation),
-                    constructors.Select(Expression.New)))
-            .Compile();
+        return constructors.Select(c => Expression.Lambda<Func<IGeneratorImplementation>>(
+                Expression.New(c))
+            .Compile()).ToArray();
     }
 }
