@@ -24,10 +24,10 @@ import android.os.StatFs;
 import android.os.SystemClock;
 import android.util.Log;
 
-// -- GODOT start --
+// -- BLAZIUM start --
 //import com.android.vending.expansion.downloader.R;
 import org.godotengine.godot.R;
-// -- GODOT end --
+// -- BLAZIUM end --
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -149,14 +149,14 @@ public class Helpers {
             }
             return "";
         }
-        // -- GODOT start --
+        // -- BLAZIUM start --
         return String.format(Locale.ENGLISH, "%.2f",
                 (float) overallProgress / (1024.0f * 1024.0f))
                 + "MB /" +
                 String.format(Locale.ENGLISH, "%.2f", (float) overallTotal /
                         (1024.0f * 1024.0f))
                 + "MB";
-        // -- GODOT end --
+        // -- BLAZIUM end --
     }
 
     /**
@@ -189,9 +189,9 @@ public class Helpers {
     }
 
     public static String getSpeedString(float bytesPerMillisecond) {
-        // -- GODOT start --
+        // -- BLAZIUM start --
         return String.format(Locale.ENGLISH, "%.2f", bytesPerMillisecond * 1000 / 1024);
-        // -- GODOT end --
+        // -- BLAZIUM end --
     }
 
     public static String getTimeRemaining(long durationInMilliseconds) {

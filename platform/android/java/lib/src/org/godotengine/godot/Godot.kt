@@ -184,7 +184,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	private fun requireActivity() = getActivity() ?: throw IllegalStateException("Host activity must be non-null")
 
 	/**
-	 * Start initialization of the Godot engine.
+	 * Start initialization of the Blazium engine.
 	 *
 	 * This must be followed by [onInitNativeLayer] and [onInitRenderView] in that order to complete
 	 * initialization of the engine.
@@ -209,7 +209,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			val window = activity.window
 			window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
 
-			Log.v(TAG, "Initializing Godot plugin registry")
+			Log.v(TAG, "Initializing Blazium plugin registry")
 			GodotPluginRegistry.initializePluginRegistry(this, primaryHost.getHostPlugins(this))
 			if (io == null) {
 				io = GodotIO(activity)
@@ -311,7 +311,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
-	 * Initializes the native layer of the Godot engine.
+	 * Initializes the native layer of the Blazium engine.
 	 *
 	 * This must be preceded by [onCreate] and followed by [onInitRenderView] to complete
 	 * initialization of the engine.
@@ -353,15 +353,15 @@ class Godot(private val context: Context) : SensorEventListener {
 					fileAccessHandler,
 					useApkExpansion,
 				)
-				Log.v(TAG, "Godot native layer initialization completed: $nativeLayerInitializeCompleted")
+				Log.v(TAG, "Blazium native layer initialization completed: $nativeLayerInitializeCompleted")
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
-					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
+					throw IllegalStateException("Unable to setup the Blazium engine! Aborting...")
 				} else {
-					Log.v(TAG, "Godot native layer setup completed")
+					Log.v(TAG, "Blazium native layer setup completed")
 				}
 			}
 		} finally {
@@ -377,9 +377,9 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * initialize the engine.
 	 *
 	 * @param host The [GodotHost] that's initializing the render views
-	 * @param providedContainerLayout Optional argument; if provided, this is reused to host the Godot's render views
+	 * @param providedContainerLayout Optional argument; if provided, this is reused to host the Blazium's render views
 	 *
-	 * @return A [FrameLayout] instance containing Godot's render views if initialization is successful, null otherwise.
+	 * @return A [FrameLayout] instance containing Blazium's render views if initialization is successful, null otherwise.
 	 *
 	 * @throws IllegalStateException if [onInitNativeLayer] has not been called
 	 */
@@ -485,7 +485,7 @@ class Godot(private val context: Context) : SensorEventListener {
 					setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
 				}
 
-				// Include the returned non-null views in the Godot view hierarchy.
+				// Include the returned non-null views in the Blazium view hierarchy.
 				for (plugin in pluginRegistry.allPlugins) {
 					val pluginView = plugin.onMainCreate(activity)
 					if (pluginView != null) {
@@ -626,12 +626,12 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
-	 * Invoked on the render thread when the Godot setup is complete.
+	 * Invoked on the render thread when the Blazium setup is complete.
 	 */
 	private fun onGodotSetupCompleted() {
 		Log.v(TAG, "OnGodotSetupCompleted")
 
-		// These properties are defined after Godot setup completion, so we retrieve them here.
+		// These properties are defined after Blazium setup completion, so we retrieve them here.
 		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
 		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
@@ -655,7 +655,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
-	 * Invoked on the render thread when the Godot main loop has started.
+	 * Invoked on the render thread when the Blazium main loop has started.
 	 */
 	private fun onGodotMainLoopStarted() {
 		Log.v(TAG, "OnGodotMainLoopStarted")
@@ -811,7 +811,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	/**
-	 * Destroys the Godot Engine and kill the process it's running in.
+	 * Destroys the Blazium Engine and kill the process it's running in.
 	 */
 	@JvmOverloads
 	fun destroyAndKillProcess(destroyRunnable: Runnable? = null) {

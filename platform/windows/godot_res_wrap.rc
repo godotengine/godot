@@ -1,6 +1,6 @@
 #include "core/version.h"
 
-GODOT_ICON ICON platform/windows/godot_console.ico
+GODOT_ICON ICON platform/windows/blazium_console.ico
 
 1 VERSIONINFO
 FILEVERSION     VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
@@ -12,12 +12,12 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName",            "Godot Engine"
+            VALUE "CompanyName",            "Blazium Engine"
             VALUE "FileDescription",        VERSION_NAME " (Console)"
             VALUE "FileVersion",            VERSION_NUMBER
             VALUE "ProductName",            VERSION_NAME " (Console)"
             VALUE "Licence",                "MIT"
-            VALUE "LegalCopyright",         "(c) 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
+            VALUE "LegalCopyright",         "(c) 2024-present Blazium Engine & 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
             VALUE "Info",                   "https://godotengine.org"
             VALUE "ProductVersion",         VERSION_FULL_BUILD
         END

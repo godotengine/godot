@@ -51,11 +51,11 @@ import java.util.*
 import kotlin.math.min
 
 /**
- * Base class for the Godot Android Editor activities.
+ * Base class for the Blazium Android Editor activities.
  *
  * This provides the basic templates for the activities making up this application.
  * Each derived activity runs in its own process, which enable up to have several instances of
- * the Godot engine up and running at the same time.
+ * the Blazium engine up and running at the same time.
  *
  * It also plays the role of the primary editor window.
  */
@@ -234,7 +234,7 @@ open class GodotEditor : GodotActivity() {
 		for (runningProcess in runningProcesses) {
 			if (runningProcess.processName == processName) {
 				// Killing process directly
-				Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
+				Log.v(TAG, "Killing Blazium process ${runningProcess.processName}")
 				Process.killProcess(runningProcess.pid)
 				return true
 			}
@@ -265,18 +265,18 @@ open class GodotEditor : GodotActivity() {
 	}
 
 	/**
-	 * The Godot Android Editor sets its own orientation via its AndroidManifest
+	 * The Blazium Android Editor sets its own orientation via its AndroidManifest
 	 */
 	protected open fun overrideOrientationRequest() = true
 
 	/**
-	 * Enable long press gestures for the Godot Android editor.
+	 * Enable long press gestures for the Blazium Android editor.
 	 */
 	protected open fun enableLongPressGestures() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**
-	 * Enable pan and scale gestures for the Godot Android editor.
+	 * Enable pan and scale gestures for the Blazium Android editor.
 	 */
 	protected open fun enablePanAndScaleGestures() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_pan_and_scale_gestures"))

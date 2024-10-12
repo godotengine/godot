@@ -56,7 +56,7 @@ public class GodotDownloaderService extends DownloaderService {
 	@Override
 	public String getPublicKey() {
 		SharedPreferences prefs = getApplicationContext().getSharedPreferences("app_data_keys", Context.MODE_PRIVATE);
-		Log.d("GODOT", "getting public key:" + prefs.getString("store_public_key", null));
+		Log.d("BLAZIUM", "getting public key:" + prefs.getString("store_public_key", null));
 		return prefs.getString("store_public_key", null);
 
 		//return BASE64_PUBLIC_KEY;
@@ -79,7 +79,7 @@ public class GodotDownloaderService extends DownloaderService {
 	 */
 	@Override
 	public String getAlarmReceiverClassName() {
-		Log.d("GODOT", "getAlarmReceiverClassName()");
+		Log.d("BLAZIUM", "getAlarmReceiverClassName()");
 		return GodotDownloaderAlarmReceiver.class.getName();
 	}
 }

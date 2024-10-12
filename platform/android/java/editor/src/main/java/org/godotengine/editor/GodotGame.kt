@@ -33,7 +33,7 @@ package org.godotengine.editor
 import org.godotengine.godot.GodotLib
 
 /**
- * Drives the 'run project' window of the Godot Editor.
+ * Drives the 'run project' window of the Blazium Editor.
  */
 class GodotGame : GodotEditor() {
 

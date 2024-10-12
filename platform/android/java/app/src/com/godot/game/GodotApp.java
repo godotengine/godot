@@ -37,7 +37,7 @@ import android.os.Bundle;
 import androidx.core.splashscreen.SplashScreen;
 
 /**
- * Template activity for Godot Android builds.
+ * Template activity for Blazium Android builds.
  * Feel free to extend and modify this class for your custom logic.
  */
 public class GodotApp extends GodotActivity {

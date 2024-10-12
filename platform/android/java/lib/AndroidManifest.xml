@@ -5,7 +5,7 @@
 
     <application>
 
-        <!-- Records the version of the Godot library -->
+        <!-- Records the version of the Blazium library -->
         <meta-data
             android:name="org.godotengine.library.version"
             android:value="${godotLibraryVersion}" />
