@@ -9,7 +9,7 @@ namespace Godot.SourceGenerators.Implementation;
 /// <summary>
 /// Allows chaining source generators.
 /// </summary>
-public static class GeneratorInvoker
+public static class GodotGenerators
 {
     public static void RunAll(IGeneratorExecutionContext context)
     {
@@ -29,7 +29,7 @@ public static class GeneratorInvoker
         Type[] types;
         try
         {
-            types = typeof(GeneratorInvoker).Assembly.GetTypes();
+            types = typeof(GodotGenerators).Assembly.GetTypes();
         }
         catch (ReflectionTypeLoadException e)
         {

@@ -7,7 +7,7 @@ public class GodotGeneratorsTests
     [Fact]
     public void GetGeneratorInstances_BehavesProperly()
     {
-        var instances = GeneratorInvoker.CreateInstances();
+        var instances = GodotGenerators.CreateInstances();
         Assert.NotEmpty(instances);
     }
 }
