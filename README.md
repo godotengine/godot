@@ -29,7 +29,7 @@ Before being open sourced in [February 2014](https://github.com/godotengine/godo
 Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
 [Ariel Manzur](https://github.com/punto-) (both still maintaining the project)
 for several years as an in-house engine, used to publish several work-for-hire
-titles.
+titles. In 2024, Godot exposed itself as being ran by incompotent and unstable people that blocked many people (including people helping to fund the engine with donations) from so much as seeing the source code on Github, all due to having an opposing (and frankly more grounded and widely accepted) political view from them, or at least telling the Godot team to actually develop the engine and not post about being woke on Twitter/X. After this, 3 forks of the engine arose: Redot, Lolidot and, of course, Ooodly.
 
 ![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
 
