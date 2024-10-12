@@ -117,13 +117,13 @@ enum PropertyUsageFlags {
 
 struct PropertyInfo {
 	STRUCT_DECLARE(PropertyInfo);
-	STRUCT_MEMBER_PRIMITIVE(String, name, String());
-	STRUCT_MEMBER_PRIMITIVE(StringName, class_name, StringName());
-	STRUCT_MEMBER_PRIMITIVE_FROM(Variant::Type, type, Variant::NIL);
-	STRUCT_MEMBER_PRIMITIVE_FROM(PropertyHint, hint, PROPERTY_HINT_NONE);
-	STRUCT_MEMBER_PRIMITIVE(String, hint_string, String());
-	STRUCT_MEMBER_PRIMITIVE(uint32_t, usage, PROPERTY_USAGE_DEFAULT);
-	STRUCT_LAYOUT_OWNER(Object, PropertyInfo, struct name, struct class_name, struct type, struct hint, struct hint_string, struct usage);
+	STRUCT_MEMBER(String, name, String());
+	STRUCT_MEMBER(StringName, class_name, StringName());
+	STRUCT_MEMBER_FROM(Variant::Type, type, Variant::NIL);
+	STRUCT_MEMBER_FROM(PropertyHint, hint, PROPERTY_HINT_NONE);
+	STRUCT_MEMBER(String, hint_string, String());
+	STRUCT_MEMBER(uint32_t, usage, PROPERTY_USAGE_DEFAULT);
+	STRUCT_LAYOUT(Object, PropertyInfo, struct name, struct class_name, struct type, struct hint, struct hint_string, struct usage);
 
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;

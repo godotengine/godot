@@ -344,10 +344,10 @@ public:
 
 	struct Connection {
 		STRUCT_DECLARE(Connection);
-		STRUCT_MEMBER_PRIMITIVE(::Signal, signal, ::Signal());
-		STRUCT_MEMBER_PRIMITIVE(Callable, callable, Callable());
-		STRUCT_MEMBER_PRIMITIVE(uint32_t, flags, 0);
-		STRUCT_LAYOUT_OWNER(Object, Connection, struct signal, struct callable, struct flags);
+		STRUCT_MEMBER(::Signal, signal, ::Signal());
+		STRUCT_MEMBER(Callable, callable, Callable());
+		STRUCT_MEMBER(uint32_t, flags, 0);
+		STRUCT_LAYOUT(Object, Connection, struct signal, struct callable, struct flags);
 
 		bool operator<(const Connection &p_conn) const;
 

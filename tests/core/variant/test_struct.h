@@ -271,9 +271,9 @@ TEST_CASE("[Struct] StructInfo") {
 TEST_CASE("[Struct] Validation") {
 	struct NamedInt {
 		STRUCT_DECLARE(NamedInt);
-		STRUCT_MEMBER_PRIMITIVE(String, name, String());
-		STRUCT_MEMBER_PRIMITIVE(int, value, 0);
-		STRUCT_LAYOUT(NamedInt, struct name, struct value);
+		STRUCT_MEMBER(String, name, String());
+		STRUCT_MEMBER(int, value, 0);
+		STRUCT_LAYOUT(TestStruct, NamedInt, struct name, struct value);
 	};
 
 	Struct<NamedInt> named_int;
@@ -329,22 +329,22 @@ TEST_CASE("[Struct] Validation") {
 TEST_CASE("[Struct] Nesting") {
 	struct BasicStruct {
 		STRUCT_DECLARE(BasicStruct);
-		STRUCT_MEMBER_PRIMITIVE(int, int_val, 4);
-		STRUCT_MEMBER_PRIMITIVE(float, float_val, 5.5f);
-		STRUCT_LAYOUT(BasicStruct, struct int_val, struct float_val);
+		STRUCT_MEMBER(int, int_val, 4);
+		STRUCT_MEMBER(float, float_val, 5.5f);
+		STRUCT_LAYOUT(TestStruct, BasicStruct, struct int_val, struct float_val);
 		BasicStruct() {};
 	};
 	struct BasicStructLookalike {
 		STRUCT_DECLARE(BasicStructLookalike);
-		STRUCT_MEMBER_PRIMITIVE(int, int_val, 4);
-		STRUCT_MEMBER_PRIMITIVE(float, float_val, 5.5f);
-		STRUCT_LAYOUT(BasicStructLookalike, struct int_val, struct float_val);
+		STRUCT_MEMBER(int, int_val, 4);
+		STRUCT_MEMBER(float, float_val, 5.5f);
+		STRUCT_LAYOUT(TestStruct, BasicStructLookalike, struct int_val, struct float_val);
 	};
 	struct NestedStruct {
 		STRUCT_DECLARE(NestedStruct);
 		STRUCT_MEMBER_CLASS_POINTER(Node, node, nullptr);
 		STRUCT_MEMBER_STRUCT(BasicStruct, value, BasicStruct());
-		STRUCT_LAYOUT(NestedStruct, struct node, struct value);
+		STRUCT_LAYOUT(TestStruct, NestedStruct, struct node, struct value);
 	};
 
 	REQUIRE_EQ(NestedStruct::Layout::struct_member_count, 2);

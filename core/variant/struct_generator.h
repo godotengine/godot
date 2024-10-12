@@ -39,8 +39,16 @@ class TypedArray;
 template <typename T>
 class Struct;
 
+/* The following set of macros let you seamlessly add reflection data to
+ * a C++ struct or class so that it can be exposed as a Godot Struct.
+ * The StructInfo struct below uses these macros and serves as a good
+ * example of how these macros should be used.*/
+
+// Goes at the top of every exposed C++ struct.
 #define STRUCT_DECLARE(m_struct_name) using StructType = m_struct_name
 
+// Creates the typedef for a non-pointer struct member, along with some helper functions.
+// "Alias" means that the exposed name can differ from the internal name.
 #define STRUCT_MEMBER_TYPEDEF_ALIAS(m_type, m_member_name, m_member_name_alias, m_default)                                                       \
 	using Type = m_type;                                                                                                                         \
 	_FORCE_INLINE_ static const StringName get_name() { return SNAME(m_member_name_alias); }                                                     \
@@ -49,22 +57,31 @@ class Struct;
 	_FORCE_INLINE_ static Type get(const StructType &p_struct) { return p_struct.m_member_name; }                                                \
 	_FORCE_INLINE_ static Type get_default_value() { return m_default; }                                                                         \
 	_FORCE_INLINE_ static void set_variant(StructType &p_struct, const Variant &p_variant) { p_struct.m_member_name = from_variant(p_variant); } \
-	_FORCE_INLINE_ static void set(StructType &p_struct, const m_type &p_value) { p_struct.m_member_name = p_value; }
+	_FORCE_INLINE_ static void set(StructType &p_struct, const Type &p_value) { p_struct.m_member_name = p_value; }
 
+// Shorter macro you can use when the exposed name is the same as the internal name.
 #define STRUCT_MEMBER_TYPEDEF(m_type, m_member_name, m_default) \
 	STRUCT_MEMBER_TYPEDEF_ALIAS(m_type, m_member_name, #m_member_name, m_default)
 
-#define STRUCT_MEMBER_TYPEDEF_POINTER(m_type, m_member_name, m_default)                                                                          \
+// Same as above, but for pointer members.
+#define STRUCT_MEMBER_TYPEDEF_POINTER_ALIAS(m_type, m_member_name, m_member_name_alias, m_default)                                               \
 	using Type = m_type *;                                                                                                                       \
-	_FORCE_INLINE_ static const StringName get_name() { return SNAME(#m_member_name); }                                                          \
+	_FORCE_INLINE_ static const StringName get_name() { return SNAME(m_member_name_alias); }                                                     \
 	_FORCE_INLINE_ static Variant get_variant(const StructType &p_struct) { return to_variant(p_struct.m_member_name); }                         \
 	_FORCE_INLINE_ static const Variant get_default_value_variant() { return to_variant(m_default); }                                            \
 	_FORCE_INLINE_ static Type get(const StructType &p_struct) { return p_struct.m_member_name; }                                                \
-	_FORCE_INLINE_ static const m_type *get_default_value() { return m_default; }                                                                \
+	_FORCE_INLINE_ static const Type get_default_value() { return m_default; }                                                                   \
 	_FORCE_INLINE_ static void set_variant(StructType &p_struct, const Variant &p_variant) { p_struct.m_member_name = from_variant(p_variant); } \
 	_FORCE_INLINE_ static void set(StructType &p_struct, Type p_value) { p_struct.m_member_name = p_value; }
 
-#define STRUCT_MEMBER_PRIMITIVE_ALIAS(m_type, m_member_name, m_member_name_alias, m_default)                \
+// Creates the typedef for a pointer struct member, along with some helper functions.
+#define STRUCT_MEMBER_TYPEDEF_POINTER(m_type, m_member_name, m_default) \
+	STRUCT_MEMBER_TYPEDEF_POINTER_ALIAS(m_type, m_member_name, #m_member_name, m_default)
+
+// Creates all the reflection data for a struct member and stores it as static properties of a struct with
+// the same name as the member. This particular macro only works for primitive Variant types. For more
+// complicated types, such as class values, class pointers, or structs, use the corresponding macro below.
+#define STRUCT_MEMBER_ALIAS(m_type, m_member_name, m_member_name_alias, m_default)                          \
 	m_type m_member_name = m_default;                                                                       \
 	struct m_member_name {                                                                                  \
 		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return p_variant; }           \
@@ -75,7 +92,12 @@ class Struct;
 		static const StructInfo *get_struct_member_info() { return nullptr; }                               \
 	}
 
-#define STRUCT_MEMBER_PRIMITIVE_FROM(m_type, m_member_name, m_default)                                      \
+#define STRUCT_MEMBER(m_type, m_member_name, m_default) \
+	STRUCT_MEMBER_ALIAS(m_type, m_member_name, #m_member_name, m_default)
+
+// Macros that include _FROM allow you to customize the way the struct is converted from a Variant. You must
+// implement the from_variant(const Variant &p_variant) function in the corresponding .cpp file.
+#define STRUCT_MEMBER_FROM(m_type, m_member_name, m_default)                                                \
 	m_type m_member_name = m_default;                                                                       \
 	struct m_member_name {                                                                                  \
 		static m_type from_variant(const Variant &p_variant);                                               \
@@ -86,10 +108,9 @@ class Struct;
 		static const StructInfo *get_struct_member_info() { return nullptr; }                               \
 	}
 
-#define STRUCT_MEMBER_PRIMITIVE(m_type, m_member_name, m_default) \
-	STRUCT_MEMBER_PRIMITIVE_ALIAS(m_type, m_member_name, #m_member_name, m_default)
-
-#define STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(m_type, m_member_name, m_member_name_alias, m_default)        \
+// Macros that include _TO allow you to customize the way the struct is converted to a Variant. You must
+// implement the Variant to_variant function in the corresponding .cpp file.
+#define STRUCT_MEMBER_FROM_TO_ALIAS(m_type, m_member_name, m_member_name_alias, m_default)                  \
 	m_type m_member_name = m_default;                                                                       \
 	struct m_member_name {                                                                                  \
 		static m_type from_variant(const Variant &p_variant);                                               \
@@ -100,8 +121,8 @@ class Struct;
 		static const StructInfo *get_struct_member_info() { return nullptr; }                               \
 	}
 
-#define STRUCT_MEMBER_PRIMITIVE_FROM_TO(m_type, m_member_name, m_default) \
-	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(m_type, m_member_name, #m_member_name, m_default)
+#define STRUCT_MEMBER_FROM_TO(m_type, m_member_name, m_default) \
+	STRUCT_MEMBER_FROM_TO_ALIAS(m_type, m_member_name, #m_member_name, m_default)
 
 #define STRUCT_MEMBER_CLASS_POINTER(m_type, m_member_name, m_default)                                                       \
 	m_type *m_member_name = m_default;                                                                                      \
@@ -152,25 +173,30 @@ class Struct;
 #define STRUCT_MEMBER_STRUCT_FROM_TO(m_type, m_member_name, m_default) \
 	STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(m_type, m_member_name, #m_member_name, m_default)
 
-#define STRUCT_LAYOUT_WITH_NAME(m_struct_name, m_struct, ...) \
-	static const StringName get_struct_name() {               \
-		return SNAME(m_struct_name);                          \
-	}                                                         \
-	static const StructInfo &get_struct_info() {              \
-		return Layout::get_struct_info();                     \
-	}                                                         \
-	using Layout = StructLayout<m_struct, __VA_ARGS__>;       \
-	m_struct(const Dictionary &p_dict) {                      \
-		Layout::fill_struct(p_dict, *this);                   \
-	}                                                         \
-	m_struct(const Array &p_array) {                          \
-		Layout::fill_struct(p_array, *this);                  \
+// Use after all the struct members have been declared to specialize the StructLayout Template
+// and define some helper functions.
+#define STRUCT_LAYOUT_ALIAS(m_struct_name, m_struct, ...) \
+	static const StringName get_struct_name() {           \
+		return SNAME(m_struct_name);                      \
+	}                                                     \
+	static const StructInfo &get_struct_info() {          \
+		return Layout::get_struct_info();                 \
+	}                                                     \
+	using Layout = StructLayout<m_struct, __VA_ARGS__>;   \
+	m_struct(const Dictionary &p_dict) {                  \
+		Layout::fill_struct(p_dict, *this);               \
+	}                                                     \
+	m_struct(const Array &p_array) {                      \
+		Layout::fill_struct(p_array, *this);              \
 	}
 
-#define STRUCT_LAYOUT_OWNER(m_owner, m_struct, ...) STRUCT_LAYOUT_WITH_NAME(#m_owner "." #m_struct, m_struct, __VA_ARGS__)
+// Most of the time, the exposed name of a struct follows the pattern "OwningClass.StructName".
+#define STRUCT_LAYOUT(m_owner, m_struct, ...) STRUCT_LAYOUT_ALIAS(#m_owner "." #m_struct, m_struct, __VA_ARGS__)
 
-#define STRUCT_LAYOUT(m_struct, ...) STRUCT_LAYOUT_WITH_NAME(#m_struct, m_struct, __VA_ARGS__)
-
+/* The StructLayout template manages all the reflection data for a native struct. It automatically generates
+ * functions for converting the C++ struct to and from a Godot Struct, Array, or Dictionary.
+ * The StructType argument is expected to be a struct declared with STRUCT_DECLARE and the StructMember
+ * arguments are expected to be the reflection structs created by any of the various STRUCT_MEMBER macros. */
 template <typename StructType, typename... StructMembers>
 struct StructLayout {
 	static constexpr int32_t struct_member_count = sizeof...(StructMembers);
@@ -225,6 +251,9 @@ struct StructLayout {
 		return sizeof...(StructMembers) - TypeFinder<T, StructMembers...>::remaining_count - 1;
 	}
 
+	// Provides random access member lookup for native Godot Structs.
+	// It uses recursive types to force the compiler to perform a linear member search
+	// so that member access is O(1) at runtime.
 private:
 	template <typename TypeToFind, typename... TypesToSearch>
 	struct TypeFinder;
@@ -245,15 +274,18 @@ private:
 	};
 };
 
+/* Represents the type data of both native and user Godot Structs.
+ * StructInfo is itself exposed as a Godot Struct, so it serves as
+ * a good example for how to expose other structs. */
 struct StructInfo {
 	STRUCT_DECLARE(StructInfo);
-	STRUCT_MEMBER_PRIMITIVE(StringName, name, StringName());
-	STRUCT_MEMBER_PRIMITIVE(int32_t, count, 0);
-	STRUCT_MEMBER_PRIMITIVE(Vector<StringName>, names, Vector<StringName>());
-	STRUCT_MEMBER_PRIMITIVE_FROM_TO(Vector<Variant::Type>, types, Vector<Variant::Type>());
-	STRUCT_MEMBER_PRIMITIVE(Vector<StringName>, class_names, Vector<StringName>());
-	STRUCT_MEMBER_PRIMITIVE(Vector<Variant>, default_values, Vector<Variant>());
-	STRUCT_LAYOUT(StructInfo, struct name, struct count, struct names, struct types, struct class_names, struct default_values);
+	STRUCT_MEMBER(StringName, name, StringName());
+	STRUCT_MEMBER(int32_t, count, 0);
+	STRUCT_MEMBER(Vector<StringName>, names, Vector<StringName>());
+	STRUCT_MEMBER_FROM_TO(Vector<Variant::Type>, types, Vector<Variant::Type>());
+	STRUCT_MEMBER(Vector<StringName>, class_names, Vector<StringName>());
+	STRUCT_MEMBER(Vector<Variant>, default_values, Vector<Variant>());
+	STRUCT_LAYOUT_ALIAS("StructInfo", StructInfo, struct name, struct count, struct names, struct types, struct class_names, struct default_values);
 
 	Vector<const StructInfo *> struct_member_infos;
 

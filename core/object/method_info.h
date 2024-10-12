@@ -48,16 +48,15 @@ enum MethodFlags {
 
 struct MethodInfo {
 	STRUCT_DECLARE(MethodInfo);
-	STRUCT_MEMBER_PRIMITIVE(String, name, String());
-	STRUCT_MEMBER_PRIMITIVE_FROM_TO_ALIAS(List<PropertyInfo>, arguments, "args", List<PropertyInfo>());
-	STRUCT_MEMBER_PRIMITIVE_ALIAS(Vector<Variant>, default_arguments, "default_args", Vector<Variant>());
-	STRUCT_MEMBER_PRIMITIVE(uint32_t, flags, METHOD_FLAGS_DEFAULT);
-	STRUCT_MEMBER_PRIMITIVE(int, id, 0);
+	STRUCT_MEMBER(String, name, String());
+	STRUCT_MEMBER_FROM_TO_ALIAS(List<PropertyInfo>, arguments, "args", List<PropertyInfo>());
+	STRUCT_MEMBER_ALIAS(Vector<Variant>, default_arguments, "default_args", Vector<Variant>());
+	STRUCT_MEMBER(uint32_t, flags, METHOD_FLAGS_DEFAULT);
+	STRUCT_MEMBER(int, id, 0);
 	STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(PropertyInfo, return_val, "return", PropertyInfo());
-
-	STRUCT_MEMBER_PRIMITIVE(int, return_val_metadata, 0);
-	STRUCT_MEMBER_PRIMITIVE(Vector<int>, arguments_metadata, Vector<int>());
-	STRUCT_LAYOUT_OWNER(Object, MethodInfo, struct name, struct arguments, struct default_arguments, struct flags, struct id, struct return_val, struct return_val_metadata, struct arguments_metadata);
+	STRUCT_MEMBER(int, return_val_metadata, 0);
+	STRUCT_MEMBER(Vector<int>, arguments_metadata, Vector<int>());
+	STRUCT_LAYOUT(Object, MethodInfo, struct name, struct arguments, struct default_arguments, struct flags, struct id, struct return_val, struct return_val_metadata, struct arguments_metadata);
 
 	int get_argument_meta(int p_arg) const {
 		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
