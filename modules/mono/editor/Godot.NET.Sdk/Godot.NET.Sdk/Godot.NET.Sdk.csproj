@@ -3,8 +3,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 
-    <Description>MSBuild .NET Sdk for Godot projects.</Description>
-    <Authors>Godot Engine contributors</Authors>
+    <Description>MSBuild .NET Sdk for Redot projects.</Description>
+    <Authors>Redot Engine contributors</Authors>
 
     <PackageId>Godot.NET.Sdk</PackageId>
     <Version>4.3.1</Version>

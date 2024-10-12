@@ -5583,9 +5583,9 @@
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
-		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
+		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Redot 3.0.">
 		</constant>
-		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
+		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" deprecated="This constant has not been used since Redot 3.0.">
 		</constant>
 	</constants>
 </class>

@@ -583,22 +583,22 @@ void ProjectManager::_open_selected_projects_ask() {
 		for (int i = 0; i < unsupported_features.size(); i++) {
 			String feature = unsupported_features[i];
 			if (feature == "Double Precision") {
-				warning_message += TTR("Warning: This project uses double precision floats, but this version of\nGodot uses single precision floats. Opening this project may cause data loss.\n\n");
+				warning_message += TTR("Warning: This project uses double precision floats, but this version of\nRedot uses single precision floats. Opening this project may cause data loss.\n\n");
 				unsupported_features.remove_at(i);
 				i--;
 			} else if (feature == "C#") {
-				warning_message += TTR("Warning: This project uses C#, but this build of Godot does not have\nthe Mono module. If you proceed you will not be able to use any C# scripts.\n\n");
+				warning_message += TTR("Warning: This project uses C#, but this build of Redot does not have\nthe Mono module. If you proceed you will not be able to use any C# scripts.\n\n");
 				unsupported_features.remove_at(i);
 				i--;
 			} else if (ProjectList::project_feature_looks_like_version(feature)) {
-				warning_message += vformat(TTR("Warning: This project was last edited in Godot %s. Opening will change it to Godot %s.\n\n"), Variant(feature), Variant(VERSION_BRANCH));
+				warning_message += vformat(TTR("Warning: This project was last edited in Redot %s. Opening will change it to Redot %s.\n\n"), Variant(feature), Variant(VERSION_BRANCH));
 				unsupported_features.remove_at(i);
 				i--;
 			}
 		}
 		if (!unsupported_features.is_empty()) {
 			String unsupported_features_str = String(", ").join(unsupported_features);
-			warning_message += vformat(TTR("Warning: This project uses the following features not supported by this build of Godot:\n\n%s\n\n"), unsupported_features_str);
+			warning_message += vformat(TTR("Warning: This project uses the following features not supported by this build of Redot:\n\n%s\n\n"), unsupported_features_str);
 		}
 		warning_message += TTR("Open anyway? Project will be modified.");
 		ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

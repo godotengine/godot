@@ -171,7 +171,7 @@ void AudioEffectRecord::ensure_thread_stopped() {
 void AudioEffectRecord::set_recording_active(bool p_record) {
 	if (p_record) {
 		if (current_instance == nullptr) {
-			WARN_PRINT("Recording should not be set as active before Godot has initialized.");
+			WARN_PRINT("Recording should not be set as active before Redot has initialized.");
 			return;
 		}
 		ensure_thread_stopped();

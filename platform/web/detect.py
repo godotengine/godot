@@ -32,7 +32,7 @@ def get_opts():
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
-        # Matches default values from before Emscripten 3.1.27. New defaults are too low for Godot.
+        # Matches default values from before Emscripten 3.1.27. New defaults are too low for Redot.
         ("stack_size", "WASM stack size (in KiB)", 5120),
         ("default_pthread_stack_size", "WASM pthread default stack size (in KiB)", 2048),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
@@ -278,7 +278,7 @@ def configure(env: "SConsEnvironment"):
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])
 
-    # Wrap the JavaScript support code around a closure named Godot.
+    # Wrap the JavaScript support code around a closure named Redot.
     env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Redot'"])
 
     # Force long jump mode to 'wasm'

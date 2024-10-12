@@ -1,8 +1,0 @@
-diff a/.git-blame-ignore-revs b/.git-blame-ignore-revs	(rejected hunks)
-@@ -57,3 +57,6 @@ df61dc4b2bd54a5a40c515493c76f5a458e5b541
- 
- # Style: Apply new `clang-format` fixes
- b37fc1014abf7adda70dc30b0822d775b3a4433f
-+
-+# Rebrand preambles to Redot
-+e8542b06acca3c1bdeee4b528411771f0819f084

@@ -122,6 +122,7 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
+ 2024-present, Redot Engine contributors
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
@@ -130,6 +131,7 @@ Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
  ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
+ 2024-present, Redot Engine contributors
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib

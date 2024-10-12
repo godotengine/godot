@@ -152,7 +152,7 @@ task copyReleaseAARToBin(type: Copy) {
 task zipGradleBuild(type: Zip) {
     onlyIf { generateGodotTemplates.state.executed || generateDevTemplate.state.executed }
     doFirst {
-        logger.lifecycle("Generating Godot gradle build template")
+        logger.lifecycle("Generating Redot gradle build template")
     }
     from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradlew', 'gradlew.bat', 'gradle/**']))
     include '**/*'

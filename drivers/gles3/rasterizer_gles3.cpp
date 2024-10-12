@@ -351,7 +351,7 @@ RasterizerGLES3::RasterizerGLES3() {
 		}
 	}
 
-	// Disable OpenGL linear to sRGB conversion, because Godot will always do this conversion itself.
+	// Disable OpenGL linear to sRGB conversion, because Redot will always do this conversion itself.
 	glDisable(GL_FRAMEBUFFER_SRGB);
 
 	// OpenGL needs to be initialized before initializing the Rasterizers

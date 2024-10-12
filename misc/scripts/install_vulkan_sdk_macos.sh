@@ -19,4 +19,4 @@ done
 
 rm -f /tmp/vulkan-sdk.dmg
 
-echo 'Vulkan SDK installed successfully! You can now build Godot by running "scons".'
+echo 'Vulkan SDK installed successfully! You can now build Redot by running "scons".'

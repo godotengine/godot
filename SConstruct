@@ -637,7 +637,7 @@ if methods.using_gcc(env):
     elif cc_version_major < 9:
         print_error(
             "Detected GCC version older than 9, which does not fully support "
-            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+            "C++17, or has bugs when compiling Redot. Supported versions are 9 "
             "and later. Use a newer GCC version, or Clang 6 or later by passing "
             '"use_llvm=yes" to the SCons command line.'
         )
@@ -774,7 +774,7 @@ else:
     # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
     env.Prepend(CCFLAGS=["/std:c++17"])
 
-# Disable exception handling. Godot doesn't use exceptions anywhere, and this
+# Disable exception handling. Redot doesn't use exceptions anywhere, and this
 # saves around 20% of binary size and very significant build time (GH-80513).
 if env["disable_exceptions"]:
     if env.msvc:
