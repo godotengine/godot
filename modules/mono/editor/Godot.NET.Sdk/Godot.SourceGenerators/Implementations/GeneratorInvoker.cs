@@ -12,14 +12,12 @@ namespace Godot.SourceGenerators.Implementation;
 /// </summary>
 public static class GeneratorInvoker
 {
-    public static void RunAll(IGeneratorExecutionContext context, CancellationToken cancellationToken)
+    public static void RunAll(IGeneratorExecutionContext context)
     {
-        Parallel.Invoke(
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount - 1, CancellationToken = cancellationToken
-            },
-            GetGeneratorInstances().Select(g => (Action)(() => g.Execute(context))).ToArray());
+        foreach (var generator in GetGeneratorInstances())
+        {
+            generator.Execute(context);
+        }
     }
 
     public static IEnumerable<IGeneratorImplementation> GetGeneratorInstances()
