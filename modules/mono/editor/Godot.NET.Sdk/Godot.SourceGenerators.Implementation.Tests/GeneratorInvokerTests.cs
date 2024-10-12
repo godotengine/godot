@@ -2,12 +2,12 @@ using Xunit;
 
 namespace Godot.SourceGenerators.Implementation.Tests;
 
-public class GeneratorInvokerTests
+public class GodotGeneratorsTests
 {
     [Fact]
     public void GetGeneratorInstances_BehavesProperly()
     {
-        var instances = GeneratorInvoker.GetGeneratorInstances();
+        var instances = GeneratorInvoker.CreateInstances();
         Assert.NotEmpty(instances);
     }
 }

@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Godot.SourceGenerators.Implementation;
 
@@ -14,13 +13,18 @@ public static class GeneratorInvoker
 {
     public static void RunAll(IGeneratorExecutionContext context)
     {
-        foreach (var generator in GetGeneratorInstances())
+        foreach (var generator in CreateInstances())
         {
             generator.Execute(context);
         }
     }
 
-    public static IEnumerable<IGeneratorImplementation> GetGeneratorInstances()
+    public static IEnumerable<IGeneratorImplementation> CreateInstances() => _generatorsConstructor();
+
+    private static readonly Func<IEnumerable<IGeneratorImplementation>> _generatorsConstructor =
+        GetGeneratorsConstructor();
+
+    private static Func<IEnumerable<IGeneratorImplementation>> GetGeneratorsConstructor()
     {
         Type[] types;
         try
@@ -34,10 +38,14 @@ public static class GeneratorInvoker
 
         var implementations = types
             .Where(t => typeof(IGeneratorImplementation).IsAssignableFrom(t));
-        var generators = implementations
+        var constructors = implementations
             .Where(t => t is { IsAbstract: false, IsInterface: false })
-            .Select(t => (IGeneratorImplementation)t.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>()))
+            .Select(t => t.GetConstructor(Array.Empty<Type>()) ?? throw new InvalidOperationException())
             .ToArray();
-        return generators;
+
+        return Expression.Lambda<Func<IEnumerable<IGeneratorImplementation>>>(
+                Expression.NewArrayInit(typeof(IGeneratorImplementation),
+                    constructors.Select(Expression.New)))
+            .Compile();
     }
 }
