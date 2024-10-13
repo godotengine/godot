@@ -47,7 +47,9 @@ public static class GodotGenerators
             .Where(t => typeof(IGeneratorImplementation).IsAssignableFrom(t));
         var constructors = implementations
             .Where(t => t is { IsAbstract: false, IsInterface: false })
-            .Select(t => t.GetConstructor(Array.Empty<Type>()) ?? throw new InvalidOperationException())
+            .Select(t =>
+                t.GetConstructor(Array.Empty<Type>()) ??
+                throw new InvalidOperationException($"Expected {t.Name} to have a parameterless constructor."))
             .ToArray();
 
         return constructors.Select(c => Expression.Lambda<Func<IGeneratorImplementation>>(
