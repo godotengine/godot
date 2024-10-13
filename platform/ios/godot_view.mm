@@ -435,7 +435,7 @@ static const float earth_gravity = 9.80665;
 	// output
 
 	///@TODO Using [[UIApplication sharedApplication] statusBarOrientation]
-	/// is a bit of a hack. Godot obviously knows the orientation so maybe
+	/// is a bit of a hack. Blazium obviously knows the orientation so maybe
 	/// we
 	// can use that instead? (note that left and right seem swapped)
 

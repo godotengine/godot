@@ -796,7 +796,7 @@ class SampleNode {
 }
 
 /**
- * Collection of nodes to represents a Godot Engine audio bus.
+ * Collection of nodes to represents a Blazium Engine audio bus.
  * @class
  */
 class Bus {
@@ -2168,7 +2168,7 @@ const GodotAudioScript = {
 					}
 				}
 
-				// Let Godot process the input/output.
+				// Let Blazium process the input/output.
 				onprocess();
 
 				// Write the output.

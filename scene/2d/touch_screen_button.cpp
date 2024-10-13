@@ -370,10 +370,10 @@ bool TouchScreenButton::is_passby_press_enabled() const {
 
 #ifndef DISABLE_DEPRECATED
 bool TouchScreenButton::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == CoreStringName(normal)) { // Compatibility with Godot 3.x.
+	if (p_name == CoreStringName(normal)) { // Compatibility with Blazium 3.x.
 		set_texture_normal(p_value);
 		return true;
-	} else if (p_name == SceneStringName(pressed)) { // Compatibility with Godot 3.x.
+	} else if (p_name == SceneStringName(pressed)) { // Compatibility with Blazium 3.x.
 		set_texture_pressed(p_value);
 		return true;
 	}

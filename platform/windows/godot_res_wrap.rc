@@ -18,7 +18,7 @@ BEGIN
             VALUE "ProductName",            VERSION_NAME " (Console)"
             VALUE "Licence",                "MIT"
             VALUE "LegalCopyright",         "(c) 2024-present Blazium Engine & 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
-            VALUE "Info",                   "https://godotengine.org"
+            VALUE "Info",                   "https://blazium.app"
             VALUE "ProductVersion",         VERSION_FULL_BUILD
         END
     END

@@ -77,7 +77,7 @@ if env["dlink_enabled"]:
     # The main emscripten runtime, with exported standard libraries.
     sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
 
-    # The side library, containing all Godot code.
+    # The side library, containing all Blazium code.
     wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
     build = sys + [wasm[0]]
 else:

@@ -61,9 +61,9 @@ void FreeDesktopScreenSaver::inhibit() {
 
 	String app_name_string = GLOBAL_GET("application/config/name");
 	CharString app_name_utf8 = app_name_string.utf8();
-	const char *app_name = app_name_string.is_empty() ? "Godot Engine" : app_name_utf8.get_data();
+	const char *app_name = app_name_string.is_empty() ? "Blazium Engine" : app_name_utf8.get_data();
 
-	const char *reason = "Running Godot Engine project";
+	const char *reason = "Running Blazium Engine project";
 
 	DBusMessage *message = dbus_message_new_method_call(
 			BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE,

@@ -32,7 +32,7 @@
 
 #include "core/templates/hash_map.h"
 
-// This provides translation from Windows virtual key codes to Godot and back.
+// This provides translation from Windows virtual key codes to Blazium and back.
 // See WinUser.h and the below for documentation:
 // https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 

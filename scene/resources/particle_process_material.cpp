@@ -1005,7 +1005,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "\n";
 		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
 
-		// Godot detects when the COLLIDED keyword is used. If it's used anywhere in the shader then Godot will generate the screen space SDF for collisions.
+		// Blazium detects when the COLLIDED keyword is used. If it's used anywhere in the shader then Blazium will generate the screen space SDF for collisions.
 		// We don't need it as long as collision is disabled. Refer to GH-83744 for more info.
 		if (collision_mode == COLLISION_RIGID) {
 			code += "	if (!COLLIDED) {\n";

@@ -83,7 +83,7 @@ public class GodotNetUtils {
 		try {
 			multicastLock.release();
 		} catch (RuntimeException e) {
-			Log.e("Godot", "Exception during multicast lock release: " + e);
+			Log.e("Blazium", "Exception during multicast lock release: " + e);
 		}
 	}
 
@@ -112,7 +112,7 @@ public class GodotNetUtils {
 			}
 			return writer.toString();
 		} catch (Exception e) {
-			Log.e("Godot", "Exception while reading CA certificates: " + e);
+			Log.e("Blazium", "Exception while reading CA certificates: " + e);
 			return "";
 		}
 	}

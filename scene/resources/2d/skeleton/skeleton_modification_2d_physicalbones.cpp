@@ -36,7 +36,7 @@ bool SkeletonModification2DPhysicalBones::_set(const StringName &p_path, const V
 	String path = p_path;
 
 #ifdef TOOLS_ENABLED
-	// Exposes a way to fetch the PhysicalBone2D nodes from the Godot editor.
+	// Exposes a way to fetch the PhysicalBone2D nodes from the Blazium editor.
 	if (is_setup) {
 		if (Engine::get_singleton()->is_editor_hint()) {
 			if (path.begins_with("fetch_bones")) {

@@ -1896,7 +1896,7 @@ void WaylandThread::_wl_data_device_on_enter(void *data, struct wl_data_device *
 	ss->dnd_enter_serial = serial;
 	ss->wl_data_offer_dnd = id;
 
-	// Godot only supports DnD file copying for now.
+	// Blazium only supports DnD file copying for now.
 	wl_data_offer_accept(id, serial, "text/uri-list");
 	wl_data_offer_set_actions(id, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
 }
@@ -2501,7 +2501,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_position(td.position);
 		mm->set_global_position(td.position);
 
-		// NOTE: The Godot API expects normalized values and we store them raw,
+		// NOTE: The Blazium API expects normalized values and we store them raw,
 		// straight from the compositor, so we have to normalize them here.
 
 		// According to the tablet proto spec, tilt is expressed in degrees relative
@@ -2871,7 +2871,7 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 	int max_size = 1;
 
 	// ================================ IMPORTANT =================================
-	// NOTE: Due to a Godot limitation, we can't really rescale the whole UI yet.
+	// NOTE: Due to a Blazium limitation, we can't really rescale the whole UI yet.
 	// Because of this reason, all platforms have resorted to forcing the highest
 	// scale possible of a system on any window, despite of what screen it's onto.
 	// On this backend everything's already in place for dynamic window scale
@@ -4032,7 +4032,7 @@ Vector<uint8_t> WaylandThread::selection_get_mime(const String &p_mime) const {
 
 	if (ss->wl_data_source_selection) {
 		// We have a source so the stuff we're pasting is ours. We'll have to pass the
-		// data directly or we'd stall waiting for Godot (ourselves) to send us the
+		// data directly or we'd stall waiting for Blazium (ourselves) to send us the
 		// data :P
 
 		OfferState *os = wl_data_offer_get_offer_state(ss->wl_data_offer_selection);
@@ -4075,7 +4075,7 @@ Vector<uint8_t> WaylandThread::primary_get_mime(const String &p_mime) const {
 
 	if (ss->wp_primary_selection_source) {
 		// We have a source so the stuff we're pasting is ours. We'll have to pass the
-		// data directly or we'd stall waiting for Godot (ourselves) to send us the
+		// data directly or we'd stall waiting for Blazium (ourselves) to send us the
 		// data :P
 
 		OfferState *os = wp_primary_selection_offer_get_offer_state(ss->wp_primary_selection_offer);

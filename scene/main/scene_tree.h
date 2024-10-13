@@ -282,13 +282,13 @@ public:
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
 	void set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value);
 
-	// `notify_group()` is immediate by default since Godot 4.0.
+	// `notify_group()` is immediate by default since Blazium 4.0.
 	void notify_group(const StringName &p_group, int p_notification);
-	// `set_group()` is immediate by default since Godot 4.0.
+	// `set_group()` is immediate by default since Blazium 4.0.
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
 
 	template <typename... VarArgs>
-	// `call_group()` is immediate by default since Godot 4.0.
+	// `call_group()` is immediate by default since Blazium 4.0.
 	void call_group(const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];

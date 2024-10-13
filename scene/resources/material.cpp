@@ -3546,7 +3546,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			idx++;
 		}
 
-		WARN_PRINT("Godot 3.x SpatialMaterial remapped parameter not found: " + String(p_name));
+		WARN_PRINT("Blazium 3.x SpatialMaterial remapped parameter not found: " + String(p_name));
 		return true;
 	}
 }

@@ -341,7 +341,7 @@ const GodotOS = {
 	godot_js_os_hw_concurrency_get__proxy: 'sync',
 	godot_js_os_hw_concurrency_get__sig: 'i',
 	godot_js_os_hw_concurrency_get: function () {
-		// TODO Godot core needs fixing to avoid spawning too many threads (> 24).
+		// TODO Blazium core needs fixing to avoid spawning too many threads (> 24).
 		const concurrency = navigator.hardwareConcurrency || 1;
 		return concurrency < 2 ? concurrency : 2;
 	},
@@ -369,7 +369,7 @@ autoAddDeps(GodotOS, '$GodotOS');
 mergeInto(LibraryManager.library, GodotOS);
 
 /*
- * Godot event listeners.
+ * Blazium event listeners.
  * Keeps track of registered event listeners so it can remove them on shutdown.
  */
 const GodotEventListeners = {

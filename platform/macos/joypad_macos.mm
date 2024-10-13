@@ -340,7 +340,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 		controller.playerIndex = [self getFreePlayerIndex];
 	}
 
-	// Tell Godot about our new controller.
+	// Tell Blazium about our new controller.
 	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
 
 	Joypad *joypad = [[Joypad alloc] init:controller];
@@ -380,7 +380,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 
 	NSArray *keys = [self getAllKeysForController:controller];
 	for (NSNumber *key in keys) {
-		// Tell Godot this joystick is no longer there.
+		// Tell Blazium this joystick is no longer there.
 		int joy_id = [key intValue];
 		Input::get_singleton()->joy_connection_changed(joy_id, false, "");
 

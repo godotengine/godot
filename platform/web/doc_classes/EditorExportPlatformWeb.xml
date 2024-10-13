@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		The Web exporter customizes how a web build is handled. In the editor's "Export" window, it is created when adding a new "Web" preset.
-		[b]Note:[/b] Godot on Web is rendered inside a [code]&lt;canvas&gt;[/code] tag. Normally, the canvas cannot be positioned or resized manually, but otherwise acts as the main [Window] of the application.
+		[b]Note:[/b] Blazium on Web is rendered inside a [code]&lt;canvas&gt;[/code] tag. Normally, the canvas cannot be positioned or resized manually, but otherwise acts as the main [Window] of the application.
 	</description>
 	<tutorials>
 		<link title="Exporting for the Web">$DOCS_URL/tutorials/export/exporting_for_web.html</link>
@@ -19,7 +19,7 @@
 			File path to the custom export template used for release builds. If left empty, the default template is used.
 		</member>
 		<member name="html/canvas_resize_policy" type="int" setter="" getter="">
-			Determines how the canvas should be resized by Godot.
+			Determines how the canvas should be resized by Blazium.
 			- [b]None:[/b] The canvas is not automatically resized.
 			- [b]Project:[/b] The size of the canvas is dependent on the [ProjectSettings].
 			- [b]Adaptive:[/b] The canvas is automatically resized to fit as much of the web page as possible.

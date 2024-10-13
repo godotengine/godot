@@ -83,7 +83,7 @@
 
 class WaylandThread {
 public:
-	// Messages used for exchanging information between Godot's and Wayland's thread.
+	// Messages used for exchanging information between Blazium's and Wayland's thread.
 	class Message : public RefCounted {
 	public:
 		Message() {}
@@ -259,7 +259,7 @@ public:
 		WaylandThread *wayland_thread;
 	};
 
-	// "High level" Godot-side screen data.
+	// "High level" Blazium-side screen data.
 	struct ScreenData {
 		// Geometry data.
 		Point2i position;

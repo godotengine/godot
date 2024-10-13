@@ -19,7 +19,7 @@ afterEvaluate {
                 // Mostly self-explanatory metadata
                 pom {
                     name = PUBLISH_ARTIFACT_ID
-                    description = 'Godot Engine Android Library'
+                    description = 'Blazium Engine Android Library'
                     url = 'https://godotengine.org/'
                     licenses {
                         license {

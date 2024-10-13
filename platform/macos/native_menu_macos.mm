@@ -288,7 +288,7 @@ void NativeMenuMacOS::popup(const RID &p_rid, const Vector2i &p_position) {
 	if (ds) {
 		Point2i position = p_position;
 		// macOS native y-coordinate relative to _get_screens_origin() is negative,
-		// Godot passes a positive value.
+		// Blazium passes a positive value.
 		position.y *= -1;
 		position += ds->_get_screens_origin();
 		position /= ds->screen_get_max_scale();

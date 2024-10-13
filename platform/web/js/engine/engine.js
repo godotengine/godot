@@ -159,7 +159,7 @@ const Engine = (function () {
 					} catch (e) {
 						return Promise.reject(e);
 					}
-					// Godot configuration.
+					// Blazium configuration.
 					me.rtenv['initConfig'](config);
 
 					// Preload GDExtension libraries.

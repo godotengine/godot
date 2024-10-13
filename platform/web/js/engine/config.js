@@ -37,7 +37,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		canvas: null,
 		/**
-		 * The name of the WASM file without the extension. (Set by Godot Editor export process).
+		 * The name of the WASM file without the extension. (Set by Blazium Editor export process).
 		 *
 		 * @memberof EngineConfig
 		 * @default
@@ -64,14 +64,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		locale: null,
 		/**
-		 * The canvas resize policy determines how the canvas should be resized by Godot.
+		 * The canvas resize policy determines how the canvas should be resized by Blazium.
 		 *
-		 * ``0`` means Godot won't do any resizing. This is useful if you want to control the canvas size from
+		 * ``0`` means Blazium won't do any resizing. This is useful if you want to control the canvas size from
 		 * javascript code in your template.
 		 *
-		 * ``1`` means Godot will resize the canvas on start, and when changing window size via engine functions.
+		 * ``1`` means Blazium will resize the canvas on start, and when changing window size via engine functions.
 		 *
-		 * ``2`` means Godot will adapt the canvas size to match the whole browser window.
+		 * ``2`` means Blazium will adapt the canvas size to match the whole browser window.
 		 *
 		 * @memberof EngineConfig
 		 * @type {number}
@@ -134,12 +134,12 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		fileSizes: [],
 		/**
-		 * A callback function for handling Godot's ``OS.execute`` calls.
+		 * A callback function for handling Blazium's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
 		 *
 		 * @callback EngineConfig.onExecute
-		 * @param {string} path The path that Godot's wants executed.
+		 * @param {string} path The path that Blazium's wants executed.
 		 * @param {Array.<string>} args The arguments of the "command" to execute.
 		 */
 		/**
@@ -148,12 +148,12 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		onExecute: null,
 		/**
-		 * A callback function for being notified when the Godot instance quits.
+		 * A callback function for being notified when the Blazium instance quits.
 		 *
 		 * **Note**: This function will not be called if the engine crashes or become unresponsive.
 		 *
 		 * @callback EngineConfig.onExit
-		 * @param {number} status_code The status code returned by Godot on exit.
+		 * @param {number} status_code The status code returned by Blazium on exit.
 		 */
 		/**
 		 * @ignore
@@ -246,7 +246,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.onPrint = parse('onPrint', this.onPrint);
 		this.onProgress = parse('onProgress', this.onProgress);
 
-		// Godot config
+		// Blazium config
 		this.canvas = parse('canvas', this.canvas);
 		this.executable = parse('executable', this.executable);
 		this.mainPack = parse('mainPack', this.mainPack);
@@ -345,7 +345,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		locale = locale.replace('-', '_');
 		const onExit = this.onExit;
 
-		// Godot configuration.
+		// Blazium configuration.
 		return {
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,

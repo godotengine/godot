@@ -449,7 +449,7 @@ const GodotInputDragDrop = {
 mergeInto(LibraryManager.library, GodotInputDragDrop);
 
 /*
- * Godot exposed input functions.
+ * Blazium exposed input functions.
  */
 const GodotInput = {
 	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
