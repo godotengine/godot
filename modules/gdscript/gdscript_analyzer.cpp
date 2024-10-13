@@ -962,6 +962,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 		}
 	}
 
+	// Resolving external access
 	if (!parser->has_class(p_class)) {
 		if (parser_ref.is_null()) {
 			// Error already pushed.
@@ -982,6 +983,41 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 		if (other_parser->errors.size() > error_count) {
 			push_error(vformat(R"(Could not resolve external class member "%s".)", member.get_name()), p_source);
 			return;
+		}
+
+		// Simple access detection
+		GDScriptParser::Node *member_node = nullptr;
+		String action_name = "access";
+		String member_type = "member";
+
+		switch (member.type) {
+			case GDScriptParser::ClassNode::Member::CONSTANT:
+				member_node = member.constant;
+				break;
+			case GDScriptParser::ClassNode::Member::VARIABLE:
+				member_node = member.variable;
+				break;
+			case GDScriptParser::ClassNode::Member::FUNCTION:
+				member_node = member.function;
+				action_name = "call";
+				member_type = "method";
+		}
+
+		if (member_node) {
+			switch (member_node->access_restriction) {
+				case GDScriptParser::Node::AccessRestriction::ACCESS_RESTRICTION_PRIVATE:
+					if (parser->current_class != other_parser->current_class) {
+						push_error(vformat(R"(Could not %s external class %s "%s" because it is private.)", action_name, member_type, member.get_name()), p_source);
+						return;
+					}
+					break;
+				case GDScriptParser::Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED:
+					if (!parser->current_class->extends.has(other_parser->current_class->identifier)) {
+						push_error(vformat(R"(Could not %s external class %s "%s" because it is protected and accessed from a class that is not derived from "%s".)", action_name, member_type, member.get_name(), other_parser->current_class->fqcn), p_source);
+						return;
+					}
+					break;
+			}
 		}
 
 		return;

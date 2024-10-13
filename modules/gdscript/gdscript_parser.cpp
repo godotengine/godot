@@ -4185,20 +4185,49 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 // Access restrictions.
 bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class)
 {
-	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION, false, R"("@private" annotation can only be applied to class members, such as constants, variables, and functions.)");
+	AssignableNode *member = static_cast<AssignableNode *>(p_target);
 
-	AccessibleNode *member = static_cast<AccessibleNode *>(p_target);
 	switch (member->access_restriction) {
-		
+		case Node::AccessRestriction::ACCESS_RESTRICTION_PRIVATE:
+			push_error(R"("@private" annotation can only be used once per member.)", p_annotation);
+			return false;
+		case Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED:
+			push_error(R"("@private" and "@protected" annotations cannot be used together.)", p_annotation);
+			return false;
 	}
 
-    return true;
+	VariableNode *variable = static_cast<VariableNode *>(member);
+	if (variable->exported && variable->type != Node::Type::FUNCTION) {
+		push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
+		return false;
+	}
+
+	member->access_restriction = Node::AccessRestriction::ACCESS_RESTRICTION_PRIVATE;
+	print_line(vformat(R"(Set access restriction of memebr %s to %s)", member->identifier->name, member->access_restriction));
+
+	return true;
 }
 
 bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class)
 {
-    ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION, false, R"("@protected" annotation can only be applied to class members, such as constants, variables, and functions.)");
-	
+	AssignableNode *member = static_cast<AssignableNode *>(p_target);
+
+	switch (member->access_restriction) {
+		case Node::AccessRestriction::ACCESS_RESTRICTION_PRIVATE:
+			push_error(R"("@protected" annotation can only be used once per member.)", p_annotation);
+			return false;
+		case Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED:
+			push_error(R"("@private" and "@protected" annotations cannot be used together.)", p_annotation);
+			return false;
+	}
+
+	VariableNode *variable = static_cast<VariableNode *>(member);
+	if (variable->exported && variable->type != Node::Type::FUNCTION) {
+		push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
+		return false;
+	}
+
+	member->access_restriction = Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED;
 	return true;
 }
 
@@ -4324,6 +4353,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->access_restriction != Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+		push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
 		return false;
 	}
 

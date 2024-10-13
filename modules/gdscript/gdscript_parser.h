@@ -333,8 +333,15 @@ public:
 			VARIABLE,
 			WHILE,
 		};
-
 		Type type = NONE;
+
+		enum AccessRestriction {
+			ACCESS_RESTRICTION_PUBLIC, // By default, public.
+			ACCESS_RESTRICTION_PRIVATE, // Can only be accessed from within the same class.
+			ACCESS_RESTRICTION_PROTECTED, // Can only be accessed from within the same class or its subclasses.
+		};
+		AccessRestriction access_restriction = AccessRestriction::ACCESS_RESTRICTION_PUBLIC;
+
 		int start_line = 0, end_line = 0;
 		int start_column = 0, end_column = 0;
 		int leftmost_column = 0, rightmost_column = 0;
@@ -400,14 +407,6 @@ public:
 	};
 
 	struct AssignableNode : public Node {
-		enum AccessRestriction {
-			ACCESS_RESTRICTION_PUBLIC,
-			ACCESS_RESTRICTION_PRIVATE,
-			ACCESS_RESTRICTION_PROTECTED,
-		}
-		AccessRestriction access_restriction = ACCESS_RESTRICTION_PUBLIC; // Default to public.
-		Vector<ClassNode*> accessible_classes;
-
 		IdentifierNode *identifier = nullptr;
 		ExpressionNode *initializer = nullptr;
 		TypeNode *datatype_specifier = nullptr;
@@ -573,7 +572,6 @@ public:
 				ENUM_VALUE, // For unnamed enums.
 				GROUP, // For member grouping.
 			};
-
 			Type type = UNDEFINED;
 
 			union {

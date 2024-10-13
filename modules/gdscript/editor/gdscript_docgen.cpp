@@ -375,6 +375,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 			} break;
 
 			case GDP::ClassNode::Member::CONSTANT: {
+				if (member.constant->access_restriction != GDP::Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+					break;
+				}
+
 				const GDP::ConstantNode *m_const = member.constant;
 				const StringName &const_name = member.constant->identifier->name;
 
@@ -393,6 +397,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 			} break;
 
 			case GDP::ClassNode::Member::FUNCTION: {
+				if (member.function->access_restriction != GDP::Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+					break;
+				}
+
 				const GDP::FunctionNode *m_func = member.function;
 				const StringName &func_name = m_func->identifier->name;
 
@@ -455,6 +463,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 			} break;
 
 			case GDP::ClassNode::Member::VARIABLE: {
+				if (member.variable->access_restriction != GDP::Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+					break;
+				}
+
 				const GDP::VariableNode *m_var = member.variable;
 				const StringName &var_name = m_var->identifier->name;
 

@@ -730,7 +730,7 @@
 		<annotation name="@private">
 			<return type="void" />
 			<description>
-				Modifies the accessibility of the following property to [b]private[/b], which means that it can only be accessed from within the same script.
+				Modifies the accessibility of the following member(constants, variables and functions) to [b]private[/b], which means that it can only be accessed from within the same script.
 				[codeblock]
 				# In Class A:
 				@private static var a = 10
@@ -745,7 +745,7 @@
 		<annotation name="@protected">
 			<return type="void" />
 			<description>
-				Modifies the accessibility of the following property to [b]protected[/b], which means that it can only be accessed from within the same script or a child of the same script.
+				Modifies the accessibility of the following member(constants, variables and functions) to [b]protected[/b], which means that it can only be accessed from within the same script or a child of the same script.
 				[codeblock]
 				# In Class A:
 				@private static var a = 10
