@@ -269,7 +269,7 @@ def build_res_file(target, source, env: "SConsEnvironment"):
         cmdbase += " --include-dir . --target=" + arch_aliases[env["arch"]]
     else:
         # rc doesn't seem to have a target architecture arg.  So not passing.
-        cmdbase += " /i ."
+        cmdbase += " /nologo /i ."
 
     for x in range(len(source)):
         ok = True
