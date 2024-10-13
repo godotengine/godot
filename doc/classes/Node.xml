@@ -1017,10 +1017,10 @@
 			The node's processing behavior (see [enum ProcessMode]). To check if the node can process in its current mode, use [method can_process].
 		</member>
 		<member name="process_physics_priority" type="int" setter="set_physics_process_priority" getter="get_physics_process_priority" default="0">
-			Similar to [member process_priority] but for [constant NOTIFICATION_PHYSICS_PROCESS], [method _physics_process] or the internal version.
+			Similar to [member process_priority] but for [constant NOTIFICATION_PHYSICS_PROCESS], [method _physics_process] or [constant NOTIFICATION_INTERNAL_PHYSICS_PROCESS].
 		</member>
 		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
-			The node's execution order of the process callbacks ([method _process], [constant NOTIFICATION_PROCESS], and [constant NOTIFICATION_INTERNAL_PROCESS]). Nodes whose priority value is [i]lower[/i] call their process callback first, regardless of tree order.
+			The node's execution order of the process callbacks ([method _process], [constant NOTIFICATION_PROCESS], and [constant NOTIFICATION_INTERNAL_PROCESS]). Nodes whose priority value is [i]lower[/i] call their process callbacks first, regardless of tree order.
 		</member>
 		<member name="process_thread_group" type="int" setter="set_process_thread_group" getter="get_process_thread_group" enum="Node.ProcessThreadGroup" default="0">
 			Set the process thread group for this node (basically, whether it receives [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS], [method _process] or [method _physics_process] (and the internal versions) on the main thread or in a sub-thread.
