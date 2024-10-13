@@ -1697,7 +1697,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			// Construct a GitHub repository URL and open it in the user's default web browser.
 			// If the commit hash is available, use it for greater accuracy. Otherwise fall back to tagged release.
 			String git_ref = String(VERSION_HASH).is_empty() ? String(VERSION_NUMBER) + "-stable" : String(VERSION_HASH);
-			OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
+			OS::get_singleton()->shell_open(vformat("https://github.com/blazium-engine/blazium/blob/%s/%s#L%d",
 					git_ref, file, line_number));
 		} break;
 		case ACTION_DELETE_BREAKPOINT: {
