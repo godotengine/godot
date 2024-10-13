@@ -280,7 +280,7 @@ class FontEditorPlugin : public EditorPlugin {
 public:
 	FontEditorPlugin();
 
-	virtual String get_name() const override { return "Font"; }
+	virtual String get_plugin_name() const override { return "Font"; }
 };
 
 #endif // FONT_CONFIG_PLUGIN_H

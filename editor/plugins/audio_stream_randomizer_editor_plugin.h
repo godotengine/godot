@@ -41,7 +41,7 @@ private:
 	void _move_stream_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos);
 
 public:
-	virtual String get_name() const override { return "AudioStreamRandomizer"; }
+	virtual String get_plugin_name() const override { return "AudioStreamRandomizer"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

@@ -47,7 +47,7 @@ class SubViewportPreviewEditorPlugin : public EditorPlugin {
 	GDCLASS(SubViewportPreviewEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "SubViewportPreview"; }
+	virtual String get_plugin_name() const override { return "SubViewportPreview"; }
 
 	SubViewportPreviewEditorPlugin();
 };
