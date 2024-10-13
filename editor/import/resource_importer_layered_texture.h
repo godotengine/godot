@@ -117,6 +117,8 @@ public:
 	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;
 
+	virtual bool can_import_threaded() const override { return true; }
+
 	void set_mode(Mode p_mode) { mode = p_mode; }
 
 	ResourceImporterLayeredTexture(bool p_singleton = false);
