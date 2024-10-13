@@ -4193,6 +4193,8 @@ bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Nod
 		case Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED:
 			push_error(R"("@private" and "@protected" annotations cannot be used together.)", p_annotation);
 			return false;
+		default:
+			break;
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(member);
@@ -4216,6 +4218,8 @@ bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, N
 		case Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED:
 			push_error(R"("@private" and "@protected" annotations cannot be used together.)", p_annotation);
 			return false;
+		default:
+			break;
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(member);

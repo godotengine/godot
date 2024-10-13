@@ -1002,6 +1002,8 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				action_name = "call";
 				member_type = "method";
 				break;
+			default:
+				break;
 		}
 
 		if (member_node) {
@@ -1017,6 +1019,8 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 						push_error(vformat(R"(Could not %s external class %s "%s" because it is protected and accessed from a class that is not derived from "%s".)", action_name, member_type, member.get_name(), other_parser->current_class->fqcn), p_source);
 						return;
 					}
+					break;
+				default:
 					break;
 			}
 		}
