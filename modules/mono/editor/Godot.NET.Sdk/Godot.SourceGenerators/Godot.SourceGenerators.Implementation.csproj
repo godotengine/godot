@@ -2,6 +2,8 @@
   <Import Project="Godot.SourceGenerators.targets"/>
   <PropertyGroup>
     <PackageId>Godot.SourceGenerators.Implementation</PackageId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(BaseOutputPath)/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <!--  Generators should not be run when assembly is loaded.-->
