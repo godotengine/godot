@@ -100,8 +100,8 @@ GDScriptParser::GDScriptParser() {
 
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Access restrictions.
-		register_annotation(MethodInfo("@private"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION , &GDScriptParser::access_private_annotation);
-		register_annotation(MethodInfo("@protected"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION , &GDScriptParser::access_protected_annotation);
+		register_annotation(MethodInfo("@private"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::access_private_annotation);
+		register_annotation(MethodInfo("@protected"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::access_protected_annotation);
 
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -4183,8 +4183,7 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 }
 
 // Access restrictions.
-bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class)
-{
+bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	AssignableNode *member = static_cast<AssignableNode *>(p_target);
 
 	switch (member->access_restriction) {
@@ -4203,13 +4202,11 @@ bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Nod
 	}
 
 	member->access_restriction = Node::AccessRestriction::ACCESS_RESTRICTION_PRIVATE;
-	print_line(vformat(R"(Set access restriction of memebr %s to %s)", member->identifier->name, member->access_restriction));
 
 	return true;
 }
 
-bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class)
-{
+bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	AssignableNode *member = static_cast<AssignableNode *>(p_target);
 
 	switch (member->access_restriction) {

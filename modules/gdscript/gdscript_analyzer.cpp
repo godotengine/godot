@@ -1001,6 +1001,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member_node = member.function;
 				action_name = "call";
 				member_type = "method";
+				break;
 		}
 
 		if (member_node) {
