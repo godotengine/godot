@@ -1,6 +1,6 @@
 #include "core/version.h"
 
-GODOT_ICON ICON platform/windows/blazium_console.ico
+GODOT_ICON ICON platform/windows/godot_console.ico
 
 1 VERSIONINFO
 FILEVERSION     VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
