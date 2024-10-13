@@ -2662,14 +2662,19 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 		path = base_node->get_path().rel_path_to(p_path);
 	}
 
+	_submit_relative_node_path(path);
+}
+
+void EditorPropertyNodePath::_submit_relative_node_path(const NodePath &p_path) {
+	Node *base_node = get_base_node();
 	if (editing_node) {
 		if (!base_node) {
-			emit_changed(get_edited_property(), get_tree()->get_edited_scene_root()->get_node(path));
+			emit_changed(get_edited_property(), get_tree()->get_edited_scene_root()->get_node(p_path));
 		} else {
-			emit_changed(get_edited_property(), base_node->get_node(path));
+			emit_changed(get_edited_property(), base_node->get_node(p_path));
 		}
 	} else {
-		emit_changed(get_edited_property(), path);
+		emit_changed(get_edited_property(), p_path);
 	}
 	update_property();
 }
@@ -2748,7 +2753,7 @@ void EditorPropertyNodePath::_accept_text() {
 
 void EditorPropertyNodePath::_text_submitted(const String &p_text) {
 	NodePath np = p_text;
-	emit_changed(get_edited_property(), np);
+	_submit_relative_node_path(np);
 	edit->hide();
 	assign->show();
 	menu->show();
