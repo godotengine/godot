@@ -313,7 +313,7 @@ opts.Add("AS", "Assembler binary")
 opts.Add("AR", "Archiver binary")
 opts.Add("RANLIB", "Ranlib binary")
 opts.Add("RC", "Resource compiler binary")
-# Set this to something like "${TEMPFILE('$AR rcs $TARGET $SOURCES','$ARCOMSTR')}" if you get errors related to a command being too long. 
+# Set this to something like "${TEMPFILE('$AR rcs $TARGET $SOURCES','$ARCOMSTR')}" if you get errors related to a command being too long.
 # This is a common error on Windows machines.
 opts.Add("ARCOM", "Custom command used to generate an object file from an assembly-language source file.")
 opts.Add("cppdefines", "Custom defines for the pre-processor")

@@ -492,7 +492,7 @@ def configure(env: "SConsEnvironment"):
             # The default crash handler depends on glibc, so if the host uses
             # a different libc (BSD libc, musl), libexecinfo is required.
             print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
-    elif not "execinfo" in env or env["execinfo"]:
+    elif "execinfo" not in env or env["execinfo"]:
         env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
 
     if platform.system() == "FreeBSD":
