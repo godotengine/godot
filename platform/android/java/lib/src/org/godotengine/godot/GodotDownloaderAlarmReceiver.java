@@ -48,7 +48,7 @@ import com.google.android.vending.expansion.downloader.DownloaderClientMarshalle
 public class GodotDownloaderAlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d("BLAZIUM", "Alarm recieved");
+		Log.d("BLAZIUM", "Alarma recivida");
 		try {
 			DownloaderClientMarshaller.startDownloadServiceIfRequired(context, intent, GodotDownloaderService.class);
 		} catch (NameNotFoundException e) {
