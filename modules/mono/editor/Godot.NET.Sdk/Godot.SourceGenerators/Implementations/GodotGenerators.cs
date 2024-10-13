@@ -11,6 +11,22 @@ namespace Godot.SourceGenerators.Implementation;
 /// </summary>
 public static class GodotGenerators
 {
+    /// <summary>
+    /// The recommended way to apply Godot source generators.
+    /// </summary>
+    public static void RunAll(IGeneratorExecutionContext generatorExecutionContext)
+    {
+        foreach (var c in GetConstructors())
+        {
+            c().Execute(generatorExecutionContext);
+        }
+    }
+
+    /// <summary>
+    /// Allows more control over how the generators are executed e.g. in parallel.
+    /// Parallel execution can cause cryptic exceptions.
+    /// <see cref="RunAll"/> is the recommended way to apply Godot generators.
+    /// </summary>
     public static IEnumerable<Func<IGeneratorImplementation>> GetConstructors() => _generatorsConstructor;
 
     private static readonly Func<IGeneratorImplementation>[] _generatorsConstructor = GetGeneratorConstructors();
