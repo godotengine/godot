@@ -30,6 +30,7 @@
 
 #include "editor_object_selector.h"
 
+#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -131,6 +132,18 @@ void EditorObjectSelector::update_path() {
 		Ref<Texture2D> obj_icon;
 		if (Object::cast_to<MultiNodeEdit>(obj)) {
 			obj_icon = EditorNode::get_singleton()->get_class_icon(Object::cast_to<MultiNodeEdit>(obj)->get_edited_class_name());
+		} else if (obj->is_class("EditorDebuggerRemoteObject")) {
+			String class_name;
+			Ref<Script> script_base = obj->get_script();
+
+			if (script_base.is_valid()) {
+				class_name = script_base->get_global_name();
+			}
+			if (class_name.is_empty()) {
+				class_name = Object::cast_to<EditorDebuggerRemoteObject>(obj)->type_name;
+			}
+
+			obj_icon = EditorNode::get_singleton()->get_class_icon(class_name);
 		} else {
 			obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
 		}
