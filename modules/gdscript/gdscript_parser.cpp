@@ -99,6 +99,10 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		// Access restrictions.
+		register_annotation(MethodInfo("@private"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION , &GDScriptParser::access_private_annotation);
+		register_annotation(MethodInfo("@protected"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION , &GDScriptParser::access_protected_annotation);
+
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -4175,6 +4179,26 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	}
 	variable->onready = true;
 	current_class->onready_used = true;
+	return true;
+}
+
+// Access restrictions.
+bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class)
+{
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION, false, R"("@private" annotation can only be applied to class members, such as constants, variables, and functions.)");
+
+	AccessibleNode *member = static_cast<AccessibleNode *>(p_target);
+	switch (member->access_restriction) {
+		
+	}
+
+    return true;
+}
+
+bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class)
+{
+    ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION, false, R"("@protected" annotation can only be applied to class members, such as constants, variables, and functions.)");
+	
 	return true;
 }
 

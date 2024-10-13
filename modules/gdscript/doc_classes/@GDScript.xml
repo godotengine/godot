@@ -316,6 +316,7 @@
 				[/codeblock]
 				[b]Note:[/b] Custom resources and nodes should be registered as global classes using [code]class_name[/code], since the Inspector currently only supports global classes. Otherwise, a less specific type will be exported instead.
 				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
+				[b]Note:[/b] Exported properties should maintain [b]public[/b] to other classes, so this cannot be used together with either [annotation @private] or [annotation @protected].
 			</description>
 		</annotation>
 		<annotation name="@export_category">
@@ -724,6 +725,36 @@
 				[codeblock]
 				@onready var character_name: Label = $Label
 				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@private">
+			<return type="void" />
+			<description>
+				Modifies the accessibility of the following property to [b]private[/b], which means that it can only be accessed from within the same script.
+				[codeblock]
+				# In Class A:
+				@private static var a = 10
+				# In Class B:
+				var b = A.a # Error: Cannot access private property 'a' from outside the class.
+				# In Class C that inherits from A:
+				var c = A.a # Error: Cannot access private property 'a' from outside the class.
+				[/codeblock]
+				[b]Note:[/b] As this modifies the accessibility of the property, it cannot be used together with [annotation @export] or its extending versions.
+			</description>
+		</annotation>
+		<annotation name="@protected">
+			<return type="void" />
+			<description>
+				Modifies the accessibility of the following property to [b]protected[/b], which means that it can only be accessed from within the same script or a child of the same script.
+				[codeblock]
+				# In Class A:
+				@private static var a = 10
+				# In Class B:
+				var b = A.a # Error: Cannot access private property 'a' from outside the class.
+				# In Class C that inherits from A:
+				var c = A.a # OK: Can access protected property 'a' from the parent class.
+				[/codeblock]
+				[b]Note:[/b] As this modifies the accessibility of the property, it cannot be used together with [annotation @export] or its extending versions.
 			</description>
 		</annotation>
 		<annotation name="@rpc">

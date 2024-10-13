@@ -400,6 +400,14 @@ public:
 	};
 
 	struct AssignableNode : public Node {
+		enum AccessRestriction {
+			ACCESS_RESTRICTION_PUBLIC,
+			ACCESS_RESTRICTION_PRIVATE,
+			ACCESS_RESTRICTION_PROTECTED,
+		}
+		AccessRestriction access_restriction = ACCESS_RESTRICTION_PUBLIC; // Default to public.
+		Vector<ClassNode*> accessible_classes;
+
 		IdentifierNode *identifier = nullptr;
 		ExpressionNode *initializer = nullptr;
 		TypeNode *datatype_specifier = nullptr;
@@ -1503,6 +1511,9 @@ private:
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	//// Access restrictions.
+	bool access_private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool access_protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
