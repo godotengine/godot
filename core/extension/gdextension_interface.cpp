@@ -40,6 +40,7 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
+#include "core/variant/variant_utility.h"
 #include "core/version.h"
 
 #include <string.h>
@@ -526,6 +527,21 @@ static GDExtensionBool gdextension_variant_can_convert(GDExtensionVariantType p_
 
 static GDExtensionBool gdextension_variant_can_convert_strict(GDExtensionVariantType p_from, GDExtensionVariantType p_to) {
 	return Variant::can_convert_strict((Variant::Type)p_from, (Variant::Type)p_to);
+}
+
+static void gdextension_variant_interpolate(GDExtensionConstVariantPtr p_from, GDExtensionConstVariantPtr p_to, float p_weight, GDExtensionVariantPtr r_dest, GDExtensionCallError *r_error) {
+	const Variant *from = (const Variant *)p_from;
+	const Variant *to = (const Variant *)p_to;
+	Variant *dest = (Variant *)r_dest;
+
+	Callable::CallError error;
+	*dest = VariantUtilityFunctions::lerp(*from, *to, p_weight, error);
+
+	if (r_error) {
+		r_error->error = (GDExtensionCallErrorType)(error.error);
+		r_error->argument = error.argument;
+		r_error->expected = error.expected;
+	}
 }
 
 // Variant interaction.
@@ -1622,6 +1638,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(variant_get_type_name);
 	REGISTER_INTERFACE_FUNC(variant_can_convert);
 	REGISTER_INTERFACE_FUNC(variant_can_convert_strict);
+	REGISTER_INTERFACE_FUNC(variant_interpolate);
 	REGISTER_INTERFACE_FUNC(get_variant_from_type_constructor);
 	REGISTER_INTERFACE_FUNC(get_variant_to_type_constructor);
 	REGISTER_INTERFACE_FUNC(variant_get_ptr_operator_evaluator);

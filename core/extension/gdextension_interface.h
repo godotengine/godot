@@ -1360,6 +1360,20 @@ typedef GDExtensionBool (*GDExtensionInterfaceVariantCanConvert)(GDExtensionVari
 typedef GDExtensionBool (*GDExtensionInterfaceVariantCanConvertStrict)(GDExtensionVariantType p_from, GDExtensionVariantType p_to);
 
 /**
+ * @name variant_interpolate
+ * @since 4.4
+ *
+ * Interpolates between the values of two Variants using a given weight.
+ *
+ * @param p_from The Variant to interpolate from.
+ * @param p_to The Variant to interpolate towards.
+ * @param p_weight The weight that dictates how far to interpolate the value of p_from towards the value of p_to.
+ * @param r_dest A pointer to the destination Variant.
+ * @param r_error A pointer to a GDExtensionCallError struct that will receive error information.
+ */
+typedef void (*GDExtensionInterfaceVariantInterpolate)(GDExtensionConstVariantPtr p_from, GDExtensionConstVariantPtr p_to, float p_weight, GDExtensionVariantPtr r_dest, GDExtensionCallError *r_error);
+
+/**
  * @name get_variant_from_type_constructor
  * @since 4.1
  *
