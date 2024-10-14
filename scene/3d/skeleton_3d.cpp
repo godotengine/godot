@@ -822,8 +822,8 @@ void Skeleton3D::set_human_bone(int p_bone, bool p_is_human_bone) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
-	bones.write[p_bone].is_human_bone = true;
-	bones.write[p_bone].pose_cache_dirty = true;
+	bones[p_bone].is_human_bone = true;
+	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
 		_make_dirty();
 	}
@@ -2254,7 +2254,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 
 void Skeleton3D::change_to_human_bone(int p_bone) {	
 	while(p_bone != -1) {
-		bones.write[p_bone].is_human_bone = true;
+		bones[p_bone].is_human_bone = true;
 		p_bone = bones[p_bone].parent;
 	}
 }
