@@ -3868,7 +3868,7 @@ void EditorHelpBitTooltip::show_tooltip(EditorHelpBit *p_help_bit, Control *p_ta
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
 	p_help_bit->connect("request_hide", callable_mp(tooltip, &EditorHelpBitTooltip::_safe_queue_free));
 	tooltip->add_child(p_help_bit);
-	p_target->get_viewport()->add_child(tooltip);
+	p_target->add_child(tooltip);
 	p_help_bit->update_content_height();
 	tooltip->popup_under_cursor();
 }
