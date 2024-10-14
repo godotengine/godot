@@ -274,6 +274,14 @@ namespace Godot.SourceGenerators
             return null;
         }
 
+        public static ITypeSymbol[]? GetGenericElementTypes(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol { IsGenericType: true } genericType)
+                return genericType.TypeArguments.ToArray();
+
+            return null;
+        }
+
         private static StringBuilder Append(this StringBuilder source, string a, string b)
             => source.Append(a).Append(b);
 

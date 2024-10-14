@@ -1763,6 +1763,28 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
+
+			// Wrapped lines.
+			text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+			text_edit->set_text("this is some text\nfor selection");
+			text_edit->set_size(Size2(110, 100));
+			MessageQueue::get_singleton()->flush();
+
+			// Line 0 wraps: 'this is ', 'some text'.
+			// Line 1 wraps: 'for ', 'selection'.
+			CHECK(text_edit->is_line_wrapped(0));
+
+			// Select to the first character of a wrapped line.
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 11).get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 8).get_center(), MouseButtonMask::LEFT, Key::NONE);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "so");
+			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
+			CHECK(text_edit->get_selection_origin_line() == 0);
+			CHECK(text_edit->get_selection_origin_column() == 10);
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK(text_edit->is_dragging_cursor());
 		}
 
 		SUBCASE("[TextEdit] mouse word select") {
@@ -3563,6 +3585,54 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
 
+		SUBCASE("[TextEdit] cut when empty selection clipboard disabled") {
+			text_edit->set_empty_selection_clipboard_enabled(false);
+			DS->clipboard_set("");
+
+			text_edit->set_text("this is\nsome\n");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(6);
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			text_edit->cut();
+			MessageQueue::get_singleton()->flush();
+			CHECK(DS->clipboard_get() == "");
+			CHECK(text_edit->get_text() == "this is\nsome\n");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 6);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK_FALSE("lines_edited_from");
+		}
+
+		SUBCASE("[TextEdit] copy when empty selection clipboard disabled") {
+			text_edit->set_empty_selection_clipboard_enabled(false);
+			DS->clipboard_set("");
+
+			text_edit->set_text("this is\nsome\n");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(6);
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			text_edit->copy();
+			MessageQueue::get_singleton()->flush();
+			CHECK(DS->clipboard_get() == "");
+			CHECK(text_edit->get_text() == "this is\nsome\n");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 6);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK_FALSE("lines_edited_from");
+		}
+
 		SIGNAL_UNWATCH(text_edit, "text_set");
 		SIGNAL_UNWATCH(text_edit, "text_changed");
 		SIGNAL_UNWATCH(text_edit, "lines_edited_from");
@@ -4210,6 +4280,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 4);
 			text_edit->remove_secondary_carets();
+
+			// Remove when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(3);
+
+			SEND_GUI_ACTION("ui_text_backspace_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK_FALSE(text_edit->has_selection());
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_backspace_word same line") {
@@ -4869,6 +4951,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 2);
 			text_edit->remove_secondary_carets();
+
+			// Remove when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+
+			SEND_GUI_ACTION("ui_text_delete_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK_FALSE(text_edit->has_selection());
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_delete_word same line") {
@@ -5279,6 +5373,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Move when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(3);
+
+			SEND_GUI_ACTION("ui_text_caret_word_left");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_left") {
@@ -5541,6 +5645,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Move when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+
+			SEND_GUI_ACTION("ui_text_caret_word_right");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 3);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_right") {
@@ -5713,6 +5827,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 2);
 
 			MessageQueue::get_singleton()->flush();
+			// Lines 0 and 4 are wrapped into 2 parts: 'this is ' and 'some'.
 			CHECK(text_edit->is_line_wrapped(0));
 			SIGNAL_DISCARD("text_set");
 			SIGNAL_DISCARD("text_changed");
@@ -5762,9 +5877,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
-			text_edit->set_caret_column(12, false);
 
 			// Normal up over wrapped line to line 0.
+			text_edit->set_caret_column(12, false);
 			SEND_GUI_ACTION("ui_text_caret_up");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
@@ -5777,6 +5892,23 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Normal up from column 0 to a wrapped line.
+			text_edit->remove_secondary_carets();
+			text_edit->set_caret_line(5);
+			text_edit->set_caret_column(0);
+			SEND_GUI_ACTION("ui_text_caret_up");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 4);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK_FALSE(text_edit->has_selection(0));
+
+			// Normal up to column 0 of a wrapped line.
+			SEND_GUI_ACTION("ui_text_caret_up");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 4);
+			CHECK(text_edit->get_caret_column() == 0);
+			CHECK_FALSE(text_edit->has_selection(0));
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_down") {
@@ -5792,6 +5924,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			MessageQueue::get_singleton()->flush();
 
+			// Lines 3 and 7 are wrapped into 2 parts: 'this is ' and 'some'.
 			CHECK(text_edit->is_line_wrapped(3));
 			SIGNAL_DISCARD("text_set");
 			SIGNAL_DISCARD("text_changed");
@@ -5841,9 +5974,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
-			text_edit->set_caret_column(7, false);
 
 			// Normal down over wrapped line to last wrapped line.
+			text_edit->set_caret_column(7, false);
 			SEND_GUI_ACTION("ui_text_caret_down");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 3);
@@ -5856,6 +5989,23 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Normal down to column 0 of a wrapped line.
+			text_edit->remove_secondary_carets();
+			text_edit->set_caret_line(3);
+			text_edit->set_caret_column(0);
+			SEND_GUI_ACTION("ui_text_caret_down");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 3);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK_FALSE(text_edit->has_selection(0));
+
+			// Normal down out of visual column 0 of a wrapped line moves to start of next line.
+			SEND_GUI_ACTION("ui_text_caret_down");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 4);
+			CHECK(text_edit->get_caret_column() == 0);
+			CHECK_FALSE(text_edit->has_selection(0));
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_document_start") {
@@ -7162,7 +7312,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(0) == 2);
 		CHECK(text_edit->get_caret_column(0) == 5);
 		CHECK(text_edit->get_caret_line(1) == 2);
-		CHECK(text_edit->get_caret_column(1) == 10);
+		CHECK(text_edit->get_caret_column(1) == 6);
 
 		// Cannot add caret below from last line last line wrap.
 		text_edit->add_caret_at_carets(true);
@@ -7171,7 +7321,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(0) == 2);
 		CHECK(text_edit->get_caret_column(0) == 5);
 		CHECK(text_edit->get_caret_line(1) == 2);
-		CHECK(text_edit->get_caret_column(1) == 10);
+		CHECK(text_edit->get_caret_column(1) == 6);
 
 		// Add caret above from not first line wrap.
 		text_edit->remove_secondary_carets();

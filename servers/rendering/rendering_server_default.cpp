@@ -150,12 +150,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			double time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
 
-			if (name[0] != '<' && name[0] != '>') {
-				if (print_gpu_profile_task_time.has(name)) {
-					print_gpu_profile_task_time[name] += time;
-				} else {
-					print_gpu_profile_task_time[name] = time;
-				}
+			if (print_gpu_profile_task_time.has(name)) {
+				print_gpu_profile_task_time[name] += time;
+			} else {
+				print_gpu_profile_task_time[name] = time;
 			}
 		}
 
@@ -283,6 +281,16 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 		return RSG::viewport->get_total_primitives_drawn();
 	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_CANVAS);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_MESH) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_MESH) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_MESH);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE) {
+		return RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SURFACE);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_DRAW) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_DRAW);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION);
 	}
 	return RSG::utilities->get_rendering_info(p_info);
 }
@@ -381,12 +389,9 @@ void RenderingServerDefault::_thread_loop() {
 
 /* INTERPOLATION */
 
-void RenderingServerDefault::tick() {
-	RSG::canvas->tick();
-}
-
 void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
 	RSG::canvas->set_physics_interpolation_enabled(p_enabled);
+	RSG::scene->set_physics_interpolation_enabled(p_enabled);
 }
 
 /* EVENT QUEUING */
@@ -409,6 +414,15 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	} else {
 		_draw(p_swap_buffers, frame_step);
 	}
+}
+
+void RenderingServerDefault::tick() {
+	RSG::canvas->tick();
+	RSG::scene->tick();
+}
+
+void RenderingServerDefault::pre_draw(bool p_will_draw) {
+	RSG::scene->pre_draw(p_will_draw);
 }
 
 void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) {

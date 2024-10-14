@@ -4609,6 +4609,26 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
 		CHECK(code_edit->get_caret_line() == 0);
 		CHECK(code_edit->get_caret_column() == 0);
+
+		// Unfold previous folded line on backspace if the caret is at the first column.
+		code_edit->set_line_folding_enabled(true);
+		code_edit->set_text("line 1\n\tline 2\nline 3");
+		code_edit->set_caret_line(2);
+		code_edit->set_caret_column(0);
+		code_edit->fold_line(0);
+		code_edit->backspace();
+		CHECK_FALSE(code_edit->is_line_folded(0));
+		code_edit->set_line_folding_enabled(false);
+
+		// Do not unfold previous line on backspace if the caret is not at the first column.
+		code_edit->set_line_folding_enabled(true);
+		code_edit->set_text("line 1\n\tline 2\nline 3");
+		code_edit->set_caret_line(2);
+		code_edit->set_caret_column(4);
+		code_edit->fold_line(0);
+		code_edit->backspace();
+		CHECK(code_edit->is_line_folded(0));
+		code_edit->set_line_folding_enabled(false);
 	}
 
 	SUBCASE("[TextEdit] cut") {
@@ -4757,6 +4777,31 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_caret_column(2) == 3);
 		CHECK(code_edit->get_caret_line(3) == 2);
 		CHECK(code_edit->get_caret_column(3) == 0);
+	}
+
+	SUBCASE("[SceneTree][CodeEdit] cut when empty selection clipboard disabled") {
+		DisplayServerMock *DS = (DisplayServerMock *)(DisplayServer::get_singleton());
+		code_edit->set_empty_selection_clipboard_enabled(false);
+		DS->clipboard_set("");
+
+		code_edit->set_text("this is\nsome\n");
+		code_edit->set_caret_line(0);
+		code_edit->set_caret_column(6);
+		MessageQueue::get_singleton()->flush();
+		SIGNAL_DISCARD("text_set");
+		SIGNAL_DISCARD("text_changed");
+		SIGNAL_DISCARD("lines_edited_from");
+		SIGNAL_DISCARD("caret_changed");
+
+		code_edit->cut();
+		MessageQueue::get_singleton()->flush();
+		CHECK(DS->clipboard_get() == "");
+		CHECK(code_edit->get_text() == "this is\nsome\n");
+		CHECK(code_edit->get_caret_line() == 0);
+		CHECK(code_edit->get_caret_column() == 6);
+		SIGNAL_CHECK_FALSE("caret_changed");
+		SIGNAL_CHECK_FALSE("text_changed");
+		SIGNAL_CHECK_FALSE("lines_edited_from");
 	}
 
 	SUBCASE("[SceneTree][CodeEdit] new line") {

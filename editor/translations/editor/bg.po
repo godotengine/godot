@@ -18,15 +18,15 @@
 # BigHomieDripDrop <bartu.bali@gmail.com>, 2022.
 # xaio <xaio666@gmail.com>, 2022.
 # Vosh <vosh4k@gmail.com>, 2022.
-# 100daysummer <bobbydochev@gmail.com>, 2023.
+# 100daysummer <bobbydochev@gmail.com>, 2023, 2024.
 # Филип Узунов <filkata@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-16 14:27+0000\n"
-"Last-Translator: Филип Узунов <filkata@gmail.com>\n"
+"PO-Revision-Date: 2024-06-30 18:47+0000\n"
+"Last-Translator: 100daysummer <bobbydochev@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -34,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Main Thread"
 msgstr "Главна нишка"
@@ -93,6 +93,12 @@ msgstr "Десен Стик X-Axis, Джойстик 1 X-Ос"
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Десен Стик Y-Ос, Джойстик 1 Y-Ос"
 
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Джойстик 2 Х-ос, Ляв Тригер, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Джойстик 2 Y-Ос, Десен Тригер, Sony R2, Xbox RT"
+
 msgid "Joystick 3 X-Axis"
 msgstr "Джойстик 3 X-Ос"
 
@@ -105,6 +111,12 @@ msgstr "Джойстик 4 X-Ос"
 msgid "Joystick 4 Y-Axis"
 msgstr "Джойстик 4 Y-Ос"
 
+msgid "D-pad Up"
+msgstr "Кръстат бутон нагоре"
+
+msgid "D-pad Down"
+msgstr "Кръстат бутон надолу"
+
 msgid "D-pad Left"
 msgstr "Кръстат бутон наляво"
 
@@ -114,8 +126,20 @@ msgstr "Кръстат бутон надясно"
 msgid "Joypad Button %d"
 msgstr "Бутон %d на контролера"
 
+msgid "canceled"
+msgstr "отменен"
+
+msgid "touched"
+msgstr "докоснат"
+
+msgid "released"
+msgstr "пуснат"
+
 msgid "Accept"
 msgstr "Потвърждаване"
+
+msgid "Select"
+msgstr "Избери"
 
 msgid "Cancel"
 msgstr "Отказ"
@@ -131,6 +155,9 @@ msgstr "Наляво"
 
 msgid "Right"
 msgstr "Надясно"
+
+msgid "Up"
+msgstr "Нагоре"
 
 msgid "Down"
 msgstr "Надолу"
@@ -194,6 +221,9 @@ msgstr "Курсор надясно"
 
 msgid "Caret Word Right"
 msgstr "Курсор с дума надясно"
+
+msgid "Caret Up"
+msgstr "Курсор нагоре"
 
 msgid "Caret Down"
 msgstr "Курсор надолу"
@@ -298,6 +328,13 @@ msgstr "ПиБ"
 msgid "EiB"
 msgstr "ЕиБ"
 
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"Невалидно име на действие. Не може да бъде празно, нито да съдържа '/', ':', "
+"'=', '\\' или '\"'"
+
 msgid "An action with the name '%s' already exists."
 msgstr "Вече съществува действие с името „%s“."
 
@@ -316,8 +353,14 @@ msgstr "Редактиране на събитието"
 msgid "Remove Event"
 msgstr "Премахване на събитието"
 
+msgid "Filter by Name"
+msgstr "Филтриране по име"
+
 msgid "Clear All"
 msgstr "Изчистване на всичко"
+
+msgid "Clear all search filters."
+msgstr "Изчистване на всички филтъри за търсене."
 
 msgid "Add New Action"
 msgstr "Добавяне на ново действие"
@@ -519,18 +562,6 @@ msgstr "Добавянето на нова пътечка без корен е �
 
 msgid "Add Bezier Track"
 msgstr "Добавяне на нова пътечка на Безие"
-
-msgid "Add Position Key"
-msgstr "Добавяне на ключ за позицията"
-
-msgid "Add Rotation Key"
-msgstr "Добавяне на ключ за ротацията"
-
-msgid "Add Scale Key"
-msgstr "Добавяне на ключ за скалирането"
-
-msgid "Add Track Key"
-msgstr "Добавяне на ключ за пътечката"
 
 msgid "Add Method Track Key"
 msgstr "Добавяне на ключ за пътечка с метод"
@@ -1489,13 +1520,6 @@ msgstr "Бързо отваряне на сцена..."
 
 msgid "Quick Open Script..."
 msgstr "Бързо отваряне на скрипт…"
-
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Текущата сцена няма коренен обект, но въпреки това %d променени външни "
-"ресурса бяха запазени."
 
 msgid "Save Scene As..."
 msgstr "Запазване на сцената като..."
@@ -5152,13 +5176,6 @@ msgstr ""
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Това тяло ще бъде игнорирано, докато не зададете полигонна мрежа."
-
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"За да може AnimatedSprite3D да показва кадри, първо трябва се създаде или "
-"зададе ресурс от тип SpriteFrames в свойството „Frames“."
 
 msgid "Plotting Meshes"
 msgstr "Построяване на полигонните мрежи"

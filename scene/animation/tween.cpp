@@ -61,6 +61,11 @@ Ref<Tween> Tweener::_get_tween() {
 	return Ref<Tween>(ObjectDB::get_instance(tween_id));
 }
 
+void Tweener::_finish() {
+	finished = true;
+	emit_signal(SceneStringName(finished));
+}
+
 void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
@@ -574,6 +579,7 @@ bool PropertyTweener::step(double &r_delta) {
 
 	Object *target_instance = ObjectDB::get_instance(target);
 	if (!target_instance) {
+		_finish();
 		return false;
 	}
 	elapsed_time += r_delta;
@@ -612,9 +618,8 @@ bool PropertyTweener::step(double &r_delta) {
 		return true;
 	} else {
 		target_instance->set_indexed(property, final_val);
-		finished = true;
 		r_delta = elapsed_time - delay - duration;
-		emit_signal(SceneStringName(finished));
+		_finish();
 		return false;
 	}
 }
@@ -672,9 +677,8 @@ bool IntervalTweener::step(double &r_delta) {
 		r_delta = 0;
 		return true;
 	} else {
-		finished = true;
 		r_delta = elapsed_time - duration;
-		emit_signal(SceneStringName(finished));
+		_finish();
 		return false;
 	}
 }
@@ -703,6 +707,7 @@ bool CallbackTweener::step(double &r_delta) {
 	}
 
 	if (!callback.is_valid()) {
+		_finish();
 		return false;
 	}
 
@@ -715,9 +720,8 @@ bool CallbackTweener::step(double &r_delta) {
 			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce) + ".");
 		}
 
-		finished = true;
 		r_delta = elapsed_time - delay;
-		emit_signal(SceneStringName(finished));
+		_finish();
 		return false;
 	}
 
@@ -768,6 +772,7 @@ bool MethodTweener::step(double &r_delta) {
 	}
 
 	if (!callback.is_valid()) {
+		_finish();
 		return false;
 	}
 
@@ -801,9 +806,8 @@ bool MethodTweener::step(double &r_delta) {
 		r_delta = 0;
 		return true;
 	} else {
-		finished = true;
 		r_delta = elapsed_time - delay - duration;
-		emit_signal(SceneStringName(finished));
+		_finish();
 		return false;
 	}
 }

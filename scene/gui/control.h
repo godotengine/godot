@@ -33,7 +33,6 @@
 
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/templates/rid.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
@@ -262,6 +261,7 @@ private:
 		// Extra properties.
 
 		String tooltip;
+		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 	} data;
 
@@ -347,10 +347,6 @@ protected:
 
 	void _notification(int p_notification);
 	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#endif
 
 	// Exposed virtual methods.
 
@@ -637,6 +633,9 @@ public:
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
 #endif
+
+	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_tooltip_auto_translate_mode() const;
 
 	// Extra properties.
 

@@ -68,6 +68,8 @@ private:
 		AnimationData *from = nullptr;
 		double pos = 0.0;
 		float speed_scale = 1.0;
+		double start_time = 0.0;
+		double end_time = 0.0;
 	};
 
 	struct Blend {
@@ -80,6 +82,7 @@ private:
 		PlaybackData current;
 		StringName assigned;
 		bool seeked = false;
+		bool internal_seeked = false;
 		bool started = false;
 		List<Blend> blend;
 	} playback;
@@ -116,7 +119,7 @@ private:
 
 	void _play(const StringName &p_name, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void _capture(const StringName &p_name, bool p_from_end = false, double p_duration = -1.0, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
-	void _process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current = false);
+	void _process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current = false);
 	void _blend_playback_data(double p_delta, bool p_started);
 	void _stop_internal(bool p_reset, bool p_keep_state);
 	void _check_immediately_after_start();
@@ -176,7 +179,11 @@ public:
 	Tween::EaseType get_auto_capture_ease_type() const;
 
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void play_section_with_markers(const StringName &p_name = StringName(), const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void play_section(const StringName &p_name = StringName(), double p_start_time = -1, double p_end_time = -1, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);
+	void play_section_with_markers_backwards(const StringName &p_name = StringName(), const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName(), double p_custom_blend = -1);
+	void play_section_backwards(const StringName &p_name = StringName(), double p_start_time = -1, double p_end_time = -1, double p_custom_blend = -1);
 	void play_with_capture(const StringName &p_name = StringName(), double p_duration = -1.0, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
@@ -200,14 +207,19 @@ public:
 	void set_movie_quit_on_finish_enabled(bool p_enabled);
 	bool is_movie_quit_on_finish_enabled() const;
 
+	void seek_internal(double p_time, bool p_update = false, bool p_update_only = false, bool p_is_internal_seek = false);
 	void seek(double p_time, bool p_update = false, bool p_update_only = false);
 
 	double get_current_animation_position() const;
 	double get_current_animation_length() const;
 
-#ifdef TOOLS_ENABLED
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
+	void set_section_with_markers(const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName());
+	void set_section(double p_start_time = -1, double p_end_time = -1);
+	void reset_section();
+
+	double get_section_start_time() const;
+	double get_section_end_time() const;
+	bool has_section() const;
 
 	virtual void advance(double p_time) override;
 

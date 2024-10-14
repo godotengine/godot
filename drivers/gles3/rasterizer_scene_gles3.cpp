@@ -777,7 +777,6 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	ERR_FAIL_COND(p_env.is_null());
 
 	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	ERR_FAIL_NULL(sky);
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
@@ -851,6 +850,15 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::SKY_ENERGY_MULTIPLIER, p_sky_energy_multiplier, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
 	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, p_luminance_multiplier, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
 
+	Color fog_color = environment_get_fog_light_color(p_env).srgb_to_linear() * environment_get_fog_light_energy(p_env);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_ENABLED, environment_get_fog_enabled(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_AERIAL_PERSPECTIVE, environment_get_fog_aerial_perspective(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_LIGHT_COLOR, fog_color, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SUN_SCATTER, environment_get_fog_sun_scatter(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_DENSITY, environment_get_fog_density(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SKY_AFFECT, environment_get_fog_sky_affect(p_env), shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+	material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::DIRECTIONAL_LIGHT_COUNT, sky_globals.directional_light_count, shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
+
 	if (p_use_multiview) {
 		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -904,7 +912,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	RS::SkyMode sky_mode = sky->mode;
 
 	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
-		if (shader_data->uses_time || shader_data->uses_position) {
+		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == 256) {
 			update_single_frame = true;
 			sky_mode = RS::SKY_MODE_REALTIME;
 		} else if (shader_data->uses_light || shader_data->ubo_size > 0) {
@@ -925,7 +933,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	int max_processing_layer = sky->mipmap_count;
 
 	// Update radiance cubemap
-	if (sky->reflection_dirty && (sky->processing_layer > max_processing_layer || update_single_frame)) {
+	if (sky->reflection_dirty && (sky->processing_layer >= max_processing_layer || update_single_frame)) {
 		static const Vector3 view_normals[6] = {
 			Vector3(+1, 0, 0),
 			Vector3(-1, 0, 0),
@@ -1355,38 +1363,25 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 		GeometryInstanceSurface *surf = inst->surface_caches;
 
+		float lod_distance = 0.0;
+
+		if (p_render_data->cam_orthogonal) {
+			lod_distance = 1.0;
+		} else {
+			Vector3 aabb_min = inst->transformed_aabb.position;
+			Vector3 aabb_max = inst->transformed_aabb.position + inst->transformed_aabb.size;
+			Vector3 camera_position = p_render_data->main_cam_transform.origin;
+			Vector3 surface_distance = Vector3(0.0, 0.0, 0.0).max(aabb_min - camera_position).max(camera_position - aabb_max);
+
+			lod_distance = surface_distance.length();
+		}
+
 		while (surf) {
 			// LOD
 
 			if (p_render_data->screen_mesh_lod_threshold > 0.0 && mesh_storage->mesh_surface_has_lod(surf->surface)) {
-				float distance = 0.0;
-
-				// Check if camera is NOT inside the mesh AABB.
-				if (!inst->transformed_aabb.has_point(p_render_data->main_cam_transform.origin)) {
-					// Get the LOD support points on the mesh AABB.
-					Vector3 lod_support_min = inst->transformed_aabb.get_support(p_render_data->main_cam_transform.basis.get_column(Vector3::AXIS_Z));
-					Vector3 lod_support_max = inst->transformed_aabb.get_support(-p_render_data->main_cam_transform.basis.get_column(Vector3::AXIS_Z));
-
-					// Get the distances to those points on the AABB from the camera origin.
-					float distance_min = (float)p_render_data->main_cam_transform.origin.distance_to(lod_support_min);
-					float distance_max = (float)p_render_data->main_cam_transform.origin.distance_to(lod_support_max);
-
-					if (distance_min * distance_max < 0.0) {
-						//crossing plane
-						distance = 0.0;
-					} else if (distance_min >= 0.0) {
-						distance = distance_min;
-					} else if (distance_max <= 0.0) {
-						distance = -distance_max;
-					}
-				}
-
-				if (p_render_data->cam_orthogonal) {
-					distance = 1.0;
-				}
-
 				uint32_t indices = 0;
-				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
+				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, lod_distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
 				surf->index_count = indices;
 
 				if (p_render_data->render_info) {
@@ -1420,7 +1415,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 #else
 				bool force_alpha = false;
 #endif
-				if (!force_alpha && (surf->flags & GeometryInstanceSurface::FLAG_PASS_OPAQUE)) {
+				if (!force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
 					rl->add_element(surf);
 				}
 				if (force_alpha || (surf->flags & GeometryInstanceSurface::FLAG_PASS_ALPHA)) {
@@ -2557,6 +2552,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glBindTexture(rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, rt->color);
 
 		copy_effects->copy_screen(render_data.luminance_multiplier);
+
+		scene_state.enable_gl_depth_test(true);
+		scene_state.enable_gl_depth_draw(true);
 	}
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
@@ -2587,7 +2585,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	scene_state.enable_gl_depth_draw(false);
 
-	if (draw_sky) {
+	if (draw_sky || draw_sky_fog_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
 		scene_state.enable_gl_depth_test(true);
@@ -3202,6 +3200,10 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							if (lm->uses_spherical_harmonics) {
 								spec_constants |= SceneShaderGLES3::USE_SH_LIGHTMAP;
 							}
+
+							if (lightmap_bicubic_upscale) {
+								spec_constants |= SceneShaderGLES3::LIGHTMAP_BICUBIC_FILTER;
+							}
 						} else if (inst->lightmap_sh) {
 							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_CAPTURE;
 						} else {
@@ -3344,6 +3346,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						Vector4 uv_scale(inst->lightmap_uv_scale.position.x, inst->lightmap_uv_scale.position.y, inst->lightmap_uv_scale.size.x, inst->lightmap_uv_scale.size.y);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_UV_SCALE, uv_scale, shader->version, instance_variant, spec_constants);
 
+						if (lightmap_bicubic_upscale) {
+							Vector2 light_texture_size(lm->light_texture_size.x, lm->light_texture_size.y);
+							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_TEXTURE_SIZE, light_texture_size, shader->version, instance_variant, spec_constants);
+						}
+
 						float exposure_normalization = 1.0;
 						if (p_render_data->camera_attributes.is_valid()) {
 							float enf = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
@@ -3436,6 +3443,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::MODEL_FLAGS, inst->flags_cache, shader->version, instance_variant, spec_constants);
+			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::INSTANCE_OFFSET, uint32_t(inst->shader_uniforms_offset), shader->version, instance_variant, spec_constants);
 
 			if (p_pass_mode == PASS_MODE_MATERIAL) {
 				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::UV_OFFSET, p_params->uv_offset, shader->version, instance_variant, spec_constants);
@@ -4039,6 +4047,10 @@ void RasterizerSceneGLES3::decals_set_filter(RS::DecalFilter p_filter) {
 void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter p_filter) {
 }
 
+void RasterizerSceneGLES3::lightmaps_set_bicubic_filter(bool p_enable) {
+	lightmap_bicubic_upscale = p_enable;
+}
+
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 	singleton = this;
 
@@ -4052,6 +4064,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 	positional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"));
 	directional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"));
+	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	{
 		// Setup Lights
@@ -4113,6 +4126,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 		global_defines += "\n#define MAX_FORWARD_LIGHTS " + itos(config->max_lights_per_object) + "u\n";
 		global_defines += "\n#define MAX_ROUGHNESS_LOD " + itos(sky_globals.roughness_layers - 1) + ".0\n";
+		if (config->force_vertex_shading) {
+			global_defines += "\n#define USE_VERTEX_LIGHTING\n";
+		}
 		material_storage->shaders.scene_shader.initialize(global_defines);
 		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();
 		material_storage->shaders.scene_shader.version_bind_shader(scene_globals.shader_default_version, SceneShaderGLES3::MODE_COLOR);

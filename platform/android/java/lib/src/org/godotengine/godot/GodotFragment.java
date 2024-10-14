@@ -30,6 +30,7 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.utils.BenchmarkUtils;
 
@@ -187,7 +188,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		final Activity activity = getActivity();
 		mCurrentIntent = activity.getIntent();
 
-		godot = new Godot(requireContext());
+		if (parentHost != null) {
+			godot = parentHost.getGodot();
+		}
+		if (godot == null) {
+			godot = new Godot(requireContext());
+		}
 		performEngineInitialization();
 		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 	}
@@ -209,7 +215,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			final String errorMessage = TextUtils.isEmpty(e.getMessage())
 					? getString(R.string.error_engine_setup_message)
 					: e.getMessage();
-			godot.alert(errorMessage, getString(R.string.text_error_title), godot::forceQuit);
+			godot.alert(errorMessage, getString(R.string.text_error_title), godot::destroyAndKillProcess);
 		} catch (IllegalArgumentException ignored) {
 			final Activity activity = getActivity();
 			Intent notifierIntent = new Intent(activity, activity.getClass());
@@ -325,7 +331,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	public void onBackPressed() {
-		godot.onBackPressed(this);
+		godot.onBackPressed();
 	}
 
 	/**
@@ -478,5 +484,29 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			return parentHost.getHostPlugins(engine);
 		}
 		return Collections.emptySet();
+	}
+
+	@Override
+	public Error signApk(@NonNull String inputPath, @NonNull String outputPath, @NonNull String keystorePath, @NonNull String keystoreUser, @NonNull String keystorePassword) {
+		if (parentHost != null) {
+			return parentHost.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword);
+		}
+		return Error.ERR_UNAVAILABLE;
+	}
+
+	@Override
+	public Error verifyApk(@NonNull String apkPath) {
+		if (parentHost != null) {
+			return parentHost.verifyApk(apkPath);
+		}
+		return Error.ERR_UNAVAILABLE;
+	}
+
+	@Override
+	public boolean supportsFeature(String featureTag) {
+		if (parentHost != null) {
+			return parentHost.supportsFeature(featureTag);
+		}
+		return false;
 	}
 }

@@ -74,7 +74,7 @@ public:
 
 		// Needs internally to estimate remain time, the previous frame values are not retained.
 		Animation::LoopMode loop_mode = Animation::LOOP_NONE;
-		bool is_just_looped = false; // For breaking loop, it is true when just looped.
+		bool will_end = false; // For breaking loop, it is true when just looped.
 		bool is_infinity = false; // For unpredictable state machine's end.
 
 		bool is_looping() {
@@ -84,7 +84,11 @@ public:
 			if ((is_looping() && !p_break_loop) || is_infinity) {
 				return HUGE_LENGTH;
 			}
-			if (p_break_loop && is_just_looped) {
+			if (is_looping() && p_break_loop && will_end) {
+				return 0;
+			}
+			double remain = length - position;
+			if (Math::is_zero_approx(remain)) {
 				return 0;
 			}
 			return length - position;
@@ -102,7 +106,7 @@ public:
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
 	struct ProcessState {
 		AnimationTree *tree = nullptr;
-		HashMap<NodePath, int> track_map; // TODO: Is there a better way to manage filter/tracks?
+		const HashMap<NodePath, int> *track_map; // TODO: Is there a better way to manage filter/tracks?
 		bool is_testing = false;
 		bool valid = false;
 		String invalid_reasons;

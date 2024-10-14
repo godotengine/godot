@@ -785,9 +785,6 @@ msgstr "Tambah Trek Bezier"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Laluan trek tidak sah, maka tidak boleh menambahkan kunci."
 
-msgid "Add Track Key"
-msgstr "Tambah Kunci Trek"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Laluan trek tidak sah, maka tidak boleh menambahkan kunci kaedah."
 
@@ -2037,13 +2034,6 @@ msgid "Quick Open Script..."
 msgstr "Buka Cepat Skrip..."
 
 msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Adegan semasa tidak mempunyai nod akar, tetapi %d sumber luaran yang diubah "
-"suai telah disimpan juga."
-
-msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -2483,9 +2473,6 @@ msgstr ""
 
 msgid "Write your logic in the _run() method."
 msgstr "Tulis logik anda dalam kaedah _run()."
-
-msgid "There is an edited scene already."
-msgstr "Sudah ada adegan yang diedit."
 
 msgid "General"
 msgstr "Am"

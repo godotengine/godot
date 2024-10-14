@@ -1315,10 +1315,12 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			if (array.is_typed()) {
 				Ref<Script> script = array.get_typed_script();
 				if (script.is_valid()) {
-					header |= HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT;
+					header |= p_full_objects ? HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT : HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME;
 				} else if (array.get_typed_class_name() != StringName()) {
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME;
 				} else {
+					// No need to check `p_full_objects` since for `Variant::OBJECT`
+					// `array.get_typed_class_name()` should be non-empty.
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN;
 				}
 			}
@@ -1783,12 +1785,18 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Variant variant = array.get_typed_script();
 				Ref<Script> script = variant;
 				if (script.is_valid()) {
-					String path = script->get_path();
-					ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
-					_encode_string(path, buf, r_len);
+					if (p_full_objects) {
+						String path = script->get_path();
+						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
+						_encode_string(path, buf, r_len);
+					} else {
+						_encode_string(EncodedObjectAsID::get_class_static(), buf, r_len);
+					}
 				} else if (array.get_typed_class_name() != StringName()) {
-					_encode_string(array.get_typed_class_name(), buf, r_len);
+					_encode_string(p_full_objects ? array.get_typed_class_name().operator String() : EncodedObjectAsID::get_class_static(), buf, r_len);
 				} else {
+					// No need to check `p_full_objects` since for `Variant::OBJECT`
+					// `array.get_typed_class_name()` should be non-empty.
 					if (buf) {
 						encode_uint32(array.get_typed_builtin(), buf);
 						buf += 4;

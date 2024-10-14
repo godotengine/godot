@@ -21,6 +21,12 @@ msgstr ""
 msgid "New Code Region"
 msgstr "Yeni Kod Bölgesi"
 
+msgid "Pick a color from the screen."
+msgstr "Ekrandan bir renk seçin."
+
+msgid "Pick a color from the application window."
+msgstr "Uygulama penceresinden bir renk seç."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -41,12 +47,6 @@ msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Bir onaltılık kod (\"#ff0000\") veya isimlendirilmiş bir renk (\"kırmızı\") "
 "girin."
-
-msgid "Pick a color from the screen."
-msgstr "Ekrandan bir renk seçin."
-
-msgid "Pick a color from the application window."
-msgstr "Uygulama penceresinden bir renk seç."
 
 msgid "Select a picker shape."
 msgstr "Bir seçici şekil seçin."

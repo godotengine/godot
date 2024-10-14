@@ -34,6 +34,17 @@
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#undef CursorShape
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
+
 DisplayServer *DisplayServer::singleton = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
@@ -570,7 +581,7 @@ int DisplayServer::get_screen_from_rect(const Rect2 &p_rect) const {
 	return pos_screen;
 }
 
-DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
 
@@ -621,6 +632,10 @@ void DisplayServer::virtual_keyboard_hide() {
 // returns height of the currently shown keyboard (0 if keyboard is hidden)
 int DisplayServer::virtual_keyboard_get_height() const {
 	ERR_FAIL_V_MSG(0, "Virtual keyboard not supported by this display server.");
+}
+
+bool DisplayServer::has_hardware_keyboard() const {
+	return true;
 }
 
 void DisplayServer::cursor_set_shape(CursorShape p_shape) {
@@ -757,6 +772,17 @@ DisplayServer::WindowID DisplayServer::get_focused_window() const {
 }
 
 void DisplayServer::set_context(Context p_context) {
+}
+
+void DisplayServer::register_additional_output(Object *p_object) {
+	ObjectID id = p_object->get_instance_id();
+	if (!additional_outputs.has(id)) {
+		additional_outputs.push_back(id);
+	}
+}
+
+void DisplayServer::unregister_additional_output(Object *p_object) {
+	additional_outputs.erase(p_object->get_instance_id());
 }
 
 void DisplayServer::_bind_methods() {
@@ -954,6 +980,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
 
+	ClassDB::bind_method(D_METHOD("has_hardware_keyboard"), &DisplayServer::has_hardware_keyboard);
+
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
 	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
@@ -996,6 +1024,10 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
 
 	ClassDB::bind_method(D_METHOD("is_window_transparency_available"), &DisplayServer::is_window_transparency_available);
+
+	ClassDB::bind_method(D_METHOD("register_additional_output", "object"), &DisplayServer::register_additional_output);
+	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
+	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
@@ -1194,6 +1226,67 @@ Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
 
 void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
+}
+
+bool DisplayServer::can_create_rendering_device() {
+#if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
+	if (created_rendering_device == RenderingDeviceCreationStatus::SUCCESS) {
+		return true;
+	} else if (created_rendering_device == RenderingDeviceCreationStatus::FAILURE) {
+		return false;
+	}
+
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+#pragma clang diagnostic pop
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				// Creating a RenderingDevice is quite slow.
+				// Cache the result for future usage, so that it's much faster on subsequent calls.
+				created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+				memdelete(rcd);
+				rcd = nullptr;
+				return true;
+			} else {
+				created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // RD_ENABLED
+	return false;
 }
 
 DisplayServer::DisplayServer() {

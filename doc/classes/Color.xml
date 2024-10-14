@@ -190,6 +190,7 @@
 			<param index="1" name="default" type="Color" />
 			<description>
 				Creates a [Color] from the given string, which can be either an HTML color code or a named color (case-insensitive). Returns [param default] if the color cannot be inferred from the string.
+				If you want to create a color from String in a constant expression, use the equivalent constructor instead (i.e. [code]Color("color string")[/code]).
 			</description>
 		</method>
 		<method name="get_luminance" qualifiers="const">
@@ -217,6 +218,7 @@
 				var my_color = new Color(0xbbefd2a4);
 				[/csharp]
 				[/codeblocks]
+				If you want to use hex notation in a constant expression, use the equivalent constructor instead (i.e. [code]Color(0xRRGGBBAA)[/code]).
 			</description>
 		</method>
 		<method name="hex64" qualifiers="static">

@@ -78,13 +78,7 @@ void ParallaxLayer::_update_mirroring() {
 }
 
 void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
-	mirroring = p_mirroring;
-	if (mirroring.x < 0) {
-		mirroring.x = 0;
-	}
-	if (mirroring.y < 0) {
-		mirroring.y = 0;
-	}
+	mirroring = p_mirroring.maxf(0);
 
 	_update_mirroring();
 }
@@ -139,7 +133,7 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, real_t p_s
 }
 
 PackedStringArray ParallaxLayer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
 		warnings.push_back(RTR("ParallaxLayer node only works when set as child of a ParallaxBackground node."));

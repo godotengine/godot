@@ -364,6 +364,7 @@ public:
 		bool repeat_source;
 		Point2 repeat_size;
 		int repeat_times = 1;
+		Item *repeat_source_item = nullptr;
 
 		Rect2 global_rect_cache;
 
@@ -544,6 +545,7 @@ public:
 	virtual void update() = 0;
 
 	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) = 0;
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
 
 	RendererCanvasRender() {
 		ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCanvasRender singleton already exists.");

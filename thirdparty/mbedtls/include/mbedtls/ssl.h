@@ -83,10 +83,7 @@
 /** Processing of the Certificate handshake message failed. */
 #define MBEDTLS_ERR_SSL_BAD_CERTIFICATE                   -0x7A00
 /* Error space gap */
-/**
- * Received NewSessionTicket Post Handshake Message.
- * This error code is experimental and may be changed or removed without notice.
- */
+/** A TLS 1.3 NewSessionTicket message has been received. */
 #define MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET       -0x7B00
 /** Not possible to read early data */
 #define MBEDTLS_ERR_SSL_CANNOT_READ_EARLY_DATA            -0x7B80
@@ -323,6 +320,9 @@
 
 #define MBEDTLS_SSL_SESSION_TICKETS_DISABLED     0
 #define MBEDTLS_SSL_SESSION_TICKETS_ENABLED      1
+
+#define MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_DISABLED  0
+#define MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED   1
 
 #define MBEDTLS_SSL_PRESET_DEFAULT              0
 #define MBEDTLS_SSL_PRESET_SUITEB               2
@@ -1446,6 +1446,12 @@ struct mbedtls_ssl_config {
 #endif
 #if defined(MBEDTLS_SSL_SESSION_TICKETS) && \
     defined(MBEDTLS_SSL_CLI_C)
+    /** Encodes two booleans, one stating whether TLS 1.2 session tickets are
+     *  enabled or not, the other one whether the handling of TLS 1.3
+     *  NewSessionTicket messages is enabled or not. They are respectively set
+     *  by mbedtls_ssl_conf_session_tickets() and
+     *  mbedtls_ssl_conf_tls13_enable_signal_new_session_tickets().
+     */
     uint8_t MBEDTLS_PRIVATE(session_tickets);   /*!< use session tickets? */
 #endif
 
@@ -2364,7 +2370,7 @@ int mbedtls_ssl_set_cid(mbedtls_ssl_context *ssl,
  */
 int mbedtls_ssl_get_own_cid(mbedtls_ssl_context *ssl,
                             int *enabled,
-                            unsigned char own_cid[MBEDTLS_SSL_CID_OUT_LEN_MAX],
+                            unsigned char own_cid[MBEDTLS_SSL_CID_IN_LEN_MAX],
                             size_t *own_cid_len);
 
 /**
@@ -3216,16 +3222,16 @@ void mbedtls_ssl_conf_session_cache(mbedtls_ssl_config *conf,
  *                 a full handshake.
  *
  * \note           This function can handle a variety of mechanisms for session
- *                 resumption: For TLS 1.2, both session ID-based resumption and
- *                 ticket-based resumption will be considered. For TLS 1.3,
- *                 once implemented, sessions equate to tickets, and loading
- *                 one or more sessions via this call will lead to their
- *                 corresponding tickets being advertised as resumption PSKs
- *                 by the client.
- *
- * \note           Calling this function multiple times will only be useful
- *                 once TLS 1.3 is supported. For TLS 1.2 connections, this
- *                 function should be called at most once.
+ *                 resumption: For TLS 1.2, both session ID-based resumption
+ *                 and ticket-based resumption will be considered. For TLS 1.3,
+ *                 sessions equate to tickets, and loading one session by
+ *                 calling this function will lead to its corresponding ticket
+ *                 being advertised as resumption PSK by the client. This
+ *                 depends on session tickets being enabled (see
+ *                 #MBEDTLS_SSL_SESSION_TICKETS configuration option) though.
+ *                 If session tickets are disabled, a call to this function
+ *                 with a TLS 1.3 session, will not have any effect on the next
+ *                 handshake for the SSL context \p ssl.
  *
  * \param ssl      The SSL context representing the connection which should
  *                 be attempted to be setup using session resumption. This
@@ -3240,9 +3246,10 @@ void mbedtls_ssl_conf_session_cache(mbedtls_ssl_config *conf,
  *
  * \return         \c 0 if successful.
  * \return         \c MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE if the session
- *                 could not be loaded because of an implementation limitation.
- *                 This error is non-fatal, and has no observable effect on
- *                 the SSL context or the session that was attempted to be loaded.
+ *                 could not be loaded because one session has already been
+ *                 loaded. This error is non-fatal, and has no observable
+ *                 effect on the SSL context or the session that was attempted
+ *                 to be loaded.
  * \return         Another negative error code on other kinds of failure.
  *
  * \sa             mbedtls_ssl_get_session()
@@ -3309,8 +3316,16 @@ int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
  *                 to determine the necessary size by calling this function
  *                 with \p buf set to \c NULL and \p buf_len to \c 0.
  *
+ * \note           For TLS 1.3 sessions, this feature is supported only if the
+ *                 MBEDTLS_SSL_SESSION_TICKETS configuration option is enabled,
+ *                 as in TLS 1.3 session resumption is possible only with
+ *                 tickets.
+ *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL if \p buf is too small.
+ * \return         #MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE if the
+ *                 MBEDTLS_SSL_SESSION_TICKETS configuration option is disabled
+ *                 and the session is a TLS 1.3 session.
  */
 int mbedtls_ssl_session_save(const mbedtls_ssl_session *session,
                              unsigned char *buf,
@@ -4456,21 +4471,50 @@ int mbedtls_ssl_conf_max_frag_len(mbedtls_ssl_config *conf, unsigned char mfl_co
 void mbedtls_ssl_conf_preference_order(mbedtls_ssl_config *conf, int order);
 #endif /* MBEDTLS_SSL_SRV_C */
 
-#if defined(MBEDTLS_SSL_SESSION_TICKETS) && \
-    defined(MBEDTLS_SSL_CLI_C)
+#if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_CLI_C)
 /**
- * \brief          Enable / Disable session tickets (client only).
- *                 (Default: MBEDTLS_SSL_SESSION_TICKETS_ENABLED.)
+ * \brief          Enable / Disable TLS 1.2 session tickets (client only,
+ *                 TLS 1.2 only). Enabled by default.
  *
  * \note           On server, use \c mbedtls_ssl_conf_session_tickets_cb().
  *
  * \param conf     SSL configuration
- * \param use_tickets   Enable or disable (MBEDTLS_SSL_SESSION_TICKETS_ENABLED or
- *                                         MBEDTLS_SSL_SESSION_TICKETS_DISABLED)
+ * \param use_tickets   Enable or disable (#MBEDTLS_SSL_SESSION_TICKETS_ENABLED or
+ *                                         #MBEDTLS_SSL_SESSION_TICKETS_DISABLED)
  */
 void mbedtls_ssl_conf_session_tickets(mbedtls_ssl_config *conf, int use_tickets);
-#endif /* MBEDTLS_SSL_SESSION_TICKETS &&
-          MBEDTLS_SSL_CLI_C */
+
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+/**
+ * \brief Enable / Disable handling of TLS 1.3 NewSessionTicket messages
+ *        (client only, TLS 1.3 only).
+ *
+ *        The handling of TLS 1.3 NewSessionTicket messages is disabled by
+ *        default.
+ *
+ *        In TLS 1.3, servers may send a NewSessionTicket message at any time,
+ *        and may send multiple NewSessionTicket messages. By default, TLS 1.3
+ *        clients ignore NewSessionTicket messages.
+ *
+ *        To support session tickets in TLS 1.3 clients, call this function
+ *        with #MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED. When
+ *        this is enabled, when a client receives a NewSessionTicket message,
+ *        the next call to a message processing functions (notably
+ *        mbedtls_ssl_handshake() and mbedtls_ssl_read()) will return
+ *        #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET. The client should then
+ *        call mbedtls_ssl_get_session() to retrieve the session ticket before
+ *        calling the same message processing function again.
+ *
+ * \param conf  SSL configuration
+ * \param signal_new_session_tickets Enable or disable
+ *                                   (#MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED or
+ *                                    #MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_DISABLED)
+ */
+void mbedtls_ssl_conf_tls13_enable_signal_new_session_tickets(
+    mbedtls_ssl_config *conf, int signal_new_session_tickets);
+
+#endif /* MBEDTLS_SSL_PROTO_TLS1_3 */
+#endif /* MBEDTLS_SSL_SESSION_TICKETS && MBEDTLS_SSL_CLI_C */
 
 #if defined(MBEDTLS_SSL_SESSION_TICKETS) && \
     defined(MBEDTLS_SSL_SRV_C) && \
@@ -4837,23 +4881,16 @@ const mbedtls_x509_crt *mbedtls_ssl_get_peer_cert(const mbedtls_ssl_context *ssl
  * \note           This function can handle a variety of mechanisms for session
  *                 resumption: For TLS 1.2, both session ID-based resumption and
  *                 ticket-based resumption will be considered. For TLS 1.3,
- *                 once implemented, sessions equate to tickets, and calling
- *                 this function multiple times will export the available
- *                 tickets one a time until no further tickets are available,
- *                 in which case MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE will
- *                 be returned.
- *
- * \note           Calling this function multiple times will only be useful
- *                 once TLS 1.3 is supported. For TLS 1.2 connections, this
- *                 function should be called at most once.
+ *                 sessions equate to tickets, and if session tickets are
+ *                 enabled (see #MBEDTLS_SSL_SESSION_TICKETS configuration
+ *                 option), this function exports the last received ticket and
+ *                 the exported session may be used to resume the TLS 1.3
+ *                 session. If session tickets are disabled, exported sessions
+ *                 cannot be used to resume a TLS 1.3 session.
  *
  * \return         \c 0 if successful. In this case, \p session can be used for
  *                 session resumption by passing it to mbedtls_ssl_set_session(),
  *                 and serialized for storage via mbedtls_ssl_session_save().
- * \return         #MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE if no further session
- *                 is available for export.
- *                 This error is a non-fatal, and has no observable effect on
- *                 the SSL context or the destination session.
  * \return         Another negative error code on other kinds of failure.
  *
  * \sa             mbedtls_ssl_set_session()
@@ -4885,6 +4922,10 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  * \return         #MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED if DTLS is in use
  *                 and the client did not demonstrate reachability yet - in
  *                 this case you must stop using the context (see below).
+ * \return         #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET if a TLS 1.3
+ *                 NewSessionTicket message has been received. See the
+ *                 documentation of mbedtls_ssl_read() for more information
+ *                 about this error code.
  * \return         #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA if early data, as
  *                 defined in RFC 8446 (TLS 1.3 specification), has been
  *                 received as part of the handshake. This is server specific
@@ -4901,6 +4942,7 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                 #MBEDTLS_ERR_SSL_WANT_WRITE,
  *                 #MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS or
  *                 #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS or
+ *                 #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET or
  *                 #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA,
  *                 you must stop using the SSL context for reading or writing,
  *                 and either free it or call \c mbedtls_ssl_session_reset()
@@ -4921,10 +4963,13 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                 currently being processed might or might not contain further
  *                 DTLS records.
  *
- * \note           If the context is configured to allow TLS 1.3, or if
- *                 #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
+ * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
  *                 subsystem must have been initialized by calling
  *                 psa_crypto_init() before calling this function.
+ *                 Otherwise, the handshake may call psa_crypto_init()
+ *                 if a negotiation involving TLS 1.3 takes place (this may
+ *                 be the case even if TLS 1.3 is offered but eventually
+ *                 not selected).
  */
 int mbedtls_ssl_handshake(mbedtls_ssl_context *ssl);
 
@@ -4972,6 +5017,7 @@ static inline int mbedtls_ssl_is_handshake_over(mbedtls_ssl_context *ssl)
  *                 #MBEDTLS_ERR_SSL_WANT_READ, #MBEDTLS_ERR_SSL_WANT_WRITE,
  *                 #MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS,
  *                 #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS or
+ *                 #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET or
  *                 #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA, you must stop using
  *                 the SSL context for reading or writing, and either free it
  *                 or call \c mbedtls_ssl_session_reset() on it before
@@ -5040,6 +5086,17 @@ int mbedtls_ssl_renegotiate(mbedtls_ssl_context *ssl);
  * \return         #MBEDTLS_ERR_SSL_CLIENT_RECONNECT if we're at the server
  *                 side of a DTLS connection and the client is initiating a
  *                 new connection using the same source port. See below.
+ * \return         #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET if a TLS 1.3
+ *                 NewSessionTicket message has been received.
+ *                 This error code is only returned on the client side. It is
+ *                 only returned if handling of TLS 1.3 NewSessionTicket
+ *                 messages has been enabled through
+ *                 mbedtls_ssl_conf_tls13_enable_signal_new_session_tickets().
+ *                 This error code indicates that a TLS 1.3 NewSessionTicket
+ *                 message has been received and parsed successfully by the
+ *                 client. The ticket data can be retrieved from the SSL
+ *                 context by calling mbedtls_ssl_get_session(). It remains
+ *                 available until the next call to mbedtls_ssl_read().
  * \return         #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA if early data, as
  *                 defined in RFC 8446 (TLS 1.3 specification), has been
  *                 received as part of the handshake. This is server specific
@@ -5057,6 +5114,7 @@ int mbedtls_ssl_renegotiate(mbedtls_ssl_context *ssl);
  *                 #MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS,
  *                 #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS,
  *                 #MBEDTLS_ERR_SSL_CLIENT_RECONNECT or
+ *                 #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET or
  *                 #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA,
  *                 you must stop using the SSL context for reading or writing,
  *                 and either free it or call \c mbedtls_ssl_session_reset()
@@ -5122,6 +5180,10 @@ int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len);
  *                 operation is in progress (see mbedtls_ecp_set_max_ops()) -
  *                 in this case you must call this function again to complete
  *                 the handshake when you're done attending other tasks.
+ * \return         #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET if a TLS 1.3
+ *                 NewSessionTicket message has been received. See the
+ *                 documentation of mbedtls_ssl_read() for more information
+ *                 about this error code.
  * \return         #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA if early data, as
  *                 defined in RFC 8446 (TLS 1.3 specification), has been
  *                 received as part of the handshake. This is server specific
@@ -5138,6 +5200,7 @@ int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len);
  *                 #MBEDTLS_ERR_SSL_WANT_WRITE,
  *                 #MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS,
  *                 #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS or
+ *                 #MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET or
  *                 #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA,
  *                 you must stop using the SSL context for reading or writing,
  *                 and either free it or call \c mbedtls_ssl_session_reset()

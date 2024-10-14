@@ -321,6 +321,12 @@
 				Returns [code]true[/code] if all the image's pixels have an alpha value of 0. Returns [code]false[/code] if any pixel has an alpha value higher than 0.
 			</description>
 		</method>
+		<method name="linear_to_srgb">
+			<return type="void" />
+			<description>
+				Converts the entire image from the linear colorspace to the sRGB colorspace. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+			</description>
+		</method>
 		<method name="load">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -535,7 +541,6 @@
 			<param index="2" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -561,7 +566,6 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [param point] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -590,7 +594,7 @@
 		<method name="srgb_to_linear">
 			<return type="void" />
 			<description>
-				Converts the raw data from the sRGB colorspace to a linear scale.
+				Converts the raw data from the sRGB colorspace to a linear scale. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
 			</description>
 		</method>
 	</methods>

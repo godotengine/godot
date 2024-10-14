@@ -113,6 +113,8 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_SAMPLERCUBEARRAY:
 			return 16;
+		case SL::TYPE_SAMPLEREXT:
+			return 16;
 		case SL::TYPE_STRUCT:
 			return 0;
 		case SL::TYPE_MAX: {
@@ -185,7 +187,7 @@ static String f2sp0(float p_float) {
 	return num;
 }
 
-static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
+static String get_constant_text(SL::DataType p_type, const Vector<SL::Scalar> &p_values) {
 	switch (p_type) {
 		case SL::TYPE_BOOL:
 			return p_values[0].boolean ? "true" : "false";
@@ -353,7 +355,7 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 		}
 
 		header += " ";
-		header += _mkid(fnode->name);
+		header += _mkid(fnode->rname);
 		header += "(";
 
 		for (int i = 0; i < fnode->arguments.size(); i++) {
@@ -922,7 +924,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
-					if (u.texture_order >= 0) {
+					if (u.is_texture()) {
 						StringName name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 							name = "color_buffer";
@@ -949,7 +951,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
-							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
+							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
 							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
@@ -1039,7 +1041,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (shader->uniforms.has(anode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
-					if (u.texture_order >= 0) {
+					if (u.is_texture()) {
 						code = _mkid(anode->name); //texture, use as is
 					} else {
 						//a scalar or vector
@@ -1049,7 +1051,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
-							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
+							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
 							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
@@ -1134,9 +1136,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				case SL::OP_NEGATE:
 				case SL::OP_NOT:
 				case SL::OP_DECREMENT:
-				case SL::OP_INCREMENT:
-					code = _opstr(onode->op) + _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					break;
+				case SL::OP_INCREMENT: {
+					const String node_code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+
+					if (onode->op == SL::OP_NEGATE && node_code.begins_with("-")) { // To prevent writing unary minus twice.
+						code = node_code;
+					} else {
+						code = _opstr(onode->op) + node_code;
+					}
+
+				} break;
 				case SL::OP_POST_DECREMENT:
 				case SL::OP_POST_INCREMENT:
 					code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + _opstr(onode->op);
@@ -1181,7 +1190,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
-							code += _mkid(vnode->name);
+							code += _mkid(vnode->rname);
 						}
 					}
 
@@ -1286,6 +1295,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 													break;
 												}
 												if (function->arguments[j].tex_argument_check) {
+													if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+														is_screen_texture = true;
+													} else if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+														is_depth_texture = true;
+													} else if (function->arguments[j].tex_hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+														is_normal_roughness_texture = true;
+													}
 													sampler_name = _get_sampler_name(function->arguments[j].tex_argument_filter, function->arguments[j].tex_argument_repeat);
 													found = true;
 													break;
@@ -1338,7 +1354,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					code += ")";
 					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
-						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
+						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier()), 1.0))";
 					}
 					if (is_normal_roughness_texture && !texture_func_returns_data) {
 						code = "normal_roughness_compatibility(" + code + ")";

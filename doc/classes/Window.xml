@@ -370,6 +370,9 @@
 			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
 				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]true[/code] (single-window mode), [param rect]'s coordinates are global and relative to the main window's top-left corner (excluding window decorations). If [param rect]'s position coordinates are negative, the window will be located outside the main window and may not be visible as a result.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code] (multi-window mode), [param rect]'s coordinates are global and relative to the top-left corner of the leftmost screen. If [param rect]'s position coordinates are negative, the window will be placed at the top-left corner of the screen.
+				[b]Note:[/b] [param rect] must be in global coordinates if specified.
 			</description>
 		</method>
 		<method name="popup_centered">
@@ -380,7 +383,7 @@
 				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
-		<method name="popup_centered_clamped">
+		<method name="popup_centered_clamped" keywords="minsize">
 			<return type="void" />
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
@@ -415,7 +418,7 @@
 				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
 			</description>
 		</method>
-		<method name="popup_exclusive_centered_clamped">
+		<method name="popup_exclusive_centered_clamped" keywords="minsize">
 			<return type="void" />
 			<param index="0" name="from_node" type="Node" />
 			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />

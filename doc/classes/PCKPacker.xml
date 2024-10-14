@@ -42,12 +42,12 @@
 		</method>
 		<method name="pck_start">
 			<return type="int" enum="Error" />
-			<param index="0" name="pck_name" type="String" />
+			<param index="0" name="pck_path" type="String" />
 			<param index="1" name="alignment" type="int" default="32" />
 			<param index="2" name="key" type="String" default="&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;" />
 			<param index="3" name="encrypt_directory" type="bool" default="false" />
 			<description>
-				Creates a new PCK file with the name [param pck_name]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [param pck_name] (even though it's not required).
+				Creates a new PCK file at the file path [param pck_path]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [param pck_path] (even though it's not required).
 			</description>
 		</method>
 	</methods>

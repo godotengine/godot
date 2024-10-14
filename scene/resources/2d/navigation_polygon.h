@@ -33,16 +33,14 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
+#include "servers/navigation/navigation_globals.h"
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);
 	RWLock rwlock;
 
 	Vector<Vector2> vertices;
-	struct Polygon {
-		Vector<int> indices;
-	};
-	Vector<Polygon> polygons;
+	Vector<Vector<int>> polygons;
 	Vector<Vector<Vector2>> outlines;
 	Vector<Vector<Vector2>> baked_outlines;
 
@@ -53,7 +51,7 @@ class NavigationPolygon : public Resource {
 	// Navigation mesh
 	Ref<NavigationMesh> navigation_mesh;
 
-	real_t cell_size = 1.0f; // Must match ProjectSettings default 2D cell_size.
+	real_t cell_size = NavigationDefaults2D::navmesh_cell_size;
 	real_t border_size = 0.0f;
 
 	Rect2 baking_rect;
@@ -74,6 +72,11 @@ public:
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 #endif
+	enum SamplePartitionType {
+		SAMPLE_PARTITION_CONVEX_PARTITION = 0,
+		SAMPLE_PARTITION_TRIANGULATE,
+		SAMPLE_PARTITION_MAX
+	};
 
 	enum ParsedGeometryType {
 		PARSED_GEOMETRY_MESH_INSTANCES = 0,
@@ -91,6 +94,7 @@ public:
 
 	real_t agent_radius = 10.0f;
 
+	SamplePartitionType partition_type = SAMPLE_PARTITION_CONVEX_PARTITION;
 	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_BOTH;
 	uint32_t parsed_collision_mask = 0xFFFFFFFF;
 
@@ -109,6 +113,8 @@ public:
 	Vector<Vector2> get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
+	void set_outlines(const Vector<Vector<Vector2>> &p_outlines);
+	Vector<Vector<Vector2>> get_outlines() const;
 
 	void clear_outlines();
 #ifndef DISABLE_DEPRECATED
@@ -116,9 +122,12 @@ public:
 #endif // DISABLE_DEPRECATED
 
 	void set_polygons(const Vector<Vector<int>> &p_polygons);
-	const Vector<Vector<int>> &get_polygons() const;
+	Vector<Vector<int>> get_polygons() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+
+	void set_sample_partition_type(SamplePartitionType p_value);
+	SamplePartitionType get_sample_partition_type() const;
 
 	void set_parsed_geometry_type(ParsedGeometryType p_geometry_type);
 	ParsedGeometryType get_parsed_geometry_type() const;
@@ -155,12 +164,15 @@ public:
 	void clear();
 
 	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons);
+	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<Vector<Vector2>> &p_outlines);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons);
+	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<Vector<Vector2>> &r_outlines);
 
 	NavigationPolygon() {}
 	~NavigationPolygon() {}
 };
 
+VARIANT_ENUM_CAST(NavigationPolygon::SamplePartitionType);
 VARIANT_ENUM_CAST(NavigationPolygon::ParsedGeometryType);
 VARIANT_ENUM_CAST(NavigationPolygon::SourceGeometryMode);
 

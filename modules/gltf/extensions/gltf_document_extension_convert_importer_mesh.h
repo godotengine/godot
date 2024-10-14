@@ -37,7 +37,6 @@ class GLTFDocumentExtensionConvertImporterMesh : public GLTFDocumentExtension {
 	GDCLASS(GLTFDocumentExtensionConvertImporterMesh, GLTFDocumentExtension);
 
 protected:
-	static void _bind_methods();
 	static void _copy_meta(Object *p_src_object, Object *p_dst_object);
 
 public:

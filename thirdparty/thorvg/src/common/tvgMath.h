@@ -26,7 +26,7 @@
  #define _USE_MATH_DEFINES
 
 #include <float.h>
-#include <math.h>
+#include <cmath>
 #include "tvgCommon.h"
 
 #define MATH_PI  3.14159265358979323846f
@@ -42,6 +42,7 @@
 /* General functions                                                    */
 /************************************************************************/
 
+float mathAtan2(float y, float x);
 
 static inline float mathDeg2Rad(float degree)
 {
@@ -67,6 +68,13 @@ static inline bool mathEqual(float a, float b)
 }
 
 
+template <typename T>
+static inline void mathClamp(T& v, const T& min, const T& max)
+{
+    if (v < min) v = min;
+    else if (v > max) v = max;
+}
+
 /************************************************************************/
 /* Matrix functions                                                     */
 /************************************************************************/
@@ -77,17 +85,17 @@ bool mathIdentity(const Matrix* m);
 Matrix operator*(const Matrix& lhs, const Matrix& rhs);
 bool operator==(const Matrix& lhs, const Matrix& rhs);
 
-static inline bool mathRightAngle(const Matrix* m)
+static inline bool mathRightAngle(const Matrix& m)
 {
-   auto radian = fabsf(atan2f(m->e21, m->e11));
+   auto radian = fabsf(mathAtan2(m.e21, m.e11));
    if (radian < FLOAT_EPSILON || mathEqual(radian, MATH_PI2) || mathEqual(radian, MATH_PI)) return true;
    return false;
 }
 
 
-static inline bool mathSkewed(const Matrix* m)
+static inline bool mathSkewed(const Matrix& m)
 {
-    return !mathZero(m->e21 + m->e12);
+    return !mathZero(m.e21 + m.e12);
 }
 
 
@@ -232,6 +240,17 @@ static inline Point operator/(const Point& lhs, const float rhs)
 }
 
 
+static inline Point mathNormal(const Point& p1, const Point& p2)
+{
+    auto dir = p2 - p1;
+    auto len = mathLength(dir);
+    if (mathZero(len)) return {};
+
+    auto unitDir = dir / len;
+    return {-unitDir.y, unitDir.x};
+}
+
+
 static inline void mathLog(const Point& pt)
 {
     TVGLOG("COMMON", "Point: [%f %f]", pt.x, pt.y);
@@ -247,5 +266,6 @@ static inline T mathLerp(const T &start, const T &end, float t)
     return static_cast<T>(start + (end - start) * t);
 }
 
+uint8_t mathLerp(const uint8_t &start, const uint8_t &end, float t);
 
 #endif //_TVG_MATH_H_

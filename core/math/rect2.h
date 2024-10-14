@@ -285,13 +285,15 @@ struct [[nodiscard]] Rect2 {
 		return Rect2(position.round(), size.round());
 	}
 
-	Vector2 get_support(const Vector2 &p_normal) const {
-		Vector2 half_extents = size * 0.5f;
-		Vector2 ofs = position + half_extents;
-		return Vector2(
-					   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
-					   (p_normal.y > 0) ? -half_extents.y : half_extents.y) +
-				ofs;
+	Vector2 get_support(const Vector2 &p_direction) const {
+		Vector2 support = position;
+		if (p_direction.x > 0.0f) {
+			support.x += size.x;
+		}
+		if (p_direction.y > 0.0f) {
+			support.y += size.y;
+		}
+		return support;
 	}
 
 	_FORCE_INLINE_ bool intersects_filled_polygon(const Vector2 *p_points, int p_point_count) const {

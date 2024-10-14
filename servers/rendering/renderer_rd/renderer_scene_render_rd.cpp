@@ -1040,6 +1040,14 @@ void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightPr
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::lightmaps_set_bicubic_filter(bool p_enable) {
+	if (lightmap_filter_bicubic == p_enable) {
+		return;
+	}
+	lightmap_filter_bicubic = p_enable;
+	_update_shader_quality_settings();
+}
+
 int RendererSceneRenderRD::get_roughness_layers() const {
 	return sky.roughness_layers;
 }
@@ -1123,6 +1131,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
+		scene_data.taa_frame_count = p_camera_data->taa_frame_count;
 		scene_data.main_cam_transform = p_camera_data->main_transform;
 		scene_data.flip_y = !p_reflection_probe.is_valid();
 
@@ -1483,6 +1492,7 @@ void RendererSceneRenderRD::init() {
 
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 

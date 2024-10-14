@@ -22,6 +22,12 @@ msgstr ""
 msgid "New Code Region"
 msgstr "منطقة الكود الجديدة"
 
+msgid "Pick a color from the screen."
+msgstr "اختر لونًا من الشاشة."
+
+msgid "Pick a color from the application window."
+msgstr "اختر لونًا من نافذة التطبيق."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -37,12 +43,6 @@ msgid ""
 msgstr ""
 "اللون: #%s\n"
 "الزر الأيسر للفأرة (LMB): تطبيق اللون"
-
-msgid "Pick a color from the screen."
-msgstr "اختر لونًا من الشاشة."
-
-msgid "Pick a color from the application window."
-msgstr "اختر لونًا من نافذة التطبيق."
 
 msgid "Select a picker shape."
 msgstr "اختر شكل الملقاط."

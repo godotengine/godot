@@ -34,7 +34,7 @@
 #include "gdscript.h"
 
 #include "core/object/ref_counted.h"
-#include "core/os/mutex.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -59,6 +59,7 @@ private:
 	String path;
 	uint32_t source_hash = 0;
 	bool clearing = false;
+	bool abandoned = false;
 
 	friend class GDScriptCache;
 	friend class GDScript;
@@ -79,6 +80,7 @@ public:
 class GDScriptCache {
 	// String key is full path.
 	HashMap<String, GDScriptParserRef *> parser_map;
+	HashMap<String, Vector<ObjectID>> abandoned_parser_map;
 	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;
@@ -93,7 +95,12 @@ class GDScriptCache {
 
 	bool cleared = false;
 
-	Mutex mutex;
+public:
+	static const int BINARY_MUTEX_TAG = 2;
+
+private:
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex();
 
 public:
 	static void move_script(const String &p_from, const String &p_to);

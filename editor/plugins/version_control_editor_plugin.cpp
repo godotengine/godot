@@ -1006,7 +1006,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	toggle_vcs_choice = memnew(CheckButton);
 	toggle_vcs_choice->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	toggle_vcs_choice->set_pressed_no_signal(false);
-	toggle_vcs_choice->connect(SNAME("toggled"), callable_mp(this, &VersionControlEditorPlugin::_toggle_vcs_integration));
+	toggle_vcs_choice->connect(SceneStringName(toggled), callable_mp(this, &VersionControlEditorPlugin::_toggle_vcs_integration));
 	toggle_vcs_hbc->add_child(toggle_vcs_choice);
 
 	set_up_vbc->add_child(memnew(HSeparator));
@@ -1032,7 +1032,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_username = memnew(LineEdit);
 	set_up_username->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	set_up_username->set_text(EDITOR_DEF("version_control/username", ""));
+	set_up_username->set_text(EDITOR_GET("version_control/username"));
 	set_up_username->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
 	set_up_username_input->add_child(set_up_username);
 
@@ -1068,7 +1068,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_ssh_public_key_path = memnew(LineEdit);
 	set_up_ssh_public_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	set_up_ssh_public_key_path->set_text(EDITOR_DEF("version_control/ssh_public_key_path", ""));
+	set_up_ssh_public_key_path->set_text(EDITOR_GET("version_control/ssh_public_key_path"));
 	set_up_ssh_public_key_path->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_path);
 
@@ -1101,7 +1101,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_ssh_private_key_path = memnew(LineEdit);
 	set_up_ssh_private_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	set_up_ssh_private_key_path->set_text(EDITOR_DEF("version_control/ssh_private_key_path", ""));
+	set_up_ssh_private_key_path->set_text(EDITOR_GET("version_control/ssh_private_key_path"));
 	set_up_ssh_private_key_path->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_path);
 

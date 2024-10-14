@@ -532,10 +532,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			Vector<GDScriptCodeGenerator::Address> elements;
 
 			// Create the result temporary first since it's the last to be killed.
-			GDScriptDataType dict_type;
-			dict_type.has_type = true;
-			dict_type.kind = GDScriptDataType::BUILTIN;
-			dict_type.builtin_type = Variant::DICTIONARY;
+			GDScriptDataType dict_type = _gdtype_from_datatype(dn->get_datatype(), codegen.script);
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(dict_type);
 
 			for (int i = 0; i < dn->elements.size(); i++) {
@@ -566,7 +563,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				elements.push_back(element);
 			}
 
-			gen->write_construct_dictionary(result, elements);
+			if (dict_type.has_container_element_types()) {
+				gen->write_construct_typed_dictionary(result, dict_type.get_container_element_type_or_variant(0), dict_type.get_container_element_type_or_variant(1), elements);
+			} else {
+				gen->write_construct_dictionary(result, elements);
+			}
 
 			for (int i = 0; i < elements.size(); i++) {
 				if (elements[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
@@ -1064,11 +1065,23 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Get at (potential) root stack pos, so it can be returned.
 				GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, chain.back()->get()->base);
+				const bool base_known_type = base.type.has_type;
+				const bool base_is_shared = Variant::is_type_shared(base.type.builtin_type);
+
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
 
 				GDScriptCodeGenerator::Address prev_base = base;
+
+				// In case the base has a setter, don't use the address directly, as we want to call that setter.
+				// So use a temp value instead and call the setter at the end.
+				GDScriptCodeGenerator::Address base_temp;
+				if ((!base_known_type || !base_is_shared) && base.mode == GDScriptCodeGenerator::Address::MEMBER && member_property_has_setter && !member_property_is_in_setter) {
+					base_temp = codegen.add_temporary(base.type);
+					gen->write_assign(base_temp, base);
+					prev_base = base_temp;
+				}
 
 				struct ChainInfo {
 					bool is_named = false;
@@ -1217,6 +1230,15 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						if (!known_type) {
 							gen->write_end_jump_if_shared();
 						}
+					}
+				} else if (base_temp.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					if (!base_known_type) {
+						gen->write_jump_if_shared(base);
+					}
+					// Save the temp value back to the base by calling its setter.
+					gen->write_call(GDScriptCodeGenerator::Address(), base, member_property_setter_function, { assigned });
+					if (!base_known_type) {
+						gen->write_end_jump_if_shared();
 					}
 				}
 
@@ -1880,7 +1902,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::MATCH: {
 				const GDScriptParser::MatchNode *match = static_cast<const GDScriptParser::MatchNode *>(s);
 
-				codegen.start_block(); // Add an extra block, since the binding pattern and @special variables belong to the branch scope.
+				codegen.start_block(); // Add an extra block, since @special locals belong to the match scope.
 
 				// Evaluate the match expression.
 				GDScriptCodeGenerator::Address value = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype(), codegen.script));
@@ -1918,7 +1940,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 					const GDScriptParser::MatchBranchNode *branch = match->branches[j];
 
-					codegen.start_block(); // Create an extra block around for binds.
+					codegen.start_block(); // Add an extra block, since binds belong to the match branch scope.
 
 					// Add locals in block before patterns, so temporaries don't use the stack address for binds.
 					List<GDScriptCodeGenerator::Address> branch_locals = _add_block_locals(codegen, branch->block);
@@ -1970,13 +1992,15 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 					_clear_block_locals(codegen, branch_locals);
 
-					codegen.end_block(); // Get out of extra block.
+					codegen.end_block(); // Get out of extra block for binds.
 				}
 
 				// End all nested `if`s.
 				for (int j = 0; j < match->branches.size(); j++) {
 					gen->write_endif();
 				}
+
+				codegen.end_block(); // Get out of extra block for match's @special locals.
 			} break;
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
@@ -2010,7 +2034,9 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::FOR: {
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);
 
-				codegen.start_block(); // Add an extra block, since the iterator and @special variables belong to the loop scope.
+				// Add an extra block, since the iterator and @special locals belong to the loop scope.
+				// Also we use custom logic to clear block locals.
+				codegen.start_block();
 
 				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype(), codegen.script));
 
@@ -2043,10 +2069,12 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				_clear_block_locals(codegen, loop_locals); // Outside loop, after block - for `break` and normal exit.
 
-				codegen.end_block(); // Get out of extra block.
+				codegen.end_block(); // Get out of extra block for loop iterator, @special locals, and custom locals clearing.
 			} break;
 			case GDScriptParser::Node::WHILE: {
 				const GDScriptParser::WhileNode *while_n = static_cast<const GDScriptParser::WhileNode *>(s);
+
+				codegen.start_block(); // Add an extra block, since we use custom logic to clear block locals.
 
 				gen->start_while_condition();
 
@@ -2074,6 +2102,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				gen->write_endwhile();
 
 				_clear_block_locals(codegen, loop_locals); // Outside loop, after block - for `break` and normal exit.
+
+				codegen.end_block(); // Get out of extra block for custom locals clearing.
 			} break;
 			case GDScriptParser::Node::BREAK: {
 				gen->write_break();
@@ -2296,8 +2326,11 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 
-				if (field_type.has_container_element_type(0)) {
+				if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
 					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+				} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
+					codegen.generator->write_construct_typed_dictionary(dst_address, field_type.get_container_element_type_or_variant(0),
+							field_type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());
 				} else if (field_type.kind == GDScriptDataType::BUILTIN) {
 					codegen.generator->write_construct(dst_address, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
 				}
@@ -2486,9 +2519,15 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		if (field_type.has_type) {
 			codegen.generator->write_newline(field->start_line);
 
-			if (field_type.has_container_element_type(0)) {
+			if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
+				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
+				codegen.generator->pop_temporary();
+			} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
+				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
+				codegen.generator->write_construct_typed_dictionary(temp, field_type.get_container_element_type_or_variant(0),
+						field_type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());
 				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
 				codegen.generator->pop_temporary();
 			} else if (field_type.kind == GDScriptDataType::BUILTIN) {
@@ -2590,9 +2629,10 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 	return err;
 }
 
-// Prepares given script, and inner class scripts, for compilation. It populates class members and initializes method
-// RPC info for its base classes first, then for itself, then for inner classes.
-// Warning: this function cannot initiate compilation of other classes, or it will result in cyclic dependency issues.
+// Prepares given script, and inner class scripts, for compilation. It populates class members and
+// initializes method RPC info for its base classes first, then for itself, then for inner classes.
+// WARNING: This function cannot initiate compilation of other classes, or it will result in
+// cyclic dependency issues.
 Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	if (parsed_classes.has(p_script)) {
 		return OK;

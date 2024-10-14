@@ -266,9 +266,6 @@ void MultiMeshEditor::_browse(bool p_source) {
 	std->popup_scenetree_dialog(browsed_node);
 }
 
-void MultiMeshEditor::_bind_methods() {
-}
-
 MultiMeshEditor::MultiMeshEditor() {
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
@@ -387,7 +384,7 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 	multimesh_editor = memnew(MultiMeshEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(multimesh_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }

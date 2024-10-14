@@ -34,6 +34,7 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -45,7 +46,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		BASE_UNIFORM_SET = 0,
 		MATERIAL_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
-		CANVAS_TEXTURE_UNIFORM_SET = 3,
+		BATCH_UNIFORM_SET = 3,
 	};
 
 	const int SAMPLERS_BINDING_FIRST_INDEX = 10;
@@ -57,12 +58,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		SHADER_VARIANT_PRIMITIVE_POINTS,
 		SHADER_VARIANT_ATTRIBUTES,
 		SHADER_VARIANT_ATTRIBUTES_POINTS,
-		SHADER_VARIANT_QUAD_LIGHT,
-		SHADER_VARIANT_NINEPATCH_LIGHT,
-		SHADER_VARIANT_PRIMITIVE_LIGHT,
-		SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT,
-		SHADER_VARIANT_ATTRIBUTES_LIGHT,
-		SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
 		SHADER_VARIANT_MAX
 	};
 
@@ -84,14 +79,14 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		FLAGS_NINEPATCH_V_MODE_SHIFT = 18,
 		FLAGS_LIGHT_COUNT_SHIFT = 20,
 
-		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 26),
-		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
+		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 24),
+		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 25),
 
-		FLAGS_USE_MSDF = (1 << 28),
-		FLAGS_USE_LCD = (1 << 29),
+		FLAGS_USE_MSDF = (1 << 26),
+		FLAGS_USE_LCD = (1 << 27),
 
-		FLAGS_FLIP_H = (1 << 30),
-		FLAGS_FLIP_V = (1 << 31),
+		FLAGS_FLIP_H = (1 << 28),
+		FLAGS_FLIP_V = (1 << 29),
 	};
 
 	enum {
@@ -118,75 +113,81 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	/**** SHADER ****/
 	/****************/
 
-	enum PipelineVariant {
-		PIPELINE_VARIANT_QUAD,
-		PIPELINE_VARIANT_NINEPATCH,
-		PIPELINE_VARIANT_PRIMITIVE_TRIANGLES,
-		PIPELINE_VARIANT_PRIMITIVE_LINES,
-		PIPELINE_VARIANT_PRIMITIVE_POINTS,
-		PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES,
-		PIPELINE_VARIANT_ATTRIBUTE_TRIANGLE_STRIP,
-		PIPELINE_VARIANT_ATTRIBUTE_LINES,
-		PIPELINE_VARIANT_ATTRIBUTE_LINES_STRIP,
-		PIPELINE_VARIANT_ATTRIBUTE_POINTS,
-		PIPELINE_VARIANT_QUAD_LCD_BLEND,
-		PIPELINE_VARIANT_MAX
-	};
-	enum PipelineLightMode {
-		PIPELINE_LIGHT_MODE_DISABLED,
-		PIPELINE_LIGHT_MODE_ENABLED,
-		PIPELINE_LIGHT_MODE_MAX
+	struct ShaderSpecialization {
+		union {
+			struct {
+				uint32_t use_lighting : 1;
+			};
+
+			uint32_t packed_0;
+		};
 	};
 
-	struct PipelineVariants {
-		PipelineCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
+	struct PipelineKey {
+		ShaderVariant variant = SHADER_VARIANT_MAX;
+		RD::FramebufferFormatID framebuffer_format_id = RD::INVALID_FORMAT_ID;
+		RD::VertexFormatID vertex_format_id = RD::INVALID_ID;
+		RD::RenderPrimitive render_primitive = RD::RENDER_PRIMITIVE_MAX;
+		ShaderSpecialization shader_specialization = {};
+		uint32_t lcd_blend = 0;
+		uint32_t ubershader = 0;
+
+		uint32_t hash() const {
+			uint32_t h = hash_murmur3_one_32(variant);
+			h = hash_murmur3_one_32(framebuffer_format_id, h);
+			h = hash_murmur3_one_32(vertex_format_id, h);
+			h = hash_murmur3_one_32(render_primitive, h);
+			h = hash_murmur3_one_32(shader_specialization.packed_0, h);
+			h = hash_murmur3_one_32(lcd_blend, h);
+			h = hash_murmur3_one_32(ubershader, h);
+			return hash_fmix32(h);
+		}
 	};
-
-	struct {
-		CanvasShaderRD canvas_shader;
-		RID default_version;
-		RID default_version_rd_shader;
-		RID quad_index_buffer;
-		RID quad_index_array;
-		PipelineVariants pipeline_variants;
-
-		ShaderCompiler compiler;
-	} shader;
 
 	struct CanvasShaderData : public RendererRD::MaterialStorage::ShaderData {
-		enum BlendMode { //used internally
-			BLEND_MODE_MIX,
-			BLEND_MODE_ADD,
-			BLEND_MODE_SUB,
-			BLEND_MODE_MUL,
-			BLEND_MODE_PMALPHA,
-			BLEND_MODE_DISABLED,
-		};
-
-		bool valid = false;
-		RID version;
-		PipelineVariants pipeline_variants;
-
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+		int blend_mode = 0;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
 		String code;
+		RID version;
+		PipelineHashMapRD<PipelineKey, CanvasShaderData, void (CanvasShaderData::*)(PipelineKey)> pipeline_hash_map;
+
+		static const uint32_t VERTEX_INPUT_MASKS_SIZE = SHADER_VARIANT_MAX * 2;
+		std::atomic<uint64_t> vertex_input_masks[VERTEX_INPUT_MASKS_SIZE] = {};
 
 		bool uses_screen_texture = false;
 		bool uses_screen_texture_mipmaps = false;
 		bool uses_sdf = false;
 		bool uses_time = false;
 
+		void _clear_vertex_input_mask_cache();
+		void _create_pipeline(PipelineKey p_pipeline_key);
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		RID get_shader(ShaderVariant p_shader_variant, bool p_ubershader) const;
+		uint64_t get_vertex_input_mask(ShaderVariant p_shader_variant, bool p_ubershader);
+		bool is_valid() const;
 
-		CanvasShaderData() {}
+		CanvasShaderData();
 		virtual ~CanvasShaderData();
 	};
+
+	struct {
+		// Data must be guaranteed to be erased before the rest on the destructor.
+		CanvasShaderData *default_version_data = nullptr;
+		CanvasShaderRD canvas_shader;
+		RID default_version_rd_shader;
+		RID quad_index_buffer;
+		RID quad_index_array;
+		ShaderCompiler compiler;
+		uint32_t pipeline_compilations[RS::PIPELINE_SOURCE_MAX] = {};
+		Mutex mutex;
+	} shader;
 
 	RendererRD::MaterialStorage::ShaderData *_create_shader_func();
 	static RendererRD::MaterialStorage::ShaderData *_create_shader_funcs() {
@@ -335,48 +336,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	//state that does not vary across rendering all items
 
-	struct State {
-		//state buffer
-		struct Buffer {
-			float canvas_transform[16];
-			float screen_transform[16];
-			float canvas_normal_transform[16];
-			float canvas_modulate[4];
-
-			float screen_pixel_size[2];
-			float time;
-			uint32_t use_pixel_snap;
-
-			float sdf_to_tex[4];
-			float sdf_to_screen[2];
-			float screen_to_sdf[2];
-
-			uint32_t directional_light_count;
-			float tex_to_sdf;
-			uint32_t pad1;
-			uint32_t pad2;
-		};
-
-		LightUniform *light_uniforms = nullptr;
-
-		RID lights_uniform_buffer;
-		RID canvas_state_buffer;
-		RID shadow_sampler;
-		RID shadow_texture;
-		RID shadow_depth_texture;
-		RID shadow_fb;
-		int shadow_texture_size = 2048;
-
-		RID default_transforms_uniform_set;
-
-		uint32_t max_lights_per_render;
-		uint32_t max_lights_per_item;
-
-		double time;
-
-	} state;
-
-	struct PushConstant {
+	struct InstanceData {
 		float world[6];
 		uint32_t flags;
 		uint32_t specular_shininess;
@@ -403,7 +363,170 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t lights[4];
 	};
 
+	struct PushConstant {
+		uint32_t base_instance_index;
+		ShaderSpecialization shader_specialization;
+		uint32_t pad2;
+		uint32_t pad3;
+	};
+
+	// TextureState is used to determine when a new batch is required due to a change of texture state.
+	struct TextureState {
+		static const uint32_t FILTER_SHIFT = 0;
+		static const uint32_t FILTER_BITS = 3;
+		static const uint32_t FILTER_MASK = (1 << FILTER_BITS) - 1;
+		static const uint32_t REPEAT_SHIFT = FILTER_BITS;
+		static const uint32_t REPEAT_BITS = 2;
+		static const uint32_t REPEAT_MASK = (1 << REPEAT_BITS) - 1;
+		static const uint32_t TEXTURE_IS_DATA_SHIFT = REPEAT_SHIFT + REPEAT_BITS;
+		static const uint32_t TEXTURE_IS_DATA_BITS = 1;
+		static const uint32_t TEXTURE_IS_DATA_MASK = (1 << TEXTURE_IS_DATA_BITS) - 1;
+		static const uint32_t LINEAR_COLORS_SHIFT = TEXTURE_IS_DATA_SHIFT + TEXTURE_IS_DATA_BITS;
+		static const uint32_t LINEAR_COLORS_BITS = 1;
+		static const uint32_t LINEAR_COLORS_MASK = (1 << LINEAR_COLORS_BITS) - 1;
+
+		RID texture;
+		uint32_t other = 0;
+
+		TextureState() {}
+
+		TextureState(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, bool p_texture_is_data, bool p_use_linear_colors) {
+			texture = p_texture;
+			other = (((uint32_t)p_base_filter & FILTER_MASK) << FILTER_SHIFT) |
+					(((uint32_t)p_base_repeat & REPEAT_MASK) << REPEAT_SHIFT) |
+					(((uint32_t)p_texture_is_data & TEXTURE_IS_DATA_MASK) << TEXTURE_IS_DATA_SHIFT) |
+					(((uint32_t)p_use_linear_colors & LINEAR_COLORS_MASK) << LINEAR_COLORS_SHIFT);
+		}
+
+		_FORCE_INLINE_ RS::CanvasItemTextureFilter texture_filter() const {
+			return (RS::CanvasItemTextureFilter)((other >> FILTER_SHIFT) & FILTER_MASK);
+		}
+
+		_FORCE_INLINE_ RS::CanvasItemTextureRepeat texture_repeat() const {
+			return (RS::CanvasItemTextureRepeat)((other >> REPEAT_SHIFT) & REPEAT_MASK);
+		}
+
+		_FORCE_INLINE_ bool linear_colors() const {
+			return (other >> LINEAR_COLORS_SHIFT) & LINEAR_COLORS_MASK;
+		}
+
+		_FORCE_INLINE_ bool texture_is_data() const {
+			return (other >> TEXTURE_IS_DATA_SHIFT) & TEXTURE_IS_DATA_MASK;
+		}
+
+		bool operator==(const TextureState &p_val) const {
+			return (texture == p_val.texture) && (other == p_val.other);
+		}
+
+		bool operator!=(const TextureState &p_val) const {
+			return (texture != p_val.texture) || (other != p_val.other);
+		}
+	};
+
+	struct TextureInfo {
+		TextureState state;
+		uint32_t specular_shininess = 0;
+		uint32_t flags = 0;
+		Vector2 texpixel_size;
+
+		RID diffuse;
+		RID normal;
+		RID specular;
+		RID sampler;
+	};
+
+	struct Batch {
+		// Position in the UBO measured in bytes
+		uint32_t start = 0;
+		uint32_t instance_count = 0;
+		uint32_t instance_buffer_index = 0;
+
+		TextureInfo tex_info;
+
+		Color modulate = Color(1.0, 1.0, 1.0, 1.0);
+
+		Item *clip = nullptr;
+
+		RID material;
+		CanvasMaterialData *material_data = nullptr;
+
+		const Item::Command *command = nullptr;
+		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
+		ShaderVariant shader_variant = SHADER_VARIANT_QUAD;
+		RD::RenderPrimitive render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
+		bool use_lighting = false;
+
+		// batch-specific data
+		union {
+			// TYPE_PRIMITIVE
+			uint32_t primitive_points = 0;
+			// TYPE_PARTICLES
+			uint32_t mesh_instance_count;
+		};
+		bool has_blend = false;
+	};
+
+	struct DataBuffer {
+		LocalVector<RID> instance_buffers;
+	};
+
+	struct State {
+		//state buffer
+		struct Buffer {
+			float canvas_transform[16];
+			float screen_transform[16];
+			float canvas_normal_transform[16];
+			float canvas_modulate[4];
+
+			float screen_pixel_size[2];
+			float time;
+			uint32_t use_pixel_snap;
+
+			float sdf_to_tex[4];
+			float sdf_to_screen[2];
+			float screen_to_sdf[2];
+
+			uint32_t directional_light_count;
+			float tex_to_sdf;
+			uint32_t pad1;
+			uint32_t pad2;
+		};
+
+		LocalVector<DataBuffer> canvas_instance_data_buffers;
+		LocalVector<Batch> canvas_instance_batches;
+		uint32_t current_data_buffer_index = 0;
+		uint32_t current_instance_buffer_index = 0;
+		uint32_t current_batch_index = 0;
+		uint32_t last_instance_index = 0;
+		InstanceData *instance_data_array = nullptr;
+
+		uint32_t max_instances_per_buffer = 16384;
+		uint32_t max_instance_buffer_size = 16384 * sizeof(InstanceData);
+
+		RID current_batch_uniform_set;
+
+		LightUniform *light_uniforms = nullptr;
+
+		RID lights_uniform_buffer;
+		RID canvas_state_buffer;
+		RID shadow_sampler;
+		RID shadow_texture;
+		RID shadow_depth_texture;
+		RID shadow_fb;
+		int shadow_texture_size = 2048;
+
+		RID default_transforms_uniform_set;
+
+		uint32_t max_lights_per_render;
+		uint32_t max_lights_per_item;
+
+		double time;
+
+	} state;
+
 	Item *items[MAX_RENDER_ITEMS];
+
+	TextureInfo default_texture_info;
 
 	bool using_directional_lights = false;
 	RID default_canvas_texture;
@@ -422,9 +545,23 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	Color debug_redraw_color;
 	double debug_redraw_time = 1.0;
 
-	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size, bool p_texture_is_data = false); //recursive, so regular inline used instead.
-	void _render_item(RenderingDevice::DrawListID p_draw_list, RID p_render_target, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants, bool &r_sdf_used, const Point2 &p_offset, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	// A structure to store cached render target information
+	struct RenderTarget {
+		// Current render target for the canvas.
+		RID render_target;
+		// The base flags for each InstanceData, derived from the render target.
+		// Either FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR or 0
+		uint32_t base_flags = 0;
+	};
+
+	inline RID _get_pipeline_specialization_or_ubershader(CanvasShaderData *p_shader_data, PipelineKey &r_pipeline_key, PushConstant &r_push_constant, RID p_mesh_instance = RID(), void *p_surface = nullptr, uint32_t p_surface_index = 0, RID *r_vertex_array = nullptr);
+	void _render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch);
+	void _render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void _prepare_batch_texture_info(Batch *p_current_batch, RID p_texture) const;
+	[[nodiscard]] Batch *_new_batch(bool &r_batch_broken);
+	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken, Batch *&r_current_batch);
+	void _allocate_instance_buffer();
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
@@ -455,6 +592,7 @@ public:
 	virtual void set_shadow_texture_size(int p_size) override;
 
 	void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override;
+	uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
 
 	void set_time(double p_time);
 	void update() override;

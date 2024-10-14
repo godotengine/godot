@@ -141,7 +141,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 
 		if (p_name == "codesign/codesign") {
 			if (dist_type == 2) {
-				if (codesign_tool == 2 && Engine::get_singleton()->has_singleton("GodotSharp")) {
+				if (codesign_tool == 2 && ClassDB::class_exists("CSharpScript")) {
 					return TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries (GDExtension or .NET).");
 				}
 				if (codesign_tool == 0) {
@@ -333,7 +333,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 	}
 
 	// These entitlements are required to run managed code, and are always enabled in Mono builds.
-	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+	if (ClassDB::class_exists("CSharpScript")) {
 		if (p_option == "codesign/entitlements/allow_jit_code_execution" || p_option == "codesign/entitlements/allow_unsigned_executable_memory" || p_option == "codesign/entitlements/allow_dyld_environment_variables") {
 			return false;
 		}
@@ -357,17 +357,13 @@ List<String> EditorExportPlatformMacOS::get_binary_extensions(const Ref<EditorEx
 			list.push_back("dmg");
 #endif
 			list.push_back("zip");
-#ifndef WINDOWS_ENABLED
 			list.push_back("app");
-#endif
 		} else if (dist_type == 1) {
 #ifdef MACOS_ENABLED
 			list.push_back("dmg");
 #endif
 			list.push_back("zip");
-#ifndef WINDOWS_ENABLED
 			list.push_back("app");
-#endif
 		} else if (dist_type == 2) {
 #ifdef MACOS_ENABLED
 			list.push_back("pkg");
@@ -451,13 +447,15 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version"), "10.12"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_x86_64"), "10.12"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "11.00"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
+	// TODO(sgc): Need to set appropriate version when using Metal
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_version"), "13.1"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_build"), "22C55"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_name"), "macosx13.1"));
@@ -822,8 +820,12 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$app_category", cat.to_lower()) + "\n";
 		} else if (lines[i].contains("$copyright")) {
 			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
+		} else if (lines[i].contains("$min_version_arm64")) {
+			strnew += lines[i].replace("$min_version_arm64", p_preset->get("application/min_macos_version_arm64")) + "\n";
+		} else if (lines[i].contains("$min_version_x86_64")) {
+			strnew += lines[i].replace("$min_version_x86_64", p_preset->get("application/min_macos_version_x86_64")) + "\n";
 		} else if (lines[i].contains("$min_version")) {
-			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version")) + "\n";
+			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version_x86_64")) + "\n"; // Old template, use x86-64 version for both.
 		} else if (lines[i].contains("$highres")) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
 		} else if (lines[i].contains("$additional_plist_content")) {
@@ -1064,7 +1066,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 	return OK;
 }
 
-Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn, bool p_set_id) {
+void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn, bool p_set_id) {
 	int codesign_tool = p_preset->get("codesign/codesign");
 	switch (codesign_tool) {
 		case 1: { // built-in ad-hoc
@@ -1074,7 +1076,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			Error err = CodeSign::codesign(false, true, p_path, p_ent_path, error_msg);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Built-in CodeSign failed with error \"%s\"."), error_msg));
-				return Error::FAILED;
+				return;
 			}
 #else
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Built-in CodeSign require regex module."));
@@ -1086,13 +1088,13 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xrcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
-				return Error::FAILED;
+				return;
 			}
 
 			List<String> args;
 			args.push_back("sign");
 
-			if (p_path.get_extension() != "dmg") {
+			if (!p_ent_path.is_empty()) {
 				args.push_back("--entitlements-xml-path");
 				args.push_back(p_ent_path);
 			}
@@ -1124,13 +1126,13 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			Error err = OS::get_singleton()->execute(rcodesign, args, &str, &exitcode, true);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start rcodesign executable."));
-				return err;
+				return;
 			}
 
 			if (exitcode != 0) {
 				print_line("rcodesign (" + p_path + "):\n" + str);
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
-				return Error::FAILED;
+				return;
 			} else {
 				print_verbose("rcodesign (" + p_path + "):\n" + str);
 			}
@@ -1141,7 +1143,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 
 			if (!FileAccess::exists("/usr/bin/codesign") && !FileAccess::exists("/bin/codesign")) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xcode command line tools are not installed."));
-				return Error::FAILED;
+				return;
 			}
 
 			bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
@@ -1153,7 +1155,7 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 				args.push_back("runtime");
 			}
 
-			if (p_path.get_extension() != "dmg") {
+			if (!p_ent_path.is_empty()) {
 				args.push_back("--entitlements");
 				args.push_back(p_ent_path);
 			}
@@ -1190,13 +1192,13 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 			Error err = OS::get_singleton()->execute("codesign", args, &str, &exitcode, true);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
-				return err;
+				return;
 			}
 
 			if (exitcode != 0) {
 				print_line("codesign (" + p_path + "):\n" + str);
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
-				return Error::FAILED;
+				return;
 			} else {
 				print_verbose("codesign (" + p_path + "):\n" + str);
 			}
@@ -1205,14 +1207,13 @@ Error EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pre
 		default: {
 		};
 	}
-
-	return OK;
 }
 
-Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path,
+void EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path,
 		const String &p_ent_path, const String &p_helper_ent_path, bool p_should_error_on_non_code) {
 	static Vector<String> extensions_to_sign;
 
+	bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
 	if (extensions_to_sign.is_empty()) {
 		extensions_to_sign.push_back("dylib");
 		extensions_to_sign.push_back("framework");
@@ -1223,7 +1224,8 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 	Ref<DirAccess> dir_access{ DirAccess::open(p_path, &dir_access_error) };
 
 	if (dir_access_error != OK) {
-		return dir_access_error;
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign directory %s."), p_path));
+		return;
 	}
 
 	dir_access->list_dir_begin();
@@ -1237,44 +1239,35 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 		}
 
 		if (extensions_to_sign.has(current_file.get_extension())) {
-			String ent_path = p_ent_path;
+			String ent_path;
 			bool set_bundle_id = false;
-			if (FileAccess::exists(current_file_path)) {
+			if (sandbox && FileAccess::exists(current_file_path)) {
 				int ftype = MachO::get_filetype(current_file_path);
 				if (ftype == 2 || ftype == 5) {
 					ent_path = p_helper_ent_path;
 					set_bundle_id = true;
 				}
 			}
-			Error code_sign_error{ _code_sign(p_preset, current_file_path, ent_path, false, set_bundle_id) };
-			if (code_sign_error != OK) {
-				return code_sign_error;
-			}
+			_code_sign(p_preset, current_file_path, ent_path, false, set_bundle_id);
 			if (is_executable(current_file_path)) {
 				// chmod with 0755 if the file is executable.
 				FileAccess::set_unix_permissions(current_file_path, 0755);
 			}
 		} else if (dir_access->current_is_dir()) {
-			Error code_sign_error{ _code_sign_directory(p_preset, current_file_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code) };
-			if (code_sign_error != OK) {
-				return code_sign_error;
-			}
+			_code_sign_directory(p_preset, current_file_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code);
 		} else if (p_should_error_on_non_code) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign file %s."), current_file));
-			return Error::FAILED;
 		}
 
 		current_file = dir_access->get_next();
 	}
-
-	return OK;
 }
 
 Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path,
 		const String &p_in_app_path, bool p_sign_enabled,
 		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
 		const String &p_helper_ent_path,
-		bool p_should_error_on_non_code_sign) {
+		bool p_should_error_on_non_code_sign, bool p_sandbox) {
 	static Vector<String> extensions_to_sign;
 
 	if (extensions_to_sign.is_empty()) {
@@ -1363,19 +1356,19 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 	if (err == OK && p_sign_enabled) {
 		if (dir_access->dir_exists(p_src_path) && p_src_path.get_extension().is_empty()) {
 			// If it is a directory, find and sign all dynamic libraries.
-			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code_sign);
+			_code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code_sign);
 		} else {
 			if (extensions_to_sign.has(p_in_app_path.get_extension())) {
-				String ent_path = p_ent_path;
+				String ent_path;
 				bool set_bundle_id = false;
-				if (FileAccess::exists(p_in_app_path)) {
+				if (p_sandbox && FileAccess::exists(p_in_app_path)) {
 					int ftype = MachO::get_filetype(p_in_app_path);
 					if (ftype == 2 || ftype == 5) {
 						ent_path = p_helper_ent_path;
 						set_bundle_id = true;
 					}
 				}
-				err = _code_sign(p_preset, p_in_app_path, ent_path, false, set_bundle_id);
+				_code_sign(p_preset, p_in_app_path, ent_path, false, set_bundle_id);
 			}
 			if (dir_access->file_exists(p_in_app_path) && is_executable(p_in_app_path)) {
 				// chmod with 0755 if the file is executable.
@@ -1389,13 +1382,13 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 Error EditorExportPlatformMacOS::_export_macos_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin,
 		const String &p_app_path_name, Ref<DirAccess> &dir_access,
 		bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
-		const String &p_ent_path, const String &p_helper_ent_path) {
+		const String &p_ent_path, const String &p_helper_ent_path, bool p_sandbox) {
 	Error error{ OK };
 	const Vector<String> &macos_plugins{ p_editor_export_plugin->get_macos_plugin_files() };
 	for (int i = 0; i < macos_plugins.size(); ++i) {
 		String src_path{ ProjectSettings::get_singleton()->globalize_path(macos_plugins[i]) };
 		String path_in_app{ p_app_path_name + "/Contents/PlugIns/" + src_path.get_file() };
-		error = _copy_and_sign_files(dir_access, src_path, path_in_app, p_sign_enabled, p_preset, p_ent_path, p_helper_ent_path, false);
+		error = _copy_and_sign_files(dir_access, src_path, path_in_app, p_sign_enabled, p_preset, p_ent_path, p_helper_ent_path, false, p_sandbox);
 		if (error != OK) {
 			break;
 		}
@@ -1513,7 +1506,7 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 	return OK;
 }
 
-Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String base_dir = p_path.get_base_dir();
@@ -1906,6 +1899,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					if (is_executable(file)) {
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
+#ifndef UNIX_ENABLED
+						if (export_format == "app") {
+							add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + file.get_file()));
+						}
+#endif
 					}
 				} else {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
@@ -1931,6 +1929,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
+#ifndef UNIX_ENABLED
+			if (export_format == "app") {
+				add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), scr_path.get_file()));
+			}
+#endif
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console wrapper."));
 			}
@@ -1988,7 +1991,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 				ent_f->store_line("<plist version=\"1.0\">");
 				ent_f->store_line("<dict>");
-				if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+				if (ClassDB::class_exists("CSharpScript")) {
 					// These entitlements are required to run managed code, and are always enabled in Mono builds.
 					ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
 					ent_f->store_line("<true/>");
@@ -2156,9 +2159,14 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				String hlp_path = helpers[i];
 				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
 				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path, false, true);
+					_code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path, false, true);
 				}
 				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
+#ifndef UNIX_ENABLED
+				if (export_format == "app") {
+					add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/Helpers/" + hlp_path.get_file()));
+				}
+#endif
 			}
 		}
 
@@ -2168,11 +2176,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
 				if (shared_objects[i].target.is_empty()) {
 					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
-					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, hlp_ent_path, true);
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, hlp_ent_path, true, sandbox);
 				} else {
 					String path_in_app = tmp_app_path_name.path_join(shared_objects[i].target);
 					tmp_app_dir->make_dir_recursive(path_in_app);
-					err = _copy_and_sign_files(da, src_path, path_in_app.path_join(src_path.get_file()), sign_enabled, p_preset, ent_path, hlp_ent_path, false);
+					err = _copy_and_sign_files(da, src_path, path_in_app.path_join(src_path.get_file()), sign_enabled, p_preset, ent_path, hlp_ent_path, false, sandbox);
 				}
 				if (err != OK) {
 					break;
@@ -2181,7 +2189,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 			Vector<Ref<EditorExportPlugin>> export_plugins{ EditorExport::get_singleton()->get_export_plugins() };
 			for (int i = 0; i < export_plugins.size(); ++i) {
-				err = _export_macos_plugins_for(export_plugins[i], tmp_app_path_name, da, sign_enabled, p_preset, ent_path, hlp_ent_path);
+				err = _export_macos_plugins_for(export_plugins[i], tmp_app_path_name, da, sign_enabled, p_preset, ent_path, hlp_ent_path, sandbox);
 				if (err != OK) {
 					break;
 				}
@@ -2201,7 +2209,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if (ep.step(TTR("Code signing bundle"), 2)) {
 				return ERR_SKIP;
 			}
-			err = _code_sign(p_preset, tmp_app_path_name, ent_path, true, false);
+			_code_sign(p_preset, tmp_app_path_name, ent_path, true, false);
 		}
 
 		String noto_path = p_path;
@@ -2219,7 +2227,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				if (ep.step(TTR("Code signing DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _code_sign(p_preset, p_path, ent_path, false, false);
+				_code_sign(p_preset, p_path, ent_path, false, false);
 			}
 		} else if (export_format == "pkg") {
 			// Create a Installer.
@@ -2519,7 +2527,7 @@ void EditorExportPlatformMacOS::cleanup() {
 	cleanup_commands.clear();
 }
 
-Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
 	cleanup();
 	if (p_device) { // Stop command, cleanup only.
 		return OK;
@@ -2581,8 +2589,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 
 	String cmd_args;
 	{
-		Vector<String> cmd_args_list;
-		gen_debug_flags(cmd_args_list, p_debug_flags);
+		Vector<String> cmd_args_list = gen_export_flags(p_debug_flags);
 		for (int i = 0; i < cmd_args_list.size(); i++) {
 			if (i != 0) {
 				cmd_args += " ";
@@ -2591,7 +2598,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 		}
 	}
 
-	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
+	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
 	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");

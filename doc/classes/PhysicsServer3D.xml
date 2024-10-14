@@ -678,6 +678,17 @@
 				Sets a body state (see [enum BodyState] constants).
 			</description>
 		</method>
+		<method name="body_set_state_sync_callback">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Sets the body's state synchronization callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the callback.
+				The function [param callable] will be called every physics frame, assuming that the body was active during the previous physics tick, and can be used to fetch the latest state from the physics server.
+				The function [param callable] must take the following parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState3D], used to retrieve the body's state.
+			</description>
+		</method>
 		<method name="body_test_motion">
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />

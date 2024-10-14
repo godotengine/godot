@@ -34,6 +34,9 @@
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 
+constexpr uint64_t ID_MASK = 0xFFFFFFFF;
+constexpr uint64_t INDEX_SHIFT = 32;
+
 Ref<AudioStreamPlayback> AudioStreamPolyphonic::instantiate_playback() {
 	Ref<AudioStreamPlaybackPolyphonic> playback;
 	playback.instantiate();
@@ -140,6 +143,10 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 
 		if (s.stream_playback->get_is_sample()) {
+			if (s.finish_request.is_set()) {
+				s.active.clear();
+				AudioServer::get_singleton()->stop_sample_playback(s.stream_playback->get_sample_playback());
+			}
 			continue;
 		}
 
@@ -240,6 +247,11 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 				sp->volume_vector.write[2] = AudioFrame(linear_volume, linear_volume);
 				sp->volume_vector.write[3] = AudioFrame(linear_volume, linear_volume);
 				sp->bus = p_bus;
+
+				if (streams[i].stream_playback->get_sample_playback().is_valid()) {
+					AudioServer::get_singleton()->stop_playback_stream(sp);
+				}
+
 				streams[i].stream_playback->set_sample_playback(sp);
 				AudioServer::get_singleton()->start_sample_playback(sp);
 			}
@@ -252,14 +264,14 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 }
 
 AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_find_stream(int64_t p_id) {
-	uint32_t index = p_id >> INDEX_SHIFT;
+	uint32_t index = static_cast<uint64_t>(p_id) >> INDEX_SHIFT;
 	if (index >= streams.size()) {
 		return nullptr;
 	}
 	if (!streams[index].active.is_set()) {
 		return nullptr; // Not active, no longer exists.
 	}
-	int64_t id = p_id & ID_MASK;
+	int64_t id = static_cast<uint64_t>(p_id) & ID_MASK;
 	if (streams[index].id != id) {
 		return nullptr;
 	}
@@ -308,6 +320,9 @@ Ref<AudioSamplePlayback> AudioStreamPlaybackPolyphonic::get_sample_playback() co
 
 void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
 }
 
 void AudioStreamPlaybackPolyphonic::_bind_methods() {

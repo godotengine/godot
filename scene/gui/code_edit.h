@@ -113,6 +113,9 @@ private:
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
 	String line_number_padding = " ";
+	HashMap<int, RID> line_number_text_cache;
+	void _clear_line_number_text_cache();
+	void _update_line_number_gutter_width();
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
@@ -214,6 +217,7 @@ private:
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 	Rect2i code_completion_scroll_rect;
+	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
@@ -244,6 +248,7 @@ private:
 		Ref<Texture2D> can_fold_code_region_icon;
 		Ref<Texture2D> folded_code_region_icon;
 		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> completion_color_bg;
 
 		Color breakpoint_color = Color(1, 1, 1);
 		Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();

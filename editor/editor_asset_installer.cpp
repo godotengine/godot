@@ -632,7 +632,7 @@ void EditorAssetInstaller::_notification(int p_what) {
 				extension_icon_map["gdshader"] = get_editor_theme_icon(SNAME("Shader"));
 				extension_icon_map["gdshaderinc"] = get_editor_theme_icon(SNAME("TextFile"));
 				extension_icon_map["gd"] = get_editor_theme_icon(SNAME("GDScript"));
-				if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+				if (ClassDB::class_exists("CSharpScript")) {
 					extension_icon_map["cs"] = get_editor_theme_icon(SNAME("CSharpScript"));
 				} else {
 					// Mark C# support as unavailable.
@@ -657,9 +657,6 @@ void EditorAssetInstaller::_notification(int p_what) {
 			}
 		} break;
 	}
-}
-
-void EditorAssetInstaller::_bind_methods() {
 }
 
 EditorAssetInstaller::EditorAssetInstaller() {
@@ -688,7 +685,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	show_source_files_button->set_toggle_mode(true);
 	show_source_files_button->set_tooltip_text(TTR("Open the list of the asset contents and select which files to install."));
 	remapping_tools->add_child(show_source_files_button);
-	show_source_files_button->connect("toggled", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
+	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
 	Button *target_dir_button = memnew(Button);
 	target_dir_button->set_text(TTR("Change Install Folder"));
@@ -701,7 +698,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	skip_toplevel_check = memnew(CheckBox);
 	skip_toplevel_check->set_text(TTR("Ignore asset root"));
 	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
-	skip_toplevel_check->connect("toggled", callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
+	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
 
 	remapping_tools->add_spacer();

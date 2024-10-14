@@ -87,57 +87,55 @@ void NavMeshGenerator2D::sync() {
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	generator_task_mutex.lock();
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	{
+		MutexLock generator_task_lock(generator_task_mutex);
 
-	LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
+		LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
 
-	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask2D *> &E : generator_tasks) {
-		if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
-			finished_task_ids.push_back(E.key);
+		for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask2D *> &E : generator_tasks) {
+			if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
+				WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+				finished_task_ids.push_back(E.key);
 
-			NavMeshGeneratorTask2D *generator_task = E.value;
-			DEV_ASSERT(generator_task->status == NavMeshGeneratorTask2D::TaskStatus::BAKING_FINISHED);
+				NavMeshGeneratorTask2D *generator_task = E.value;
+				DEV_ASSERT(generator_task->status == NavMeshGeneratorTask2D::TaskStatus::BAKING_FINISHED);
 
-			baking_navmeshes.erase(generator_task->navigation_mesh);
-			if (generator_task->callback.is_valid()) {
-				generator_emit_callback(generator_task->callback);
+				baking_navmeshes.erase(generator_task->navigation_mesh);
+				if (generator_task->callback.is_valid()) {
+					generator_emit_callback(generator_task->callback);
+				}
+				memdelete(generator_task);
 			}
-			memdelete(generator_task);
+		}
+
+		for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
+			generator_tasks.erase(finished_task_id);
 		}
 	}
-
-	for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
-		generator_tasks.erase(finished_task_id);
-	}
-
-	generator_task_mutex.unlock();
-	baking_navmesh_mutex.unlock();
 }
 
 void NavMeshGenerator2D::cleanup() {
-	baking_navmesh_mutex.lock();
-	generator_task_mutex.lock();
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	{
+		MutexLock generator_task_lock(generator_task_mutex);
 
-	baking_navmeshes.clear();
+		baking_navmeshes.clear();
 
-	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask2D *> &E : generator_tasks) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
-		NavMeshGeneratorTask2D *generator_task = E.value;
-		memdelete(generator_task);
+		for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask2D *> &E : generator_tasks) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+			NavMeshGeneratorTask2D *generator_task = E.value;
+			memdelete(generator_task);
+		}
+		generator_tasks.clear();
+
+		generator_rid_rwlock.write_lock();
+		for (NavMeshGeometryParser2D *parser : generator_parsers) {
+			generator_parser_owner.free(parser->self);
+		}
+		generator_parsers.clear();
+		generator_rid_rwlock.write_unlock();
 	}
-	generator_tasks.clear();
-
-	generator_rid_rwlock.write_lock();
-	for (NavMeshGeometryParser2D *parser : generator_parsers) {
-		generator_parser_owner.free(parser->self);
-	}
-	generator_parsers.clear();
-	generator_rid_rwlock.write_unlock();
-
-	generator_task_mutex.unlock();
-	baking_navmesh_mutex.unlock();
 }
 
 void NavMeshGenerator2D::finish() {
@@ -212,7 +210,7 @@ void NavMeshGenerator2D::bake_from_source_geometry_data_async(Ref<NavigationPoly
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
-	generator_task_mutex.lock();
+	MutexLock generator_task_lock(generator_task_mutex);
 	NavMeshGeneratorTask2D *generator_task = memnew(NavMeshGeneratorTask2D);
 	generator_task->navigation_mesh = p_navigation_mesh;
 	generator_task->source_geometry_data = p_source_geometry_data;
@@ -220,14 +218,11 @@ void NavMeshGenerator2D::bake_from_source_geometry_data_async(Ref<NavigationPoly
 	generator_task->status = NavMeshGeneratorTask2D::TaskStatus::BAKING_STARTED;
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator2D::generator_thread_bake, generator_task, NavMeshGenerator2D::baking_use_high_priority_threads, "NavMeshGeneratorBake2D");
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
-	generator_task_mutex.unlock();
 }
 
 bool NavMeshGenerator2D::is_baking(Ref<NavigationPolygon> p_navigation_polygon) {
-	baking_navmesh_mutex.lock();
-	bool baking = baking_navmeshes.has(p_navigation_polygon);
-	baking_navmesh_mutex.unlock();
-	return baking;
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	return baking_navmeshes.has(p_navigation_polygon);
 }
 
 void NavMeshGenerator2D::generator_thread_bake(void *p_arg) {
@@ -1042,10 +1037,32 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	TPPLPartition tpart;
-	if (tpart.ConvexPartition_HM(&tppl_in_polygon, &tppl_out_polygon) == 0) { //failed!
-		ERR_PRINT("NavigationPolygon Convex partition failed. Unable to create a valid NavigationMesh from defined polygon outline paths.");
-		p_navigation_mesh->clear();
-		return;
+
+	NavigationPolygon::SamplePartitionType sample_partition_type = p_navigation_mesh->get_sample_partition_type();
+
+	switch (sample_partition_type) {
+		case NavigationPolygon::SamplePartitionType::SAMPLE_PARTITION_CONVEX_PARTITION:
+			if (tpart.ConvexPartition_HM(&tppl_in_polygon, &tppl_out_polygon) == 0) {
+				ERR_PRINT("NavigationPolygon polygon convex partition failed. Unable to create a valid navigation mesh polygon layout from provided source geometry.");
+				p_navigation_mesh->set_vertices(Vector<Vector2>());
+				p_navigation_mesh->clear_polygons();
+				return;
+			}
+			break;
+		case NavigationPolygon::SamplePartitionType::SAMPLE_PARTITION_TRIANGULATE:
+			if (tpart.Triangulate_EC(&tppl_in_polygon, &tppl_out_polygon) == 0) {
+				ERR_PRINT("NavigationPolygon polygon triangulation failed. Unable to create a valid navigation mesh polygon layout from provided source geometry.");
+				p_navigation_mesh->set_vertices(Vector<Vector2>());
+				p_navigation_mesh->clear_polygons();
+				return;
+			}
+			break;
+		default: {
+			ERR_PRINT("NavigationPolygon polygon partitioning failed. Unrecognized partition type.");
+			p_navigation_mesh->set_vertices(Vector<Vector2>());
+			p_navigation_mesh->clear_polygons();
+			return;
+		}
 	}
 
 	Vector<Vector2> new_vertices;

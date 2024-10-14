@@ -574,7 +574,9 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 
 	if (len == 1 && _peek(-1) == '_') {
 		// Lone underscore.
-		return make_token(Token::UNDERSCORE);
+		Token token = make_token(Token::UNDERSCORE);
+		token.literal = "_";
+		return token;
 	}
 
 	String name(_start, len);

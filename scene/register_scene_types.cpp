@@ -117,6 +117,7 @@
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/external_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/gradient_texture.h"
@@ -402,8 +403,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VSlider);
 	GDREGISTER_CLASS(Popup);
 	GDREGISTER_CLASS(PopupPanel);
-	GDREGISTER_CLASS(MenuBar);
-	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(CheckBox);
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
@@ -458,6 +457,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CodeHighlighter);
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
+	GDREGISTER_CLASS(MenuBar);
+	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(OptionButton);
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
@@ -882,7 +883,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ProceduralSkyMaterial);
 	GDREGISTER_CLASS(PanoramaSkyMaterial);
 	GDREGISTER_CLASS(PhysicalSkyMaterial);
-	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
 	BaseMaterial3D::init_shaders();
 
 	GDREGISTER_CLASS(MeshLibrary);
@@ -926,6 +926,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GradientTexture2D);
 	GDREGISTER_CLASS(AnimatedTexture);
 	GDREGISTER_CLASS(CameraTexture);
+	GDREGISTER_CLASS(ExternalTexture);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
 	GDREGISTER_ABSTRACT_CLASS(ImageTextureLayered);
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);

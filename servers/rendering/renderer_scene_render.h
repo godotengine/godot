@@ -58,6 +58,11 @@ public:
 	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) = 0;
 	virtual uint32_t geometry_instance_get_pair_mask() = 0;
 
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) = 0;
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
+
 	/* SDFGI UPDATE */
 
 	virtual void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) = 0;
@@ -307,8 +312,9 @@ public:
 		Transform3D view_offset[RendererSceneRender::MAX_RENDER_VIEWS];
 		Projection view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 		Vector2 taa_jitter;
+		float taa_frame_count = 0.0f;
 
-		void set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2(), uint32_t p_visible_layers = 0xFFFFFFFF);
+		void set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2(), float p_taa_frame_count = 0.0f, uint32_t p_visible_layers = 0xFFFFFFFF);
 		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect);
 	};
 
@@ -338,6 +344,7 @@ public:
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
 
 	virtual void update() = 0;
 	virtual ~RendererSceneRender() {}

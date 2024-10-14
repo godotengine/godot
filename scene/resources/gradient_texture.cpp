@@ -85,7 +85,7 @@ void GradientTexture1D::_queue_update() {
 	callable_mp(this, &GradientTexture1D::update_now).call_deferred();
 }
 
-void GradientTexture1D::_update() {
+void GradientTexture1D::_update() const {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -172,14 +172,14 @@ RID GradientTexture1D::get_rid() const {
 }
 
 Ref<Image> GradientTexture1D::get_image() const {
-	const_cast<GradientTexture1D *>(this)->update_now();
+	update_now();
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
 
-void GradientTexture1D::update_now() {
+void GradientTexture1D::update_now() const {
 	if (update_pending) {
 		_update();
 	}
@@ -225,7 +225,7 @@ void GradientTexture2D::_queue_update() {
 	callable_mp(this, &GradientTexture2D::update_now).call_deferred();
 }
 
-void GradientTexture2D::_update() {
+void GradientTexture2D::_update() const {
 	update_pending = false;
 
 	if (gradient.is_null()) {
@@ -405,14 +405,14 @@ RID GradientTexture2D::get_rid() const {
 }
 
 Ref<Image> GradientTexture2D::get_image() const {
-	const_cast<GradientTexture2D *>(this)->update_now();
+	update_now();
 	if (!texture.is_valid()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(texture);
 }
 
-void GradientTexture2D::update_now() {
+void GradientTexture2D::update_now() const {
 	if (update_pending) {
 		_update();
 	}

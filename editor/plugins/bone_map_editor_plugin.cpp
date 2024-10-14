@@ -252,9 +252,6 @@ StringName BonePicker::get_selected_bone() {
 	return selected->get_text(0);
 }
 
-void BonePicker::_bind_methods() {
-}
-
 void BonePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1232,9 +1229,11 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.push_back("face");
 	int head = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_NONE, neck);
 	if (head == -1) {
-		search_path = skeleton->get_bone_children(neck);
-		if (search_path.size() == 1) {
-			head = search_path[0]; // Maybe only one child of the Neck is Head.
+		if (neck != -1) {
+			search_path = skeleton->get_bone_children(neck);
+			if (search_path.size() == 1) {
+				head = search_path[0]; // Maybe only one child of the Neck is Head.
+			}
 		}
 	}
 	if (head == -1) {
@@ -1478,12 +1477,6 @@ void EditorInspectorPluginBoneMap::parse_begin(Object *p_object) {
 }
 
 BoneMapEditorPlugin::BoneMapEditorPlugin() {
-	// Register properties in editor settings.
-	EDITOR_DEF("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/set", Color(0.1, 0.6, 0.25));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/missing", Color(0.8, 0.2, 0.8));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/error", Color(0.8, 0.2, 0.2));
-
 	Ref<EditorInspectorPluginBoneMap> inspector_plugin;
 	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);

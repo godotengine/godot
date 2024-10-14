@@ -204,11 +204,8 @@ void AudioStreamPlaybackSynchronized::seek(double p_time) {
 }
 
 int AudioStreamPlaybackSynchronized::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-	if (active != true) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0.0, 0.0);
-		}
-		return p_frames;
+	if (!active) {
+		return 0;
 	}
 
 	int todo = p_frames;

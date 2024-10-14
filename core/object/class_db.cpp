@@ -181,7 +181,7 @@ public:
 		return 0;
 	}
 
-	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata) {
+	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata, GDExtensionBool p_notify_postinitialize) {
 		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
 
 		// Find the closest native parent, that isn't a runtime class.
@@ -192,7 +192,7 @@ public:
 		ERR_FAIL_NULL_V(native_parent->creation_func, nullptr);
 
 		// Construct a placeholder.
-		Object *obj = native_parent->creation_func();
+		Object *obj = native_parent->creation_func(static_cast<bool>(p_notify_postinitialize));
 
 		// ClassDB::set_object_extension_instance() won't be called for placeholders.
 		// We need need to make sure that all the things it would have done (even if
@@ -227,16 +227,12 @@ public:
 #endif
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
-	if (!classes.has(p_class)) {
-		return false;
-	}
-
-	StringName inherits = p_class;
-	while (inherits.operator String().length()) {
-		if (inherits == p_inherits) {
+	ClassInfo *c = classes.getptr(p_class);
+	while (c) {
+		if (c->name == p_inherits) {
 			return true;
 		}
-		inherits = _get_parent_class(inherits);
+		c = c->inherits_ptr;
 	}
 
 	return false;
@@ -264,6 +260,22 @@ void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
 		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		p_classes->push_back(E.key);
+	}
+
+	p_classes->sort_custom<StringName::AlphCompare>();
+}
+
+void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes) {
+	OBJTYPE_RLOCK;
+
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		if (!E.value.gdextension || E.value.gdextension->library != p_extension.ptr()) {
 			continue;
 		}
 		p_classes->push_back(E.key);
@@ -301,6 +313,29 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 		return StringName();
 	}
 	return ti->inherits;
+}
+
+bool ClassDB::get_inheritance_chain_nocheck(const StringName &p_class, Vector<StringName> &r_result) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *start = classes.getptr(p_class);
+	if (!start) {
+		return false;
+	}
+
+	int classes_to_add = 0;
+	for (ClassInfo *ti = start; ti; ti = ti->inherits_ptr) {
+		classes_to_add++;
+	}
+
+	int64_t old_size = r_result.size();
+	r_result.resize(old_size + classes_to_add);
+	StringName *w = r_result.ptrw() + old_size;
+	for (ClassInfo *ti = start; ti; ti = ti->inherits_ptr) {
+		*w++ = ti->name;
+	}
+
+	return true;
 }
 
 StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) {
@@ -502,12 +537,12 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class) {
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize) {
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
+		if (!_can_instantiate(ti)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
@@ -516,34 +551,78 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
 		ERR_FAIL_NULL_V_MSG(ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
 	}
+
 #ifdef TOOLS_ENABLED
 	if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
 		ERR_PRINT("Class '" + String(p_class) + "' can only be instantiated by editor.");
 		return nullptr;
 	}
 #endif
-	if (ti->gdextension && ti->gdextension->create_instance) {
-		ObjectGDExtension *extension = ti->gdextension;
-#ifdef TOOLS_ENABLED
-		if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
-			extension = get_placeholder_extension(ti->name);
-		}
-#endif
-		return (Object *)extension->create_instance(extension->class_userdata);
-	} else {
-#ifdef TOOLS_ENABLED
-		if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
-			if (!ti->inherits_ptr || !ti->inherits_ptr->creation_func) {
-				ERR_PRINT(vformat("Cannot make a placeholder instance of runtime class %s because its parent cannot be constructed.", ti->name));
-			} else {
-				ObjectGDExtension *extension = get_placeholder_extension(ti->name);
-				return (Object *)extension->create_instance(extension->class_userdata);
-			}
-		}
-#endif
 
-		return ti->creation_func();
+#ifdef TOOLS_ENABLED
+	// Try to create placeholder.
+	if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
+		bool can_create_placeholder = false;
+		if (ti->gdextension) {
+			if (ti->gdextension->create_instance2) {
+				can_create_placeholder = true;
+			}
+#ifndef DISABLE_DEPRECATED
+			else if (ti->gdextension->create_instance) {
+				can_create_placeholder = true;
+			}
+#endif // DISABLE_DEPRECATED
+		} else if (!ti->inherits_ptr || !ti->inherits_ptr->creation_func) {
+			ERR_PRINT(vformat("Cannot make a placeholder instance of runtime class %s because its parent cannot be constructed.", ti->name));
+		} else {
+			can_create_placeholder = true;
+		}
+
+		if (can_create_placeholder) {
+			ObjectGDExtension *extension = get_placeholder_extension(ti->name);
+			return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+		}
 	}
+#endif // TOOLS_ENABLED
+
+	if (ti->gdextension && ti->gdextension->create_instance2) {
+		ObjectGDExtension *extension = ti->gdextension;
+		return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+	}
+#ifndef DISABLE_DEPRECATED
+	else if (ti->gdextension && ti->gdextension->create_instance) {
+		ObjectGDExtension *extension = ti->gdextension;
+		return (Object *)extension->create_instance(extension->class_userdata);
+	}
+#endif // DISABLE_DEPRECATED
+	else {
+		return ti->creation_func(p_notify_postinitialize);
+	}
+}
+
+bool ClassDB::_can_instantiate(ClassInfo *p_class_info) {
+	if (!p_class_info) {
+		return false;
+	}
+
+	if (p_class_info->disabled || !p_class_info->creation_func) {
+		return false;
+	}
+
+	if (!p_class_info->gdextension) {
+		return true;
+	}
+
+	if (p_class_info->gdextension->create_instance2) {
+		return true;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_class_info->gdextension->create_instance) {
+		return true;
+	}
+#endif //  DISABLE_DEPRECATED
+	return false;
 }
 
 Object *ClassDB::instantiate(const StringName &p_class) {
@@ -552,6 +631,10 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 
 Object *ClassDB::instantiate_no_placeholders(const StringName &p_class) {
 	return _instantiate_internal(p_class, true);
+}
+
+Object *ClassDB::instantiate_without_postinitialization(const StringName &p_class) {
+	return _instantiate_internal(p_class, true, false);
 }
 
 #ifdef TOOLS_ENABLED
@@ -565,7 +648,7 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
+		if (!_can_instantiate(ti)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
@@ -626,7 +709,10 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->get_rid = &PlaceholderExtensionInstance::placeholder_instance_get_rid;
 
 	placeholder_extension->class_userdata = ti;
-	placeholder_extension->create_instance = &PlaceholderExtensionInstance::placeholder_class_create_instance;
+#ifndef DISABLE_DEPRECATED
+	placeholder_extension->create_instance = nullptr;
+#endif // DISABLE_DEPRECATED
+	placeholder_extension->create_instance2 = &PlaceholderExtensionInstance::placeholder_class_create_instance;
 	placeholder_extension->free_instance = &PlaceholderExtensionInstance::placeholder_class_free_instance;
 	placeholder_extension->get_virtual = &PlaceholderExtensionInstance::placeholder_class_get_virtual;
 	placeholder_extension->get_virtual_call_data = nullptr;
@@ -643,7 +729,7 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
+		if (!_can_instantiate(ti)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
@@ -680,7 +766,7 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
+	return _can_instantiate(ti);
 }
 
 bool ClassDB::is_abstract(const StringName &p_class) {
@@ -695,7 +781,18 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 		Ref<Script> scr = ResourceLoader::load(path);
 		return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 	}
-	return ti->creation_func == nullptr && (!ti->gdextension || ti->gdextension->create_instance == nullptr);
+
+	if (ti->creation_func != nullptr) {
+		return false;
+	}
+	if (!ti->gdextension) {
+		return true;
+	}
+#ifndef DISABLE_DEPRECATED
+	return ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
+#else
+	return ti->gdextension->create_instance2 == nullptr;
+#endif //  DISABLE_DEPRECATED
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
@@ -715,7 +812,7 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance) && ti->is_virtual);
+	return (_can_instantiate(ti) && ti->is_virtual);
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
@@ -1547,14 +1644,16 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 				Variant index = psg->index;
 				const Variant *arg[1] = { &index };
 				Callable::CallError ce;
-				r_value = p_object->callp(psg->getter, arg, 1, ce);
+				const Variant value = p_object->callp(psg->getter, arg, 1, ce);
+				r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
 
 			} else {
 				Callable::CallError ce;
 				if (psg->_getptr) {
 					r_value = psg->_getptr->call(p_object, nullptr, 0, ce);
 				} else {
-					r_value = p_object->callp(psg->getter, nullptr, 0, ce);
+					const Variant value = p_object->callp(psg->getter, nullptr, 0, ce);
+					r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
 				}
 			}
 			return true;
@@ -2205,6 +2304,13 @@ void ClassDB::cleanup() {
 	resource_base_extensions.clear();
 	compat_classes.clear();
 	native_structs.clear();
+}
+
+// Array to use in optional parameters on methods and the DEFVAL_ARRAY macro.
+Array ClassDB::default_array_arg = Array::create_read_only();
+
+bool ClassDB::is_default_array_arg(const Array &p_array) {
+	return p_array.is_same_instance(default_array_arg);
 }
 
 //

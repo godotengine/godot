@@ -202,15 +202,6 @@ msgstr "3D 聲像強度"
 msgid "iOS"
 msgstr "iOS"
 
-msgid "Editor"
-msgstr "編輯器"
-
-msgid "Script"
-msgstr "腳本"
-
-msgid "Search in File Extensions"
-msgstr "按照副檔名搜尋"
-
 msgid "Subwindows"
 msgstr "子視窗"
 
@@ -814,6 +805,9 @@ msgstr "切換模式"
 msgid "Interface"
 msgstr "界面"
 
+msgid "Editor"
+msgstr "編輯器"
+
 msgid "Editor Language"
 msgstr "編輯器語言"
 
@@ -831,9 +825,6 @@ msgstr "編輯器螢幕"
 
 msgid "Project Manager Screen"
 msgstr "專案管理員"
-
-msgid "Enable Pseudolocalization"
-msgstr "啟用模擬翻譯模式"
 
 msgid "Use Embedded Menu"
 msgstr "使用嵌入式選單"
@@ -1593,6 +1584,15 @@ msgstr "遠端場景樹重新整理間隔"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "遠端檢查重新整理間隔"
+
+msgid "Input"
+msgstr "輸入"
+
+msgid "Buffering"
+msgstr "緩衝"
+
+msgid "Agile Event Flushing"
+msgstr "敏捷事件刷新"
 
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -2440,6 +2440,9 @@ msgstr "SSH私鑰路徑"
 msgid "Main Run Args"
 msgstr "主執行參數"
 
+msgid "Script"
+msgstr "腳本"
+
 msgid "Templates Search Path"
 msgstr "範本搜索路徑"
 
@@ -2635,18 +2638,6 @@ msgstr "預設"
 msgid "Default Clear Color"
 msgstr "預設清除顏色"
 
-msgid "Show Image"
-msgstr "顯示圖像"
-
-msgid "Image"
-msgstr "圖像"
-
-msgid "Fullsize"
-msgstr "全尺寸"
-
-msgid "Use Filter"
-msgstr "使用篩選器"
-
 msgid "Icon"
 msgstr "圖示"
 
@@ -2656,12 +2647,6 @@ msgstr "macOS 原生圖示"
 msgid "Windows Native Icon"
 msgstr "Windows 原生圖示"
 
-msgid "Buffering"
-msgstr "緩衝"
-
-msgid "Agile Event Flushing"
-msgstr "敏捷事件刷新"
-
 msgid "Pointing"
 msgstr "指點"
 
@@ -2670,6 +2655,9 @@ msgstr "Android"
 
 msgid "Text Driver"
 msgstr "文字驅動"
+
+msgid "Search in File Extensions"
+msgstr "按照副檔名搜尋"
 
 msgid "Mouse Cursor"
 msgstr "滑鼠游標"
@@ -2682,6 +2670,18 @@ msgstr "自定義圖像熱點"
 
 msgid "Tooltip Position Offset"
 msgstr "工具提示位置偏移"
+
+msgid "Show Image"
+msgstr "顯示圖像"
+
+msgid "Image"
+msgstr "圖像"
+
+msgid "Fullsize"
+msgstr "全尺寸"
+
+msgid "Use Filter"
+msgstr "使用篩選器"
 
 msgid "Minimum Display Time"
 msgstr "最短顯示時間"
@@ -4797,9 +4797,6 @@ msgstr "安全邊距"
 
 msgid "Disable Mode"
 msgstr "停用模式"
-
-msgid "Input"
-msgstr "輸入"
 
 msgid "Pickable"
 msgstr "可拾取"
@@ -8452,9 +8449,6 @@ msgstr "表面索引"
 msgid "Degrees Mode"
 msgstr "度數模式"
 
-msgid "Font Color"
-msgstr "字體顏色"
-
 msgid "Font Pressed Color"
 msgstr "字體顏色按下"
 
@@ -9969,6 +9963,3 @@ msgstr "世界原點"
 
 msgid "Primary Interface"
 msgstr "主介面"
-
-msgid "Property"
-msgstr "屬性"

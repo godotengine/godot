@@ -112,7 +112,7 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 			argptrs[i + 2] = p_arguments[i];
 		}
 
-		CallError tmp;
+		CallError tmp; // TODO: Check `tmp`?
 		Error err = (Error)obj->callp(SNAME("rpc_id"), argptrs, argcount, tmp).operator int64_t();
 
 		r_call_error.error = Callable::CallError::CALL_OK;
@@ -315,31 +315,32 @@ bool Callable::operator<(const Callable &p_callable) const {
 }
 
 void Callable::operator=(const Callable &p_callable) {
+	CallableCustom *cleanup_ref = nullptr;
 	if (is_custom()) {
 		if (p_callable.is_custom()) {
 			if (custom == p_callable.custom) {
 				return;
 			}
 		}
-
-		if (custom->ref_count.unref()) {
-			memdelete(custom);
-			custom = nullptr;
-		}
+		cleanup_ref = custom;
+		custom = nullptr;
 	}
 
 	if (p_callable.is_custom()) {
 		method = StringName();
-		if (!p_callable.custom->ref_count.ref()) {
-			object = 0;
-		} else {
-			object = 0;
+		object = 0;
+		if (p_callable.custom->ref_count.ref()) {
 			custom = p_callable.custom;
 		}
 	} else {
 		method = p_callable.method;
 		object = p_callable.object;
 	}
+
+	if (cleanup_ref != nullptr && cleanup_ref->ref_count.unref()) {
+		memdelete(cleanup_ref);
+	}
+	cleanup_ref = nullptr;
 }
 
 Callable::operator String() const {
@@ -543,6 +544,13 @@ bool Signal::is_connected(const Callable &p_callable) const {
 	ERR_FAIL_NULL_V(obj, false);
 
 	return obj->is_connected(name, p_callable);
+}
+
+bool Signal::has_connections() const {
+	Object *obj = get_object();
+	ERR_FAIL_NULL_V(obj, false);
+
+	return obj->has_connections(name);
 }
 
 Array Signal::get_connections() const {

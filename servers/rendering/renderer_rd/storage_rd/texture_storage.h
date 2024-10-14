@@ -76,6 +76,21 @@ public:
 		TYPE_3D
 	};
 
+	struct CanvasTextureInfo {
+		RID diffuse;
+		RID normal;
+		RID specular;
+		RID sampler;
+		Size2i size;
+		Color specular_color;
+
+		bool use_normal = false;
+		bool use_specular = false;
+
+		_FORCE_INLINE_ bool is_valid() const { return diffuse.is_valid(); }
+		_FORCE_INLINE_ bool is_null() const { return diffuse.is_null(); }
+	};
+
 private:
 	friend class LightStorage;
 	friend class MaterialStorage;
@@ -85,6 +100,12 @@ private:
 	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 
 	/* Canvas Texture API */
+
+	struct CanvasTextureCache {
+		RID diffuse = RID();
+		RID normal = RID();
+		RID specular = RID();
+	};
 
 	class CanvasTexture {
 	public:
@@ -96,14 +117,14 @@ private:
 
 		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-		RID uniform_sets[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX][2];
+		CanvasTextureCache info_cache[2];
 
 		Size2i size_cache = Size2i(1, 1);
 		bool use_normal_cache = false;
 		bool use_specular_cache = false;
 		bool cleared_cache = true;
 
-		void clear_sets();
+		void clear_cache();
 		~CanvasTexture();
 	};
 
@@ -477,13 +498,11 @@ public:
 	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
 	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
 
-	bool canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, bool p_use_srgb, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular, bool p_texture_is_data);
+	CanvasTextureInfo canvas_texture_get_info(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, bool p_use_srgb, bool p_texture_is_data);
 
 	/* Texture API */
 
 	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); };
-
-	virtual bool can_create_resources_async() const override;
 
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
@@ -491,10 +510,14 @@ public:
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override;
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
+
+	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 
 	//these two APIs can be used together or in combination with the others.
@@ -773,6 +796,9 @@ public:
 
 	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set);
 	void render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set);
+
+	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
+	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
 };
 
 } // namespace RendererRD

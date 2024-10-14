@@ -334,15 +334,6 @@ msgstr "iOS"
 msgid "Mix With Others"
 msgstr "Misturar com Outros"
 
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Script"
-
-msgid "Search in File Extensions"
-msgstr "Pesquisar em Extensões de Arquivo"
-
 msgid "Subwindows"
 msgstr "Subjanelas"
 
@@ -946,6 +937,9 @@ msgstr "Alternar Modo"
 msgid "Interface"
 msgstr "Interface"
 
+msgid "Editor"
+msgstr "Editor"
+
 msgid "Editor Language"
 msgstr "Linguagem do Editor"
 
@@ -963,9 +957,6 @@ msgstr "Tela do Editor"
 
 msgid "Project Manager Screen"
 msgstr "Tela do Gerenciador de Projetos"
-
-msgid "Enable Pseudolocalization"
-msgstr "Habilitar Pseudo Localização"
 
 msgid "Use Embedded Menu"
 msgstr "Usar Menu Integrado"
@@ -1665,6 +1656,15 @@ msgstr "Intervalo de Atualização da Inspeção Remota"
 
 msgid "Profile Native Calls"
 msgstr "Chamadas Nativas de Perfil"
+
+msgid "Input"
+msgstr "Entrada"
+
+msgid "Buffering"
+msgstr "Preparando"
+
+msgid "Agile Event Flushing"
+msgstr "Limpeza de Eventos Agil"
 
 msgid "Project Manager"
 msgstr "Gerenciador de Projetos"
@@ -2467,6 +2467,9 @@ msgstr "Caminho da Chave Privada SSH"
 msgid "Main Run Args"
 msgstr "Argumentos de Execução Principais"
 
+msgid "Script"
+msgstr "Script"
+
 msgid "Templates Search Path"
 msgstr "Caminho de Pesquisa de Templates"
 
@@ -2632,18 +2635,6 @@ msgstr "Ambiente"
 msgid "Default Clear Color"
 msgstr "Cor Limpa Padrão"
 
-msgid "Show Image"
-msgstr "Mostrar Imagem"
-
-msgid "Image"
-msgstr "Imagem"
-
-msgid "Fullsize"
-msgstr "Tamanho Inteiro"
-
-msgid "Use Filter"
-msgstr "Usar Filtro"
-
 msgid "Icon"
 msgstr "Ícone"
 
@@ -2652,12 +2643,6 @@ msgstr "Ícone Nativo macOS"
 
 msgid "Windows Native Icon"
 msgstr "Ícone Nativo Windows"
-
-msgid "Buffering"
-msgstr "Preparando"
-
-msgid "Agile Event Flushing"
-msgstr "Limpeza de Eventos Agil"
 
 msgid "Pointing"
 msgstr "Apontando"
@@ -2671,6 +2656,9 @@ msgstr "Eixo rotativo da entrada de rolagem"
 msgid "Text Driver"
 msgstr "Driver de Texto"
 
+msgid "Search in File Extensions"
+msgstr "Pesquisar em Extensões de Arquivo"
+
 msgid "Mouse Cursor"
 msgstr "Cursor do Mouse"
 
@@ -2682,6 +2670,18 @@ msgstr "Imagem Personalizada de Hotspot"
 
 msgid "Tooltip Position Offset"
 msgstr "Deslocamento de Posição da Dica de Ferramenta"
+
+msgid "Show Image"
+msgstr "Mostrar Imagem"
+
+msgid "Image"
+msgstr "Imagem"
+
+msgid "Fullsize"
+msgstr "Tamanho Inteiro"
+
+msgid "Use Filter"
+msgstr "Usar Filtro"
 
 msgid "Minimum Display Time"
 msgstr "Tempo mínimo de exibição"
@@ -4322,9 +4322,6 @@ msgstr "Ao sair"
 
 msgid "Disable Mode"
 msgstr "Desativar Modo"
-
-msgid "Input"
-msgstr "Entrada"
 
 msgid "Pickable"
 msgstr "Pegável"
@@ -6764,6 +6761,3 @@ msgstr "A detecção de âncora está habilitada"
 
 msgid "Tracking Confidence"
 msgstr "Rastreando a confiança"
-
-msgid "Property"
-msgstr "Propriedade"

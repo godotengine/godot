@@ -127,7 +127,7 @@ void EditorAudioBus::_notification(int p_what) {
 			} else if (has_focus()) {
 				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Button")), Rect2(Vector2(), get_size()));
 			} else {
-				draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)), Rect2(Vector2(), get_size()));
 			}
 
 			if (get_index() != 0 && hovering_drop) {
@@ -657,6 +657,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 		Label *l = memnew(Label);
 		l->set_text(item->get_text(0));
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		effects->set_drag_preview(l);
 
 		return fxd;
@@ -929,6 +930,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hb->add_child(scale);
 
 	effects = memnew(Tree);
+	effects->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	effects->set_hide_root(true);
 	effects->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 	effects->set_hide_folding(true);
@@ -954,6 +956,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_focus_mode(FOCUS_CLICK);
 
 	effect_options = memnew(PopupMenu);
+	effect_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate class names.
 	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
 	List<StringName> effect_list;
@@ -1262,7 +1265,7 @@ void EditorAudioBuses::_load_default_layout() {
 	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
-	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
@@ -1278,7 +1281,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_rebuild_buses();
-		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+		EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 
 	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
@@ -1298,7 +1301,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		edited_path = p_string;
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_rebuild_buses();
-		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+		EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 	}
 }
@@ -1397,7 +1400,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	file->set_text(p_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
-	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 

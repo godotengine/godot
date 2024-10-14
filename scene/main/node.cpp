@@ -111,6 +111,7 @@ void Node::_notification(int p_notification) {
 				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
 			}
 			data.is_auto_translate_dirty = true;
+			data.is_translation_domain_dirty = true;
 
 #ifdef TOOLS_ENABLED
 			// Don't translate UI elements when they're being edited.
@@ -138,6 +139,12 @@ void Node::_notification(int p_notification) {
 
 			get_tree()->nodes_in_tree_count++;
 			orphan_node_count--;
+
+			// Allow physics interpolated nodes to automatically reset when added to the tree
+			// (this is to save the user from doing this manually each time).
+			if (get_tree()->is_physics_interpolation_enabled()) {
+				_set_physics_interpolation_reset_requested(true);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -433,6 +440,18 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_physics_interpolated(p_interpolated);
+	}
+	data.blocked--;
+}
+
+void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
+	if (is_physics_interpolated()) {
+		data.physics_interpolation_reset_requested = p_requested;
+	}
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		K.value->_propagate_physics_interpolation_reset_requested(p_requested);
 	}
 	data.blocked--;
 }
@@ -739,7 +758,7 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	}
 }
 
-const Variant Node::get_node_rpc_config() const {
+Variant Node::get_rpc_config() const {
 	return data.rpc_config;
 }
 
@@ -752,8 +771,7 @@ Error Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallErro
 		return ERR_INVALID_PARAMETER;
 	}
 
-	Variant::Type type = p_args[0]->get_type();
-	if (type != Variant::STRING_NAME && type != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -781,8 +799,7 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 		return ERR_INVALID_PARAMETER;
 	}
 
-	Variant::Type type = p_args[1]->get_type();
-	if (type != Variant::STRING_NAME && type != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -890,15 +907,23 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 	}
 
 	// If swapping from interpolated to non-interpolated, use this as an extra means to cause a reset.
-	if (is_physics_interpolated() && !interpolate) {
-		reset_physics_interpolation();
+	if (is_physics_interpolated() && !interpolate && is_inside_tree()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 	}
 
 	_propagate_physics_interpolated(interpolate);
 }
 
 void Node::reset_physics_interpolation() {
-	propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+	if (is_inside_tree()) {
+		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+
+		// If `reset_physics_interpolation()` is called explicitly by the user
+		// (e.g. from scripts) then we prevent deferred auto-resets taking place.
+		// The user is trusted to call reset in the right order, and auto-reset
+		// will interfere with their control of prev / curr, so should be turned off.
+		_propagate_physics_interpolation_reset_requested(false);
+	}
 }
 
 bool Node::_is_enabled() const {
@@ -1294,6 +1319,51 @@ bool Node::can_auto_translate() const {
 	}
 
 	return data.is_auto_translating;
+}
+
+StringName Node::get_translation_domain() const {
+	ERR_READ_THREAD_GUARD_V(StringName());
+
+	if (data.is_translation_domain_inherited && data.is_translation_domain_dirty) {
+		const_cast<Node *>(this)->_translation_domain = data.parent ? data.parent->get_translation_domain() : StringName();
+		data.is_translation_domain_dirty = false;
+	}
+	return _translation_domain;
+}
+
+void Node::set_translation_domain(const StringName &p_domain) {
+	ERR_THREAD_GUARD
+
+	if (!data.is_translation_domain_inherited && _translation_domain == p_domain) {
+		return;
+	}
+
+	_translation_domain = p_domain;
+	data.is_translation_domain_inherited = false;
+	data.is_translation_domain_dirty = false;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::set_translation_domain_inherited() {
+	ERR_THREAD_GUARD
+
+	if (data.is_translation_domain_inherited) {
+		return;
+	}
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::_propagate_translation_domain_dirty() {
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		Node *child = K.value;
+		if (child->data.is_translation_domain_inherited) {
+			child->data.is_translation_domain_dirty = true;
+			child->_propagate_translation_domain_dirty();
+		}
+	}
+	notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 StringName Node::get_name() const {
@@ -2783,9 +2853,11 @@ Node *Node::duplicate(int p_flags) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *dupe = _duplicate(p_flags);
 
+	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
+
 	_duplicate_properties(this, this, dupe, p_flags);
 
-	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
+	if (p_flags & DUPLICATE_SIGNALS) {
 		_duplicate_signals(this, dupe);
 	}
 
@@ -2800,6 +2872,8 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) con
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	int flags = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR;
 	Node *dupe = _duplicate(flags, &r_duplimap);
+
+	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	_duplicate_properties(this, this, dupe, flags);
 
@@ -3406,7 +3480,7 @@ Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_arg
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3429,7 +3503,7 @@ Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Cal
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3582,6 +3656,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
@@ -3610,6 +3685,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
@@ -3825,6 +3901,9 @@ Node::Node() {
 	data.unhandled_key_input = false;
 
 	data.physics_interpolated = true;
+	data.physics_interpolation_reset_requested = false;
+	data.physics_interpolated_client_side = false;
+	data.use_identity_transform = false;
 
 	data.parent_owned = false;
 	data.in_constructor = true;
@@ -3938,6 +4017,11 @@ void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_THREAD_GUARD_V(false);
 	return Object::is_connected(p_signal, p_callable);
+}
+
+bool Node::has_connections(const StringName &p_signal) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_connections(p_signal);
 }
 
 #endif

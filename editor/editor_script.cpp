@@ -78,7 +78,7 @@ EditorInterface *EditorScript::get_editor_interface() const {
 }
 
 void EditorScript::run() {
-	GDVIRTUAL_REQUIRED_CALL(_run);
+	GDVIRTUAL_CALL(_run);
 }
 
 void EditorScript::_bind_methods() {
