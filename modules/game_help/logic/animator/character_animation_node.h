@@ -6,123 +6,7 @@
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
 
-#include "../blackboard/blackboard_plan.h"
-struct BonePose {
-    int bone_index;
-    Vector3 position;
-    Quaternion rotation;
-    Vector3 scale;
-    Vector3 forward;
-    float length;
-    Vector<StringName> child_bones;
-
-    void load(Dictionary& aDict) {
-        clear();
-        bone_index = aDict["bone_index"];
-        position = aDict["position"];
-        rotation = aDict["rotation"];
-        scale = aDict["scale"];
-        forward = aDict["forward"];
-        length = aDict["length"];
-        Vector<String> child  = aDict["child_bones"];
-
-        for(int i=0; i < child.size(); i++) {
-            child_bones.push_back(StringName(child[i]));
-        }
-    }
-    void save(Dictionary& aDict) {
-
-        aDict["bone_index"] = bone_index;
-        aDict["position"] = position;
-        aDict["rotation"] = rotation;
-        aDict["scale"] = scale;
-        aDict["forward"] = forward;
-        aDict["length"] = length;
-        Vector<String> child;
-        for(int i=0; i < child_bones.size(); i++) {
-            child.push_back(child_bones[i]);
-        }
-        aDict["child_bones"] = child;
-    }
-    void clear() {
-        child_bones.clear();
-        bone_index = -1;
-        position = Vector3();
-        rotation = Quaternion();
-        scale = Vector3();
-        forward = Vector3();
-        length = 0.0f;
-    }
-    
-};
-
-class HumanConfig : public Resource {
-    GDCLASS(HumanConfig, Resource);
-
-    static void _bind_methods() {
-
-        ClassDB::bind_method(D_METHOD("set_data", "data"), &HumanConfig::set_data);
-        ClassDB::bind_method(D_METHOD("get_data"), &HumanConfig::get_data);
-
-        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
-
-    }
-
-public:
-
-    void load(Dictionary& aDict) {
-        clear();
-        Dictionary pose = aDict["virtual_pose"];
-        auto keys = pose.keys();
-        for (auto& it : keys) {
-			Dictionary dict = pose.get(it, Dictionary());
-            virtual_pose[it].load(dict);
-        }
-
-        Vector<String> root = aDict["root_bone"];
-        for(int i=0; i < root.size(); i++) {
-            root_bone.push_back(StringName(root[i]));
-        }
-        
-    }
-
-    void save(Dictionary& aDict) {
-        Dictionary pose;
-		auto keys = pose.keys();
-		for (auto& it : keys) {
-			Dictionary dict = pose.get(it, Dictionary());
-			virtual_pose[it].save(dict);
-            pose[it] = dict;
-        }
-        aDict["virtual_pose"] = pose;
-        Vector<String> root;
-        for(int i=0; i < root_bone.size(); i++) {
-            root.push_back(root_bone[i]);
-        }
-        aDict["root_bone"] = root;
-    }
-
-    void clear() {
-        virtual_pose.clear();
-        root_bone.clear();
-    }
-
-    void set_data(Dictionary aDict) {
-        load(aDict);
-    }
-    Dictionary get_data() {
-        Dictionary dict;
-        save(dict);
-        return dict;
-    }
-public:
-    // 虚拟姿勢
-    HashMap<StringName, BonePose> virtual_pose;
-
-    Vector<StringName> root_bone;
-    
-};
-   
+#include "../blackboard/blackboard_plan.h"  
 
 namespace HumanAnim
 {
@@ -130,7 +14,7 @@ namespace HumanAnim
  // 骨骼配置
     struct HumanSkeleton {
         
-        HashMap<StringName, Transform3D> real_local_pose; 
+        HashMap<StringName, Quaternion> real_local_pose; 
         HashMap<StringName, Transform3D> real_pose; 
 
         HashMap<StringName, Vector3> global_lookat;
@@ -352,23 +236,6 @@ namespace HumanAnim
 
         }
 
-        // 构建真实姿势
-        static void build_skeleton_pose(Skeleton3D* p_skeleton,HumanConfig& p_config,HumanSkeleton& p_skeleton_config) {
-
-            for(auto& it : p_config.root_bone) {
-                BonePose& pose = p_config.virtual_pose[it];
-                Transform3D& trans = p_skeleton_config.real_pose[it];
-                trans = p_skeleton->get_bone_global_pose(pose.bone_index);
-
-                build_skeleton_local_pose(p_skeleton,p_config, pose,p_skeleton_config);
-            }
-            
-            for(auto& it : p_config.root_bone) {
-                Transform3D& trans = p_skeleton_config.real_pose[it] ;
-                Transform3D local_trans;
-                build_skeleton_global_lookat(p_config,local_trans,p_skeleton_config);
-            }
-        }
 
         // 重定向骨骼
         static void retarget(HumanConfig& p_config,HumanSkeleton& p_skeleton_config) {
@@ -379,7 +246,7 @@ namespace HumanAnim
                 Basis rot;
                 rot.rotate_to_align( pose.forward, p_skeleton_config.global_lookat[it]);
                 trans.basis = rot * trans.basis;
-                p_skeleton_config.real_local_pose[it] = trans;
+                p_skeleton_config.real_local_pose[it] = trans.basis.get_rotation_quaternion();
 
 
                 Transform3D local_trans;
@@ -512,6 +379,23 @@ namespace HumanAnim
             }
             
         }
+		// 构建真实姿势
+		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanConfig& p_config, HumanSkeleton& p_skeleton_config) {
+
+			for (auto& it : p_config.root_bone) {
+				BonePose& pose = p_config.virtual_pose[it];
+				Transform3D& trans = p_skeleton_config.real_pose[it];
+				trans = p_skeleton->get_bone_global_pose(pose.bone_index);
+
+				build_skeleton_local_pose(p_skeleton, p_config, pose, p_skeleton_config);
+			}
+
+			for (auto& it : p_config.root_bone) {
+				Transform3D& trans = p_skeleton_config.real_pose[it];
+				Transform3D local_trans;
+				build_skeleton_global_lookat(p_config, local_trans, p_skeleton_config);
+			}
+		}
         static void build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanConfig& p_config,BonePose& parent_pose,HumanSkeleton& p_skeleton_config) {
             for(auto& it : parent_pose.child_bones) {
                 BonePose& pose = p_config.virtual_pose[it];
@@ -552,9 +436,8 @@ namespace HumanAnim
                 trans.basis = rot * trans.basis ;
                 trans *= parent_trans;
                 
-                Transform3D& local_trans = p_skeleton_config.real_local_pose[it];
-                local_trans.origin = trans.origin;
-                local_trans.basis = rot * Basis(pose.rotation) ;
+                Quaternion& local_trans = p_skeleton_config.real_local_pose[it];
+                local_trans = rot.get_rotation_quaternion() * Basis(pose.rotation) ;
                 retarget(p_config,pose,trans,p_skeleton_config);
             }
             

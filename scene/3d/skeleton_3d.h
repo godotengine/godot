@@ -42,6 +42,124 @@ namespace human_anim
 		struct Human;
 	}
 }
+
+
+struct BonePose {
+	int bone_index;
+	Vector3 position;
+	Quaternion rotation;
+	Vector3 scale;
+	Vector3 forward;
+	float length;
+	Vector<StringName> child_bones;
+
+	void load(Dictionary& aDict) {
+		clear();
+		bone_index = aDict["bone_index"];
+		position = aDict["position"];
+		rotation = aDict["rotation"];
+		scale = aDict["scale"];
+		forward = aDict["forward"];
+		length = aDict["length"];
+		Vector<String> child = aDict["child_bones"];
+
+		for (int i = 0; i < child.size(); i++) {
+			child_bones.push_back(StringName(child[i]));
+		}
+	}
+	void save(Dictionary& aDict) {
+
+		aDict["bone_index"] = bone_index;
+		aDict["position"] = position;
+		aDict["rotation"] = rotation;
+		aDict["scale"] = scale;
+		aDict["forward"] = forward;
+		aDict["length"] = length;
+		Vector<String> child;
+		for (int i = 0; i < child_bones.size(); i++) {
+			child.push_back(child_bones[i]);
+		}
+		aDict["child_bones"] = child;
+	}
+	void clear() {
+		child_bones.clear();
+		bone_index = -1;
+		position = Vector3();
+		rotation = Quaternion();
+		scale = Vector3();
+		forward = Vector3();
+		length = 0.0f;
+	}
+
+};
+
+class HumanConfig : public Resource {
+	GDCLASS(HumanConfig, Resource);
+
+	static void _bind_methods() {
+
+		ClassDB::bind_method(D_METHOD("set_data", "data"), &HumanConfig::set_data);
+		ClassDB::bind_method(D_METHOD("get_data"), &HumanConfig::get_data);
+
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
+
+	}
+
+public:
+
+	void load(Dictionary& aDict) {
+		clear();
+		Dictionary pose = aDict["virtual_pose"];
+		auto keys = pose.keys();
+		for (auto& it : keys) {
+			Dictionary dict = pose.get(it, Dictionary());
+			virtual_pose[it].load(dict);
+		}
+
+		Vector<String> root = aDict["root_bone"];
+		for (int i = 0; i < root.size(); i++) {
+			root_bone.push_back(StringName(root[i]));
+		}
+
+	}
+
+	void save(Dictionary& aDict) {
+		Dictionary pose;
+		auto keys = pose.keys();
+		for (auto& it : keys) {
+			Dictionary dict = pose.get(it, Dictionary());
+			virtual_pose[it].save(dict);
+			pose[it] = dict;
+		}
+		aDict["virtual_pose"] = pose;
+		Vector<String> root;
+		for (int i = 0; i < root_bone.size(); i++) {
+			root.push_back(root_bone[i]);
+		}
+		aDict["root_bone"] = root;
+	}
+
+	void clear() {
+		virtual_pose.clear();
+		root_bone.clear();
+	}
+
+	void set_data(Dictionary aDict) {
+		load(aDict);
+	}
+	Dictionary get_data() {
+		Dictionary dict;
+		save(dict);
+		return dict;
+	}
+public:
+	// 虚拟姿勢
+	HashMap<StringName, BonePose> virtual_pose;
+
+	Vector<StringName> root_bone;
+
+};
+
 class Skeleton3D;
 class SkeletonModifier3D;
 class HumanSkeletonConfig : public Resource
@@ -211,7 +329,7 @@ public:
 	// To process modifiers.
 	ModifierCallbackModeProcess modifier_callback_mode_process = MODIFIER_CALLBACK_MODE_PROCESS_IDLE;
 	LocalVector<ObjectID> modifiers;
-	Ref<HumanSkeletonConfig> human_config;
+	Ref<HumanConfig> human_config;
 	bool modifiers_dirty = false;
 	void _find_modifiers();
 	void _process_modifiers();
@@ -323,10 +441,9 @@ public:
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
 
-	void set_human_config(const Ref<HumanSkeletonConfig> &p_human_config);
-	Ref<HumanSkeletonConfig> get_human_config() const;
+	void set_human_config(const Ref<HumanConfig> &p_human_config);
+	Ref<HumanConfig> get_human_config() const;
 
-	void init_human_config();
 
 #ifndef DISABLE_DEPRECATED
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;

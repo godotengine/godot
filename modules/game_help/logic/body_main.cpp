@@ -737,13 +737,16 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map = skeleton->get_human_bone_mapping();
         Vector<String> bone_names = skeleton->get_bone_names();
         
-        Ref<HumanSkeletonConfig> config;
+        Ref<HumanConfig> config;
 
 		skeleton->set_human_bone_mapping(bone_map);
         
         if(p_is_skeleton_human)
         {
-            skeleton->init_human_config();
+			config.instantiate();
+			HashMap<String,String> bone_label = HumanAnim::HumanAnimmation::get_bone_label();
+			HumanAnim::HumanAnimmation::build_virtual_pose(skeleton, *config.ptr(), bone_label);
+            skeleton->set_human_config(config);
             config = skeleton->get_human_config();
             config->set_name("human_config");
 		    save_fbx_res("human_config", p_group, config, ske_save_path, true);
@@ -782,9 +785,9 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 
 	}
 	// 生成预制体
-	Ref<CharacterBodyPrefab> body_prefab;
-	body_prefab.instantiate();
-	body_prefab->set_name(p_group);
+	Ref<CharacterBodyPrefab> _body_prefab;
+	_body_prefab.instantiate();
+	_body_prefab->set_name(p_group);
 	HashMap<String, MeshInstance3D* > meshs;
 	// 便利存儲模型文件
 	get_fbx_meshs(p_node, meshs);
@@ -802,21 +805,21 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         else {
 		    save_fbx_res("meshs", p_group, part, save_path, true);
         }
-		body_prefab->parts[save_path] = true;
+		_body_prefab->parts[save_path] = true;
 	}
 	// 保存预制体
-	body_prefab->skeleton_path = ske_save_path;
-    body_prefab->set_is_human(p_is_skeleton_human);
+	_body_prefab->skeleton_path = ske_save_path;
+	_body_prefab->set_is_human(p_is_skeleton_human);
     if(p_is_skeleton_human) {
-	    save_fbx_res("human_prefab", p_group, body_prefab, bone_map_save_path, true);
+	    save_fbx_res("human_prefab", p_group, _body_prefab, bone_map_save_path, true);
     }
     else {
-	    save_fbx_res("prefab", p_group, body_prefab, bone_map_save_path, true);        
+	    save_fbx_res("prefab", p_group, _body_prefab, bone_map_save_path, true);
     }
 
 
 	p_node->queue_free();
-	return body_prefab;
+	return _body_prefab;
 }
 void CharacterBodyMain::editor_build_form_mesh_file_path()
 {
@@ -875,7 +878,7 @@ void CharacterBodyMain::editor_build_animation()
 	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
 	Ref<CharacterBoneMap> bone_map;
     Node* node = p_node->find_child("Skeleton3D");
-	Ref<HumanSkeletonConfig> editor_human_config;
+	Ref<HumanConfig> editor_human_config;
     Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
 	if (editor_ref_bone_map.is_valid()) {
 		editor_human_config = editor_ref_bone_map->get_human_config();
@@ -941,7 +944,7 @@ void CharacterBodyMain::editor_build_animation()
 
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (editor_human_config.is_valid()) {
-				new_animation = editor_human_config->human->animation_to_dof(human_bone_name_index,new_animation.ptr(), bone_map->get_bone_map());
+				new_animation = HumanAnim::HumanAnimmation::build_human_animation(skeleton, *editor_human_config.ptr(), new_animation);
 			}
             new_animation->optimize();
             new_animation->compress();
