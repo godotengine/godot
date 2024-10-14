@@ -41,26 +41,30 @@ class OpenXRIPBinding : public Resource {
 
 private:
 	Ref<OpenXRAction> action;
-	PackedStringArray paths;
+	String source_path;
+
+	// PackedStringArray paths;
 
 protected:
 	static void _bind_methods();
 
 public:
-	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> p_action, const char *p_paths); // Helper function for adding a new binding
+	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> p_action, const String &p_source_path); // Helper function for adding a new binding
 
 	void set_action(const Ref<OpenXRAction> p_action); // Set the action for this binding
 	Ref<OpenXRAction> get_action() const; // Get the action for this binding
 
-	int get_path_count() const; // Get the number of io paths
+	void set_source_path(const String &path);
+	String get_source_path() const;
+
+	// Deprecated
 	void set_paths(const PackedStringArray p_paths); // Set our paths (for loading from resource)
 	PackedStringArray get_paths() const; // Get our paths (for saving to resource)
-
-	void parse_paths(const String p_paths); // Parse a comma separated string of io paths.
-
+	int get_path_count() const; // Get the number of io paths
 	bool has_path(const String p_path) const; // Has this io path
 	void add_path(const String p_path); // Add an io path
 	void remove_path(const String p_path); // Remove an io path
+	// End deprecated
 
 	// TODO add validation that we can display in the interface that checks if no two paths belong to the same top level path
 
@@ -88,11 +92,12 @@ public:
 	void set_bindings(Array p_bindings); // Set the bindings (for loading from a resource)
 	Array get_bindings() const; // Get the bindings (for saving to a resource)
 
-	Ref<OpenXRIPBinding> get_binding_for_action(const Ref<OpenXRAction> p_action) const; // Get our binding record for a given action
+	Ref<OpenXRIPBinding> find_binding(const Ref<OpenXRAction> p_action, const String &p_source_path) const; // Get our binding record
+	Vector<Ref<OpenXRIPBinding>> get_bindings_for_action(const Ref<OpenXRAction> p_action) const; // Get our binding record for a given action
 	void add_binding(Ref<OpenXRIPBinding> p_binding); // Add a binding object
 	void remove_binding(Ref<OpenXRIPBinding> p_binding); // Remove a binding object
 
-	void add_new_binding(const Ref<OpenXRAction> p_action, const char *p_paths); // Create a new binding for this profile
+	void add_new_binding(const Ref<OpenXRAction> p_action, const String &p_paths); // Create a new binding for this profile
 	void remove_binding_for_action(const Ref<OpenXRAction> p_action); // Remove all bindings for this action
 	bool has_binding_for_action(const Ref<OpenXRAction> p_action); // Returns true if we have a binding for this action
 
