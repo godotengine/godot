@@ -1357,6 +1357,7 @@
 				GD.Print(dict["a"]);                              // Prints 1
 				[/csharp]
 				[/codeblocks]
+				[b]Warning:[/b] Using this function on untrusted Strings can allow remote code execution. Use with caution.
 			</description>
 		</method>
 		<method name="tan">
