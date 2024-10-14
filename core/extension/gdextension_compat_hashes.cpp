@@ -470,6 +470,7 @@ void GDExtensionCompatHashes::initialize() {
 	});
 	mappings.insert("JSON", {
 		{ "stringify", 2656701787, 462733549 },
+		{ "stringify", 967569410, 2656701787 },
 	});
 	mappings.insert("JavaScriptBridge", {
 		{ "download_buffer", 4123979296, 3352272093 },

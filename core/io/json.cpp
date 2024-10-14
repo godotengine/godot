@@ -31,6 +31,7 @@
 #include "json.h"
 
 #include "core/config/engine.h"
+#include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 
 const char *JSON::tk_name[TK_MAX] = {
@@ -50,7 +51,7 @@ String JSON::_make_indent(const String &p_indent, int p_size) {
 	return p_indent.repeat(p_size);
 }
 
-String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
+String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision, bool p_allow_nonfinite) {
 	ERR_FAIL_COND_V_MSG(p_cur_indent > Variant::MAX_RECURSION_DEPTH, "...", "JSON structure is too deep. Bailing.");
 
 	String colon = ":";
@@ -70,6 +71,13 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			return itos(p_var);
 		case Variant::FLOAT: {
 			double num = p_var;
+
+			if (Math::is_nan(num)) {
+				return p_allow_nonfinite ? "NaN" : "null";
+			} else if (Math::is_inf(num)) {
+				return (num > 0.0) ? (p_allow_nonfinite ? "Infinity" : "1e9999") : (p_allow_nonfinite ? "-Infinity" : "-1e9999");
+			}
+
 			if (p_full_precision) {
 				// Store unreliable digits (17) instead of just reliable
 				// digits (14) so that the value can be decoded exactly.
@@ -103,7 +111,7 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision, p_allow_nonfinite);
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
 			p_markers.erase(a.id());
@@ -132,9 +140,9 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 					s += ",";
 					s += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E), p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision, p_allow_nonfinite);
 				s += colon;
-				s += _stringify(d[E], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				s += _stringify(d[E], p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision, p_allow_nonfinite);
 			}
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
@@ -199,7 +207,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 						index++;
 						break;
 					} else if (p_str[index] == '\\') {
-						//escaped characters...
+						// Escaped characters...
 						index++;
 						char32_t next = p_str[index];
 						if (next == 0) {
@@ -253,7 +261,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 									res <<= 4;
 									res |= v;
 								}
-								index += 4; //will add at the end anyway
+								index += 4; // Will add at the end anyway
 
 								if ((res & 0xfffffc00) == 0xd800) {
 									if (p_str[index + 1] != '\\' || p_str[index + 2] != 'u') {
@@ -291,7 +299,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 									}
 									if ((trail & 0xfffffc00) == 0xdc00) {
 										res = (res << 10UL) + trail - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
-										index += 4; //will add at the end anyway
+										index += 4; // Will add at the end anyway
 									} else {
 										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
 										return ERR_PARSE_ERROR;
@@ -334,9 +342,9 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					index++;
 					break;
 				}
-
-				if (p_str[index] == '-' || is_digit(p_str[index])) {
-					//a number
+				if (((p_str[index] == '-') && is_digit(p_str[index + 1])) || is_digit(p_str[index])) {
+					// If the first character is '-', the second character must be a digit in order to count as a number token
+					// a number
 					const char32_t *rptr;
 					double number = String::to_float(&p_str[index], &rptr);
 					index += (rptr - &p_str[index]);
@@ -344,10 +352,11 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					r_token.value = number;
 					return OK;
 
-				} else if (is_ascii_alphabet_char(p_str[index])) {
+				} else if (is_ascii_alphabet_char(p_str[index]) || p_str[index] == '-') {
+					// Only allows '-' inside an identifier if does not precede a digit, used for non-finite identifiers
 					String id;
 
-					while (is_ascii_alphabet_char(p_str[index])) {
+					while (is_ascii_alphabet_char(p_str[index]) || p_str[index] == '-') {
 						id += p_str[index];
 						index++;
 					}
@@ -394,8 +403,14 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 			value = false;
 		} else if (id == "null") {
 			value = Variant();
+		} else if (id == "Infinity" || id == "inf") {
+			value = INFINITY;
+		} else if (id == "-Infinity" || id == "-inf") {
+			value = -INFINITY;
+		} else if (id == "NaN" || id == "nan") {
+			value = NAN;
 		} else {
-			r_err_str = "Expected 'true','false' or 'null', got '" + id + "'.";
+			r_err_str = "Expected 'true', 'false', 'null', 'Infinity', 'inf', '-Infinity', '-inf', 'NaN', or 'nan', got '" + id + "'.";
 			return ERR_PARSE_ERROR;
 		}
 	} else if (token.type == TK_NUMBER) {
@@ -562,11 +577,11 @@ String JSON::get_parsed_text() const {
 	return text;
 }
 
-String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
+String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision, bool p_allow_nonfinite) {
 	Ref<JSON> jason;
 	jason.instantiate();
 	HashSet<const void *> markers;
-	return jason->_stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
+	return jason->_stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision, p_allow_nonfinite);
 }
 
 Variant JSON::parse_string(const String &p_json_string) {
@@ -578,7 +593,7 @@ Variant JSON::parse_string(const String &p_json_string) {
 }
 
 void JSON::_bind_methods() {
-	ClassDB::bind_static_method("JSON", D_METHOD("stringify", "data", "indent", "sort_keys", "full_precision"), &JSON::stringify, DEFVAL(""), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_static_method("JSON", D_METHOD("stringify", "data", "indent", "sort_keys", "full_precision", "allow_nonfinite"), &JSON::stringify, DEFVAL(""), DEFVAL(true), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_static_method("JSON", D_METHOD("parse_string", "json_string"), &JSON::parse_string);
 	ClassDB::bind_method(D_METHOD("parse", "json_text", "keep_text"), &JSON::parse, DEFVAL(false));
 

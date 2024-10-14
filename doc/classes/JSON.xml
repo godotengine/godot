@@ -89,10 +89,12 @@
 			<param index="1" name="indent" type="String" default="&quot;&quot;" />
 			<param index="2" name="sort_keys" type="bool" default="true" />
 			<param index="3" name="full_precision" type="bool" default="false" />
+			<param index="4" name="allow_nonfinite" type="bool" default="false" />
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
 				[b]Note:[/b] If [param full_precision] is [code]true[/code], when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
+				[b]Note:[/b] If [param allow_nonfinite] is [code]true[/code], when stringifying the floating point values [code]INF[/code], [code]-INF[/code], and [code]NAN[/code], the values are encoding using the keywords [code]Infinity[/code], [code]-Infinity[/code], and [code]-NaN[/code] which are not compliant to the JSON standard.
 				The [param indent] parameter controls if and how something is indented; its contents will be used where there should be an indent in the output. Even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
 				[b]Example output:[/b]
 				[codeblock]
