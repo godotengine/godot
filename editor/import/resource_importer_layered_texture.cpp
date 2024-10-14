@@ -339,11 +339,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		return err;
 	}
 
-	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
-		//basis universal does not support float formats, fall back
-		compress_mode = COMPRESS_VRAM_COMPRESSED;
-	}
-
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
 		//if using video ram, optimize
 		if (channel_pack == 0) {
