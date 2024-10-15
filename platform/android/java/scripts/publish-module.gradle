@@ -19,12 +19,12 @@ afterEvaluate {
                 // Mostly self-explanatory metadata
                 pom {
                     name = PUBLISH_ARTIFACT_ID
-                    description = 'Godot Engine Android Library'
-                    url = 'https://godotengine.org/'
+                    description = 'Blazium Engine Android Library'
+                    url = 'https://blazium.app/'
                     licenses {
                         license {
                             name = 'MIT License'
-                            url = 'https://github.com/godotengine/godot/blob/master/LICENSE.txt'
+                            url = 'https://github.com/blazium-engine/blazium/blob/master/LICENSE.txt'
                         }
                     }
                     developers {
@@ -43,15 +43,20 @@ afterEvaluate {
                             name = 'Rémi Verschelde'
                             email = 'rverschelde@gmail.com'
                         }
+                        developer {
+                            id = 'bioblaze'
+                            name = 'Bioblaze Payne'
+                            email = 'bioblazepayne@gmail.com'
+                        }
                         // Add all other devs here...
                     }
 
                     // Version control info - if you're using GitHub, follow the
                     // format as seen here
                     scm {
-                        connection = 'scm:git:github.com/godotengine/godot.git'
-                        developerConnection = 'scm:git:ssh://github.com/godotengine/godot.git'
-                        url = 'https://github.com/godotengine/godot/tree/master'
+                        connection = 'scm:git:github.com/blazium-engine/blazium.git'
+                        developerConnection = 'scm:git:ssh://github.com/blazium-engine/blazium.git'
+                        url = 'https://github.com/blazium-engine/blazium/tree/master'
                     }
                 }
             }
