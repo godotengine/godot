@@ -164,7 +164,7 @@
 			<description>
 				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
-				[b]Warning:[/b] Loading Data from a Config File may allow for remote code execution. This is non-trivial to midigate, but storing a [code]readme[/code] file in the same directory can warn users against downloading untrusted configurations:
+				[b]Warning:[/b] Loading data from a config fie may allow for remote code execution. This is non-trivial to mitigate, but storing a [code]readme[/code] file in the same directory can warn users against downloading untrusted configurations:
 				[codeblocks]
 				[gdscript]
 				var config_path = "user://"
@@ -172,7 +172,7 @@
 				# Check if configuration has been initialized:
 				if not FileAccess.file_exists("%s%s" % [config_path, config_file_name]):
 				    var readme = FileAccess.open("%s%s" % [config_path, "README.txt"], FileAccess.WRITE)
-				    readme.store_string("Caution: It is not advised to use Config-files you find online, as malicious files may compromise your device.")
+				    readme.store_string("Caution: It is not advised to use config files you find online, as malicious files may compromise your device.")
 				    readme.close()
 				[/gdscript]
 				[/codeblocks]
