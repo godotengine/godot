@@ -197,8 +197,8 @@ TEST_CASE("[RegEx] Complex Grouping") {
 	CHECK(expr->get_string(0) == "https://docs.blazium.app");
 
 	CHECK(expr->get_string(1) == "docs");
-	CHECK(expr->get_string(2) == "godotengine");
-	CHECK(expr->get_string(3) == "org");
+	CHECK(expr->get_string(2) == "blazium");
+	CHECK(expr->get_string(3) == "app");
 }
 
 TEST_CASE("[RegEx] Number Expression") {
