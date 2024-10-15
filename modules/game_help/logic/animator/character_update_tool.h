@@ -5,6 +5,7 @@
 #include "scene/animation/animation_mixer.h"
 #include "scene/3d/human_anim/human.h"
 #include "animation_help.h"
+#include "human_animation.h"
 
 
 // 动画遮罩
@@ -114,9 +115,10 @@ protected:
     void process_anim(const AnimationMixer::AnimationInstance& ai);
     void process_human_anim() ;
 protected:
-    Ref<HumanSkeletonConfig> human_config;
-    human_anim::human::HumanAnimationKeyFrame temp_human_key_frame;
-    human_anim::human::HumanAnimationKeyFrame human_key_frame;
+    Ref<HumanConfig> human_config;
+    HumanAnim::HumanSkeleton temp_anim_skeleton;
+    HumanAnim::HumanSkeleton human_skeleton;
+
 
     HashSet<ObjectID> animation_cache;
     LocalVector<AnimationMixer::AnimationInstance> animation_instances;

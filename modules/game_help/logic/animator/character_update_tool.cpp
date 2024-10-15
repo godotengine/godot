@@ -24,7 +24,8 @@ void CharacterAnimationUpdateTool::clear_cache(Skeleton3D* t_skeleton,Node* p_pa
     human_config = t_skeleton->get_human_config();
     if(human_config.is_valid()) {
         is_human = true;
-        memcpy(human_key_frame.dot_array, &human_config->human->m_RestDof, sizeof(float) * 95); 
+		human_skeleton.rest(*human_config.ptr());
+
     }
 }
 void CharacterAnimationUpdateTool::add_animation_instance(AnimationMixer::AnimationInstance& ai) {
@@ -118,8 +119,11 @@ void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerC
         }
     }
     if(is_human) {
-        if(human_config->human) {
-            human_config->human->app_dof_to_skeleton(t_skeleton,human_key_frame);
+        //if(human_config->human) {
+        //    human_config->human->app_dof_to_skeleton(t_skeleton,human_key_frame);
+        //}
+        if(human_config.is_valid()) {
+            human_skeleton.apply(t_skeleton);
         }
     }
 }
@@ -148,7 +152,7 @@ void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_ma
         NodePath path = anim->track_get_path(i);
         Animation::TrackType track_src_type = anim->track_get_type(i);
 
-        if(is_human && track_src_type == Animation::TYPE_POSITION_3D && human_anim::human::HumanAnimationKeyFrame::has_dof(path.get_name(0))) {
+        if(is_human && track_src_type == Animation::TYPE_POSITION_3D && path.get_name(0).begins_with("hm.")) {
             continue;
         }
 
@@ -232,9 +236,8 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     const Vector<Animation::Track*> tracks = a->get_tracks();
     Animation::Track* const* tracks_ptr = tracks.ptr();
     real_t a_length = a->get_length();
-    if(is_human) {
-        temp_human_key_frame.reset();
-    }
+    temp_anim_skeleton.clear();
+
     double blend = ai.playback_info.weight;
     int count = tracks.size();
     for (int i = 0; i < count; i++) {
@@ -325,7 +328,11 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if (err != OK) {
                 continue;
             }
+            if(animation_track->path.get_name(0).begins_with("hm."))
             {
+                temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0),loc);
+            }
+            else {
                 t->loc = t->loc.lerp(loc, blend);
                 t->loc_used = true;
             }
@@ -507,9 +514,6 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if (err != OK) {
                 continue;
             }
-            if(temp_human_key_frame.set_dof(animation_track->path.get_name(0),value)) {
-                continue;
-            }
             AnimationMixer::TrackCacheBlendShape* t = context.blend_shape_cache[animation_track->path];
 			if (!context.blend_shape_cache.has(animation_track->path)) {
 				continue;
@@ -520,8 +524,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
 
     }
     if(is_human) {
-        Vector<uint8_t> bone_mask = a->get_human_bone_mask();
-        human_key_frame.blend(temp_human_key_frame, bone_mask, blend);
+        human_skeleton.blend(human_skeleton, blend);
     }
 }
 
