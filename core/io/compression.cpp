@@ -146,7 +146,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			ERR_FAIL_COND_V(res != BROTLI_DECODER_RESULT_SUCCESS, -1);
 			return ret_size;
 #else
-			ERR_FAIL_V_MSG(-1, "Godot was compiled without brotli support.");
+			ERR_FAIL_V_MSG(-1, "Blazium was compiled without brotli support.");
 #endif
 		} break;
 		case MODE_FASTLZ: {
@@ -267,7 +267,7 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 		BrotliDecoderDestroyInstance(state);
 		return Z_OK;
 #else
-		ERR_FAIL_V_MSG(Z_ERRNO, "Godot was compiled without brotli support.");
+		ERR_FAIL_V_MSG(Z_ERRNO, "Blazium was compiled without brotli support.");
 #endif
 	} else {
 		// This function only supports GZip and Deflate.
