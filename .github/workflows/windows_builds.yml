@@ -66,7 +66,7 @@ jobs:
             target: template_release
             tests: true
             sconsflags: debug_symbols=no use_mingw=yes
-            bin: ./bin/godot.windows.template_release.gcc.x86_64.console.exe
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: gcc
 
     steps:
