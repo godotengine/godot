@@ -100,8 +100,8 @@ GDScriptParser::GDScriptParser() {
 
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Access restrictions.
-		register_annotation(MethodInfo("@private"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::access_private_annotation);
-		register_annotation(MethodInfo("@protected"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::access_protected_annotation);
+		register_annotation(MethodInfo("@private"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION | AnnotationInfo::SIGNAL, &GDScriptParser::access_private_annotation);
+		register_annotation(MethodInfo("@protected"), AnnotationInfo::CONSTANT | AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION | AnnotationInfo::SIGNAL, &GDScriptParser::access_protected_annotation);
 
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -4184,6 +4184,9 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 
 // Access restrictions.
 bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION && p_target->type != Node::SIGNAL, false, R"("@private" annotation can only be applied to class variables.)");
+	ERR_FAIL_COND_V(!p_annotation->resolved_arguments.is_empty(), false);
+
 	AssignableNode *member = static_cast<AssignableNode *>(p_target);
 
 	switch (member->access_restriction) {
@@ -4198,17 +4201,24 @@ bool GDScriptParser::access_private_annotation(AnnotationNode *p_annotation, Nod
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(member);
-	if (variable->exported && variable->type != Node::Type::FUNCTION) {
-		push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
-		return false;
+	if (variable->exported) {
+		if (variable->type == Node::Type::CONSTANT || variable->type == Node::Type::VARIABLE) {
+			push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
+			return false;
+		} else if (variable->type == Node::Type::SIGNAL) {
+			variable->exported = false;
+		}
 	}
 
 	member->access_restriction = Node::AccessRestriction::ACCESS_RESTRICTION_PRIVATE;
-
+	member->access_restriction_belong_to_class = current_class;
 	return true;
 }
 
 bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CONSTANT && p_target->type != Node::VARIABLE && p_target->type != Node::FUNCTION && p_target->type != Node::SIGNAL, false, R"("@protected" annotation can only be applied to class variables.)");
+	ERR_FAIL_COND_V(!p_annotation->resolved_arguments.is_empty(), false);
+
 	AssignableNode *member = static_cast<AssignableNode *>(p_target);
 
 	switch (member->access_restriction) {
@@ -4223,12 +4233,17 @@ bool GDScriptParser::access_protected_annotation(AnnotationNode *p_annotation, N
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(member);
-	if (variable->exported && variable->type != Node::Type::FUNCTION) {
-		push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
-		return false;
+	if (variable->exported) {
+		if (variable->type == Node::Type::CONSTANT || variable->type == Node::Type::VARIABLE) {
+			push_error(R"("@export" annotation cannot be applied to private or protected members.)", p_annotation);
+			return false;
+		} else if (variable->type == Node::Type::SIGNAL) {
+			variable->exported = false;
+		}
 	}
 
 	member->access_restriction = Node::AccessRestriction::ACCESS_RESTRICTION_PROTECTED;
+	member->access_restriction_belong_to_class = current_class;
 	return true;
 }
 
@@ -4695,6 +4710,10 @@ bool GDScriptParser::export_storage_annotation(AnnotationNode *p_annotation, Nod
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
 	}
+	if (variable->access_restriction != Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to private or protected members.)", p_annotation->name), p_annotation);
+		return false;
+	}
 
 	variable->exported = true;
 
@@ -4716,6 +4735,10 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->access_restriction != Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to private or protected members.)", p_annotation->name), p_annotation);
 		return false;
 	}
 
@@ -4751,6 +4774,10 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->access_restriction != Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to private or protected members.)", p_annotation->name), p_annotation);
 		return false;
 	}
 

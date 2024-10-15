@@ -341,6 +341,7 @@ public:
 			ACCESS_RESTRICTION_PROTECTED, // Can only be accessed from within the same class or its subclasses.
 		};
 		AccessRestriction access_restriction = AccessRestriction::ACCESS_RESTRICTION_PUBLIC;
+		ClassNode *access_restriction_belong_to_class = nullptr; // This is used to check if a class member is protected.
 
 		int start_line = 0, end_line = 0;
 		int start_column = 0, end_column = 0;

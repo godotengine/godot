@@ -439,6 +439,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 			} break;
 
 			case GDP::ClassNode::Member::SIGNAL: {
+				if (member.function->access_restriction != GDP::Node::AccessRestriction::ACCESS_RESTRICTION_PUBLIC) {
+					break;
+				}
+
 				const GDP::SignalNode *m_signal = member.signal;
 				const StringName &signal_name = m_signal->identifier->name;
 
