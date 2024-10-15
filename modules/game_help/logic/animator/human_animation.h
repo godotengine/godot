@@ -19,6 +19,10 @@ namespace HumanAnim
         HashMap<StringName, Vector3> root_move;
         HashMap<StringName, Quaternion> root_rotion;
 
+        
+        HashMap<StringName, Vector3> root_move_add;
+        HashMap<StringName, Quaternion> root_rotion_add;
+
         void rest(HumanConfig& p_config) {
             real_local_pose.clear();
             for(auto& it : p_config.virtual_pose) {
@@ -28,11 +32,22 @@ namespace HumanAnim
 
         void clear() { real_local_pose.clear(); real_pose.clear(); global_lookat.clear(); }
 
-        void set_human_lookat(StringName p_bone,Vector3 p_lookat) {
-            if(p_bone.str().begins_with("hm.")) {
+        void set_human_lookat(StringName p_bone,const Vector3& p_lookat) {
+            if(p_bone.str().begins_with("hm.p.")) {
+                String name = p_bone.substr(5);
+                root_move[name] = p_lookat;
+            }
+            else if(p_bone.str().begins_with("hm.")) {
                 String name = p_bone.substr(3);
                 global_lookat[name] = p_lookat;
             }
+            
+        }
+        void set_human_root_position(StringName p_bone,const Vector3& p_pos,const Vector3& p_pos_add) {
+
+            
+        }
+        void set_human_root_rotation(StringName p_bone,const Quaternion& p_rot,const Quaternion& p_rot_add) {
             
         }
 
@@ -49,7 +64,9 @@ namespace HumanAnim
         void apply(Skeleton3D *p_skeleton) {
             for(auto& it : real_local_pose) {
                 int bone_index = p_skeleton->find_bone(it.key);
-                p_skeleton->set_bone_pose_rotation(bone_index, it.value);
+				if (bone_index >= 0) {
+					p_skeleton->set_bone_pose_rotation(bone_index, it.value);
+				}
             }
         }
 
@@ -141,7 +158,11 @@ namespace HumanAnim
             Quaternion rot;
             HumanSkeleton skeleton_config;
             Vector<HashMap<StringName, Vector3>> animation_lookat;
+
+            //  根节点的位置
+            Vector<HashMap<StringName, Vector3>> animation_root_position;
             animation_lookat.resize(key_count);
+            animation_root_position.resize(key_count);
 		    Vector<Animation::Track*> tracks = p_animation->get_tracks();
 
             // 获取非人型骨骼的轨迹
@@ -233,6 +254,7 @@ namespace HumanAnim
                 build_skeleton_pose(p_skeleton,p_config,skeleton_config);
                 // 存储动画
                 animation_lookat.set(i,skeleton_config.global_lookat);
+                animation_root_position.set(i,skeleton_config.root_move);
 
             }
 
@@ -256,6 +278,22 @@ namespace HumanAnim
 						key.value = animation_lookat[i][it.key];
                         track->positions.set(i,key);
 
+                    }
+                }
+
+                auto& root_keys = animation_root_position[0];
+                for(auto& it : root_keys) {
+                    int track_index = out_anim->add_track(Animation::TYPE_POSITION_3D);
+                    Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
+                    track->path = String("hm.p.") + it.key;
+                    track->interpolation = Animation::INTERPOLATION_LINEAR;
+                    track->positions.resize(animation_root_position.size());
+                    for(int i = 0;i < animation_root_position.size();i++) {
+                        double time = double(i) / 100.0;
+                        Animation::TKey<Vector3> key;
+                        key.time = time;
+                        key.value = animation_root_position[i][it.key];
+                        track->positions.set(i,key);
                     }
                 }
                 
