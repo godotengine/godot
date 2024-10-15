@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_quick_open.h                                                   */
+/*  editor_expression_evaluator.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_QUICK_OPEN_H
-#define EDITOR_QUICK_OPEN_H
+#ifndef EDITOR_EXPRESSION_EVALUATOR_H
+#define EDITOR_EXPRESSION_EVALUATOR_H
 
-#include "core/templates/oa_hash_map.h"
-#include "editor/editor_file_system.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/box_container.h"
 
-class EditorQuickOpen : public ConfirmationDialog {
-	GDCLASS(EditorQuickOpen, ConfirmationDialog);
+class Button;
+class CheckBox;
+class EditorDebuggerInspector;
+class LineEdit;
+class RemoteDebuggerPeer;
+class ScriptEditorDebugger;
 
-	static Rect2i prev_rect;
-	static bool was_showed;
+class EditorExpressionEvaluator : public VBoxContainer {
+	GDCLASS(EditorExpressionEvaluator, VBoxContainer)
 
-	LineEdit *search_box = nullptr;
-	Tree *search_options = nullptr;
-	String base_type;
-	bool allow_multi_select = false;
+private:
+	Ref<RemoteDebuggerPeer> peer;
 
-	Vector<String> files;
-	OAHashMap<String, Ref<Texture2D>> icons;
+	LineEdit *expression_input = nullptr;
+	CheckBox *clear_on_run_checkbox = nullptr;
+	Button *evaluate_btn = nullptr;
+	Button *clear_btn = nullptr;
 
-	struct Entry {
-		String path;
-		float score = 0;
-	};
+	EditorDebuggerInspector *inspector = nullptr;
 
-	struct EntryComparator {
-		_FORCE_INLINE_ bool operator()(const Entry &A, const Entry &B) const {
-			return A.score > B.score;
-		}
-	};
+	void _evaluate();
+	void _clear();
 
-	void _update_search();
-	void _build_search_cache(EditorFileSystemDirectory *p_efsd);
-	float _score_search_result(const PackedStringArray &p_search_tokens, const String &p_path);
-
-	void _confirmed();
-	virtual void cancel_pressed() override;
-	void _cleanup();
-
-	void _sbox_input(const Ref<InputEvent> &p_event);
-	void _text_changed(const String &p_newtext);
+	void _remote_object_selected(ObjectID p_id);
+	void _on_expression_input_changed(const String &p_expression);
+	void _on_debugger_breaked(bool p_breaked, bool p_can_debug);
+	void _on_debugger_clear_execution(Ref<Script> p_stack_script);
 
 protected:
+	ScriptEditorDebugger *editor_debugger = nullptr;
+
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
-	String get_base_type() const;
+	void on_start();
+	void set_editor_debugger(ScriptEditorDebugger *p_editor_debugger);
+	void add_value(const Array &p_array);
 
-	String get_selected() const;
-	Vector<String> get_selected_files() const;
-
-	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false);
-	EditorQuickOpen();
+	EditorExpressionEvaluator();
 };
 
-#endif // EDITOR_QUICK_OPEN_H
+#endif // EDITOR_EXPRESSION_EVALUATOR_H
