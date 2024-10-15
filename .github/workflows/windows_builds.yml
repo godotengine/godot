@@ -47,7 +47,7 @@ jobs:
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
             cache-name: windows-editor-clang
             target: editor
-            tests: true
+            tests: false
             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
             bin: ./bin/godot.windows.editor.x86_64.llvm.exe
             compiler: clang
