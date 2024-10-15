@@ -1,0 +1,2 @@
+all:
+	scons platform=linuxbsd
