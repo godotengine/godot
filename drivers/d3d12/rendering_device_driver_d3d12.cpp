@@ -6629,7 +6629,6 @@ static Error create_command_signature(ID3D12Device *device, D3D12_INDIRECT_ARGUM
 Error RenderingDeviceDriverD3D12::_initialize_frames(uint32_t p_frame_count) {
 	Error err;
 
-
 	//CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 	uint32_t resource_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame");
 	uint32_t sampler_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame");
