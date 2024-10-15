@@ -2739,6 +2739,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"extends",
 		"func",
 		"namespace", // Reserved for potential future use.
+		"private", // Reserved for potential future use.
+		"protected", // Reserved for potential future use.
 		"signal",
 		"static",
 		"trait", // Reserved for potential future use.

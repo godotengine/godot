@@ -1035,12 +1035,15 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 		// Access protection from external access
 		// See reduce_identifier_from_base() to check how this protects access from derived class (i.e. protect private members of the super class).
+		/*
 		if (!execute_access_protection(parser->current_class, member, p_source, true)) {
 			return;
 		}
+		*/
 
 		return;
 	}
+
 
 	GDScriptParser::ClassNode *previous_class = parser->current_class;
 	parser->current_class = p_class;
@@ -4123,7 +4126,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 			// Here detects access protection from derived classes.
 			// See resolve_class_member() to see how it protects access non-derived classes (i.e. private and protected members).
-			execute_access_protection(base_class, member, p_identifier, false);
+			// execute_access_protection(base_class, member, p_identifier, false);
 
 			switch (member.type) {
 				case GDScriptParser::ClassNode::Member::CONSTANT: {

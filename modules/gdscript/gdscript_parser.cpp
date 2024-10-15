@@ -3999,6 +3999,8 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST }, // IS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NAMESPACE,
 		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE }, // PRELOAD,
+		{ nullptr,											nullptr,                                        PREC_NONE }, // PRIVATE,
+		{ nullptr,											nullptr,                                        PREC_NONE }, // PROTECTED,
 		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // SIGNAL,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // STATIC,

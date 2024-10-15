@@ -127,6 +127,8 @@ public:
 			IS,
 			NAMESPACE,
 			PRELOAD,
+			PRIVATE,
+			PROTECTED,
 			SELF,
 			SIGNAL,
 			STATIC,
