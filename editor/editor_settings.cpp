@@ -502,7 +502,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Theme
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_ENUM, "interface/theme/follow_system_theme", false, "")
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Gray,Light,Solarized (Dark),Solarized (Light),Black (OLED),Custom")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot,Godot 2,Redot,Gray,Light,Solarized (Dark),Solarized (Light),Black (OLED),Custom")
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/spacing_preset", "Default", "Compact,Default,Spacious,Custom")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/theme/icon_and_font_color", 0, "Auto,Dark,Light")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/base_color", Color(0.2, 0.23, 0.31), "")
@@ -594,7 +594,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Text editor */
 
 	// Theme
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "text_editor/theme/color_theme", "Default", "Default,Godot 2,Custom")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "text_editor/theme/color_theme", "Default", "Default,Godot,Godot 2,Custom")
 
 	// Theme: Highlighting
 	_load_godot2_text_editor_theme();
@@ -991,7 +991,7 @@ bool EditorSettings::_save_text_editor_theme(const String &p_file) {
 }
 
 bool EditorSettings::_is_default_text_editor_theme(const String &p_theme_name) {
-	return p_theme_name == "default" || p_theme_name == "godot 2" || p_theme_name == "custom";
+	return p_theme_name == "default" || p_theme_name == "godot" || p_theme_name == "godot 2" || p_theme_name == "custom";
 }
 
 const String EditorSettings::_get_project_metadata_path() const {
@@ -1417,7 +1417,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 }
 
 void EditorSettings::list_text_editor_themes() {
-	String themes = "Default,Godot 2,Custom";
+	String themes = "Default,Godot,Godot 2,Custom";
 
 	Ref<DirAccess> d = DirAccess::open(EditorPaths::get_singleton()->get_text_editor_themes_dir());
 	if (d.is_valid()) {
