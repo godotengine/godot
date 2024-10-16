@@ -1173,6 +1173,11 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
 				slot.set_prop(new_prop);
+			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+				Variant key = dict.get_key_at_index(slot.index);
+				String cs = key.get_construct_string();
+				slot.prop->set_label(cs);
+				slot.prop->set_tooltip_text(cs);
 			}
 
 			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
@@ -1200,7 +1205,8 @@ void EditorPropertyDictionary::update_property() {
 
 void EditorPropertyDictionary::_remove_pressed(int p_slot_index) {
 	Dictionary dict = object->get_dict().duplicate();
-	dict.erase(dict.get_key_at_index(p_slot_index));
+	int index = slots[p_slot_index].index;
+	dict.erase(dict.get_key_at_index(index));
 
 	emit_changed(get_edited_property(), dict);
 }
