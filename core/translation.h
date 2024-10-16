@@ -87,6 +87,8 @@ class TranslationServer : public Object {
 	Ref<Translation> tool_translation;
 	Ref<Translation> doc_translation;
 
+	mutable HashMap<String, int> locale_compare_cache;
+
 	bool enabled;
 
 	static TranslationServer *singleton;
