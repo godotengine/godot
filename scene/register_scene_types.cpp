@@ -539,7 +539,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Node3D);
 	GDREGISTER_ABSTRACT_CLASS(Node3DGizmo);
 	GDREGISTER_CLASS(Skin);
-	GDREGISTER_ABSTRACT_CLASS(HumanSkeletonConfig);
 	GDREGISTER_ABSTRACT_CLASS(SkinReference);
 	GDREGISTER_CLASS(Skeleton3D);
 	GDREGISTER_CLASS(ImporterMesh);
@@ -614,6 +613,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PhysicalBone3D);
 	GDREGISTER_CLASS(SoftBody3D);
 
+	GDREGISTER_CLASS(HumanConfig);
 	GDREGISTER_CLASS(HumanSkeletonConfig);
 	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);

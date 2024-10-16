@@ -94,32 +94,28 @@ namespace HumanAnim
         // 构建虚拟姿势
         static void build_virtual_pose(Skeleton3D *p_skeleton,HumanConfig& p_config,HashMap<String, String>& p_human_bone_label) {
             Vector<int> root_bones = p_skeleton->get_root_bones();
+            p_skeleton->_update_bones_nested_set();
+			p_skeleton->force_update_all_bone_transforms(false);
 
-
+			int root_bone = p_skeleton->find_bone("Hips");
+			
             // 人型骨骼的初始的根骨可能带有旋转,所以不能存储根骨
-            for(int i=0;i<root_bones.size();i++) {
+            if(root_bone >= 0) {
 
-                StringName bone_name = p_skeleton->get_bone_name(root_bones[i]);
+                StringName bone_name = p_skeleton->get_bone_name(root_bone);
                 BonePose pose;
-                Transform3D trans = p_skeleton->get_bone_global_rest(root_bones[i]);
+                Transform3D trans = p_skeleton->get_bone_global_rest(root_bone);
                 float height = 1.0;
-                Vector<int> children = p_skeleton->get_bone_children(root_bones[i]);
-                Vector3 bone_foreard = Vector3(0,1,0);
-                if(children.size()>0) {
-                    bone_foreard = p_skeleton->get_bone_global_rest(children[0]).origin - (trans.origin);
-                    height = bone_foreard.length();
-                }
-                else if(p_skeleton->get_bone_parent(i) >= 0) {
-                    bone_foreard = trans.origin - p_skeleton->get_bone_global_rest(p_skeleton->get_bone_parent(i)).origin;
-                    height = 1.0;
-                }
+                Vector<int> children = p_skeleton->get_bone_children(root_bone);
+                Vector3 bone_foreard = Vector3(0,0,1);
+				bone_foreard = trans.basis.xform(bone_foreard);
                 pose.position = trans.origin;
                 pose.rotation = trans.basis.get_rotation_quaternion();
                 float inv_height = 1.0 / height;
                 pose.forward = bone_foreard.normalized();
                 pose.scale = Vector3(inv_height,inv_height,inv_height);
                 pose.length = height;
-                pose.bone_index = root_bones[i];
+                pose.bone_index = root_bone;
                 for(int j=0;j<children.size();j++) {
                     pose.child_bones.push_back(p_skeleton->get_bone_name(children[j]));
                 }
@@ -133,6 +129,10 @@ namespace HumanAnim
 
             // 根据骨骼的高度计算虚拟姿势
             for(int i=0;i<p_skeleton->get_bone_count();i++) {
+				String bone_name = p_skeleton->get_bone_name(i);
+				if (!p_config.virtual_pose.has(bone_name)) {
+					continue;
+				}
                 int parent = p_skeleton->get_bone_parent(i);
                 BonePose& parent_pose = p_config.virtual_pose[p_skeleton->get_bone_name(parent)];
                 BonePose& child_pose = p_config.virtual_pose[p_skeleton->get_bone_name(i)];
