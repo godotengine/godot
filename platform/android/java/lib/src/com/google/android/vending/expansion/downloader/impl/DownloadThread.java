@@ -54,10 +54,13 @@ public class DownloadThread {
         mService = service;
         mNotification = notification;
         mDB = DownloadsDB.getDB(service);
-        mUserAgent = "APKXDL (Linux; U; Android " + android.os.Build.VERSION.RELEASE + ";"
-                + Locale.getDefault().toString() + "; " + android.os.Build.DEVICE + "/"
-                + android.os.Build.ID + ")" +
-                service.getPackageName();
+        StringBuffer mUserAgentBuffer = new StringBuffer("APKXDL (Linux; U; Android ");
+        mUserAgentBuffer.append(android.os.Build.VERSION.RELEASE).append(";");
+        mUserAgentBuffer.append(Locale.getDefault().toString());
+        mUserAgentBuffer.append("; ").append(android.os.Build.DEVICE).append("/");
+        mUserAgentBuffer.append(android.os.Build.ID).append(")");
+        mUserAgentBuffer.append(service.getPackageName());
+        mUserAgent = mUserAgentBuffer.toString();
     }
 
     /**

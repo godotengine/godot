@@ -71,11 +71,14 @@ public final class SignalInfo {
 
 	@Override
 	public String toString() {
-		return "SignalInfo{"
-				+
-				"name='" + name + '\'' +
-				", paramsTypes=" + Arrays.toString(paramTypes) +
-				'}';
+		StringBuilder object = new StringBuilder("SignalInfo{");
+		object.append("name='");
+		object.append(name);
+		object.append('\'');
+		object.append(", paramsTypes=");
+		object.append(Arrays.toString(paramTypes));
+		object.append('}');
+		return object.toString();
 	}
 
 	@Override

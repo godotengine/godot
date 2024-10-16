@@ -534,9 +534,12 @@ public class Base64 {
                   "invalid padding byte '=' at byte offset " + i);
             } else if ((b4Posn == 3 && bytesLeft > 2)
                 || (b4Posn == 4 && bytesLeft > 1)) {
+              StringBuilder exceptionData = new StringBuilder("padding byte '=' falsely signals end of encoded value ");
+              exceptionData.append("at offset ");
+              exceptionData.append(i);
               throw new Base64DecoderException(
-                  "padding byte '=' falsely signals end of encoded value "
-                      + "at offset " + i);
+                      exceptionData.toString()
+                  );
             } else if (lastByte != EQUALS_SIGN && lastByte != NEW_LINE) {
               throw new Base64DecoderException(
                   "encoded value has invalid trailing byte");
@@ -551,8 +554,13 @@ public class Base64 {
           }
         }
       } else {
-        throw new Base64DecoderException("Bad Base64 input character at " + i
-            + ": " + source[i + off] + "(decimal)");
+          StringBuilder exceptionData = new StringBuilder("Bad Base64 input character at ");
+          exceptionData.append(i);
+          exceptionData.append(": " );
+          exceptionData.append(source[i + off]);
+          exceptionData.append("(decimal)");
+        throw new Base64DecoderException(
+            exceptionData.toString() );
       }
     }
 
