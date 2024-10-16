@@ -32,6 +32,7 @@
 #define DISPLAY_SERVER_H
 
 #include "core/input/input.h"
+#include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/variant/callable.h"
@@ -39,7 +40,6 @@
 #include "display/native_menu.h"
 
 class Texture2D;
-class Image;
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
