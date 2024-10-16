@@ -203,13 +203,11 @@ int GDScriptTestRunner::run_tests() {
 			print_line(test.get_source_relative_filepath());
 		}
 		for (GDScriptTest::TestResult &result : test.run_test()) {
-			String source_file = result.source_test->get_source_file();
-			String output_file = result.source_test->get_output_file();
-			String expected = FileAccess::get_file_as_string(output_file);
+			String expected = FileAccess::get_file_as_string(result.source_test->get_output_file());
 #ifndef DEBUG_ENABLED
 			expected = strip_warnings(expected);
 #endif
-			INFO(source_file);
+			INFO(result.source_test->get_source_file());
 			if (!result.passed) {
 				INFO(expected);
 				failed++;
