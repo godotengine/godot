@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 /*
-Adapted to Godot from the Bullet library.
+Adapted to Blazium from the Bullet library.
 */
 
 /*

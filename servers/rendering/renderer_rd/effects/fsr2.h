@@ -41,7 +41,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/fsr2/fsr2_tcr_autogen_pass.glsl.gen.h"
 
 // This flag doesn't actually control anything GCC specific in FSR2. It determines
-// if symbols should be exported, which is not required for Godot.
+// if symbols should be exported, which is not required for Blazium.
 #ifndef FFX_GCC
 #define FFX_GCC
 #endif

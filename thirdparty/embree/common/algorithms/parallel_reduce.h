@@ -58,19 +58,19 @@ namespace embree
     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
       reduction,context);
-    // -- GODOT start --
+    // -- BLAZIUM start --
     // if (context.is_group_execution_cancelled())
     //   throw std::runtime_error("task cancelled");
-    // -- GODOT end --
+    // -- BLAZIUM end --
     return v;
   #else
     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
       reduction);
-    // -- GODOT start --
+    // -- BLAZIUM start --
     // if (tbb::task::self().is_cancelled())
     //   throw std::runtime_error("task cancelled");
-    // -- GODOT end --
+    // -- BLAZIUM end --
     return v;
   #endif
 #else // TASKING_PPL
