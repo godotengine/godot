@@ -102,7 +102,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		}
 	}
 
-	override fun onGodotRestartRequested(instance: Blazium) {
+	override fun onGodotRestartRequested(instance: Godot) {
 		runOnUiThread {
 			godotFragment?.let {
 				if (instance === it.godot) {
@@ -174,7 +174,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		return this
 	}
 
-	override fun getGodot(): Blazium? {
+	override fun getGodot(): Godot? {
 		return godotFragment?.godot
 	}
 
