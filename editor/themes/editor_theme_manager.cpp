@@ -284,7 +284,11 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			bool preset_draw_extra_borders = false;
 
 			// Please use alphabetical order if you're adding a new theme here.
-			if (config.preset == "Breeze Dark") {
+			if (config.preset == "Blazium") {
+				preset_accent_color = Color(0.506, 0.188, 0.949);
+				preset_base_color = Color(0.18, 0.18, 0.18);
+				preset_contrast = config.default_contrast;
+			} else if (config.preset == "Breeze Dark") {
 				preset_accent_color = Color(0.26, 0.76, 1.00);
 				preset_base_color = Color(0.24, 0.26, 0.28);
 				preset_contrast = config.default_contrast;
@@ -329,8 +333,8 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_contrast = 0.0;
 				preset_draw_extra_borders = true;
 			} else { // Default
-				preset_accent_color = Color(0.44, 0.73, 0.98);
-				preset_base_color = Color(0.21, 0.24, 0.29);
+				preset_accent_color = Color(0.506, 0.188, 0.949);
+				preset_base_color = Color(0.18, 0.18, 0.18);
 				preset_contrast = config.default_contrast;
 			}
 
