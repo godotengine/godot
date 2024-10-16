@@ -437,11 +437,7 @@ void EditorVisualProfiler::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (is_layout_rtl()) {
-				activate->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
-			} else {
-				activate->set_icon(get_editor_theme_icon(SNAME("Play")));
-			}
+			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
 	}
