@@ -5638,7 +5638,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		}
 
 		/* set the titlebar name */
-		XStoreName(x11_display, wd.x11_window, "Blazium");
+		XStoreName(x11_display, wd.x11_window, "Blazium"); // Child windows are named in void DisplayServerX11::_update_context() -Teki
 		XSetWMProtocols(x11_display, wd.x11_window, &wm_delete, 1);
 		if (xdnd_aware != None) {
 			XChangeProperty(x11_display, wd.x11_window, xdnd_aware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&xdnd_version, 1);
