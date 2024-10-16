@@ -324,6 +324,10 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				// The contrast rate value is irrelevant on a fully black theme.
 				preset_contrast = 0.0;
 				preset_draw_extra_borders = true;
+			} else if (config.preset == "Indigo") {
+				preset_accent_color = Color(0.37, 0.54, 0.91);
+				preset_base_color = Color(0.17, 0.17, 0.20);
+				preset_contrast = 0.4;
 			} else { // Default
 				preset_accent_color = Color(0.44, 0.73, 0.98);
 				preset_base_color = Color(0.21, 0.24, 0.29);
