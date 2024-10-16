@@ -554,7 +554,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
                 "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
                 "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+                "https://docs.blazium.app/contributing/development/compiling/compiling_for_windows.html"
             )
             sys.exit(255)
 
@@ -697,8 +697,9 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = mingw_bin_prefix + "g++"
         if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
             env["AS"] = mingw_bin_prefix + "as"
-        if try_cmd("gcc-ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "gcc-ar"
+        ar = "ar" if os.name == "nt" else "gcc-ar"
+        if try_cmd(f"{ar} --version", env["mingw_prefix"], env["arch"]):
+            env["AR"] = mingw_bin_prefix + ar
         if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
             env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
 
@@ -784,7 +785,7 @@ def configure_mingw(env: "SConsEnvironment"):
                 "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
                 "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
                 "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+                "https://docs.blazium.app/contributing/development/compiling/compiling_for_windows.html"
             )
             sys.exit(255)
 

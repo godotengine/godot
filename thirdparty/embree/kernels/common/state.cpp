@@ -194,7 +194,7 @@ namespace embree
   bool State::parseFile(const FileName& fileName)
   { 
     Ref<Stream<int> > file;
-    // -- GODOT start --
+    // -- BLAZIUM start --
     // try {
       file = new FileStream(fileName);
     // }
@@ -202,7 +202,7 @@ namespace embree
     //   (void) e;
     //   return false;
     // }
-    // -- GODOT end --
+    // -- BLAZIUM end --
     
     std::vector<std::string> syms;
     for (size_t i=0; i<sizeof(symbols)/sizeof(void*); i++) 

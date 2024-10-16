@@ -1621,7 +1621,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
 			schema_path = save_path.contains("modules/") ? "../../../doc/class.xsd" : "../class.xsd";
 		} else {
-			schema_path = "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd";
+			schema_path = "https://raw.githubusercontent.com/blazium-engine/blazium/master/doc/class.xsd";
 		}
 		header += vformat(
 				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",

@@ -6,12 +6,12 @@ index 77a4e8253f..ac6873613f 100644
  #include <stdlib.h>
  #include <sys/types.h>
  
-+/* GODOT ADDITTION */
++/* BLAZIUM ADDITTION */
 +#if defined(_MSC_VER)
 +#include <BaseTsd.h>
 +typedef SSIZE_T ssize_t;
 +#endif
-+/* GODOT END */
++/* BLAZIUM END */
 +
  /*
   * wslay/wslayver.h is generated from wslay/wslayver.h.in by
