@@ -8763,7 +8763,7 @@ void AnimationMarkerEdit::_move_selection_commit() {
 void AnimationMarkerEdit::_delete_selected_markers() {
 	if (selection.size()) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Animation Delete Keys"));
+		undo_redo->create_action(TTR("Animation Delete Markers"));
 		for (const StringName &name : selection) {
 			double time = animation->get_marker_time(name);
 			undo_redo->add_do_method(animation.ptr(), "remove_marker", name);
@@ -8967,7 +8967,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	add_child(menu);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationMarkerEdit::_menu_selected));
 	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/rename_marker", TTR("Rename Marker"), Key::R), MENU_KEY_RENAME);
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/delete_selection", TTR("Delete Markers (s)"), Key::KEY_DELETE), MENU_KEY_DELETE);
+	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/delete_selection", TTR("Delete Marker(s)"), Key::KEY_DELETE), MENU_KEY_DELETE);
 	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/toggle_marker_names", TTR("Show All Marker Names"), Key::M), MENU_KEY_TOGGLE_MARKER_NAMES);
 
 	marker_insert_confirm = memnew(ConfirmationDialog);
