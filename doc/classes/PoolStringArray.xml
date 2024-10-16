@@ -75,6 +75,13 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed. Returns [code]-1[/code] if [code]from[/code] is out of bounds.
 			</description>
 		</method>
+		<method name="get">
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the String at the given [code]index[/code] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool" />
 			<argument index="0" name="value" type="String" />
