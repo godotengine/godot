@@ -50,7 +50,7 @@ public final class SignalInfo {
 		}
 
 		this.name = signalName;
-		this.paramTypes = paramTypes == null ? new Class<?>[ 0 ] : paramTypes;
+		this.paramTypes = paramTypes == null ? new Class<?>[0] : paramTypes;
 		this.paramTypesNames = new String[this.paramTypes.length];
 		for (int i = 0; i < this.paramTypes.length; i++) {
 			this.paramTypesNames[i] = this.paramTypes[i].getName();
@@ -71,11 +71,14 @@ public final class SignalInfo {
 
 	@Override
 	public String toString() {
-		return "SignalInfo{"
-				+
-				"name='" + name + '\'' +
-				", paramsTypes=" + Arrays.toString(paramTypes) +
-				'}';
+            StringBuilder object = new StringBuilder("SignalInfo{");
+            object.append("name='");
+            object.append(name);
+            object.append('\'');
+            object.append(", paramsTypes=");
+            object.append(Arrays.toString(paramTypes));
+            object.append('}');
+	    return object.toString();
 	}
 
 	@Override
