@@ -164,7 +164,7 @@
 			<description>
 				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
 				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
-				[b]Warning:[/b] Loading data from a config fie may allow for remote code execution. This is non-trivial to mitigate, but storing a [code]readme[/code] file in the same directory can warn users against downloading untrusted configurations:
+				[b]Warning:[/b] Loading data from a config file may allow for remote code execution. This is non-trivial to mitigate, but storing a [code]readme[/code] file in the same directory can warn users against downloading untrusted configurations:
 				[codeblocks]
 				[gdscript]
 				var config_path = "user://"
