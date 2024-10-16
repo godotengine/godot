@@ -296,23 +296,23 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_accent_color = Color(0.53, 0.67, 0.89);
 				preset_base_color = Color(0.24, 0.23, 0.27);
 				preset_contrast = config.default_contrast;
-			} else if (config.preset == "Redot") {
-				preset_accent_color = Color(0.87, 0.22, 0.29);
-				preset_base_color = Color(0.14, 0.12, 0.12);
+			} else if (config.preset == "Gray") {
+				preset_accent_color = Color(0.44, 0.73, 0.98);
+				preset_base_color = Color(0.24, 0.24, 0.24);
 				preset_contrast = config.default_contrast;
 			} else if (config.preset == "Indigo") {
 				preset_accent_color = Color(0.37, 0.54, 0.91);
 				preset_base_color = Color(0.17, 0.17, 0.20);
 				preset_contrast = 0.4;
-			} else if (config.preset == "Gray") {
-				preset_accent_color = Color(0.44, 0.73, 0.98);
-				preset_base_color = Color(0.24, 0.24, 0.24);
-				preset_contrast = config.default_contrast;
 			} else if (config.preset == "Light") {
 				preset_accent_color = Color(0.18, 0.50, 1.00);
 				preset_base_color = Color(0.9, 0.9, 0.9);
 				// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
 				preset_contrast = -0.06;
+			} else if (config.preset == "Redot") {
+				preset_accent_color = Color(0.87, 0.22, 0.29);
+				preset_base_color = Color(0.14, 0.12, 0.12);
+				preset_contrast = config.default_contrast;
 			} else if (config.preset == "Solarized (Dark)") {
 				preset_accent_color = Color(0.15, 0.55, 0.82);
 				preset_base_color = Color(0.04, 0.23, 0.27);
