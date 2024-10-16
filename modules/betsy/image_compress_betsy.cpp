@@ -36,11 +36,16 @@
 
 #include "bc1.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "servers/display_server.h"
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;
 
 void BetsyCompressor::_init() {
+	if (!DisplayServer::can_create_rendering_device()) {
+		return;
+	}
+
 	// Create local RD.
 	RenderingContextDriver *rcd = nullptr;
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
