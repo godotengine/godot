@@ -104,7 +104,7 @@ namespace HumanAnim
 
                 StringName bone_name = p_skeleton->get_bone_name(root_bone);
                 BonePose pose;
-                Transform3D trans = p_skeleton->get_bone_global_rest(root_bone);
+                Transform3D trans = p_skeleton->get_bone_global_pose(root_bone);
                 float height = 1.0;
                 Vector<int> children = p_skeleton->get_bone_children(root_bone);
                 Vector3 bone_foreard = Vector3(0,0,1);
@@ -134,8 +134,12 @@ namespace HumanAnim
 					continue;
 				}
                 int parent = p_skeleton->get_bone_parent(i);
-                BonePose& parent_pose = p_config.virtual_pose[p_skeleton->get_bone_name(parent)];
-                BonePose& child_pose = p_config.virtual_pose[p_skeleton->get_bone_name(i)];
+				String parent_bone_name = p_skeleton->get_bone_name(parent);
+				if (!p_config.virtual_pose.has(bone_name)) {
+					continue;
+				}
+                BonePose& parent_pose = p_config.virtual_pose[parent_bone_name];
+                BonePose& child_pose = p_config.virtual_pose[bone_name];
                 child_pose.position *= parent_pose.scale;
                 
             }
@@ -416,27 +420,25 @@ namespace HumanAnim
         static void build_virtual_pose(HumanConfig& p_config,Skeleton3D* p_skeleton, int bone_index,HashMap<String, String>& p_human_bone_label) {
             
             Vector<int> child_bones = p_skeleton->get_bone_children(bone_index);
-            Transform3D parent_trans = p_skeleton->get_bone_global_rest(bone_index);
-            parent_trans.invert();
             for(int i=0; i < child_bones.size(); i++) {
                 String bone_name = p_skeleton->get_bone_name(child_bones[i]);
                 if(!p_human_bone_label.has(bone_name)) {
                     continue;
                 }
-                BonePose pose;
-                Transform3D trans = p_skeleton->get_bone_global_rest(child_bones[i]);
+                BonePose & pose = p_config.virtual_pose[bone_name];
+                Transform3D trans = p_skeleton->get_bone_global_pose(child_bones[i]);
                 float height = 1.0;
                 Vector<int> children = p_skeleton->get_bone_children(child_bones[i]);
                 Vector3 bone_foreard = Vector3(0,1,0);
                 if(children.size()>0) {
-                    bone_foreard = p_skeleton->get_bone_global_rest(children[0]).origin - (trans.origin);
+                    bone_foreard = p_skeleton->get_bone_global_pose(children[0]).origin - (trans.origin);
                     height = bone_foreard.length();
                 }
                 else if(p_skeleton->get_bone_parent(i) >= 0) {
-                    bone_foreard = trans.origin - p_skeleton->get_bone_global_rest(p_skeleton->get_bone_parent(i)).origin;
+                    bone_foreard = trans.origin - p_skeleton->get_bone_global_pose(p_skeleton->get_bone_parent(i)).origin;
                     height = 1.0;
                 }
-                Transform3D local_trans =  trans * parent_trans;
+                Transform3D local_trans = p_skeleton->get_bone_pose(child_bones[i]);
                 pose.position = local_trans.origin;
                 pose.rotation = local_trans.basis.get_rotation_quaternion();
                 float inv_height = 1.0 / height;
@@ -447,7 +449,6 @@ namespace HumanAnim
                 for(int j=0;j<children.size();j++) {
                     pose.child_bones.push_back(p_skeleton->get_bone_name(children[j]));
                 }
-                p_config.virtual_pose[bone_name] = pose;
 				build_virtual_pose(p_config, p_skeleton,  child_bones[i], p_human_bone_label);
             }
             

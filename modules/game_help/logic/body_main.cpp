@@ -744,8 +744,8 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         if(p_is_skeleton_human)
         {
 			config.instantiate();
-			HashMap<String,String> bone_label = HumanAnim::HumanAnimmation::get_bone_label();
-			HumanAnim::HumanAnimmation::build_virtual_pose(skeleton, *config.ptr(), bone_label);
+			HashMap<String,String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
+			HumanAnim::HumanAnimmation::build_virtual_pose(skeleton, *config.ptr(), _bone_label);
             skeleton->set_human_config(config);
             config = skeleton->get_human_config();
             config->set_name("human_config");
