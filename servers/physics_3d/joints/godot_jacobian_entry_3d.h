@@ -32,7 +32,7 @@
 #define GODOT_JACOBIAN_ENTRY_3D_H
 
 /*
-Adapted to Blazium from the Bullet library.
+Adapted to Godot from the Bullet library.
 */
 
 /*

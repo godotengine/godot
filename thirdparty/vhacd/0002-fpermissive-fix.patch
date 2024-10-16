@@ -6,7 +6,7 @@ index 487205062..52297cd78 100644
      }
  };
  
-+// -- BLAZIUM start --
++// -- GODOT start --
 +// Cherry-picked from Bullet 2.88 to fix GH-27926
 +///align a pointer to the provided alignment, upwards
 +template <typename T>
@@ -27,11 +27,11 @@ index 487205062..52297cd78 100644
 +    converter.integer &= bit_mask;
 +    return converter.ptr;
 +}
-+// -- BLAZIUM end --
++// -- GODOT end --
 +
- // -- BLAZIUM start --
+ // -- GODOT start --
  }; // namespace VHACD
- // -- BLAZIUM end --
+ // -- GODOT end --
 diff --git a/thirdparty/vhacd/src/btAlignedAllocator.cpp b/thirdparty/vhacd/src/btAlignedAllocator.cpp
 index ce0e7f26f..8dee31e7e 100644
 --- a/thirdparty/vhacd/src/btAlignedAllocator.cpp
@@ -42,12 +42,12 @@ index ce0e7f26f..8dee31e7e 100644
      if (real) {
 -        offset = (alignment - (unsigned long)(real + sizeof(void*))) & (alignment - 1);
 -        ret = (void*)((real + sizeof(void*)) + offset);
-+        // -- BLAZIUM start --
++        // -- GODOT start --
 +        // Synced with Bullet 2.88 to fix GH-27926
 +        //offset = (alignment - (unsigned long)(real + sizeof(void*))) & (alignment - 1);
 +        //ret = (void*)((real + sizeof(void*)) + offset);
 +        ret = btAlignPointer(real + sizeof(void *), alignment);
-+        // -- BLAZIUM end --
++        // -- GODOT end --
          *((void**)(ret)-1) = (void*)(real);
      }
      else {

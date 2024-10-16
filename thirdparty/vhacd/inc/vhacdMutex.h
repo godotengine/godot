@@ -71,9 +71,9 @@
 #include <pthread.h>
 #endif
 
-// -- BLAZIUM start --
+// -- GODOT start --
 #if defined(__APPLE__) || !defined(__GLIBC__)
-// -- BLAZIUM end --
+// -- GODOT end --
 #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
 #endif
 

@@ -894,7 +894,7 @@ namespace embree
     }
 
     /* initiate build */
-    // -- BLAZIUM start --
+    // -- GODOT start --
     // try {
       TaskScheduler::TaskGroupContext context;
       scheduler->spawn_root([&]() { commit_task(); Lock<MutexSys> lock(taskGroup->schedulerMutex); taskGroup->scheduler = nullptr; }, &context, 1, !join);
@@ -905,7 +905,7 @@ namespace embree
     //   taskGroup->scheduler = nullptr;
     //   throw;
     // }
-    // -- BLAZIUM end --
+    // -- GODOT end --
   }
 
 #endif

@@ -135,7 +135,7 @@ void Decompress( u8* rgba, void const* block, int flags )
         colourBlock = reinterpret_cast< u8 const* >( block ) + 8;
 
     // decompress colour
-    // -- BLAZIUM start --
+    // -- GODOT start --
     //DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
     if(( flags & ( kBc4 ) ) != 0)
         DecompressColourBc4( rgba, colourBlock);
@@ -143,7 +143,7 @@ void Decompress( u8* rgba, void const* block, int flags )
         DecompressColourBc5( rgba, colourBlock);
     else
         DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
-    // -- BLAZIUM end --
+    // -- GODOT end --
 
     // decompress alpha separately if necessary
     if( ( flags & kDxt3 ) != 0 )

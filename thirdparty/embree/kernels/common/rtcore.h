@@ -13,13 +13,13 @@ namespace embree
   __forceinline bool isIncoherent(RTCRayQueryFlags flags) { return (flags & RTC_RAY_QUERY_FLAG_COHERENT) == RTC_RAY_QUERY_FLAG_INCOHERENT; }
 
 /*! Macros used in the rtcore API implementation */
-// -- BLAZIUM start --
+// -- GODOT start --
 #define RTC_CATCH_BEGIN
 #define RTC_CATCH_END(device)
 #define RTC_CATCH_END2(scene)
 #define RTC_CATCH_END2_FALSE(scene) return false;
 #if 0
-// -- BLAZIUM end --
+// -- GODOT end --
 #define RTC_CATCH_BEGIN try {
   
 #define RTC_CATCH_END(device)                                                \
@@ -94,7 +94,7 @@ namespace embree
 #define RTC_TRACE(x) 
 #endif
 
-// -- BLAZIUM start --
+// -- GODOT start --
 #if 0
   /*! used to throw embree API errors */
   struct rtcore_error : public std::exception
@@ -122,7 +122,7 @@ namespace embree
     abort();
     // throw rtcore_error(error,str);
 #endif
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #define RTC_BUILD_ARGUMENTS_HAS(settings,member) \
   (settings.byteSize > (offsetof(RTCBuildArguments,member)+sizeof(settings.member)))

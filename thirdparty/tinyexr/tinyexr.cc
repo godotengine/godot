@@ -4,9 +4,9 @@
 #endif
 #endif
 
-// -- BLAZIUM start --
+// -- GODOT start --
 #include <zlib.h> // Should come before including tinyexr.
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"

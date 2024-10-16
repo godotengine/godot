@@ -30,7 +30,7 @@
 
 /**
  @file  godot.h
- @brief ENet BLAZIUM header
+ @brief ENet Godot header
 */
 
 #ifndef __ENET_GODOT_H__

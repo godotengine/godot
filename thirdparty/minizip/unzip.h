@@ -202,9 +202,9 @@ extern int ZEXPORT unzClose(unzFile file);
     these files MUST be closed with unzCloseCurrentFile before call unzClose.
   return UNZ_OK if there is no problem. */
 
-/* BLAZIUM start */
+/* GODOT start */
 extern void* unzGetOpaque(unzFile file);
-/* BLAZIUM end */
+/* GODOT end */
 
 extern int ZEXPORT unzGetGlobalInfo(unzFile file,
                                     unz_global_info *pglobal_info);
@@ -394,12 +394,12 @@ extern int ZEXPORT unzReadCurrentFile(unzFile file,
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
 */
 
-/* BLAZIUM start */
+/* GODOT start */
 extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos);
 /*
   Seek to position in uncompressed data
 */
-/* BLAZIUM end */
+/* GODOT end */
 
 extern z_off_t ZEXPORT unztell(unzFile file);
 

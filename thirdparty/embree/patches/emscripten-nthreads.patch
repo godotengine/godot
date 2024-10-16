@@ -7,11 +7,11 @@ index c98f61fa53..7f7a009a1e 100644
  #if defined(__EMSCRIPTEN__)
  #include <emscripten.h>
 +
-+// -- BLAZIUM start --
++// -- GODOT start --
 +extern "C" {
 +extern int godot_js_os_hw_concurrency_get();
 +}
-+// -- BLAZIUM end --
++// -- GODOT end --
  #endif
  
  namespace embree
@@ -34,9 +34,9 @@ index c98f61fa53..7f7a009a1e 100644
 -            return 1;
 -        }
 -    });
-+    // -- BLAZIUM start --
++    // -- GODOT start --
 +    nThreads = godot_js_os_hw_concurrency_get();
-+    // -- BLAZIUM end --
++    // -- GODOT end --
  #else
      cpu_set_t set;
      if (pthread_getaffinity_np(pthread_self(), sizeof(set), &set) == 0)

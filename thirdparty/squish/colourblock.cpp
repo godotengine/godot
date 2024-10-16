@@ -24,9 +24,9 @@
    -------------------------------------------------------------------------- */
 
 #include "colourblock.h"
-// -- BLAZIUM start --
+// -- GODOT start --
 #include "alpha.h"
-// -- BLAZIUM end --
+// -- GODOT end --
 
 namespace squish {
 
@@ -214,7 +214,7 @@ void DecompressColour( u8* rgba, void const* block, bool isDxt1 )
     }
 }
 
-// -- BLAZIUM start --
+// -- GODOT start --
 void DecompressColourBc4( u8* rgba, void const* block)
 {
     DecompressAlphaDxt5(rgba,block);
@@ -241,7 +241,7 @@ void DecompressColourBc5( u8* rgba, void const* block)
         rgba[i*4 + 3] = 255;
     }
 }
-// -- BLAZIUM end --
+// -- GODOT end --
 
 
 } // namespace squish

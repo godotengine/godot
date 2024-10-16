@@ -28,18 +28,18 @@ subject to the following restrictions:
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
 #define BT_BULLET_VERSION 279
 
-// -- BLAZIUM start --
+// -- GODOT start --
 namespace VHACD {
-// -- BLAZIUM end --
+// -- GODOT end --
 
 inline int32_t btGetVersion()
 {
     return BT_BULLET_VERSION;
 }
 
-// -- BLAZIUM start --
+// -- GODOT start --
 }; // namespace VHACD
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #if defined(DEBUG) || defined(_DEBUG)
 #define BT_DEBUG
@@ -72,10 +72,10 @@ inline int32_t btGetVersion()
 #define btFsel(a, b, c) __fsel((a), (b), (c))
 #else
 
-// -- BLAZIUM start --
+// -- GODOT start --
 //#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION))
 #if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION)) && (!defined(_M_ARM)) && (!defined(_M_ARM64))
-// -- BLAZIUM end --
+// -- GODOT end --
 #define BT_USE_SSE
 #include <emmintrin.h>
 #endif
@@ -210,9 +210,9 @@ inline int32_t btGetVersion()
 #endif //__CELLOS_LV2__
 #endif
 
-// -- BLAZIUM start --
+// -- GODOT start --
 namespace VHACD {
-// -- BLAZIUM end --
+// -- GODOT end --
 
 ///The btScalar type abstracts floating point numbers, to easily switch between double and single floating point precision.
 #if defined(BT_USE_DOUBLE_PRECISION)
@@ -546,7 +546,7 @@ struct btTypedObject {
     }
 };
 
-// -- BLAZIUM start --
+// -- GODOT start --
 // Cherry-picked from Bullet 2.88 to fix GH-27926
 ///align a pointer to the provided alignment, upwards
 template <typename T>
@@ -567,10 +567,10 @@ T *btAlignPointer(T *unalignedPtr, size_t alignment)
     converter.integer &= bit_mask;
     return converter.ptr;
 }
-// -- BLAZIUM end --
+// -- GODOT end --
 
-// -- BLAZIUM start --
+// -- GODOT start --
 }; // namespace VHACD
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #endif //BT_SCALAR_H

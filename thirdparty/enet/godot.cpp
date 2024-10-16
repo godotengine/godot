@@ -30,7 +30,7 @@
 
 /**
  @file  godot.cpp
- @brief ENet BLAZIUM specific functions
+ @brief ENet Godot specific functions
 */
 
 #include "core/io/dtls_server.h"

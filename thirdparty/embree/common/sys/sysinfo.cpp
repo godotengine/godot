@@ -647,11 +647,11 @@ namespace embree
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 
-// -- BLAZIUM start --
+// -- GODOT start --
 extern "C" {
 extern int godot_js_os_hw_concurrency_get();
 }
-// -- BLAZIUM end --
+// -- GODOT end --
 #endif
 
 namespace embree
@@ -665,9 +665,9 @@ namespace embree
     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
     assert(nThreads);
 #elif defined(__EMSCRIPTEN__)
-    // -- BLAZIUM start --
+    // -- GODOT start --
     nThreads = godot_js_os_hw_concurrency_get();
-    // -- BLAZIUM end --
+    // -- GODOT end --
 #else
     cpu_set_t set;
     if (pthread_getaffinity_np(pthread_self(), sizeof(set), &set) == 0)

@@ -40,7 +40,7 @@ private:
 
 	// Environment
 	struct Environment {
-		// Note, we capture and store all environment parameters received from Blazium here.
+		// Note, we capture and store all environment parameters received from Godot here.
 		// Not all renderers support all effects and should just ignore the bits they don't support.
 
 		// Background

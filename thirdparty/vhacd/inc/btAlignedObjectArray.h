@@ -38,9 +38,9 @@ subject to the following restrictions:
 #include <new> //for placement new
 #endif //BT_USE_PLACEMENT_NEW
 
-// -- BLAZIUM start --
+// -- GODOT start --
 namespace VHACD {
-// -- BLAZIUM end --
+// -- GODOT end --
 
 ///The btAlignedObjectArray template class uses a subset of the stl::vector interface for its methods
 ///It is developed to replace stl::vector to avoid portability issues, including STL alignment issues to add SIMD/SSE data
@@ -449,8 +449,8 @@ public:
     }
 };
 
-// -- BLAZIUM start --
+// -- GODOT start --
 }; // namespace VHACD
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #endif //BT_OBJECT_ARRAY__

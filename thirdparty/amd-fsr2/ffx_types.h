@@ -22,9 +22,9 @@
 #pragma once
 
 #include <stdint.h>
-// -- BLAZIUM start --
+// -- GODOT start --
 #include <stdlib.h>
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #if defined (FFX_GCC)
 /// FidelityFX exported functions
