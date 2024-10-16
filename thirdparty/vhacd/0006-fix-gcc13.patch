@@ -6,9 +6,9 @@ index 132bdcfb3e..925584cf52 100644
  #include "vhacdManifoldMesh.h"
  #include "vhacdVector.h"
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#include <cstdint>
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  namespace VHACD {
  //!    Incremental Convex Hull algorithm (cf. http://cs.smith.edu/~orourke/books/ftp.html ).
@@ -22,9 +22,9 @@ index a48f53c5c5..5eed4e13aa 100644
  #include "vhacdSArray.h"
  #include "vhacdVector.h"
 +
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#include <cstdint>
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  namespace VHACD {
  class TMMTriangle;

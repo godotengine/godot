@@ -7,9 +7,9 @@ index 11f6e12dc..94e71d512 100644
  
  #include "btScalar.h"
 +
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  //#define BT_DEBUG_MEMORY_ALLOCATIONS 1
  #ifdef BT_DEBUG_MEMORY_ALLOCATIONS
@@ -18,9 +18,9 @@ index 11f6e12dc..94e71d512 100644
      friend bool operator==(const self_type&, const self_type&) { return true; }
  };
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_ALIGNED_ALLOCATOR
 diff --git a/thirdparty/vhacd/inc/btAlignedObjectArray.h b/thirdparty/vhacd/inc/btAlignedObjectArray.h
@@ -31,9 +31,9 @@ index e6620adf6..1ce03d21b 100644
  #include <new> //for placement new
  #endif //BT_USE_PLACEMENT_NEW
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  ///The btAlignedObjectArray template class uses a subset of the stl::vector interface for its methods
  ///It is developed to replace stl::vector to avoid portability issues, including STL alignment issues to add SIMD/SSE data
@@ -42,9 +42,9 @@ index e6620adf6..1ce03d21b 100644
      }
  };
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_OBJECT_ARRAY__
 diff --git a/thirdparty/vhacd/inc/btConvexHullComputer.h b/thirdparty/vhacd/inc/btConvexHullComputer.h
@@ -55,9 +55,9 @@ index 3c5075c2c..04bb96f64 100644
  #include "btAlignedObjectArray.h"
  #include "btVector3.h"
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  /// Convex hull implementation based on Preparata and Hong
  /// See http://code.google.com/p/bullet/issues/detail?id=275
@@ -66,9 +66,9 @@ index 3c5075c2c..04bb96f64 100644
      }
  };
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_CONVEX_HULL_COMPUTER_H
 diff --git a/thirdparty/vhacd/inc/btMinMax.h b/thirdparty/vhacd/inc/btMinMax.h
@@ -79,9 +79,9 @@ index 40b0ceb6e..9bc1e1c77 100644
  
  #include "btScalar.h"
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  template <class T>
  SIMD_FORCE_INLINE const T& btMin(const T& a, const T& b)
@@ -90,9 +90,9 @@ index 40b0ceb6e..9bc1e1c77 100644
      }
  }
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_GEN_MINMAX_H
 diff --git a/thirdparty/vhacd/inc/btScalar.h b/thirdparty/vhacd/inc/btScalar.h
@@ -103,18 +103,18 @@ index b814474bd..617fd7c44 100644
  /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
  #define BT_BULLET_VERSION 279
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  inline int32_t btGetVersion()
  {
      return BT_BULLET_VERSION;
  }
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #if defined(DEBUG) || defined(_DEBUG)
  #define BT_DEBUG
@@ -123,9 +123,9 @@ index b814474bd..617fd7c44 100644
  #endif //__CELLOS_LV2__
  #endif
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  ///The btScalar type abstracts floating point numbers, to easily switch between double and single floating point precision.
  #if defined(BT_USE_DOUBLE_PRECISION)
@@ -135,9 +135,9 @@ index b814474bd..617fd7c44 100644
      }
  };
 +
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_SCALAR_H
 diff --git a/thirdparty/vhacd/inc/btVector3.h b/thirdparty/vhacd/inc/btVector3.h
@@ -148,9 +148,9 @@ index 0f2fefbbd..4ed971673 100644
  #define btVector3DataName "btVector3FloatData"
  #endif //BT_USE_DOUBLE_PRECISION
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  /**@brief btVector3 can be used to represent 3D points and vectors.
   * It has an un-used w component to suit 16-byte alignment when btVector3 is stored in containers. This extra component can be used by derived classes (Quaternion?) or by user
@@ -159,9 +159,9 @@ index 0f2fefbbd..4ed971673 100644
          m_floats[i] = dataIn.m_floats[i];
  }
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_VECTOR3_H
 diff --git a/thirdparty/vhacd/src/btAlignedAllocator.cpp b/thirdparty/vhacd/src/btAlignedAllocator.cpp
@@ -172,9 +172,9 @@ index 11d594f6c..ce0e7f26f 100644
  
  #include "btAlignedAllocator.h"
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #ifdef _MSC_VER
  #pragma warning(disable:4311 4302)
@@ -183,9 +183,9 @@ index 11d594f6c..ce0e7f26f 100644
      sAlignedFreeFunc(ptr);
  }
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  #endif //BT_DEBUG_MEMORY_ALLOCATIONS
 diff --git a/thirdparty/vhacd/src/btConvexHullComputer.cpp b/thirdparty/vhacd/src/btConvexHullComputer.cpp
@@ -196,9 +196,9 @@ index d3d749adb..8ab34af2a 100644
  #include <stdio.h>
  #endif
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +namespace VHACD {
-+// -- GODOT end --
++// -- BLAZIUM end --
 +
  // Convex hull implementation based on Preparata and Hong
  // Ole Kniemeyer, MAXON Computer GmbH
@@ -208,6 +208,6 @@ index d3d749adb..8ab34af2a 100644
      return shift;
  }
 +
-+// -- GODOT start --
++// -- BLAZIUM start --
 +}; // namespace VHACD
-+// -- GODOT end --
++// -- BLAZIUM end --

@@ -108,7 +108,6 @@ open class GodotEditor : GodotActivity() {
 		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
 			Debug.waitForDebugger()
 		}
-
 		super.onCreate(savedInstanceState)
 	}
 

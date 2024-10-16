@@ -48,20 +48,31 @@ public class DownloadsDB {
 
     private SQLiteStatement getDownloadByIndexStatement() {
         if (null == mGetDownloadByIndex) {
+            StringBuilder sqlBuffer = new StringBuilder("SELECT ");
+            sqlBuffer.append(BaseColumns._ID);
+            sqlBuffer.append(" FROM ");
+            sqlBuffer.append(DownloadColumns.TABLE_NAME);
+            sqlBuffer.append(" WHERE ");
+            sqlBuffer.append(DownloadColumns.INDEX );
+            sqlBuffer.append(" = ?");
             mGetDownloadByIndex = mHelper.getReadableDatabase().compileStatement(
-                    "SELECT " + BaseColumns._ID + " FROM "
-                            + DownloadColumns.TABLE_NAME + " WHERE "
-                            + DownloadColumns.INDEX + " = ?");
+                    sqlBuffer.toString());
         }
         return mGetDownloadByIndex;
     }
 
     private SQLiteStatement getUpdateCurrentBytesStatement() {
         if (null == mUpdateCurrentBytes) {
+            StringBuffer sqlBuffer = new StringBuffer("UPDATE ");
+            sqlBuffer.append(DownloadColumns.TABLE_NAME);
+            sqlBuffer.append(" SET ");
+            sqlBuffer.append(DownloadColumns.CURRENTBYTES);
+            sqlBuffer.append(" = ?" );
+            sqlBuffer.append(" WHERE ");
+            sqlBuffer.append(DownloadColumns.INDEX);
+            sqlBuffer.append(" = ?");
             mUpdateCurrentBytes = mHelper.getReadableDatabase().compileStatement(
-                    "UPDATE " + DownloadColumns.TABLE_NAME + " SET " + DownloadColumns.CURRENTBYTES
-                            + " = ?" +
-                            " WHERE " + DownloadColumns.INDEX + " = ?");
+                sqlBuffer.toString());
         }
         return mUpdateCurrentBytes;
     }
@@ -71,13 +82,19 @@ public class DownloadsDB {
         final SQLiteDatabase sqldb = mHelper.getReadableDatabase();
         // Query for the version code, the row ID of the metadata (for future
         // updating) the status and the flags
-        Cursor cur = sqldb.rawQuery("SELECT " +
-                MetadataColumns.APKVERSION + "," +
-                BaseColumns._ID + "," +
-                MetadataColumns.DOWNLOAD_STATUS + "," +
-                MetadataColumns.FLAGS +
-                " FROM "
-                + MetadataColumns.TABLE_NAME + " LIMIT 1", null);
+        StringBuffer sqlBuffer = new StringBuffer("SELECT ");
+        sqlBuffer.append(MetadataColumns.APKVERSION);
+        sqlBuffer.append(",");
+        sqlBuffer.append(BaseColumns._ID);
+        sqlBuffer.append(",");
+        sqlBuffer.append(MetadataColumns.DOWNLOAD_STATUS);
+        sqlBuffer.append(",");
+        sqlBuffer.append(MetadataColumns.FLAGS);
+        sqlBuffer.append(" FROM ");
+        sqlBuffer.append(MetadataColumns.TABLE_NAME);
+        sqlBuffer.append(" LIMIT 1");
+        Cursor cur = sqldb.rawQuery(
+                sqlBuffer.toString() , null);
         if (null != cur && cur.moveToFirst()) {
             mVersionCode = cur.getInt(0);
             mMetadataRowID = cur.getLong(1);
@@ -141,24 +158,24 @@ public class DownloadsDB {
 
         private String createTableQueryFromArray(String paramString,
                 String[][] paramArrayOfString) {
-            StringBuilder localStringBuilder = new StringBuilder();
-            localStringBuilder.append("CREATE TABLE ");
-            localStringBuilder.append(paramString);
-            localStringBuilder.append(" (");
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("CREATE TABLE ");
+            sqlBuilder.append(paramString);
+            sqlBuilder.append(" (");
             int i = paramArrayOfString.length;
             for (int j = 0;; j++) {
                 if (j >= i) {
-                    localStringBuilder
-                            .setLength(localStringBuilder.length() - 1);
-                    localStringBuilder.append(");");
-                    return localStringBuilder.toString();
+                    sqlBuilder
+                            .setLength(sqlBuilder.length() - 1);
+                    sqlBuilder.append(");");
+                    return sqlBuilder.toString();
                 }
                 String[] arrayOfString = paramArrayOfString[j];
-                localStringBuilder.append(' ');
-                localStringBuilder.append(arrayOfString[0]);
-                localStringBuilder.append(' ');
-                localStringBuilder.append(arrayOfString[1]);
-                localStringBuilder.append(',');
+                sqlBuilder.append(' ');
+                sqlBuilder.append(arrayOfString[0]);
+                sqlBuilder.append(' ');
+                sqlBuilder.append(arrayOfString[1]);
+                sqlBuilder.append(',');
             }
         }
 
@@ -209,9 +226,13 @@ public class DownloadsDB {
 
         public void onUpgrade(SQLiteDatabase paramSQLiteDatabase,
                 int paramInt1, int paramInt2) {
+            StringBuffer sqlBuffer = new StringBuffer("Upgrading database from version ");
+            sqlBuffer.append(paramInt1);
+            sqlBuffer.append(" to ");
+            sqlBuffer.append(paramInt2);
+            sqlBuffer.append(", which will destroy all old data");
             Log.w(DownloadsContentDBHelper.class.getName(),
-                    "Upgrading database from version " + paramInt1 + " to "
-                            + paramInt2 + ", which will destroy all old data");
+                    sqlBuffer.toString());
             dropTables(paramSQLiteDatabase);
             onCreate(paramSQLiteDatabase);
         }
@@ -365,9 +386,13 @@ public class DownloadsDB {
 
     public boolean isDownloadRequired() {
         final SQLiteDatabase sqldb = mHelper.getReadableDatabase();
-        Cursor cur = sqldb.rawQuery("SELECT Count(*) FROM "
-                + DownloadColumns.TABLE_NAME + " WHERE "
-                + DownloadColumns.STATUS + " <> 0", null);
+        StringBuffer sqlBuffer = new StringBuffer("SELECT Count(*) FROM ");
+        sqlBuffer.append(DownloadColumns.TABLE_NAME);
+        sqlBuffer.append(" WHERE ");
+        sqlBuffer.append(DownloadColumns.STATUS);
+        sqlBuffer.append(" <> 0");
+        Cursor cur = sqldb.rawQuery(
+                sqlBuffer.toString(), null);
         try {
             if (null != cur && cur.moveToFirst()) {
                 return 0 == cur.getInt(0);
@@ -422,8 +447,11 @@ public class DownloadsDB {
                 return false;
             mMetadataRowID = newID;
         } else {
+            StringBuffer metaData = new StringBuffer(BaseColumns._ID);
+            metaData.append(" = ");
+            metaData.append(mMetadataRowID);
             if (0 == sqldb.update(MetadataColumns.TABLE_NAME, cv,
-                    BaseColumns._ID + " = " + mMetadataRowID, null))
+                    metaData.toString(), null))
                 return false;
         }
         return true;

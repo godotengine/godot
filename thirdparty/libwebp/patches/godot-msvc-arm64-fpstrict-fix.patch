@@ -6,13 +6,13 @@ index 09028428ac..3184e2b80f 100644
  #define LINEAR_TO_GAMMA_TAB_SIZE (1 << LINEAR_TO_GAMMA_TAB_BITS)
  static uint32_t kLinearToGammaTabS[LINEAR_TO_GAMMA_TAB_SIZE + 2];
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#if defined(_MSC_VER)
 +static const double kGammaF = 2.222222222222222;
 +#else
  static const double kGammaF = 1. / 0.45;
 +#endif
-+// -- GODOT end --
++// -- BLAZIUM end --
  #define GAMMA_TO_LINEAR_BITS 16
  
  static volatile int kGammaTablesSOk = 0;

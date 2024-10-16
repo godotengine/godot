@@ -568,7 +568,7 @@ typedef struct SpvReflectCapability {
 } SpvReflectCapability;
 
 
-// -- GODOT begin --
+// -- BLAZIUM begin --
 /*! @enum SpvReflectSpecializationConstantType
 
 */
@@ -577,7 +577,7 @@ typedef enum SpvReflectSpecializationConstantType {
   SPV_REFLECT_SPECIALIZATION_CONSTANT_INT = 1,
   SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT = 2,
 } SpvReflectSpecializationConstantType;
-// -- GODOT end --
+// -- BLAZIUM end --
 
 /*! @struct SpvReflectSpecId
 
@@ -586,13 +586,13 @@ typedef struct SpvReflectSpecializationConstant {
   uint32_t spirv_id;
   uint32_t constant_id;
   const char* name;
-// -- GODOT begin --
+// -- BLAZIUM begin --
   SpvReflectSpecializationConstantType constant_type;
   union {
     float float_value;
     uint32_t int_bool_value;
   } default_value;
-// -- GODOT end --
+// -- BLAZIUM end --
 } SpvReflectSpecializationConstant;
 
 /*! @struct SpvReflectShaderModule

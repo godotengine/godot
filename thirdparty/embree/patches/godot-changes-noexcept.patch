@@ -8,10 +8,10 @@ index b52b1e2e13..51ec0a6405 100644
        reduction,context);
 -    if (context.is_group_execution_cancelled())
 -      throw std::runtime_error("task cancelled");
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (context.is_group_execution_cancelled())
 +    //   throw std::runtime_error("task cancelled");
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      return v;
    #else
      const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
@@ -19,10 +19,10 @@ index b52b1e2e13..51ec0a6405 100644
        reduction);
 -    if (tbb::task::self().is_cancelled())
 -      throw std::runtime_error("task cancelled");
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (tbb::task::self().is_cancelled())
 +    //   throw std::runtime_error("task cancelled");
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      return v;
    #endif
  #else // TASKING_PPL
@@ -35,12 +35,12 @@ index 42ffb10176..c93da0b420 100644
      while (cin->peek() != EOF && !isSeparator(cin->peek())) {
        int c = cin->get();
 -      if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
-+      // -- GODOT start --
++      // -- BLAZIUM start --
 +      // if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
 +      if (!isValidChar(c)) {
 +        abort();
 +      }
-+      // -- GODOT end --
++      // -- BLAZIUM end --
        str.push_back((char)c);
      }
      str.push_back(0);
@@ -54,7 +54,7 @@ index de225fafc6..71616a3982 100644
    {
 -    if (tls_context_embree != nullptr) throw std::runtime_error("USM allocation already enabled");
 -    if (tls_device_embree != nullptr) throw std::runtime_error("USM allocation already enabled");
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (tls_context_embree != nullptr) throw std::runtime_error("USM allocation already enabled");
 +    // if (tls_device_embree != nullptr) throw std::runtime_error("USM allocation already enabled");
 +    if (tls_context_embree != nullptr) {
@@ -63,7 +63,7 @@ index de225fafc6..71616a3982 100644
 +    if (tls_device_embree != nullptr) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      tls_context_embree = context;
      tls_device_embree = device;
    }
@@ -72,7 +72,7 @@ index de225fafc6..71616a3982 100644
    {
 -    if (tls_context_embree  == nullptr) throw std::runtime_error("USM allocation not enabled");
 -    if (tls_device_embree  == nullptr) throw std::runtime_error("USM allocation not enabled");
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (tls_context_embree  == nullptr) throw std::runtime_error("USM allocation not enabled");
 +    // if (tls_device_embree  == nullptr) throw std::runtime_error("USM allocation not enabled");
 +    if (tls_context_embree  == nullptr) {
@@ -81,7 +81,7 @@ index de225fafc6..71616a3982 100644
 +    if (tls_device_embree  == nullptr) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      tls_context_embree = nullptr;
      tls_device_embree = nullptr;
    }
@@ -91,7 +91,7 @@ index de225fafc6..71616a3982 100644
    {
 -    if (tls_context_tutorial  == nullptr) throw std::runtime_error("USM allocation not enabled");
 -    if (tls_device_tutorial  == nullptr) throw std::runtime_error("USM allocation not enabled");
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (tls_context_tutorial  == nullptr) throw std::runtime_error("USM allocation not enabled");
 +    // if (tls_device_tutorial  == nullptr) throw std::runtime_error("USM allocation not enabled");
 +    if (tls_context_tutorial  == nullptr) {
@@ -100,7 +100,7 @@ index de225fafc6..71616a3982 100644
 +    if (tls_device_tutorial  == nullptr) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      
      tls_context_tutorial = nullptr;
      tls_device_tutorial = nullptr;
@@ -110,13 +110,13 @@ index de225fafc6..71616a3982 100644
      void* ptr = _mm_malloc(size,align);
 -    if (size != 0 && ptr == nullptr)
 -      throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (size != 0 && ptr == nullptr)
 +    //   throw std::bad_alloc();
 +    if (size != 0 && ptr == nullptr) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      return ptr;
    }
  
@@ -126,13 +126,13 @@ index de225fafc6..71616a3982 100644
        
 -    if (size != 0 && ptr == nullptr)
 -      throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (size != 0 && ptr == nullptr)
 +    //   throw std::bad_alloc();
 +    if (size != 0 && ptr == nullptr) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
  
      return ptr;
    }
@@ -141,12 +141,12 @@ index de225fafc6..71616a3982 100644
      int flags = MEM_COMMIT | MEM_RESERVE;
      char* ptr = (char*) VirtualAlloc(nullptr,bytes,flags,PAGE_READWRITE);
 -    if (ptr == nullptr) throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (ptr == nullptr) throw std::bad_alloc();
 +    if (ptr == nullptr) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      hugepages = false;
      return ptr;
    }
@@ -156,13 +156,13 @@ index de225fafc6..71616a3982 100644
  
 -    if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT))
 -      throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT))
 +    //   throw std::bad_alloc();
 +    if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT)) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
  
      return bytesNew;
    }
@@ -172,13 +172,13 @@ index de225fafc6..71616a3982 100644
  
 -    if (!VirtualFree(ptr,0,MEM_RELEASE))
 -      throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (!VirtualFree(ptr,0,MEM_RELEASE))
 +    //   throw std::bad_alloc();
 +    if (!VirtualFree(ptr,0,MEM_RELEASE)) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
    }
  
    void os_advise(void *ptr, size_t bytes)
@@ -187,12 +187,12 @@ index de225fafc6..71616a3982 100644
      /* fallback to 4k pages */
      void* ptr = (char*) mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 -    if (ptr == MAP_FAILED) throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (ptr == MAP_FAILED) throw std::bad_alloc();
 +    if (ptr == MAP_FAILED) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      hugepages = false;
  
      /* advise huge page hint for THP */
@@ -202,13 +202,13 @@ index de225fafc6..71616a3982 100644
  
 -    if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1)
 -      throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1)
 +    //   throw std::bad_alloc();
 +    if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
  
      return bytesNew;
    }
@@ -218,13 +218,13 @@ index de225fafc6..71616a3982 100644
      bytes = (bytes+pageSize-1) & ~(pageSize-1);
 -    if (munmap(ptr,bytes) == -1)
 -      throw std::bad_alloc();
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (munmap(ptr,bytes) == -1)
 +    //   throw std::bad_alloc();
 +    if (munmap(ptr,bytes) == -1) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
    }
  
    /* hint for transparent huge pages (THP) */
@@ -237,10 +237,10 @@ index e19c2c221a..28b17f988d 100644
  
        __forceinline pointer allocate( size_type n ) {
 -        throw std::runtime_error("no allocation supported");
-+        // -- GODOT start --
++        // -- BLAZIUM start --
 +        // throw std::runtime_error("no allocation supported");
 +        abort();
-+        // -- GODOT end --
++        // -- BLAZIUM end --
        }
  
        __forceinline void deallocate( pointer p, size_type n ) {
@@ -252,21 +252,21 @@ index 6dc0cf3318..d4a9b9e119 100644
  #define UPRINT4(x,y,z,w) embree_cout_uniform << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
  
  #if defined(DEBUG) // only report file and line in debug mode
-+  // -- GODOT start --
++  // -- BLAZIUM start --
 +  // #define THROW_RUNTIME_ERROR(str) \
 +  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
    #define THROW_RUNTIME_ERROR(str) \
 -    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
 +    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
-+  // -- GODOT end --
++  // -- BLAZIUM end --
  #else
-+  // -- GODOT start --
++  // -- BLAZIUM start --
 +  // #define THROW_RUNTIME_ERROR(str) \
 +  //   throw std::runtime_error(str);
    #define THROW_RUNTIME_ERROR(str) \
 -    throw std::runtime_error(str);
 +    abort();
-+  // -- GODOT end --
++  // -- BLAZIUM end --
  #endif
  
  #define FATAL(x)   THROW_RUNTIME_ERROR(x)
@@ -280,7 +280,7 @@ index 83ead95122..88b88a30ec 100644
        thread.task = this;
 -      try {
 -        if (context->cancellingException == nullptr)
-+      // -- GODOT start --
++      // -- BLAZIUM start --
 +      // try {
 +      //   if (context->cancellingException == nullptr)
            closure->execute();
@@ -292,7 +292,7 @@ index 83ead95122..88b88a30ec 100644
 +      //   if (context->cancellingException == nullptr)
 +      //     context->cancellingException = std::current_exception();
 +      // }
-+      // -- GODOT end --
++      // -- BLAZIUM end --
        thread.task = prevTask;
        add_dependencies(-1);
      }
@@ -306,13 +306,13 @@ index 355648b3f8..e72d3b72ba 100644
          size_t ofs = bytes + ((align - stackPtr) & (align-1));
 -        if (stackPtr + ofs > CLOSURE_STACK_SIZE)
 -          throw std::runtime_error("closure stack overflow");
-+        // -- GODOT start --
++        // -- BLAZIUM start --
 +        // if (stackPtr + ofs > CLOSURE_STACK_SIZE)
 +        //   throw std::runtime_error("closure stack overflow");
 +        if (stackPtr + ofs > CLOSURE_STACK_SIZE) {
 +          abort();
 +        }
-+        // -- GODOT end --
++        // -- BLAZIUM end --
          stackPtr += ofs;
          return &stack[stackPtr-bytes];
        }
@@ -322,13 +322,13 @@ index 355648b3f8..e72d3b72ba 100644
        {
 -        if (right >= TASK_STACK_SIZE)
 -          throw std::runtime_error("task stack overflow");
-+        // -- GODOT start --
++        // -- BLAZIUM start --
 +        // if (right >= TASK_STACK_SIZE)
 +        //   throw std::runtime_error("task stack overflow");
 +        if (right >= TASK_STACK_SIZE) {
 +          abort();
 +        }
-+        // -- GODOT end --
++        // -- BLAZIUM end --
  
  	/* allocate new task on right side of stack */
          size_t oldStackPtr = stackPtr;
@@ -341,10 +341,10 @@ index 40f9043736..57f75bfd7e 100644
      }
      else {
 -      throw std::runtime_error("not supported node type in bvh_statistics");
-+      // -- GODOT start --
++      // -- BLAZIUM start --
 +      // throw std::runtime_error("not supported node type in bvh_statistics");
 +      abort();
-+      // -- GODOT end --
++      // -- BLAZIUM end --
      }
      return s;
    } 
@@ -358,13 +358,13 @@ index 2bd292de4d..840d48c327 100644
      {
 -      if (osAllocation && useUSM)
 -        throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
-+      // -- GODOT start --
++      // -- BLAZIUM start --
 +      // if (osAllocation && useUSM)
 +      //   throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
 +      if (osAllocation && useUSM) {
 +        abort();
 +      }
-+      // -- GODOT end --
++      // -- BLAZIUM end --
  
        for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++)
        {
@@ -374,13 +374,13 @@ index 2bd292de4d..840d48c327 100644
            void* ptr = myUsedBlocks->malloc(device,bytes,align,partial);
 -          if (ptr == nullptr && !blockAllocation)
 -            throw std::bad_alloc();
-+          // -- GODOT start --
++          // -- BLAZIUM start --
 +          // if (ptr == nullptr && !blockAllocation)
 +          //   throw std::bad_alloc();
 +          if (ptr == nullptr && !blockAllocation) {
 +            abort();
 +          }
-+          // -- GODOT end --
++          // -- BLAZIUM end --
            if (ptr) return ptr;
          }
  
@@ -392,7 +392,7 @@ index 8dc5d7045b..eb8d2c0a58 100644
      RTC_TRACE(rtcSetSceneBuildQuality);
      RTC_VERIFY_HANDLE(hscene);
      RTC_ENTER_DEVICE(hscene);
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (quality != RTC_BUILD_QUALITY_LOW &&
 +    //     quality != RTC_BUILD_QUALITY_MEDIUM &&
 +    //     quality != RTC_BUILD_QUALITY_HIGH)
@@ -404,7 +404,7 @@ index 8dc5d7045b..eb8d2c0a58 100644
 +        quality != RTC_BUILD_QUALITY_HIGH) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      scene->setBuildQuality(quality);
      RTC_CATCH_END2(scene);
    }
@@ -412,7 +412,7 @@ index 8dc5d7045b..eb8d2c0a58 100644
      RTC_TRACE(rtcSetGeometryBuildQuality);
      RTC_VERIFY_HANDLE(hgeometry);
      RTC_ENTER_DEVICE(hgeometry);
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // if (quality != RTC_BUILD_QUALITY_LOW &&
 +    //     quality != RTC_BUILD_QUALITY_MEDIUM &&
 +    //     quality != RTC_BUILD_QUALITY_HIGH &&
@@ -426,7 +426,7 @@ index 8dc5d7045b..eb8d2c0a58 100644
 +        quality != RTC_BUILD_QUALITY_REFIT) {
 +      abort();
 +    }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      geometry->setBuildQuality(quality);
      RTC_CATCH_END2(geometry);
    }
@@ -438,7 +438,7 @@ index 73a061de11..47526482c1 100644
    __forceinline bool isIncoherent(RTCRayQueryFlags flags) { return (flags & RTC_RAY_QUERY_FLAG_COHERENT) == RTC_RAY_QUERY_FLAG_INCOHERENT; }
  
  /*! Macros used in the rtcore API implementation */
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#define RTC_CATCH_BEGIN
 +#define RTC_CATCH_END(device)
 +#define RTC_CATCH_END2(scene)
@@ -450,7 +450,7 @@ index 73a061de11..47526482c1 100644
 -#  define RTC_CATCH_END2_FALSE(scene) return false;
 -#else
 -  
-+// -- GODOT end --
++// -- BLAZIUM end --
  #define RTC_CATCH_BEGIN try {
    
  #define RTC_CATCH_END(device)                                                \
@@ -458,7 +458,7 @@ index 73a061de11..47526482c1 100644
  #define RTC_TRACE(x) 
  #endif
  
-+// -- GODOT start --
++// -- BLAZIUM start --
 +#if 0
    /*! used to throw embree API errors */
    struct rtcore_error : public std::exception
@@ -480,7 +480,7 @@ index 73a061de11..47526482c1 100644
 +    abort();
 +    // throw rtcore_error(error,str);
  #endif
-+// -- GODOT end --
++// -- BLAZIUM end --
  
  #define RTC_BUILD_ARGUMENTS_HAS(settings,member) \
    (settings.byteSize > (offsetof(RTCBuildArguments,member)+sizeof(settings.member)))
@@ -493,7 +493,7 @@ index fda8dd938a..10cb3c4bec 100644
  
      /* initiate build */
 -    try {
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // try {
        TaskScheduler::TaskGroupContext context;
        scheduler->spawn_root([&]() { commit_task(); Lock<MutexSys> lock(taskGroup->schedulerMutex); taskGroup->scheduler = nullptr; }, &context, 1, !join);
@@ -511,7 +511,7 @@ index fda8dd938a..10cb3c4bec 100644
 +    //   taskGroup->scheduler = nullptr;
 +    //   throw;
 +    // }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
    }
  
  #endif
@@ -524,7 +524,7 @@ index 4e3ab6ddfb..1d73ae9629 100644
    { 
      Ref<Stream<int> > file;
 -    try {
-+    // -- GODOT start --
++    // -- BLAZIUM start --
 +    // try {
        file = new FileStream(fileName);
 -    }
@@ -537,7 +537,7 @@ index 4e3ab6ddfb..1d73ae9629 100644
 +    //   (void) e;
 +    //   return false;
 +    // }
-+    // -- GODOT end --
++    // -- BLAZIUM end --
      
      std::vector<std::string> syms;
      for (size_t i=0; i<sizeof(symbols)/sizeof(void*); i++) 

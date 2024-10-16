@@ -14,10 +14,7 @@ public class ScriptPathAttributeGeneratorTests
     {
         return (
             Path.Combine("Godot.SourceGenerators", "Godot.SourceGenerators.ScriptPathAttributeGenerator", "AssemblyScriptTypes.generated.cs"),
-            SourceText.From($$"""
-            [assembly:Godot.AssemblyHasScriptsAttribute(new System.Type[] {{{string.Join(", ", types.Select(type => $"typeof({type})"))}}})]
-
-            """, Encoding.UTF8)
+            SourceText.From($"[assembly:Godot.AssemblyHasScriptsAttribute(new System.Type[] {{{string.Join(", ", types.Select(type => $"typeof({type})"))}}})]\n", Encoding.UTF8)
         );
     }
 

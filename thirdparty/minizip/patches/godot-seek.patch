@@ -6,15 +6,15 @@ index 782d32469a..2e89f5f41a 100644
      p_filefunc64_32->zfile_func64.opaque = p_filefunc32->opaque;
      p_filefunc64_32->zseek32_file = p_filefunc32->zseek_file;
      p_filefunc64_32->ztell32_file = p_filefunc32->ztell_file;
-+    /* GODOT start */
++    /* BLAZIUM start */
 +    p_filefunc64_32->zfile_func64.alloc_mem = p_filefunc32->alloc_mem;
 +    p_filefunc64_32->zfile_func64.free_mem = p_filefunc32->free_mem;
-+    /* GODOT end */
++    /* BLAZIUM end */
  }
  
-+/* GODOT start */
++/* BLAZIUM start */
 +/*
-+// GODOT end
++// BLAZIUM end
  
  
  static voidpf ZCALLBACK fopen_file_func(voidpf opaque, const char* filename, int mode) {
@@ -22,9 +22,9 @@ index 782d32469a..2e89f5f41a 100644
      pzlib_filefunc_def->zerror_file = ferror_file_func;
      pzlib_filefunc_def->opaque = NULL;
  }
-+// GODOT start
++// BLAZIUM start
 +*/
-+/* GODOT end */
++/* BLAZIUM end */
 diff --git a/thirdparty/minizip/ioapi.h b/thirdparty/minizip/ioapi.h
 index a2d2e6e60d..509b52da8a 100644
 --- a/thirdparty/minizip/ioapi.h
@@ -33,10 +33,10 @@ index a2d2e6e60d..509b52da8a 100644
      close_file_func     zclose_file;
      testerror_file_func zerror_file;
      voidpf              opaque;
-+    /* GODOT start */
++    /* BLAZIUM start */
 +    alloc_func          alloc_mem;
 +    free_func           free_mem;
-+    /* GODOT end */
++    /* BLAZIUM end */
  } zlib_filefunc_def;
  
  typedef ZPOS64_T (ZCALLBACK *tell64_file_func)    (voidpf opaque, voidpf stream);
@@ -44,10 +44,10 @@ index a2d2e6e60d..509b52da8a 100644
      close_file_func     zclose_file;
      testerror_file_func zerror_file;
      voidpf              opaque;
-+    /* GODOT start */
++    /* BLAZIUM start */
 +    alloc_func          alloc_mem;
 +    free_func           free_mem;
-+    /* GODOT end */
++    /* BLAZIUM end */
  } zlib_filefunc64_def;
  
  void fill_fopen64_filefunc(zlib_filefunc64_def* pzlib_filefunc_def);
@@ -59,9 +59,9 @@ index ea05b7d62a..981ba3c0cb 100644
      uLong compression_method;   /* compression method (0==store) */
      ZPOS64_T byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/
      int   raw;
-+    /* GODOT start */
++    /* BLAZIUM start */
 +    int extra_size;
-+    /* GODOT end */
++    /* BLAZIUM end */
  } file_in_zip64_read_info_s;
  
  
@@ -72,10 +72,10 @@ index ea05b7d62a..981ba3c0cb 100644
 -        fill_fopen64_filefunc(&us.z_filefunc.zfile_func64);
 -    else
 -        us.z_filefunc = *pzlib_filefunc64_32_def;
-+        /* GODOT start */
++        /* BLAZIUM start */
 +        return NULL; // standard i/o not supported
 +    us.z_filefunc = *pzlib_filefunc64_32_def;
-+    /* GODOT end */
++    /* BLAZIUM end */
      us.is64bitOpenFunction = is64bitOpenFunction;
  
  
@@ -83,7 +83,7 @@ index ea05b7d62a..981ba3c0cb 100644
      return unzOpenInternal(path, NULL, 1);
  }
  
-+/* GODOT start */
++/* BLAZIUM start */
 +extern void* unzGetOpaque(unzFile file) {
 +
 +    unz64_s* s;
@@ -93,7 +93,7 @@ index ea05b7d62a..981ba3c0cb 100644
 +
 +    return s->z_filefunc.zfile_func64.opaque;
 +};
-+/* GODOT end */
++/* BLAZIUM end */
 +
  /*
    Close a ZipFile opened with unzOpen.
@@ -102,7 +102,7 @@ index ea05b7d62a..981ba3c0cb 100644
  
          if (lSeek!=0)
          {
-+            /* GODOT start */
++            /* BLAZIUM start */
 +            if (lSeek<0) {
 +                // WORKAROUND for backwards seeking
 +                ZPOS64_T pos = ZTELL64(s->z_filefunc, s->filestream);
@@ -111,14 +111,14 @@ index ea05b7d62a..981ba3c0cb 100644
 +                else
 +                    err=UNZ_ERRNO;
 +            } else {
-+            /* GODOT end */
++            /* BLAZIUM end */
              if (ZSEEK64(s->z_filefunc, s->filestream,(ZPOS64_T)lSeek,ZLIB_FILEFUNC_SEEK_CUR)==0)
                  lSeek=0;
              else
                  err=UNZ_ERRNO;
-+            /* GODOT start */
++            /* BLAZIUM start */
 +            }
-+            /* GODOT end */
++            /* BLAZIUM end */
          }
  
          while(acc < file_info.size_file_extra)
@@ -128,10 +128,10 @@ index ea05b7d62a..981ba3c0cb 100644
      {
 -      pfile_in_zip_read_info->stream.zalloc = (alloc_func)0;
 -      pfile_in_zip_read_info->stream.zfree = (free_func)0;
-+      /* GODOT start */
++      /* BLAZIUM start */
 +      pfile_in_zip_read_info->stream.zalloc = s->z_filefunc.zfile_func64.alloc_mem;
 +      pfile_in_zip_read_info->stream.zfree = s->z_filefunc.zfile_func64.free_mem;
-+      /* GODOT end */
++      /* BLAZIUM end */
        pfile_in_zip_read_info->stream.opaque = (voidpf)0;
        pfile_in_zip_read_info->stream.next_in = 0;
        pfile_in_zip_read_info->stream.avail_in = 0;
@@ -139,9 +139,9 @@ index ea05b7d62a..981ba3c0cb 100644
                iSizeVar;
  
      pfile_in_zip_read_info->stream.avail_in = (uInt)0;
-+    /* GODOT start */
++    /* BLAZIUM start */
 +    pfile_in_zip_read_info->extra_size = iSizeVar;
-+    /* GODOT end */
++    /* BLAZIUM end */
  
      s->pfile_in_zip_read = pfile_in_zip_read_info;
                  s->encrypted = 0;
@@ -149,7 +149,7 @@ index ea05b7d62a..981ba3c0cb 100644
      return UNZ_OK;
  }
  
-+/* GODOT start */
++/* BLAZIUM start */
 +extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos) {
 +
 +    unz64_s* s;
@@ -226,7 +226,7 @@ index ea05b7d62a..981ba3c0cb 100644
 +
 +    return pos;
 +}
-+/* GODOT end */
++/* BLAZIUM end */
 +
  extern int ZEXPORT unzOpenCurrentFile(unzFile file) {
      return unzOpenCurrentFile3(file, NULL, NULL, 0, NULL);
@@ -239,9 +239,9 @@ index 5cfc9c6274..0639674574 100644
      these files MUST be closed with unzCloseCurrentFile before call unzClose.
    return UNZ_OK if there is no problem. */
  
-+/* GODOT start */
++/* BLAZIUM start */
 +extern void* unzGetOpaque(unzFile file);
-+/* GODOT end */
++/* BLAZIUM end */
 +
  extern int ZEXPORT unzGetGlobalInfo(unzFile file,
                                      unz_global_info *pglobal_info);
@@ -250,12 +250,12 @@ index 5cfc9c6274..0639674574 100644
      (UNZ_ERRNO for IO error, or zLib error for uncompress error)
  */
  
-+/* GODOT start */
++/* BLAZIUM start */
 +extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos);
 +/*
 +  Seek to position in uncompressed data
 +*/
-+/* GODOT end */
++/* BLAZIUM end */
 +
  extern z_off_t ZEXPORT unztell(unzFile file);
  
@@ -271,11 +271,11 @@ index 60bdffac34..1d2d918e72 100644
 -    if (pzlib_filefunc64_32_def==NULL)
 -        fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
 -    else
-+    /* GODOT start */
++    /* BLAZIUM start */
 +    if (pzlib_filefunc64_32_def==NULL) {
 +        //fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
 +    } else
-+    /* GODOT end */
++    /* BLAZIUM end */
          ziinit.z_filefunc = *pzlib_filefunc64_32_def;
  
      ziinit.filestream = ZOPEN64(ziinit.z_filefunc,
@@ -285,10 +285,10 @@ index 60bdffac34..1d2d918e72 100644
          {
 -          zi->ci.stream.zalloc = (alloc_func)0;
 -          zi->ci.stream.zfree = (free_func)0;
-+          /* GODOT start */
++          /* BLAZIUM start */
 +          zi->ci.stream.zalloc = zi->z_filefunc.zfile_func64.alloc_mem;
 +          zi->ci.stream.zfree = zi->z_filefunc.zfile_func64.free_mem;
-+          /* GODOT end */
++          /* BLAZIUM end */
            zi->ci.stream.opaque = (voidpf)0;
  
            if (windowBits>0)

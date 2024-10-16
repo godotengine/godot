@@ -36,7 +36,7 @@
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
 
-// -- GODOT start --
+// -- BLAZIUM start --
 #ifndef _countof
 #define _countof(array) (sizeof(array) / sizeof(array[0]))
 #endif
@@ -45,7 +45,7 @@
 #include <wchar.h>
 #define wcscpy_s wcscpy
 #endif
-// -- GODOT end --
+// -- BLAZIUM end --
 
 // max queued frames for descriptor management
 static const uint32_t FSR2_MAX_QUEUED_FRAMES = 16;
@@ -954,9 +954,9 @@ static FfxErrorCode fsr2Dispatch(FfxFsr2Context_Private* context, const FfxFsr2D
     context->constants.lumaMipDimensions[0] = uint32_t(context->constants.maxRenderSize[0] / mipDiv);
     context->constants.lumaMipDimensions[1] = uint32_t(context->constants.maxRenderSize[1] / mipDiv);
 
-	// -- GODOT start --
+	// -- BLAZIUM start --
     memcpy(context->constants.reprojectionMatrix, params->reprojectionMatrix, sizeof(context->constants.reprojectionMatrix));
-	// -- GODOT end --
+	// -- BLAZIUM end --
 
     // reactive mask bias
     const int32_t threadGroupWorkRegionDim = 8;
