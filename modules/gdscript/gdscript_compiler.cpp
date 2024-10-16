@@ -2310,6 +2310,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	if (p_func) {
 		if (p_func->identifier) {
 			func_name = p_func->identifier->name;
+		} else if (p_func->source_lambda && p_func->source_lambda->parent_variable) {
+			GDScriptParser::AssignableNode *parent_variable = p_func->source_lambda->parent_variable;
+			func_name = vformat("<anonymous lambda(%s)>", parent_variable->identifier->name);
 		} else {
 			func_name = "<anonymous lambda>";
 		}
