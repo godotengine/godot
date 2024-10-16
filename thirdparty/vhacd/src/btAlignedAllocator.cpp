@@ -15,9 +15,9 @@ subject to the following restrictions:
 
 #include "btAlignedAllocator.h"
 
-// -- BLAZIUM start --
+// -- GODOT start --
 namespace VHACD {
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #ifdef _MSC_VER
 #pragma warning(disable:4311 4302)
@@ -72,12 +72,12 @@ static inline void* btAlignedAllocDefault(size_t size, int32_t alignment)
 
     real = (char*)sAllocFunc(size + sizeof(void*) + (alignment - 1));
     if (real) {
-        // -- BLAZIUM start --
+        // -- GODOT start --
         // Synced with Bullet 2.88 to fix GH-27926
         //offset = (alignment - (unsigned long)(real + sizeof(void*))) & (alignment - 1);
         //ret = (void*)((real + sizeof(void*)) + offset);
         ret = btAlignPointer(real + sizeof(void *), alignment);
-        // -- BLAZIUM end --
+        // -- GODOT end --
         *((void**)(ret)-1) = (void*)(real);
     }
     else {
@@ -185,8 +185,8 @@ void btAlignedFreeInternal(void* ptr)
     sAlignedFreeFunc(ptr);
 }
 
-// -- BLAZIUM start --
+// -- GODOT start --
 }; // namespace VHACD
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #endif //BT_DEBUG_MEMORY_ALLOCATIONS

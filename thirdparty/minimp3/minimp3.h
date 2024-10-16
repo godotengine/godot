@@ -1566,7 +1566,7 @@ static void mp3d_synth(float *xl, mp3d_sample_t *dstl, int nch, float *lins)
 
 #else /* MINIMP3_FLOAT_OUTPUT */
 
-// -- BLAZIUM start --
+// -- GODOT start --
 #if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_ARM))
             static f4 g_scale;
             g_scale = vsetq_lane_f32(1.0f/32768.0f, g_scale, 0);
@@ -1576,7 +1576,7 @@ static void mp3d_synth(float *xl, mp3d_sample_t *dstl, int nch, float *lins)
 #else
             static const f4 g_scale = { 1.0f/32768.0f, 1.0f/32768.0f, 1.0f/32768.0f, 1.0f/32768.0f };
 #endif
-// -- BLAZIUM end --
+// -- GODOT end --
 
             a = VMUL(a, g_scale);
             b = VMUL(b, g_scale);
@@ -1825,7 +1825,7 @@ void mp3dec_f32_to_s16(const float *in, int16_t *out, int num_samples)
     for(; i < aligned_count; i += 8)
     {
 
-// -- BLAZIUM start --
+// -- GODOT start --
 #if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_ARM))
             static f4 g_scale;
             g_scale = vsetq_lane_f32(32768.0f, g_scale, 0);
@@ -1835,7 +1835,7 @@ void mp3dec_f32_to_s16(const float *in, int16_t *out, int num_samples)
 #else
         static const f4 g_scale = { 32768.0f, 32768.0f, 32768.0f, 32768.0f };
 #endif
-// -- BLAZIUM end --
+// -- GODOT end --
 
         f4 a = VMUL(VLD(&in[i  ]), g_scale);
         f4 b = VMUL(VLD(&in[i+4]), g_scale);

@@ -22,7 +22,7 @@ tar --strip-components=1 -xvf *.tar.gz
 rm *.tar.gz
 
 # Install from local git checkout "thorvg-git" in the same directory
-# as BLAZIUM git checkout.
+# as godot git checkout.
 #d="../../../../thorvg-git"
 #cp -r ${d}/AUTHORS ${d}/inc ${d}/LICENSE ${d}/src .
 

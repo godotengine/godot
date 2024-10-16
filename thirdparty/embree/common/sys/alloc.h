@@ -160,10 +160,10 @@ namespace embree
       typedef std::ptrdiff_t difference_type;
 
       __forceinline pointer allocate( size_type n ) {
-        // -- BLAZIUM start --
+        // -- GODOT start --
         // throw std::runtime_error("no allocation supported");
         abort();
-        // -- BLAZIUM end --
+        // -- GODOT end --
       }
 
       __forceinline void deallocate( pointer p, size_type n ) {

@@ -6,9 +6,9 @@ index 572efed852..18efa7a0cb 100644
  // two code paths for building root signatures, this helper method reconstructs a 1.0 signature when
  // 1.1 is not supported.
  inline HRESULT D3DX12SerializeVersionedRootSignature(
-+/* BLAZIUM start */
++/* GODOT start */
 +    _In_ HMODULE pLibD3D12,
-+/* BLAZIUM end */
++/* GODOT end */
      _In_ const D3D12_VERSIONED_ROOT_SIGNATURE_DESC* pRootSignatureDesc,
      D3D_ROOT_SIGNATURE_VERSION MaxVersion,
      _Outptr_ ID3DBlob** ppBlob,
@@ -16,13 +16,13 @@ index 572efed852..18efa7a0cb 100644
          *ppErrorBlob = nullptr;
      }
  
-+    /* BLAZIUM start */
++    /* GODOT start */
 +	PFN_D3D12_SERIALIZE_ROOT_SIGNATURE d3d_D3D12SerializeRootSignature = (PFN_D3D12_SERIALIZE_ROOT_SIGNATURE)(void *)GetProcAddress(pLibD3D12, "D3D12SerializeRootSignature");
 +    if (d3d_D3D12SerializeRootSignature == nullptr) {
 +        return E_INVALIDARG;
 +    }
 +    PFN_D3D12_SERIALIZE_VERSIONED_ROOT_SIGNATURE d3d_D3D12SerializeVersionedRootSignature = (PFN_D3D12_SERIALIZE_VERSIONED_ROOT_SIGNATURE)(void *)GetProcAddress(pLibD3D12, "D3D12SerializeVersionedRootSignature");
-+    /* BLAZIUM end */
++    /* GODOT end */
      switch (MaxVersion)
      {
          case D3D_ROOT_SIGNATURE_VERSION_1_0:
@@ -30,9 +30,9 @@ index 572efed852..18efa7a0cb 100644
              {
                  case D3D_ROOT_SIGNATURE_VERSION_1_0:
 -                    return D3D12SerializeRootSignature(&pRootSignatureDesc->Desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
-+/* BLAZIUM start */
++/* GODOT start */
 +                    return d3d_D3D12SerializeRootSignature(&pRootSignatureDesc->Desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
-+/* BLAZIUM end */
++/* GODOT end */
  
                  case D3D_ROOT_SIGNATURE_VERSION_1_1:
  #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
@@ -41,9 +41,9 @@ index 572efed852..18efa7a0cb 100644
                      {
                          const CD3DX12_ROOT_SIGNATURE_DESC desc_1_0(desc_1_1.NumParameters, pParameters_1_0, desc_1_1.NumStaticSamplers, pStaticSamplers == nullptr ? desc_1_1.pStaticSamplers : pStaticSamplers, desc_1_1.Flags);
 -                        hr = D3D12SerializeRootSignature(&desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
-+/* BLAZIUM start */
++/* GODOT start */
 +                        hr = d3d_D3D12SerializeRootSignature(&desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
-+/* BLAZIUM end */
++/* GODOT end */
                      }
  
                      if (pParameters)
@@ -52,9 +52,9 @@ index 572efed852..18efa7a0cb 100644
              case D3D_ROOT_SIGNATURE_VERSION_1_0:
              case D3D_ROOT_SIGNATURE_VERSION_1_1:
 -                return D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
-+/* BLAZIUM start */
++/* GODOT start */
 +                return d3d_D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
-+/* BLAZIUM end */
++/* GODOT end */
  
  #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
              case D3D_ROOT_SIGNATURE_VERSION_1_2:
@@ -63,9 +63,9 @@ index 572efed852..18efa7a0cb 100644
                  {
                      const CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc(desc_1_1.NumParameters, desc_1_1.pParameters, desc_1_1.NumStaticSamplers, pStaticSamplers == nullptr ? desc_1_1.pStaticSamplers : pStaticSamplers, desc_1_1.Flags);
 -                    hr = D3D12SerializeVersionedRootSignature(&desc, ppBlob, ppErrorBlob);
-+/* BLAZIUM start */
++/* GODOT start */
 +                    hr = d3d_D3D12SerializeVersionedRootSignature(&desc, ppBlob, ppErrorBlob);
-+/* BLAZIUM end */
++/* GODOT end */
                  }
  
                  if (pStaticSamplers)
@@ -74,9 +74,9 @@ index 572efed852..18efa7a0cb 100644
          case D3D_ROOT_SIGNATURE_VERSION_1_2:
  #endif
 -            return D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
-+/* BLAZIUM start */
++/* GODOT start */
 +            return d3d_D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
-+/* BLAZIUM end */
++/* GODOT end */
      }
  
      return E_INVALIDARG;

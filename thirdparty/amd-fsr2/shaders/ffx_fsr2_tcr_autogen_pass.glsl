@@ -40,11 +40,11 @@
 #define FSR2_BIND_CB_FSR2									11
 #define FSR2_BIND_CB_REACTIVE                               12
 
-// -- BLAZIUM start --
+// -- GODOT start --
 #if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
 #define FSR2_BIND_SRV_INPUT_DEPTH                           13
 #endif
-// -- BLAZIUM end --
+// -- GODOT end --
 
 #include "ffx_fsr2_callbacks_glsl.h"
 #include "ffx_fsr2_common.h"

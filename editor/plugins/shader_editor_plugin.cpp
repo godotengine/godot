@@ -679,7 +679,7 @@ void ShaderEditorPlugin::_notification(int p_what) {
 
 ShaderEditorPlugin::ShaderEditorPlugin() {
 	window_wrapper = memnew(WindowWrapper);
-	window_wrapper->set_window_title(vformat(TTR("%s - Blazium Engine"), TTR("Shader Editor")));
+	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Shader Editor")));
 	window_wrapper->set_margins_enabled(true);
 
 	main_split = memnew(HSplitContainer);

@@ -643,7 +643,7 @@ uint8_t RenderingLightCuller::Data::LUT_entries[LUT_SIZE][8] = {
 
 // See e.g. http://lspiroengine.com/?p=153 for reference.
 // Principles are the same, but differences to the article:
-// * Order of planes / points is different in Blazium.
+// * Order of planes / points is different in Godot.
 // * We use a lookup table at runtime.
 void RenderingLightCuller::create_LUT() {
 	// Each pair of planes that are opposite can have an edge.

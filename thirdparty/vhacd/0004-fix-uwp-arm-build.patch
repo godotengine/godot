@@ -7,10 +7,10 @@ index 3999a71521..4c9e0cf7ab 100644
  #else
  
 -#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION))
-+// -- BLAZIUM start --
++// -- GODOT start --
 +//#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION))
 +#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION)) && (!defined(_M_ARM)) && (!defined(_M_ARM64))
-+// -- BLAZIUM end --
++// -- GODOT end --
  #define BT_USE_SSE
  #include <emmintrin.h>
  #endif

@@ -48,7 +48,7 @@ namespace embree
     {
       Task* prevTask = thread.task;
       thread.task = this;
-      // -- BLAZIUM start --
+      // -- GODOT start --
       // try {
       //   if (context->cancellingException == nullptr)
           closure->execute();
@@ -56,7 +56,7 @@ namespace embree
       //   if (context->cancellingException == nullptr)
       //     context->cancellingException = std::current_exception();
       // }
-      // -- BLAZIUM end --
+      // -- GODOT end --
       thread.task = prevTask;
       add_dependencies(-1);
     }

@@ -45,10 +45,10 @@ typedef struct Fsr2Constants {
     float                       dynamicResChangeFactor;
     float                       viewSpaceToMetersFactor;
 
-	// -- BLAZIUM start --
+	// -- GODOT start --
     float                       pad;
     float                       reprojectionMatrix[16];
-	// -- BLAZIUM end --
+	// -- GODOT end --
 } Fsr2Constants;
 
 struct FfxFsr2ContextDescription;
