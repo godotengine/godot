@@ -30,6 +30,7 @@
 
 #include "default_theme.h"
 
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "default_font.gen.h"
 #include "default_theme_icons.gen.h"
