@@ -4723,6 +4723,16 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 		} break;
+		case ANIM_NEXT_STEP: {
+			AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+			te->goto_next_step(false);
+			te->accept_event();
+		} break;
+		case ANIM_PREV_STEP: {
+			AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+			te->goto_prev_step(false);
+			te->accept_event();
+		} break;
 		case CLEAR_GUIDES: {
 			Node *const root = EditorNode::get_singleton()->get_edited_scene();
 
@@ -5656,6 +5666,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_copy_pose", TTR("Copy Pose")), ANIM_COPY_POSE);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_paste_pose", TTR("Paste Pose")), ANIM_PASTE_POSE);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_clear_pose", TTR("Clear Pose"), KeyModifierMask::SHIFT | Key::K), ANIM_CLEAR_POSE);
+	p->add_separator();
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_goto_next_step", TTR("Go to Next Step")), ANIM_NEXT_STEP);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/anim_goto_prev_step", TTR("Go to Previous Step")), ANIM_PREV_STEP);
 
 	snap_dialog = memnew(SnapDialog);
 	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &CanvasItemEditor::_snap_changed));
