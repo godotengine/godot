@@ -42,6 +42,7 @@ namespace GodotTools.Build
             startInfo.CreateNoWindow = true;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+            startInfo.WorkingDirectory = Path.GetDirectoryName(buildInfo.Project)!;
 
             if (OperatingSystem.IsWindows())
             {
@@ -112,6 +113,7 @@ namespace GodotTools.Build
             startInfo.UseShellExecute = false;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+            startInfo.WorkingDirectory = Path.GetDirectoryName(buildInfo.Project)!;
 
             if (OperatingSystem.IsWindows())
             {
