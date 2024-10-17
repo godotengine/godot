@@ -1628,6 +1628,7 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				if (has_ime_text() && has_selection()) {
+					set_selection_mode(SELECTION_MODE_NONE);
 					delete_selection();
 				}
 
@@ -1952,6 +1953,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				_reset_caret_blink_timer();
 				apply_ime();
 				_cancel_drag_and_drop_text();
+				set_selection_mode(SELECTION_MODE_NONE);
 
 				Point2i pos = get_line_column_at_pos(mpos);
 				int mouse_line = pos.y;
@@ -4733,6 +4735,8 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 	}
 	const int last_line_max_wrap = get_line_wrap_count(text.size() - 1);
 
+	set_selection_mode(SELECTION_MODE_NONE);
+
 	begin_multicaret_edit();
 	int view_target_caret = -1;
 	int view_line = p_below ? -1 : INT_MAX;
@@ -5279,6 +5283,8 @@ void TextEdit::select_word_under_caret(int p_caret) {
 		return;
 	}
 
+	set_selection_mode(SELECTION_MODE_NONE);
+
 	for (int c = 0; c < carets.size(); c++) {
 		if (p_caret != -1 && p_caret != c) {
 			continue;
@@ -5332,6 +5338,8 @@ void TextEdit::add_selection_for_next_occurrence() {
 		return;
 	}
 
+	set_selection_mode(SELECTION_MODE_NONE);
+
 	const String &highlighted_text = get_selected_text(caret);
 	int column = get_selection_from_column(caret) + 1;
 	int line = get_selection_from_line(caret);
@@ -5362,6 +5370,8 @@ void TextEdit::skip_selection_for_next_occurrence() {
 	if (text.size() == 1 && text[0].length() == 0) {
 		return;
 	}
+
+	set_selection_mode(SELECTION_MODE_NONE);
 
 	// Always use the last caret, to correctly search for
 	// the next occurrence that comes after this caret.
@@ -5906,6 +5916,9 @@ void TextEdit::set_line_as_first_visible(int p_line, int p_wrap_index) {
 	ERR_FAIL_COND(p_wrap_index < 0);
 	ERR_FAIL_COND(p_wrap_index > get_line_wrap_count(p_line));
 	set_v_scroll(get_scroll_pos_for_line(p_line, p_wrap_index));
+
+	scrolling = false;
+	minimap_clicked = false;
 }
 
 int TextEdit::get_first_visible_line() const {
@@ -5916,6 +5929,9 @@ void TextEdit::set_line_as_center_visible(int p_line, int p_wrap_index) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	ERR_FAIL_COND(p_wrap_index < 0);
 	ERR_FAIL_COND(p_wrap_index > get_line_wrap_count(p_line));
+
+	scrolling = false;
+	minimap_clicked = false;
 
 	int visible_rows = get_visible_line_count();
 	Point2i next_line = get_next_visible_line_index_offset_from(p_line, p_wrap_index, (-visible_rows / 2) - 1);
@@ -5932,6 +5948,9 @@ void TextEdit::set_line_as_last_visible(int p_line, int p_wrap_index) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	ERR_FAIL_COND(p_wrap_index < 0);
 	ERR_FAIL_COND(p_wrap_index > get_line_wrap_count(p_line));
+
+	scrolling = false;
+	minimap_clicked = false;
 
 	Point2i next_line = get_next_visible_line_index_offset_from(p_line, p_wrap_index, -get_visible_line_count() - 1);
 	int first_line = p_line - next_line.x + 1;
@@ -5995,8 +6014,6 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	ERR_FAIL_INDEX(p_caret, carets.size());
 
 	// Make sure Caret is visible on the screen.
-	scrolling = false;
-	minimap_clicked = false;
 
 	int cur_line = get_caret_line(p_caret);
 	int cur_wrap = get_caret_wrap_index(p_caret);
@@ -7757,7 +7774,7 @@ void TextEdit::_selection_changed(int p_caret) {
 
 void TextEdit::_click_selection_held() {
 	// Update the selection mode on a timer so it is updated when the view scrolls even if the mouse isn't moving.
-	if (!Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) || get_selection_mode() == SelectionMode::SELECTION_MODE_NONE) {
+	if (!Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 		click_select_held->stop();
 		return;
 	}
@@ -7772,6 +7789,7 @@ void TextEdit::_click_selection_held() {
 			_update_selection_mode_line();
 		} break;
 		default: {
+			click_select_held->stop();
 			break;
 		}
 	}
