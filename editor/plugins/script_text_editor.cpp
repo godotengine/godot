@@ -260,6 +260,11 @@ void ScriptTextEditor::_set_theme_for_script() {
 			text_edit->add_auto_brace_completion_pair(beg, end);
 		}
 	}
+
+	List<String> block_key_delimiters;
+	script->get_language()->get_block_key_delimiters(&block_key_delimiters);
+
+	text_edit->set_block_key_delimiters(&block_key_delimiters);
 }
 
 void ScriptTextEditor::_show_errors_panel(bool p_show) {
