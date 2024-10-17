@@ -479,6 +479,9 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_string_to_snake_case(in godot_string p_self,
             out godot_string r_snake_case);
 
+        public static partial void godotsharp_string_to_kebab_case(in godot_string p_self,
+            out godot_string r_kebab_case);
+
         // NodePath
 
         public static partial void godotsharp_node_path_get_as_property_path(in godot_node_path p_self,
