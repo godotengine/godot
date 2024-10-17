@@ -320,6 +320,15 @@
 				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8]. This is the inverse of [method String.to_ascii_buffer].
 			</description>
 		</method>
+		<method name="get_string_from_multibyte_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="encoding" type="int" default="0" />
+			<description>
+				Converts system multibyte code page encoded array to [String]. This is the inverse of [method String.to_multibyte_char_buffer].
+				[param encoding] is one of the [url=https://learn.microsoft.com/en-us/windows/win32/Intl/code-page-identifiers]Code Page Identifiers[/url], or [code]0[/code] for system default Windows ANSI code page.
+				[b]Note:[/b] This method is implemented only on Windows, on other platforms [param encoding] is ignored, and this method is equivalent to [method get_string_from_utf8].
+			</description>
+		</method>
 		<method name="get_string_from_utf8" qualifiers="const">
 			<return type="String" />
 			<description>

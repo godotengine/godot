@@ -229,6 +229,9 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	virtual String multibyte_to_string(int p_encoding, const PackedByteArray &p_array) const override;
+	virtual PackedByteArray string_to_multibyte(int p_encoding, const String &p_string) const override;
+
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
 	virtual void initialize_debugging() override;
