@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/convex_hull.h"
+#include "core/math/vector3.h"
 #include "core/os/thread.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
@@ -595,9 +596,17 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 		return;
 	}
 
-	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis(), obstacle->get_global_position());
+	// Prevent non-positive scaling.
+	const Vector3 safe_scale = obstacle->get_global_basis().get_scale().abs().maxf(0.001);
 
-	const float obstacle_radius = obstacle->get_radius();
+	// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
+	Transform3D node_xform;
+	node_xform.origin = obstacle->get_global_position();
+	node_xform.scale_basis(safe_scale);
+	node_xform.rotate_basis(Vector3(0.0, 1.0, 0.0), obstacle->get_global_rotation().y);
+	node_xform = p_source_geometry_data->root_node_transform * node_xform;
+
+	const float obstacle_radius = safe_scale[safe_scale.max_axis_index()] * obstacle->get_radius();
 
 	if (obstacle_radius > 0.0) {
 		Vector<Vector3> obstruction_circle_vertices;
@@ -635,7 +644,7 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
 		obstruction_shape_vertices_ptrw[i].y = 0.0;
 	}
-	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y, obstacle->get_height(), obstacle->get_carve_navigation_mesh());
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y, safe_scale.y * obstacle->get_height(), obstacle->get_carve_navigation_mesh());
 }
 
 void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node) {
