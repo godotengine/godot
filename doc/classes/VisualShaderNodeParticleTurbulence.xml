@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleTurbulence" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node for randomized particle movement.
+	</brief_description>
+	<description>
+		The Turbulence Node generates a noise direction and turbulence influence value based on the given noise parameters.
+		These can be used to add a turbulent motion to the particle's velocity, which allows for creating organic and natural-looking particle effects.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
