@@ -34,6 +34,8 @@
 #include "core/templates/cowdata.h"
 #include "core/typedefs.h"
 
+#include <initializer_list>
+
 template <typename T, typename V>
 class VMap {
 public:
@@ -194,6 +196,8 @@ public:
 	}
 
 	_FORCE_INLINE_ VMap() {}
+	_FORCE_INLINE_ VMap(std::initializer_list<T> p_init) :
+			_cowdata(p_init) {}
 	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
 
 	inline void operator=(const VMap &p_from) {
