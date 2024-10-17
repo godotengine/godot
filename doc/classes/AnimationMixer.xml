@@ -318,6 +318,7 @@
 			<description>
 				Notifies when an animation finished playing.
 				[b]Note:[/b] This signal is not emitted if an animation is looping.
+				[b]Note:[/b] This signal is not emitted when switching to another animation during playback.
 			</description>
 		</signal>
 		<signal name="animation_libraries_updated">
