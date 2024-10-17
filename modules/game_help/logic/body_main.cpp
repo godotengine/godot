@@ -759,7 +759,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map_ref->set_bone_map(bone_map);
         bone_map_ref->set_bone_names(bone_names);
         bone_map_ref->set_human_config(config);
-        bone_map_ref->set_skeleton_path(p_group.path_join("skeleton.res" ));
+        bone_map_ref->set_skeleton_path(p_group.path_join("skeleton.scn" ));
         if(p_is_skeleton_human) {
 		    save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
         }
@@ -940,10 +940,10 @@ void CharacterBodyMain::editor_build_animation()
         return;
     }
     Skeleton3D* bone_map_skeleton = Object::cast_to<Skeleton3D>(ins);
-    if (skeleton == nullptr)
+    if (bone_map_skeleton == nullptr)
     {
         ERR_FAIL_MSG("scene is not Skeleton3D:" + bone_map->get_skeleton_path());
-        skeleton->queue_free();
+		bone_map_skeleton->queue_free();
         return;
     }
 

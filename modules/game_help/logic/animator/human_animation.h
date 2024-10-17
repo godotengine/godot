@@ -14,6 +14,7 @@ namespace HumanAnim
         HashMap<StringName, Transform3D> real_pose; 
 
         HashMap<StringName, Vector3> global_lookat;
+		HashMap<StringName, Vector3> global_position;
 
         // 根节点的移动
         HashMap<StringName, Vector3> root_move;
@@ -125,6 +126,7 @@ namespace HumanAnim
                 for(int j=0;j<children.size();j++) {
                     build_virtual_pose(p_config,p_skeleton, trans, children[j], p_human_bone_label);
                 }
+				p_config.root_bone.push_back(bone_name);
             }
 
             // 根据骨骼的高度计算虚拟姿势
@@ -183,8 +185,11 @@ namespace HumanAnim
                     if (path.get_subname_count() == 1) {
                         // 获取骨骼映射
                         bone_name = path.get_subname(0);
+						if (p_bone_map.has(bone_name)) {
+							bone_name = p_bone_map[bone_name];
+						}
                     }
-                    if (!p_config.virtual_pose.has(bone_name)) {
+                    if (bone_name != "Root" && !p_config.virtual_pose.has(bone_name)) {
                         other_tracks.push_back(track);
                         continue;
                     }
@@ -197,8 +202,11 @@ namespace HumanAnim
                     if (path.get_subname_count() == 1) {
                         // 获取骨骼映射
                         bone_name = path.get_subname(0);
+						if (p_bone_map.has(bone_name)) {
+							bone_name = p_bone_map[bone_name];
+						}
                     }
-                    if (!p_config.virtual_pose.has(bone_name)) {
+					if (bone_name != "Root" && !p_config.virtual_pose.has(bone_name)) {
                         other_tracks.push_back(track);
                         continue;
                     }
@@ -211,8 +219,11 @@ namespace HumanAnim
                     if (path.get_subname_count() == 1) {
                         // 获取骨骼映射
                         bone_name = path.get_subname(0);
+						if (p_bone_map.has(bone_name)) {
+							bone_name = p_bone_map[bone_name];
+						}
                     }
-                    if (!p_config.virtual_pose.has(bone_name)) {
+					if (bone_name != "Root" && !p_config.virtual_pose.has(bone_name)) {
                         other_tracks.push_back(track);
                         continue;
                     }
@@ -482,6 +493,10 @@ namespace HumanAnim
 
 			for (auto& it : p_config.root_bone) {
 				Transform3D& trans = p_skeleton_config.real_pose[it];
+				Vector3 bone_foreard = Vector3(0, 0, 1);
+				bone_foreard = trans.basis.xform(bone_foreard);
+				p_skeleton_config.global_lookat[it] = bone_foreard;
+				p_skeleton_config.global_position[it] = trans.origin;
 				Transform3D local_trans;
 				build_skeleton_global_lookat(p_config, local_trans, p_skeleton_config);
 			}
