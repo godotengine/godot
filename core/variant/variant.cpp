@@ -3619,9 +3619,9 @@ void Variant::construct_from_string(const String &p_string, Variant &r_value, Ob
 	r_value = Variant();
 }
 
-String Variant::get_construct_string() const {
+String Variant::get_construct_string(int p_max_digits) const {
 	String vars;
-	VariantWriter::write_to_string(*this, vars);
+	VariantWriter::write_to_string(*this, vars, nullptr, nullptr, true, p_max_digits);
 
 	return vars;
 }

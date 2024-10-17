@@ -31,12 +31,13 @@
 #include "doc_data.h"
 
 String DocData::get_default_value_string(const Variant &p_value) {
+	const int digits = 6; // Reduced precision is better for documentation, avoids unnecessary decimals.
 	if (p_value.get_type() == Variant::ARRAY) {
-		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
+		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string(digits).replace("\n", " ");
 	} else if (p_value.get_type() == Variant::DICTIONARY) {
-		return Variant(Dictionary(p_value, 0, StringName(), Variant(), 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
+		return Variant(Dictionary(p_value, 0, StringName(), Variant(), 0, StringName(), Variant())).get_construct_string(digits).replace("\n", " ");
 	} else {
-		return p_value.get_construct_string().replace("\n", " ");
+		return p_value.get_construct_string(digits).replace("\n", " ");
 	}
 }
 

@@ -460,11 +460,17 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(-0.0) == "-0"); // Includes sign even for zero.
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
-	CHECK(String::num_scientific(30000000) == "3e+07");
 	CHECK(String::num_int64(3141593) == "3141593");
 	CHECK(String::num_int64(0xA141593, 16) == "a141593");
 	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
+
+	// String::num_scientific tests.
+	CHECK(String::num_scientific(30000000.0) == "3e+07");
+	CHECK(String::num_scientific(1234567890.0) == "1.23457e+09");
+	CHECK(String::num_scientific(1234567890.0, 3) == "1.23e+09");
+	CHECK(String::num_scientific(1234567890.0, 9) == "1.23456789e+09");
+	CHECK(String::num_scientific(1234567890.0, 14) == "1234567890");
 
 	// String::num_real tests.
 	CHECK(String::num_real(1.0) == "1.0");
