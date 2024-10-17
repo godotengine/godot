@@ -35,7 +35,6 @@
 #import <Foundation/Foundation.h>
 
 #include "core/templates/hash_map.h"
-#include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 
 @interface GodotOpenSaveDelegate : NSObject <NSOpenSavePanelDelegate> {

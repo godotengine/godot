@@ -36,12 +36,12 @@
 #include <climits>
 
 class Variant;
-class ArrayPrivate;
 class Object;
 class StringName;
 class Callable;
 
 class Array {
+	struct ArrayPrivate;
 	mutable ArrayPrivate *_p;
 	void _unref() const;
 
@@ -201,6 +201,15 @@ public:
 	Array(const Array &p_from);
 	Array();
 	~Array();
+};
+
+template <typename T>
+class TypedArray : public Array {
+public:
+	_FORCE_INLINE_ void operator=(const Array &p_array);
+	_FORCE_INLINE_ TypedArray(const Variant &p_variant);
+	_FORCE_INLINE_ TypedArray(const Array &p_array);
+	_FORCE_INLINE_ TypedArray();
 };
 
 #endif // ARRAY_H

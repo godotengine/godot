@@ -36,7 +36,6 @@
 #include "core/math/transform_2d.h"
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
-#include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -56,9 +55,6 @@
 #define ERR_NOT_ON_RENDER_THREAD
 #define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
 #endif
-
-template <typename T>
-class TypedArray;
 
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);

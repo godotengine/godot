@@ -31,7 +31,6 @@
 #ifndef TEST_DICTIONARY_H
 #define TEST_DICTIONARY_H
 
-#include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
 
 namespace TestDictionary {

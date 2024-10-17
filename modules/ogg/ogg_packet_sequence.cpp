@@ -30,8 +30,6 @@
 
 #include "ogg_packet_sequence.h"
 
-#include "core/variant/typed_array.h"
-
 void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data) {
 	Vector<PackedByteArray> data_stored;
 	for (int i = 0; i < p_data.size(); i++) {
