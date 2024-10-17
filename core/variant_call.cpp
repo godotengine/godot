@@ -70,7 +70,7 @@ struct _VariantCall {
 				if (tptr[i] == Variant::NIL || tptr[i] == p_args[i]->type) {
 					continue; // all good
 				}
-				if (!Variant::can_convert(p_args[i]->type, tptr[i])) {
+				if (!p_args[i]->can_convert(tptr[i])) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = i;
 					r_error.expected = tptr[i];
@@ -1336,7 +1336,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 
 	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
 		return *p_args[0]; //copy construct
-	} else if (p_argcount == 1 && (!p_strict || Variant::can_convert(p_args[0]->type, p_type))) {
+	} else if (p_argcount == 1 && (!p_strict || p_args[0]->can_convert(p_type))) {
 		//near match construct
 
 		switch (p_type) {
@@ -1419,7 +1419,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 
 			//validate parameters
 			for (int i = 0; i < cd.arg_count; i++) {
-				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
+				if (!p_args[i]->can_convert(cd.arg_types[i])) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
 					r_error.argument = i;
 					r_error.expected = cd.arg_types[i];

@@ -601,6 +601,31 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	return false;
 }
 
+bool Variant::can_convert(Type p_type_to) const {
+	// If this is a string variant and we are converting to an integer, check if the contents of the string
+	// make sense as an integer
+	if (type == Type::STRING && p_type_to == Type::INT) {
+		// Get a reference to the string
+		String s = operator String();
+
+		// Is the first character a numeral?
+		if (s.length() > 0 && s[0] >= '0' && s[0] <= '9') {
+			return true;
+		}
+
+		// Is the first character '-' and the second character a numeral?
+		if (s.length() > 1 && s[0] == '-' && s[1] >= '0' && s[1] <= '9') {
+			return true;
+		}
+
+		// The string cannot be converted to a valid integer
+		return false;
+	}
+
+	// Do other type checks
+	return Variant::can_convert(type, p_type_to);
+}
+
 bool Variant::deep_equal(const Variant &p_variant, int p_recursion_count) const {
 	ERR_FAIL_COND_V_MSG(p_recursion_count > MAX_RECURSION, true, "Max recursion reached");
 

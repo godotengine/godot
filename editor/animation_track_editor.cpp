@@ -225,7 +225,7 @@ public:
 
 						if (t != args[idx].get_type()) {
 							Variant::CallError err;
-							if (Variant::can_convert(args[idx].get_type(), t)) {
+							if (args[idx].can_convert(t)) {
 								Variant old = args[idx];
 								Variant *ptrs[1] = { &old };
 								args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
@@ -844,7 +844,7 @@ public:
 
 								if (t != args[idx].get_type()) {
 									Variant::CallError err;
-									if (Variant::can_convert(args[idx].get_type(), t)) {
+									if (args[idx].can_convert(t)) {
 										Variant old = args[idx];
 										Variant *ptrs[1] = { &old };
 										args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
@@ -2423,7 +2423,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 		r_valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
 	}
 
-	return (!prop_exists || Variant::can_convert(p_key_value.get_type(), r_valid_type));
+	return (!prop_exists || p_key_value.can_convert(r_valid_type));
 }
 
 Ref<Texture> AnimationTrackEdit::_get_key_type_icon() const {
@@ -5681,7 +5681,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		for (int j = 0; j < p_animation->track_get_key_count(i); j++) {
 			Variant v = p_animation->track_get_key_value(i, j);
 
-			if (!Variant::can_convert(v.get_type(), valid_type)) {
+			if (!v.can_convert(valid_type)) {
 				p_animation->track_remove_key(i, j);
 				j--;
 			}
