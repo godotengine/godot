@@ -83,6 +83,9 @@ public:
 	typedef void (*InvalidationCallback)(void *);
 
 private:
+	// build in includes
+	static HashMap<String, String> build_in_includes;
+
 	static ShaderCompileToSPIRVFunction compile_to_spirv_function;
 	static ShaderCacheFunction cache_function;
 	static ShaderSPIRVGetCacheKeyFunction get_spirv_cache_key_function;
@@ -870,6 +873,10 @@ public:
 	static void shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function);
 	static void shader_set_spirv_cache_function(ShaderCacheFunction p_function);
 	static void shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function);
+
+	static void register_built_in_include_file(const String &p_filename, const String &p_shader_code);
+	static bool has_built_in_include_file(const String &p_filename);
+	static String get_built_in_include_file(const String &p_filename);
 
 	String shader_get_binary_cache_key() const;
 	Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
