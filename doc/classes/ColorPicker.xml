@@ -53,6 +53,26 @@
 				Returns the list of colors in the recent presets of the color picker.
 			</description>
 		</method>
+		<method name="is_displaying_old_color" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns if the old color is being displayed.
+			</description>
+		</method>
+		<method name="set_display_old_color">
+			<return type="void" />
+			<param index="0" name="display" type="bool" />
+			<description>
+				Toggles displaying old color.
+			</description>
+		</method>
+		<method name="set_old_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Sets the old color value.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">

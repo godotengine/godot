@@ -631,6 +631,7 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 		float spinbox_arrow_step = modes[current_mode]->get_spinbox_arrow_step();
 		for (int i = 0; i < current_slider_count; i++) {
 			sliders[i]->set_max(modes[current_mode]->get_slider_max(i));
+			sliders[i]->set_allow_greater(modes[current_mode]->can_allow_greater());
 			sliders[i]->set_step(step);
 			values[i]->set_custom_arrow_step(spinbox_arrow_step);
 			sliders[i]->set_value(modes[current_mode]->get_slider_value(i));
@@ -1072,6 +1073,9 @@ void ColorPicker::_update_text_value() {
 }
 
 void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
+	if (!display_old_color) {
+		return;
+	}
 	const Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
@@ -1124,7 +1128,7 @@ void ColorPicker::_sample_draw() {
 
 	if (color.r > 1 || color.g > 1 || color.b > 1) {
 		// Draw an indicator to denote that the new color is "overbright" and can't be displayed accurately in the preview.
-		sample->draw_texture(theme_cache.overbright_indicator, Point2(uv_edit->get_size().width * 0.5, 0));
+		sample->draw_texture(theme_cache.overbright_indicator, Point2(display_old_color ? sample->get_size().width * 0.5 : 0, 0));
 	}
 }
 
@@ -1135,70 +1139,43 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 
 	PickerShapeType actual_shape = _get_actual_shape();
 	if (p_which == 0) {
-		Vector<Point2> points;
-		Vector<Color> colors;
-		Vector<Color> colors2;
 		Color col = color;
 		Vector2 center = c->get_size() / 2.0;
 
-		switch (actual_shape) {
-			case SHAPE_HSV_WHEEL: {
-				points.resize(4);
-				colors.resize(4);
-				colors2.resize(4);
+		if (current_shape == SHAPE_HSV_RECTANGLE || current_shape == SHAPE_HSV_WHEEL) {
+			Vector<Point2> points;
+			Vector<Color> colors;
+			Vector<Color> colors2;
+			if (current_shape == SHAPE_HSV_RECTANGLE) {
+				points.append(Vector2());
+				points.append(Vector2(c->get_size().x, 0));
+				points.append(c->get_size());
+				points.append(Vector2(0, c->get_size().y));
+			} else {
 				real_t ring_radius_x = Math_SQRT12 * c->get_size().width * 0.42;
 				real_t ring_radius_y = Math_SQRT12 * c->get_size().height * 0.42;
 
-				points.set(0, center - Vector2(ring_radius_x, ring_radius_y));
-				points.set(1, center + Vector2(ring_radius_x, -ring_radius_y));
-				points.set(2, center + Vector2(ring_radius_x, ring_radius_y));
-				points.set(3, center + Vector2(-ring_radius_x, ring_radius_y));
-				colors.set(0, Color(1, 1, 1, 1));
-				colors.set(1, Color(1, 1, 1, 1));
-				colors.set(2, Color(0, 0, 0, 1));
-				colors.set(3, Color(0, 0, 0, 1));
-				c->draw_polygon(points, colors);
+				points.append(center - Vector2(ring_radius_x, ring_radius_y));
+				points.append(center + Vector2(ring_radius_x, -ring_radius_y));
+				points.append(center + Vector2(ring_radius_x, ring_radius_y));
+				points.append(center + Vector2(-ring_radius_x, ring_radius_y));
+			}
+			colors.append(Color(1, 1, 1, 1));
+			colors.append(Color(1, 1, 1, 1));
+			colors.append(Color(0, 0, 0, 1));
+			colors.append(Color(0, 0, 0, 1));
+			c->draw_polygon(points, colors);
 
-				col.set_hsv(h, 1, 1);
-				col.a = 0;
-				colors2.set(0, col);
-				col.a = 1;
-				colors2.set(1, col);
-				col.set_hsv(h, 1, 0);
-				colors2.set(2, col);
-				col.a = 0;
-				colors2.set(3, col);
-				c->draw_polygon(points, colors2);
-				break;
-			}
-			case SHAPE_HSV_RECTANGLE: {
-				points.resize(4);
-				colors.resize(4);
-				colors2.resize(4);
-				points.set(0, Vector2());
-				points.set(1, Vector2(c->get_size().x, 0));
-				points.set(2, c->get_size());
-				points.set(3, Vector2(0, c->get_size().y));
-				colors.set(0, Color(1, 1, 1, 1));
-				colors.set(1, Color(1, 1, 1, 1));
-				colors.set(2, Color(0, 0, 0, 1));
-				colors.set(3, Color(0, 0, 0, 1));
-				c->draw_polygon(points, colors);
-				col = color;
-				col.set_hsv(h, 1, 1);
-				col.a = 0;
-				colors2.set(0, col);
-				col.a = 1;
-				colors2.set(1, col);
-				col.set_hsv(h, 1, 0);
-				colors2.set(2, col);
-				col.a = 0;
-				colors2.set(3, col);
-				c->draw_polygon(points, colors2);
-				break;
-			}
-			default: {
-			}
+			col.set_hsv(h, 1, 1);
+			col.a = 0;
+			colors2.append(col);
+			col.a = 1;
+			colors2.append(col);
+			col.set_hsv(h, 1, 0);
+			colors2.append(col);
+			col.a = 0;
+			colors2.append(col);
+			c->draw_polygon(points, colors2);
 		}
 
 		int x;
@@ -1218,14 +1195,9 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 
 		col.set_hsv(h, 1, 1);
 		if (actual_shape == SHAPE_HSV_WHEEL) {
-			points.resize(4);
-			double h1 = h - (0.5 / 360);
-			double h2 = h + (0.5 / 360);
-			points.set(0, Point2(center.x + (center.x * Math::cos(h1 * Math_TAU)), center.y + (center.y * Math::sin(h1 * Math_TAU))));
-			points.set(1, Point2(center.x + (center.x * Math::cos(h1 * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h1 * Math_TAU) * 0.84)));
-			points.set(2, Point2(center.x + (center.x * Math::cos(h2 * Math_TAU)), center.y + (center.y * Math::sin(h2 * Math_TAU))));
-			points.set(3, Point2(center.x + (center.x * Math::cos(h2 * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h2 * Math_TAU) * 0.84)));
-			c->draw_multiline(points, col.inverted());
+			Point2 from = Point2(center.x + (center.x * Math::cos(h * Math_TAU)), center.y + (center.y * Math::sin(h * Math_TAU)));
+			Point2 to = Point2(center.x + (center.x * Math::cos(h * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h * Math_TAU) * 0.84));
+			c->draw_line(from, to, col.inverted());
 		}
 
 	} else if (p_which == 1) {
@@ -1540,7 +1512,6 @@ void ColorPicker::_pick_finished() {
 	}
 	is_picking_color = false;
 	set_process_internal(false);
-	picker_window->hide();
 }
 
 void ColorPicker::_pick_button_pressed_legacy() {
@@ -1736,6 +1707,9 @@ bool ColorPicker::is_hex_visible() const {
 void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPicker::get_pick_color);
+	ClassDB::bind_method(D_METHOD("set_old_color", "color"), &ColorPicker::set_old_color);
+	ClassDB::bind_method(D_METHOD("set_display_old_color", "display"), &ColorPicker::set_display_old_color);
+	ClassDB::bind_method(D_METHOD("is_displaying_old_color"), &ColorPicker::is_displaying_old_color);
 	ClassDB::bind_method(D_METHOD("set_deferred_mode", "mode"), &ColorPicker::set_deferred_mode);
 	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
 	ClassDB::bind_method(D_METHOD("set_color_mode", "color_mode"), &ColorPicker::set_color_mode);
@@ -1909,17 +1883,10 @@ ColorPicker::ColorPicker() {
 	mode_popup->set_item_checked(current_mode, true);
 	mode_popup->set_item_checked(MODE_MAX + 1, true);
 	mode_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ColorPicker::_set_mode_popup_value));
-	VBoxContainer *vbl = memnew(VBoxContainer);
-	real_vbox->add_child(vbl);
-
-	VBoxContainer *vbr = memnew(VBoxContainer);
-
-	real_vbox->add_child(vbr);
-	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	slider_gc = memnew(GridContainer);
 
-	vbr->add_child(slider_gc);
+	real_vbox->add_child(slider_gc);
 	slider_gc->set_h_size_flags(SIZE_EXPAND_FILL);
 	slider_gc->set_columns(3);
 
@@ -1931,7 +1898,7 @@ ColorPicker::ColorPicker() {
 
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
-	vbr->add_child(hex_hbc);
+	real_vbox->add_child(hex_hbc);
 
 	hex_hbc->add_child(memnew(Label("Hex")));
 
