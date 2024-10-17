@@ -598,6 +598,15 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->push_color(theme_cache.symbol_color);
 		class_desc->add_text("...");
 		class_desc->pop(); // color
+
+		const DocData::ArgumentDoc &rest_argument = p_method.rest_argument;
+		class_desc->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+		class_desc->add_text(": ");
+		if (rest_argument.type.is_empty()) {
+			_add_type("Array");
+		} else {
+			_add_type(rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield);
+		}
 	}
 
 	class_desc->push_color(theme_cache.symbol_color);
@@ -2030,6 +2039,15 @@ void EditorHelp::_update_doc() {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text("...");
 					class_desc->pop(); // color
+
+					const DocData::ArgumentDoc &rest_argument = annotation.rest_argument;
+					class_desc->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+					class_desc->add_text(": ");
+					if (rest_argument.type.is_empty()) {
+						_add_type("Array");
+					} else {
+						_add_type(rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield);
+					}
 				}
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -3328,9 +3346,13 @@ EditorHelpBit::HelpData EditorHelpBit::_get_method_help_data(const StringName &p
 			}
 			current.doc_type = { method.return_type, method.return_enum, method.return_is_bitfield };
 			for (const DocData::ArgumentDoc &argument : method.arguments) {
-				const DocType argument_type = { argument.type, argument.enumeration, argument.is_bitfield };
-				current.arguments.push_back({ argument.name, argument_type, argument.default_value });
+				const DocType argument_doc_type = { argument.type, argument.enumeration, argument.is_bitfield };
+				current.arguments.push_back({ argument.name, argument_doc_type, argument.default_value });
 			}
+			const DocData::ArgumentDoc &rest_argument = method.rest_argument;
+			const DocType rest_argument_doc_type = { rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield };
+			current.rest_argument = { rest_argument.name, rest_argument_doc_type, rest_argument.default_value };
+			current.is_vararg = method.qualifiers.contains("vararg");
 
 			if (method.name == p_method_name) {
 				result = current;
@@ -3525,6 +3547,27 @@ void EditorHelpBit::_update_labels() {
 					title->push_color(value_color);
 					title->add_text(argument.default_value);
 					title->pop(); // color
+				}
+			}
+
+			if (help_data.is_vararg) {
+				if (!help_data.arguments.is_empty()) {
+					title->push_color(symbol_color);
+					title->add_text(", ");
+					title->pop(); // color
+				}
+
+				title->push_color(symbol_color);
+				title->add_text("...");
+				title->pop(); // color
+
+				const ArgumentData &rest_argument = help_data.rest_argument;
+				title->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+				title->add_text(": ");
+				if (rest_argument.doc_type.type.is_empty()) {
+					_add_type_to_title({ "Array", "", false });
+				} else {
+					_add_type_to_title(rest_argument.doc_type);
 				}
 			}
 
