@@ -1373,11 +1373,11 @@ static const int reverse_caps_table[CAPS_LEN - 1][2] = {
 };
 
 static int _find_upper(int ch) {
-	int low = 0;
+	uint32_t low = 0;
 	int high = CAPS_LEN - 1;
-	int middle;
+	uint32_t middle;
 
-	while (low <= high) {
+	while ((int)low <= high) {
 		middle = (low + high) / 2;
 
 		if (ch < caps_table[middle][0]) {
@@ -1393,11 +1393,11 @@ static int _find_upper(int ch) {
 }
 
 static int _find_lower(int ch) {
-	int low = 0;
+	uint32_t low = 0;
 	int high = CAPS_LEN - 2;
-	int middle;
+	uint32_t middle;
 
-	while (low <= high) {
+	while ((int)low <= high) {
 		middle = (low + high) / 2;
 
 		if (ch < reverse_caps_table[middle][0]) {

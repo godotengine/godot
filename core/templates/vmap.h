@@ -58,17 +58,17 @@ private:
 			return 0;
 		}
 
-		int low = 0;
+		uint32_t low = 0;
 		int high = _cowdata.size() - 1;
 		const Pair *a = _cowdata.ptr();
-		int middle = 0;
+		uint32_t middle = 0;
 
 #ifdef DEBUG_ENABLED
-		if (low > high) {
+		if ((int)low > high) {
 			ERR_PRINT("low > high, this may be a bug");
 		}
 #endif
-		while (low <= high) {
+		while ((int)low <= high) {
 			middle = (low + high) / 2;
 
 			if (p_val < a[middle].key) {
@@ -93,12 +93,12 @@ private:
 			return -1;
 		}
 
-		int low = 0;
+		uint32_t low = 0;
 		int high = _cowdata.size() - 1;
-		int middle;
+		uint32_t middle;
 		const Pair *a = _cowdata.ptr();
 
-		while (low <= high) {
+		while ((int)low <= high) {
 			middle = (low + high) / 2;
 
 			if (p_val < a[middle].key) {

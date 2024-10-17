@@ -36,11 +36,11 @@
 #include "char_range.inc"
 
 #define BSEARCH_CHAR_RANGE(m_array)                      \
-	int low = 0;                                         \
+	uint32_t low = 0;                                    \
 	int high = sizeof(m_array) / sizeof(m_array[0]) - 1; \
-	int middle;                                          \
+	uint32_t middle;                                     \
                                                          \
-	while (low <= high) {                                \
+	while ((int)low <= high) {                           \
 		middle = (low + high) / 2;                       \
                                                          \
 		if (c < m_array[middle].start) {                 \
