@@ -54,6 +54,7 @@ public:
 	StringName changed;
 	StringName script;
 	StringName script_changed;
+	StringName reloaded;
 	StringName _iter_init;
 	StringName _iter_next;
 	StringName _iter_get;
