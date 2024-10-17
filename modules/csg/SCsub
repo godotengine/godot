@@ -6,7 +6,45 @@ Import("env_modules")
 
 env_csg = env_modules.Clone()
 
-# Godot source files
+env_csg.Append(CPPDEFINES=("MANIFOLD_PAR", "-1"))
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/manifold/"
+thirdparty_sources = [
+    "src/cross_section/cross_section.cpp",
+    "src/constructors.cpp",
+    "src/polygon.cpp",
+    "src/edge_op.cpp",
+    "src/face_op.cpp",
+    "src/impl.cpp",
+    "src/boolean_result.cpp",
+    "src/boolean3.cpp",
+    "src/manifold.cpp",
+    "src/properties.cpp",
+    "src/smoothing.cpp",
+    "src/sort.cpp",
+    "src/csg_tree.cpp",
+    "src/subdivision.cpp",
+    "src/quickhull.cpp",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+env_csg.Prepend(
+    CPPPATH=[
+        "#thirdparty/quickhull",
+        thirdparty_dir + "include",
+    ]
+)
+env_thirdparty = env_csg.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/quickhull/QuickHull.cpp")
+env.modules_sources += thirdparty_obj
+
+# Godot's own source files
 env_csg.add_source_files(env.modules_sources, "*.cpp")
 if env.editor_build:
     env_csg.add_source_files(env.modules_sources, "editor/*.cpp")
