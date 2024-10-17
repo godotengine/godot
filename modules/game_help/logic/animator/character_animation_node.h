@@ -25,10 +25,15 @@ class CharacterBoneMap : public Resource
         ClassDB::bind_method(D_METHOD("set_human_config", "human_config"), &CharacterBoneMap::set_human_config);
         ClassDB::bind_method(D_METHOD("get_human_config"), &CharacterBoneMap::get_human_config);
 
+        ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &CharacterBoneMap::set_skeleton_path);
+        ClassDB::bind_method(D_METHOD("get_skeleton_path"), &CharacterBoneMap::get_skeleton_path);
+
         ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "bone_map"), "set_bone_map", "get_bone_map");
         ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "bone_names"), "set_bone_names", "get_bone_names");
 
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "human_config", PROPERTY_HINT_RESOURCE_TYPE, "HumanConfig"), "set_human_config", "get_human_config");
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton_path", PROPERTY_HINT_FILE, "*.tscn,*.scn"), "set_skeleton_path", "get_skeleton_path");
 
     }
 
@@ -41,10 +46,14 @@ public:
     void set_human_config(const Ref<HumanConfig>& p_human_config) { human_config = p_human_config; }
     Ref<HumanConfig> get_human_config() { return human_config; }
 
+    void set_skeleton_path(const String& p_skeleton_path) { skeleton_path = p_skeleton_path; }
+    String get_skeleton_path() { return skeleton_path; }
+
 	Dictionary bone_map;
     // 动画名称列表,用来处理非人形动画的情况这类动画原始文件没有模型,会被识别成节点,需要靠这个动画节点名称重新映射成骨骼
     Vector<String> bone_names;
     Ref<HumanConfig> human_config;
+	String skeleton_path;
 };
 
 

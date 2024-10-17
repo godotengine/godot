@@ -759,6 +759,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map_ref->set_bone_map(bone_map);
         bone_map_ref->set_bone_names(bone_names);
         bone_map_ref->set_human_config(config);
+        bone_map_ref->set_skeleton_path(p_group.path_join("skeleton.res" ));
         if(p_is_skeleton_human) {
 		    save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
         }
@@ -927,6 +928,24 @@ void CharacterBodyMain::editor_build_animation()
 			human_bone_name_index[bone_names[i]] = i;
 		}
 	}
+	scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path(body_prefab->get_is_human()).path_join(bone_map->get_skeleton_path()));	
+    if (!scene.is_valid())
+    {
+        ERR_FAIL_MSG("load skeleton failed:" + bone_map->get_skeleton_path());
+        return;
+    }
+    Node* ins = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+    if (ins == nullptr) {
+        ERR_FAIL_MSG("init skeleton instantiate failed:" + bone_map->get_skeleton_path());
+        return;
+    }
+    Skeleton3D* bone_map_skeleton = Object::cast_to<Skeleton3D>(ins);
+    if (skeleton == nullptr)
+    {
+        ERR_FAIL_MSG("scene is not Skeleton3D:" + bone_map->get_skeleton_path());
+        skeleton->queue_free();
+        return;
+    }
 
 
 
@@ -944,7 +963,8 @@ void CharacterBodyMain::editor_build_animation()
 
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (editor_human_config.is_valid()) {
-				new_animation = HumanAnim::HumanAnimmation::build_human_animation(skeleton, *editor_human_config.ptr(), new_animation);
+				Dictionary bp = bone_map->get_bone_map();
+				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *editor_human_config.ptr(), new_animation, bp);
 			}
             new_animation->optimize();
             new_animation->compress();
@@ -982,6 +1002,9 @@ void CharacterBodyMain::editor_build_animation()
             
         }
     }
+    // 释放内存啦
+    bone_map_skeleton->queue_free();
+    p_node->queue_free();
 }
 
 

@@ -135,7 +135,7 @@ namespace HumanAnim
 				}
                 int parent = p_skeleton->get_bone_parent(i);
 				String parent_bone_name = p_skeleton->get_bone_name(parent);
-				if (!p_config.virtual_pose.has(bone_name)) {
+				if (!p_config.virtual_pose.has(parent_bone_name)) {
 					continue;
 				}
                 BonePose& parent_pose = p_config.virtual_pose[parent_bone_name];
@@ -146,17 +146,20 @@ namespace HumanAnim
 
             
         }
-        static int get_bone_human_index(Skeleton3D* p_skeleton,const NodePath& path) {
+        static int get_bone_human_index(Skeleton3D* p_skeleton, Dictionary& p_bone_map,const NodePath& path) {
             if (path.get_subname_count() == 1) {
                 // 获取骨骼映射
                 StringName bone_name = path.get_subname(0);
+				if (p_bone_map.has(bone_name)) {
+					bone_name = p_bone_map[bone_name];
+				}
                 return p_skeleton->find_bone(bone_name);
             }
             return -1;
 
         }
 
-        static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanConfig& p_config,Ref<Animation> p_animation) {            
+        static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map) {            
             int key_count = p_animation->get_length() * 100 + 1;
             Vector3 loc,scale;
             Quaternion rot;
@@ -228,7 +231,7 @@ namespace HumanAnim
                     Animation::Track* track = tracks[j];
                     if(track->type == Animation::TYPE_POSITION_3D) {
                         Animation::PositionTrack* track_cache = static_cast<Animation::PositionTrack*>(track);
-                        int bone_index = get_bone_human_index(p_skeleton,track_cache->path);
+                        int bone_index = get_bone_human_index(p_skeleton, p_bone_map,track_cache->path);
                         if(bone_index < 0) {
                             continue;
                         }
@@ -237,7 +240,7 @@ namespace HumanAnim
                     }
                     else if(track->type == Animation::TYPE_ROTATION_3D) {
                         Animation::RotationTrack* track_cache = static_cast<Animation::RotationTrack*>(track);
-                        int bone_index = get_bone_human_index(p_skeleton,track_cache->path);
+                        int bone_index = get_bone_human_index(p_skeleton, p_bone_map, track_cache->path);
                         if(bone_index < 0) {
                             continue;
                         }
@@ -246,7 +249,7 @@ namespace HumanAnim
                     }
                     else if(track->type == Animation::TYPE_SCALE_3D) {
                         Animation::ScaleTrack* track_cache = static_cast<Animation::ScaleTrack*>(track);
-                        int bone_index = get_bone_human_index(p_skeleton,track_cache->path);
+                        int bone_index = get_bone_human_index(p_skeleton, p_bone_map, track_cache->path);
                         if(bone_index < 0) {
                             continue;
                         }
