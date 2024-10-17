@@ -103,6 +103,9 @@ private:
 
 	void _redirect_request(const String &p_new_url);
 
+	bool _is_method_safe();
+	bool _is_automatic_redirect();
+
 	bool _handle_response(bool *ret_value);
 
 	Error _parse_url(const String &p_url);
