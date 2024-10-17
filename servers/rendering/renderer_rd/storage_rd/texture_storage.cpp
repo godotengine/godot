@@ -2269,6 +2269,16 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
+		case RD::DATA_FORMAT_B8G8R8A8_UNORM:
+		case RD::DATA_FORMAT_B8G8R8A8_SRGB: {
+			r_format.image_format = Image::FORMAT_RGBA8;
+			r_format.rd_format = RD::DATA_FORMAT_B8G8R8A8_UNORM;
+			r_format.rd_format_srgb = RD::DATA_FORMAT_B8G8R8A8_SRGB;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
 		case RD::DATA_FORMAT_B4G4R4A4_UNORM_PACK16: {
 			r_format.image_format = Image::FORMAT_RGBA4444;
 			r_format.rd_format = RD::DATA_FORMAT_B4G4R4A4_UNORM_PACK16;
