@@ -35,6 +35,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="active_channel" type="int" setter="set_active_channel" getter="get_active_channel" default="0">
+			The audio bus channel that is used for recording by the effect. Note that changing to a different channel will remove the previously recorded sample.
+		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="1">
 			Specifies the format in which the sample will be recorded. See [enum AudioStreamWAV.Format] for available formats.
 		</member>

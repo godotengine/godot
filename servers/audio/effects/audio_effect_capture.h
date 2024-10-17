@@ -45,10 +45,12 @@ class AudioEffectCaptureInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectCaptureInstance, AudioEffectInstance);
 	friend class AudioEffectCapture;
 	Ref<AudioEffectCapture> base;
+	int current_channel;
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 	virtual bool process_silence() const override;
+	virtual void set_current_channel(int p_channel) override { current_channel = p_channel; }
 };
 
 class AudioEffectCapture : public AudioEffect {
@@ -60,6 +62,7 @@ class AudioEffectCapture : public AudioEffect {
 	SafeNumeric<uint64_t> pushed_frames;
 	float buffer_length_seconds = 0.1f;
 	bool buffer_initialized = false;
+	int active_channel = 0;
 
 protected:
 	static void _bind_methods();
@@ -78,6 +81,9 @@ public:
 	int64_t get_discarded_frames() const;
 	int get_buffer_length_frames() const;
 	int64_t get_pushed_frames() const;
+
+	void set_active_channel(int p_channel);
+	int get_active_channel() const;
 };
 
 #endif // AUDIO_EFFECT_CAPTURE_H

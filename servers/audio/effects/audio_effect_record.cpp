@@ -70,6 +70,10 @@ bool AudioEffectRecordInstance::process_silence() const {
 	return true;
 }
 
+void AudioEffectRecordInstance::set_current_channel(int p_channel) {
+	base->register_channel_instance(p_channel, Ref<AudioEffectRecordInstance>(this));
+}
+
 void AudioEffectRecordInstance::_io_thread_process() {
 	while (is_recording) {
 		_update_buffer();
@@ -123,6 +127,7 @@ void AudioEffectRecordInstance::finish() {
 Ref<AudioEffectInstance> AudioEffectRecord::instantiate() {
 	Ref<AudioEffectRecordInstance> ins;
 	ins.instantiate();
+	ins->base = Ref<AudioEffectRecord>(this);
 	ins->is_recording = false;
 
 	//Re-using the buffer size calculations from audio_effect_delay.cpp
@@ -147,17 +152,26 @@ Ref<AudioEffectInstance> AudioEffectRecord::instantiate() {
 
 	ins->ring_buffer_read_pos = 0;
 
-	ensure_thread_stopped();
+	return ins;
+}
+
+void AudioEffectRecord::set_current_instance(Ref<AudioEffectRecordInstance> p_instance) {
 	bool is_currently_recording = false;
 	if (current_instance.is_valid()) {
 		is_currently_recording = current_instance->is_recording;
 	}
-	if (is_currently_recording) {
-		ins->init();
+	ensure_thread_stopped();
+	if (is_currently_recording && p_instance != nullptr) {
+		p_instance->init();
 	}
-	current_instance = ins;
+	current_instance = p_instance;
+}
 
-	return ins;
+void AudioEffectRecord::register_channel_instance(int p_channel, Ref<AudioEffectRecordInstance> p_instance) {
+	if (active_channel == p_channel) {
+		set_current_instance(p_instance);
+	}
+	channel_instances.insert(p_channel, p_instance);
 }
 
 void AudioEffectRecord::ensure_thread_stopped() {
@@ -195,6 +209,24 @@ void AudioEffectRecord::set_format(AudioStreamWAV::Format p_format) {
 
 AudioStreamWAV::Format AudioEffectRecord::get_format() const {
 	return format;
+}
+
+void AudioEffectRecord::set_active_channel(int p_channel) {
+	if (active_channel == p_channel) {
+		return;
+	}
+	active_channel = p_channel;
+	HashMap<int, Ref<AudioEffectRecordInstance>>::Iterator it = channel_instances.find(p_channel);
+	if (it) {
+		set_current_instance(it->value);
+	} else {
+		WARN_PRINT("Active channel set to uninitialized channel idx " + itos(p_channel) + ".");
+		set_current_instance(Ref<AudioEffectRecordInstance>());
+	}
+}
+
+int AudioEffectRecord::get_active_channel() const {
+	return active_channel;
 }
 
 Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
@@ -282,7 +314,10 @@ void AudioEffectRecord::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &AudioEffectRecord::set_format);
 	ClassDB::bind_method(D_METHOD("get_format"), &AudioEffectRecord::get_format);
 	ClassDB::bind_method(D_METHOD("get_recording"), &AudioEffectRecord::get_recording);
+	ClassDB::bind_method(D_METHOD("set_active_channel", "channel"), &AudioEffectRecord::set_active_channel);
+	ClassDB::bind_method(D_METHOD("get_active_channel"), &AudioEffectRecord::get_active_channel);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "active_channel", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), "set_active_channel", "get_active_channel");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA ADPCM,Quite OK Audio"), "set_format", "get_format");
 }
 
