@@ -90,6 +90,7 @@ private:
 	bool editable = false;
 	bool pass = false;
 	bool text_changed_dirty = false;
+	bool expand_icon = false;
 
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
@@ -145,6 +146,7 @@ private:
 
 	Ref<Texture2D> right_icon;
 	bool flat = false;
+	float right_icon_scale = 1.0;
 
 	struct Selection {
 		int begin = 0;
@@ -248,6 +250,8 @@ private:
 	void _move_caret_end(bool p_select);
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
+
+	Point2 _get_right_icon_size(Ref<Texture2D> p_right_icon, bool p_get_min) const;
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
@@ -388,6 +392,12 @@ public:
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
+
+	void set_expand_icon(bool p_enabled);
+	bool is_expand_icon() const;
+
+	void set_right_icon_scale(float p_ratio);
+	float get_right_icon_scale() const;
 
 	void set_flat(bool p_enabled);
 	bool is_flat() const;
