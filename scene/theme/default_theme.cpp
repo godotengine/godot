@@ -391,14 +391,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size(SceneStringName(font_size), "Label", -1);
 
 	theme->set_color(SceneStringName(font_color), "Label", Color(1, 1, 1));
+	theme->set_color("font_outline_color", "Label", Color(0, 0, 0, 1));
 	theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_color", "Label", Color(0, 0, 0));
+	theme->set_color("font_shadow_outline_color", "Label", Color(0, 0, 0, 0));
 
+	theme->set_constant("line_spacing", "Label", Math::round(3 * scale));
+	theme->set_constant("outline_size", "Label", 0);
+	theme->set_constant("shadow_outline_size", "Label", 0);
 	theme->set_constant("shadow_offset_x", "Label", Math::round(1 * scale));
 	theme->set_constant("shadow_offset_y", "Label", Math::round(1 * scale));
-	theme->set_constant("outline_size", "Label", 0);
-	theme->set_constant("shadow_outline_size", "Label", Math::round(1 * scale));
-	theme->set_constant("line_spacing", "Label", Math::round(3 * scale));
+	theme->set_constant("draw_shadow_before_outline", "Label", 0);
 
 	theme->set_type_variation("HeaderSmall", "Label");
 	theme->set_font_size(SceneStringName(font_size), "HeaderSmall", default_font_size + 4);
