@@ -1150,6 +1150,7 @@ void GridMapEditor::_update_cursor_instance() {
 			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
 				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
 				RenderingServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
+				RenderingServer::get_singleton()->instance_set_layer_mask(cursor_instance, node->get_mesh_library()->get_item_render_layers(selected_palette));
 			}
 		}
 	}
