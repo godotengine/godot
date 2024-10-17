@@ -178,19 +178,18 @@ void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }
 
-String OS_Web::get_user_data_dir() const {
+String OS_Web::get_user_data_dir(const String &p_appname) const {
 	String userfs = "/userfs";
-	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
-	if (!appname.is_empty()) {
+	if (!p_appname.is_empty()) {
 		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
 			if (custom_dir.is_empty()) {
-				custom_dir = appname;
+				custom_dir = p_appname;
 			}
 			return userfs.path_join(custom_dir).replace("\\", "/");
 		} else {
-			return userfs.path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace("\\", "/");
+			return userfs.path_join(get_godot_dir_name()).path_join("app_userdata").path_join(p_appname).replace("\\", "/");
 		}
 	}
 
