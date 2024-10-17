@@ -1012,6 +1012,10 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 	return TS->shaped_text_get_range(rid).y;
 }
 
+bool TextParagraph::is_dirty() {
+	return lines_dirty;
+}
+
 void TextParagraph::draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color) const {
 	_THREAD_SAFE_METHOD_
 
