@@ -142,6 +142,8 @@ public:
 
 	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer);
 	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const;
+	virtual void multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer);
+	virtual PackedByteArray multimesh_get_buffer_raw(RID p_multimesh) const;
 
 	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer, const Vector<float> &p_buffer_prev);
 	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated);
@@ -179,6 +181,8 @@ public:
 
 	virtual void _multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
 	virtual Vector<float> _multimesh_get_buffer(RID p_multimesh) const = 0;
+	virtual void _multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) = 0;
+	virtual PackedByteArray _multimesh_get_buffer_raw(RID p_multimesh) const = 0;
 
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int _multimesh_get_visible_instances(RID p_multimesh) const = 0;

@@ -2019,6 +2019,75 @@ Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 	}
 }
 
+void MeshStorage::_multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache * (int)sizeof(float)));
+
+	bool used_motion_vectors = multimesh->motion_vectors_enabled;
+	bool uses_motion_vectors = (RSG::viewport->get_num_viewports_with_motion_vectors() > 0) || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
+	if (uses_motion_vectors) {
+		_multimesh_enable_motion_vectors(multimesh);
+	}
+
+	if (multimesh->motion_vectors_enabled) {
+		uint32_t frame = RSG::rasterizer->get_frame_number();
+
+		if (multimesh->motion_vectors_last_change != frame) {
+			multimesh->motion_vectors_previous_offset = multimesh->motion_vectors_current_offset;
+			multimesh->motion_vectors_current_offset = multimesh->instances - multimesh->motion_vectors_current_offset;
+			multimesh->motion_vectors_last_change = frame;
+		}
+	}
+
+	{
+		const uint8_t *r = p_buffer.ptr();
+		RD::get_singleton()->buffer_update(multimesh->buffer, multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float), p_buffer.size(), r);
+		if (multimesh->motion_vectors_enabled && !used_motion_vectors) {
+			// Motion vectors were just enabled, and the other half of the buffer will be empty.
+			// Need to ensure that both halves are filled for correct operation.
+			RD::get_singleton()->buffer_update(multimesh->buffer, multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float), p_buffer.size(), r);
+		}
+		multimesh->buffer_set = true;
+	}
+
+	if (multimesh->data_cache.size()) {
+		float *cache_data = multimesh->data_cache.ptrw();
+		memcpy(cache_data + (multimesh->motion_vectors_current_offset * multimesh->stride_cache), p_buffer.ptr(), p_buffer.size());
+		_multimesh_mark_all_dirty(multimesh, true, true); //update AABB
+	} else if (multimesh->mesh.is_valid()) {
+		//if we have a mesh set, we need to re-generate the AABB from the new data
+		const uint8_t *data = p_buffer.ptr();
+
+		if (multimesh->custom_aabb == AABB()) {
+			_multimesh_re_create_aabb(multimesh, reinterpret_cast<const float *>(data), multimesh->instances);
+			multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+		}
+	}
+}
+
+PackedByteArray MeshStorage::_multimesh_get_buffer_raw(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, PackedByteArray());
+	if (multimesh->buffer.is_null()) {
+		return PackedByteArray();
+	} else {
+		PackedByteArray ret;
+		ret.resize(multimesh->instances * multimesh->stride_cache * sizeof(float));
+		uint8_t *w = ret.ptrw();
+
+		if (multimesh->data_cache.size()) {
+			const uint8_t *r = (uint8_t *)multimesh->data_cache.ptr() + multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float);
+			memcpy(w, r, ret.size());
+		} else {
+			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+			const uint8_t *r = buffer.ptr() + multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float);
+			memcpy(w, r, ret.size());
+		}
+		return ret;
+	}
+}
+
 void MeshStorage::_multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
