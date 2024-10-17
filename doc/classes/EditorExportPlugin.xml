@@ -34,9 +34,16 @@
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
 			<description>
-				Customize a resource. If changes are made to it, return the same or a new resource. Otherwise, return [code]null[/code].
-				The [i]path[/i] argument is only used when customizing an actual file, otherwise this means that this resource is part of another one and it will be empty.
+				Customize a resource. If changes are made to it, return the same or a new resource. Otherwise, return [code]null[/code]. When a new resource is returned, [param resource] will be replaced by a copy of the new resource.
+				The [param path] argument is only used when customizing an actual file, otherwise this means that this resource is part of another one and it will be empty.
 				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
+				[b]Note:[/b] When customizing any of the following types and returning another resource, the other resource should not be skipped using [method skip] in [method _export_file]:
+				- [AtlasTexture]
+				- [CompressedCubemap]
+				- [CompressedCubemapArray]
+				- [CompressedTexture2D]
+				- [CompressedTexture2DArray]
+				- [CompressedTexture3D]
 			</description>
 		</method>
 		<method name="_customize_scene" qualifiers="virtual">
