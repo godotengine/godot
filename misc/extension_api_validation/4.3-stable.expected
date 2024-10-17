@@ -67,6 +67,13 @@ Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/properties/pl
 These setters have been renamed to expose them. GDExtension language bindings couldn't have exposed these properties before.
 
 
+GH-94602
+--------
+Validate extension JSON: Error: Field 'classes/BitMap/methods/opaque_to_polygons/arguments': size changed value in new API, from 2 to 3.
+
+Add an optional argument to use a star-region-restricted Ramer-Douglas-Peucker Algorithm. No adjustments should be necessary.
+
+
 GH-94322
 --------
 Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_node_selector/arguments': size changed value in new API, from 2 to 3.
