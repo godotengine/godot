@@ -342,7 +342,7 @@ bool KeyMappingMacOS::is_numpad_key(unsigned int p_key) {
 	return numpad_keys.has(p_key);
 }
 
-// Translates a macOS keycode to a Blazium keycode.
+// Translates a macOS keycode to a Godot keycode.
 Key KeyMappingMacOS::translate_key(unsigned int p_key) {
 	const Key *key = keysym_map.getptr(p_key);
 	if (key) {
@@ -351,7 +351,7 @@ Key KeyMappingMacOS::translate_key(unsigned int p_key) {
 	return Key::NONE;
 }
 
-// Translates a Blazium keycode back to a macOS keycode.
+// Translates a Godot keycode back to a macOS keycode.
 unsigned int KeyMappingMacOS::unmap_key(Key p_key) {
 	const unsigned int *key = keysym_map_inv.getptr(p_key);
 	if (key) {
@@ -411,7 +411,7 @@ Key KeyMappingMacOS::remap_key(unsigned int p_key, unsigned int p_state, bool p_
 	}
 }
 
-// Translates a macOS keycode to a Blazium key location.
+// Translates a macOS keycode to a Godot key location.
 KeyLocation KeyMappingMacOS::translate_location(unsigned int p_key) {
 	const KeyLocation *location = location_map.getptr(p_key);
 	if (location) {

@@ -261,8 +261,8 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	}
 
 	if (step.get() == STEP_SETUP) {
-		// Since Blazium is initialized on the UI thread, main_thread_id was set to that thread's id,
-		// but for Blazium purposes, the main thread is the one running the game loop
+		// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
+		// but for Godot purposes, the main thread is the one running the game loop
 		Main::setup2(false); // The logo is shown in the next frame otherwise we run into rendering issues
 		input_handler = new AndroidInputHandler();
 		step.increment();

@@ -1,4 +1,4 @@
-// Gradle build config for Blazium Engine's Android port.
+// Gradle build config for Godot Engine's Android port.
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -13,7 +13,7 @@ allprojects {
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
 
-        // Blazium user plugins custom maven repos
+        // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
         if (mavenRepos != null && mavenRepos.size() > 0) {
             for (String repoUrl : mavenRepos) {
@@ -39,14 +39,14 @@ dependencies {
     } else if (rootProject.findProject(":godot:lib")) {
         implementation project(":godot:lib")
     } else {
-        // Blazium gradle build mode. In this scenario this project is the only one around and the Blazium
+        // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
         debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
         devImplementation fileTree(dir: 'libs/dev', include: ['*.jar', '*.aar'])
         releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
     }
 
-    // Blazium user plugins remote dependencies
+    // Godot user plugins remote dependencies
     String[] remoteDeps = getGodotPluginsRemoteBinaries()
     if (remoteDeps != null && remoteDeps.size() > 0) {
         for (String dep : remoteDeps) {
@@ -54,7 +54,7 @@ dependencies {
         }
     }
 
-    // Blazium user plugins local dependencies
+    // Godot user plugins local dependencies
     String[] pluginsBinaries = getGodotPluginsLocalBinaries()
     if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation files(pluginsBinaries)
@@ -80,7 +80,7 @@ android {
     namespace = 'com.godot.game'
 
     defaultConfig {
-        // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Blazium projects.
+        // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
         aaptOptions {
             ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
         }
@@ -126,7 +126,7 @@ android {
             useLegacyPackaging shouldUseLegacyPackaging()
         }
 
-        // Always select Blazium's version of libc++_shared.so in case deps have their own
+        // Always select Godot's version of libc++_shared.so in case deps have their own
         pickFirst 'lib/x86/libc++_shared.so'
         pickFirst 'lib/x86_64/libc++_shared.so'
         pickFirst 'lib/armeabi-v7a/libc++_shared.so'
@@ -158,7 +158,7 @@ android {
 
         debug {
             // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for Blazium gradle builds.
+            // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
                 signingConfig signingConfigs.debug
@@ -170,7 +170,7 @@ android {
         dev {
             initWith debug
             // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for Blazium gradle builds.
+            // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
                 signingConfig signingConfigs.debug
@@ -181,7 +181,7 @@ android {
 
         release {
             // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for Blazium gradle builds.
+            // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
                 signingConfig signingConfigs.release
@@ -278,7 +278,7 @@ task copyAndRenameReleaseAab(type: Copy) {
 }
 
 /**
- * Used to validate the version of the Java SDK used for the Blazium gradle builds.
+ * Used to validate the version of the Java SDK used for the Godot gradle builds.
  */
 task validateJavaVersion {
     if (JavaVersion.current() != versions.javaVersion) {

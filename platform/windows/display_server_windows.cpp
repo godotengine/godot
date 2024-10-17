@@ -3013,7 +3013,7 @@ Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	// Unlike a similar Linux/BSD check which matches full Latin-1 range,
 	// we limit these to ASCII to fix some layouts, including Arabic ones
 	if (char_code >= 32 && char_code <= 127) {
-		// Blazium uses 'braces' instead of 'brackets'
+		// Godot uses 'braces' instead of 'brackets'
 		if (char_code == (unsigned int)Key::BRACKETLEFT || char_code == (unsigned int)Key::BRACKETRIGHT) {
 			char_code += 32;
 		}

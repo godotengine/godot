@@ -178,7 +178,7 @@ void NavigationAgent2D::_bind_methods() {
 }
 
 #ifndef DISABLE_DEPRECATED
-// Compatibility with Blazium 4.0 beta 10 or below.
+// Compatibility with Godot 4.0 beta 10 or below.
 // Functions in block below all renamed or replaced in 4.0 beta 1X avoidance rework.
 bool NavigationAgent2D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "time_horizon") {

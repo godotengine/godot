@@ -54,7 +54,7 @@ def try_cmd(test, prefix, arch):
 def can_build():
     if os.name == "nt":
         # Building natively on Windows
-        # If VCINSTALLDIR is set in the OS environ, use traditional Blazium logic to set up MSVC
+        # If VCINSTALLDIR is set in the OS environ, use traditional Godot logic to set up MSVC
         if os.getenv("VCINSTALLDIR"):  # MSVC, manual setup
             return True
 
@@ -312,7 +312,7 @@ def setup_msvc_auto(env: "SConsEnvironment"):
     # Our x86_64 and arm64 are the same, and we need to map the 32-bit
     # architectures to other names since MSVC isn't as explicit.
     # The rest we don't need to worry about because they are
-    # aliases or aren't supported by Blazium (itanium & ia64).
+    # aliases or aren't supported by Godot (itanium & ia64).
     msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
     if env["arch"] in msvc_arch_aliases.keys():
         env["TARGET_ARCH"] = msvc_arch_aliases[env["arch"]]

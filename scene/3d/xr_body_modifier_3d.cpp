@@ -83,7 +83,7 @@ XRBodyModifier3D::BoneUpdate XRBodyModifier3D::get_bone_update() const {
 }
 
 void XRBodyModifier3D::_get_joint_data() {
-	// Table of Blazium Humanoid bone names.
+	// Table of Godot Humanoid bone names.
 	static const String bone_names[XRBodyTracker::JOINT_MAX] = {
 		"Root", // XRBodyTracker::JOINT_ROOT
 

@@ -158,7 +158,7 @@ void JoypadIOS::start_processing() {
 		controller.playerIndex = [self getFreePlayerIndex];
 	}
 
-	// tell Blazium about our new controller
+	// tell Godot about our new controller
 	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
 
 	// add it to our dictionary, this will retain our controllers
@@ -196,7 +196,7 @@ void JoypadIOS::start_processing() {
 
 	NSArray *keys = [self.connectedJoypads allKeysForObject:controller];
 	for (NSNumber *key in keys) {
-		// tell Blazium this joystick is no longer there
+		// tell Godot this joystick is no longer there
 		int joy_id = [key intValue];
 		Input::get_singleton()->joy_connection_changed(joy_id, false, "");
 

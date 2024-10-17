@@ -593,7 +593,7 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 		".rtttl", ".imy", ".xmf", ".mp4", ".m4a",
 		".m4v", ".3gp", ".3gpp", ".3g2", ".3gpp2",
 		".amr", ".awb", ".wma", ".wmv",
-		// Blazium-specific:
+		// Godot-specific:
 		".webp", // Same reasoning as .png
 		".cfb", // Don't let small config files slow-down startup
 		".scn", // Binary scenes are usually already compressed

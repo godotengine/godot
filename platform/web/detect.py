@@ -32,7 +32,7 @@ def get_opts():
 
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
-        # Matches default values from before Emscripten 3.1.27. New defaults are too low for Blazium.
+        # Matches default values from before Emscripten 3.1.27. New defaults are too low for Godot.
         ("stack_size", "WASM stack size (in KiB)", 5120),
         ("default_pthread_stack_size", "WASM pthread default stack size (in KiB)", 2048),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),

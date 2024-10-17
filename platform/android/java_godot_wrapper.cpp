@@ -32,7 +32,7 @@
 
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
-// For Blazium we call most access methods from our thread and we thus get a valid JNIEnv
+// For Godot we call most access methods from our thread and we thus get a valid JNIEnv
 // from get_jni_env(). For one or two we expect to pass the environment
 
 // TODO we could probably create a base class for this...
@@ -41,7 +41,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	godot_instance = p_env->NewGlobalRef(p_godot_instance);
 	activity = p_env->NewGlobalRef(p_activity);
 
-	// get info about our Blazium class so we can get pointers and stuff...
+	// get info about our Godot class so we can get pointers and stuff...
 	godot_class = p_env->FindClass("org/godotengine/godot/Godot");
 	if (godot_class) {
 		godot_class = (jclass)p_env->NewGlobalRef(godot_class);
@@ -57,7 +57,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 		return;
 	}
 
-	// get some Blazium method pointers...
+	// get some Godot method pointers...
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
 	_finish = p_env->GetMethodID(godot_class, "forceQuit", "(I)Z");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");

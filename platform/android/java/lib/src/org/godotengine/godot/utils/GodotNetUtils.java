@@ -61,7 +61,7 @@ public class GodotNetUtils {
 
 	/**
 	 * Acquire the multicast lock. This is required on some devices to receive broadcast/multicast packets.
-	 * This is done automatically by Blazium when enabling broadcast or joining a multicast group on a socket.
+	 * This is done automatically by Godot when enabling broadcast or joining a multicast group on a socket.
 	 */
 	public void multicastLockAcquire() {
 		if (multicastLock == null)
@@ -75,7 +75,7 @@ public class GodotNetUtils {
 
 	/**
 	 * Release the multicast lock.
-	 * This is done automatically by Blazium when the lock is no longer needed by a socket.
+	 * This is done automatically by Godot when the lock is no longer needed by a socket.
 	 */
 	public void multicastLockRelease() {
 		if (multicastLock == null)

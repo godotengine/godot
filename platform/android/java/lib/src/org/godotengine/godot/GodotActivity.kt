@@ -42,7 +42,7 @@ import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 
 /**
- * Base abstract activity for Android apps intending to use Blazium as the primary screen.
+ * Base abstract activity for Android apps intending to use Godot as the primary screen.
  *
  * Also a reference implementation for how to setup and use the [GodotFragment] fragment
  * within an Android app.
@@ -72,10 +72,10 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 		val currentFragment = supportFragmentManager.findFragmentById(R.id.godot_fragment_container)
 		if (currentFragment is GodotFragment) {
-			Log.v(TAG, "Reusing existing Blazium fragment instance.")
+			Log.v(TAG, "Reusing existing Godot fragment instance.")
 			godotFragment = currentFragment
 		} else {
-			Log.v(TAG, "Creating new Blazium fragment instance.")
+			Log.v(TAG, "Creating new Godot fragment instance.")
 			godotFragment = initGodotInstance()
 			supportFragmentManager.beginTransaction().replace(R.id.godot_fragment_container, godotFragment!!).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss()
 		}
@@ -96,7 +96,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	private fun terminateGodotInstance(instance: Godot) {
 		godotFragment?.let {
 			if (instance === it.godot) {
-				Log.v(TAG, "Force quitting Blazium instance")
+				Log.v(TAG, "Force quitting Godot instance")
 				ProcessPhoenix.forceQuit(this)
 			}
 		}
@@ -106,12 +106,12 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		runOnUiThread {
 			godotFragment?.let {
 				if (instance === it.godot) {
-					// It's very hard to properly de-initialize Blazium on Android to restart the game
+					// It's very hard to properly de-initialize Godot on Android to restart the game
 					// from scratch. Therefore, we need to kill the whole app process and relaunch it.
 					//
 					// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
 					// releasing and reloading native libs or resetting their state somehow and clearing static data).
-					Log.v(TAG, "Restarting Blazium instance...")
+					Log.v(TAG, "Restarting Godot instance...")
 					ProcessPhoenix.triggerRebirth(this)
 				}
 			}
@@ -179,7 +179,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	/**
-	 * Used to initialize the Blazium fragment instance in [onCreate].
+	 * Used to initialize the Godot fragment instance in [onCreate].
 	 */
 	protected open fun initGodotInstance(): GodotFragment {
 		return GodotFragment()

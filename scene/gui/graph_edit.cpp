@@ -376,7 +376,7 @@ void GraphEdit::_update_scroll_offset() {
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update = false;
 
-	// In Blazium, signals on value change are avoided by convention.
+	// In Godot, signals on value change are avoided by convention.
 	if (!setting_scroll_offset) {
 		emit_signal(SNAME("scroll_offset_changed"), get_scroll_offset());
 	}

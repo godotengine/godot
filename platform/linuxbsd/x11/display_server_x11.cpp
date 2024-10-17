@@ -3607,7 +3607,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 #endif
 	}
 
-	/* Phase 2, obtain a Blazium keycode from the keysym */
+	/* Phase 2, obtain a Godot keycode from the keysym */
 
 	// KeyMappingX11 just translated the X11 keysym to a PIGUI
 	// keysym, so it works in all platforms the same.
@@ -4087,7 +4087,7 @@ void DisplayServerX11::_set_input_focus(Window p_window, int p_revert_to) {
 	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
 
 	// Only attempt to change focus if the window isn't already focused, in order to
-	// prevent issues with Blazium stealing input focus with alternative window managers.
+	// prevent issues with Godot stealing input focus with alternative window managers.
 	if (p_window != focused_window) {
 		XSetInputFocus(x11_display, p_window, p_revert_to, CurrentTime);
 	}
@@ -4537,7 +4537,7 @@ void DisplayServerX11::process_events() {
 							xi.state[index] = pos;
 							if (xi.state.size() == 1) {
 								// X11 may send a motion event when a touch gesture begins, that would result
-								// in a spurious mouse motion event being sent to Blazium; remember it to be able to filter it out
+								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
 								xi.mouse_pos_to_filter = pos;
 							}
 							Input::get_singleton()->parse_input_event(st);

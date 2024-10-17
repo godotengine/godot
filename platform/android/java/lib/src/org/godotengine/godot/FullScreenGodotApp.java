@@ -31,7 +31,7 @@
 package org.godotengine.godot;
 
 /**
- * Base abstract activity for Android apps intending to use Blazium as the primary screen.
+ * Base abstract activity for Android apps intending to use Godot as the primary screen.
  *
  * @deprecated Use {@link GodotActivity}
  */

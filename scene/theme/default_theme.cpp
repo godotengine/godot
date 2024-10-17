@@ -93,7 +93,7 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
 #else
 	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
-	// 16 pixels is used as it's the most common base size for Blazium icons.
+	// 16 pixels is used as it's the most common base size for Godot icons.
 	img = Image::create_empty(Math::round(16 * scale), Math::round(16 * scale), false, Image::FORMAT_RGBA8);
 #endif
 

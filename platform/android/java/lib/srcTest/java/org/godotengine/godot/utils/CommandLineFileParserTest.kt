@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 
-// Blazium saves command line params in the `assets/_cl_` file on exporting an apk.  By default,
+// Godot saves command line params in the `assets/_cl_` file on exporting an apk.  By default,
 // without any other commands specified in `command_line/extra_args` in Export window, the content
 // of that _cl_ file consists of only the `--xr_mode_regular` and `--use_immersive` flags.
 // The `CL_` prefix here refers to that file

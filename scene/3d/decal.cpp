@@ -259,7 +259,7 @@ void Decal::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 bool Decal::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "extents") { // Compatibility with Blazium 3.x.
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
 		set_size((Vector3)p_value * 2);
 		return true;
 	}
@@ -267,7 +267,7 @@ bool Decal::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Decal::_get(const StringName &p_name, Variant &r_property) const {
-	if (p_name == "extents") { // Compatibility with Blazium 3.x.
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
 		r_property = size / 2;
 		return true;
 	}

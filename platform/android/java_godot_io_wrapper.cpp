@@ -36,7 +36,7 @@
 
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
-// For BlaziumIO we call all access methods from our thread and we thus get a valid JNIEnv
+// For GodotIO we call all access methods from our thread and we thus get a valid JNIEnv
 // from get_jni_env().
 
 GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance) {

@@ -210,7 +210,7 @@ void OS_Windows::initialize() {
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
-	// Add current Blazium PID to the list of known PIDs
+	// Add current Godot PID to the list of known PIDs
 	ProcessInfo current_pi = {};
 	PROCESS_INFORMATION current_pi_pi = {};
 	current_pi.pi = current_pi_pi;

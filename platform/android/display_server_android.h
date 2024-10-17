@@ -44,7 +44,7 @@ class DisplayServerAndroid : public DisplayServer {
 	String rendering_driver;
 
 	// https://developer.android.com/reference/android/view/PointerIcon
-	// mapping between Blazium's cursor shape to Android's'
+	// mapping between Godot's cursor shape to Android's'
 	int android_cursors[CURSOR_MAX] = {
 		1000, //CURSOR_ARROW
 		1008, //CURSOR_IBEAM

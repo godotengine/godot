@@ -64,7 +64,7 @@ def create_template_zip(env, js, wasm, worker, side):
         out_files.append(zip_dir.File(binary_name + ".worker.js"))
     # Dynamic linking (extensions) specific.
     if env["dlink_enabled"]:
-        in_files.append(side)  # Side wasm (contains the actual Blazium code).
+        in_files.append(side)  # Side wasm (contains the actual Godot code).
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
 
     service_worker = "#misc/dist/html/service-worker.js"

@@ -31,7 +31,7 @@
 #include "key_mapping_x11.h"
 
 void KeyMappingX11::initialize() {
-	// X11 Keysym to Blazium Key map.
+	// X11 Keysym to Godot Key map.
 
 	xkeysym_map[XK_Escape] = Key::ESCAPE;
 	xkeysym_map[XK_Tab] = Key::TAB;
@@ -191,7 +191,7 @@ void KeyMappingX11::initialize() {
 	xkeysym_map[XF86XK_LaunchC] = Key::LAUNCHE;
 	xkeysym_map[XF86XK_LaunchD] = Key::LAUNCHF;
 
-	// Scancode to Blazium Key map.
+	// Scancode to Godot Key map.
 	scancode_map[0x09] = Key::ESCAPE;
 	scancode_map[0x0A] = Key::KEY_1;
 	scancode_map[0x0B] = Key::KEY_2;
@@ -349,7 +349,7 @@ void KeyMappingX11::initialize() {
 	scancode_map[0xD4] = Key::F34;
 	scancode_map[0xD5] = Key::F35;
 
-	// Blazium to scancode map.
+	// Godot to scancode map.
 	for (const KeyValue<unsigned int, Key> &E : scancode_map) {
 		scancode_map_inv[E.value] = E.key;
 	}

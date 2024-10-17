@@ -86,7 +86,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
 		}
 		// macOS native y-coordinate relative to _get_screens_origin() is negative,
-		// Blazium passes a positive value.
+		// Godot passes a positive value.
 		wpos.y *= -1;
 		wpos += _get_screens_origin();
 		wpos /= scale;
@@ -298,7 +298,7 @@ Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// Returns the native top-left screen coordinate of the smallest rectangle
 	// that encompasses all screens. Needed in get_screen_position(),
 	// window_get_position, and window_set_position()
-	// to convert between macOS native screen coordinates and the ones expected by Blazium.
+	// to convert between macOS native screen coordinates and the ones expected by Godot.
 
 	if (displays_arrangement_dirty) {
 		const_cast<DisplayServerMacOS *>(this)->_update_displays_arrangement();
@@ -1512,7 +1512,7 @@ Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	p_screen = _get_screen_index(p_screen);
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Blazium expects a positive value.
+	// Godot expects a positive value.
 	position.y *= -1;
 	return position;
 }
@@ -1597,7 +1597,7 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 	Point2i position = p_position;
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Blazium passes a positive value.
+	// Godot passes a positive value.
 	position.y *= -1;
 	position += _get_screens_origin();
 	position /= screen_get_max_scale();
@@ -1971,7 +1971,7 @@ Point2i DisplayServerMacOS::window_get_position(WindowID p_window) const {
 	pos *= scale;
 	pos -= _get_screens_origin();
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Blazium expects a positive value.
+	// Godot expects a positive value.
 	pos.y *= -1;
 	return pos;
 }
@@ -1992,7 +1992,7 @@ Point2i DisplayServerMacOS::window_get_position_with_decorations(WindowID p_wind
 	pos *= scale;
 	pos -= _get_screens_origin();
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Blazium expects a positive value.
+	// Godot expects a positive value.
 	pos.y *= -1;
 	return pos;
 }
@@ -2009,7 +2009,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 
 	Point2i position = p_position;
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Blazium passes a positive value.
+	// Godot passes a positive value.
 	position.y *= -1;
 	position += _get_screens_origin();
 	position /= screen_get_max_scale();
@@ -3247,7 +3247,7 @@ Rect2 DisplayServerMacOS::status_indicator_get_rect(IndicatorID p_id) const {
 	rect.position *= scale;
 	rect.position -= _get_screens_origin();
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Blazium expects a positive value.
+	// Godot expects a positive value.
 	rect.position.y *= -1;
 	return rect;
 }
