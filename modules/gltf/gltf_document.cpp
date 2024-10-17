@@ -808,7 +808,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 
 				ERR_FAIL_COND_V(!buffer.has("byteLength"), ERR_PARSE_ERROR);
 				int byteLength = buffer["byteLength"];
-				ERR_FAIL_COND_V(byteLength < buffer_data.size(), ERR_PARSE_ERROR);
+				ERR_FAIL_COND_V_MSG((buffer_data.size() < byteLength) || (byteLength <= 0), ERR_PARSE_ERROR, "glTF: Buffer data smaller than expected: " + uri);
 				p_state->buffers.push_back(buffer_data);
 			}
 		}
@@ -857,6 +857,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 	if (!p_state->json.has("bufferViews")) {
 		return OK;
 	}
+	const Vector<Vector<uint8_t>> &buffers_data = p_state->buffers;
 	const Array &buffers = p_state->json["bufferViews"];
 	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
 		const Dictionary &d = buffers[i];
@@ -866,16 +867,32 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 
 		ERR_FAIL_COND_V(!d.has("buffer"), ERR_PARSE_ERROR);
 		buffer_view->buffer = d["buffer"];
+
+		// Check if the buffer actually exists.
+		// This assumes that we've parsed the buffers (p_state->buffers) before!
+		ERR_FAIL_COND_V_MSG((buffersData.size() < buffer_view->buffer), ERR_PARSE_ERROR,
+				"glTF: Missing buffer at index referenced by bufferview (" + itos(buffer_view->buffer) + ")");
+
 		ERR_FAIL_COND_V(!d.has("byteLength"), ERR_PARSE_ERROR);
 		buffer_view->byte_length = d["byteLength"];
 
 		if (d.has("byteOffset")) {
 			buffer_view->byte_offset = d["byteOffset"];
+			ERR_FAIL_COND_V_MSG(buffer_view->byte_offset < 0, ERR_PARSE_ERROR, "glTF: Buffer view byte_offset is not allowed to be negative (was " + itos(buffer_view->byte_offset) + ")");
 		}
 
 		if (d.has("byteStride")) {
 			buffer_view->byte_stride = d["byteStride"];
+
+			// The glTF bufferView schema specifies byteStride, if present, must be a multiple of 4, between 4 and 252.
+			// https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/bufferView.schema.json
+			ERR_FAIL_COND_V_MSG((buffer_view->byte_stride % 4 != 0) || (buffer_view->byte_stride < 4) || (buffer_view->byte_stride > 252),
+					ERR_PARSE_ERROR, "glTF: Incorrect byte_stride (" + itos(buffer_view->byte_stride) + ")");
 		}
+		// The bufferview can't point to something outside the actual data.
+		ERR_FAIL_COND_V_MSG((buffer_view->byte_length + buffer_view->byte_offset) > buffersData[buffer_view->buffer].size(),
+				ERR_PARSE_ERROR, "glTF: length+offset > size (" + itos(buffersData[buffer_view->buffer].size()) + ")");
+		// TODO: Check the combination of byte_stride, offset and byte_length for bounds.
 
 		if (d.has("target")) {
 			const int target = d["target"];
