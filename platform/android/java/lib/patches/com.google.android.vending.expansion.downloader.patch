@@ -297,4 +297,4 @@ index 4babe476f..8d41a7690 100644
 +            @SuppressLint("MissingPermission")
              NetworkInfo activeInfo = mConnectivityManager
                      .getActiveNetworkInfo();
-             updateNetworkState(activeInfo);
+             updateNetworkState(activeInfo)
