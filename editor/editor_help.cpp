@@ -282,6 +282,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "theme_item") {
 			topic = "class_theme_item";
 			table = &theme_property_line;
+		} else if (tag == "struct") {
+			topic = "struct";
+			table = &struct_line;
 		} else {
 			return;
 		}
@@ -1640,6 +1643,92 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
+	// Structs
+	if (!cd.structs.is_empty()) {
+		class_desc->add_newline();
+		class_desc->add_newline();
+
+		section_line.push_back(Pair<String, int>(TTR("Structs"), class_desc->get_paragraph_count() - 2));
+		_push_title_font();
+		class_desc->add_text(TTR("Structs"));
+		_pop_title_font();
+
+		for (const DocData::StructDoc &struct_item : cd.structs) {
+			class_desc->add_newline();
+			class_desc->add_newline();
+
+			struct_line[struct_item.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+
+			class_desc->push_indent(1);
+			_push_code_font();
+
+			// Struct name.
+			class_desc->push_color(theme_cache.headline_color);
+			class_desc->add_text(struct_item.name);
+			class_desc->pop(); // color
+
+			_pop_code_font();
+
+			// Struct description.
+			class_desc->push_indent(1);
+			_push_normal_font();
+			class_desc->push_color(theme_cache.comment_color);
+
+			const String descr = DTR(struct_item.description).strip_edges();
+			if (!descr.is_empty()) {
+				_add_text(descr);
+			} else {
+				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
+				class_desc->add_text(" ");
+				class_desc->push_color(theme_cache.comment_color);
+				if (cd.is_script_doc) {
+					class_desc->add_text(TTR("There is currently no description for this struct."));
+				} else {
+					class_desc->append_text(TTR("There is currently no description for this struct. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+				}
+				class_desc->pop(); // color
+			}
+
+			class_desc->pop(); // color
+			_pop_normal_font();
+			class_desc->pop(); // indent
+
+			// Struct members.
+			for (const DocData::PropertyDoc &member : struct_item.properties) {
+				class_desc->add_newline();
+				class_desc->push_indent(1);
+				_push_code_font();
+
+				// Member type and name.
+				_add_bulletpoint();
+				_add_type(member.type);
+				class_desc->add_text(" " + member.name);
+
+				// Member default value.
+				if (!member.default_value.is_empty()) {
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text(" [" + TTR("default:") + " ");
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.value_color);
+					class_desc->add_text(_fix_constant(member.default_value));
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text("]");
+					class_desc->pop(); // color
+				}
+
+				_pop_code_font();
+				class_desc->pop(); // indent
+			}
+
+			class_desc->pop(); // indent for struct members
+			class_desc->add_newline();
+		}
+		class_desc->add_newline();
+	}
+
 	// Constants and enums
 	if (!cd.constants.is_empty()) {
 		HashMap<String, Vector<DocData::ConstantDoc>> enums;
@@ -2344,6 +2433,10 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	} else if (what == "class_enum") {
 		if (enum_line.has(name)) {
 			line = enum_line[name];
+		}
+	} else if (what == "class_struct") {
+		if (struct_line.has(name)) {
+			line = struct_line[name];
 		}
 	} else if (what == "class_theme_item") {
 		if (theme_property_line.has(name)) {
