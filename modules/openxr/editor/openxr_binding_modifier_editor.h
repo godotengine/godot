@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.cpp                                              */
+/*  openxr_binding_modifier_editor.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_editor_plugin.h"
+#ifndef OPENXR_BINDING_MODIFIER_EDITOR_H
+#define OPENXR_BINDING_MODIFIER_EDITOR_H
 
 #include "../action_map/openxr_action_map.h"
+#include "../action_map/openxr_binding_modifier.h"
+#include "editor/editor_properties.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/panel_container.h"
 
-#include "editor/editor_command_palette.h"
-#include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
+class OpenXRBindingModifierEditor : public PanelContainer {
+	GDCLASS(OpenXRBindingModifierEditor, PanelContainer);
 
-void OpenXREditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<OpenXRActionMap>(p_node)) {
-		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			action_map_editor->open_action_map(path);
-		}
-	}
-}
+private:
+	HBoxContainer *header_hb = nullptr;
+	Label *binding_modifier_title = nullptr;
+	Button *rem_binding_modifier_btn = nullptr;
 
-bool OpenXREditorPlugin::handles(Object *p_node) const {
-	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-}
+protected:
+	VBoxContainer *main_vb = nullptr;
+	HashMap<StringName, EditorProperty *> property_editors;
 
-void OpenXREditorPlugin::make_visible(bool p_visible) {
-}
+	EditorUndoRedoManager *undo_redo;
+	Ref<OpenXRBindingModifier> binding_modifier;
+	Ref<OpenXRActionMap> action_map;
 
-OpenXREditorPlugin::OpenXREditorPlugin() {
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRAnalogThresholdModifier", "OpenXRAnalogThresholdEditor");
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRDpadBindingModifier", "OpenXRDpadBindingEditor");
+	static void _bind_methods();
+	void _notification(int p_what);
 
-	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_bottom_panel()->add_item(TTR("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTR("Toggle OpenXR Action Map Bottom Panel")));
+	void add_property_editor(const String &p_property, EditorProperty *p_editor);
 
-#ifndef ANDROID_ENABLED
-	select_runtime = memnew(OpenXRSelectRuntime);
-	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
-#endif
-}
+	void _on_remove_binding_modifier();
 
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}
+public:
+	Ref<OpenXRBindingModifier> get_binding_modifier() const { return binding_modifier; }
+
+	void _on_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
+
+	virtual void set_binding_modifier(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier);
+
+	OpenXRBindingModifierEditor();
+};
+
+#endif // OPENXR_BINDING_MODIFIER_EDITOR_H

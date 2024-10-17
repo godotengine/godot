@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.cpp                                              */
+/*  openxr_binding_modifier.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_editor_plugin.h"
+#ifndef OPENXR_BINDING_MODIFIER_H
+#define OPENXR_BINDING_MODIFIER_H
 
-#include "../action_map/openxr_action_map.h"
+#include "../action_map/openxr_action.h"
+#include "core/io/resource.h"
 
-#include "editor/editor_command_palette.h"
-#include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
+// Part of implementation for:
+// https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_KHR_binding_modification
 
-void OpenXREditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<OpenXRActionMap>(p_node)) {
-		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			action_map_editor->open_action_map(path);
-		}
-	}
-}
+class OpenXRInteractionProfile;
+class OpenXRIPBinding;
 
-bool OpenXREditorPlugin::handles(Object *p_node) const {
-	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-}
+class OpenXRBindingModifier : public Resource {
+	GDCLASS(OpenXRBindingModifier, Resource);
 
-void OpenXREditorPlugin::make_visible(bool p_visible) {
-}
+private:
+protected:
+	friend class OpenXRInteractionProfile;
+	friend class OpenXRIPBinding;
 
-OpenXREditorPlugin::OpenXREditorPlugin() {
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRAnalogThresholdModifier", "OpenXRAnalogThresholdEditor");
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRDpadBindingModifier", "OpenXRDpadBindingEditor");
+	static void _bind_methods();
 
-	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_bottom_panel()->add_item(TTR("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTR("Toggle OpenXR Action Map Bottom Panel")));
+	OpenXRInteractionProfile *interaction_profile = nullptr; // action belongs to this interaction profile (should only be set if record_on_binding() == false).
+	OpenXRIPBinding *ip_binding = nullptr; // action belongs to this binding (should only be set if record_on_binding() == true).
 
-#ifndef ANDROID_ENABLED
-	select_runtime = memnew(OpenXRSelectRuntime);
-	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
-#endif
-}
+public:
+	virtual bool record_on_binding() const { return true; } // If true, this binding modifier is recorded on a specific binding. If false, this binding modifier is recorded on the interaction profile.
 
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}
+	virtual String get_description() const = 0; // Returns the description shown in the editor
+	virtual PackedByteArray get_ip_modification() = 0; // Return the XrBindingModificationsKHR binding modifier struct data used when calling xrSuggestInteractionProfileBindings
+};
+
+#endif // OPENXR_BINDING_MODIFIER_H

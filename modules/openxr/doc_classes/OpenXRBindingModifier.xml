@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRBindingModifier" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Binding modifier base class.
+	</brief_description>
+	<description>
+		Binding modifier base class. Subclasses implement various modifiers that alter how an OpenXR runtime processes inputs.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

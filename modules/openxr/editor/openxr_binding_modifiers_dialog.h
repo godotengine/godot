@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.cpp                                              */
+/*  openxr_binding_modifiers_dialog.h                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_editor_plugin.h"
+#ifndef OPENXR_BINDING_MODIFIERS_DIALOG_H
+#define OPENXR_BINDING_MODIFIERS_DIALOG_H
 
 #include "../action_map/openxr_action_map.h"
+#include "../action_map/openxr_interaction_profile.h"
+#include "../editor/openxr_binding_modifier_editor.h"
+#include "editor/create_dialog.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/scroll_container.h"
 
-#include "editor/editor_command_palette.h"
-#include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
+class OpenXRBindingModifiersDialog : public AcceptDialog {
+	GDCLASS(OpenXRBindingModifiersDialog, AcceptDialog);
 
-void OpenXREditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<OpenXRActionMap>(p_node)) {
-		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			action_map_editor->open_action_map(path);
-		}
-	}
-}
+private:
+	ScrollContainer *binding_modifier_sc = nullptr;
+	VBoxContainer *binding_modifiers_vb = nullptr;
+	Button *add_binding_modifier_btn = nullptr;
+	CreateDialog *create_dialog = nullptr;
 
-bool OpenXREditorPlugin::handles(Object *p_node) const {
-	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-}
+	OpenXRBindingModifierEditor *_add_binding_modifier_editor(Ref<OpenXRBindingModifier> p_binding_modifier);
+	void _create_binding_modifiers();
 
-void OpenXREditorPlugin::make_visible(bool p_visible) {
-}
+	void _on_add_binding_modifier();
+	void _on_remove_binding_modifier(Object *p_binding_modifier_editor);
+	void _on_dialog_created();
 
-OpenXREditorPlugin::OpenXREditorPlugin() {
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRAnalogThresholdModifier", "OpenXRAnalogThresholdEditor");
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRDpadBindingModifier", "OpenXRDpadBindingEditor");
+protected:
+	EditorUndoRedoManager *undo_redo;
+	Ref<OpenXRActionMap> action_map;
+	Ref<OpenXRInteractionProfile> interaction_profile;
+	Ref<OpenXRIPBinding> ip_binding;
 
-	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_bottom_panel()->add_item(TTR("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTR("Toggle OpenXR Action Map Bottom Panel")));
+	static void _bind_methods();
+	void _notification(int p_what);
 
-#ifndef ANDROID_ENABLED
-	select_runtime = memnew(OpenXRSelectRuntime);
-	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
-#endif
-}
+	// used for undo/redo
+	void _do_add_binding_modifier_editor(OpenXRBindingModifierEditor *p_binding_modifier_editor);
+	void _do_remove_binding_modifier_editor(OpenXRBindingModifierEditor *p_binding_modifier_editor);
 
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}
+public:
+	OpenXRBindingModifiersDialog();
+
+	void setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile, Ref<OpenXRIPBinding> p_ip_binding = Ref<OpenXRIPBinding>());
+};
+
+#endif // OPENXR_BINDING_MODIFIERS_DIALOG_H
