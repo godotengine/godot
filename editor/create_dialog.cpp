@@ -208,7 +208,7 @@ void CreateDialog::_update_search() {
 
 	// Select the best result.
 	if (empty_search) {
-		select_type(base_type);
+		select_type(base_type, false);
 	} else if (best_match != StringName()) {
 		select_type(best_match);
 	} else {
