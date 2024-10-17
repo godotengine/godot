@@ -325,9 +325,9 @@ private:
 	String cut_copy_line = "";
 
 	// Context menu.
-	PopupMenu *menu = nullptr;
-	PopupMenu *menu_dir = nullptr;
-	PopupMenu *menu_ctl = nullptr;
+	ObjectID menu_id;
+	ObjectID menu_dir_id;
+	ObjectID menu_ctl_id;
 
 	Key _get_menu_action_accelerator(const String &p_action);
 	void _generate_context_menu();
