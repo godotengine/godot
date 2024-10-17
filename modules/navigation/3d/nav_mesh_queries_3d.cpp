@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef _3D_DISABLED
-
 #include "nav_mesh_queries_3d.h"
 
 #include "../nav_base.h"
@@ -711,5 +709,3 @@ void NavMeshQueries3D::clip_path(const LocalVector<gd::NavigationPoly> &p_naviga
 		}
 	}
 }
-
-#endif // _3D_DISABLED
