@@ -22,6 +22,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Creates a new AudioStreamOggVorbis instance from the given file path. The file must be in Ogg Vorbis format.
+				[b]Note:[/b] This performs a full import, meant for dynamically loading audio at runtime. For Ogg Vorbis audio files present in your project at compile time, Godot will import them in the editor. Use [ResourceLoader] to access the imported versions of your audio files. Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported project, as only the imported version is used.
 			</description>
 		</method>
 	</methods>
