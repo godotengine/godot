@@ -21,7 +21,6 @@ afterEvaluate {
                     name = PUBLISH_ARTIFACT_ID
                     description = 'Blazium Engine Android Library'
                     url = 'https://blazium.app/'
-
                     licenses {
                         license {
                             name = 'MIT License'
