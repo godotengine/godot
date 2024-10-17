@@ -1314,6 +1314,9 @@
 		<member name="text_editor/script_list/group_help_pages" type="bool" setter="" getter="">
 			If [code]true[/code], class reference pages are grouped together at the bottom of the Script Editor's script list.
 		</member>
+		<member name="text_editor/script_list/last_opened_script_threshold" type="int" setter="" getter="">
+			If [member text_editor/script_list/sort_scripts_by] is set to [b]Last Opened[/b], this defines how many scripts, counting from the top of the list, won't be pushed up when opened.
+		</member>
 		<member name="text_editor/script_list/list_script_names_as" type="int" setter="" getter="">
 			Specifies how script paths should be displayed in Script Editor's script list. If using the "Name" option and some scripts share the same file name, more parts of their paths are revealed to avoid conflicts.
 		</member>
@@ -1331,7 +1334,12 @@
 			[b]Note:[/b] Only effective if [member text_editor/script_list/show_members_overview] is [code]true[/code].
 		</member>
 		<member name="text_editor/script_list/sort_scripts_by" type="int" setter="" getter="">
-			Specifies sorting used for Script Editor's open script list.
+			Specifies sorting used for the Script Editor's list of opened scripts and documentation.
+			- [b]Name:[/b] Scripts will be sorted alphabetically by their file name.
+			- [b]Path:[/b] Scripts will be sorted alphabetically by their file path.
+			- [b]None:[/b] Scripts and documentation won't be sorted in any particular order. They can be dragged around manually.
+			- [b]Last Opened:[/b] Opening a script or documentation page will push it to the top of the list, unless it's already near the top. The threshold for what's considered "near the top" is defined in [member text_editor/script_list/last_opened_script_threshold].
+			If set to [b]Name[/b] or [b]Path[/b], documentation will be sorted alphabetically at the bottom of the list.
 		</member>
 		<member name="text_editor/theme/color_theme" type="String" setter="" getter="">
 			The syntax theme to use in the script editor.
