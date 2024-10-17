@@ -95,6 +95,15 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
+def detect_swappy():
+    archs = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
+    has_swappy = True
+    for arch in archs:
+        if not os.path.isfile("thirdparty/swappy-frame-pacing/" + arch + "/libswappy_static.a"):
+            has_swappy = False
+    return has_swappy
+
+
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
@@ -176,19 +185,35 @@ def configure(env: "SConsEnvironment"):
         )
     )
 
+    has_swappy = detect_swappy()
+    if not has_swappy:
+        print_warning(
+            "Swappy Frame Pacing not detected! It is strongly recommended you download it from https://github.com/darksylinc/godot-swappy/releases and extract it so that thirdparty/swappy-frame-pacing/arm64-v8a/libswappy_static.a can be found."
+        )
+        if not env["disable_swappy"]:
+            print_error(
+                "Build option `disable_swappy=yes` can be used to ignore missing Swappy dependency and build without it."
+            )
+            sys.exit(255)
+
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
     if env["arch"] == "x86_32":
         # The NDK adds this if targeting API < 24, so we can drop it when Godot targets it at least
         env.Append(CCFLAGS=["-mstackrealign"])
+        env.Append(LIBPATH=["../../thirdparty/swappy-frame-pacing/x86"])
     elif env["arch"] == "arm32":
         env.Append(CCFLAGS="-march=armv7-a -mfloat-abi=softfp".split())
         env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
         env.Append(CPPDEFINES=["__ARM_NEON__"])
+        if has_swappy:
+            env.Append(LIBPATH=["../../thirdparty/swappy-frame-pacing/armeabi-v7a"])
     elif env["arch"] == "arm64":
         env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
+        if has_swappy:
+            env.Append(LIBPATH=["../../thirdparty/swappy-frame-pacing/arm64-v8a"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
@@ -203,6 +228,9 @@ def configure(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        if has_swappy:
+            env.Append(CPPDEFINES=["SWAPPY_FRAME_PACING_ENABLED"])
+            env.Append(LIBS=["swappy_static"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 
