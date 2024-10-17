@@ -54,8 +54,8 @@ partial class ScriptBoilerplate
     internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
     {
         var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
-        properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName.@_nodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
-        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_velocity, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)22, name: PropertyName.@_nodePath, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4104, exported: false));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_velocity, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4104, exported: false));
         return properties;
     }
 #pragma warning restore CS0109
