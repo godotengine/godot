@@ -689,6 +689,8 @@ private:
 
 	bool enable_recursive_folding = true;
 
+	bool enable_auto_tooltip = true;
+
 	int _count_selected_items(TreeItem *p_from) const;
 	bool _is_branch_selected(TreeItem *p_from) const;
 	bool _is_sibling_branch_selected(TreeItem *p_from) const;
@@ -817,6 +819,9 @@ public:
 
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
+
+	void set_auto_tooltip(bool p_enable);
+	bool is_auto_tooltip_enabled() const;
 
 	Size2 get_minimum_size() const override;
 
