@@ -6,9 +6,9 @@ index ad6ea0de6..452c7d148 100644
  import android.os.RemoteException;
  import android.util.Log;
  
-+// -- BLAZIUM start --
++// -- GODOT start --
 +import java.lang.ref.WeakReference;
-+// -- BLAZIUM end --
++// -- GODOT end --
  
  
  /**
@@ -17,7 +17,7 @@ index ad6ea0de6..452c7d148 100644
           * Target we publish for clients to send messages to IncomingHandler.
           */
 -        final Messenger mMessenger = new Messenger(new Handler() {
-+        // -- BLAZIUM start --
++        // -- GODOT start --
 +        private final MessengerHandlerClient mMsgHandler = new MessengerHandlerClient(this);
 +        final Messenger mMessenger = new Messenger(mMsgHandler);
 +
@@ -74,7 +74,7 @@ index ad6ea0de6..452c7d148 100644
 +                    break;
 +            }
 +        }
-+        // -- BLAZIUM end --
++        // -- GODOT end --
  
          public Stub(IDownloaderClient itf, Class<?> downloaderService) {
              mItf = itf;
@@ -86,9 +86,9 @@ index 979352299..3771d19c9 100644
  import android.os.Messenger;
  import android.os.RemoteException;
  
-+// -- BLAZIUM start --
++// -- GODOT start --
 +import java.lang.ref.WeakReference;
-+// -- BLAZIUM end --
++// -- GODOT end --
  
  
  /**
@@ -97,7 +97,7 @@ index 979352299..3771d19c9 100644
      private static class Stub implements IStub {
          private IDownloaderService mItf = null;
 -        final Messenger mMessenger = new Messenger(new Handler() {
-+        // -- BLAZIUM start --
++        // -- GODOT start --
 +        private final MessengerHandlerServer mMsgHandler = new MessengerHandlerServer(this);
 +        final Messenger mMessenger = new Messenger(mMsgHandler);
 +
@@ -160,7 +160,7 @@ index 979352299..3771d19c9 100644
 +                    break;
 +            }
 +        }
-+        // -- BLAZIUM end --
++        // -- GODOT end --
  
          public Stub(IDownloaderService itf) {
              mItf = itf;
@@ -173,10 +173,10 @@ index e4b1b0f1c..36cd6aacf 100644
  import android.util.Log;
  
 -import com.android.vending.expansion.downloader.R;
-+// -- BLAZIUM start --
++// -- GODOT start --
 +//import com.android.vending.expansion.downloader.R;
 +import org.godotengine.godot.R;
-+// -- BLAZIUM end --
++// -- GODOT end --
  
  import java.io.File;
  import java.text.SimpleDateFormat;
@@ -185,7 +185,7 @@ index e4b1b0f1c..36cd6aacf 100644
              return "";
          }
 -        return String.format("%.2f",
-+        // -- BLAZIUM start --
++        // -- GODOT start --
 +        return String.format(Locale.ENGLISH, "%.2f",
                  (float) overallProgress / (1024.0f * 1024.0f))
                  + "MB /" +
@@ -193,7 +193,7 @@ index e4b1b0f1c..36cd6aacf 100644
 +                String.format(Locale.ENGLISH, "%.2f", (float) overallTotal /
                          (1024.0f * 1024.0f))
                  + "MB";
-+        // -- BLAZIUM end --
++        // -- GODOT end --
      }
  
      /**
@@ -202,9 +202,9 @@ index e4b1b0f1c..36cd6aacf 100644
  
      public static String getSpeedString(float bytesPerMillisecond) {
 -        return String.format("%.2f", bytesPerMillisecond * 1000 / 1024);
-+        // -- BLAZIUM start --
++        // -- GODOT start --
 +        return String.format(Locale.ENGLISH, "%.2f", bytesPerMillisecond * 1000 / 1024);
-+        // -- BLAZIUM end --
++        // -- GODOT end --
      }
  
      public static String getTimeRemaining(long durationInMilliseconds) {
@@ -216,9 +216,9 @@ index 12edd97ab..a0e1165cc 100644
  import android.telephony.TelephonyManager;
  import android.util.Log;
  
-+// -- BLAZIUM start --
++// -- GODOT start --
 +import android.annotation.SuppressLint;
-+// -- BLAZIUM end --
++// -- GODOT end --
 +
  /**
   * Contains useful helper functions, typically tied to the application context.
@@ -248,10 +248,10 @@ index f1536e80e..4b214b22d 100644
  package com.google.android.vending.expansion.downloader.impl;
  
 -import com.android.vending.expansion.downloader.R;
-+// -- BLAZIUM start --
++// -- GODOT start --
 +//import com.android.vending.expansion.downloader.R;
 +import org.godotengine.godot.R;
-+// -- BLAZIUM end --
++// -- GODOT end --
 +
  import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
  import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
@@ -266,12 +266,12 @@ index b2e0e7af0..c114b8a64 100644
              PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
 -            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
 -            wakeLock.acquire();
-+            // -- BLAZIUM start --
++            // -- GODOT start --
 +            //wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
 +            //wakeLock.acquire();
 +            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "org.godot.game:wakelock");
 +            wakeLock.acquire(20 * 60 * 1000L /*20 minutes*/);
-+            // -- BLAZIUM end --
++            // -- GODOT end --
  
              if (Constants.LOGV) {
                  Log.v(Constants.TAG, "initiating download for " + mInfo.mFileName);
@@ -283,9 +283,9 @@ index 4babe476f..8d41a7690 100644
  import android.telephony.TelephonyManager;
  import android.util.Log;
  
-+// -- BLAZIUM start --
++// -- GODOT start --
 +import android.annotation.SuppressLint;
-+// -- BLAZIUM end --
++// -- GODOT end --
 +
  import java.io.File;
  
