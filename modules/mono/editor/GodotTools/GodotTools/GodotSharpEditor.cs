@@ -173,10 +173,16 @@ namespace GodotTools
         }
 
         private static string _vsCodePath = string.Empty;
+        private static string _codiumPath = string.Empty;
 
         private static readonly string[] VsCodeNames =
         {
             "code", "code-oss", "vscode", "vscode-oss", "visual-studio-code", "visual-studio-code-oss"
+        };
+
+        private static readonly string[] CodiumNames =
+        {
+            "codium"
         };
 
         [UsedImplicitly]
@@ -328,7 +334,7 @@ namespace GodotTools
                             args.Add("-b");
                             args.Add(vscodeBundleId);
 
-                            // The reusing of existing windows made by the 'open' command might not choose a wubdiw that is
+                            // The reusing of existing windows made by the 'open' command might not choose a window that is
                             // editing our folder. It's better to ask for a new window and let VSCode do the window management.
                             args.Add("-n");
 
@@ -383,6 +389,88 @@ namespace GodotTools
                     catch (Exception e)
                     {
                         GD.PushError($"Error when trying to run code editor: VSCode. Exception message: '{e.Message}'");
+                    }
+
+                    break;
+                }
+                case ExternalEditorId.Codium:
+                {
+                    if (string.IsNullOrEmpty(_codiumPath) || !File.Exists(_codiumPath))
+                    {
+                        // Try to search it again if it wasn't found last time or if it was removed from its location
+                        _codiumPath = CodiumNames.SelectFirstNotNull(OS.PathWhich, orElse: string.Empty);
+                    }
+
+                    var args = new List<string>();
+
+                    bool macOSAppBundleInstalled = false;
+
+                    if (OS.IsMacOS)
+                    {
+                        const string codiumBundleId = "com.vscodium.codium";
+
+                        macOSAppBundleInstalled = Internal.IsMacOSAppBundleInstalled(codiumBundleId);
+
+                        if (macOSAppBundleInstalled)
+                        {
+                            args.Add("-b");
+                            args.Add(codiumBundleId);
+
+                            // The reusing of existing windows made by the 'open' command might not choose a window that is
+                            // editing our folder. It's better to ask for a new window and let VSCode do the window management.
+                            args.Add("-n");
+
+                            // The open process must wait until the application finishes (which is instant in VSCode's case)
+                            args.Add("--wait-apps");
+
+                            args.Add("--args");
+                        }
+                    }
+
+                    args.Add(Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath)!);
+
+                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+
+                    if (line >= 0)
+                    {
+                        args.Add("-g");
+                        args.Add($"{scriptPath}:{line + 1}:{col + 1}");
+                    }
+                    else
+                    {
+                        args.Add(scriptPath);
+                    }
+
+                    string command;
+
+                    if (OS.IsMacOS)
+                    {
+                        if (!macOSAppBundleInstalled && string.IsNullOrEmpty(_codiumPath))
+                        {
+                            GD.PushError("Cannot find code editor: Codium");
+                            return Error.FileNotFound;
+                        }
+
+                        command = macOSAppBundleInstalled ? "/usr/bin/open" : _codiumPath;
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(_codiumPath))
+                        {
+                            GD.PushError("Cannot find code editor: Codium");
+                            return Error.FileNotFound;
+                        }
+
+                        command = _codiumPath;
+                    }
+
+                    try
+                    {
+                        OS.RunProcess(command, args);
+                    }
+                    catch (Exception e)
+                    {
+                        GD.PushError($"Error when trying to run code editor: Codium. Exception message: '{e.Message}'");
                     }
 
                     break;
@@ -549,6 +637,7 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudio}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",Codium:{(int)ExternalEditorId.Codium}" +
                                    $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
@@ -557,6 +646,7 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",Codium:{(int)ExternalEditorId.Codium}" +
                                    $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
@@ -564,6 +654,7 @@ namespace GodotTools
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
+                                   $",Codium:{(int)ExternalEditorId.Codium}" +
                                    $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
