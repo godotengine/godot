@@ -72,6 +72,7 @@ public:
 	// Must be a power of two.
 	static constexpr uint32_t INITIAL_CAPACITY = 16;
 	static constexpr uint32_t EMPTY_HASH = 0;
+	static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
 
 private:
 	Allocator element_alloc;
