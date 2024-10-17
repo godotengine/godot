@@ -107,6 +107,7 @@ class GDScript : public Script {
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, Ref<GDScript>> subclasses;
+	HashMap<StringName, StructInfo> structs;
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
@@ -259,6 +260,8 @@ public:
 	}
 	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
+	const StructInfo *get_script_struct_info(const String &p_struct_name, bool p_no_inheritance = false) const;
+	void set_script_struct_info(const StructInfo &p_struct_info);
 
 	RBSet<GDScript *> get_dependencies();
 	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
