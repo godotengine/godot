@@ -657,13 +657,6 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 	real_t closest_point_distance_squared = FLT_MAX;
 
 	for (const gd::Polygon &polygon : p_polygons) {
-		for (size_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
-			const Face3 face(polygon.points[0].pos, polygon.points[point_id - 1].pos, polygon.points[point_id].pos);
-			const Vector3 closest_point_on_face = face.get_closest_point_to(p_point);
-			const real_t distance_squared_to_point = closest_point_on_face.distance_squared_to(p_point);
-			if (distance_squared_to_point < closest_point_distance_squared) {
-				result.point = closest_point_on_face;
-				result.normal = face.get_plane().normal;
 		Vector3 plane_normal = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
 		bool inside = true;
 		Vector3 previous = polygon.points[polygon.points.size() - 1].pos;
@@ -692,7 +685,7 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 					// The projection being below 1 is our usual stop, but if we are on the first side we check
 					// and we are below 0 there could be a better point on the previous side. If we are between 0 and 1
 					// then we must stop, we will not find a better point for this polygon
-					if((point_id > 0) || (percent >= 0.f)) {
+					if ((point_id > 0) || (percent >= 0.f)) {
 						break;
 					}
 				}
@@ -709,7 +702,6 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 				result.point = p_point - plane_normalized * distance;
 				result.normal = plane_normal;
 				result.owner = polygon.owner->get_self();
-				closest_point_distance_squared = distance_squared_to_point;
 
 				if (Math::is_equal_approx(distance, 0.f)) {
 					break;
