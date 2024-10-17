@@ -1355,6 +1355,13 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 void EditorFileDialog::_make_dir_confirm() {
 	const String stripped_dirname = makedirname->get_text().strip_edges();
 
+	if (stripped_dirname.is_empty()) {
+		error_dialog->set_text(TTR("The path specified is invalid."));
+		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		makedirname->set_text(""); // Reset label.
+		return;
+	}
+
 	if (dir_access->dir_exists(stripped_dirname)) {
 		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
 		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
