@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDTrait" inherits="GDScript" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A script implemented in the GDScript programming language.
+	</brief_description>
+	<description>
+		See [GDScript] or [@GDScript] instead.
+		Helper Script to store Traits for GDScript, its not attachable to objects [method Object.set_script].Saved with the [code].gdt[/code] extension, for GDScript  programming language external Traits.
+	</description>
+	<tutorials>
+		<link title="GDScript documentation index">$DOCS_URL/tutorials/scripting/gdscript/index.html</link>
+	</tutorials>
+</class>
