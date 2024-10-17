@@ -82,6 +82,13 @@ Validate extension JSON: Error: Field 'classes/OS/methods/execute_with_pipe/argu
 Optional argument added. Compatibility method registered.
 
 
+GH-96989
+--------
+Validate extension JSON: API was removed: classes/Control/methods/accept_event
+
+Method moved to Node. Compatibility method registered.
+
+
 GH-94684
 --------
 Validate extension JSON: Error: Field 'classes/SoftBody3D/methods/set_point_pinned/arguments': size changed value in new API, from 3 to 4.
