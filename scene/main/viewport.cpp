@@ -2449,11 +2449,34 @@ bool Viewport::_gui_control_has_focus(const Control *p_control) {
 }
 
 void Viewport::_gui_control_grab_focus(Control *p_control) {
-	if (gui.key_focus && gui.key_focus == p_control) {
-		// No need for change.
-		return;
+	Window *base_window = get_base_window();
+	if (base_window->is_multi_viewport_focus_enabled()) {
+		// Release previous focus.
+		if (gui.key_focus && gui.key_focus != p_control) {
+			gui_release_focus();
+		}
+
+		// Ensure chain of SubViewportContainer focus in parent Viewport. Needs to happen, even if control has focus in this Viewport.
+		Viewport *vp = this;
+		if (Object::cast_to<SubViewport>(vp)) {
+			SubViewportContainer *svc = Object::cast_to<SubViewportContainer>(get_parent());
+			if (svc) {
+				svc->grab_focus();
+			}
+		}
+		if (gui.key_focus == p_control) {
+			// No need for change.
+			return;
+		}
+	} else {
+		if (gui.key_focus && gui.key_focus == p_control) {
+			// No need for change.
+			return;
+		}
+		get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)base_window);
 	}
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
+
+	// Perform necessary adjustments for focuschange.
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		emit_signal(SNAME("gui_focus_changed"), p_control);
