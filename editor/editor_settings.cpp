@@ -54,6 +54,7 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/syntax_highlighter.h"
 
 // PRIVATE METHODS
 
@@ -729,6 +730,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/completion/add_node_path_literals", false, true);
 	_initial_set("text_editor/completion/use_single_quotes", false, true);
 	_initial_set("text_editor/completion/colorize_suggestions", true);
+	_initial_set("text_editor/syntax_highlighter_for_bidi_override", true);
+	_initial_set("text_editor/syntax_highlighter_can_change_font", true);
 
 	// External editor (ScriptEditorPlugin)
 	_initial_set("text_editor/external/use_external_editor", false, true);
@@ -1024,15 +1027,28 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 void EditorSettings::_load_godot2_text_editor_theme() {
 	// Godot 2 is only a dark theme; it doesn't have a light theme counterpart.
+#define EDITOR_SETTING(m_type, m_property_hint, m_name, m_default_value, m_hint_string) \
+	_initial_set(m_name, m_default_value);                                              \
+	hints[m_name] = PropertyInfo(m_type, m_name, m_property_hint, m_hint_string);
+
 	_initial_set("text_editor/theme/highlighting/symbol_color", Color(0.73, 0.87, 1.0), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/symbol_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/keyword_color", Color(1.0, 1.0, 0.7), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/keyword_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/control_flow_keyword_color", Color(1.0, 0.85, 0.7), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/control_flow_keyword_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/base_type_color", Color(0.64, 1.0, 0.83), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/base_type_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/engine_type_color", Color(0.51, 0.83, 1.0), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/engine_type_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/user_type_color", Color(0.42, 0.67, 0.93), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/user_type_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/comment_color", Color(0.4, 0.4, 0.4), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/comment_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/doc_comment_color", Color(0.5, 0.6, 0.7), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/doc_comment_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/string_color", Color(0.94, 0.43, 0.75), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/string_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/background_color", Color(0.13, 0.12, 0.15), true);
 	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
 	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
@@ -1052,16 +1068,21 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1), true);
 	_initial_set("text_editor/theme/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15), true);
 	_initial_set("text_editor/theme/highlighting/number_color", Color(0.92, 0.58, 0.2), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/number_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/function_color", Color(0.4, 0.64, 0.81), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/function_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/member_variable_color", Color(0.9, 0.31, 0.35), true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/member_variable_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4), true);
 	_initial_set("text_editor/theme/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
 	_initial_set("text_editor/theme/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
 	_initial_set("text_editor/theme/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
 	_initial_set("text_editor/theme/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	_initial_set("text_editor/theme/highlighting/folded_code_region_color", Color(0.68, 0.46, 0.77, 0.2));
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/theme/highlighting/folded_code_region_style", SyntaxHighlighter::SYNTAX_STYLE_REGULAR, "Regular,Bold,Italic,Bold Italic");
 	_initial_set("text_editor/theme/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/theme/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
+#undef EDITOR_SETTING
 }
 
 void EditorSettings::_load_default_visual_shader_editor_theme() {
@@ -1103,6 +1124,8 @@ bool EditorSettings::_save_text_editor_theme(const String &p_file) {
 	for (const String &key : keys) {
 		if (key.begins_with("text_editor/theme/highlighting/") && key.contains("color")) {
 			cf->set_value(theme_section, key.replace("text_editor/theme/highlighting/", ""), ((Color)props[key].variant).to_html());
+		} else if (key.begins_with("text_editor/theme/highlighting/") && key.contains("style")) {
+			cf->set_value(theme_section, key.replace("text_editor/theme/highlighting/", ""), ((int)props[key].variant));
 		}
 	}
 
@@ -1599,6 +1622,8 @@ void EditorSettings::load_text_editor_theme() {
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.contains("color")) {
 				props["text_editor/theme/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
+			} else if (val.is_valid_html_color() && key.contains("style")) {
+				props["text_editor/theme/highlighting/" + key].variant = val;
 			}
 		}
 	}

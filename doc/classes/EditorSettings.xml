@@ -1333,6 +1333,12 @@
 		<member name="text_editor/script_list/sort_scripts_by" type="int" setter="" getter="">
 			Specifies sorting used for Script Editor's open script list.
 		</member>
+		<member name="text_editor/syntax_highlighter_can_change_font" type="bool" setter="" getter="">
+			If [code]true[/code], if syntax highlighter can change text font style.
+		</member>
+		<member name="text_editor/syntax_highlighter_for_bidi_override" type="bool" setter="" getter="">
+			If [code]true[/code], syntax highlighter is used to tokenize text for BiDi override.
+		</member>
 		<member name="text_editor/theme/color_theme" type="String" setter="" getter="">
 			The syntax theme to use in the script editor.
 			You can save your own syntax theme from your current settings by using [b]File &gt; Theme &gt; Save As...[/b] at the top of the script editor. The syntax theme will then be available locally in the list of color themes.
@@ -1343,6 +1349,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/base_type_color" type="Color" setter="" getter="">
 			The script editor's base type color (used for types like [Vector2], [Vector3], [Color], ...).
+		</member>
+		<member name="text_editor/theme/highlighting/base_type_style" type="int" setter="" getter="">
+			The script editor's base type font style (used for types like [Vector2], [Vector3], [Color], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/bookmark_color" type="Color" setter="" getter="">
 			The script editor's bookmark icon color (displayed in the gutter).
@@ -1367,6 +1376,9 @@
 			The script editor's comment color.
 			[b]Note:[/b] In GDScript, unlike Python, multiline strings are not considered to be comments, and will use the string highlighting color instead.
 		</member>
+		<member name="text_editor/theme/highlighting/comment_style" type="int" setter="" getter="">
+			The script editor's comment font style.
+		</member>
 		<member name="text_editor/theme/highlighting/completion_background_color" type="Color" setter="" getter="">
 			The script editor's autocompletion box background color.
 		</member>
@@ -1388,14 +1400,23 @@
 		<member name="text_editor/theme/highlighting/control_flow_keyword_color" type="Color" setter="" getter="">
 			The script editor's control flow keyword color (used for keywords like [code]if[/code], [code]for[/code], [code]return[/code], ...).
 		</member>
+		<member name="text_editor/theme/highlighting/control_flow_keyword_style" type="int" setter="" getter="">
+			The script editor's control flow keyword font style (used for keywords like [code]if[/code], [code]for[/code], [code]return[/code], ...).
+		</member>
 		<member name="text_editor/theme/highlighting/current_line_color" type="Color" setter="" getter="">
 			The script editor's background color for the line the caret is currently on. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/mark_color].
 		</member>
 		<member name="text_editor/theme/highlighting/doc_comment_color" type="Color" setter="" getter="">
 			The script editor's documentation comment color. In GDScript, this is used for comments starting with [code]##[/code]. In C#, this is used for comments starting with [code]///[/code] or [code]/**[/code].
 		</member>
+		<member name="text_editor/theme/highlighting/doc_comment_style" type="int" setter="" getter="">
+			The script editor's documentation comment font style. In GDScript, this is used for comments starting with [code]##[/code]. In C#, this is used for comments starting with [code]///[/code] or [code]/**[/code].
+		</member>
 		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
 			The script editor's engine type color ([Vector2], [Vector3], [Color], ...).
+		</member>
+		<member name="text_editor/theme/highlighting/engine_type_style" type="int" setter="" getter="">
+			The script editor's engine type font style ([Vector2], [Vector3], [Color], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
@@ -1403,12 +1424,21 @@
 		<member name="text_editor/theme/highlighting/folded_code_region_color" type="Color" setter="" getter="">
 			The script editor's background line highlighting color for folded code region.
 		</member>
+		<member name="text_editor/theme/highlighting/folded_code_region_style" type="int" setter="" getter="">
+			The script editor's background line highlighting font style for folded code region.
+		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
 			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
 		</member>
+		<member name="text_editor/theme/highlighting/function_style" type="int" setter="" getter="">
+			The script editor's function call font style.
+		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
+		</member>
+		<member name="text_editor/theme/highlighting/keyword_style" type="int" setter="" getter="">
+			The script editor's non-control flow keyword font style (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/line_length_guideline_color" type="Color" setter="" getter="">
 			The script editor's color for the line length guideline. The "hard" line length guideline will be drawn with this color, whereas the "soft" line length guideline will be drawn with half of its opacity.
@@ -1423,8 +1453,14 @@
 			The script editor's color for member variables on objects (e.g. [code]self.some_property[/code]).
 			[b]Note:[/b] This color is not used for local variable declaration and access.
 		</member>
+		<member name="text_editor/theme/highlighting/member_variable_style" type="int" setter="" getter="">
+			The script editor's font style for member variables on objects (e.g. [code]self.some_property[/code]).
+		</member>
 		<member name="text_editor/theme/highlighting/number_color" type="Color" setter="" getter="">
 			The script editor's color for numbers (integer and floating-point).
+		</member>
+		<member name="text_editor/theme/highlighting/number_style" type="int" setter="" getter="">
+			The script editor's font style for numbers (integer and floating-point).
 		</member>
 		<member name="text_editor/theme/highlighting/safe_line_number_color" type="Color" setter="" getter="">
 			The script editor's color for type-safe line numbers. See also [member text_editor/theme/highlighting/line_number_color].
@@ -1442,8 +1478,14 @@
 		<member name="text_editor/theme/highlighting/string_color" type="Color" setter="" getter="">
 			The script editor's color for strings (single-line and multi-line).
 		</member>
+		<member name="text_editor/theme/highlighting/string_style" type="int" setter="" getter="">
+			The script editor's font style for strings (single-line and multi-line).
+		</member>
 		<member name="text_editor/theme/highlighting/symbol_color" type="Color" setter="" getter="">
 			The script editor's color for operators ([code]( ) [ ] { } + - * /[/code], ...).
+		</member>
+		<member name="text_editor/theme/highlighting/symbol_style" type="int" setter="" getter="">
+			The script editor's font style for operators ([code]( ) [ ] { } + - * /[/code], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/text_color" type="Color" setter="" getter="">
 			The script editor's color for text not highlighted by any syntax highlighting rule.
@@ -1453,6 +1495,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/user_type_color" type="Color" setter="" getter="">
 			The script editor's color for user-defined types (using [code]class_name[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/user_type_style" type="int" setter="" getter="">
+			The script editor's font style for user-defined types (using [code]class_name[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].

@@ -44,6 +44,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/texture.h"
 
 // Theme configuration.
@@ -2569,14 +2570,23 @@ void EditorThemeManager::_generate_text_editor_defaults(ThemeConfiguration &p_co
 
 	/* clang-format off */
 	setting->set_initial_value("text_editor/theme/highlighting/symbol_color",                    symbol_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/symbol_style",                    SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/keyword_color",                   keyword_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/keyword_style",                   SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/control_flow_keyword_color",      control_flow_keyword_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/control_flow_keyword_style",      SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/base_type_color",                 base_type_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/base_type_style",                 SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/engine_type_color",               engine_type_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/engine_type_style",               SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/user_type_color",                 user_type_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/user_type_style",                 SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/comment_color",                   comment_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/comment_style",                   SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/doc_comment_color",               doc_comment_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/doc_comment_style",               SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/string_color",                    string_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/string_style",                    SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/background_color",                te_background_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/completion_background_color",     completion_background_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/completion_selected_color",       completion_selected_color, true);
@@ -2596,14 +2606,18 @@ void EditorThemeManager::_generate_text_editor_defaults(ThemeConfiguration &p_co
 	setting->set_initial_value("text_editor/theme/highlighting/line_length_guideline_color",     line_length_guideline_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/word_highlighted_color",          word_highlighted_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/number_color",                    number_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/number_style",                    SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/function_color",                  function_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/function_style",                  SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/member_variable_color",           member_variable_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/member_variable_style",           SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/mark_color",                      mark_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/bookmark_color",                  bookmark_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/breakpoint_color",                breakpoint_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/executing_line_color",            executing_line_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/code_folding_color",              code_folding_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/folded_code_region_color",        folded_code_region_color, true);
+	setting->set_initial_value("text_editor/theme/highlighting/folded_code_region_style",        SyntaxHighlighter::SYNTAX_STYLE_REGULAR, true);
 	setting->set_initial_value("text_editor/theme/highlighting/search_result_color",             search_result_color, true);
 	setting->set_initial_value("text_editor/theme/highlighting/search_result_border_color",      search_result_border_color, true);
 	/* clang-format on */
@@ -2620,6 +2634,10 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	// Now theme is loaded, apply it to CodeEdit.
 	p_theme->set_font(SceneStringName(font), "CodeEdit", p_theme->get_font(SNAME("source"), EditorStringName(EditorFonts)));
 	p_theme->set_font_size(SceneStringName(font_size), "CodeEdit", p_theme->get_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
+
+	p_theme->set_font("bold_font", "CodeEdit", p_theme->get_font(SNAME("source_bold"), EditorStringName(EditorFonts)));
+	p_theme->set_font("italics_font", "CodeEdit", p_theme->get_font(SNAME("source_italics"), EditorStringName(EditorFonts)));
+	p_theme->set_font("bold_italics_font", "CodeEdit", p_theme->get_font(SNAME("source_bold_italics"), EditorStringName(EditorFonts)));
 
 	/* clang-format off */
 	p_theme->set_icon("tab",                  "CodeEdit", p_theme->get_icon(SNAME("GuiTab"), EditorStringName(EditorIcons)));
