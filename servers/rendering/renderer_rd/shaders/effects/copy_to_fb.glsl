@@ -118,16 +118,7 @@ layout(set = 1, binding = 0) uniform sampler2D source_color2;
 
 layout(location = 0) out vec4 frag_color;
 
-vec3 linear_to_srgb(vec3 color) {
-	//if going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
-	const vec3 a = vec3(0.055f);
-	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
-}
-
-vec3 srgb_to_linear(vec3 color) {
-	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
-}
+#include "../color_space_inc.glsl"
 
 void main() {
 #ifdef MODE_SET_COLOR

@@ -150,6 +150,7 @@ public:
 		FEATURE_NATIVE_HELP,
 		FEATURE_NATIVE_DIALOG_INPUT,
 		FEATURE_NATIVE_DIALOG_FILE,
+		FEATURE_HDR,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -459,6 +460,11 @@ public:
 
 	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
 	virtual VSyncMode window_get_vsync_mode(WindowID p_window) const;
+
+	virtual void window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_get_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
