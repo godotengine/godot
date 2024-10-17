@@ -70,6 +70,8 @@ SceneStringNames::SceneStringNames() {
 	pre_sort_children = StaticCString::create("pre_sort_children");
 	sort_children = StaticCString::create("sort_children");
 
+	collision_state_changed = StaticCString::create("collision_state_changed");
+
 	body_shape_entered = StaticCString::create("body_shape_entered");
 	body_entered = StaticCString::create("body_entered");
 	body_shape_exited = StaticCString::create("body_shape_exited");
