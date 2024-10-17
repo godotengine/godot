@@ -2735,6 +2735,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		EditorPaths::create();
 
+		// The default value of the editor setting 'interface/editor/expand_to_title' is true.
+		bool expand_to_title = true;
+
 		// Editor setting class is not available, load config directly.
 		if (!init_use_custom_screen && (editor || project_manager) && EditorPaths::get_singleton()->are_paths_valid()) {
 			ERR_FAIL_COND_V(!DirAccess::dir_exists_absolute(EditorPaths::get_singleton()->get_config_dir()), FAILED);
@@ -2763,6 +2766,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool prefer_wayland_found = false;
 					bool prefer_wayland = false;
+					bool extend_to_title_found = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2778,7 +2782,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found) {
+					while (!screen_found || !prefer_wayland_found || !extend_to_title_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2802,6 +2806,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
 							}
+
+							if (!extend_to_title_found && assign == "interface/editor/expand_to_title") {
+								expand_to_title = value;
+							}
 						}
 					}
 
@@ -2814,6 +2822,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 					}
 				}
 			}
+		}
+
+		if (expand_to_title) {
+			window_flags |= DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
 		}
 
 		if (found_project && EditorPaths::get_singleton()->is_self_contained()) {

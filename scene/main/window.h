@@ -31,6 +31,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 
@@ -103,6 +104,13 @@ public:
 		WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN,
 		WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS,
 		WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS,
+	};
+
+	enum WindowButton {
+		WINDOW_BUTTON_NONE,
+		WINDOW_BUTTON_MINIMIZE,
+		WINDOW_BUTTON_MAXIMIZE,
+		WINDOW_BUTTON_CLOSE,
 	};
 
 private:
@@ -206,6 +214,27 @@ private:
 		Color title_outline_modulate;
 		int title_outline_size = 0;
 
+		Ref<StyleBox> decoration_button_normal;
+		Ref<StyleBox> decoration_button_hover;
+		Ref<StyleBox> decoration_button_pressed;
+
+		Color decoration_button_normal_modulate;
+		Color decoration_button_hover_modulate;
+		Color decoration_button_pressed_modulate;
+
+		Ref<Texture2D> minimize;
+		Ref<Texture2D> minimize_pressed;
+		int minimize_h_offset = 0;
+		int minimize_v_offset = 0;
+
+		Ref<Texture2D> maximize;
+		Ref<Texture2D> maximize_pressed;
+		Ref<Texture2D> maximize_disabled;
+		Ref<Texture2D> restore;
+		Ref<Texture2D> restore_pressed;
+		int maximize_h_offset = 0;
+		int maximize_v_offset = 0;
+
 		Ref<Texture2D> close;
 		Ref<Texture2D> close_pressed;
 		int close_h_offset = 0;
@@ -236,6 +265,25 @@ private:
 	Ref<Shortcut> debugger_stop_shortcut;
 
 	static int root_layout_direction;
+
+	RID decoration_canvas;
+	WindowButton window_button_hover = WINDOW_BUTTON_NONE;
+	WindowButton window_button_pressed = WINDOW_BUTTON_NONE;
+	Rect2 minimize_button_rect;
+	Rect2 maximize_button_rect;
+	Rect2 close_button_rect;
+	bool window_buttons_offset_customized = false;
+	Vector2i window_buttons_offset;
+	void _create_decoration_canvas();
+	void _update_decoration();
+	bool _get_decoration_visible() const;
+	Rect2 _translate_decoration_rect(const Rect2 &p_rect, const Transform2D &p_window_transform);
+	void _draw_window_button_decoration(const Rect2 &p_button_rect, WindowButton p_window_button);
+	Ref<Texture2D> _get_decoration_button_icon(WindowButton p_window_button);
+	Ref<StyleBox> _get_decoration_button_style_box(WindowButton p_window_button);
+	Color _get_decoration_button_modulate(WindowButton p_window_button);
+	bool _handle_window_buttons(const Ref<InputEvent> &p_event);
+	Vector2i _get_window_buttons_offset() const;
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
@@ -315,6 +363,7 @@ public:
 
 	void show();
 	void hide();
+	void send_close_request();
 
 	void set_transient(bool p_transient);
 	bool is_transient() const;
@@ -463,6 +512,11 @@ public:
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
+
+	void set_window_buttons_offset(const Vector2i &p_offset);
+	Vector2i get_window_buttons_offset() const;
+	Vector2i get_safe_title_margins_left() const;
+	Vector2i get_safe_title_margins_right() const;
 
 	//
 

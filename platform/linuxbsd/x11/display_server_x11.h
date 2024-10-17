@@ -207,10 +207,31 @@ class DisplayServerX11 : public DisplayServer {
 		bool is_popup = false;
 		bool layered_window = false;
 		bool mpass = false;
+		bool extend_to_title = false;
 
 		Rect2i parent_safe_rect;
 
 		unsigned int focus_order = 0;
+
+		// Variables to track the resizing state
+		Cursor resize_border_cursor = None;
+		int resize_edge = 0;
+		int resize_origin_mouse_x, resize_origin_mouse_y = 0;
+		int resize_origin_width, resize_origin_height = 0;
+		int resize_origin_position_x, resize_origin_position_y = 0;
+	};
+
+	const int RESIZE_BORDER = 5;
+	enum ResizeEdges {
+		RESIZE_EDGE_NONE = 0,
+		RESIZE_EDGE_LEFT = 1,
+		RESIZE_EDGE_RIGHT = 1 << 1,
+		RESIZE_EDGE_TOP = 1 << 2,
+		RESIZE_EDGE_BOTTOM = 1 << 3,
+		RESIZE_EDGE_TOP_LEFT = RESIZE_EDGE_TOP | RESIZE_EDGE_LEFT,
+		RESIZE_EDGE_TOP_RIGHT = RESIZE_EDGE_TOP | RESIZE_EDGE_RIGHT,
+		RESIZE_EDGE_BOTTOM_LEFT = RESIZE_EDGE_BOTTOM | RESIZE_EDGE_LEFT,
+		RESIZE_EDGE_BOTTOM_RIGHT = RESIZE_EDGE_BOTTOM | RESIZE_EDGE_RIGHT
 	};
 
 	Point2i im_selection;
@@ -375,6 +396,10 @@ class DisplayServerX11 : public DisplayServer {
 	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
 
+	int _detect_resize_edge(int p_mouse_x, int p_mouse_y, const WindowData &p_wd);
+	void _handle_resize(XEvent *p_event, WindowData &p_wd);
+	bool _handle_border_motion(XEvent *p_event, WindowData &p_wd);
+
 protected:
 	void _window_changed(XEvent *event);
 
@@ -509,6 +534,8 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+	virtual bool window_maximize_on_title_dbl_click() const override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

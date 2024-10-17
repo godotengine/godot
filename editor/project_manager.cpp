@@ -1053,20 +1053,27 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 }
 
 void ProjectManager::_titlebar_resized() {
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
-	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	Window *w = get_window();
+	if (!w) {
+		return;
+	}
+
+	// On Windows and Linux, we will let the window button in the corner, same as the
+	// default OS buttons.
+#ifdef MACOS_ENABLED
+	w->set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2));
+#endif
+
+	const Vector2i &left_margin = w->get_safe_title_margins_left();
+	const Vector2i &right_margin = w->get_safe_title_margins_right();
 	if (left_menu_spacer) {
-		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
-		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
-		right_spacer->set_custom_minimum_size(Size2(w, 0));
+		left_menu_spacer->set_custom_minimum_size(Size2(left_margin.x, 0));
 	}
 	if (right_menu_spacer) {
-		int w = (root_container->is_layout_rtl()) ? margin.x : margin.y;
-		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
-		left_spacer->set_custom_minimum_size(Size2(w, 0));
+		right_menu_spacer->set_custom_minimum_size(Size2(right_margin.x, 0));
 	}
 	if (title_bar) {
-		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+		title_bar->set_custom_minimum_size(Size2(0, MAX(left_margin.y, right_margin.y) - title_bar->get_global_position().y));
 	}
 }
 
