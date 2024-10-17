@@ -43,7 +43,6 @@
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			load->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
