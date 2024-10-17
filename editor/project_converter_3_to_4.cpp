@@ -36,6 +36,7 @@
 
 #ifdef MODULE_REGEX_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -523,6 +524,7 @@ bool ProjectConverter3To4::convert() {
 	print_line(vformat("Conversion ended - all files(%d), converted files: (%d), not converted files: (%d).", collected_files.size(), converted_files, collected_files.size() - converted_files));
 	uint64_t conversion_end_time = Time::get_singleton()->get_ticks_msec();
 	print_line(vformat("Conversion of all files took %10.3f seconds.", (conversion_end_time - conversion_start_time) / 1000.0));
+	update_translations_path();
 	return true;
 }
 
@@ -730,6 +732,15 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 		}
 	}
 	return collected_files;
+}
+
+// Updates the path for *.localization files added in the project settings.
+void ProjectConverter3To4::update_translations_path() {
+	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
+		PackedStringArray old_path_translations = ProjectSettings::get_singleton()->get("locale/translations");
+		ProjectSettings::get_singleton()->set("internationalization/locale/translations", old_path_translations);
+		ProjectSettings::get_singleton()->save();
+	}
 }
 
 Vector<SourceLine> ProjectConverter3To4::split_lines(const String &text) {
