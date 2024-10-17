@@ -248,11 +248,19 @@ void EditorFileSystem::_first_scan_filesystem() {
 	ep.step(TTR("Scanning file structure..."), 0, true);
 	nb_files_total = _scan_new_dir(first_scan_root_dir, d);
 
+	// Preloading GDExtensions file extensions to prevent looping on all the resource loaders
+	// for each files in _first_scan_process_scripts.
+	List<String> gdextension_extensions;
+	ResourceLoader::get_recognized_extensions_for_type("GDExtension", &gdextension_extensions);
+	// We can assume that an extension is not loaded from a tres or res file.
+	gdextension_extensions.erase("res");
+	gdextension_extensions.erase("tres");
+
 	// This loads the global class names from the scripts and ensures that even if the
 	// global_script_class_cache.cfg was missing or invalid, the global class names are valid in ScriptServer.
 	// At the same time, to prevent looping multiple times in all files, it looks for extensions.
 	ep.step(TTR("Loading global class names..."), 1, true);
-	_first_scan_process_scripts(first_scan_root_dir, existing_class_names, extensions);
+	_first_scan_process_scripts(first_scan_root_dir, gdextension_extensions, existing_class_names, extensions);
 
 	// Removing invalid global class to prevent having invalid paths in ScriptServer.
 	_remove_invalid_global_class_names(existing_class_names);
@@ -276,9 +284,9 @@ void EditorFileSystem::_first_scan_filesystem() {
 	ep.step(TTR("Starting file scan..."), 5, true);
 }
 
-void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_scan_dir, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions) {
+void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_scan_dir, List<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions) {
 	for (ScannedDirectory *scan_sub_dir : p_scan_dir->subdirs) {
-		_first_scan_process_scripts(scan_sub_dir, p_existing_class_names, p_extensions);
+		_first_scan_process_scripts(scan_sub_dir, p_gdextension_extensions, p_existing_class_names, p_extensions);
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
@@ -293,24 +301,29 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 				break;
 			}
 		}
-		if (!is_script) {
-			continue; // Not a script.
+		if (is_script) {
+			String path = p_scan_dir->full_path.path_join(scan_file);
+			String type = ResourceLoader::get_resource_type(path);
+
+			if (ClassDB::is_parent_class(type, SNAME("Script"))) {
+				String script_class_extends;
+				String script_class_icon_path;
+				String script_class_name = _get_global_script_class(type, path, &script_class_extends, &script_class_icon_path);
+				_register_global_class_script(path, path, type, script_class_name, script_class_extends, script_class_icon_path);
+
+				if (!script_class_name.is_empty()) {
+					p_existing_class_names.insert(script_class_name);
+				}
+			}
 		}
 
-		String path = p_scan_dir->full_path.path_join(scan_file);
-		String type = ResourceLoader::get_resource_type(path);
-
-		if (ClassDB::is_parent_class(type, SNAME("Script"))) {
-			String script_class_extends;
-			String script_class_icon_path;
-			String script_class_name = _get_global_script_class(type, path, &script_class_extends, &script_class_icon_path);
-			_register_global_class_script(path, path, type, script_class_name, script_class_extends, script_class_icon_path);
-
-			if (!script_class_name.is_empty()) {
-				p_existing_class_names.insert(script_class_name);
+		// Check for GDExtensions.
+		if (p_gdextension_extensions.find(ext)) {
+			String path = p_scan_dir->full_path.path_join(scan_file);
+			String type = ResourceLoader::get_resource_type(path);
+			if (type == SNAME("GDExtension")) {
+				p_extensions.insert(path);
 			}
-		} else if (type == SNAME("GDExtension")) {
-			p_extensions.insert(path);
 		}
 	}
 }
