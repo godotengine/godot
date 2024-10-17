@@ -51,6 +51,9 @@
 		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" default="Vector3(0, 0, 0)">
 			Sets the origin offset to be used when this [ReflectionProbe] is in [member box_projection] mode. This can be set to a non-zero value to ensure a reflection fits a rectangle-shaped room, while reducing the number of objects that "get in the way" of the reflection.
 		</member>
+		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
+			Sets the priority of this probe. Only probes with the highest priority that touches a fragment is used. If more than one probe matches they are blended.
+		</member>
 		<member name="reflection_mask" type="int" setter="set_reflection_mask" getter="get_reflection_mask" default="1048575">
 			Sets the reflection mask which determines what objects have reflections applied from this probe. Every [VisualInstance3D] with a layer included in this reflection mask will have reflections applied from this probe. See also [member cull_mask], which can be used to exclude objects from appearing in the reflection while still making them affected by the [ReflectionProbe].
 		</member>

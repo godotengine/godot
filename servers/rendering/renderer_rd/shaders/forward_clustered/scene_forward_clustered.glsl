@@ -1857,6 +1857,7 @@ void fragment_shader(in SceneData scene_data) {
 
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+		uint priority = 0;
 
 		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 3;
 
@@ -1907,7 +1908,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; //not masked
 				}
 
-				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum, priority);
 			}
 		}
 
