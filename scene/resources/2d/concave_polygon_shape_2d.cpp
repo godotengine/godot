@@ -105,6 +105,10 @@ real_t ConcavePolygonShape2D::get_enclosing_radius() const {
 	return Math::sqrt(r);
 }
 
+bool ConcavePolygonShape2D::contains_point(const Vector2 &p_point) const {
+	return false; //sorry again
+}
+
 void ConcavePolygonShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_segments", "segments"), &ConcavePolygonShape2D::set_segments);
 	ClassDB::bind_method(D_METHOD("get_segments"), &ConcavePolygonShape2D::get_segments);
