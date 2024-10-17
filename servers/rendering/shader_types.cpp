@@ -284,6 +284,7 @@ ShaderTypes::ShaderTypes() {
 
 	{
 		ShaderLanguage::StageFunctionInfo func;
+		func.skip_function = "vertex";
 		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("sdf_pos", ShaderLanguage::TYPE_VEC2));
 		func.return_type = ShaderLanguage::TYPE_FLOAT; //whether it could emit
 		shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].stage_functions["texture_sdf"] = func;
@@ -297,6 +298,7 @@ ShaderTypes::ShaderTypes() {
 
 	{
 		ShaderLanguage::StageFunctionInfo func;
+		func.skip_function = "vertex";
 		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("uv", ShaderLanguage::TYPE_VEC2));
 		func.return_type = ShaderLanguage::TYPE_VEC2; //whether it could emit
 		shader_modes[RS::SHADER_CANVAS_ITEM].functions["fragment"].stage_functions["screen_uv_to_sdf"] = func;

@@ -859,6 +859,7 @@ public:
 
 		Vector<Argument> arguments;
 		DataType return_type = TYPE_VOID;
+		String skip_function;
 	};
 
 	struct ModeInfo {
