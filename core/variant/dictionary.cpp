@@ -152,6 +152,21 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	}
 }
 
+void Dictionary::set(const Variant &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	Variant key = p_key;
+	ERR_FAIL_COND(!_p->typed_key.validate(key, "set"));
+	operator[](key) = p_value;
+}
+
+Error Dictionary::set_safe(const Variant &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Dictionary is in read-only state.");
+	Variant key = p_key;
+	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "set_safe"), ERR_INVALID_PARAMETER);
+	operator[](key) = p_value;
+	return OK;
+}
+
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get_valid"), Variant());
@@ -179,6 +194,7 @@ Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get"), p_default);
 	const Variant *result = getptr(key);
 	if (!result) {
+		ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Dictionary is in read-only state.");
 		Variant value = p_default;
 		ERR_FAIL_COND_V(!_p->typed_value.validate(value, "add"), value);
 		operator[](key) = value;
