@@ -34,7 +34,7 @@ def generate_bundle(target, source, env):
         if not os.path.isdir(app_dir + "/Contents/MacOS"):
             os.mkdir(app_dir + "/Contents/MacOS")
         if target_bin != "":
-            shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
+            shutil.copy(target_bin, app_dir + "/Contents/MacOS/Blazium")
         if "mono" in env.module_version_string:
             shutil.copytree(Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
         version = get_build_version(False)

@@ -687,7 +687,7 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 	}
 	return ret;
 #else
-	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
+	ERR_FAIL_V_MSG(Vector<String>(), "Blazium was compiled without fontconfig, system font support is disabled.");
 #endif
 }
 
@@ -793,7 +793,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	return ret;
 #else
-	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
+	ERR_FAIL_V_MSG(Vector<String>(), "Blazium was compiled without fontconfig, system font support is disabled.");
 #endif
 }
 
@@ -849,7 +849,7 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 
 	return String();
 #else
-	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
+	ERR_FAIL_V_MSG(String(), "Blazium was compiled without fontconfig, system font support is disabled.");
 #endif
 }
 

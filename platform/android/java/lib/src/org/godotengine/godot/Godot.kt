@@ -209,7 +209,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			val window = activity.window
 			window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
 
-			Log.v(TAG, "Initializing Godot plugin registry")
+			Log.v(TAG, "Initializing Blazium plugin registry")
 			GodotPluginRegistry.initializePluginRegistry(this, primaryHost.getHostPlugins(this))
 			if (io == null) {
 				io = GodotIO(activity)
@@ -353,15 +353,15 @@ class Godot(private val context: Context) : SensorEventListener {
 					fileAccessHandler,
 					useApkExpansion,
 				)
-				Log.v(TAG, "Godot native layer initialization completed: $nativeLayerInitializeCompleted")
+				Log.v(TAG, "Blazium native layer initialization completed: $nativeLayerInitializeCompleted")
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
-					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
+					throw IllegalStateException("Unable to setup the Blazium engine! Aborting...")
 				} else {
-					Log.v(TAG, "Godot native layer setup completed")
+					Log.v(TAG, "Blazium native layer setup completed")
 				}
 			}
 		} finally {

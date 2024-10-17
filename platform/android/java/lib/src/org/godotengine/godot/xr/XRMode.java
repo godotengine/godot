@@ -31,7 +31,7 @@
 package org.godotengine.godot.xr;
 
 /**
- * Godot available XR modes.
+ * Blazium available XR modes.
  */
 public enum XRMode {
 	REGULAR(0, "Regular", "--xr_mode_regular", "Default Android Gamepad"), // Regular/flatscreen

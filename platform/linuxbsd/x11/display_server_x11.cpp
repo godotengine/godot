@@ -5228,13 +5228,13 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 		CharString name_str;
 		switch (context) {
 			case CONTEXT_EDITOR:
-				name_str = "Godot_Editor";
+				name_str = "Blazium_Editor";
 				break;
 			case CONTEXT_PROJECTMAN:
-				name_str = "Godot_ProjectList";
+				name_str = "Blazium_ProjectList";
 				break;
 			case CONTEXT_ENGINE:
-				name_str = "Godot_Engine";
+				name_str = "Blazium_Engine";
 				break;
 		}
 
@@ -5242,12 +5242,12 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 		if (context == CONTEXT_ENGINE) {
 			String config_name = GLOBAL_GET("application/config/name");
 			if (config_name.length() == 0) {
-				class_str = "Godot_Engine";
+				class_str = "Blazium_Engine";
 			} else {
 				class_str = config_name.utf8();
 			}
 		} else {
-			class_str = "Godot";
+			class_str = "Blazium";
 		}
 
 		classHint->res_class = class_str.ptrw();
@@ -5638,7 +5638,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		}
 
 		/* set the titlebar name */
-		XStoreName(x11_display, wd.x11_window, "Godot");
+		XStoreName(x11_display, wd.x11_window, "Blazium");
 		XSetWMProtocols(x11_display, wd.x11_window, &wm_delete, 1);
 		if (xdnd_aware != None) {
 			XChangeProperty(x11_display, wd.x11_window, xdnd_aware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&xdnd_version, 1);
@@ -6217,7 +6217,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 			if (use_prime) {
 				print_line("Found discrete GPU, setting DRI_PRIME=1 to use it.");
-				print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
+				print_line("Note: Set DRI_PRIME=0 in the environment to disable Blazium from using the discrete GPU.");
 				setenv("DRI_PRIME", "1", 1);
 			}
 		}

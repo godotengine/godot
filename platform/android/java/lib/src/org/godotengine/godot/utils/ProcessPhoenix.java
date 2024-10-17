@@ -75,7 +75,7 @@ public final class ProcessPhoenix extends Activity {
     context.startActivity(intent);
   }
 
-  // -- GODOT start --
+  // -- BLAZIUM start --
   /**
    * Finish the activity and kill its process
    */
@@ -94,7 +94,7 @@ public final class ProcessPhoenix extends Activity {
     Runtime.getRuntime().exit(0); // Kill kill kill!
   }
 
-  // -- GODOT end --
+  // -- BLAZIUM end --
 
   private static Intent getRestartIntent(Context context) {
     String packageName = context.getPackageName();
@@ -111,11 +111,11 @@ public final class ProcessPhoenix extends Activity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    // -- GODOT start --
+    // -- BLAZIUM start --
     ArrayList<Intent> intents = getIntent().getParcelableArrayListExtra(KEY_RESTART_INTENTS);
     startActivities(intents.toArray(new Intent[intents.size()]));
     forceQuit(this, getIntent().getIntExtra(KEY_MAIN_PROCESS_PID, -1));
-    // -- GODOT end --
+    // -- BLAZIUM end --
   }
 
   /**

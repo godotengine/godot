@@ -38,10 +38,10 @@
 #include <jni.h>
 
 /**
- * Converts JNI jstring to Godot String.
+ * Converts JNI jstring to Blazium String.
  * @param source Source JNI string. If null an empty string is returned.
  * @param env JNI environment instance. If null obtained by get_jni_env().
- * @return Godot string instance.
+ * @return Blazium string instance.
  */
 static inline String jstring_to_string(jstring source, JNIEnv *env = nullptr) {
 	String result;

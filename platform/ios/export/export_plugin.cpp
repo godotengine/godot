@@ -1977,7 +1977,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 		plugin_format["initialization"] = plugin_initialization_cpp_code;
 		plugin_format["deinitialization"] = plugin_deinitialization_cpp_code;
 
-		String plugin_cpp_code = "\n// Godot Plugins\n"
+		String plugin_cpp_code = "\n// Blazium Plugins\n"
 								 "void godot_ios_plugins_initialize();\n"
 								 "void godot_ios_plugins_deinitialize();\n"
 								 "// Exported Plugins\n\n"

@@ -95,7 +95,7 @@ android {
 
         missingDimensionStrategy 'products', 'editor'
         manifestPlaceholders += [
-            editorAppName: "Godot Editor 4",
+            editorAppName: "Blazium Editor 4",
             editorBuildSuffix: ""
         ]
     }

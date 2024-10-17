@@ -112,7 +112,7 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 	return result;
 }
 
-/* Can be handled by Info.plist. Not yet supported by Godot.
+/* Can be handled by Info.plist. Not yet supported by Blazium.
 
 // MARK: Scene
 
