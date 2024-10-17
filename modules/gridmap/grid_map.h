@@ -33,12 +33,41 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/multimesh.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
 class PhysicsMaterial;
+
+class GridMapGIData : public Resource {
+	GDCLASS(GridMapGIData, Resource);
+
+	struct BakedMesh {
+		Ref<Mesh> mesh;
+		RID instance;
+	};
+
+	Vector<BakedMesh> instantiated_baked_meshes;
+	Vector<Ref<Mesh>> baked_meshes;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void add_instantiated_baked_mesh(Ref<Mesh> p_mesh, RID instance);
+	void add_baked_mesh(Ref<Mesh> p_mesh);
+
+	void clear_baked_meshes();
+	void clear_instantiated_baked_meshes();
+
+	Array get_baked_meshes();
+	void set_baked_meshes(Array meshes);
+
+	Array get_instantiated_baked_meshes();
+
+	GridMapGIData();
+	~GridMapGIData();
+};
 
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
@@ -216,7 +245,7 @@ class GridMap : public Node3D {
 		RID instance;
 	};
 
-	Vector<BakedMesh> baked_meshes;
+	Ref<GridMapGIData> gi_data;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -249,6 +278,9 @@ public:
 
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
+
+	void set_gi_data(Ref<GridMapGIData> p_material);
+	Ref<GridMapGIData> get_gi_data() const;
 
 	Array get_collision_shapes() const;
 
@@ -292,8 +324,17 @@ public:
 
 	Array get_meshes() const;
 
+	void ensure_baked_meshes();
 	void clear_baked_meshes();
+	Array get_baked_meshes() const;
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);
+	void add_baked_mesh(Ref<Mesh> p_mesh);
+	void set_baked_meshes(Array p_meshes);
+
+	void clear_instantiated_baked_meshes();
+	Array get_instantiated_baked_meshes();
+	void make_instantiated_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);
+	void add_instantiated_baked_mesh(Ref<Mesh> p_mesh, RID p_instance);
 
 	void clear();
 
