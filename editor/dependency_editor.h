@@ -99,6 +99,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	Label *text = nullptr;
 	Tree *owners = nullptr;
 
+	ItemList *to_be_deleted_files = nullptr;
+
 	HashMap<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
 	Vector<String> files_to_delete;
@@ -122,6 +124,7 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
 	void _find_localization_remaps_of_removed_files(Vector<RemovedDependency> &p_removed);
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
+	void show_delete_list();
 
 	void ok_pressed() override;
 
