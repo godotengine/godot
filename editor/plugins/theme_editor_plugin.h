@@ -43,6 +43,7 @@ class CheckButton;
 class EditorFileDialog;
 class ItemList;
 class Label;
+class LineEdit;
 class OptionButton;
 class PanelContainer;
 class TabBar;
@@ -254,14 +255,16 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _dialog_about_to_show();
 	void _update_edit_types();
 	void _edited_type_selected();
+	void _edited_type_edited();
 	void _edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _update_edit_item_tree(String p_item_type);
 	void _item_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
-	void _add_theme_type(const String &p_new_text);
-	void _add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type);
+	void _add_theme_type();
+	void _add_theme_item(Theme::DataType p_data_type, const String &p_item_name, const String &p_item_type);
 	void _remove_theme_type(const String &p_theme_type);
+	void _rename_theme_type(const String &p_old_theme_type, const String &p_new_theme_type);
 	void _remove_data_type_items(Theme::DataType p_data_type, String p_item_type);
 	void _remove_class_items();
 	void _remove_custom_items();
@@ -345,6 +348,10 @@ class ThemeTypeEditor : public MarginContainer {
 
 	OptionButton *theme_type_list = nullptr;
 	Button *add_type_button = nullptr;
+	Button *rename_type_button = nullptr;
+	ConfirmationDialog *theme_type_rename_dialog = nullptr;
+	LineEdit *theme_type_rename_line_edit = nullptr;
+	Button *remove_type_button = nullptr;
 
 	CheckButton *show_default_items_button = nullptr;
 
@@ -381,6 +388,9 @@ class ThemeTypeEditor : public MarginContainer {
 
 	void _list_type_selected(int p_index);
 	void _add_type_button_cbk();
+	void _rename_type_button_cbk();
+	void _theme_type_rename_dialog_confirmed();
+	void _remove_type_button_cbk();
 	void _add_default_type_items();
 
 	void _update_add_button(const String &p_text, LineEdit *p_for_edit);
