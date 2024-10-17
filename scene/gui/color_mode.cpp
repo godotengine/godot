@@ -45,8 +45,7 @@ String ColorModeRGB::get_slider_label(int idx) const {
 
 float ColorModeRGB::get_slider_max(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
-	Color color = color_picker->get_pick_color();
-	return next_power_of_2(MAX(255, color.components[idx] * 255.0)) - 1;
+	return slider_max[idx];
 }
 
 float ColorModeRGB::get_slider_value(int idx) const {
@@ -252,30 +251,27 @@ void ColorModeRAW::slider_draw(int p_which) {
 		left_color.a = 0;
 		right_color = color;
 		right_color.a = 1;
-
-		col.set(0, left_color);
-		col.set(1, right_color);
-		col.set(2, right_color);
-		col.set(3, left_color);
-		pos.set(0, Vector2(0, 0));
-		pos.set(1, Vector2(size.x, 0));
-		pos.set(2, Vector2(size.x, margin));
-		pos.set(3, Vector2(0, margin));
-
-		slider->draw_polygon(pos, col);
-	}
-}
-
-bool ColorModeRAW::apply_theme() const {
-	for (int i = 0; i < 4; i++) {
-		HSlider *slider = color_picker->get_slider(i);
-		slider->remove_theme_icon_override("grabber");
-		slider->remove_theme_icon_override("grabber_highlight");
-		slider->remove_theme_style_override("slider");
-		slider->remove_theme_constant_override("grabber_offset");
+	} else {
+		left_color = Color(
+				p_which == 0 ? 0 : color.r,
+				p_which == 1 ? 0 : color.g,
+				p_which == 2 ? 0 : color.b);
+		right_color = Color(
+				p_which == 0 ? 1 : color.r,
+				p_which == 1 ? 1 : color.g,
+				p_which == 2 ? 1 : color.b);
 	}
 
-	return true;
+	col.set(0, left_color);
+	col.set(1, right_color);
+	col.set(2, right_color);
+	col.set(3, left_color);
+	pos.set(0, Vector2(0, 0));
+	pos.set(1, Vector2(size.x, 0));
+	pos.set(2, Vector2(size.x, margin));
+	pos.set(3, Vector2(0, margin));
+
+	slider->draw_polygon(pos, col);
 }
 
 void ColorModeOKHSL::_value_changed() {
