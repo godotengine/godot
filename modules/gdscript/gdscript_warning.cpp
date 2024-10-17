@@ -163,17 +163,17 @@ String GDScriptWarning::get_message() const {
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 		case MISMATCHED_TYPE:
 			CHECK_SYMBOLS(5);
-			if(symbols[2] == "size") {
+			if (symbols[2] == "size") {
 				return vformat(R"(The match expression will not match this pattern. The pattern type is %s of size %s but the match expression type is %s of size %s.)", symbols[0], symbols[3], symbols[1], symbols[4]);
-			}else if(symbols[2] == "array_typed") {
+			} else if (symbols[2] == "array_typed") {
 				return vformat(R"(The match expression will not match this pattern. The pattern type is %s containing %s but the match expression type is %s.)", symbols[0], symbols[3], symbols[1]);
-			}else if(symbols[2] == "array_typed_match") {
+			} else if (symbols[2] == "array_typed_match") {
 				return vformat(R"(The match expression will not match this pattern. The pattern type is %s but the match expression type is %s containing multiple types.)", symbols[0], symbols[1]);
-			}else if(symbols[2] == "dict") {
+			} else if (symbols[2] == "dict") {
 				return vformat(R"(The match expression will not match this pattern. The pattern type is %s missing %s but the match expression type is %s containing those terms.)", symbols[0], symbols[3], symbols[1]);
-			}else if(symbols[2] == "dict_typed") {
+			} else if (symbols[2] == "dict_typed") {
 				return vformat(R"(The match expression will not match this pattern. The pattern type is %s including %s but the match expression type is %s.)", symbols[0], symbols[3], symbols[1]);
-			}else {
+			} else {
 				return vformat(R"(The match expression will not match this pattern. The pattern type is %s but the match expression type is %s.)", symbols[0], symbols[1]);
 			}
 #ifndef DISABLE_DEPRECATED
