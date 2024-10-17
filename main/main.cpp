@@ -1468,8 +1468,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	audio_server = memnew(AudioServer);
 	audio_server->init();
 
-	// also init our arvr_server from here
-	arvr_server = memnew(ARVRServer);
+	// also init our arvr_server from here, we also need access to our singleton as early as possible
+	{
+		arvr_server = memnew(ARVRServer);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("ARVRServer", ARVRServer::get_singleton()));
+	}
 
 	// and finally setup this property under visual_server
 	VisualServer::get_singleton()->set_render_loop_enabled(!disable_render_loop);

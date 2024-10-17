@@ -3516,6 +3516,14 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 						storage->shaders.copy.set_conditional(CopyShaderGLES2::SEP_CBCR_TEXTURE, true);
 						storage->shaders.copy.set_conditional(CopyShaderGLES2::YCBCR_TO_RGB, true);
+					} else if (feed->get_datatype() == CameraFeed::FEED_EXTERNAL) {
+						RID camera_RGBA = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
+
+						VS::get_singleton()->texture_bind(camera_RGBA, 0);
+
+						// TODO: we need to find a better way of doing this
+						storage->shaders.copy.add_custom_define("#extension GL_OES_EGL_image_external : require\n");
+						storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_EXTERNAL_SAMPLER, true);
 					};
 
 					storage->shaders.copy.bind();
@@ -3528,10 +3536,12 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 					// turn off everything used
+					storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_EXTERNAL_SAMPLER, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES2::SEP_CBCR_TEXTURE, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES2::YCBCR_TO_RGB, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_DISPLAY_TRANSFORM, false);
+					storage->shaders.copy.clear_custom_defines();
 
 					//restore
 					glEnable(GL_BLEND);
@@ -3541,6 +3551,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 				} else {
 					// don't have a feed, just show greenscreen :)
 					clear_color = Color(0.0, 1.0, 0.0, 1.0);
+					storage->frame.clear_request = true;
 				}
 			} break;
 			case VS::ENV_BG_CANVAS: {

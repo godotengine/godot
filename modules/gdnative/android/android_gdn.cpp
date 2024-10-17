@@ -81,6 +81,15 @@ bool GDAPI godot_android_is_activity_resumed() {
 #endif
 }
 
+int GDAPI godot_android_get_display_rotation() {
+#ifdef __ANDROID__
+	OS_Android *os_android = (OS_Android *)OS::get_singleton();
+	return os_android->get_godot_java()->get_display_rotation();
+#else
+	return 0;
+#endif
+}
+
 #ifdef __cplusplus
 }
 #endif
