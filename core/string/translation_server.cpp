@@ -124,7 +124,7 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 
 String TranslationServer::_standardize_locale(const String &p_locale, bool p_add_defaults) const {
 	// Replaces '-' with '_' for macOS style locales.
-	String univ_locale = p_locale.replace("-", "_");
+	String univ_locale = p_locale.replace_char('-', '_');
 
 	// Extract locale elements.
 	String lang_name, script_name, country_name, variant_name;

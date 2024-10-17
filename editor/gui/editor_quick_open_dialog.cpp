@@ -312,7 +312,7 @@ int QuickOpenResultContainer::_sort_candidates(const String &p_query) {
 		return 0;
 	}
 
-	const PackedStringArray search_tokens = p_query.to_lower().replace("/", " ").split(" ", false);
+	const PackedStringArray search_tokens = p_query.to_lower().replace_char('/', ' ').split(" ", false);
 
 	if (search_tokens.is_empty()) {
 		return 0;

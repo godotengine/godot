@@ -478,7 +478,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 		builder.append("\n>> on function: ");
 		builder.append(String::utf8(p_function));
 		builder.append("()\n>> ");
-		builder.append(String::utf8(p_file).trim_prefix(self->base_dir).replace("\\", "/"));
+		builder.append(String::utf8(p_file).trim_prefix(self->base_dir).replace_char('\\', '/'));
 		builder.append("\n>> ");
 		builder.append(itos(p_line));
 	}
