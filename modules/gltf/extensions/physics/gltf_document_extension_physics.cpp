@@ -31,7 +31,10 @@
 #include "gltf_document_extension_physics.h"
 
 #include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/rigid_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
+
+using GLTFShapeIndex = int64_t;
 
 // Import process.
 Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
@@ -105,6 +108,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 				Array state_shapes = p_state->get_additional_data(StringName("GLTFPhysicsShapes"));
 				ERR_FAIL_INDEX_V_MSG(node_shape_index, state_shapes.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the shape index " + itos(node_shape_index) + " is not in the state shapes (size: " + itos(state_shapes.size()) + ").");
 				p_gltf_node->set_additional_data(StringName("GLTFPhysicsColliderShape"), state_shapes[node_shape_index]);
+				p_gltf_node->set_additional_data(StringName("GLTFPhysicsColliderShapeIndex"), node_shape_index);
 			} else {
 				// If this node is a collider but does not have a collider
 				// shape, then it only serves to combine together shapes.
@@ -119,6 +123,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 				Array state_shapes = p_state->get_additional_data(StringName("GLTFPhysicsShapes"));
 				ERR_FAIL_INDEX_V_MSG(node_shape_index, state_shapes.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the shape index " + itos(node_shape_index) + " is not in the state shapes (size: " + itos(state_shapes.size()) + ").");
 				p_gltf_node->set_additional_data(StringName("GLTFPhysicsTriggerShape"), state_shapes[node_shape_index]);
+				p_gltf_node->set_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"), node_shape_index);
 			} else {
 				// If this node is a trigger but does not have a trigger shape,
 				// then it's a trigger body, what Godot calls an Area3D node.
@@ -129,8 +134,8 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			}
 			// If this node defines explicit member shape nodes, save this information.
 			if (node_trigger.has("nodes")) {
-				Array node_trigger_nodes = node_trigger["nodes"];
-				p_gltf_node->set_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"), node_trigger_nodes);
+				Array compound_trigger_nodes = node_trigger["nodes"];
+				p_gltf_node->set_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"), compound_trigger_nodes);
 			}
 		}
 		if (physics_body_ext.has("motion") || physics_body_ext.has("type")) {
@@ -138,6 +143,144 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 		}
 	}
 	return OK;
+}
+
+bool _will_gltf_shape_become_subnode(Ref<GLTFState> p_state, const Ref<GLTFNode> p_gltf_node, GLTFNodeIndex p_gltf_node_index) {
+	if (p_gltf_node->has_additional_data(StringName("GLTFPhysicsBody"))) {
+		return true;
+	}
+	const TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+	const GLTFNodeIndex parent_index = p_gltf_node->get_parent();
+	if (parent_index == -1 || parent_index >= state_gltf_nodes.size()) {
+		return true;
+	}
+	const Ref<GLTFNode> parent_gltf_node = state_gltf_nodes[parent_index];
+	const Variant parent_body_maybe = parent_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
+	if (parent_body_maybe.get_type() != Variant::NIL) {
+		Ref<GLTFPhysicsBody> parent_body = parent_body_maybe;
+		// If the parent matches the triggerness, then this node will be generated as a shape (CollisionShape3D).
+		// Otherwise, if there is a mismatch, a body will be generated for this node, and a subnode will also be generated for the shape.
+		if (parent_body->get_body_type() == "trigger") {
+			return p_gltf_node->has_additional_data(StringName("GLTFPhysicsColliderShape"));
+		} else {
+			return p_gltf_node->has_additional_data(StringName("GLTFPhysicsTriggerShape"));
+		}
+	}
+	if (parent_gltf_node->has_additional_data(StringName("GLTFPhysicsColliderShape"))) {
+		return false;
+	}
+	if (parent_gltf_node->has_additional_data(StringName("GLTFPhysicsTriggerShape"))) {
+		return false;
+	}
+	Variant compound_trigger_maybe = parent_gltf_node->has_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"));
+	if (compound_trigger_maybe.get_type() != Variant::NIL) {
+		Array compound_trigger_nodes = compound_trigger_maybe;
+		// Remember, JSON only has numbers, not integers, so must cast to double.
+		return !compound_trigger_nodes.has((double)p_gltf_node_index);
+	}
+	return true;
+}
+
+NodePath _get_scene_node_path_for_shape_index(Ref<GLTFState> p_state, const GLTFNodeIndex p_shape_index) {
+	TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+	for (GLTFNodeIndex node_index = 0; node_index < state_gltf_nodes.size(); node_index++) {
+		const Ref<GLTFNode> gltf_node = state_gltf_nodes[node_index];
+		ERR_CONTINUE(gltf_node.is_null());
+		// Check if this node has a shape index and if it matches the one we are looking for.
+		Variant shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
+		if (shape_index_maybe.get_type() != Variant::INT) {
+			shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
+			if (shape_index_maybe.get_type() != Variant::INT) {
+				continue;
+			}
+		}
+		const GLTFShapeIndex shape_index = shape_index_maybe;
+		if (shape_index != p_shape_index) {
+			continue;
+		}
+		NodePath node_path = gltf_node->get_scene_node_path(p_state);
+		// At this point, we have found a node with the shape index we were looking for.
+		if (_will_gltf_shape_become_subnode(p_state, gltf_node, node_index)) {
+			Vector<StringName> sname_path = node_path.get_names();
+			sname_path.append(gltf_node->get_name() + "Shape");
+			node_path = NodePath(sname_path, false);
+		}
+		return node_path;
+	}
+	return NodePath();
+}
+
+Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::import_object_model_property(Ref<GLTFState> p_state, const PackedStringArray &p_split_json_pointer, const TypedArray<NodePath> &p_partial_paths) {
+	Ref<GLTFObjectModelProperty> ret;
+	if (p_split_json_pointer.size() != 6) {
+		// The only properties this class cares about are exactly 6 levels deep.
+		return ret;
+	}
+	ret.instantiate();
+	const String &prop_name = p_split_json_pointer[5];
+	if (p_split_json_pointer[0] == "extensions" && p_split_json_pointer[2] == "shapes") {
+		if (p_split_json_pointer[1] == "OMI_physics_shape" || p_split_json_pointer[1] == "KHR_collision_shapes") {
+			const GLTFNodeIndex shape_index = p_split_json_pointer[3].to_int();
+			NodePath node_path = _get_scene_node_path_for_shape_index(p_state, shape_index);
+			if (node_path.is_empty()) {
+				return ret;
+			}
+			String godot_prop_name = prop_name;
+			if (prop_name == "size") {
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (prop_name == "height" || prop_name == "radius") {
+				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			} else if (prop_name == "radiusBottom" || prop_name == "radiusTop") {
+				godot_prop_name = "radius";
+				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			} else {
+				// Not something we handle, return without appending a NodePath.
+				return ret;
+			}
+			// Example: `A/B/C/CollisionShape3D:shape:radius`.
+			Vector<StringName> subnames;
+			subnames.append("shape");
+			subnames.append(godot_prop_name);
+			node_path = NodePath(node_path.get_names(), subnames, false);
+			ret->append_node_path(node_path);
+		}
+	} else if (p_split_json_pointer[0] == "nodes" && p_split_json_pointer[2] == "extensions" && p_split_json_pointer[4] == "motion") {
+		if (p_split_json_pointer[3] == "OMI_physics_body" || p_split_json_pointer[3] == "KHR_physics_rigid_bodies") {
+			const GLTFNodeIndex node_index = p_split_json_pointer[1].to_int();
+			const TypedArray<GLTFNode> all_gltf_nodes = p_state->get_nodes();
+			ERR_FAIL_INDEX_V_MSG(node_index, all_gltf_nodes.size(), ret, "GLTF Physics: The node index " + itos(node_index) + " is not in the state nodes (size: " + itos(all_gltf_nodes.size()) + ").");
+			const Ref<GLTFNode> gltf_node = all_gltf_nodes[node_index];
+			NodePath node_path;
+			if (p_partial_paths.is_empty()) {
+				node_path = gltf_node->get_scene_node_path(p_state);
+			} else {
+				// The path is already computed for us, just grab it.
+				node_path = p_partial_paths[0];
+			}
+			if (prop_name == "mass") {
+				ret->append_path_to_property(node_path, "mass");
+				ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+			} else if (prop_name == "linearVelocity") {
+				ret->append_path_to_property(node_path, "linear_velocity");
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (prop_name == "angularVelocity") {
+				ret->append_path_to_property(node_path, "angular_velocity");
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (prop_name == "centerOfMass") {
+				ret->append_path_to_property(node_path, "center_of_mass");
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (prop_name == "inertiaDiagonal") {
+				ret->append_path_to_property(node_path, "inertia");
+				ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+			} else if (prop_name == "inertiaOrientation") {
+				WARN_PRINT("GLTF Physics: The 'inertiaOrientation' property is not supported by Godot.");
+			} else {
+				// Not something we handle, return without appending a NodePath.
+				return ret;
+			}
+		}
+	}
+	return ret;
 }
 
 void _setup_shape_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> p_gltf_shape) {
@@ -434,24 +577,126 @@ Array _get_or_create_state_shapes_in_state(Ref<GLTFState> p_state) {
 	return state_shapes;
 }
 
-Dictionary _export_node_shape(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> p_physics_shape) {
+GLTFShapeIndex _export_node_shape(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> p_physics_shape) {
 	Array state_shapes = _get_or_create_state_shapes_in_state(p_state);
-	int size = state_shapes.size();
+	GLTFShapeIndex size = state_shapes.size();
 	Dictionary shape_property;
 	Dictionary shape_dict = p_physics_shape->to_dictionary();
-	for (int i = 0; i < size; i++) {
+	for (GLTFShapeIndex i = 0; i < size; i++) {
 		Dictionary other = state_shapes[i];
 		if (other == shape_dict) {
 			// De-duplication: If we already have an identical shape,
 			// set the shape index to the existing one and return.
-			shape_property["shape"] = i;
-			return shape_property;
+			return i;
 		}
 	}
 	// If we don't have an identical shape, add it to the array.
 	state_shapes.push_back(shape_dict);
-	shape_property["shape"] = size;
-	return shape_property;
+	return size;
+}
+
+Error GLTFDocumentExtensionPhysics::export_preserialize(Ref<GLTFState> p_state) {
+	// Note: Need to do _export_node_shape before exporting animations, so export_node is too late.
+	TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+	for (Ref<GLTFNode> gltf_node : state_gltf_nodes) {
+		Ref<GLTFPhysicsShape> collider_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
+		if (collider_shape.is_valid()) {
+			GLTFShapeIndex collider_shape_index = _export_node_shape(p_state, collider_shape);
+			gltf_node->set_additional_data(StringName("GLTFPhysicsColliderShapeIndex"), collider_shape_index);
+		}
+		Ref<GLTFPhysicsShape> trigger_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShape"));
+		if (trigger_shape.is_valid()) {
+			GLTFShapeIndex trigger_shape_index = _export_node_shape(p_state, trigger_shape);
+			gltf_node->set_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"), trigger_shape_index);
+		}
+	}
+	return OK;
+}
+
+Ref<GLTFObjectModelProperty> GLTFDocumentExtensionPhysics::export_object_model_property(Ref<GLTFState> p_state, const NodePath &p_node_path, const Node *p_godot_node, GLTFNodeIndex p_gltf_node_index, const Object *p_target_object, int p_target_depth) {
+	Ref<GLTFObjectModelProperty> ret;
+	const Vector<StringName> &path_subnames = p_node_path.get_subnames();
+	if (path_subnames.is_empty()) {
+		return ret;
+	}
+	ret.instantiate();
+	const StringName &node_prop = path_subnames[0];
+	if (Object::cast_to<RigidBody3D>(p_target_object)) {
+		if (path_subnames.size() != 1) {
+			return ret;
+		}
+		// Example: `/nodes/0/extensions/OMI_physics_body/motion/mass`
+		PackedStringArray split_json_pointer;
+		split_json_pointer.append("nodes");
+		split_json_pointer.append(itos(p_gltf_node_index));
+		split_json_pointer.append("extensions");
+		split_json_pointer.append("OMI_physics_body");
+		split_json_pointer.append("motion");
+		if (node_prop == StringName("mass")) {
+			split_json_pointer.append("mass");
+			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+		} else if (node_prop == StringName("linear_velocity")) {
+			split_json_pointer.append("linearVelocity");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else if (node_prop == StringName("angular_velocity")) {
+			split_json_pointer.append("angularVelocity");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else if (node_prop == StringName("center_of_mass")) {
+			split_json_pointer.append("centerOfMass");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else if (node_prop == StringName("inertia")) {
+			split_json_pointer.append("inertiaDiagonal");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else {
+			// Not something we handle, return without setting the JSON pointer.
+			return ret;
+		}
+		ret->set_json_pointers({ split_json_pointer });
+	} else if (Object::cast_to<CollisionShape3D>(p_godot_node)) {
+		if (path_subnames.size() != 2) {
+			return ret;
+		}
+		// Example: `/extensions/OMI_physics_shape/shapes/0/box/size`
+		PackedStringArray split_json_pointer;
+		split_json_pointer.append("extensions");
+		split_json_pointer.append("OMI_physics_shape");
+		split_json_pointer.append("shapes");
+		TypedArray<GLTFNode> state_gltf_nodes = p_state->get_nodes();
+		ERR_FAIL_INDEX_V(p_gltf_node_index, state_gltf_nodes.size(), ret);
+		Ref<GLTFNode> gltf_node = state_gltf_nodes[p_gltf_node_index];
+		Variant shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
+		String shape_type;
+		if (shape_index_maybe.get_type() == Variant::INT) {
+			Ref<GLTFPhysicsShape> collider_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
+			shape_type = collider_shape->get_shape_type();
+		} else {
+			shape_index_maybe = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
+			if (shape_index_maybe.get_type() == Variant::INT) {
+				Ref<GLTFPhysicsShape> trigger_shape = gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShape"));
+				shape_type = trigger_shape->get_shape_type();
+			}
+		}
+		ERR_FAIL_COND_V(shape_index_maybe.get_type() != Variant::INT, ret);
+		GLTFShapeIndex shape_index = shape_index_maybe;
+		split_json_pointer.append(itos(shape_index));
+		split_json_pointer.append(shape_type);
+		const StringName &shape_prop = path_subnames[1];
+		if (shape_prop == StringName("size")) {
+			split_json_pointer.append("size");
+			ret->set_types(Variant::VECTOR3, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT3);
+		} else if (shape_prop == StringName("radius")) {
+			split_json_pointer.append("radius");
+			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+		} else if (shape_prop == StringName("height")) {
+			split_json_pointer.append("height");
+			ret->set_types(Variant::FLOAT, GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_FLOAT);
+		} else {
+			// Not something we handle, return without setting the JSON pointer.
+			return ret;
+		}
+		ret->set_json_pointers({ split_json_pointer });
+	}
+	return ret;
 }
 
 Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_node_json, Node *p_node) {
@@ -465,13 +710,16 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 			trigger_property["nodes"] = compound_trigger_nodes;
 		}
 	}
-	Ref<GLTFPhysicsShape> collider_shape = p_gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShape"));
-	if (collider_shape.is_valid()) {
-		physics_body_ext["collider"] = _export_node_shape(p_state, collider_shape);
+	Variant collider_shape_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsColliderShapeIndex"));
+	if (collider_shape_index.get_type() == Variant::INT) {
+		Dictionary collider_dict;
+		collider_dict["shape"] = collider_shape_index;
+		physics_body_ext["collider"] = collider_dict;
 	}
-	Ref<GLTFPhysicsShape> trigger_shape = p_gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShape"));
-	if (trigger_shape.is_valid()) {
-		physics_body_ext["trigger"] = _export_node_shape(p_state, trigger_shape);
+	Variant trigger_shape_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsTriggerShapeIndex"));
+	if (trigger_shape_index.get_type() == Variant::INT) {
+		Dictionary trigger_dict = physics_body_ext.get_or_add("trigger", {});
+		trigger_dict["shape"] = trigger_shape_index;
 	}
 	if (!physics_body_ext.is_empty()) {
 		Dictionary node_extensions = r_node_json["extensions"];

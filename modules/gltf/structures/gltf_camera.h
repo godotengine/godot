@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 
 class Camera3D;
+class GLTFObjectModelProperty;
 
 // Reference and test file:
 // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md
@@ -54,6 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static void set_fov_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop);
+
 	bool get_perspective() const { return perspective; }
 	void set_perspective(bool p_val) { perspective = p_val; }
 	real_t get_fov() const { return fov; }
