@@ -1981,9 +1981,8 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 		if (p_arg_names.size() != mi.arguments.size()) {
 			WARN_PRINT("Mismatch argument name count for virtual method: " + String(p_class) + "::" + p_method.name);
 		} else {
-			List<PropertyInfo>::Iterator itr = mi.arguments.begin();
-			for (int i = 0; i < p_arg_names.size(); ++itr, ++i) {
-				itr->name = p_arg_names[i];
+			for (int i = 0; i < p_arg_names.size(); ++i) {
+				mi.arguments.write[i].name = p_arg_names[i];
 			}
 		}
 	}
