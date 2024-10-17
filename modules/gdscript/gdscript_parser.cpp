@@ -886,7 +886,11 @@ void GDScriptParser::parse_extends() {
 		if (previous.literal.get_type() != Variant::STRING) {
 			push_error(vformat(R"(Only strings or identifiers can be used after "extends", found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
 		}
-		current_class->extends_path = previous.literal;
+		String extends_path = previous.literal;
+		if (extends_path.begins_with("uid://")) {
+			extends_path = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(extends_path));
+		}
+		current_class->extends_path = extends_path;
 
 		if (!match(GDScriptTokenizer::Token::PERIOD)) {
 			return;
