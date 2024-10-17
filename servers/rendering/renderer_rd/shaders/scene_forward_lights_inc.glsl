@@ -1,14 +1,34 @@
 // Functions related to lighting
 
+/* [Drobot2014a] Low Level Optimizations for GCN. */
+float sqrt_IEEE_int_approximation(float v) {
+	return intBitsToFloat(0x1fbd1df5 + (floatBitsToInt(v) >> 1));
+}
+
+vec2 sqrt_IEEE_int_approximation(vec2 v) {
+	return intBitsToFloat(0x1fbd1df5 + (floatBitsToInt(v) >> 1));
+}
+
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
 	float k = alpha / (1.0 - cos_theta_m * cos_theta_m + a * a);
 	return k * k * (1.0 / M_PI);
 }
 
-// From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
+// From "Course Notes: Moving Frostbite to PBR", page 12: https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
 float V_GGX(float NdotL, float NdotV, float alpha) {
-	return 0.5 / mix(2.0 * NdotL * NdotV, NdotL + NdotV, alpha);
+	// Original formulation of G_SmithGGX Correlated
+	// lambda_v = ( -1 + sqrt ( alphaG2 * (1 - NdotL2 ) / NdotL2 + 1) ) * 0.5 f ;
+	// lambda_l = ( -1 + sqrt ( alphaG2 * (1 - NdotV2 ) / NdotV2 + 1) ) * 0.5 f ;
+	// G_ SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l ) ;
+	// V_ SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * NdotL * NdotV ) ;
+
+	// This is the optimized version
+	// Caution: the " NdotL *" and " NdotV *" are explicitly inversed, this is not a mistake.
+	float Lambda_GGXV = NdotL * sqrt_IEEE_int_approximation((-NdotV * alpha + NdotV) * NdotV + alpha);
+	float Lambda_GGXL = NdotV * sqrt_IEEE_int_approximation((-NdotL * alpha + NdotL) * NdotL + alpha);
+
+	return 0.5 / (Lambda_GGXV + Lambda_GGXL);
 }
 
 float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
@@ -20,10 +40,14 @@ float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float c
 	return D;
 }
 
+// From "Course Notes: Moving Frostbite to PBR", page 12: https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
+// This is a modified version to take anisotropy into account
 float V_GGX_anisotropic(float alpha_x, float alpha_y, float TdotV, float TdotL, float BdotV, float BdotL, float NdotV, float NdotL) {
-	float Lambda_V = NdotL * length(vec3(alpha_x * TdotV, alpha_y * BdotV, NdotV));
-	float Lambda_L = NdotV * length(vec3(alpha_x * TdotL, alpha_y * BdotL, NdotL));
-	return 0.5 / (Lambda_V + Lambda_L);
+	float Lambda_GGXV = NdotL * sqrt_IEEE_int_approximation((-NdotV * (alpha_x * TdotV * TdotV + alpha_y * BdotV * BdotV) + NdotV) * NdotV + alpha_x * TdotV * TdotV + alpha_y * BdotV * BdotV);
+
+	float Lambda_GGXL = NdotV * sqrt_IEEE_int_approximation((-NdotL * (alpha_x * TdotL * TdotL + alpha_y * BdotL * BdotL) + NdotL) * NdotL + alpha_x * TdotL * TdotL + alpha_y * BdotL * BdotL);
+
+	return 0.5 / (Lambda_GGXV + Lambda_GGXL);
 }
 
 float SchlickFresnel(float u) {
@@ -205,7 +229,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float alpha_ggx = roughness * roughness;
 #if defined(LIGHT_ANISOTROPY_USED)
 
-		float aspect = sqrt(1.0 - anisotropy * 0.9);
+		float aspect = sqrt_IEEE_int_approximation(1.0 - anisotropy * 0.9);
 		float ax = alpha_ggx / aspect;
 		float ay = alpha_ggx * aspect;
 		float XdotH = dot(T, H);
@@ -343,7 +367,7 @@ float sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec
 		bool do_flip = sample_coord_length_sqaured > 1.0;
 
 		if (do_flip) {
-			float len = sqrt(sample_coord_length_sqaured);
+			float len = sqrt_IEEE_int_approximation(sample_coord_length_sqaured);
 			sample_coord = sample_coord * (2.0 / len - 1.0);
 		}
 
@@ -576,7 +600,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 	if (sc_use_light_soft_shadows() && omni_lights.data[idx].size > 0.0) {
 		float t = omni_lights.data[idx].size / max(0.001, light_length);
-		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
+		size_A = max(0.0, 1.0 - 1 / sqrt_IEEE_int_approximation(1 + t * t));
 	}
 
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -833,7 +857,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 	if (sc_use_light_soft_shadows() && spot_lights.data[idx].size > 0.0) {
 		float t = spot_lights.data[idx].size / max(0.001, light_length);
-		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
+		size_A = max(0.0, 1.0 - 1 / sqrt_IEEE_int_approximation(1 + t * t));
 	}
 
 #ifdef LIGHT_TRANSMITTANCE_USED
