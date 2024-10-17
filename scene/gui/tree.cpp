@@ -3517,7 +3517,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 
 			return nullptr;
 		} else {
-			if (p_item != root && !p_item->is_collapsed() && !p_item->get_children() && !p_item->get_next() && p_item->get_parent() != root && pos.y < h + cache.vseparation // pos.y < compute_item_height() + 2*vseparation
+			if (p_item != root && !p_item->is_collapsed() && !p_item->get_first_child() && !p_item->get_next() && p_item->get_parent() != root && pos.y < h + cache.vseparation // pos.y < compute_item_height() + 2*vseparation
 					&& drop_mode_flags != DROP_MODE_ON_ITEM) {
 				// This section considers drawing the line on the bottom of the tree
 				section = 2;
