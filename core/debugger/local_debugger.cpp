@@ -208,10 +208,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			print_variables(members, values, variable_prefix);
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
-			if (line.get_slice_count(" ") <= 1) {
-				print_line("Usage: print <expre>");
+			if (line.find_char(' ') < 0) {
+				print_line("Usage: print <expression>");
 			} else {
-				String expr = line.get_slicec(' ', 2);
+				String expr = line.split(" ", true, 1)[1];
 				String res = script_lang->debug_parse_stack_level_expression(current_frame, expr);
 				print_line(res);
 			}
