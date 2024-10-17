@@ -116,6 +116,8 @@
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_gradient_texture.h"
+#include "tests/scene/test_http_request.h"
+#include "tests/scene/test_http_request_manual_mock.h"
 #include "tests/scene/test_image_texture.h"
 #include "tests/scene/test_image_texture_3d.h"
 #include "tests/scene/test_instance_placeholder.h"
