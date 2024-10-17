@@ -2265,6 +2265,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
 			}
+
+			if (k->get_keycode() == Key::ESCAPE && freelook_active) {
+				set_freelook_active(false);
+			}
+
 			if (k->get_keycode() == Key::ESCAPE && !cursor.region_select) {
 				_clear_selected();
 				return;
@@ -2440,9 +2445,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		// Freelook doesn't work in orthogonal mode.
 		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
 			set_freelook_active(!is_freelook_active());
-
-		} else if (k->get_keycode() == Key::ESCAPE) {
-			set_freelook_active(false);
 		}
 
 		if (k->get_keycode() == Key::SPACE) {
