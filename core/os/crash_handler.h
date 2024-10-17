@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  crash_handler_macos.h                                                 */
+/*  crash_handler.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CRASH_HANDLER_MACOS_H
-#define CRASH_HANDLER_MACOS_H
+#ifndef CRASH_HANDLER_H
+#define CRASH_HANDLER_H
 
-#include "core/os/crash_handler.h"
+#include "os.h"
 
-class CrashHandler : public CrashHandlerBase {
-	static CrashHandler *singleton;
+class CrashHandlerBase {
+public:
+	struct ModuleData {
+		String fname; // Store.
+		uint64_t load_address = 0;
+	};
+	struct AddressData {
+		bool system = false;
+		int module_idx = -1; // Store.
+		uint64_t faddress = 0;
+		uint64_t address = 0; // Store.
+		uint64_t base = 0;
+		String fname;
+	};
+	struct TraceData {
+		LocalVector<ModuleData> modules;
+		LocalVector<AddressData> trace;
+		int signal = 0;
+	};
+
+protected:
+	bool disabled;
 
 public:
-	static CrashHandler *get_singleton() { return singleton; }
+	virtual void initialize() = 0;
 
-	virtual void initialize() override;
+	virtual TraceData collect_trace(int p_signal) const = 0;
+	virtual void decode_address(TraceData &p_data, int p_address_idx, bool p_remap = false) const = 0;
 
-	virtual TraceData collect_trace(int p_signal) const override;
-	virtual void decode_address(TraceData &p_data, int p_address_idx, bool p_remap) const override;
+	void print_header(int p_signal) const;
+	void print_trace(const TraceData &p_data) const;
+	String encode_trace(const TraceData &p_data) const;
+	TraceData decode_trace(const String &p_trace_b64) const;
 
-	virtual void disable() override;
+	virtual void disable() = 0;
+	bool is_disabled() const { return disabled; }
 
-	CrashHandler();
-	virtual ~CrashHandler();
+	virtual ~CrashHandlerBase() {}
 };
 
-#endif // CRASH_HANDLER_MACOS_H
+#endif // CRASH_HANDLER_H
