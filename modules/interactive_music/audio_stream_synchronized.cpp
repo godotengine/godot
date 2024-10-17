@@ -296,6 +296,29 @@ bool AudioStreamPlaybackSynchronized::is_playing() const {
 	return active;
 }
 
+Vector<Ref<AudioStream>> AudioStreamPlaybackSynchronized::get_playing_streams() const {
+	Vector<Ref<AudioStream>> playing_streams = Vector<Ref<AudioStream>>();
+
+	if (active) {
+		for (int i = 0; i < stream->stream_count; i++) {
+			if (playback[i].is_valid() && playback[i]->is_playing()) {
+				playing_streams.push_back(stream->audio_streams[i]);
+			}
+		}
+	}
+	return playing_streams;
+}
+
+TypedArray<AudioStream> AudioStreamPlaybackSynchronized::_get_playing_streams() const {
+	TypedArray<AudioStream> ret;
+	Vector<Ref<AudioStream>> streams = get_playing_streams();
+	int streams_amount = streams.size();
+	for (int i = 0; i < streams_amount; i++) {
+		ret.push_back(streams[i]);
+	}
+	return ret;
+}
+
 void AudioStreamPlaybackSynchronized::_update_playback_instances() {
 	stop();
 
@@ -306,4 +329,8 @@ void AudioStreamPlaybackSynchronized::_update_playback_instances() {
 			playback[i].unref();
 		}
 	}
+}
+
+void AudioStreamPlaybackSynchronized::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_playing_streams"), &AudioStreamPlaybackSynchronized::_get_playing_streams);
 }
