@@ -45,7 +45,7 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	autowrap_mode = p_mode;
 	lines_dirty = true;
 	queue_redraw();
-	update_configuration_warnings();
+	update_configuration_info();
 
 	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
@@ -335,8 +335,9 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 	}
 }
 
-PackedStringArray Label::get_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_configuration_warnings();
+#ifdef TOOLS_ENABLED
+Vector<ConfigurationInfo> Label::get_configuration_info() const {
+	Vector<ConfigurationInfo> infos = Control::get_configuration_info();
 
 	// FIXME: This is not ideal and the sizing model should be fixed,
 	// but for now we have to warn about this impossible to resolve combination.
@@ -347,7 +348,9 @@ PackedStringArray Label::get_configuration_warnings() const {
 		// and it can be a container, but that makes no difference to the user.
 		Container *parent_container = Object::cast_to<Container>(get_parent_control());
 		if (parent_container && autowrap_mode != TextServer::AUTOWRAP_OFF && get_custom_minimum_size() == Size2()) {
-			warnings.push_back(RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."));
+			CONFIG_WARNING_P(
+					RTR("Labels with autowrapping enabled must have a custom minimum size configured to work correctly inside a container."),
+					"autowrap_mode");
 		}
 	}
 
@@ -369,14 +372,17 @@ PackedStringArray Label::get_configuration_warnings() const {
 		int64_t glyph_count = TS->shaped_text_get_glyph_count(text_rid);
 		for (int64_t i = 0; i < glyph_count; i++) {
 			if (glyph[i].font_rid == RID()) {
-				warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label's text."));
+				CONFIG_WARNING_P(
+						RTR("The current font does not support rendering one or more characters used in this Label's text."),
+						"text");
 				break;
 			}
 		}
 	}
 
-	return warnings;
+	return infos;
 }
+#endif
 
 void Label::_notification(int p_what) {
 	switch (p_what) {
@@ -392,7 +398,7 @@ void Label::_notification(int p_what) {
 			dirty = true;
 
 			queue_redraw();
-			update_configuration_warnings();
+			update_configuration_info();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -874,7 +880,7 @@ void Label::set_text(const String &p_string) {
 	}
 	queue_redraw();
 	update_minimum_size();
-	update_configuration_warnings();
+	update_configuration_info();
 }
 
 void Label::_invalidate() {

@@ -112,7 +112,9 @@ SceneStringNames::SceneStringNames() {
 	blend_times = StaticCString::create("blend_times");
 	speed = StaticCString::create("speed");
 
+#ifndef DISABLE_DEPRECATED
 	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");
+#endif
 
 	output = StaticCString::create("output");
 

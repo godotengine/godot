@@ -175,7 +175,9 @@ public:
 	void set_texture_scale(real_t p_scale);
 	real_t get_texture_scale() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	Vector<ConfigurationInfo> get_configuration_info() const override;
+#endif
 
 	PointLight2D();
 };
