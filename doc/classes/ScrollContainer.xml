@@ -107,6 +107,12 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="h_separation" data_type="constant" type="int" default="0">
+			The horizontal separation applied when the vertical scroll bar is visible.
+		</theme_item>
+		<theme_item name="v_separation" data_type="constant" type="int" default="0">
+			The vertical separation applied when the horizontal scroll bar is visible.
+		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background [StyleBox] of the [ScrollContainer].
 		</theme_item>
