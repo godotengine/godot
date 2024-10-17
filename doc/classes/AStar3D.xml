@@ -10,26 +10,26 @@
 		[codeblocks]
 		[gdscript]
 		class MyAStar:
-		    extends AStar3D
+			extends AStar3D
 
-		    func _compute_cost(u, v):
-		        return abs(u - v)
+			func _compute_cost(u, v):
+				return abs(u - v)
 
-		    func _estimate_cost(u, v):
-		        return min(0, abs(u - v) - 1)
+			func _estimate_cost(u, v):
+				return min(0, abs(u - v) - 1)
 		[/gdscript]
 		[csharp]
 		public partial class MyAStar : AStar3D
 		{
-		    public override float _ComputeCost(long fromId, long toId)
-		    {
-		        return Mathf.Abs((int)(fromId - toId));
-		    }
+			public override float _ComputeCost(long fromId, long toId)
+			{
+				return Mathf.Abs((int)(fromId - toId));
+			}
 
-		    public override float _EstimateCost(long fromId, long toId)
-		    {
-		        return Mathf.Min(0, Mathf.Abs((int)(fromId - toId)) - 1);
-		    }
+			public override float _EstimateCost(long fromId, long toId)
+			{
+				return Mathf.Min(0, Mathf.Abs((int)(fromId - toId)) - 1);
+			}
 		}
 		[/csharp]
 		[/codeblocks]
