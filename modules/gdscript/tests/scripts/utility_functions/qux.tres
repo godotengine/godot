@@ -1,0 +1,7 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://cqd4xsl30rr7c"]
+
+[ext_resource type="Script" path="./qux.notest.gd" id="1_qux"]
+
+[resource]
+script = ExtResource("1_qux")
+decimal = 0.5
