@@ -59,8 +59,14 @@ void LabelSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "color"), &LabelSettings::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &LabelSettings::get_shadow_color);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_outline_color", "color"), &LabelSettings::set_shadow_outline_color);
+	ClassDB::bind_method(D_METHOD("get_shadow_outline_color"), &LabelSettings::get_shadow_outline_color);
+
 	ClassDB::bind_method(D_METHOD("set_shadow_offset", "offset"), &LabelSettings::set_shadow_offset);
 	ClassDB::bind_method(D_METHOD("get_shadow_offset"), &LabelSettings::get_shadow_offset);
+
+	ClassDB::bind_method(D_METHOD("set_draw_shadow_before_outline", "state"), &LabelSettings::set_draw_shadow_before_outline);
+	ClassDB::bind_method(D_METHOD("get_draw_shadow_before_outline"), &LabelSettings::get_draw_shadow_before_outline);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 
@@ -76,7 +82,9 @@ void LabelSettings::_bind_methods() {
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,127,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_outline_color"), "set_shadow_outline_color", "get_shadow_outline_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_shadow_before_outline", PROPERTY_HINT_RANGE, "0,1,1,or_greater,suffix:px"), "set_draw_shadow_before_outline", "get_draw_shadow_before_outline");
 }
 
 void LabelSettings::set_line_spacing(real_t p_spacing) {
@@ -173,6 +181,17 @@ Color LabelSettings::get_shadow_color() const {
 	return shadow_color;
 }
 
+void LabelSettings::set_shadow_outline_color(const Color &p_color) {
+	if (shadow_outline_color != p_color) {
+		shadow_outline_color = p_color;
+		emit_changed();
+	}
+}
+
+Color LabelSettings::get_shadow_outline_color() const {
+	return shadow_outline_color;
+}
+
 void LabelSettings::set_shadow_offset(const Vector2 &p_offset) {
 	if (shadow_offset != p_offset) {
 		shadow_offset = p_offset;
@@ -182,4 +201,15 @@ void LabelSettings::set_shadow_offset(const Vector2 &p_offset) {
 
 Vector2 LabelSettings::get_shadow_offset() const {
 	return shadow_offset;
+}
+
+void LabelSettings::set_draw_shadow_before_outline(int p_state) {
+	if (draw_shadow_before_outline != p_state) {
+		draw_shadow_before_outline = p_state;
+		emit_changed();
+	}
+}
+
+int LabelSettings::get_draw_shadow_before_outline() const {
+	return draw_shadow_before_outline;
 }
