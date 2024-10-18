@@ -287,12 +287,12 @@ public:
 	String substr(int p_from, int p_chars = -1) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
-	int find_char(char32_t p_char, int p_from = 0) const; ///< return <0 if failed
+	int find_char(const char32_t &p_char, int p_from = 0) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int findn(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfind(const char *p_str, int p_from = -1) const; ///< return <0 if failed
-	int rfind_char(char32_t p_char, int p_from = -1) const; ///< return <0 if failed
+	int rfind_char(const char32_t &p_char, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
 	int rfindn(const char *p_str, int p_from = -1) const; ///< return <0 if failed
 	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed

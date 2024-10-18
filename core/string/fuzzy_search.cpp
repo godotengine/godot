@@ -104,11 +104,22 @@ bool FuzzySearchResult::can_add_token_match(const Ref<FuzzyTokenMatch> &p_match)
 	return true;
 }
 
-void FuzzySearchResult::score_token_match(Ref<FuzzyTokenMatch> &p_match) {
+bool FuzzyTokenMatch::is_case_insensitive(const String &p_original, const String &p_adjusted) {
+	for (const Vector2i substr : substrings) {
+		for (int i = substr.x; i < substr.x + substr.y; i++) {
+			if (p_original[i] != p_adjusted[i]) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void FuzzySearchResult::score_token_match(Ref<FuzzyTokenMatch> &p_match, bool p_case_insensitive) {
 	// This can always be tweaked more. The intuition is that exact matches should almost always
 	// be prioritized over broken up matches, and other criteria more or less act as tie breakers.
 
-	p_match->score = -20 * p_match->misses();
+	p_match->score = -20 * p_match->misses() - (p_case_insensitive ? 3 : 0);
 
 	for (Vector2i substring : p_match->substrings) {
 		// Score longer substrings higher than short substrings
@@ -172,7 +183,7 @@ Vector<Ref<FuzzySearchResult>> FuzzySearch::sort_and_filter(const Vector<Ref<Fuz
 	};
 
 	// Prune low score entries before sorting
-	for (const Ref<FuzzySearchResult>& i : p_results) {
+	for (const Ref<FuzzySearchResult> &i : p_results) {
 		if (i->score >= cull_score) {
 			results.push_back(i);
 		}
@@ -270,7 +281,7 @@ bool FuzzySearch::fuzzy_search(Ref<FuzzySearchResult> p_result, const String &p_
 	// combination of matches, or necessarily the highest scoring single subsequence, as it only considers
 	// eager subsequences for a given index, and likewise eagerly finds matches for each token in sequence.
 	for (const String &token : tokens) {
-		int offset = 0;
+		int offset = start_offset;
 		// TODO : Consider avoiding the FuzzyTokenMatch allocation by either passing a reference to reuse or
 		//  otherwise tracking scores/intervals without a RefCounted construct.
 		Ref<FuzzyTokenMatch> best_match = nullptr;
@@ -280,7 +291,7 @@ bool FuzzySearch::fuzzy_search(Ref<FuzzySearchResult> p_result, const String &p_
 				break;
 			}
 			if (p_result->can_add_token_match(match)) {
-				p_result->score_token_match(match);
+				p_result->score_token_match(match, match->is_case_insensitive(p_target, adjusted_target));
 				if (best_match.is_null() || best_match->score < match->score) {
 					best_match = match;
 				}

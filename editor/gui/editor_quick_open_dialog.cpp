@@ -141,6 +141,7 @@ void style_button(Button *p_button) {
 
 QuickOpenResultContainer::QuickOpenResultContainer() {
 	fuzzy_search.instantiate();
+	fuzzy_search->start_offset = 6; // Don't match against "res://"
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_theme_constant_override("separation", 0);

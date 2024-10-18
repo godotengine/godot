@@ -56,6 +56,7 @@ public:
 
 	void add_substring(int substring_start, int substring_length);
 	bool intersects(Vector2i other_interval) const;
+	bool is_case_insensitive(const String &p_original, const String &p_adjusted);
 
 	int misses() const { return token_length - matched_length; }
 };
@@ -78,7 +79,7 @@ public:
 	Vector<Ref<FuzzyTokenMatch>> token_matches;
 
 	bool can_add_token_match(const Ref<FuzzyTokenMatch> &p_match) const;
-	void score_token_match(Ref<FuzzyTokenMatch> &p_match);
+	void score_token_match(Ref<FuzzyTokenMatch> &p_match, bool p_case_insensitive);
 	void add_token_match(Ref<FuzzyTokenMatch> &p_match);
 };
 
@@ -101,6 +102,7 @@ protected:
 
 public:
 	PackedStringArray tokens;
+	int start_offset = 0;
 	bool case_sensitive = false;
 	int max_results = 100;
 	int max_misses = 2;

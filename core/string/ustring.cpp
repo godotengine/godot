@@ -3368,7 +3368,7 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
-int String::find_char(char32_t p_char, int p_from) const {
+int String::find_char(const char32_t &p_char, int p_from) const {
 	return _cowdata.find(p_char, p_from);
 }
 
@@ -3605,7 +3605,7 @@ int String::rfind(const char *p_str, int p_from) const {
 	return -1;
 }
 
-int String::rfind_char(char32_t p_char, int p_from) const {
+int String::rfind_char(const char32_t &p_char, int p_from) const {
 	return _cowdata.rfind(p_char, p_from);
 }
 

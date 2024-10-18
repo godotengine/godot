@@ -109,8 +109,8 @@ auto bench(String p_query, Vector<String> p_targets) {
 			auto start = std::chrono::high_resolution_clock::now();
 			get_top_result(p_query, p_targets);
 			auto end = std::chrono::high_resolution_clock::now();
-			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-			timings.push_back(duration);
+			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+			timings.push_back(duration / 1000.0f); // Convert to fractional ms
 		}
 	}
 
