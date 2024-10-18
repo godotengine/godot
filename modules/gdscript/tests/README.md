@@ -32,27 +32,11 @@ The config file contains two section:
 
 `[output]` specifies the expected results for the test. The following key are supported:
 
-- `include: Array`: An unordered list of suggestions that should be in the result. Each entry is one dictionary with the following keys: `display`, `insert_text`, `kind`, `location`, which correspond to the suggestion struct which is used in the code. The runner only tests against specified keys, so in most cases `display` will suffice.
+- `include: Array`: A list of suggestions that should be in the result. Each entry is one dictionary with the following keys: `display`, `insert_text`, `kind`, which correspond to the suggestion struct which is used in the code. The runner only tests against specified keys, so in most cases `display` will suffice.
+  The list is split into buckets. items marked with `after: true` start a new bucket. Items inside the same bucket can occur in any order, but they have to occur behind all items of previous buckets.
+
 - `exclude: Array`: An array of suggestions which should not be in the result. The entries take the same form as for `include`.
 - `call_hint: String`: The expected call hint returned by autocompletion.
 - `forced: boolean`: Whether autocompletion is expected to force opening a completion window.
 
 Tests will only test against entries in `[output]` that were specified.
-
-## Writing autocompletion tests
-
-To avoid failing edge cases a certain behavior needs to be tested multiple times. Some things that tests should account for:
-
-- All possible types: Test with all possible types that apply to the tested behavior. (For the last points testing against `SCRIPT` and `CLASS` should suffice. `CLASS` can be obtained through C#, `SCRIPT` through GDScript. Relying on autoloads to be of type `SCRIPT` is not good, since this might change in the future.)
-
-  - `BUILTIN`
-  - `NATIVE`
-  - GDScripts (with `class_name` as well as `preload`ed)
-  - C# (as standin for all other language bindings) (with `class_name` as well as `preload`ed)
-  - Autoloads
-
-- Possible contexts: the completion might be placed in different places of the program. e.g:
-  - initializers of class members
-  - directly inside a suite
-  - assignments inside a suite
-  - as parameter to a call
