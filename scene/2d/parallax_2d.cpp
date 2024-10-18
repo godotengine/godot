@@ -187,10 +187,6 @@ int Parallax2D::get_repeat_times() const {
 }
 
 void Parallax2D::set_scroll_offset(const Point2 &p_offset) {
-	if (p_offset == scroll_offset) {
-		return;
-	}
-
 	scroll_offset = p_offset;
 
 	_update_scroll();
