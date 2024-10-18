@@ -56,6 +56,9 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_formats"), &CameraFeed::get_formats);
 	ClassDB::bind_method(D_METHOD("set_format", "index", "parameters"), &CameraFeed::set_format);
 
+	GDVIRTUAL_BIND(_activate_feed);
+	GDVIRTUAL_BIND(_deactivate_feed);
+
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("format_changed"));
 
@@ -253,12 +256,13 @@ void CameraFeed::set_ycbcr_images(const Ref<Image> &p_y_img, const Ref<Image> &p
 }
 
 bool CameraFeed::activate_feed() {
-	// nothing to do here
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_activate_feed, ret);
+	return ret;
 }
 
 void CameraFeed::deactivate_feed() {
-	// nothing to do here
+	GDVIRTUAL_CALL(_deactivate_feed);
 }
 
 bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {
