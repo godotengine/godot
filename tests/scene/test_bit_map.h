@@ -464,6 +464,13 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
 	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 2.0, true);
+	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
+	CHECK_MESSAGE(polygons[0].size() == 12, "The polygon should have exactly 12 points");
+
+	reset_bit_map(bit_map);
+	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
+	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
 	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");

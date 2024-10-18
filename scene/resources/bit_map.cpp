@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "bit_map.h"
+#include "bit_map.compat.inc"
 
 #include "core/io/image_loader.h"
 #include "core/variant/typed_array.h"
@@ -365,19 +366,37 @@ Vector<Vector<Vector2>> BitMap::_march_square(const Rect2i &p_rect, const Point2
 	return ret;
 }
 
+/**
+ * Check if a point(b) is between two line segment (a and c) perpendicular range. Does not include endpoints.
+ * Uses dot product to get the directions for both endpoints and if their signs are different then the point is out of range
+ */
+static bool is_in_line_range(const Vector2 &b, const Vector2 &a, const Vector2 &c) {
+	Vector2 ba = a - b;
+	Vector2 bc = c - b;
+	Vector2 ac = c - a;
+
+	float dot1 = ba.dot(ac);
+	float dot2 = bc.dot(ac);
+	return (dot1 * dot2 < 0);
+}
+
 static float perpendicular_distance(const Vector2 &i, const Vector2 &start, const Vector2 &end) {
 	float res;
 	float slope;
 	float intercept;
 
-	if (start.x == end.x) {
-		res = Math::absf(i.x - end.x);
-	} else if (start.y == end.y) {
-		res = Math::absf(i.y - end.y);
+	if (is_in_line_range(i, start, end)) {
+		if (start.x == end.x) {
+			res = Math::absf(i.x - end.x);
+		} else if (start.y == end.y) {
+			res = Math::absf(i.y - end.y);
+		} else {
+			slope = (end.y - start.y) / (end.x - start.x);
+			intercept = start.y - (slope * start.x);
+			res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		}
 	} else {
-		slope = (end.y - start.y) / (end.x - start.x);
-		intercept = start.y - (slope * start.x);
-		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = MIN(i.distance_to(start), i.distance_to(end));
 	}
 	return res;
 }
@@ -391,7 +410,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	float dist = 0.0;
 	// Not looping first and last point.
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
-		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
+		float cdist = perpendicular_distance(v[i], v[0], v[size - 1]);
 		if (cdist > dist) {
 			dist = cdist;
 			index = static_cast<int>(i);
@@ -399,8 +418,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 	if (dist > optimization) {
 		Vector<Vector2> left, right;
-		left.resize(index);
-		for (int i = 0; i < index; i++) {
+		left.resize(index + 1);
+		for (int i = 0; i < index + 1; i++) {
 			left.write[i] = v[i];
 		}
 		right.resize(v.size() - index);
@@ -410,8 +429,8 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		Vector<Vector2> r1 = rdp(left, optimization);
 		Vector<Vector2> r2 = rdp(right, optimization);
 
-		int middle = r1.size();
-		r1.resize(r1.size() + r2.size());
+		int middle = r1.size() - 1;
+		r1.resize(r1.size() + r2.size() - 1);
 		for (int i = 0; i < r2.size(); i++) {
 			r1.write[middle + i] = r2[i];
 		}
@@ -424,7 +443,382 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 	}
 }
 
-static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
+// Check if ABC is counterclockwise
+static bool cntrcw(const Vector2 &A, const Vector2 &B, const Vector2 &C) {
+	return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x);
+}
+
+// Line segments AB and CD intersect check
+static bool intersect(const Vector2 &A, const Vector2 &B, const Vector2 &C, const Vector2 &D) {
+	return cntrcw(A, C, D) != cntrcw(B, C, D) && cntrcw(A, B, C) != cntrcw(A, B, D);
+}
+
+static float angle_between_two_pnts(const Vector2 center_pnt, const Vector2 prev_pnt, const Vector2 new_pnt) {
+	Vector2 v1 = Vector2(prev_pnt.y - center_pnt.y, prev_pnt.x - center_pnt.x);
+	Vector2 v2 = Vector2(new_pnt.y - center_pnt.y, new_pnt.x - center_pnt.x);
+
+	float dot = v1.x * v2.x + v1.y * v2.y;
+	float det = v1.x * v2.y - v1.y * v2.x;
+
+	return Math::atan2(det, dot);
+}
+
+int get_triangle_pnt(const Vector<PackedInt32Array> &graph, const int &ep1_i, const int &ep2_i, Vector<bool> &seen) {
+	Vector<int> points = graph[ep1_i];
+	Vector<bool> pTouched;
+	pTouched.resize_zeroed(graph.size());
+
+	for (int p : points) {
+		pTouched.write[p] = true;
+	}
+
+	points = graph[ep2_i];
+	for (int p : points) {
+		if (pTouched[p] && !seen[p]) { // Only return the point if it hasn't already been processed
+			return p;
+		}
+	}
+
+	return -1; // None of the triangles available have not been processed
+}
+
+void tri_search(const Vector<PackedInt32Array> graph, const Vector<Vector2> &pl, const Vector2 &star_center, Vector<bool> &seen, Vector<int> &pKeep, int ep1_i, int ep2_i, const float special_contraint = -99) {
+	Vector2 ep1 = pl[ep1_i];
+	Vector2 ep2 = pl[ep2_i];
+
+	PackedFloat32Array constraints = { angle_between_two_pnts(star_center, pl[0], ep1), angle_between_two_pnts(star_center, pl[0], ep2) };
+	constraints.sort();
+
+	int point_idx = get_triangle_pnt(graph, ep1_i, ep2_i, seen);
+	if (point_idx == -1) {
+		return;
+	}
+
+	Vector2 point = pl[point_idx];
+
+	seen.write[point_idx] = true;
+	float angle = angle_between_two_pnts(star_center, pl[0], point);
+	if (constraints[0] < angle && angle < constraints[1] && (0 < angle && angle <= special_contraint)) {
+		pKeep.append(point_idx);
+		if (Math::abs(ep1_i - ep2_i) != 1) {
+			tri_search(graph, pl, star_center, seen, pKeep, ep1_i, point_idx, special_contraint);
+			tri_search(graph, pl, star_center, seen, pKeep, point_idx, ep2_i, special_contraint);
+		}
+	}
+}
+
+static bool is_between(const Vector2 &b, const Vector2 &a, const Vector2 &c) {
+	return Math::absf((a.distance_to(b) + b.distance_to(c)) - a.distance_to(c)) < .001;
+}
+
+// Gets the star region for the star_center of the given polyline( pl ) in a clockwise pattern
+static PackedInt32Array get_star_region(Vector<Vector2> &pl, const Vector2 &star_center) {
+	pl.append(star_center);
+	PackedInt32Array triangulation = Geometry2D::triangulate_polygon(pl);
+	if (triangulation.size() == 0) { // Edge case where the polygon would self-intersect when closed
+		pl.remove_at(pl.size() - 1);
+		return PackedInt32Array({ 0 });
+	}
+
+	PackedInt32Array star_region;
+	// Generate a neighbor graph for the triangulation
+	Vector<PackedInt32Array> graph;
+	graph.resize(pl.size());
+	for (int i = 0; i < triangulation.size(); i += 3) {
+		int p1_i = triangulation[i];
+		int p2_i = triangulation[i + 1];
+		int p3_i = triangulation[i + 2];
+
+		graph.write[p1_i].append(p2_i);
+		graph.write[p1_i].append(p3_i);
+
+		graph.write[p2_i].append(p1_i);
+		graph.write[p2_i].append(p3_i);
+
+		graph.write[p3_i].append(p1_i);
+		graph.write[p3_i].append(p2_i);
+	}
+
+	PackedInt32Array star_connections = graph[pl.size() - 1];
+	Vector<bool> seen;
+	seen.resize_zeroed(pl.size());
+	seen.write[pl.size() - 1] = true;
+
+	for (int i = 0; i < star_connections.size(); i += 2) {
+		if (!seen[star_connections[i]]) {
+			seen.write[star_connections[i]] = true;
+			star_region.append(star_connections[i]);
+		}
+
+		if (!seen[star_connections[i + 1]]) {
+			seen.write[star_connections[i + 1]] = true;
+			star_region.append(star_connections[i + 1]);
+		}
+
+		// The angle needs to be positive facing from edge points 1 - 2
+		if (angle_between_two_pnts(star_center, pl[star_connections[i]], pl[star_connections[i + 1]])) {
+			tri_search(graph, pl, star_center, seen, star_region, star_connections[i], star_connections[i + 1], Math_PI);
+		} else {
+			tri_search(graph, pl, star_center, seen, star_region, star_connections[i + 1], star_connections[i], Math_PI);
+		}
+	}
+
+	star_region.sort();
+
+	pl.remove_at(pl.size() - 1); // Remove the add star_center from the list
+
+	if (star_region[star_region.size() - 1] != pl.size() - 1) {
+		star_region.push_back(pl.size() - 1);
+	}
+
+	return star_region;
+}
+
+// Calculates signed distance sign
+bool is_outside_the_line_segment(const Vector2 &pnt, const Vector2 &start, const Vector2 &end) {
+	return !cntrcw(start, pnt, end) || is_between(pnt, start, end);
+}
+
+int fix_polyline_intersection(Vector<Vector2> &simplified_pl, Vector<Vector2> &pl) {
+	// Split into sections between sub-polyline
+	PackedInt32Array convex_segment;
+	Vector2 last_val = simplified_pl[simplified_pl.size() - 1];
+	int result_cntr = 0;
+	for (int i = 0; i < pl.size(); ++i) {
+		if (pl[i] == simplified_pl[result_cntr]) {
+			convex_segment.push_back(i);
+			result_cntr += 1;
+			if (pl[i] == last_val) {
+				break;
+			}
+		}
+	}
+	int error_idx = -1; // Location of the error
+	int segment_i = 0;
+	while (segment_i < convex_segment.size() - 1) {
+		Vector2i segment = { segment_i, segment_i + 1 };
+		if (convex_segment[segment[1]] - convex_segment[segment[0]] == 1) { // Skip if no in-between points to make the convex hull from
+			segment_i++;
+			continue;
+		}
+		error_idx = segment[0];
+		// Create the convex hull to test against and find the point that will be used to fix the convex hull
+		Vector<Vector2> convex_hull;
+		Vector2 start = simplified_pl[segment[0]];
+		Vector2 end = simplified_pl[segment[1]];
+		for (int pl_idx = convex_segment[segment[0]]; pl_idx < convex_segment[segment[1]] + 1; ++pl_idx) {
+			convex_hull.push_back(pl[pl_idx]);
+		}
+
+		// Iterate through every sub-polyline section
+		int furthest_intersecting_pnt_idx = -1;
+		float max_dist = -1.f;
+		for (int i = 0; i < simplified_pl.size(); ++i) {
+			// Check if there is a point that intersects the hull
+			Vector2 simp_pnt = simplified_pl[i];
+			if (simp_pnt != start && simp_pnt != end && simp_pnt != convex_hull[0] && simp_pnt != convex_hull[convex_hull.size() - 1] && (Geometry2D::is_point_in_polygon(simp_pnt, convex_hull) || is_between(simp_pnt, start, end))) {
+				float dist = perpendicular_distance(simp_pnt, start, end);
+				if (dist > max_dist) {
+					furthest_intersecting_pnt_idx = i;
+					max_dist = dist;
+				}
+			}
+		}
+		if (furthest_intersecting_pnt_idx != -1) {
+			// Find a point in the convex hull to fix the error
+			Vector2 prob_end;
+			Vector2 furthest_intersecting_pnt = simplified_pl[furthest_intersecting_pnt_idx];
+			if (furthest_intersecting_pnt_idx == simplified_pl.size() - 1) {
+				prob_end = simplified_pl[furthest_intersecting_pnt_idx - 1];
+			} else if (furthest_intersecting_pnt_idx == 0) {
+				prob_end = simplified_pl[furthest_intersecting_pnt_idx + 1];
+			} else {
+				if (simplified_pl[furthest_intersecting_pnt_idx - 1] == end || intersect(start, end, furthest_intersecting_pnt, simplified_pl[furthest_intersecting_pnt_idx + 1])) {
+					prob_end = simplified_pl[furthest_intersecting_pnt_idx + 1];
+				} else {
+					prob_end = simplified_pl[furthest_intersecting_pnt_idx - 1];
+				}
+			}
+			bool furthest_pnt_orientation = cntrcw(start, furthest_intersecting_pnt, end);
+			bool special_orientation = is_between(furthest_intersecting_pnt, start, end);
+			bool fixed = false;
+			for (int pl_i = convex_segment[segment[0]] + 1; pl_i < convex_segment[segment[1]]; ++pl_i) {
+				Vector2 pnt = pl[pl_i];
+				if ((furthest_pnt_orientation == cntrcw(start, pnt, end)) || special_orientation) { // Only look through points that have the same orientation
+					if (!intersect(start, pnt, furthest_intersecting_pnt, prob_end) && !intersect(pnt, end, furthest_intersecting_pnt, prob_end) && !is_between(furthest_intersecting_pnt, start, pnt) && !is_between(furthest_intersecting_pnt, pnt, end)) {
+						simplified_pl.insert(segment[0] + 1, pnt);
+						convex_segment.insert(segment_i + 1, pl_i);
+						segment_i = -1; // Reset the intersection check
+						fixed = true;
+						break;
+					}
+				}
+			}
+			if (!fixed) {
+				Vector2 pnt = pl[convex_segment[segment[1]] - 1];
+				simplified_pl.insert(segment[0] + 1, pnt);
+				convex_segment.insert(segment_i + 1, convex_segment[segment[1]] - 1);
+				segment_i = -1; // Reset the intersection check
+			}
+		}
+		segment_i++;
+	}
+	return error_idx; // Return the index of the bug
+}
+
+// Copy vector into another vector. In python: destination[start_idx:end_idx] = source
+static void copy_section(Vector<Vector2> &destination, const Vector<Vector2> &source, int start_idx, int end_idx) {
+	if ((end_idx - start_idx + 1) > source.size()) {
+		for (int i = 0; i < source.size(); ++i)
+			destination.write[start_idx + i] = source[i];
+
+		// Remove any excess points in the replacement range that aren't used anymore
+		int iter_end = start_idx + source.size();
+		for (int i = start_idx + source.size(); i < end_idx; ++i)
+			destination.remove_at(iter_end);
+
+	} else {
+		int end_iter = MIN(destination.size() - start_idx, end_idx - start_idx);
+
+		for (int i = 0; i < end_iter; ++i)
+			destination.write[start_idx + i] = source[i];
+
+		end_iter = source.size() - end_iter + 1;
+		for (int i = 1; i < end_iter; ++i)
+			destination.insert(end_idx, source[source.size() - i]);
+	}
+}
+
+static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, float optimization) {
+	if (v.size() < 3) {
+		return v;
+	}
+	// 1 - (a) Determine the intersection of v1 vn and the original polyline. If there is no intersection go to (2).
+	Vector2 v1_vn_intersection = (v[0] + v[v.size() - 1]) / 2.0;
+
+	// 2 - (a) Determine the sequence of vertices Si lying in a star-shaped region.
+	PackedInt32Array star_region = get_star_region(v, v1_vn_intersection);
+
+	// Nothing was found in the search due to a self-intersection. Fix the self-intersection and rescan
+	if (star_region.size() <= 2 && v.size() != 3) {
+		int error_idx = -1;
+		Vector2 end = v[v.size() - 1];
+		Vector2 start = v[0];
+
+		bool between_flag = false;
+		if (star_region.size() == 1) { // The first point cannot see the last point
+			for (int i = 1; i < v.size() - 1; ++i) {
+				if (cntrcw(start, v[i], end)) {
+					error_idx = i;
+					break;
+				}
+			}
+		} else { // The first and last points are being covered by another edge
+			for (int i = 1; i < v.size() - 1; ++i) {
+				if (is_outside_the_line_segment(v[i], start, end)) {
+					error_idx = i;
+					between_flag = true;
+					break;
+				}
+			}
+		}
+
+		if (error_idx != -1) {
+			// Split at the error
+			Vector<Vector2> left, right;
+			left.resize(error_idx + 1);
+			for (int i = 0; i < error_idx + 1; i++) {
+				left.write[i] = v[i];
+			}
+			right.resize(v.size() - error_idx);
+			for (int i = 0; i < right.size(); i++) {
+				right.write[i] = v[error_idx + i];
+			}
+
+			Vector<Vector2> r1 = star_shaped_rdp(left, optimization);
+			Vector<Vector2> r2 = star_shaped_rdp(right, optimization);
+
+			if (!between_flag) {
+				r1.remove_at(r1.size() - 1);
+			}
+			r2.remove_at(0);
+
+			r1.append_array(r2);
+
+			return r1;
+		}
+	}
+
+	// 2 - (b) Apply the Douglas-Peucker algorithm for these vertices
+	Vector<Vector2> star_region_polyline;
+	star_region_polyline.resize(star_region.size());
+	for (int i = 0; i < star_region.size(); ++i) {
+		star_region_polyline.write[i] = v[star_region[i]];
+	}
+	star_region_polyline = rdp(star_region_polyline, optimization);
+
+	if (star_region.size() == star_region_polyline.size()) {
+		return rdp(v, optimization);
+	}
+
+	if (star_region_polyline.size() == 2) {
+		for (int i = star_region.size() - 2; i > 0; --i) {
+			v.remove_at(star_region[i]);
+		}
+	}
+	// 2 - (c) Check the distance of vertices out of star_region_polyline.
+	bool no_point_larger_than_eps = true; // Skip checking the perpendicular distance when a point is found that is larger than the optimization
+	Vector<Vector2> edge = { star_region_polyline[0], star_region_polyline[1] };
+	int edge_idx = 2; // The index of the next edge
+	int start_idx = 0; // The index of the start of the polyline section
+	int polyline_size = v.size();
+
+	for (int i = 1; i < polyline_size; ++i) {
+		Vector2 pnt = v[i];
+		if (!star_region_polyline.has(pnt)) {
+			if (no_point_larger_than_eps) {
+				if (perpendicular_distance(pnt, edge[0], edge[1]) > optimization) {
+					no_point_larger_than_eps = false;
+				}
+			}
+		} else {
+			// 2 - (c) If some have a distance greater than the specified tolerance, go to (2a).
+			if (!no_point_larger_than_eps) {
+				Vector<Vector2> new_polyline_section;
+				for (int j = start_idx; j < i + 1; j++)
+					new_polyline_section.push_back(v[j]);
+
+				Vector<Vector2> res = star_shaped_rdp(new_polyline_section, optimization);
+				copy_section(v, res, start_idx, i + 1);
+
+				// Update the size and index pointer
+				int old_size = polyline_size;
+				polyline_size = v.size();
+				i -= old_size - polyline_size;
+
+			} else { // Remove the points between the two new points as they are in the optimization
+				copy_section(v, edge, start_idx, i + 1);
+
+				// Update the size and index pointer
+				int old_size = polyline_size;
+				polyline_size = v.size();
+				i -= old_size - polyline_size;
+			}
+
+			// Move on to the next section if not at the polyline end
+			if (i != (polyline_size - 1)) {
+				edge.write[0] = edge[1];
+				edge.write[1] = star_region_polyline[edge_idx];
+				edge_idx += 1;
+				start_idx = i;
+			}
+		}
+	}
+
+	return v;
+}
+
+static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float epsilon, bool p_star_rdp) {
 	int size = points.size();
 	// If there are less than 3 points, then we have nothing.
 	ERR_FAIL_COND_V(size < 3, Vector<Vector2>());
@@ -435,7 +829,15 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 
 	float maxEp = MIN(rect.size.width, rect.size.height);
 	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
-	Vector<Vector2> result = rdp(points, ep);
+
+	Vector<Vector2> result;
+	if (p_star_rdp) {
+		Vector<Vector2> orig_points(points); // For the self-intersection fix
+		result = star_shaped_rdp(points, ep);
+		fix_polyline_intersection(result, orig_points);
+	} else {
+		result = rdp(points, epsilon);
+	}
 
 	Vector2 last = result[result.size() - 1];
 
@@ -521,7 +923,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 	} while (reenter || popped);
 }
 
-Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon) const {
+Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Point2i from;
@@ -536,7 +938,7 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, fl
 				fill_bits(this, fill, Point2i(j, i), r);
 
 				for (Vector<Vector2> polygon : _march_square(r, Point2i(j, i))) {
-					polygon = reduce(polygon, r, p_epsilon);
+					polygon = reduce(polygon, r, p_epsilon, p_star_rdp);
 
 					if (polygon.size() < 3) {
 						print_verbose("Invalid polygon, skipped");
@@ -615,8 +1017,8 @@ void BitMap::shrink_mask(int p_pixels, const Rect2i &p_rect) {
 	grow_mask(-p_pixels, p_rect);
 }
 
-TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon) const {
-	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
+TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const {
+	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon, p_star_rdp);
 
 	// Convert result to bindable types.
 
@@ -725,7 +1127,7 @@ void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
 	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
-	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
+	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon", "star_rdp"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }

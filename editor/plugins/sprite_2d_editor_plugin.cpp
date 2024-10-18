@@ -190,8 +190,9 @@ void Sprite2DEditor::_update_mesh_data() {
 	}
 
 	float epsilon = simplification->get_value();
+	bool star_rdp = enable_star_rdp->is_pressed();
 
-	Vector<Vector<Vector2>> lines = bm->clip_opaque_to_polygons(rect, epsilon);
+	Vector<Vector<Vector2>> lines = bm->clip_opaque_to_polygons(rect, epsilon, star_rdp);
 
 	uv_lines.clear();
 
@@ -644,6 +645,10 @@ Sprite2DEditor::Sprite2DEditor() {
 	grow_pixels->set_step(1);
 	grow_pixels->set_value(2);
 	hb->add_child(grow_pixels);
+	hb->add_spacer();
+	hb->add_child(memnew(Label(TTR("Enable Star RDP:"))));
+	enable_star_rdp = memnew(CheckBox);
+	hb->add_child(enable_star_rdp);
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));
