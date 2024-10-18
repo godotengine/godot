@@ -23,6 +23,23 @@ public static partial class ScriptManagerBridge
 
             Debug.Assert(!scriptType.IsGenericTypeDefinition, $"A generic type definition must never be added to the script type map. Type: {scriptType}.");
 
+            var duplicateScript = _scriptTypeMap.ContainsKey(scriptPtr);
+            var duplicateType = _typeScriptMap.ContainsKey(scriptType);
+
+            if (duplicateScript && duplicateType)
+            {
+                throw new ArgumentException($"Duplicate script type & pointer: {scriptType}({scriptPtr}).");
+            }
+
+            if (duplicateScript)
+            {
+                throw new ArgumentException($"Duplicate script pointer: {scriptType}({scriptPtr}).");
+            }
+
+            if (duplicateType)
+            {
+                throw new ArgumentException($"Duplicate script type: {scriptType}({scriptPtr}).");
+            }
             _scriptTypeMap.Add(scriptPtr, scriptType);
             _typeScriptMap.Add(scriptType, scriptPtr);
 
@@ -34,14 +51,24 @@ public static partial class ScriptManagerBridge
 
         public void Remove(IntPtr scriptPtr)
         {
-            if (_scriptTypeMap.Remove(scriptPtr, out Type? scriptType))
-                _ = _typeScriptMap.Remove(scriptType);
+            if (!_scriptTypeMap.Remove(scriptPtr, out var scriptType))
+            {
+                return;
+            }
+            _typeScriptMap.Remove(scriptType);
         }
 
         public bool RemoveByScriptType(Type scriptType, out IntPtr scriptPtr)
         {
+            if (_typeScriptMap.TryGetValue(scriptType, out scriptPtr) && !_scriptTypeMap.ContainsKey(scriptPtr))
+            {
+                throw new ArgumentException($"Unable to find script pointer for script type: {scriptType}");
+            }
             if (_typeScriptMap.Remove(scriptType, out scriptPtr))
-                return _scriptTypeMap.Remove(scriptPtr);
+            {
+                _scriptTypeMap.Remove(scriptPtr);
+                return true;
+            }
             return false;
         }
 

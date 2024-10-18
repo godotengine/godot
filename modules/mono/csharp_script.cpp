@@ -715,11 +715,16 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// If someone removes a script from a node, deletes the script, builds, adds a script to the
 		// same node, then builds again, the script might have no path and also no script_class. In
 		// that case, we can't (and don't need to) reload it.
-		if (scr->get_path().is_empty() && !scr->valid) {
+
+		bool is_path_empty = scr->get_path().is_empty();
+
+		if (is_path_empty && !scr->valid) {
 			continue;
 		}
 
-		to_reload.push_back(scr);
+		if (!is_path_empty) {
+			to_reload.push_back(scr);
+		}
 
 		// Script::instances are deleted during managed object disposal, which happens on domain finalize.
 		// Only placeholders are kept. Therefore we need to keep a copy before that happens.
