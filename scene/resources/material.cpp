@@ -2484,6 +2484,7 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 			// Vertex not supported in ORM mode, since no individual roughness.
 			p_property.hint_string = "Unshaded,Per-Pixel";
 		}
+
 		if (p_property.name.begins_with("roughness") || p_property.name.begins_with("metallic") || p_property.name.begins_with("ao_texture")) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -2500,13 +2501,11 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 			if (p_property.name.begins_with("ao")) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
-			if (p_property.name.begins_with("emission")) {
-				p_property.usage = PROPERTY_USAGE_NONE;
-			}
 
 			if (p_property.name.begins_with("metallic")) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
+
 			if (p_property.name.begins_with("rim")) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
