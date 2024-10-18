@@ -1,5 +1,6 @@
 """Functions used to generate source files during build time"""
 
+import re
 import zlib
 
 
@@ -123,6 +124,7 @@ def make_donors_header(target, source, env):
         "DONORS_MEMBERS_PLATINUM",
         "DONORS_MEMBERS_GOLD",
     ]
+    anonymous_donor_pattern = re.compile(r"And (?P<count>\d+) anonymous donor")
 
     src = str(source[0])
     dst = str(target[0])
@@ -132,15 +134,22 @@ def make_donors_header(target, source, env):
         g.write("#define DONORS_GEN_H\n")
 
         reading = False
+        current_section = None
+        anonymous_donor_count = 0
 
         def close_section():
             g.write("\t0\n")
             g.write("};\n")
+            g.write("#define {}_ANONYMOUS {}\n".format(current_section, anonymous_donor_count))
 
         for line in f:
-            if reading >= 0:
+            if reading:
                 if line.startswith("    "):
-                    g.write('\t"' + escape_string(line.strip()) + '",\n')
+                    match = anonymous_donor_pattern.search(line)
+                    if match:
+                        anonymous_donor_count = int(match.group("count"))
+                    else:
+                        g.write('\t"' + escape_string(line.strip()) + '",\n')
                     continue
             if line.startswith("## "):
                 if reading:
