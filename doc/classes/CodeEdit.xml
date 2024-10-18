@@ -587,6 +587,9 @@
 		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
 		</member>
+		<member name="tab_always_indents" type="bool" setter="set_tab_always_indents" getter="is_tab_always_indents" default="false">
+			Sets if pressing [kbd]Tab[/kbd] should indent the current line instead of inserting a tab.
+		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" overrides="TextEdit" enum="Control.TextDirection" default="1" />
 	</members>
 	<signals>
