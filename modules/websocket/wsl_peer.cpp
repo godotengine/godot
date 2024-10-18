@@ -564,9 +564,14 @@ Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
 ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len, int flags, void *user_data) {
 	WSLPeer *peer = (WSLPeer *)user_data;
 	Ref<StreamPeer> conn = peer->connection;
+
 	if (conn.is_null()) {
 		wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
 		return -1;
+	}
+	uint64_t space_left = peer->in_buffer.space_left();
+	if (space_left < peer->length_needed) {
+		return WSLAY_ERR_NOMEM;
 	}
 	int read = 0;
 	Error err = conn->get_partial_data(data, len, read);
@@ -580,6 +585,17 @@ ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, 
 		return -1;
 	}
 	return read;
+}
+
+void WSLPeer::_wsl_on_frame_start_callback(wslay_event_context_ptr ctx, const wslay_event_on_frame_recv_start_arg *arg, void *user_data) {
+	WSLPeer *peer = (WSLPeer *)user_data;
+	Ref<StreamPeer> conn = peer->connection;
+	if (arg->opcode == WSLAY_TEXT_FRAME || arg->opcode == WSLAY_BINARY_FRAME) {
+		uint64_t space_left = peer->in_buffer.space_left();
+		if (space_left < arg->payload_length) {
+			peer->length_needed = arg->payload_length;
+		}
+	}
 }
 
 ssize_t WSLPeer::_wsl_send_callback(wslay_event_context_ptr ctx, const uint8_t *data, size_t len, int flags, void *user_data) {
@@ -643,7 +659,7 @@ wslay_event_callbacks WSLPeer::_wsl_callbacks = {
 	_wsl_recv_callback,
 	_wsl_send_callback,
 	_wsl_genmask_callback,
-	nullptr, /* on_frame_recv_start_callback */
+	_wsl_on_frame_start_callback, /* on_frame_recv_start_callback */
 	nullptr, /* on_frame_recv_callback */
 	nullptr, /* on_frame_recv_end_callback */
 	_wsl_msg_recv_callback
