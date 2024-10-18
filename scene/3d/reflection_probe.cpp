@@ -156,6 +156,34 @@ bool ReflectionProbe::are_shadows_enabled() const {
 	return enable_shadows;
 }
 
+void ReflectionProbe::set_enable_distance_fade(bool p_enable) {
+	distance_fade_enabled = p_enable;
+	RS::get_singleton()->reflection_probe_set_distance_fade(probe, distance_fade_enabled, distance_fade_begin, distance_fade_length);
+	notify_property_list_changed();
+}
+
+bool ReflectionProbe::is_distance_fade_enabled() const {
+	return distance_fade_enabled;
+}
+
+void ReflectionProbe::set_distance_fade_begin(real_t p_distance) {
+	distance_fade_begin = p_distance;
+	RS::get_singleton()->reflection_probe_set_distance_fade(probe, distance_fade_enabled, distance_fade_begin, distance_fade_length);
+}
+
+real_t ReflectionProbe::get_distance_fade_begin() const {
+	return distance_fade_begin;
+}
+
+void ReflectionProbe::set_distance_fade_length(real_t p_length) {
+	distance_fade_length = p_length;
+	RS::get_singleton()->reflection_probe_set_distance_fade(probe, distance_fade_enabled, distance_fade_begin, distance_fade_length);
+}
+
+real_t ReflectionProbe::get_distance_fade_length() const {
+	return distance_fade_length;
+}
+
 void ReflectionProbe::set_cull_mask(uint32_t p_layers) {
 	cull_mask = p_layers;
 	RS::get_singleton()->reflection_probe_set_cull_mask(probe, p_layers);
@@ -196,6 +224,12 @@ void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
+
+	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	VisualInstance3D::_validate_property(p_property);
 }
 
 void ReflectionProbe::_bind_methods() {
@@ -232,6 +266,15 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_shadows", "enable"), &ReflectionProbe::set_enable_shadows);
 	ClassDB::bind_method(D_METHOD("are_shadows_enabled"), &ReflectionProbe::are_shadows_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_enable_distance_fade", "enable"), &ReflectionProbe::set_enable_distance_fade);
+	ClassDB::bind_method(D_METHOD("is_distance_fade_enabled"), &ReflectionProbe::is_distance_fade_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_begin", "distance"), &ReflectionProbe::set_distance_fade_begin);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_begin"), &ReflectionProbe::get_distance_fade_begin);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_length", "distance"), &ReflectionProbe::set_distance_fade_length);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_length"), &ReflectionProbe::get_distance_fade_length);
+
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "layers"), &ReflectionProbe::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &ReflectionProbe::get_cull_mask);
 
@@ -257,6 +300,11 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,Constant Color"), "set_ambient_mode", "get_ambient_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ambient_color", "get_ambient_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ambient_color_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_color_energy", "get_ambient_color_energy");
+
+	ADD_GROUP("Distance Fade", "distance_fade_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled"), "set_enable_distance_fade", "is_distance_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_begin", "get_distance_fade_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_length", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_distance_fade_length", "get_distance_fade_length");
 
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
