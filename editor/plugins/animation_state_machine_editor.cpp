@@ -682,12 +682,7 @@ void AnimationNodeStateMachineEditor::_delete_all() {
 }
 
 void AnimationNodeStateMachineEditor::_delete_tree_draw() {
-	TreeItem *item = delete_tree->get_next_selected(nullptr);
-	while (item) {
-		delete_window->get_cancel_button()->set_disabled(false);
-		return;
-	}
-	delete_window->get_cancel_button()->set_disabled(true);
+	delete_window->get_cancel_button()->set_disabled(!delete_tree->get_next_selected(nullptr));
 }
 
 void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
