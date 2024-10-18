@@ -227,6 +227,31 @@ Vector<float> RendererMeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	return _multimesh_get_buffer(p_multimesh);
 }
 
+void RendererMeshStorage::multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) {
+	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
+	if (mmi && mmi->interpolated) {
+		ERR_FAIL_COND_MSG(p_buffer.size() / (PackedFloat32Array::Size)sizeof(float) != mmi->_data_curr.size(), vformat("Buffer should have %d elements, got %d instead.", mmi->_data_curr.size(), p_buffer.size() / (PackedFloat32Array::Size)sizeof(float)));
+
+		mmi->_data_curr.resize(p_buffer.size() / (PackedFloat32Array::Size)sizeof(float));
+		memcpy(mmi->_data_curr.ptrw(), p_buffer.ptr(), p_buffer.size());
+		_multimesh_add_to_interpolation_lists(p_multimesh, *mmi);
+
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+		if (!Engine::get_singleton()->is_in_physics_frame()) {
+			PHYSICS_INTERPOLATION_WARNING("MultiMesh interpolation is being triggered from outside physics process, this might lead to issues");
+		}
+#endif
+
+		return;
+	}
+
+	_multimesh_set_buffer_raw(p_multimesh, p_buffer);
+}
+
+PackedByteArray RendererMeshStorage::multimesh_get_buffer_raw(RID p_multimesh) const {
+	return _multimesh_get_buffer_raw(p_multimesh);
+}
+
 void RendererMeshStorage::multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer, const Vector<float> &p_buffer_prev) {
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {

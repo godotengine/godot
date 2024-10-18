@@ -476,6 +476,8 @@ public:
 
 	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
 	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
+	virtual void multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) = 0;
+	virtual PackedByteArray multimesh_get_buffer_raw(RID p_multimesh) const = 0;
 
 	// Interpolation.
 	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev) = 0;
