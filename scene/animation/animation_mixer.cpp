@@ -178,7 +178,7 @@ void AnimationMixer::_animation_set_cache_update() {
 	}
 
 	while (to_erase.size()) {
-		animation_set.erase(to_erase.front()->get());
+		animation_set.erase(to_erase.get_front());
 		to_erase.pop_front();
 	}
 
@@ -908,7 +908,7 @@ bool AnimationMixer::_update_caches() {
 	}
 
 	while (to_delete.front()) {
-		Animation::TypeHash thash = to_delete.front()->get();
+		Animation::TypeHash thash = to_delete.get_front();
 		memdelete(track_cache[thash]);
 		track_cache.erase(thash);
 		to_delete.pop_front();
@@ -1602,7 +1602,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						List<int> to_play;
 						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 						if (to_play.size()) {
-							idx = to_play.back()->get();
+							idx = to_play.get_back();
 						}
 					}
 					if (idx < 0) {
@@ -1717,7 +1717,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						List<int> to_play;
 						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 						if (to_play.size()) {
-							int idx = to_play.back()->get();
+							int idx = to_play.get_back();
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
 							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 								if (playing_caches.has(t)) {

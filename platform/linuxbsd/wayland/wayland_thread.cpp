@@ -3197,7 +3197,7 @@ bool WaylandThread::has_message() {
 
 Ref<WaylandThread::Message> WaylandThread::pop_message() {
 	if (messages.front() != nullptr) {
-		Ref<Message> msg = messages.front()->get();
+		Ref<Message> msg = messages.get_front();
 		messages.pop_front();
 		return msg;
 	}
