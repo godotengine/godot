@@ -87,60 +87,58 @@ void TilesEditorUtils::_thread() {
 			thumbnail_size *= EDSCALE;
 			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
 
-			if (item.pattern.is_valid() && !item.pattern->is_empty()) {
-				// Generate the pattern preview
-				SubViewport *viewport = memnew(SubViewport);
-				viewport->set_size(thumbnail_size2);
-				viewport->set_disable_input(true);
-				viewport->set_transparent_background(true);
-				viewport->set_update_mode(SubViewport::UPDATE_ONCE);
+			// Generate the pattern preview
+			SubViewport *viewport = memnew(SubViewport);
+			viewport->set_size(thumbnail_size2);
+			viewport->set_disable_input(true);
+			viewport->set_transparent_background(true);
+			viewport->set_update_mode(SubViewport::UPDATE_ONCE);
 
-				TileMap *tile_map = memnew(TileMap);
-				tile_map->set_tileset(item.tile_set);
-				tile_map->set_pattern(0, Vector2(), item.pattern);
-				viewport->add_child(tile_map);
+			TileMap *tile_map = memnew(TileMap);
+			tile_map->set_tileset(item.tile_set);
+			tile_map->set_pattern(0, Vector2(), item.pattern);
+			viewport->add_child(tile_map);
 
-				TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
+			TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
 
-				Rect2 encompassing_rect;
-				encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
-				for (int i = 0; i < used_cells.size(); i++) {
-					Vector2i cell = used_cells[i];
-					Vector2 world_pos = tile_map->map_to_local(cell);
-					encompassing_rect.expand_to(world_pos);
+			Rect2 encompassing_rect;
+			encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
+			for (int i = 0; i < used_cells.size(); i++) {
+				Vector2i cell = used_cells[i];
+				Vector2 world_pos = tile_map->map_to_local(cell);
+				encompassing_rect.expand_to(world_pos);
 
-					// Texture.
-					Ref<TileSetAtlasSource> atlas_source = item.tile_set->get_source(tile_map->get_cell_source_id(0, cell));
-					if (atlas_source.is_valid()) {
-						Vector2i coords = tile_map->get_cell_atlas_coords(0, cell);
-						int alternative = tile_map->get_cell_alternative_tile(0, cell);
+				// Texture.
+				Ref<TileSetAtlasSource> atlas_source = item.tile_set->get_source(tile_map->get_cell_source_id(0, cell));
+				if (atlas_source.is_valid()) {
+					Vector2i coords = tile_map->get_cell_atlas_coords(0, cell);
+					int alternative = tile_map->get_cell_alternative_tile(0, cell);
 
-						if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
-							Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
-							encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
-							encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
-						}
+					if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
+						Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
+						encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
+						encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
 					}
 				}
-
-				Vector2 scale = thumbnail_size2 / MAX(encompassing_rect.size.x, encompassing_rect.size.y);
-				tile_map->set_scale(scale);
-				tile_map->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
-
-				// Add the viewport at the last moment to avoid rendering too early.
-				callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(viewport, false, Node::INTERNAL_MODE_DISABLED);
-
-				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
-
-				pattern_preview_done.wait();
-
-				Ref<Image> image = viewport->get_texture()->get_image();
-
-				// Find the index for the given pattern. TODO: optimize.
-				item.callback.call(item.pattern, ImageTexture::create_from_image(image));
-
-				viewport->queue_free();
 			}
+
+			Vector2 scale = thumbnail_size2 / MAX(encompassing_rect.size.x, encompassing_rect.size.y);
+			tile_map->set_scale(scale);
+			tile_map->set_position(-(scale * encompassing_rect.get_center()) + thumbnail_size2 / 2);
+
+			// Add the viewport at the last moment to avoid rendering too early.
+			callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(viewport, false, Node::INTERNAL_MODE_DISABLED);
+
+			RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
+
+			pattern_preview_done.wait();
+
+			Ref<Image> image = viewport->get_texture()->get_image();
+
+			// Find the index for the given pattern. TODO: optimize.
+			item.callback.call(item.pattern, ImageTexture::create_from_image(image));
+
+			viewport->queue_free();
 		}
 	}
 	pattern_thread_exited.set();

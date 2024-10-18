@@ -94,11 +94,19 @@ private:
 	// Patterns.
 	ItemList *patterns_item_list = nullptr;
 	Label *patterns_help_label = nullptr;
-	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
+	//void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
+	/*
+	Tree *pattern_sets_display = nullptr;
+	TreeItem *root = nullptr;
+	Label *pattern_sets_help_label = nullptr;
+
+
+
+
 	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
 	bool select_last_pattern = false;
 	void _update_patterns_list();
-
+	*/
 	// Expanded editor.
 	PanelContainer *expanded_area = nullptr;
 	Control *expanded_editor = nullptr;
