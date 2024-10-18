@@ -3022,7 +3022,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				}
 
 				// Make sure the click is correct.
-				Point2 click_pos = get_global_mouse_position() - get_global_position();
+				const Point2 click_pos = get_local_mouse_position();
 				if (!get_item_at_position(click_pos)) {
 					pressed_button = -1;
 					cache.click_type = Cache::CLICK_NONE;
