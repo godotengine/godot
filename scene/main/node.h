@@ -123,6 +123,13 @@ public:
 		AUTO_TRANSLATE_MODE_DISABLED,
 	};
 
+	enum ResolvedLayoutDirection {
+		RESOLVED_LAYOUT_DIRECTION_APPLICATION_LOCALE,
+		RESOLVED_LAYOUT_DIRECTION_LTR,
+		RESOLVED_LAYOUT_DIRECTION_RTL,
+		RESOLVED_LAYOUT_DIRECTION_SYSTEM_LOCALE,
+	};
+
 	struct Comparator {
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};

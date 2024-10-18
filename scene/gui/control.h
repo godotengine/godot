@@ -253,6 +253,9 @@ private:
 		// Internationalization.
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
+		mutable ResolvedLayoutDirection resolved_layout_dir = RESOLVED_LAYOUT_DIRECTION_APPLICATION_LOCALE;
+		mutable bool is_resolved_layout_dir_dirty = true;
+
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
@@ -320,7 +323,7 @@ private:
 
 	// Extra properties.
 
-	static int root_layout_direction;
+	static ResolvedLayoutDirection root_layout_direction;
 
 	String get_tooltip_text() const;
 
@@ -408,7 +411,7 @@ public:
 
 	// Editor integration.
 
-	static void set_root_layout_direction(int p_root_dir);
+	static void set_root_layout_direction(ResolvedLayoutDirection p_root_dir);
 
 	PackedStringArray get_configuration_warnings() const override;
 #ifdef TOOLS_ENABLED
@@ -624,6 +627,7 @@ public:
 
 	void set_layout_direction(LayoutDirection p_direction);
 	LayoutDirection get_layout_direction() const;
+	ResolvedLayoutDirection get_resolved_layout_direction() const;
 	virtual bool is_layout_rtl() const;
 
 	void set_localize_numeral_system(bool p_enable);
