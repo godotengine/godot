@@ -49,7 +49,6 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,6 +65,7 @@ public final class PermissionsUtil {
 	public static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
 	public static final int REQUEST_SINGLE_PERMISSION_REQ_CODE = 1002;
 	public static final int REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE = 2002;
+	public static final int REQUEST_INSTALL_PACKAGES_REQ_CODE = 3002;
 
 	private PermissionsUtil() {
 	}
@@ -103,6 +103,16 @@ public final class PermissionsUtil {
 						} catch (Exception ignored) {
 							Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
 							activity.startActivityForResult(intent, REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE);
+						}
+					}
+				} else if (permission.equals(Manifest.permission.REQUEST_INSTALL_PACKAGES)) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !activity.getPackageManager().canRequestPackageInstalls()) {
+						try {
+							Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+							intent.setData(Uri.parse(String.format("package:%s", activity.getPackageName())));
+							activity.startActivityForResult(intent, REQUEST_INSTALL_PACKAGES_REQ_CODE);
+						} catch (Exception e) {
+							Log.e(TAG, "Unable to request permission " + Manifest.permission.REQUEST_INSTALL_PACKAGES);
 						}
 					}
 				} else {
@@ -215,7 +225,7 @@ public final class PermissionsUtil {
 		try {
 			manifestPermissions = getManifestPermissions(activity);
 		} catch (PackageManager.NameNotFoundException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Unable to retrieve manifest permissions", e);
 			return false;
 		}
 
@@ -242,7 +252,7 @@ public final class PermissionsUtil {
 		try {
 			manifestPermissions = getManifestPermissions(context);
 		} catch (PackageManager.NameNotFoundException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Unable to retrieve manifest permissions", e);
 			return new String[0];
 		}
 		if (manifestPermissions.isEmpty()) {
