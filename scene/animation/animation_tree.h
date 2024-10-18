@@ -59,7 +59,7 @@ public:
 	};
 
 	bool closable = false;
-	Vector<Input> inputs;
+	LocalVector<Input> inputs;
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
@@ -100,7 +100,7 @@ public:
 		StringName base_path;
 		AnimationNode *parent = nullptr;
 		Vector<StringName> connections;
-		Vector<real_t> track_weights;
+		LocalVector<real_t> track_weights;
 	} node_state;
 
 	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
@@ -267,8 +267,8 @@ private:
 		uint64_t last_pass = 0;
 		real_t activity = 0.0;
 	};
-	HashMap<StringName, Vector<Activity>> input_activity_map;
-	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
+	HashMap<StringName, LocalVector<Activity>> input_activity_map;
+	HashMap<StringName, LocalVector<Activity> *> input_activity_map_get;
 
 	NodePath animation_player;
 
