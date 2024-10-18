@@ -1979,6 +1979,12 @@
 		</constant>
 		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
+		<constant name="STORAGE_BUFFER_USAGE_READONLY" value="2" enum="StorageBufferUsage" is_bitfield="true">
+			Buffer can only be read by the shader using it.
+		</constant>
+		<constant name="STORAGE_BUFFER_USAGE_WRITEONLY" value="4" enum="StorageBufferUsage" is_bitfield="true">
+			Buffer can only be written to by the shader using it, usually used by an output buffer to be copied back to the CPU later.
+		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 			Sampler uniform.
 		</constant>
