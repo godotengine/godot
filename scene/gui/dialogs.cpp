@@ -244,7 +244,10 @@ void AcceptDialog::_update_child_rects() {
 
 	// Place the content from the top to fill the rest of the space (minus the separation).
 	Point2 content_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), theme_cache.panel_style->get_margin(SIDE_TOP));
-	Size2 content_size = Size2(dlg_size.x - h_margins, dlg_size.y - v_margins - buttons_size.y - theme_cache.buttons_separation);
+	Size2 content_size = Size2(dlg_size.x - h_margins, dlg_size.y - v_margins - buttons_size.y);
+	if (buttons_size.y > 0) {
+		content_size.y -= theme_cache.buttons_separation;
+	}
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -286,7 +289,9 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	content_minsize.x = MAX(buttons_minsize.x, content_minsize.x);
 	content_minsize.y += buttons_minsize.y;
 	// Plus there is a separation size added on top.
-	content_minsize.y += theme_cache.buttons_separation;
+	if (buttons_minsize.y > 0) {
+		content_minsize.y += theme_cache.buttons_separation;
+	}
 
 	// Then we take the background panel as it provides the offsets,
 	// which are always added to the minimum size.
