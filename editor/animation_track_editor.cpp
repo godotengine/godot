@@ -7555,9 +7555,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	inactive_player_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_inactive_player_warning));
 	bottom_hb->add_child(inactive_player_warning);
 
-	bottom_hb->add_spacer();
-
 	bezier_edit_icon = memnew(Button);
+	bezier_edit_icon->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	bezier_edit_icon->set_flat(true);
 	bezier_edit_icon->set_disabled(true);
 	bezier_edit_icon->set_toggle_mode(true);

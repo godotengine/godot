@@ -1027,9 +1027,8 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_install_hb->add_child(mirror_options_button);
 	mirror_options_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 
-	download_install_hb->add_spacer();
-
 	download_current_button = memnew(Button);
+	download_current_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	download_current_button->set_text(TTR("Download and Install"));
 	download_current_button->set_tooltip_text(TTR("Download and install templates for the current version from the best possible mirror."));
 	download_install_hb->add_child(download_current_button);
