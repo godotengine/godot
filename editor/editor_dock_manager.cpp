@@ -504,12 +504,12 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	// Save SplitContainer offsets.
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (vsplits[i]->is_visible_in_tree()) {
-			p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
+			p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offsets()[0]);
 		}
 	}
 
 	for (int i = 0; i < hsplits.size(); i++) {
-		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
+		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offsets()[0] / EDSCALE));
 	}
 
 	FileSystemDock::get_singleton()->save_layout_to_config(p_layout, p_section);
@@ -597,7 +597,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			continue;
 		}
 		int ofs = p_layout->get_value(p_section, "dock_split_" + itos(i + 1));
-		vsplits[i]->set_split_offset(ofs);
+		vsplits[i]->set_split_offsets({ ofs });
 	}
 
 	for (int i = 0; i < hsplits.size(); i++) {
@@ -605,7 +605,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			continue;
 		}
 		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
-		hsplits[i]->set_split_offset(ofs * EDSCALE);
+		hsplits[i]->set_split_offsets({ int(ofs * EDSCALE) });
 	}
 
 	FileSystemDock::get_singleton()->load_layout_from_config(p_layout, p_section);

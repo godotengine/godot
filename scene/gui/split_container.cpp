@@ -30,8 +30,6 @@
 
 #include "split_container.h"
 
-#include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 
@@ -40,7 +38,8 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 
 	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 
-	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+	bool at_least_two_children = sc->_get_sortable_child(1);
+	if (sc->collapsed || !at_least_two_children || !sc->dragging_enabled) {
 		return;
 	}
 
@@ -49,10 +48,11 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				sc->_compute_split_offset(true);
+				sc->dragging_index = dragger_index;
+				sc->_update_dragger_positions(true);
 				dragging = true;
 				sc->emit_signal(SNAME("drag_started"));
-				drag_ofs = sc->split_offset;
+				drag_ofs = sc->split_offsets[dragger_index];
 				if (sc->vertical) {
 					drag_from = get_transform().xform(mb->get_position()).y;
 				} else {
@@ -60,6 +60,7 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			} else {
 				dragging = false;
+				sc->dragging_index = -1;
 				queue_redraw();
 				sc->emit_signal(SNAME("drag_ended"));
 			}
@@ -75,13 +76,13 @@ void SplitContainerDragger::gui_input(const Ref<InputEvent> &p_event) {
 
 		Vector2i in_parent_pos = get_transform().xform(mm->get_position());
 		if (!sc->vertical && is_layout_rtl()) {
-			sc->split_offset = drag_ofs - (in_parent_pos.x - drag_from);
+			sc->split_offsets.write[dragger_index] = drag_ofs - (in_parent_pos.x - drag_from);
 		} else {
-			sc->split_offset = drag_ofs + ((sc->vertical ? in_parent_pos.y : in_parent_pos.x) - drag_from);
+			sc->split_offsets.write[dragger_index] = drag_ofs + ((sc->vertical ? in_parent_pos.y : in_parent_pos.x) - drag_from);
 		}
-		sc->_compute_split_offset(true);
+		sc->_update_dragger_positions(true);
 		sc->queue_sort();
-		sc->emit_signal(SNAME("dragged"), sc->get_split_offset());
+		sc->emit_signal(SNAME("dragged"), sc->split_offsets[dragger_index]);
 	}
 }
 
@@ -102,6 +103,7 @@ void SplitContainerDragger::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
@@ -109,6 +111,20 @@ void SplitContainerDragger::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			if (dragging) {
+				dragging = false;
+				queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (dragging && !is_visible_in_tree()) {
+				dragging = false;
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			draw_style_box(sc->theme_cache.split_bar_background, split_bar_rect);
@@ -126,19 +142,22 @@ void SplitContainerDragger::_notification(int p_what) {
 	}
 }
 
-Control *SplitContainer::_get_sortable_child(int p_idx, SortableVisbilityMode p_visibility_mode) const {
+Control *SplitContainer::_get_sortable_child(int p_idx) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = as_sortable_control(get_child(i, false), p_visibility_mode);
-		if (!c) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::VISIBLE);
+		if (!child) {
 			continue;
 		}
 
 		if (idx == p_idx) {
-			return c;
+			return child;
 		}
 
 		idx++;
+		if (idx > p_idx) {
+			break;
+		}
 	}
 	return nullptr;
 }
@@ -164,107 +183,344 @@ int SplitContainer::_get_separation() const {
 	return MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width());
 }
 
-void SplitContainer::_compute_split_offset(bool p_clamp) {
-	Control *first = _get_sortable_child(0);
-	Control *second = _get_sortable_child(1);
-	int axis_index = vertical ? 1 : 0;
-	int size = get_size()[axis_index];
+Point2i SplitContainer::_get_valid_range(int p_dragger_index) {
+	ERR_FAIL_INDEX_V(p_dragger_index, (int)dragger_positions.size(), Point2i());
+	int axis = vertical ? 1 : 0;
 	int sep = _get_separation();
 
-	// Compute the wished size.
-	int wished_size = 0;
-	int split_offset_with_collapse = 0;
-	if (!collapsed) {
-		split_offset_with_collapse = split_offset;
-	}
-	bool first_is_expanded = (vertical ? first->get_v_size_flags() : first->get_h_size_flags()) & SIZE_EXPAND;
-	bool second_is_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
+	// Sum the minimum sizes on the left and right sides of the dragger.
+	Point2i position_range = Point2i(0, get_size()[axis]);
+	position_range.x += sep * p_dragger_index;
+	position_range.y -= sep * (dragger_positions.size() - p_dragger_index);
 
-	if (first_is_expanded && second_is_expanded) {
-		float ratio = first->get_stretch_ratio() / (first->get_stretch_ratio() + second->get_stretch_ratio());
-		wished_size = size * ratio - sep * 0.5 + split_offset_with_collapse;
-	} else if (first_is_expanded) {
-		wished_size = size - sep + split_offset_with_collapse;
+	int valid_child_count = (int)dragger_positions.size() + 1;
+	for (int i = 0; i < valid_child_count; i++) {
+		Control *child = _get_sortable_child(i);
+		ERR_FAIL_NULL_V(child, Point2i());
+		if (i <= p_dragger_index) {
+			position_range.x += child->get_combined_minimum_size()[axis];
+		} else if (i > p_dragger_index) {
+			position_range.y -= child->get_combined_minimum_size()[axis];
+		}
+	}
+	return position_range;
+}
+
+struct _StretchData {
+	int min_size = 0;
+	float stretch_ratio = 0.0;
+	int final_size = 0;
+	bool expand_flag = false;
+};
+
+void SplitContainer::_update_default_dragger_positions() {
+	int sep = _get_separation();
+	int axis = vertical ? 1 : 0;
+	float size = get_size()[axis];
+
+	float total_min_size = get_minimum_size()[axis];
+	float free_space = MAX(0.0, size - total_min_size);
+	float stretchable_space = free_space;
+
+	// First pass, determine the total stretch amount.
+	int expand_count = 0;
+	float stretch_total = 0;
+	LocalVector<_StretchData> stretch_data;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::VISIBLE);
+		if (!child) {
+			continue;
+		}
+		_StretchData sdata;
+		sdata.min_size = child->get_combined_minimum_size()[axis];
+		sdata.final_size = sdata.min_size;
+		if ((vertical ? child->get_v_size_flags() : child->get_h_size_flags()).has_flag(SIZE_EXPAND)) {
+			sdata.stretch_ratio = child->get_stretch_ratio();
+			stretch_total += sdata.stretch_ratio;
+			stretchable_space += sdata.min_size;
+			sdata.expand_flag = true;
+			expand_count += 1;
+		}
+		stretch_data.push_back(sdata);
+	}
+
+	if ((int)stretch_data.size() <= 1) {
+		default_dragger_positions.clear();
+		return;
+	}
+	default_dragger_positions.resize((int)stretch_data.size() - 1);
+
+#ifndef DISABLE_DEPRECATED
+	if (expand_count == 2 && (int)default_dragger_positions.size() == 1) {
+		// Special case when there are 2 expanded children for compatibility.
+		float ratio = stretch_data[0].stretch_ratio / stretch_total;
+		default_dragger_positions[0] = size * ratio - sep / 2;
+		return;
+	}
+#endif // DISABLE_DEPRECATED
+
+	// Second pass, determine final sizes if stretching.
+	while (stretch_total > 0.0) {
+		bool refit_successful = true;
+		// Keep track of accumulated error in pixels.
+		float error = 0.0;
+		for (int i = 0; i < (int)stretch_data.size(); i++) {
+			if (stretch_data[i].stretch_ratio <= 0.0) {
+				continue;
+			}
+			// Check if it reaches its minimum size.
+			float desired_size = stretch_data[i].stretch_ratio / stretch_total * stretchable_space;
+			error += desired_size - (int)desired_size;
+			if (desired_size < stretch_data[i].min_size) {
+				// Will not be stretched, remove and retry.
+				stretch_total -= stretch_data[i].stretch_ratio;
+				stretchable_space -= stretch_data[i].min_size;
+				stretch_data[i].stretch_ratio = 0.0;
+				stretch_data[i].final_size = stretch_data[i].min_size;
+				refit_successful = false;
+				break;
+			} else {
+				stretch_data[i].final_size = desired_size;
+				// Dump accumulated error if one pixel or more.
+				if (error >= 1.0) {
+					stretch_data[i].final_size += 1;
+					error -= 1;
+				}
+			}
+		}
+		if (refit_successful) {
+			break;
+		}
+	}
+
+	// Final pass, set the default positions.
+	int pos = 0;
+	int expands_seen = 0;
+	for (int i = 0; i < (int)default_dragger_positions.size(); i++) {
+		// Do not add a dragger for the last child.
+		pos += stretch_data[i].final_size;
+		if (stretch_data[i].expand_flag) {
+			expands_seen += 1;
+		}
+		if (expands_seen == 0) {
+			// Before all expand flags.
+			default_dragger_positions[i] = 0;
+		} else if (expands_seen >= expand_count) {
+			// After all expand flags.
+			default_dragger_positions[i] = size;
+		} else {
+			default_dragger_positions[i] = pos;
+		}
+		pos += sep;
+	}
+}
+
+void SplitContainer::_update_dragger_positions(bool p_clamp) {
+	int sep = _get_separation();
+	int axis = vertical ? 1 : 0;
+	int size = get_size()[axis];
+
+	dragger_positions.resize(default_dragger_positions.size());
+	if (split_offsets.size() < default_dragger_positions.size() || (int)split_offsets.size() < 1) {
+		split_offsets.resize_zeroed(MAX(1, (int)default_dragger_positions.size()));
+	}
+
+	if (collapsed) {
+		for (int i = 0; i < (int)dragger_positions.size(); i++) {
+			dragger_positions[i] = default_dragger_positions[i];
+			Point2i valid_range = _get_valid_range(i);
+			dragger_positions[i] = CLAMP(dragger_positions[i], valid_range.x, valid_range.y);
+			if (p_clamp) {
+				split_offsets.write[i] = dragger_positions[i] - default_dragger_positions[i];
+			}
+			if (!vertical && is_layout_rtl()) {
+				dragger_positions[i] = size - dragger_positions[i] - sep;
+			}
+		}
+		return;
+	}
+
+	// Use split_offsets to find the desired dragger positions.
+	for (int i = 0; i < (int)dragger_positions.size(); i++) {
+		dragger_positions[i] = default_dragger_positions[i] + split_offsets[i];
+
+		// Clamp the desired position to acceptatble values.
+		Point2i valid_range = _get_valid_range(i);
+		dragger_positions[i] = CLAMP(dragger_positions[i], valid_range.x, valid_range.y);
+	}
+
+	// Prevent overlaps.
+	if (dragging_index == -1) {
+		// Check each dragger with the one to the right of it.
+		for (int i = 0; i < (int)dragger_positions.size() - 1; i++) {
+			int check_min_size = _get_sortable_child(i + 1)->get_combined_minimum_size()[axis];
+			int push_pos = dragger_positions[i] + sep + check_min_size;
+			if (dragger_positions[i + 1] < push_pos) {
+				dragger_positions[i + 1] = push_pos;
+				Point2i valid_range = _get_valid_range(i);
+				dragger_positions[i] = CLAMP(dragger_positions[i], valid_range.x, valid_range.y);
+			}
+		}
 	} else {
-		wished_size = split_offset_with_collapse;
-	}
+		// Prioritize the active dragger.
+		int dragging_position = dragger_positions[dragging_index];
 
-	// Clamp the split offset to acceptable values.
-	int first_min_size = first->get_combined_minimum_size()[axis_index];
-	int second_min_size = second->get_combined_minimum_size()[axis_index];
-	computed_split_offset = CLAMP(wished_size, first_min_size, size - sep - second_min_size);
+		// Push overlapping draggers to the left.
+		int accumulated_min_size = _get_sortable_child(dragging_index)->get_combined_minimum_size()[axis];
+		for (int i = dragging_index - 1; i >= 0; i--) {
+			int push_pos = dragging_position - sep * (dragging_index - i) - accumulated_min_size;
+			if (dragger_positions[i] > push_pos) {
+				dragger_positions[i] = push_pos;
+			}
+			accumulated_min_size += _get_sortable_child(i)->get_combined_minimum_size()[axis];
+		}
+
+		// Push overlapping draggers to the right.
+		accumulated_min_size = 0;
+		for (int i = dragging_index + 1; i < (int)dragger_positions.size(); i++) {
+			accumulated_min_size += _get_sortable_child(i)->get_combined_minimum_size()[axis];
+			int push_pos = dragging_position + sep * (i - dragging_index) + accumulated_min_size;
+			if (dragger_positions[i] < push_pos) {
+				dragger_positions[i] = push_pos;
+			}
+		}
+	}
 
 	// Clamp the split_offset if requested.
 	if (p_clamp) {
-		split_offset -= wished_size - computed_split_offset;
+		for (int i = 0; i < (int)dragger_positions.size(); i++) {
+			split_offsets.write[i] -= default_dragger_positions[i] + split_offsets[i] - dragger_positions[i];
+		}
+	}
+
+	// Invert if rtl.
+	if (!vertical && is_layout_rtl()) {
+		for (int i = 0; i < (int)dragger_positions.size(); i++) {
+			dragger_positions[i] = size - dragger_positions[i] - sep;
+		}
 	}
 }
 
 void SplitContainer::_resort() {
-	Control *first = _get_sortable_child(0);
-	Control *second = _get_sortable_child(1);
-
-	if (!first || !second) { // Only one child.
-		if (first) {
-			fit_child_in_rect(first, Rect2(Point2(), get_size()));
-		} else if (second) {
-			fit_child_in_rect(second, Rect2(Point2(), get_size()));
-		}
-		dragging_area_control->hide();
+	if (!is_visible_in_tree()) {
 		return;
 	}
-	dragging_area_control->set_visible(!collapsed);
+	if (!_get_sortable_child(1)) {
+		Control *child = _get_sortable_child(0);
+		if (child) {
+			// Only one valid child.
+			fit_child_in_rect(child, Rect2(Point2(), get_size()));
+		}
+		for (int i = 0; i < (int)dragging_area_controls.size(); i++) {
+			dragging_area_controls[i]->hide();
+		}
+		return;
+	}
+	for (int i = 0; i < (int)dragging_area_controls.size(); i++) {
+		dragging_area_controls[i]->set_visible(!collapsed);
+	}
 
-	_compute_split_offset(false); // This recalculates and sets computed_split_offset.
+	_update_default_dragger_positions();
+	_update_dragger_positions(false);
 
 	int sep = _get_separation();
-	bool is_rtl = is_layout_rtl();
+
+	int axis = vertical ? 1 : 0;
+	Size2i new_size = get_size();
+	bool rtl = is_layout_rtl();
 
 	// Move the children.
-	if (vertical) {
-		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(get_size().width, computed_split_offset)));
-		int sofs = computed_split_offset + sep;
-		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
-	} else {
-		if (is_rtl) {
-			computed_split_offset = get_size().width - computed_split_offset - sep;
-			fit_child_in_rect(second, Rect2(Point2(0, 0), Size2(computed_split_offset, get_size().height)));
-			int sofs = computed_split_offset + sep;
-			fit_child_in_rect(first, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+	int valid_child_count = (int)dragger_positions.size() + 1;
+	for (int i = 0; i < valid_child_count; i++) {
+		Control *child = _get_sortable_child(i);
+		if (!child) {
+			return;
+		}
+		int start_pos;
+		int end_pos;
+		if (!vertical && rtl) {
+			start_pos = i >= (int)dragger_positions.size() ? 0 : dragger_positions[i] + sep;
+			end_pos = i == 0 ? new_size[axis] : dragger_positions[i - 1];
 		} else {
-			fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(computed_split_offset, get_size().height)));
-			int sofs = computed_split_offset + sep;
-			fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+			start_pos = i == 0 ? 0 : dragger_positions[i - 1] + sep;
+			end_pos = i >= (int)dragger_positions.size() ? new_size[axis] : dragger_positions[i];
+		}
+		int size = end_pos - start_pos;
+
+		if (vertical) {
+			fit_child_in_rect(child, Rect2(Point2(0, start_pos), Size2(new_size.width, size)));
+		} else {
+			fit_child_in_rect(child, Rect2(Point2(start_pos, 0), Size2(size, new_size.height)));
 		}
 	}
 
-	dragging_area_control->set_mouse_filter(dragging_enabled ? MOUSE_FILTER_STOP : MOUSE_FILTER_IGNORE);
+	_update_draggers();
+
+	// Update dragger positions.
 	const int dragger_ctrl_size = MAX(sep, theme_cache.minimum_grab_thickness);
 	float split_bar_offset = (dragger_ctrl_size - sep) * 0.5;
-	if (vertical) {
-		Rect2 split_bar_rect = Rect2(is_rtl ? drag_area_margin_end : drag_area_margin_begin, computed_split_offset, get_size().width - drag_area_margin_begin - drag_area_margin_end, sep);
-		dragging_area_control->set_rect(Rect2(split_bar_rect.position.x, split_bar_rect.position.y - split_bar_offset + drag_area_offset, split_bar_rect.size.x, dragger_ctrl_size));
-		dragging_area_control->split_bar_rect = Rect2(Vector2(0.0, int(split_bar_offset) - drag_area_offset), split_bar_rect.size);
-	} else {
-		Rect2 split_bar_rect = Rect2(computed_split_offset, drag_area_margin_begin, sep, get_size().height - drag_area_margin_begin - drag_area_margin_end);
-		dragging_area_control->set_rect(Rect2(split_bar_rect.position.x - split_bar_offset + drag_area_offset * (is_rtl ? -1 : 1), split_bar_rect.position.y, dragger_ctrl_size, split_bar_rect.size.y));
-		dragging_area_control->split_bar_rect = Rect2(Vector2(int(split_bar_offset) - drag_area_offset * (is_rtl ? -1 : 1), 0.0), split_bar_rect.size);
+	ERR_FAIL_COND(dragging_area_controls.size() != dragger_positions.size());
+	for (int i = 0; i < (int)dragger_positions.size(); i++) {
+		dragging_area_controls[i]->set_mouse_filter(dragging_enabled ? MOUSE_FILTER_STOP : MOUSE_FILTER_IGNORE);
+		if (vertical) {
+			Rect2 split_bar_rect = Rect2(rtl ? drag_area_margin_end : drag_area_margin_begin, dragger_positions[i], new_size.width - drag_area_margin_begin - drag_area_margin_end, sep);
+			dragging_area_controls[i]->set_rect(Rect2(split_bar_rect.position.x, split_bar_rect.position.y - split_bar_offset + drag_area_offset, split_bar_rect.size.x, dragger_ctrl_size));
+			dragging_area_controls[i]->split_bar_rect = Rect2(Vector2(0.0, int(split_bar_offset) - drag_area_offset), split_bar_rect.size);
+		} else {
+			Rect2 split_bar_rect = Rect2(dragger_positions[i], drag_area_margin_begin, sep, new_size.height - drag_area_margin_begin - drag_area_margin_end);
+			dragging_area_controls[i]->set_rect(Rect2(split_bar_rect.position.x - split_bar_offset + drag_area_offset * (rtl ? -1 : 1), split_bar_rect.position.y, dragger_ctrl_size, split_bar_rect.size.y));
+			dragging_area_controls[i]->split_bar_rect = Rect2(Vector2(int(split_bar_offset) - drag_area_offset * (rtl ? -1 : 1), 0.0), split_bar_rect.size);
+		}
+		dragging_area_controls[i]->queue_redraw();
 	}
 	queue_redraw();
-	dragging_area_control->queue_redraw();
+}
+
+void SplitContainer::_update_draggers() {
+	int valid_child_count = 0;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::VISIBLE);
+		if (!child) {
+			continue;
+		}
+		valid_child_count++;
+	}
+
+	int dragger_count = valid_child_count - 1;
+	int draggers_size_diff = dragger_count - (int)dragging_area_controls.size();
+	// Add new draggers.
+	for (int i = 0; i < draggers_size_diff; i++) {
+		SplitContainerDragger *dragger = memnew(SplitContainerDragger);
+		dragging_area_controls.push_back(dragger);
+		add_child(dragger, false, Node::INTERNAL_MODE_BACK);
+		dragger->force_parent_owned();
+	}
+	// Remove some draggers.
+	for (int i = 0; i < -draggers_size_diff; i++) {
+		int remove_at = (int)dragging_area_controls.size() - 1;
+		SplitContainerDragger *dragger = dragging_area_controls[remove_at];
+		dragging_area_controls.remove_at(remove_at);
+		memdelete(dragger);
+	}
+
+	// Make sure draggers have the correct index.
+	for (int i = 0; i < (int)dragging_area_controls.size(); i++) {
+		dragging_area_controls[i]->dragger_index = i;
+	}
 }
 
 Size2 SplitContainer::get_minimum_size() const {
 	Size2i minimum;
 	int sep = _get_separation();
 
-	for (int i = 0; i < 2; i++) {
-		Control *child = _get_sortable_child(i, SortableVisbilityMode::VISIBLE);
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *child = _get_sortable_child(i);
 		if (!child) {
 			break;
 		}
 
-		if (i == 1) {
+		if (i != 0) {
+			// Add separator size.
 			if (vertical) {
 				minimum.height += sep;
 			} else {
@@ -307,23 +563,45 @@ void SplitContainer::_notification(int p_what) {
 	}
 }
 
-void SplitContainer::set_split_offset(int p_offset) {
-	if (split_offset == p_offset) {
+void SplitContainer::add_child_notify(Node *p_child) {
+	Container::add_child_notify(p_child);
+	if (p_child->get_internal_mode() == INTERNAL_MODE_DISABLED && as_sortable_control(p_child, SortableVisbilityMode::VISIBLE)) {
+		// Add the dragger immediately, don't wait until sorting.
+		_update_draggers();
+	}
+}
+
+#ifndef DISABLE_DEPRECATED
+int SplitContainer::_get_split_offset() const {
+	return split_offsets[0];
+}
+
+void SplitContainer::_set_split_offset(int p_offset) {
+	if (split_offsets[0] == p_offset) {
 		return;
 	}
-	split_offset = p_offset;
+
+	split_offsets.write[0] = p_offset;
+	queue_sort();
+}
+#endif // DISABLE_DEPRECATED
+
+void SplitContainer::set_split_offsets(const PackedInt32Array &p_offsets) {
+	split_offsets = p_offsets;
 	queue_sort();
 }
 
-int SplitContainer::get_split_offset() const {
-	return split_offset;
+PackedInt32Array SplitContainer::get_split_offsets() const {
+	return split_offsets;
 }
 
 void SplitContainer::clamp_split_offset() {
-	if (!_get_sortable_child(0) || !_get_sortable_child(1)) {
+	if (!_get_sortable_child(1)) {
+		// Needs at least two children.
 		return;
 	}
-	_compute_split_offset(true);
+
+	_update_dragger_positions(true);
 	queue_sort();
 }
 
@@ -367,10 +645,16 @@ void SplitContainer::set_dragging_enabled(bool p_enabled) {
 		return;
 	}
 	dragging_enabled = p_enabled;
-	if (!dragging_enabled && dragging_area_control->dragging) {
-		dragging_area_control->dragging = false;
+	if (!dragging_enabled) {
+		bool was_dragging = false;
+		for (int i = 0; i < (int)dragging_area_controls.size(); i++) {
+			was_dragging = dragging_area_controls[i]->dragging;
+			dragging_area_controls[i]->dragging = false;
+		}
 		// queue_redraw() is called by _resort().
-		emit_signal(SNAME("drag_ended"));
+		if (was_dragging) {
+			emit_signal(SNAME("drag_ended"));
+		}
 	}
 	if (get_viewport()) {
 		get_viewport()->update_mouse_cursor_state();
@@ -444,16 +728,26 @@ int SplitContainer::get_drag_area_offset() const {
 
 void SplitContainer::set_show_drag_area_enabled(bool p_enabled) {
 	show_drag_area = p_enabled;
-	dragging_area_control->queue_redraw();
+	for (int i = 0; i < (int)dragging_area_controls.size(); i++) {
+		dragging_area_controls[i]->queue_redraw();
+	}
 }
 
 bool SplitContainer::is_show_drag_area_enabled() const {
 	return show_drag_area;
 }
 
+Array SplitContainer::get_drag_area_controls() {
+	Array controls;
+	for (int i = 0; i < (int)dragging_area_controls.size(); i++) {
+		controls.push_back(dragging_area_controls[i]);
+	}
+	return controls;
+}
+
 void SplitContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::set_split_offset);
-	ClassDB::bind_method(D_METHOD("get_split_offset"), &SplitContainer::get_split_offset);
+	ClassDB::bind_method(D_METHOD("set_split_offsets", "offsets"), &SplitContainer::set_split_offsets);
+	ClassDB::bind_method(D_METHOD("get_split_offsets"), &SplitContainer::get_split_offsets);
 	ClassDB::bind_method(D_METHOD("clamp_split_offset"), &SplitContainer::clamp_split_offset);
 
 	ClassDB::bind_method(D_METHOD("set_collapsed", "collapsed"), &SplitContainer::set_collapsed);
@@ -480,13 +774,13 @@ void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_area_highlight_in_editor", "drag_area_highlight_in_editor"), &SplitContainer::set_show_drag_area_enabled);
 	ClassDB::bind_method(D_METHOD("is_drag_area_highlight_in_editor_enabled"), &SplitContainer::is_show_drag_area_enabled);
 
-	ClassDB::bind_method(D_METHOD("get_drag_area_control"), &SplitContainer::get_drag_area_control);
+	ClassDB::bind_method(D_METHOD("get_drag_area_controls"), &SplitContainer::get_drag_area_controls);
 
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::INT, "offset")));
 	ADD_SIGNAL(MethodInfo("drag_started"));
 	ADD_SIGNAL(MethodInfo("drag_ended"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_split_offset", "get_split_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "split_offsets", PROPERTY_HINT_NONE, "suffix:px"), "set_split_offsets", "get_split_offsets");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dragging_enabled"), "set_dragging_enabled", "is_dragging_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden and Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
@@ -509,11 +803,20 @@ void SplitContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon_h, "h_grabber");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon_v, "v_grabber");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SplitContainer, split_bar_background, "split_bar_background");
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::_set_split_offset);
+	ClassDB::bind_method(D_METHOD("get_split_offset"), &SplitContainer::_get_split_offset);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_NO_EDITOR), "set_split_offset", "get_split_offset");
+#endif // DISABLE_DEPRECATED
 }
 
 SplitContainer::SplitContainer(bool p_vertical) {
 	vertical = p_vertical;
+	split_offsets.push_back(0);
 
-	dragging_area_control = memnew(SplitContainerDragger);
-	add_child(dragging_area_control, false, Node::INTERNAL_MODE_BACK);
+	SplitContainerDragger *dragger = memnew(SplitContainerDragger);
+	dragging_area_controls.push_back(dragger);
+	add_child(dragger, false, Node::INTERNAL_MODE_BACK);
 }

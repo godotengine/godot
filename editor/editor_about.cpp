@@ -274,7 +274,7 @@ EditorAbout::EditorAbout() {
 	HSplitContainer *tpl_hbc = memnew(HSplitContainer);
 	tpl_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	tpl_hbc->set_split_offset(240 * EDSCALE);
+	tpl_hbc->set_split_offsets({ (int)(240 * EDSCALE) });
 	license_thirdparty->add_child(tpl_hbc);
 
 	_tpl_tree = memnew(Tree);

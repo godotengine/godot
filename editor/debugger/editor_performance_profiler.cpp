@@ -390,7 +390,7 @@ void EditorPerformanceProfiler::_notification(int p_what) {
 
 EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	set_name(TTR("Monitors"));
-	set_split_offset(340 * EDSCALE);
+	set_split_offsets({ (int)(340 * EDSCALE) });
 
 	monitor_tree = memnew(Tree);
 	monitor_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

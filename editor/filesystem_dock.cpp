@@ -510,7 +510,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				split_box->set_vertical(is_vertical);
 
 				const int actual_offset = is_vertical ? split_box_offset_v : split_box_offset_h;
-				split_box->set_split_offset(actual_offset);
+				split_box->set_split_offsets({ actual_offset });
 				const StringName icon = is_vertical ? SNAME("Panels2") : SNAME("Panels2Alt");
 				button_toggle_display_mode->set_icon(get_editor_theme_icon(icon));
 
