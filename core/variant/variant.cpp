@@ -1727,6 +1727,21 @@ String stringify_vector(const T &vec, int recursion_count) {
 	return str;
 }
 
+String stringify_array(const Array &p_array, int recursion_count) { // TODO: should this be called r_recursion_count?
+	String str("[");
+	for (int i = 0; i < p_array.size(); i++) {
+		if (i > 0) {
+			str += ", ";
+		}
+		if (p_array.is_struct()) {
+			str += String(p_array.get_member_name(i)) + ": ";
+		}
+		str += stringify_variant_clean(p_array[i], recursion_count);
+	}
+	str += "]";
+	return str;
+}
+
 String Variant::stringify(int recursion_count) const {
 	switch (type) {
 		case NIL:
@@ -1842,7 +1857,7 @@ String Variant::stringify(int recursion_count) const {
 			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "[...]", "Maximum array recursion reached!");
 			recursion_count++;
 
-			return stringify_vector(operator Array(), recursion_count);
+			return stringify_array(operator Array(), recursion_count);
 		}
 		case OBJECT: {
 			if (_get_obj().obj) {

@@ -203,6 +203,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<Array>>(sarray());
 	add_constructor<VariantConstructor<Array, Array>>(sarray("from"));
 	add_constructor<VariantConstructorTypedArray>(sarray("base", "type", "class_name", "script"));
+	//	add_constructor<VariantConstructorStruct>(sarray("base", "size", "struct_name", "member_names"));
 	add_constructor<VariantConstructorToArray<PackedByteArray>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt32Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt64Array>>(sarray("from"));
