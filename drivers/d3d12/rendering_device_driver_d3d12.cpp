@@ -5641,7 +5641,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.RasterizerState)->SlopeScaledDepthBias = 0.0f;
 	}
 	(&pipeline_desc.RasterizerState)->ForcedSampleCount = 0;
-	(&pipeline_desc.RasterizerState)->ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+	(&pipeline_desc.RasterizerState)->ConservativeRaster = p_rasterization_state.enable_conservative_rasterization ? D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON : D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 	(&pipeline_desc.RasterizerState)->MultisampleEnable = TEXTURE_SAMPLES_COUNT[p_multisample_state.sample_count] != 1;
 	(&pipeline_desc.RasterizerState)->AntialiasedLineEnable = true;
 
