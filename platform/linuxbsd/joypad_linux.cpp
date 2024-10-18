@@ -75,6 +75,9 @@ JoypadLinux::Joypad::~Joypad() {
 void JoypadLinux::Joypad::reset() {
 	dpad = 0;
 	fd = -1;
+	for (int i = 0; i < MAX_KEY; i++) {
+		key_map[i] = -1;
+	}
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
 		curr_axis[i] = 0;
@@ -309,11 +312,12 @@ void JoypadLinux::setup_joypad_properties(Joypad &p_joypad) {
 			p_joypad.key_map[i] = num_buttons++;
 		}
 	}
-	for (int i = BTN_MISC; i < BTN_JOYSTICK; ++i) {
+	for (int i = 0; i < BTN_JOYSTICK; ++i) {
 		if (test_bit(i, keybit)) {
 			p_joypad.key_map[i] = num_buttons++;
 		}
 	}
+
 	for (int i = 0; i < ABS_MISC; ++i) {
 		/* Skip hats */
 		if (i == ABS_HAT0X) {
@@ -338,6 +342,108 @@ void JoypadLinux::setup_joypad_properties(Joypad &p_joypad) {
 			p_joypad.force_feedback = true;
 		}
 	}
+}
+
+void JoypadLinux::_auto_remap(Joypad &p_joypad, const StringName &p_guid, const String &p_name, bool p_hat0x_exist, bool p_hat0y_exist) {
+	if (p_joypad.key_map[BTN_GAMEPAD] == -1) {
+		return;
+	}
+
+	// Generate key mapping for JoyButton.
+
+	int joy_button_mappings[int(JoyButton::SDL_MAX)];
+	for (int i = 0; i < int(JoyButton::SDL_MAX); i++) {
+		joy_button_mappings[i] = -1;
+	}
+
+#define BUTTON_MAP_KEY(button, keycode) (joy_button_mappings[int(button)] = p_joypad.key_map[keycode])
+#define BUTTON_MAPPED(button) (joy_button_mappings[int(button)] != int(JoyButton::INVALID))
+#define UNUSED_KEY_HIDE(keycode) (p_joypad.key_map[keycode] = -p_joypad.key_map[keycode] - 2) // Used for two events occur at one key press.
+
+	BUTTON_MAP_KEY(JoyButton::A, BTN_A);
+	BUTTON_MAP_KEY(JoyButton::B, BTN_B);
+	BUTTON_MAP_KEY(JoyButton::X, BTN_X);
+	BUTTON_MAP_KEY(JoyButton::Y, BTN_Y);
+
+	BUTTON_MAP_KEY(JoyButton::BACK, KEY_BACK);
+	BUTTON_MAP_KEY(JoyButton::GUIDE, KEY_HOMEPAGE);
+	if (!BUTTON_MAPPED(JoyButton::BACK)) {
+		BUTTON_MAP_KEY(JoyButton::BACK, BTN_SELECT);
+	}
+	if (!BUTTON_MAPPED(JoyButton::GUIDE)) {
+		BUTTON_MAP_KEY(JoyButton::GUIDE, BTN_MODE);
+	}
+
+	BUTTON_MAP_KEY(JoyButton::START, BTN_START);
+	BUTTON_MAP_KEY(JoyButton::LEFT_STICK, BTN_THUMBL);
+	BUTTON_MAP_KEY(JoyButton::RIGHT_STICK, BTN_THUMBR);
+	BUTTON_MAP_KEY(JoyButton::LEFT_SHOULDER, BTN_TL);
+	BUTTON_MAP_KEY(JoyButton::RIGHT_SHOULDER, BTN_TR);
+
+	if (!p_hat0y_exist) {
+		BUTTON_MAP_KEY(JoyButton::DPAD_UP, BTN_DPAD_UP);
+		BUTTON_MAP_KEY(JoyButton::DPAD_DOWN, BTN_DPAD_DOWN);
+	} else {
+		UNUSED_KEY_HIDE(BTN_DPAD_UP);
+		UNUSED_KEY_HIDE(BTN_DPAD_DOWN);
+	}
+	if (!p_hat0x_exist) {
+		BUTTON_MAP_KEY(JoyButton::DPAD_LEFT, BTN_DPAD_LEFT);
+		BUTTON_MAP_KEY(JoyButton::DPAD_RIGHT, BTN_DPAD_RIGHT);
+	} else {
+		UNUSED_KEY_HIDE(BTN_DPAD_LEFT);
+		UNUSED_KEY_HIDE(BTN_DPAD_RIGHT);
+	}
+
+	BUTTON_MAP_KEY(JoyButton::MISC1, KEY_RECORD);
+	if (!BUTTON_MAPPED(JoyButton::MISC1)) {
+		BUTTON_MAP_KEY(JoyButton::MISC1, BTN_Z);
+	}
+
+	// Generate key mapping for JoyAxis.
+
+	int joy_axis_mappings[int(JoyAxis::SDL_MAX)];
+	for (int i = 0; i < int(JoyAxis::SDL_MAX); i++) {
+		joy_axis_mappings[i] = -1;
+	}
+
+#define AXIS_MAP_ABS(axis, abscode) (joy_axis_mappings[int(axis)] = p_joypad.abs_map[abscode])
+#define AXIS_MAP_KEY(axis, keycode) (joy_axis_mappings[int(axis)] = p_joypad.key_map[keycode])
+#define AXIS_MAPPED(axis) (joy_axis_mappings[int(axis)] != -1)
+
+	AXIS_MAP_ABS(JoyAxis::LEFT_X, ABS_X);
+	AXIS_MAP_ABS(JoyAxis::LEFT_Y, ABS_Y);
+
+	AXIS_MAP_ABS(JoyAxis::RIGHT_X, ABS_RX);
+	AXIS_MAP_ABS(JoyAxis::RIGHT_Y, ABS_RY);
+
+	if (AXIS_MAPPED(JoyAxis::RIGHT_X)) {
+		AXIS_MAP_ABS(JoyAxis::TRIGGER_LEFT, ABS_BRAKE);
+		AXIS_MAP_ABS(JoyAxis::TRIGGER_RIGHT, ABS_GAS);
+
+		if (!AXIS_MAPPED(JoyAxis::TRIGGER_LEFT)) {
+			AXIS_MAP_ABS(JoyAxis::TRIGGER_LEFT, ABS_Z);
+			AXIS_MAP_ABS(JoyAxis::TRIGGER_RIGHT, ABS_RZ);
+		}
+	} else {
+		AXIS_MAP_ABS(JoyAxis::RIGHT_X, ABS_Z);
+		AXIS_MAP_ABS(JoyAxis::RIGHT_Y, ABS_RZ);
+
+		AXIS_MAP_ABS(JoyAxis::TRIGGER_LEFT, ABS_BRAKE);
+		AXIS_MAP_ABS(JoyAxis::TRIGGER_RIGHT, ABS_GAS);
+	}
+
+	bool trigger_is_key = false;
+	if (!AXIS_MAPPED(JoyAxis::TRIGGER_LEFT) && !AXIS_MAPPED(JoyAxis::TRIGGER_RIGHT)) {
+		trigger_is_key = true;
+		AXIS_MAP_KEY(JoyAxis::TRIGGER_LEFT, BTN_TL2);
+		AXIS_MAP_KEY(JoyAxis::TRIGGER_RIGHT, BTN_TR2);
+	} else {
+		UNUSED_KEY_HIDE(BTN_TL2);
+		UNUSED_KEY_HIDE(BTN_TR2);
+	}
+
+	input->unknown_gamepad_auto_map(p_guid, p_name, joy_button_mappings, joy_axis_mappings, trigger_is_key);
 }
 
 void JoypadLinux::open_joypad(const char *p_path) {
@@ -419,6 +525,12 @@ void JoypadLinux::open_joypad(const char *p_path) {
 				}
 			}
 
+			if (input->is_unknown_gamepad_auto_mapped() && !input->has_mapping(uid)) {
+				bool hat0x_exist = test_bit(ABS_HAT0X, absbit);
+				bool hat0y_exist = test_bit(ABS_HAT0Y, absbit);
+				_auto_remap(joypad, uid, name, hat0x_exist, hat0y_exist);
+			}
+
 			input->joy_connection_changed(joy_num, true, name, uid, joypad_info);
 		} else {
 			String uidname = uid;
@@ -427,6 +539,13 @@ void JoypadLinux::open_joypad(const char *p_path) {
 				uidname = uidname + _hex_str(name[i]);
 			}
 			uidname += "00";
+
+			if (input->is_unknown_gamepad_auto_mapped() && !input->has_mapping(uid)) {
+				bool hat0x_exist = test_bit(ABS_HAT0X, absbit);
+				bool hat0y_exist = test_bit(ABS_HAT0Y, absbit);
+				_auto_remap(joypad, uid, name, hat0x_exist, hat0y_exist);
+			}
+
 			input->joy_connection_changed(joy_num, true, name, uidname);
 		}
 	}
@@ -536,7 +655,9 @@ void JoypadLinux::process_joypads() {
 
 			switch (joypad_event.type) {
 				case EV_KEY:
-					input->joy_button(i, (JoyButton)joypad.key_map[joypad_event.code], joypad_event.value);
+					if (joypad.key_map[joypad_event.code] >= 0) {
+						input->joy_button(i, (JoyButton)joypad.key_map[joypad_event.code], joypad_event.value);
+					}
 					break;
 
 				case EV_ABS:

@@ -141,6 +141,7 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the name of the joypad at the specified device index, e.g. [code]PS4 Controller[/code]. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names.
+				[b]Note:[/b] For device whose name ends with [code]"[auto]"[/code], its mapping was auto added. See [member ProjectSettings.input_devices/gamepad/unknown_gamepad_auto_mapped].
 			</description>
 		</method>
 		<method name="get_joy_vibration_duration">
@@ -248,6 +249,7 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+				[b]Note:[/b] Unknown gamepads meight try to auto mapped. See [member ProjectSettings.input_devices/gamepad/unknown_gamepad_auto_mapped]. Even if they are mapped correctly, they are still considered unknown, i.e. still returns [code]false[/code] for them.
 			</description>
 		</method>
 		<method name="is_key_label_pressed" qualifiers="const">

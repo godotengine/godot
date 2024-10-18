@@ -130,6 +130,7 @@ private:
 
 	HashMap<StringName, ActionState> action_states;
 
+	bool unknown_gamepad_auto_mapped = true;
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
 	bool agile_input_event_flushing = false;
@@ -285,6 +286,11 @@ public:
 #endif
 
 	static Input *get_singleton();
+
+	bool has_mapping(const StringName &p_guid);
+	void set_unknown_gamepad_auto_mapped(bool p_auto);
+	bool is_unknown_gamepad_auto_mapped();
+	void unknown_gamepad_auto_map(const StringName &p_guid, const String &p_name, const int *p_key_map, const int *p_axis_map, bool p_trigger_is_key);
 
 	bool is_anything_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
