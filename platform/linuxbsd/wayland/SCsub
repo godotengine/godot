@@ -187,8 +187,27 @@ source_files = [
     "protocol/idle_inhibit.gen.c",
     "protocol/tablet.gen.c",
     "protocol/text_input.gen.c",
+
     "display_server_wayland.cpp",
+
     "wayland_thread.cpp",
+
+    "thread/core/data.cpp",
+    "thread/core/keyboard.cpp",
+    "thread/core/pointer.cpp",
+    "thread/core/registry.cpp",
+    "thread/core/output.cpp",
+    "thread/core/seat.cpp",
+    "thread/core/surface.cpp",
+
+    "thread/libdecor.cpp",
+    "thread/primary-selection.cpp",
+    "thread/tablet.cpp",
+    "thread/text-input.cpp",
+    "thread/util.cpp",
+    "thread/xdg-activation.cpp",
+    "thread/xdg-shell.cpp",
+
     "key_mapping_xkb.cpp",
     "detect_prime_egl.cpp",
 ]
