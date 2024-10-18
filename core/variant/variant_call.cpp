@@ -1592,6 +1592,16 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED
+#define bind_static_method_with_name(m_type, m_exposed_name, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_exposed_name, m_type::m_method);                                  \
+	register_builtin_method<Method_##m_type##_##m_exposed_name>(m_arg_names, m_default_args);
+#else
+#define bind_static_method_with_name(m_type, m_exposed_name, m_method, m_arg_names, m_default_args) \
+	STATIC_METHOD_CLASS(m_type, m_exposed_name, m_type ::m_method);                                 \
+	register_builtin_method<Method_##m_type##_##m_exposed_name>(sarray(), m_default_args);
+#endif
+
+#ifdef DEBUG_METHODS_ENABLED
 #define bind_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
 	METHOD_CLASS(m_type, m_name, m_method);                                 \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
@@ -1769,7 +1779,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(hex_decode, sarray(), varray());
 	bind_string_method(to_wchar_buffer, sarray(), varray());
 
-	bind_static_method(String, num_scientific, sarray("number"), varray());
+	bind_static_method_with_name(String, num_scientific, num_scientific_compat_bind, sarray("number"), varray());
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
 	bind_static_method(String, num_int64, sarray("number", "base", "capitalize_hex"), varray(10, false));
 	bind_static_method(String, num_uint64, sarray("number", "base", "capitalize_hex"), varray(10, false));

@@ -95,3 +95,156 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 
 Default deadzone value was changed. No adjustments should be necessary.
 Compatibility method registered.
+
+
+GH-96676
+--------
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ALICE_BLUE': value changed value in new API, from "Color(0.941176, 0.972549, 1, 1)" to "Color(0.941176474, 0.972549021, 1, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ANTIQUE_WHITE': value changed value in new API, from "Color(0.980392, 0.921569, 0.843137, 1)" to "Color(0.980392158, 0.921568632, 0.843137264, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/AQUAMARINE': value changed value in new API, from "Color(0.498039, 1, 0.831373, 1)" to "Color(0.498039216, 1, 0.831372559, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/AZURE': value changed value in new API, from "Color(0.941176, 1, 1, 1)" to "Color(0.941176474, 1, 1, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/BEIGE': value changed value in new API, from "Color(0.960784, 0.960784, 0.862745, 1)" to "Color(0.960784316, 0.960784316, 0.862745106, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/BISQUE': value changed value in new API, from "Color(1, 0.894118, 0.768627, 1)" to "Color(1, 0.894117653, 0.768627465, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/BLANCHED_ALMOND': value changed value in new API, from "Color(1, 0.921569, 0.803922, 1)" to "Color(1, 0.921568632, 0.80392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/BLUE_VIOLET': value changed value in new API, from "Color(0.541176, 0.168627, 0.886275, 1)" to "Color(0.541176498, 0.168627456, 0.886274517, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/BROWN': value changed value in new API, from "Color(0.647059, 0.164706, 0.164706, 1)" to "Color(0.647058845, 0.164705887, 0.164705887, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/BURLYWOOD': value changed value in new API, from "Color(0.870588, 0.721569, 0.529412, 1)" to "Color(0.870588243, 0.721568644, 0.529411793, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CADET_BLUE': value changed value in new API, from "Color(0.372549, 0.619608, 0.627451, 1)" to "Color(0.372549027, 0.619607866, 0.627451003, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CHARTREUSE': value changed value in new API, from "Color(0.498039, 1, 0, 1)" to "Color(0.498039216, 1, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CHOCOLATE': value changed value in new API, from "Color(0.823529, 0.411765, 0.117647, 1)" to "Color(0.823529422, 0.411764711, 0.117647059, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CORAL': value changed value in new API, from "Color(1, 0.498039, 0.313726, 1)" to "Color(1, 0.498039216, 0.313725501, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CORNFLOWER_BLUE': value changed value in new API, from "Color(0.392157, 0.584314, 0.929412, 1)" to "Color(0.392156869, 0.58431375, 0.929411769, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CORNSILK': value changed value in new API, from "Color(1, 0.972549, 0.862745, 1)" to "Color(1, 0.972549021, 0.862745106, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/CRIMSON': value changed value in new API, from "Color(0.862745, 0.0784314, 0.235294, 1)" to "Color(0.862745106, 0.0784313753, 0.235294119, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_BLUE': value changed value in new API, from "Color(0, 0, 0.545098, 1)" to "Color(0, 0, 0.545098066, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_CYAN': value changed value in new API, from "Color(0, 0.545098, 0.545098, 1)" to "Color(0, 0.545098066, 0.545098066, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_GOLDENROD': value changed value in new API, from "Color(0.721569, 0.52549, 0.0431373, 1)" to "Color(0.721568644, 0.525490224, 0.0431372561, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_GRAY': value changed value in new API, from "Color(0.662745, 0.662745, 0.662745, 1)" to "Color(0.662745118, 0.662745118, 0.662745118, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_GREEN': value changed value in new API, from "Color(0, 0.392157, 0, 1)" to "Color(0, 0.392156869, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_KHAKI': value changed value in new API, from "Color(0.741176, 0.717647, 0.419608, 1)" to "Color(0.741176486, 0.717647076, 0.419607848, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_MAGENTA': value changed value in new API, from "Color(0.545098, 0, 0.545098, 1)" to "Color(0.545098066, 0, 0.545098066, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_OLIVE_GREEN': value changed value in new API, from "Color(0.333333, 0.419608, 0.184314, 1)" to "Color(0.333333343, 0.419607848, 0.184313729, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_ORANGE': value changed value in new API, from "Color(1, 0.54902, 0, 1)" to "Color(1, 0.549019635, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_ORCHID': value changed value in new API, from "Color(0.6, 0.196078, 0.8, 1)" to "Color(0.600000024, 0.196078435, 0.800000012, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_RED': value changed value in new API, from "Color(0.545098, 0, 0, 1)" to "Color(0.545098066, 0, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_SALMON': value changed value in new API, from "Color(0.913725, 0.588235, 0.478431, 1)" to "Color(0.913725495, 0.588235319, 0.478431374, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_SEA_GREEN': value changed value in new API, from "Color(0.560784, 0.737255, 0.560784, 1)" to "Color(0.56078434, 0.737254918, 0.56078434, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_SLATE_BLUE': value changed value in new API, from "Color(0.282353, 0.239216, 0.545098, 1)" to "Color(0.282352954, 0.239215687, 0.545098066, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_SLATE_GRAY': value changed value in new API, from "Color(0.184314, 0.309804, 0.309804, 1)" to "Color(0.184313729, 0.309803933, 0.309803933, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_TURQUOISE': value changed value in new API, from "Color(0, 0.807843, 0.819608, 1)" to "Color(0, 0.807843149, 0.819607854, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DARK_VIOLET': value changed value in new API, from "Color(0.580392, 0, 0.827451, 1)" to "Color(0.580392182, 0, 0.827450991, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DEEP_PINK': value changed value in new API, from "Color(1, 0.0784314, 0.576471, 1)" to "Color(1, 0.0784313753, 0.576470613, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DEEP_SKY_BLUE': value changed value in new API, from "Color(0, 0.74902, 1, 1)" to "Color(0, 0.749019623, 1, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DIM_GRAY': value changed value in new API, from "Color(0.411765, 0.411765, 0.411765, 1)" to "Color(0.411764711, 0.411764711, 0.411764711, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/DODGER_BLUE': value changed value in new API, from "Color(0.117647, 0.564706, 1, 1)" to "Color(0.117647059, 0.564705908, 1, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/FIREBRICK': value changed value in new API, from "Color(0.698039, 0.133333, 0.133333, 1)" to "Color(0.698039234, 0.13333334, 0.13333334, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/FLORAL_WHITE': value changed value in new API, from "Color(1, 0.980392, 0.941176, 1)" to "Color(1, 0.980392158, 0.941176474, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/FOREST_GREEN': value changed value in new API, from "Color(0.133333, 0.545098, 0.133333, 1)" to "Color(0.13333334, 0.545098066, 0.13333334, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/GAINSBORO': value changed value in new API, from "Color(0.862745, 0.862745, 0.862745, 1)" to "Color(0.862745106, 0.862745106, 0.862745106, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/GHOST_WHITE': value changed value in new API, from "Color(0.972549, 0.972549, 1, 1)" to "Color(0.972549021, 0.972549021, 1, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/GOLD': value changed value in new API, from "Color(1, 0.843137, 0, 1)" to "Color(1, 0.843137264, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/GOLDENROD': value changed value in new API, from "Color(0.854902, 0.647059, 0.12549, 1)" to "Color(0.854901969, 0.647058845, 0.125490203, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/GRAY': value changed value in new API, from "Color(0.745098, 0.745098, 0.745098, 1)" to "Color(0.745098054, 0.745098054, 0.745098054, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/GREEN_YELLOW': value changed value in new API, from "Color(0.678431, 1, 0.184314, 1)" to "Color(0.678431392, 1, 0.184313729, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/HONEYDEW': value changed value in new API, from "Color(0.941176, 1, 0.941176, 1)" to "Color(0.941176474, 1, 0.941176474, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/HOT_PINK': value changed value in new API, from "Color(1, 0.411765, 0.705882, 1)" to "Color(1, 0.411764711, 0.70588237, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/INDIAN_RED': value changed value in new API, from "Color(0.803922, 0.360784, 0.360784, 1)" to "Color(0.80392158, 0.360784322, 0.360784322, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/INDIGO': value changed value in new API, from "Color(0.294118, 0, 0.509804, 1)" to "Color(0.294117659, 0, 0.509803951, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/IVORY': value changed value in new API, from "Color(1, 1, 0.941176, 1)" to "Color(1, 1, 0.941176474, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/KHAKI': value changed value in new API, from "Color(0.941176, 0.901961, 0.54902, 1)" to "Color(0.941176474, 0.90196079, 0.549019635, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LAVENDER': value changed value in new API, from "Color(0.901961, 0.901961, 0.980392, 1)" to "Color(0.90196079, 0.90196079, 0.980392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LAVENDER_BLUSH': value changed value in new API, from "Color(1, 0.941176, 0.960784, 1)" to "Color(1, 0.941176474, 0.960784316, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LAWN_GREEN': value changed value in new API, from "Color(0.486275, 0.988235, 0, 1)" to "Color(0.486274511, 0.988235295, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LEMON_CHIFFON': value changed value in new API, from "Color(1, 0.980392, 0.803922, 1)" to "Color(1, 0.980392158, 0.80392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_BLUE': value changed value in new API, from "Color(0.678431, 0.847059, 0.901961, 1)" to "Color(0.678431392, 0.847058833, 0.90196079, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_CORAL': value changed value in new API, from "Color(0.941176, 0.501961, 0.501961, 1)" to "Color(0.941176474, 0.501960814, 0.501960814, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_CYAN': value changed value in new API, from "Color(0.878431, 1, 1, 1)" to "Color(0.87843138, 1, 1, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_GOLDENROD': value changed value in new API, from "Color(0.980392, 0.980392, 0.823529, 1)" to "Color(0.980392158, 0.980392158, 0.823529422, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_GRAY': value changed value in new API, from "Color(0.827451, 0.827451, 0.827451, 1)" to "Color(0.827450991, 0.827450991, 0.827450991, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_GREEN': value changed value in new API, from "Color(0.564706, 0.933333, 0.564706, 1)" to "Color(0.564705908, 0.933333337, 0.564705908, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_PINK': value changed value in new API, from "Color(1, 0.713726, 0.756863, 1)" to "Color(1, 0.713725507, 0.75686276, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_SALMON': value changed value in new API, from "Color(1, 0.627451, 0.478431, 1)" to "Color(1, 0.627451003, 0.478431374, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_SEA_GREEN': value changed value in new API, from "Color(0.12549, 0.698039, 0.666667, 1)" to "Color(0.125490203, 0.698039234, 0.666666687, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_SKY_BLUE': value changed value in new API, from "Color(0.529412, 0.807843, 0.980392, 1)" to "Color(0.529411793, 0.807843149, 0.980392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_SLATE_GRAY': value changed value in new API, from "Color(0.466667, 0.533333, 0.6, 1)" to "Color(0.466666669, 0.533333361, 0.600000024, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_STEEL_BLUE': value changed value in new API, from "Color(0.690196, 0.768627, 0.870588, 1)" to "Color(0.690196097, 0.768627465, 0.870588243, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIGHT_YELLOW': value changed value in new API, from "Color(1, 1, 0.878431, 1)" to "Color(1, 1, 0.87843138, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LIME_GREEN': value changed value in new API, from "Color(0.196078, 0.803922, 0.196078, 1)" to "Color(0.196078435, 0.80392158, 0.196078435, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/LINEN': value changed value in new API, from "Color(0.980392, 0.941176, 0.901961, 1)" to "Color(0.980392158, 0.941176474, 0.90196079, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MAROON': value changed value in new API, from "Color(0.690196, 0.188235, 0.376471, 1)" to "Color(0.690196097, 0.188235298, 0.376470596, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_AQUAMARINE': value changed value in new API, from "Color(0.4, 0.803922, 0.666667, 1)" to "Color(0.400000006, 0.80392158, 0.666666687, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_BLUE': value changed value in new API, from "Color(0, 0, 0.803922, 1)" to "Color(0, 0, 0.80392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_ORCHID': value changed value in new API, from "Color(0.729412, 0.333333, 0.827451, 1)" to "Color(0.729411781, 0.333333343, 0.827450991, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_PURPLE': value changed value in new API, from "Color(0.576471, 0.439216, 0.858824, 1)" to "Color(0.576470613, 0.43921569, 0.858823538, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_SEA_GREEN': value changed value in new API, from "Color(0.235294, 0.701961, 0.443137, 1)" to "Color(0.235294119, 0.701960802, 0.443137258, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_SLATE_BLUE': value changed value in new API, from "Color(0.482353, 0.407843, 0.933333, 1)" to "Color(0.482352942, 0.407843143, 0.933333337, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_SPRING_GREEN': value changed value in new API, from "Color(0, 0.980392, 0.603922, 1)" to "Color(0, 0.980392158, 0.603921592, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_TURQUOISE': value changed value in new API, from "Color(0.282353, 0.819608, 0.8, 1)" to "Color(0.282352954, 0.819607854, 0.800000012, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MEDIUM_VIOLET_RED': value changed value in new API, from "Color(0.780392, 0.0823529, 0.521569, 1)" to "Color(0.78039217, 0.0823529437, 0.521568656, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MIDNIGHT_BLUE': value changed value in new API, from "Color(0.0980392, 0.0980392, 0.439216, 1)" to "Color(0.0980392173, 0.0980392173, 0.43921569, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MINT_CREAM': value changed value in new API, from "Color(0.960784, 1, 0.980392, 1)" to "Color(0.960784316, 1, 0.980392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MISTY_ROSE': value changed value in new API, from "Color(1, 0.894118, 0.882353, 1)" to "Color(1, 0.894117653, 0.882352948, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/MOCCASIN': value changed value in new API, from "Color(1, 0.894118, 0.709804, 1)" to "Color(1, 0.894117653, 0.709803939, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/NAVAJO_WHITE': value changed value in new API, from "Color(1, 0.870588, 0.678431, 1)" to "Color(1, 0.870588243, 0.678431392, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/NAVY_BLUE': value changed value in new API, from "Color(0, 0, 0.501961, 1)" to "Color(0, 0, 0.501960814, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/OLD_LACE': value changed value in new API, from "Color(0.992157, 0.960784, 0.901961, 1)" to "Color(0.992156863, 0.960784316, 0.90196079, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/OLIVE': value changed value in new API, from "Color(0.501961, 0.501961, 0, 1)" to "Color(0.501960814, 0.501960814, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/OLIVE_DRAB': value changed value in new API, from "Color(0.419608, 0.556863, 0.137255, 1)" to "Color(0.419607848, 0.556862772, 0.137254909, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ORANGE': value changed value in new API, from "Color(1, 0.647059, 0, 1)" to "Color(1, 0.647058845, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ORANGE_RED': value changed value in new API, from "Color(1, 0.270588, 0, 1)" to "Color(1, 0.270588249, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ORCHID': value changed value in new API, from "Color(0.854902, 0.439216, 0.839216, 1)" to "Color(0.854901969, 0.43921569, 0.839215696, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PALE_GOLDENROD': value changed value in new API, from "Color(0.933333, 0.909804, 0.666667, 1)" to "Color(0.933333337, 0.909803927, 0.666666687, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PALE_GREEN': value changed value in new API, from "Color(0.596078, 0.984314, 0.596078, 1)" to "Color(0.596078455, 0.984313726, 0.596078455, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PALE_TURQUOISE': value changed value in new API, from "Color(0.686275, 0.933333, 0.933333, 1)" to "Color(0.686274529, 0.933333337, 0.933333337, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PALE_VIOLET_RED': value changed value in new API, from "Color(0.858824, 0.439216, 0.576471, 1)" to "Color(0.858823538, 0.43921569, 0.576470613, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PAPAYA_WHIP': value changed value in new API, from "Color(1, 0.937255, 0.835294, 1)" to "Color(1, 0.937254906, 0.835294127, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PEACH_PUFF': value changed value in new API, from "Color(1, 0.854902, 0.72549, 1)" to "Color(1, 0.854901969, 0.725490212, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PERU': value changed value in new API, from "Color(0.803922, 0.521569, 0.247059, 1)" to "Color(0.80392158, 0.521568656, 0.247058824, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PINK': value changed value in new API, from "Color(1, 0.752941, 0.796078, 1)" to "Color(1, 0.752941191, 0.796078444, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PLUM': value changed value in new API, from "Color(0.866667, 0.627451, 0.866667, 1)" to "Color(0.866666675, 0.627451003, 0.866666675, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/POWDER_BLUE': value changed value in new API, from "Color(0.690196, 0.878431, 0.901961, 1)" to "Color(0.690196097, 0.87843138, 0.90196079, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/PURPLE': value changed value in new API, from "Color(0.627451, 0.12549, 0.941176, 1)" to "Color(0.627451003, 0.125490203, 0.941176474, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/REBECCA_PURPLE': value changed value in new API, from "Color(0.4, 0.2, 0.6, 1)" to "Color(0.400000006, 0.200000003, 0.600000024, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ROSY_BROWN': value changed value in new API, from "Color(0.737255, 0.560784, 0.560784, 1)" to "Color(0.737254918, 0.56078434, 0.56078434, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ROYAL_BLUE': value changed value in new API, from "Color(0.254902, 0.411765, 0.882353, 1)" to "Color(0.254901975, 0.411764711, 0.882352948, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SADDLE_BROWN': value changed value in new API, from "Color(0.545098, 0.270588, 0.0745098, 1)" to "Color(0.545098066, 0.270588249, 0.0745098069, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SALMON': value changed value in new API, from "Color(0.980392, 0.501961, 0.447059, 1)" to "Color(0.980392158, 0.501960814, 0.447058827, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SANDY_BROWN': value changed value in new API, from "Color(0.956863, 0.643137, 0.376471, 1)" to "Color(0.956862748, 0.643137276, 0.376470596, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SEASHELL': value changed value in new API, from "Color(1, 0.960784, 0.933333, 1)" to "Color(1, 0.960784316, 0.933333337, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SEA_GREEN': value changed value in new API, from "Color(0.180392, 0.545098, 0.341176, 1)" to "Color(0.180392161, 0.545098066, 0.34117648, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SIENNA': value changed value in new API, from "Color(0.627451, 0.321569, 0.176471, 1)" to "Color(0.627451003, 0.321568638, 0.176470593, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SILVER': value changed value in new API, from "Color(0.752941, 0.752941, 0.752941, 1)" to "Color(0.752941191, 0.752941191, 0.752941191, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SKY_BLUE': value changed value in new API, from "Color(0.529412, 0.807843, 0.921569, 1)" to "Color(0.529411793, 0.807843149, 0.921568632, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SLATE_BLUE': value changed value in new API, from "Color(0.415686, 0.352941, 0.803922, 1)" to "Color(0.41568628, 0.352941185, 0.80392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SLATE_GRAY': value changed value in new API, from "Color(0.439216, 0.501961, 0.564706, 1)" to "Color(0.43921569, 0.501960814, 0.564705908, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SNOW': value changed value in new API, from "Color(1, 0.980392, 0.980392, 1)" to "Color(1, 0.980392158, 0.980392158, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/SPRING_GREEN': value changed value in new API, from "Color(0, 1, 0.498039, 1)" to "Color(0, 1, 0.498039216, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/STEEL_BLUE': value changed value in new API, from "Color(0.27451, 0.509804, 0.705882, 1)" to "Color(0.274509817, 0.509803951, 0.70588237, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/TAN': value changed value in new API, from "Color(0.823529, 0.705882, 0.54902, 1)" to "Color(0.823529422, 0.70588237, 0.549019635, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/TEAL': value changed value in new API, from "Color(0, 0.501961, 0.501961, 1)" to "Color(0, 0.501960814, 0.501960814, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/THISTLE': value changed value in new API, from "Color(0.847059, 0.74902, 0.847059, 1)" to "Color(0.847058833, 0.749019623, 0.847058833, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/TOMATO': value changed value in new API, from "Color(1, 0.388235, 0.278431, 1)" to "Color(1, 0.388235301, 0.278431386, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/TURQUOISE': value changed value in new API, from "Color(0.25098, 0.878431, 0.815686, 1)" to "Color(0.250980407, 0.87843138, 0.815686285, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/VIOLET': value changed value in new API, from "Color(0.933333, 0.509804, 0.933333, 1)" to "Color(0.933333337, 0.509803951, 0.933333337, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/WEB_GRAY': value changed value in new API, from "Color(0.501961, 0.501961, 0.501961, 1)" to "Color(0.501960814, 0.501960814, 0.501960814, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/WEB_GREEN': value changed value in new API, from "Color(0, 0.501961, 0, 1)" to "Color(0, 0.501960814, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/WEB_MAROON': value changed value in new API, from "Color(0.501961, 0, 0, 1)" to "Color(0.501960814, 0, 0, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/WEB_PURPLE': value changed value in new API, from "Color(0.501961, 0, 0.501961, 1)" to "Color(0.501960814, 0, 0.501960814, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/WHEAT': value changed value in new API, from "Color(0.960784, 0.870588, 0.701961, 1)" to "Color(0.960784316, 0.870588243, 0.701960802, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/WHITE_SMOKE': value changed value in new API, from "Color(0.960784, 0.960784, 0.960784, 1)" to "Color(0.960784316, 0.960784316, 0.960784316, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Color/constants/YELLOW_GREEN': value changed value in new API, from "Color(0.603922, 0.803922, 0.196078, 1)" to "Color(0.603921592, 0.80392158, 0.196078435, 1)".
+Validate extension JSON: Error: Field 'builtin_classes/Plane/methods/has_point/arguments/1': default_value changed value in new API, from "1e-05" to "1.0000000000000001e-05".
+Validate extension JSON: Error: Field 'classes/BitMap/methods/create_from_image_alpha/arguments/1': default_value changed value in new API, from "0.1" to "0.10000000000000001".
+Validate extension JSON: Error: Field 'classes/Curve3D/methods/tessellate_even_length/arguments/1': default_value changed value in new API, from "0.2" to "0.20000000000000001".
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/popup_dialog_centered_ratio/arguments/1': default_value changed value in new API, from "0.8" to "0.80000000000000004".
+Validate extension JSON: Error: Field 'classes/GridMap/methods/make_baked_meshes/arguments/1': default_value changed value in new API, from "0.1" to "0.10000000000000001".
+Validate extension JSON: Error: Field 'classes/Noise/methods/get_seamless_image/arguments/4': default_value changed value in new API, from "0.1" to "0.10000000000000001".
+Validate extension JSON: Error: Field 'classes/Noise/methods/get_seamless_image_3d/arguments/4': default_value changed value in new API, from "0.1" to "0.10000000000000001".
+Validate extension JSON: Error: Field 'classes/PhysicsBody2D/methods/move_and_collide/arguments/2': default_value changed value in new API, from "0.08" to "0.080000000000000002".
+Validate extension JSON: Error: Field 'classes/PhysicsBody2D/methods/test_move/arguments/3': default_value changed value in new API, from "0.08" to "0.080000000000000002".
+Validate extension JSON: Error: Field 'classes/PortableCompressedTexture2D/methods/create_from_image/arguments/3': default_value changed value in new API, from "0.8" to "0.80000000000000004".
+Validate extension JSON: Error: Field 'classes/Window/methods/popup_centered_ratio/arguments/0': default_value changed value in new API, from "0.8" to "0.80000000000000004".
+Validate extension JSON: Error: Field 'classes/Window/methods/popup_exclusive_centered_ratio/arguments/1': default_value changed value in new API, from "0.8" to "0.80000000000000004".
+Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/arguments/1': default_value changed value in new API, from "0.5" to "0.20000000298023224".
+
+Precision of string-serialized Variant constants increased.
