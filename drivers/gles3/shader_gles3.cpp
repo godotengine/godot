@@ -55,7 +55,20 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 
 		StageTemplate::Chunk chunk;
 
-		if (l.begins_with("#GLOBALS")) {
+		if (l.begins_with("#STRUCTS")) {
+			switch (p_stage_type) {
+				case STAGE_TYPE_VERTEX:
+					chunk.type = StageTemplate::Chunk::TYPE_VERTEX_STRUCTS;
+					break;
+				case STAGE_TYPE_FRAGMENT:
+					chunk.type = StageTemplate::Chunk::TYPE_FRAGMENT_STRUCTS;
+					break;
+				default: {
+				}
+			}
+
+			push_chunk = true;
+		} else if (l.begins_with("#GLOBALS")) {
 			switch (p_stage_type) {
 				case STAGE_TYPE_VERTEX:
 					chunk.type = StageTemplate::Chunk::TYPE_VERTEX_GLOBALS;
@@ -232,8 +245,14 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
 				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
 			} break;
+			case StageTemplate::Chunk::TYPE_VERTEX_STRUCTS: {
+				builder.append(p_version->vertex_structs.get_data()); // vertex structs
+			} break;
 			case StageTemplate::Chunk::TYPE_VERTEX_GLOBALS: {
 				builder.append(p_version->vertex_globals.get_data()); // vertex globals
+			} break;
+			case StageTemplate::Chunk::TYPE_FRAGMENT_STRUCTS: {
+				builder.append(p_version->fragment_structs.get_data()); // fragment structs
 			} break;
 			case StageTemplate::Chunk::TYPE_FRAGMENT_GLOBALS: {
 				builder.append(p_version->fragment_globals.get_data()); // fragment globals
@@ -511,8 +530,12 @@ String ShaderGLES3::_version_get_sha1(Version *p_version) const {
 
 	hash_build.append("[uniforms]");
 	hash_build.append(p_version->uniforms.get_data());
+	hash_build.append("[vertex_structs]");
+	hash_build.append(p_version->vertex_structs.get_data());
 	hash_build.append("[vertex_globals]");
 	hash_build.append(p_version->vertex_globals.get_data());
+	hash_build.append("[fragment_structs]");
+	hash_build.append(p_version->fragment_structs.get_data());
 	hash_build.append("[fragment_globals]");
 	hash_build.append(p_version->fragment_globals.get_data());
 
@@ -723,13 +746,15 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	}
 }
 
-void ShaderGLES3::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const LocalVector<ShaderGLES3::TextureUniformData> &p_texture_uniforms, bool p_initialize) {
+void ShaderGLES3::version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_structs, const String &p_vertex_globals, const String &p_fragment_structs, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const LocalVector<ShaderGLES3::TextureUniformData> &p_texture_uniforms, bool p_initialize) {
 	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_NULL(version);
 
 	_clear_version(version); //clear if existing
 
+	version->vertex_structs = p_vertex_structs.utf8();
 	version->vertex_globals = p_vertex_globals.utf8();
+	version->fragment_structs = p_fragment_structs.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 	version->code_sections.clear();
