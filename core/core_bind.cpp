@@ -391,6 +391,10 @@ void OS::unset_environment(const String &p_var) const {
 	::OS::get_singleton()->unset_environment(p_var);
 }
 
+void OS::load_shell_environment() const {
+	::OS::get_singleton()->load_shell_environment();
+}
+
 String OS::get_name() const {
 	return ::OS::get_singleton()->get_name();
 }
@@ -644,6 +648,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
 	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &OS::set_environment);
 	ClassDB::bind_method(D_METHOD("unset_environment", "variable"), &OS::unset_environment);
+	ClassDB::bind_method(D_METHOD("load_shell_environment"), &OS::load_shell_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);
