@@ -298,7 +298,7 @@ EditorBottomPanel::EditorBottomPanel() {
 	item_vbox->add_child(bottom_hbox);
 
 	left_button = memnew(Button);
-	left_button->set_tooltip_text(TTR("Scroll Left\nHold Ctrl to scroll to the begining.\nHold Shift to scroll one page."));
+	left_button->set_tooltip_text(TTR("Scroll Left\nHold Ctrl to scroll to the beginning.\nHold Shift to scroll one page."));
 	left_button->set_theme_type_variation("BottomPanelButton");
 	left_button->set_focus_mode(Control::FOCUS_NONE);
 	left_button->connect(SceneStringName(pressed), callable_mp(this, &EditorBottomPanel::_scroll).bind(false));
