@@ -1,5 +1,5 @@
 diff --git a/qoa.h b/qoa.h
-index cfed266bef..23612bb0bf 100644
+index f0f44214d8..9fa5465f08 100644
 --- a/qoa.h
 +++ b/qoa.h
 @@ -140,14 +140,14 @@ typedef struct {
@@ -42,7 +42,7 @@ index cfed266bef..23612bb0bf 100644
  
  	for (unsigned int c = 0; c < qoa->channels; c++) {
  		/* Set the initial LMS weights to {0, 0, -1, 2}. This helps with the 
-@@ -655,7 +655,7 @@ short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *qoa) {
+@@ -657,7 +657,7 @@ short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *qoa) {
  
  	/* Calculate the required size of the sample buffer and allocate */
  	int total_samples = qoa->samples * qoa->channels;
