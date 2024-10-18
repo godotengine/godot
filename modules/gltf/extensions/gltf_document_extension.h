@@ -45,6 +45,7 @@ public:
 	// Import process.
 	virtual Error import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions);
 	virtual Vector<String> get_supported_extensions();
+	virtual int remap_custom_attribute(const String &p_name);
 	virtual Error parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions);
 	virtual Error parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image);
 	virtual String get_image_file_extension();
@@ -69,6 +70,7 @@ public:
 	// Import process.
 	GDVIRTUAL2R(Error, _import_preflight, Ref<GLTFState>, Vector<String>);
 	GDVIRTUAL0R(Vector<String>, _get_supported_extensions);
+	GDVIRTUAL1R(int, _remap_custom_attribute, String);
 	GDVIRTUAL3R(Error, _parse_node_extensions, Ref<GLTFState>, Ref<GLTFNode>, Dictionary);
 	GDVIRTUAL4R(Error, _parse_image_data, Ref<GLTFState>, PackedByteArray, String, Ref<Image>);
 	GDVIRTUAL0R(String, _get_image_file_extension);
