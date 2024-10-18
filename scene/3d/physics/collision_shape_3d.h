@@ -42,14 +42,21 @@ class CollisionShape3D : public Node3D {
 
 	uint32_t owner_id = 0;
 	CollisionObject3D *collision_object = nullptr;
+	Transform3D transform_to_col_obj_cache;
 
 #ifndef DISABLE_DEPRECATED
 	void resource_changed(Ref<Resource> res);
 #endif
 	bool disabled = false;
 
+	CollisionObject3D *_get_ancestor_collision_object() const;
+	Transform3D _get_transform_to_collision_object() const;
+	void _set_transform_notifications();
+	void _create_shape_owner_in_collision_object();
+
 protected:
-	void _update_in_shape_owner(bool p_xform_only = false);
+	void _update_transform_in_shape_owner();
+	void _update_in_shape_owner();
 
 protected:
 	void _notification(int p_what);
