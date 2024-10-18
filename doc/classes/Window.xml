@@ -651,6 +651,10 @@
 			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
 			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
 		</member>
+		<member name="multi_viewport_focus" type="bool" setter="set_multi_viewport_focus" getter="is_multi_viewport_focus_enabled" default="false">
+			If [code]false[/code], only a single focused [Control] is allowed in [Viewport] nodes within this window. If [code]true[/code], every [Viewport] in this window keeps an independent state of their own focused [Control] node.
+			This setting affects only the window itself and child [SubViewport] nodes. Child [Window] nodes and their child nodes aren't affected by this setting. This is useful for splitscreen input handling.
+		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
