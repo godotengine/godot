@@ -2712,21 +2712,20 @@ StringName CSharpScript::get_global_name() const {
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
-#ifdef TOOLS_ENABLED
-	const CSharpScript *top = this;
-	while (top != nullptr) {
-		for (const PropertyInfo &E : top->exported_members_cache) {
-			r_list->push_back(E);
-		}
-
-		top = top->base_script.ptr();
-	}
-#else
 	const CSharpScript *top = this;
 	while (top != nullptr) {
 		List<PropertyInfo> props;
 
 		for (const KeyValue<StringName, PropertyInfo> &E : top->member_info) {
+#ifdef TOOLS_ENABLED
+			// In an ideal world, you would include non-public properties, and the consumer would filter them out.
+			// but since GDScript doesn't have access modifiers, a lot of other existing code assumes that all script properties are public.
+			// so to avoid issues (like the GDScript being able to infer non-public C# properties), we filter them out here.
+			bool isPrivateScriptVariable = E.value.usage & PROPERTY_USAGE_SCRIPT_VARIABLE && E.value.usage & PROPERTY_USAGE_INTERNAL;
+			if (isPrivateScriptVariable) {
+				continue;
+			}
+#endif
 			props.push_front(E.value);
 		}
 
@@ -2736,7 +2735,6 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 
 		top = top->base_script.ptr();
 	}
-#endif
 }
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
