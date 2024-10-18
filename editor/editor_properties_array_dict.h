@@ -175,6 +175,8 @@ public:
 };
 
 class EditorPropertyDictionary : public EditorProperty {
+	bool is_changing_type = false;
+
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
 	struct Slot {
