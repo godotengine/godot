@@ -4104,6 +4104,7 @@ FindBar::FindBar() {
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindBar::_search_text_submitted));
+	search_text->connect("focus_exited", callable_mp(this, &FindBar::_focus_lost));
 
 	matches_label = memnew(Label);
 	add_child(matches_label);
@@ -4245,7 +4246,8 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-		if (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner())) {
+		Control *focus_owner = get_viewport()->gui_get_focus_owner();
+		if (rich_text_label->has_focus() || (focus_owner && is_ancestor_of(focus_owner))) {
 			_hide_bar();
 			accept_event();
 		}
@@ -4261,5 +4263,11 @@ void FindBar::_search_text_submitted(const String &p_text) {
 		search_prev();
 	} else {
 		search_next();
+	}
+}
+
+void FindBar::_focus_lost() {
+	if (Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"))) {
+		_hide_bar();
 	}
 }
