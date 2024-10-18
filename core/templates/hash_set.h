@@ -37,6 +37,8 @@
 #include "core/templates/hashfuncs.h"
 #include "core/templates/paged_allocator.h"
 
+#include <initializer_list>
+
 /**
  * Implementation of Set using a bidi indexed hash map.
  * Use RBSet instead of this only if the following conditions are met:
@@ -443,6 +445,13 @@ public:
 	}
 	HashSet() {
 		capacity_index = MIN_CAPACITY_INDEX;
+	}
+
+	HashSet(std::initializer_list<TKey> p_init) :
+			HashSet(MAX(p_init.size(), MIN_CAPACITY_INDEX)) {
+		for (const TKey &E : p_init) {
+			insert(E);
+		}
 	}
 
 	void reset() {
