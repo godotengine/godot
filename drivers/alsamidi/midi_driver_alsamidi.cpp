@@ -94,6 +94,7 @@ Error MIDIDriverALSAMidi::open() {
 				snd_rawmidi_info_malloc(&info);
 				snd_rawmidi_info(midi_in, info);
 				connected_input_names.push_back(snd_rawmidi_info_get_name(info));
+				connected_output_names.push_back(snd_rawmidi_info_get_name(info));
 				snd_rawmidi_info_free(info);
 
 				connected_inputs.push_back(InputConnection(device_index, midi_in));
@@ -127,6 +128,15 @@ void MIDIDriverALSAMidi::close() {
 
 	connected_inputs.clear();
 	connected_input_names.clear();
+}
+
+Error MIDIDriverALSAMidi::send(Ref<InputEventMIDI> p_event) {
+	ERR_FAIL_COND_V(p_event.is_null(), ERR_INVALID_PARAMETER);
+	int device_id = p_event->get_device();
+	ERR_FAIL_INDEX_V(device_id, connected_inputs.size(), ERR_PARAMETER_RANGE_ERROR);
+	PackedByteArray packet = p_event->get_midi_bytes();
+	snd_rawmidi_write(connected_inputs[device_id].rawmidi_ptr, packet.ptrw(), packet.size());
+	return OK;
 }
 
 void MIDIDriverALSAMidi::lock() const {

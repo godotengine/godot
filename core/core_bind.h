@@ -148,8 +148,10 @@ public:
 	String get_system_ca_certificates();
 
 	virtual PackedStringArray get_connected_midi_inputs();
+	virtual PackedStringArray get_connected_midi_outputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
+	virtual void send_midi(Ref<InputEventMIDI> p_event);
 
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
