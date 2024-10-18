@@ -34,8 +34,6 @@
 #include "core/object/object_id.h"
 #include "core/typedefs.h"
 
-#include <atomic> // We'd normally use safe_refcount.h, but that would cause circular includes.
-
 class String;
 
 enum ErrorHandlerType {
@@ -278,7 +276,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_UNSIGNED_INDEX_V_EDMSG` but also notifies the editor.
+ * Same as `ERR_FAIL_UNSIGNED_INDEX_V_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                    \
 	if (unlikely((m_index) >= (m_size))) {                                                                                   \
@@ -668,10 +666,10 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  */
 #define ERR_PRINT_ONCE(m_msg)                                          \
 	if (true) {                                                        \
-		static bool first_print = true;                                \
-		if (first_print) {                                             \
+		static bool warning_shown = false;                             \
+		if (unlikely(!warning_shown)) {                                \
+			warning_shown = true;                                      \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg); \
-			first_print = false;                                       \
 		}                                                              \
 	} else                                                             \
 		((void)0)
@@ -681,10 +679,10 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  */
 #define ERR_PRINT_ONCE_ED(m_msg)                                             \
 	if (true) {                                                              \
-		static bool first_print = true;                                      \
-		if (first_print) {                                                   \
+		static bool warning_shown = false;                                   \
+		if (unlikely(!warning_shown)) {                                      \
+			warning_shown = true;                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, true); \
-			first_print = false;                                             \
 		}                                                                    \
 	} else                                                                   \
 		((void)0)
@@ -712,10 +710,10 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  */
 #define WARN_PRINT_ONCE(m_msg)                                                                     \
 	if (true) {                                                                                    \
-		static bool first_print = true;                                                            \
-		if (first_print) {                                                                         \
+		static bool warning_shown = false;                                                         \
+		if (unlikely(!warning_shown)) {                                                            \
+			warning_shown = true;                                                                  \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, false, ERR_HANDLER_WARNING); \
-			first_print = false;                                                                   \
 		}                                                                                          \
 	} else                                                                                         \
 		((void)0)
@@ -725,10 +723,10 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  */
 #define WARN_PRINT_ONCE_ED(m_msg)                                                                 \
 	if (true) {                                                                                   \
-		static bool first_print = true;                                                           \
-		if (first_print) {                                                                        \
+		static bool warning_shown = false;                                                        \
+		if (unlikely(!warning_shown)) {                                                           \
+			warning_shown = true;                                                                 \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, true, ERR_HANDLER_WARNING); \
-			first_print = false;                                                                  \
 		}                                                                                         \
 	} else                                                                                        \
 		((void)0)
@@ -750,10 +748,10 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  */
 #define WARN_DEPRECATED                                                                                                                                           \
 	if (true) {                                                                                                                                                   \
-		static std::atomic<bool> warning_shown;                                                                                                                   \
-		if (!warning_shown.load()) {                                                                                                                              \
+		static bool warning_shown = false;                                                                                                                        \
+		if (unlikely(!warning_shown)) {                                                                                                                           \
+			warning_shown = true;                                                                                                                                 \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", false, ERR_HANDLER_WARNING); \
-			warning_shown.store(true);                                                                                                                            \
 		}                                                                                                                                                         \
 	} else                                                                                                                                                        \
 		((void)0)
@@ -763,10 +761,10 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                       \
 	if (true) {                                                                                                                                                          \
-		static std::atomic<bool> warning_shown;                                                                                                                          \
-		if (!warning_shown.load()) {                                                                                                                                     \
+		static bool warning_shown = false;                                                                                                                               \
+		if (unlikely(!warning_shown)) {                                                                                                                                  \
+			warning_shown = true;                                                                                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", m_msg, false, ERR_HANDLER_WARNING); \
-			warning_shown.store(true);                                                                                                                                   \
 		}                                                                                                                                                                \
 	} else                                                                                                                                                               \
 		((void)0)
