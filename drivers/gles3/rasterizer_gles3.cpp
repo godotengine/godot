@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "storage/texture_storage.h"
 

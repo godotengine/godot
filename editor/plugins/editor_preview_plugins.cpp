@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access_memory.h"
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
