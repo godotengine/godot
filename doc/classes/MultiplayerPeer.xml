@@ -38,6 +38,12 @@
 				Returns the current state of the connection. See [enum ConnectionStatus].
 			</description>
 		</method>
+		<method name="is_offline_peer" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns the offline status of this [MultiplayerPeer].
+			</description>
+		</method>
 		<method name="get_packet_channel" qualifiers="const">
 			<return type="int" />
 			<description>
