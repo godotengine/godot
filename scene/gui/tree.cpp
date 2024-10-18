@@ -1722,7 +1722,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				cache.click_id = c.buttons[j].id;
 				cache.click_item = p_item;
 				cache.click_column = col;
-				cache.click_pos = get_global_mouse_position() - get_global_position();
+				cache.click_pos = get_local_mouse_position();
 				update();
 				//emit_signal("button_pressed");
 				return -1;
