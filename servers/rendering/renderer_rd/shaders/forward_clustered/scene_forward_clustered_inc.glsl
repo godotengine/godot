@@ -341,25 +341,27 @@ layout(set = 1, binding = 10) uniform sampler decal_sampler;
 
 layout(set = 1, binding = 11) uniform sampler light_projector_sampler;
 
-layout(set = 1, binding = 12 + 0) uniform sampler SAMPLER_NEAREST_CLAMP;
-layout(set = 1, binding = 12 + 1) uniform sampler SAMPLER_LINEAR_CLAMP;
-layout(set = 1, binding = 12 + 2) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
-layout(set = 1, binding = 12 + 3) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
-layout(set = 1, binding = 12 + 4) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 1, binding = 12 + 5) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
-layout(set = 1, binding = 12 + 6) uniform sampler SAMPLER_NEAREST_REPEAT;
-layout(set = 1, binding = 12 + 7) uniform sampler SAMPLER_LINEAR_REPEAT;
-layout(set = 1, binding = 12 + 8) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
-layout(set = 1, binding = 12 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
-layout(set = 1, binding = 12 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
-layout(set = 1, binding = 12 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 1, binding = 12) uniform sampler reflection_sampler;
+
+layout(set = 1, binding = 13 + 0) uniform sampler SAMPLER_NEAREST_CLAMP;
+layout(set = 1, binding = 13 + 1) uniform sampler SAMPLER_LINEAR_CLAMP;
+layout(set = 1, binding = 13 + 2) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP;
+layout(set = 1, binding = 13 + 3) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
+layout(set = 1, binding = 13 + 4) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
+layout(set = 1, binding = 13 + 5) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP;
+layout(set = 1, binding = 13 + 6) uniform sampler SAMPLER_NEAREST_REPEAT;
+layout(set = 1, binding = 13 + 7) uniform sampler SAMPLER_LINEAR_REPEAT;
+layout(set = 1, binding = 13 + 8) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT;
+layout(set = 1, binding = 13 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
+layout(set = 1, binding = 13 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
 
 #ifdef MODE_RENDER_SDF
 
-layout(r16ui, set = 1, binding = 24) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 1, binding = 25) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 1, binding = 26) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 27) uniform restrict uimage3D geom_facing_grid;
+layout(r16ui, set = 1, binding = 25) uniform restrict writeonly uimage3D albedo_volume_grid;
+layout(r32ui, set = 1, binding = 26) uniform restrict writeonly uimage3D emission_grid;
+layout(r32ui, set = 1, binding = 27) uniform restrict writeonly uimage3D emission_aniso_grid;
+layout(r32ui, set = 1, binding = 28) uniform restrict uimage3D geom_facing_grid;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas
@@ -370,24 +372,24 @@ layout(r32ui, set = 1, binding = 27) uniform restrict uimage3D geom_facing_grid;
 #else
 
 #ifdef USE_MULTIVIEW
-layout(set = 1, binding = 24) uniform texture2DArray depth_buffer;
-layout(set = 1, binding = 25) uniform texture2DArray color_buffer;
-layout(set = 1, binding = 26) uniform texture2DArray normal_roughness_buffer;
-layout(set = 1, binding = 27) uniform texture2DArray ao_buffer;
-layout(set = 1, binding = 28) uniform texture2DArray ambient_buffer;
-layout(set = 1, binding = 29) uniform texture2DArray reflection_buffer;
+layout(set = 1, binding = 25) uniform texture2DArray depth_buffer;
+layout(set = 1, binding = 26) uniform texture2DArray color_buffer;
+layout(set = 1, binding = 27) uniform texture2DArray normal_roughness_buffer;
+layout(set = 1, binding = 28) uniform texture2DArray ao_buffer;
+layout(set = 1, binding = 29) uniform texture2DArray ambient_buffer;
+layout(set = 1, binding = 30) uniform texture2DArray reflection_buffer;
 #define multiviewSampler sampler2DArray
 #else // USE_MULTIVIEW
-layout(set = 1, binding = 24) uniform texture2D depth_buffer;
-layout(set = 1, binding = 25) uniform texture2D color_buffer;
-layout(set = 1, binding = 26) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 27) uniform texture2D ao_buffer;
-layout(set = 1, binding = 28) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 29) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 25) uniform texture2D depth_buffer;
+layout(set = 1, binding = 26) uniform texture2D color_buffer;
+layout(set = 1, binding = 27) uniform texture2D normal_roughness_buffer;
+layout(set = 1, binding = 28) uniform texture2D ao_buffer;
+layout(set = 1, binding = 29) uniform texture2D ambient_buffer;
+layout(set = 1, binding = 30) uniform texture2D reflection_buffer;
 #define multiviewSampler sampler2D
 #endif
-layout(set = 1, binding = 30) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 1, binding = 31) uniform texture3D sdfgi_occlusion_cascades;
+layout(set = 1, binding = 31) uniform texture2DArray sdfgi_lightprobe_texture;
+layout(set = 1, binding = 32) uniform texture3D sdfgi_occlusion_cascades;
 
 struct VoxelGIData {
 	mat4 xform; // 64 - 64
@@ -404,17 +406,17 @@ struct VoxelGIData {
 	float exposure_normalization; // 4 - 112
 };
 
-layout(set = 1, binding = 32, std140) uniform VoxelGIs {
+layout(set = 1, binding = 33, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
 voxel_gi_instances;
 
-layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 34) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
-layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2DArray ssil_buffer;
 #else
-layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 35) uniform texture2D ssil_buffer;
 #endif // USE_MULTIVIEW
 
 #endif
