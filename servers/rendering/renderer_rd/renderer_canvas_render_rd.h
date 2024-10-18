@@ -361,6 +361,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		};
 		float color_texture_pixel_size[2];
 		uint32_t lights[4];
+		uint32_t instance_uniforms_ofs;
+		uint32_t pad2[3];
 	};
 
 	struct PushConstant {
