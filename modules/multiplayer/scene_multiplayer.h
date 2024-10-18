@@ -60,6 +60,7 @@ public:
 	virtual void close() override {}
 	virtual int get_unique_id() const override { return TARGET_PEER_SERVER; }
 	virtual ConnectionStatus get_connection_status() const override { return CONNECTION_CONNECTED; };
+	virtual bool is_offline_peer() const override { return true; }
 };
 
 class SceneMultiplayer : public MultiplayerAPI {
