@@ -1,0 +1,4 @@
+GDTEST_OK
+["@subpath", "@path", &"number", &"bar"]
+[^"", "res://utility_functions/foo.notest.gd", 42, { "@subpath": ^"", "@path": "res://utility_functions/bar.notest.gd", &"text": "lorem ipsum", &"qux": { "@subpath": ^"", "@path": "res://utility_functions/qux.notest.gd", &"decimal": 0.5 } }]
+ok

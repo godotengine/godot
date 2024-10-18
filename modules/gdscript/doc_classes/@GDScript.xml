@@ -77,8 +77,10 @@
 		<method name="dict_to_inst">
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="deep" type="bool" default="false" />
 			<description>
 				Converts a [param dictionary] (created with [method inst_to_dict]) back to an Object instance. Can be useful for deserializing.
+				If [param deep] is [code]true[/code], the method converts any inner instances recursively. Use this option only if you're sure that instances have no circular references to each other as it can lead to an endless conversion loop.
 			</description>
 		</method>
 		<method name="get_stack">
@@ -106,8 +108,10 @@
 		<method name="inst_to_dict">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
+			<param index="1" name="deep" type="bool" default="false" />
 			<description>
 				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
+				If [param deep] is [code]true[/code], the method converts any inner instances recursively. Use this option only if you're sure that instances have no circular references to each other as it can lead to an endless conversion loop.
 				[b]Note:[/b] Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.
 				[codeblock]
 				var foo = "bar"
