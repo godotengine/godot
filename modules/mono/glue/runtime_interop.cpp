@@ -1275,6 +1275,10 @@ uint32_t godotsharp_randi() {
 	return Math::rand();
 }
 
+bool godotsharp_rand_bool(double p_true_chance) {
+	return Math::rand_bool(p_true_chance);
+}
+
 float godotsharp_randf() {
 	return Math::randf();
 }
@@ -1637,6 +1641,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_printt,
 	(void *)godotsharp_randf,
 	(void *)godotsharp_randi,
+	(void *)godotsharp_rand_bool,
 	(void *)godotsharp_randomize,
 	(void *)godotsharp_randf_range,
 	(void *)godotsharp_randfn,
