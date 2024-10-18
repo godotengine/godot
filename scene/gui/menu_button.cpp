@@ -40,6 +40,9 @@ void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	if (p_event->is_pressed() && !is_disabled() && is_visible_in_tree() && popup->activate_item_by_event(p_event, false)) {
 		accept_event();
 		return;
@@ -62,6 +65,9 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 }
 
 void MenuButton::pressed() {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	if (popup->is_visible()) {
 		popup->hide();
 		return;
@@ -71,6 +77,9 @@ void MenuButton::pressed() {
 }
 
 PopupMenu *MenuButton::get_popup() const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, nullptr);
+
 	return popup;
 }
 
@@ -78,6 +87,9 @@ void MenuButton::show_popup() {
 	if (!get_viewport()) {
 		return;
 	}
+
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
 
 	emit_signal(SNAME("about_to_popup"));
 	Rect2 rect = get_screen_rect();
@@ -111,6 +123,9 @@ bool MenuButton::is_switch_on_hover() {
 }
 
 void MenuButton::set_item_count(int p_count) {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL(popup);
+
 	ERR_FAIL_COND(p_count < 0);
 
 	if (popup->get_item_count() == p_count) {
@@ -122,24 +137,35 @@ void MenuButton::set_item_count(int p_count) {
 }
 
 int MenuButton::get_item_count() const {
+	PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+	ERR_FAIL_NULL_V(popup, 0);
+
 	return popup->get_item_count();
 }
 
 void MenuButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+			ERR_FAIL_NULL(popup);
+
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
+				PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+				ERR_FAIL_NULL(popup);
+
 				popup->hide();
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_find_control(get_viewport()->get_mouse_position()));
+			PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+			ERR_FAIL_NULL(popup);
 
+			MenuButton *menu_btn_other = Object::cast_to<MenuButton>(get_viewport()->gui_find_control(get_viewport()->get_mouse_position()));
 			if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
 					(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
 				popup->hide();
@@ -155,6 +181,9 @@ void MenuButton::_notification(int p_what) {
 bool MenuButton::_set(const StringName &p_name, const Variant &p_value) {
 	const String sname = p_name;
 	if (property_helper.is_property_valid(sname)) {
+		PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+		ERR_FAIL_NULL_V(popup, false);
+
 		bool valid;
 		popup->set(sname.trim_prefix("popup/"), p_value, &valid);
 		return valid;
@@ -165,6 +194,9 @@ bool MenuButton::_set(const StringName &p_name, const Variant &p_value) {
 bool MenuButton::_get(const StringName &p_name, Variant &r_ret) const {
 	const String sname = p_name;
 	if (property_helper.is_property_valid(sname)) {
+		PopupMenu *popup = Object::cast_to<PopupMenu>(ObjectDB::get_instance(popup_id));
+		ERR_FAIL_NULL_V(popup, false);
+
 		bool valid;
 		r_ret = popup->get(sname.trim_prefix("popup/"), &valid);
 		return valid;
@@ -214,13 +246,14 @@ MenuButton::MenuButton(const String &p_text) :
 	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
-	popup = memnew(PopupMenu);
+	PopupMenu *popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("about_to_popup", callable_mp(this, &MenuButton::_popup_visibility_changed).bind(true));
 	popup->connect("popup_hide", callable_mp(this, &MenuButton::_popup_visibility_changed).bind(false));
 
 	property_helper.setup_for_instance(base_property_helper, this);
+	popup_id = popup->get_instance_id();
 }
 
 MenuButton::~MenuButton() {
