@@ -349,6 +349,14 @@ RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_
 	return environment_storage.environment_get_reflection_source(p_env);
 }
 
+void RendererSceneRender::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	environment_storage.environment_set_camera_feed_id(p_env, p_camera_feed_id);
+}
+
+int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
+	return environment_storage.environment_get_camera_feed_id(p_env);
+}
+
 // Tonemap
 
 void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {

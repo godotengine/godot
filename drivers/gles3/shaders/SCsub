@@ -17,6 +17,7 @@ if "GLES3_GLSL" in env["BUILDERS"]:
 
     # as we have a few, not yet, converted files we name the ones we want to include:
     env.GLES3_GLSL("canvas.glsl")
+    env.GLES3_GLSL("feed.glsl")
     env.GLES3_GLSL("scene.glsl")
     env.GLES3_GLSL("sky.glsl")
     env.GLES3_GLSL("canvas_occlusion.glsl")

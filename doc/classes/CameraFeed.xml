@@ -34,6 +34,21 @@
 				Returns the position of camera on the device.
 			</description>
 		</method>
+		<method name="get_texture_tex_id">
+			<return type="int" />
+			<param index="0" name="feed_image_type" type="int" enum="CameraServer.FeedImage" />
+			<description>
+				Returns the texture backend ID (usable by some external libraries that need a handle to a texture to write data).
+			</description>
+		</method>
+		<method name="set_external">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<description>
+				Sets the feed as external feed provided by another library.
+			</description>
+		</method>
 		<method name="set_format">
 			<return type="bool" />
 			<param index="0" name="index" type="int" />
@@ -109,6 +124,9 @@
 		</constant>
 		<constant name="FEED_YCBCR_SEP" value="3" enum="FeedDataType">
 			Feed supplies separate Y and CbCr images that need to be combined and converted to RGB.
+		</constant>
+		<constant name="FEED_EXTERNAL" value="4" enum="FeedDataType">
+			Feed supplies external image.
 		</constant>
 		<constant name="FEED_UNSPECIFIED" value="0" enum="FeedPosition">
 			Unspecified position.

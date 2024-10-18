@@ -118,10 +118,7 @@ public:
 	void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value);
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
 	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG);
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
 	void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id);
-#endif
 
 	RS::EnvironmentBG environment_get_background(RID p_env) const;
 	RID environment_get_sky(RID p_env) const;
@@ -136,6 +133,7 @@ public:
 	float environment_get_ambient_light_energy(RID p_env) const;
 	float environment_get_ambient_sky_contribution(RID p_env) const;
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
+	int environment_get_camera_feed_id(RID p_env) const;
 
 	// Tonemap
 	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
