@@ -263,6 +263,8 @@ public:
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
 
+	int get_playback_current() const;
+
 	AudioStreamPlaybackInteractive();
 	~AudioStreamPlaybackInteractive();
 };
