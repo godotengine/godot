@@ -772,6 +772,7 @@ public:
 	static bool has_utility_function_return_value(const StringName &p_name);
 	static Variant::Type get_utility_function_return_type(const StringName &p_name);
 	static bool is_utility_function_vararg(const StringName &p_name);
+	static bool is_utility_function_const(const StringName &p_name); // For GDScript. Compile time constant. This is **not** `const` qualifier.
 	static uint32_t get_utility_function_hash(const StringName &p_name);
 
 	static void get_utility_function_list(List<StringName> *r_functions);
