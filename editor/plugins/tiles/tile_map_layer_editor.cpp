@@ -2413,6 +2413,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	sources_list->set_stretch_ratio(0.25);
 	sources_list->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	sources_list->set_theme_type_variation("SideItemList");
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_source_display).unbind(1));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect("item_activated", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::display_tile_set_editor_panel).unbind(1));
@@ -2449,6 +2450,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	scene_tiles_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_select_mode(ItemList::SELECT_MULTI);
+	scene_tiles_list->set_theme_type_variation("SideItemList");
 	scene_tiles_list->connect("multi_selected", callable_mp(this, &TileMapLayerEditorTilesPlugin::_scenes_list_multi_selected));
 	scene_tiles_list->connect("empty_clicked", callable_mp(this, &TileMapLayerEditorTilesPlugin::_scenes_list_lmb_empty_clicked));
 	scene_tiles_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
@@ -2478,6 +2480,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_item_list->set_theme_type_variation("SideItemList");
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input));
 	patterns_item_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
 	patterns_item_list->connect("item_activated", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
@@ -3539,6 +3542,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	terrains_tile_list->set_same_column_width(true);
 	terrains_tile_list->set_fixed_icon_size(Size2(32, 32) * EDSCALE);
 	terrains_tile_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	terrains_tile_list->set_theme_type_variation("SideItemList");
 	tilemap_tab_terrains->add_child(terrains_tile_list);
 
 	// --- Toolbar ---
