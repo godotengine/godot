@@ -390,6 +390,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		case NODE_PATH: {
 			static const Type valid[] = {
 				STRING,
+				STRING_NAME,
 				NIL
 			};
 
@@ -733,6 +734,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		case NODE_PATH: {
 			static const Type valid[] = {
 				STRING,
+				STRING_NAME,
 				NIL
 			};
 
@@ -2129,6 +2131,8 @@ Variant::operator NodePath() const {
 		return *reinterpret_cast<const NodePath *>(_data._mem);
 	} else if (type == STRING) {
 		return NodePath(operator String());
+	} else if (type == STRING_NAME) {
+		return NodePath::from_string_name(operator StringName());
 	} else {
 		return NodePath();
 	}
