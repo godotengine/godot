@@ -200,6 +200,30 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(int p_encoding, const PackedByteArray &p_array) const {
+	String s;
+	if (p_array.size() > 0) {
+		const uint8_t *r = p_array.ptr();
+		s.parse_utf8((const char *)r, p_array.size());
+	}
+	return s;
+}
+
+PackedByteArray OS::string_to_multibyte(int p_encoding, const String &p_string) const {
+	if (p_string.is_empty()) {
+		return PackedByteArray();
+	}
+	CharString charstr = p_string.utf8();
+
+	PackedByteArray ret;
+	size_t len = charstr.length();
+	ret.resize(len);
+	uint8_t *w = ret.ptrw();
+	memcpy(w, charstr.ptr(), len);
+
+	return ret;
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }
