@@ -34,9 +34,10 @@
 #include "godot_menu_item.h"
 #include "key_mapping_macos.h"
 
+#include "core/input/input_map.h"
 #include "scene/resources/image_texture.h"
 
-void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu) {
+void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu, NSMenu *p_edit_menu, NSMenu *p_file_menu, NSMenuItem *p_file_menu_item, NSMenuItem *p_copy_item, NSMenuItem *p_cut_item, NSMenuItem *p_paste_item, NSMenuItem *p_undo_item, NSMenuItem *p_redo_item) {
 	{
 		MenuData *md = memnew(MenuData);
 		md->menu = p_main_menu;
@@ -44,6 +45,30 @@ void NativeMenuMacOS::_register_system_menus(NSMenu *p_main_menu, NSMenu *p_appl
 		main_menu = menus.make_rid(md);
 		main_menu_ns = p_main_menu;
 		menu_lookup[md->menu] = main_menu;
+	}
+	{
+		MenuData *md = memnew(MenuData);
+		md->menu = p_file_menu;
+		md->is_system = true;
+		file_menu = menus.make_rid(md);
+		file_menu_ns = p_file_menu;
+		menu_lookup[md->menu] = file_menu;
+
+		file_menu_item = p_file_menu_item;
+	}
+	{
+		MenuData *md = memnew(MenuData);
+		md->menu = p_edit_menu;
+		md->is_system = true;
+		edit_menu = menus.make_rid(md);
+		edit_menu_ns = p_edit_menu;
+		menu_lookup[md->menu] = edit_menu;
+
+		copy_item = p_copy_item;
+		cut_item = p_cut_item;
+		paste_item = p_paste_item;
+		undo_item = p_undo_item;
+		redo_item = p_redo_item;
 	}
 	{
 		MenuData *md = memnew(MenuData);
@@ -97,19 +122,166 @@ void NativeMenuMacOS::_menu_open(NSMenu *p_menu) {
 	}
 }
 
+void NativeMenuMacOS::_process_ui_event(DisplayServer::WindowID p_window_id, const StringName &p_name) {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds) {
+		return;
+	}
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(p_name);
+	if (!events) {
+		return;
+	}
+	const List<Ref<InputEvent>>::Element *first_event = events->front();
+	if (!first_event) {
+		return;
+	}
+
+	const Ref<InputEventKey> event = first_event->get();
+	if (event.is_null()) {
+		return;
+	}
+
+	DisplayServerMacOS::KeyEvent ke;
+	ke.window_id = p_window_id;
+	ke.macos_state = 0;
+	if (event->is_ctrl_pressed()) {
+		ke.macos_state |= NSEventModifierFlagControl;
+	}
+	if (event->is_shift_pressed()) {
+		ke.macos_state |= NSEventModifierFlagShift;
+	}
+	if (event->is_alt_pressed()) {
+		ke.macos_state |= NSEventModifierFlagOption;
+	}
+	if (event->is_meta_pressed()) {
+		ke.macos_state |= NSEventModifierFlagCommand;
+	}
+	ke.pressed = true;
+	ke.echo = false;
+	ke.raw = false;
+	ke.keycode = event->get_keycode();
+	ke.physical_keycode = event->get_physical_keycode();
+	ke.key_label = event->get_key_label();
+	ke.unicode = event->get_unicode();
+
+	ds->push_to_key_event_buffer(ke);
+}
+
+void NativeMenuMacOS::_copy_action(DisplayServer::WindowID p_window_id) {
+	if (copy_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+
+		copy_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			return;
+		} else {
+			ERR_PRINT(vformat("Failed to execute menu copy callback: %s.", Variant::get_callable_error_text(copy_cb, nullptr, 0, ce)));
+		}
+	}
+	_process_ui_event(p_window_id, "ui_copy");
+}
+
+void NativeMenuMacOS::_cut_action(DisplayServer::WindowID p_window_id) {
+	if (cut_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+
+		cut_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			return;
+		} else {
+			ERR_PRINT(vformat("Failed to execute menu cut callback: %s.", Variant::get_callable_error_text(cut_cb, nullptr, 0, ce)));
+		}
+	}
+	_process_ui_event(p_window_id, "ui_cut");
+}
+
+void NativeMenuMacOS::_paste_action(DisplayServer::WindowID p_window_id) {
+	if (paste_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+
+		paste_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			return;
+		} else {
+			ERR_PRINT(vformat("Failed to execute menu paste callback: %s.", Variant::get_callable_error_text(paste_cb, nullptr, 0, ce)));
+		}
+	}
+	_process_ui_event(p_window_id, "ui_paste");
+}
+
+void NativeMenuMacOS::_undo_action(DisplayServer::WindowID p_window_id) {
+	if (undo_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+
+		undo_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			return;
+		} else {
+			ERR_PRINT(vformat("Failed to execute menu undo callback: %s.", Variant::get_callable_error_text(undo_cb, nullptr, 0, ce)));
+		}
+	}
+	_process_ui_event(p_window_id, "ui_undo");
+}
+
+void NativeMenuMacOS::_redo_action(DisplayServer::WindowID p_window_id) {
+	if (redo_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+
+		redo_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			return;
+		} else {
+			ERR_PRINT(vformat("Failed to execute menu redo callback: %s.", Variant::get_callable_error_text(redo_cb, nullptr, 0, ce)));
+		}
+	}
+	_process_ui_event(p_window_id, "ui_redo");
+}
+
 void NativeMenuMacOS::_menu_need_update(NSMenu *p_menu) {
 	if (menu_lookup.has(p_menu)) {
 		MenuData *md = menus.get_or_null(menu_lookup[p_menu]);
 		if (md) {
+			Variant ret;
+			Callable::CallError ce;
 			// Note: "is_open" flag is set by "_menu_open", this method is always called before menu is shown, but might be called for the other reasons as well.
 			if (md->open_cb.is_valid()) {
-				Variant ret;
-				Callable::CallError ce;
-
 				// Callback is called directly, since it's expected to modify menu items before it's shown.
 				md->open_cb.callp(nullptr, 0, ret, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
 					ERR_PRINT(vformat("Failed to execute menu open callback: %s.", Variant::get_callable_error_text(md->open_cb, nullptr, 0, ce)));
+				}
+			}
+			if (p_menu == edit_menu_ns) {
+				if ([[NSApplication sharedApplication] keyWindow].sheet) {
+					[copy_item setEnabled:YES];
+					[cut_item setEnabled:YES];
+					[paste_item setEnabled:YES];
+					[undo_item setEnabled:YES];
+					[redo_item setEnabled:YES];
+					[undo_item setTitle:NSLocalizedString(@"Undo", nil)];
+					[redo_item setTitle:NSLocalizedString(@"Redo", nil)];
+				} else {
+					// Copy item.
+					[copy_item setEnabled:can_copy];
+					[cut_item setEnabled:can_cut];
+					[paste_item setEnabled:can_paste];
+					[undo_item setEnabled:can_undo];
+					[redo_item setEnabled:can_redo];
+					if (undo_description.is_empty()) {
+						[undo_item setTitle:NSLocalizedString(@"Undo", nil)];
+					} else {
+						[undo_item setTitle:[NSString stringWithUTF8String:undo_description.utf8().get_data()]];
+					}
+					if (redo_description.is_empty()) {
+						[redo_item setTitle:NSLocalizedString(@"Redo", nil)];
+					} else {
+						[redo_item setTitle:[NSString stringWithUTF8String:redo_description.utf8().get_data()]];
+					}
 				}
 			}
 		}
@@ -160,10 +332,10 @@ bool NativeMenuMacOS::_is_menu_opened(NSMenu *p_menu) const {
 }
 
 int NativeMenuMacOS::_get_system_menu_start(const NSMenu *p_menu) const {
-	if (p_menu == [NSApp mainMenu]) { // Skip Apple menu.
-		return 1;
+	if (p_menu == [NSApp mainMenu]) { // Skip Apple, File and Edit menu.
+		return 3;
 	}
-	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns) {
+	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns || p_menu == edit_menu_ns || p_menu == file_menu_ns) {
 		int count = [p_menu numberOfItems];
 		for (int i = 0; i < count; i++) {
 			NSMenuItem *menu_item = [p_menu itemAtIndex:i];
@@ -176,10 +348,10 @@ int NativeMenuMacOS::_get_system_menu_start(const NSMenu *p_menu) const {
 }
 
 int NativeMenuMacOS::_get_system_menu_count(const NSMenu *p_menu) const {
-	if (p_menu == [NSApp mainMenu]) { // Skip Apple, Window and Help menu.
-		return [p_menu numberOfItems] - 3;
+	if (p_menu == [NSApp mainMenu]) { // Skip Apple, File, Edit, Window and Help menu.
+		return [p_menu numberOfItems] - 5;
 	}
-	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns) {
+	if (p_menu == application_menu_ns || p_menu == window_menu_ns || p_menu == help_menu_ns || p_menu == edit_menu_ns || p_menu == file_menu_ns) {
 		int start = 0;
 		int count = [p_menu numberOfItems];
 		for (int i = 0; i < count; i++) {
@@ -202,6 +374,7 @@ bool NativeMenuMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_OPEN_CLOSE_CALLBACK:
 		case FEATURE_HOVER_CALLBACK:
 		case FEATURE_KEY_CALLBACK:
+		case FEATURE_COPY_CUT_PASTE_CALLBACK:
 			return true;
 		default:
 			return false;
@@ -215,6 +388,8 @@ bool NativeMenuMacOS::has_system_menu(SystemMenus p_menu_id) const {
 		case WINDOW_MENU_ID:
 		case HELP_MENU_ID:
 		case DOCK_MENU_ID:
+		case EDIT_MENU_ID:
+		case FILE_MENU_ID:
 			return true;
 		default:
 			return false;
@@ -233,8 +408,34 @@ RID NativeMenuMacOS::get_system_menu(SystemMenus p_menu_id) const {
 			return help_menu;
 		case DOCK_MENU_ID:
 			return dock_menu;
+		case EDIT_MENU_ID:
+			return edit_menu;
+		case FILE_MENU_ID:
+			return file_menu;
 		default:
 			return RID();
+	}
+}
+
+bool NativeMenuMacOS::get_system_menu_no_default_items(SystemMenus p_menu_id) const {
+	return p_menu_id == FILE_MENU_ID;
+}
+
+void NativeMenuMacOS::set_system_menu_name(SystemMenus p_menu_id, const String &p_string) {
+	if (p_menu_id == FILE_MENU_ID) {
+		if (p_string.is_empty()) {
+			[file_menu_item setTitle:NSLocalizedString(@"File", nil)];
+			[file_menu_ns setTitle:NSLocalizedString(@"File", nil)];
+		} else {
+			[file_menu_item setTitle:[NSString stringWithUTF8String:p_string.utf8().get_data()]];
+			[file_menu_ns setTitle:[NSString stringWithUTF8String:p_string.utf8().get_data()]];
+		}
+	}
+}
+
+void NativeMenuMacOS::set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden) {
+	if (p_menu_id == FILE_MENU_ID) {
+		file_menu_item.hidden = p_hidden;
 	}
 }
 
@@ -1291,7 +1492,7 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 	ERR_FAIL_NULL(md);
 	ERR_FAIL_COND_MSG(_is_menu_opened(md->menu), "Can't remove open menu!");
 
-	if (p_rid == application_menu || p_rid == window_menu || p_rid == help_menu) {
+	if (p_rid == application_menu || p_rid == window_menu || p_rid == help_menu || p_rid == edit_menu || p_rid == file_menu) {
 		int start = _get_system_menu_start(md->menu);
 		int count = _get_system_menu_count(md->menu);
 		for (int i = start + count - 1; i >= start; i--) {
@@ -1302,11 +1503,23 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 	}
 
 	if (p_rid == main_menu) {
-		// Restore Apple, Window and Help menu.
+		// Restore Apple, File, Edit, Window and Help menu.
 		MenuData *md_app = menus.get_or_null(application_menu);
 		if (md_app) {
 			NSMenuItem *menu_item = [md->menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 			[md->menu setSubmenu:md_app->menu forItem:menu_item];
+		}
+		MenuData *md_file = menus.get_or_null(file_menu);
+		if (md_file) {
+			NSMenuItem *menu_item = [md->menu addItemWithTitle:@"File" action:nil keyEquivalent:@""];
+			menu_item.hidden = YES;
+			[md->menu setSubmenu:md_file->menu forItem:menu_item];
+			file_menu_item = menu_item;
+		}
+		MenuData *md_edit = menus.get_or_null(edit_menu);
+		if (md_edit) {
+			NSMenuItem *menu_item = [md->menu addItemWithTitle:@"Edit" action:nil keyEquivalent:@""];
+			[md->menu setSubmenu:md_edit->menu forItem:menu_item];
 		}
 		MenuData *md_win = menus.get_or_null(window_menu);
 		if (md_win) {
@@ -1319,6 +1532,102 @@ void NativeMenuMacOS::clear(const RID &p_rid) {
 			[md->menu setSubmenu:md_hlp->menu forItem:menu_item];
 		}
 	}
+}
+
+void NativeMenuMacOS::set_can_copy(bool p_enabled) {
+	can_copy = p_enabled;
+}
+
+bool NativeMenuMacOS::get_can_copy() const {
+	return can_copy;
+}
+
+void NativeMenuMacOS::set_copy_callback(const Callable &p_callback) {
+	copy_cb = p_callback;
+}
+
+Callable NativeMenuMacOS::get_copy_callback() const {
+	return copy_cb;
+}
+
+void NativeMenuMacOS::set_can_cut(bool p_enabled) {
+	can_cut = p_enabled;
+}
+
+bool NativeMenuMacOS::get_can_cut() const {
+	return can_cut;
+}
+
+void NativeMenuMacOS::set_cut_callback(const Callable &p_callback) {
+	cut_cb = p_callback;
+}
+
+Callable NativeMenuMacOS::get_cut_callback() const {
+	return cut_cb;
+}
+
+void NativeMenuMacOS::set_can_paste(bool p_enabled) {
+	can_paste = p_enabled;
+}
+
+bool NativeMenuMacOS::get_can_paste() const {
+	return can_paste;
+}
+
+void NativeMenuMacOS::set_paste_callback(const Callable &p_callback) {
+	paste_cb = p_callback;
+}
+
+Callable NativeMenuMacOS::get_paste_callback() const {
+	return paste_cb;
+}
+
+void NativeMenuMacOS::set_can_undo(bool p_enabled) {
+	can_undo = p_enabled;
+}
+
+bool NativeMenuMacOS::get_can_undo() const {
+	return can_undo;
+}
+
+void NativeMenuMacOS::set_undo_callback(const Callable &p_callback) {
+	undo_cb = p_callback;
+}
+
+Callable NativeMenuMacOS::get_undo_callback() const {
+	return undo_cb;
+}
+
+void NativeMenuMacOS::set_can_redo(bool p_enabled) {
+	can_redo = p_enabled;
+}
+
+bool NativeMenuMacOS::get_can_redo() const {
+	return can_redo;
+}
+
+void NativeMenuMacOS::set_redo_callback(const Callable &p_callback) {
+	redo_cb = p_callback;
+}
+
+Callable NativeMenuMacOS::get_redo_callback() const {
+	return redo_cb;
+}
+
+void NativeMenuMacOS::set_undo_description(const String &p_description) {
+	undo_description = p_description;
+}
+
+String NativeMenuMacOS::get_undo_description() const {
+	return undo_description;
+}
+
+void NativeMenuMacOS::set_redo_description(const String &p_description) {
+	redo_description = p_description;
+}
+
+String NativeMenuMacOS::get_redo_description() const {
+	return redo_description;
 }
 
 NativeMenuMacOS::NativeMenuMacOS() {}
@@ -1343,6 +1652,28 @@ NativeMenuMacOS::~NativeMenuMacOS() {
 			menu_lookup.erase(md->menu);
 			md->menu = nullptr;
 			application_menu_ns = nullptr;
+			memdelete(md);
+		}
+	}
+	if (file_menu.is_valid()) {
+		MenuData *md = menus.get_or_null(file_menu);
+		if (md) {
+			clear(file_menu);
+			menus.free(file_menu);
+			menu_lookup.erase(md->menu);
+			md->menu = nullptr;
+			file_menu_ns = nullptr;
+			memdelete(md);
+		}
+	}
+	if (edit_menu.is_valid()) {
+		MenuData *md = menus.get_or_null(edit_menu);
+		if (md) {
+			clear(edit_menu);
+			menus.free(edit_menu);
+			menu_lookup.erase(md->menu);
+			md->menu = nullptr;
+			edit_menu_ns = nullptr;
 			memdelete(md);
 		}
 	}

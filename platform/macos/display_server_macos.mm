@@ -43,6 +43,7 @@
 #include "tts_macos.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -3481,6 +3482,34 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
+void DisplayServerMacOS::_get_action_key(const StringName &p_name, String &r_keycode, unsigned int &r_keymask) const {
+	r_keycode = String();
+	r_keymask = 0;
+
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(p_name);
+	if (!events) {
+		return;
+	}
+	const List<Ref<InputEvent>>::Element *first_event = events->front();
+	if (!first_event) {
+		return;
+	}
+	const Ref<InputEventKey> event = first_event->get();
+	if (event.is_null()) {
+		return;
+	}
+	if (event->get_keycode() != Key::NONE) {
+		r_keycode = KeyMappingMacOS::keycode_get_native_string(event->get_keycode() & KeyModifierMask::CODE_MASK);
+		r_keymask = KeyMappingMacOS::keycode_get_native_mask(event->get_keycode_with_modifiers());
+	} else if (event->get_physical_keycode() != Key::NONE) {
+		r_keycode = KeyMappingMacOS::keycode_get_native_string(event->get_physical_keycode() & KeyModifierMask::CODE_MASK);
+		r_keymask = KeyMappingMacOS::keycode_get_native_mask(event->get_physical_keycode_with_modifiers());
+	} else if (event->get_key_label() != Key::NONE) {
+		r_keycode = KeyMappingMacOS::keycode_get_native_string(event->get_key_label() & KeyModifierMask::CODE_MASK);
+		r_keymask = KeyMappingMacOS::keycode_get_native_mask(event->get_key_label_with_modifiers());
+	}
+}
+
 DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
 	KeyMappingMacOS::initialize();
 
@@ -3568,6 +3597,45 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
 	[application_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
 
+	NSMenu *file_menu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"File", nil)];
+	menu_item = [file_menu addItemWithTitle:@"_start_" action:nil keyEquivalent:@""];
+	menu_item.hidden = YES;
+	menu_item.tag = MENU_TAG_START;
+	menu_item = [file_menu addItemWithTitle:@"_end_" action:nil keyEquivalent:@""];
+	menu_item.hidden = YES;
+	menu_item.tag = MENU_TAG_END;
+
+	NSMenu *edit_menu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Edit", nil)];
+	[edit_menu setAutoenablesItems:NO];
+	[edit_menu setDelegate:menu_delegate];
+	String keycode;
+	unsigned int keymask = 0;
+
+	_get_action_key("ui_undo", keycode, keymask);
+	NSMenuItem *undo_menu_item = [edit_menu addItemWithTitle:NSLocalizedString(@"Undo", nil) action:@selector(undo:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+	[undo_menu_item setKeyEquivalentModifierMask:keymask];
+	_get_action_key("ui_redo", keycode, keymask);
+	NSMenuItem *redo_menu_item = [edit_menu addItemWithTitle:NSLocalizedString(@"Redo", nil) action:@selector(redo:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+	[redo_menu_item setKeyEquivalentModifierMask:keymask];
+	[edit_menu addItem:[NSMenuItem separatorItem]];
+
+	_get_action_key("ui_cut", keycode, keymask);
+	NSMenuItem *cut_menu_item = [edit_menu addItemWithTitle:NSLocalizedString(@"Cut", nil) action:@selector(cut:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+	[cut_menu_item setKeyEquivalentModifierMask:keymask];
+	_get_action_key("ui_copy", keycode, keymask);
+	NSMenuItem *copy_menu_item = [edit_menu addItemWithTitle:NSLocalizedString(@"Copy", nil) action:@selector(copy:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+	[copy_menu_item setKeyEquivalentModifierMask:keymask];
+	_get_action_key("ui_paste", keycode, keymask);
+	NSMenuItem *paste_menu_item = [edit_menu addItemWithTitle:NSLocalizedString(@"Paste", nil) action:@selector(paste:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()]];
+	[paste_menu_item setKeyEquivalentModifierMask:keymask];
+	[edit_menu addItem:[NSMenuItem separatorItem]];
+	menu_item = [edit_menu addItemWithTitle:@"_start_" action:nil keyEquivalent:@""];
+	menu_item.hidden = YES;
+	menu_item.tag = MENU_TAG_START;
+	menu_item = [edit_menu addItemWithTitle:@"_end_" action:nil keyEquivalent:@""];
+	menu_item.hidden = YES;
+	menu_item.tag = MENU_TAG_END;
+
 	NSMenu *window_menu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Window", nil)];
 	[window_menu addItemWithTitle:NSLocalizedString(@"Minimize", nil) action:@selector(performMiniaturize:) keyEquivalent:@"m"];
 	[window_menu addItemWithTitle:NSLocalizedString(@"Zoom", nil) action:@selector(performZoom:) keyEquivalent:@""];
@@ -3597,6 +3665,13 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:application_menu forItem:menu_item];
 
+	NSMenuItem *file_menu_item = [main_menu addItemWithTitle:NSLocalizedString(@"File", nil) action:nil keyEquivalent:@""];
+	file_menu_item.hidden = YES;
+	[main_menu setSubmenu:file_menu forItem:file_menu_item];
+
+	menu_item = [main_menu addItemWithTitle:NSLocalizedString(@"Edit", nil) action:nil keyEquivalent:@""];
+	[main_menu setSubmenu:edit_menu forItem:menu_item];
+
 	menu_item = [main_menu addItemWithTitle:NSLocalizedString(@"Window", nil) action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:window_menu forItem:menu_item];
 
@@ -3605,7 +3680,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	[main_menu setAutoenablesItems:NO];
 
-	native_menu->_register_system_menus(main_menu, application_menu, window_menu, help_menu, dock_menu);
+	native_menu->_register_system_menus(main_menu, application_menu, window_menu, help_menu, dock_menu, edit_menu, file_menu, file_menu_item, copy_menu_item, cut_menu_item, paste_menu_item, undo_menu_item, redo_menu_item);
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
