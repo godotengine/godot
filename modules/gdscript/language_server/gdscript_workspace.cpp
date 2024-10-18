@@ -486,7 +486,8 @@ bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
-		parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		// TODO: Figure out why this call is necessary.
+		_ALLOW_DISCARD_ parser->get_identifier_under_position(p_doc_pos.position, r_range);
 		r_symbol = *reference_symbol;
 		return true;
 	}
@@ -846,7 +847,8 @@ Error GDScriptWorkspace::resolve_signature(const lsp::TextDocumentPositionParams
 }
 
 GDScriptWorkspace::GDScriptWorkspace() {
-	ProjectSettings::get_singleton()->get_resource_path();
+	// TODO: Figure out why this call is necessary.
+	_ALLOW_DISCARD_ ProjectSettings::get_singleton()->get_resource_path();
 }
 
 GDScriptWorkspace::~GDScriptWorkspace() {
