@@ -832,4 +832,10 @@
 			Refers to the Ringtones directory path.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="RenderingDriver">
+		</enum>
+		<enum name="SystemDir">
+		</enum>
+	</enums>
 </class>

@@ -120,4 +120,10 @@
 		<constant name="JOINT_TYPE_6DOF" value="5" enum="JointType">
 		</constant>
 	</constants>
+	<enums>
+		<enum name="DampMode">
+		</enum>
+		<enum name="JointType">
+		</enum>
+	</enums>
 </class>

@@ -513,4 +513,10 @@
 			Help cursor. Usually a question mark.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="CursorShape">
+		</enum>
+		<enum name="MouseMode">
+		</enum>
+	</enums>
 </class>
