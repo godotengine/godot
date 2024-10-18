@@ -95,3 +95,11 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 
 Default deadzone value was changed. No adjustments should be necessary.
 Compatibility method registered.
+
+
+GH-98194
+--------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_show/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_with_options_show/arguments': size changed value in new API, from 9 to 10.
+
+Optional argument added. Compatibility methods registered.
