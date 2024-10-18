@@ -511,6 +511,8 @@ void GPUParticles3D::_notification(int p_what) {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
+		case NOTIFICATION_UNSUSPENDED:
 		case NOTIFICATION_PAUSED:
 		case NOTIFICATION_UNPAUSED: {
 			if (is_inside_tree()) {
