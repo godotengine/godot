@@ -32,4 +32,8 @@
 		<constant name="FILTER_24DB" value="3" enum="FilterDB">
 		</constant>
 	</constants>
+	<enums>
+		<enum name="FilterDB">
+		</enum>
+	</enums>
 </class>
