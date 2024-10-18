@@ -731,6 +731,8 @@ namespace Godot.SourceGenerators
             {
                 var elementTypes = MarshalUtils.GetGenericElementTypes(type);
 
+                bool containsNodeType = false;
+
                 if (elementTypes == null)
                     return false; // Non-generic Dictionary, so there's no hint to add
                 Debug.Assert(elementTypes.Length == 2);
@@ -753,6 +755,7 @@ namespace Godot.SourceGenerators
                     if (hintRes)
                     {
                         keyHintString = (int)keyElementVariantType + "/" + (int)keyElementHint + ":";
+                        containsNodeType |= keyElementHint == PropertyHint.NodeType;
 
                         if (keyElementHintString != null)
                             keyHintString += keyElementHintString;
@@ -781,6 +784,7 @@ namespace Godot.SourceGenerators
                     if (hintRes)
                     {
                         valueHintString = (int)valueElementVariantType + "/" + (int)valueElementHint + ":";
+                        containsNodeType |= valueElementHint == PropertyHint.NodeType;
 
                         if (valueElementHintString != null)
                             valueHintString += valueElementHintString;
@@ -791,7 +795,7 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                hint = PropertyHint.DictionaryType;
+                hint = containsNodeType ? PropertyHint.TypeString : PropertyHint.DictionaryType;
 
                 hintString = keyHintString != null && valueHintString != null ? $"{keyHintString};{valueHintString}" : null;
                 return hintString != null;
