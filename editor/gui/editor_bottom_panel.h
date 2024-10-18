@@ -39,6 +39,7 @@ class EditorToaster;
 class HBoxContainer;
 class LinkButton;
 class VBoxContainer;
+class ScrollContainer;
 
 class EditorBottomPanel : public PanelContainer {
 	GDCLASS(EditorBottomPanel, PanelContainer);
@@ -53,6 +54,9 @@ class EditorBottomPanel : public PanelContainer {
 
 	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
+	Button *left_button = nullptr;
+	Button *right_button = nullptr;
+	ScrollContainer *button_scroll = nullptr;
 	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	LinkButton *version_btn = nullptr;
@@ -63,6 +67,9 @@ class EditorBottomPanel : public PanelContainer {
 	void _switch_to_item(bool p_visible, int p_idx);
 	void _expand_button_toggled(bool p_pressed);
 	void _version_button_pressed();
+	void _scroll(bool p_right);
+	void _update_scroll_buttons();
+	void _update_disabled_buttons();
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
