@@ -90,6 +90,39 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 	return UPNP_RESULT_SUCCESS;
 }
 
+UPNP::UPNPResult UPNP::add_device_from_url(const String &desc_url) {
+	ERR_FAIL_COND_V_MSG(desc_url.is_empty(), UPNP_RESULT_INVALID_PARAM, "The description url must not be empty.");
+
+	Ref<UPNPDevice> dev;
+	struct UPNPUrls urls;
+	struct IGDdatas data;
+	char addr[16];
+
+	int i = UPNP_GetIGDFromUrl(desc_url.utf8().get_data(), &urls, &data, (char *)&addr, 16);
+	if (i != 1) {
+		FreeUPNPUrls(&urls);
+		return UPNP_RESULT_ACTION_FAILED;
+	}
+
+	if (urls.controlURL[0] == '\0') {
+		FreeUPNPUrls(&urls);
+		return UPNP_RESULT_INVALID_RESPONSE;
+	}
+
+	dev.instantiate();
+	dev->set_description_url(desc_url);
+	dev->set_service_type("urn:schemas-upnp-org:device:InternetGatewayDevice:1");
+	dev->set_igd_control_url(urls.controlURL);
+	dev->set_igd_service_type(data.first.servicetype);
+	dev->set_igd_our_addr(addr);
+	dev->set_igd_status(UPNPDevice::IGD_STATUS_OK);
+	FreeUPNPUrls(&urls);
+
+	devices.push_back(dev);
+
+	return UPNP_RESULT_SUCCESS;
+}
+
 void UPNP::add_device_to_list(UPNPDev *dev, UPNPDev *devlist) {
 	Ref<UPNPDevice> new_device;
 	new_device.instantiate();
@@ -334,6 +367,7 @@ void UPNP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gateway"), &UPNP::get_gateway);
 
 	ClassDB::bind_method(D_METHOD("discover", "timeout", "ttl", "device_filter"), &UPNP::discover, DEFVAL(2000), DEFVAL(2), DEFVAL("InternetGatewayDevice"));
+	ClassDB::bind_method(D_METHOD("add_device_from_url", "desc_url"), &UPNP::add_device_from_url);
 
 	ClassDB::bind_method(D_METHOD("query_external_address"), &UPNP::query_external_address);
 
