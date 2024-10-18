@@ -680,7 +680,20 @@ void WSLPeer::poll() {
 
 	if (ready_state == STATE_OPEN || ready_state == STATE_CLOSING) {
 		ERR_FAIL_NULL(wsl_ctx);
+		uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 		int err = 0;
+		if (heartbeat_interval_msec != 0 && ticks - last_heartbeat > heartbeat_interval_msec && ready_state == STATE_OPEN) {
+			struct wslay_event_msg msg;
+			msg.opcode = WSLAY_PING;
+			msg.msg = nullptr;
+			msg.msg_length = 0;
+			err = wslay_event_queue_msg(wsl_ctx, &msg);
+			if (err == 0) {
+				last_heartbeat = ticks;
+			} else {
+				print_verbose("Websocket (wslay) failed to send ping: " + itos(err));
+			}
+		}
 		if ((err = wslay_event_recv(wsl_ctx)) != 0 || (err = wslay_event_send(wsl_ctx)) != 0) {
 			// Error close.
 			print_verbose("Websocket (wslay) poll error: " + itos(err));
