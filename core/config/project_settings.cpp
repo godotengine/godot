@@ -41,7 +41,6 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/templates/rb_set.h"
-#include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
 

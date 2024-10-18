@@ -31,7 +31,6 @@
 #include "bit_map.h"
 
 #include "core/io/image_loader.h"
-#include "core/variant/typed_array.h"
 
 void BitMap::create(const Size2i &p_size) {
 	ERR_FAIL_COND(p_size.width < 1);

@@ -31,7 +31,7 @@
 #ifndef TYPE_INFO_H
 #define TYPE_INFO_H
 
-#include "core/typedefs.h"
+#include "core/object/object.h"
 
 #include <type_traits>
 
@@ -147,6 +147,79 @@ MAKE_TYPE_INFO(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
 MAKE_TYPE_INFO(PackedVector4Array, Variant::PACKED_VECTOR4_ARRAY)
 
 MAKE_TYPE_INFO(IPAddress, Variant::STRING)
+
+// Typed containers.
+template <typename T>
+struct GetTypeInfo<TypedArray<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		String hint_string;
+		if constexpr (GTI::variant_type_v<T> == Variant::OBJECT) {
+			hint_string = T::get_class_static();
+		} else {
+			hint_string = Variant::get_type_name(GTI::variant_type_v<T>);
+		}
+		return PropertyInfo(VARIANT_TYPE, String(), PROPERTY_HINT_ARRAY_TYPE, hint_string);
+	}
+};
+
+template <typename T>
+struct GetTypeInfo<const TypedArray<T> &> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		String hint_string;
+		if constexpr (GTI::variant_type_v<T> == Variant::OBJECT) {
+			hint_string = T::get_class_static();
+		} else {
+			hint_string = Variant::get_type_name(GTI::variant_type_v<T>);
+		}
+		return PropertyInfo(VARIANT_TYPE, String(), PROPERTY_HINT_ARRAY_TYPE, hint_string);
+	}
+};
+
+template <typename K, typename V>
+struct GetTypeInfo<TypedDictionary<K, V>> {
+	static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		String hint_key;
+		if constexpr (GTI::variant_type_v<K> == Variant::OBJECT) {
+			hint_key = K::get_class_static();
+		} else {
+			hint_key = GTI::variant_type_v<K> == Variant::NIL ? "Variant" : Variant::get_type_name(GTI::variant_type_v<K>);
+		}
+		String hint_value;
+		if constexpr (GTI::variant_type_v<V> == Variant::OBJECT) {
+			hint_value = V::get_class_static();
+		} else {
+			hint_value = GTI::variant_type_v<V> == Variant::NIL ? "Variant" : Variant::get_type_name(GTI::variant_type_v<V>);
+		}
+		return PropertyInfo(VARIANT_TYPE, String(), PROPERTY_HINT_DICTIONARY_TYPE, vformat("%s;%s", hint_key, hint_value));
+	}
+};
+
+template <typename K, typename V>
+struct GetTypeInfo<const TypedDictionary<K, V> &> {
+	static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		String hint_key;
+		if constexpr (GTI::variant_type_v<K> == Variant::OBJECT) {
+			hint_key = K::get_class_static();
+		} else {
+			hint_key = GTI::variant_type_v<K> == Variant::NIL ? "Variant" : Variant::get_type_name(GTI::variant_type_v<K>);
+		}
+		String hint_value;
+		if constexpr (GTI::variant_type_v<V> == Variant::OBJECT) {
+			hint_value = V::get_class_static();
+		} else {
+			hint_value = GTI::variant_type_v<V> == Variant::NIL ? "Variant" : Variant::get_type_name(GTI::variant_type_v<V>);
+		}
+		return PropertyInfo(VARIANT_TYPE, String(), PROPERTY_HINT_DICTIONARY_TYPE, vformat("%s;%s", hint_key, hint_value));
+	}
+};
 
 //objectID
 template <>
