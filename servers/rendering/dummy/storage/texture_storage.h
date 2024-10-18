@@ -53,7 +53,7 @@ public:
 
 	/* Canvas Texture API */
 
-	virtual RID canvas_texture_allocate() override { return RID(); };
+	virtual RID canvas_texture_allocate() override { return RID(); }
 	virtual void canvas_texture_initialize(RID p_rid) override {}
 	virtual void canvas_texture_free(RID p_rid) override {}
 
@@ -65,13 +65,13 @@ public:
 
 	/* Texture API */
 
-	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
+	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); }
 
 	virtual RID texture_allocate() override {
 		DummyTexture *texture = memnew(DummyTexture);
 		ERR_FAIL_NULL_V(texture, RID());
 		return texture_owner.make_rid(texture);
-	};
+	}
 
 	virtual void texture_free(RID p_rid) override {
 		// delete the texture
@@ -79,13 +79,13 @@ public:
 		ERR_FAIL_NULL(texture);
 		texture_owner.free(p_rid);
 		memdelete(texture);
-	};
+	}
 
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
 		ERR_FAIL_NULL(t);
 		t->image = p_image->duplicate();
-	};
+	}
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override {}
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override {}
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override {}
@@ -107,15 +107,15 @@ public:
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
 		ERR_FAIL_NULL_V(t, Ref<Image>());
 		return t->image;
-	};
-	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); };
-	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); };
+	}
+	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); }
+	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override { return Vector<Ref<Image>>(); }
 
-	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); };
+	virtual void texture_replace(RID p_texture, RID p_by_texture) override { texture_free(p_by_texture); }
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override {}
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override {}
-	virtual String texture_get_path(RID p_texture) const override { return String(); };
+	virtual String texture_get_path(RID p_texture) const override { return String(); }
 
 	virtual Image::Format texture_get_format(RID p_texture) const override { return Image::FORMAT_MAX; }
 
@@ -127,11 +127,11 @@ public:
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) override {}
 
-	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
+	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); }
 
 	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override {}
-	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); };
-	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; };
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); }
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; }
 
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }

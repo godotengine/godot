@@ -81,7 +81,7 @@ void RenderSceneBuffersExtension::_bind_methods() {
 
 void RenderSceneBuffersExtension::configure(const RenderSceneBuffersConfiguration *p_config) {
 	GDVIRTUAL_CALL(_configure, p_config);
-};
+}
 
 void RenderSceneBuffersExtension::set_fsr_sharpness(float p_fsr_sharpness) {
 	GDVIRTUAL_CALL(_set_fsr_sharpness, p_fsr_sharpness);
