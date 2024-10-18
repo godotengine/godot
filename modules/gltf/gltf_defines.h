@@ -43,6 +43,7 @@ class GLTFDocumentExtension;
 class GLTFLight;
 class GLTFMesh;
 class GLTFNode;
+class GLTFObjectModelProperty;
 class GLTFSkeleton;
 class GLTFSkin;
 class GLTFSpecGloss;
