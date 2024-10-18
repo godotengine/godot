@@ -186,7 +186,7 @@ License: MPL-2.0
 
 Files: ./thirdparty/clipper2/
 Comment: Clipper2
-Copyright: 2010-2023, Angus Johnson
+Copyright: 2010-2024, Angus Johnson
 License: BSL-1.0
 
 Files: ./thirdparty/cvtt/
