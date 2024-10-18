@@ -866,6 +866,9 @@ void BaseMaterial3D::_update_shader() {
 	if (flags[FLAG_DISABLE_FOG]) {
 		code += ", fog_disabled";
 	}
+	if (flags[FLAG_CLEARCOAT_NORMAL_MAP]) {
+		code += ",clearcoat_normal_map";
+	}
 
 	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
 		code += ", depth_prepass_alpha";
@@ -3208,6 +3211,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "clearcoat_enabled"), "set_feature", "get_feature", FEATURE_CLEARCOAT);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat", "get_clearcoat");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clearcoat_roughness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_clearcoat_roughness", "get_clearcoat_roughness");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "clearcoat_normal_map"), "set_flag", "get_flag", FLAG_CLEARCOAT_NORMAL_MAP);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clearcoat_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_CLEARCOAT);
 
 	ADD_GROUP("Anisotropy", "anisotropy_");
