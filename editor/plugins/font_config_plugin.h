@@ -38,6 +38,8 @@
 
 /*************************************************************************/
 
+class FontEditorPlugin;
+
 class EditorPropertyFontMetaObject : public RefCounted {
 	GDCLASS(EditorPropertyFontMetaObject, RefCounted);
 
@@ -259,7 +261,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	EditorPropertyFontNamesArray();
+	EditorPropertyFontNamesArray(FontEditorPlugin *p_ep);
 };
 
 /*************************************************************************/
@@ -267,9 +269,12 @@ public:
 class EditorInspectorPluginSystemFont : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginSystemFont, EditorInspectorPlugin);
 
+	FontEditorPlugin *ep = nullptr;
+
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
+	void set_plugin(FontEditorPlugin *p_ep) { ep = p_ep; }
 };
 
 /*************************************************************************/
@@ -277,9 +282,41 @@ public:
 class FontEditorPlugin : public EditorPlugin {
 	GDCLASS(FontEditorPlugin, EditorPlugin);
 
+	Thread thread;
+	Mutex fn;
+	RID viewport;
+	RID viewport_texture;
+	RID canvas;
+	RID canvas_item;
+	Semaphore preview_done;
+	SafeFlag previews_ready;
+	SafeFlag previews_abort;
+
+	struct FontInfo {
+		int id = 0;
+		String name;
+		bool separator = false;
+		Ref<Image> image;
+	};
+
+	int last_id = 0;
+	List<FontInfo> font_info;
+	List<ObjectID> menus_to_update;
+
+protected:
+	void _frame_started();
+	void _frame_done();
+	void _add_item(ObjectID p_menu_id, int p_id, const String &p_name, const Ref<Image> &p_image);
+
+	static void _thread_func(void *p_ud);
+	static void _thread_process_font(void *p_ud, const String &p_font);
+
 public:
 	FontEditorPlugin();
+	~FontEditorPlugin();
 
+	void populate_sysfont_popup(PopupMenu *p_menu);
+	void generate_sysfont_preview();
 	virtual String get_name() const override { return "Font"; }
 };
 

@@ -36,6 +36,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
+#include "scene/resources/image_texture.h"
+
 /*************************************************************************/
 /*  EditorPropertyFontMetaObject                                         */
 /*************************************************************************/
@@ -1017,30 +1019,21 @@ void EditorPropertyFontNamesArray::_add_font(int p_option) {
 	int previous_size = array.call("size");
 
 	array.call("resize", previous_size + 1);
-	array.set(previous_size, menu->get_item_text(p_option));
+	int idx = menu->get_item_index(p_option);
+	array.set(previous_size, menu->get_item_tooltip(idx));
 
 	emit_changed(get_edited_property(), array, "", false);
 	object->set_array(array);
 	update_property();
 }
 
-EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
+EditorPropertyFontNamesArray::EditorPropertyFontNamesArray(FontEditorPlugin *p_ep) {
 	menu = memnew(PopupMenu);
-	menu->add_item("Sans-Serif", 0);
-	menu->add_item("Serif", 1);
-	menu->add_item("Monospace", 2);
-	menu->add_item("Fantasy", 3);
-	menu->add_item("Cursive", 4);
 
-	menu->add_separator();
-
-	if (OS::get_singleton()) {
-		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
-		fonts.sort();
-		for (int i = 0; i < fonts.size(); i++) {
-			menu->add_item(fonts[i], i + 6);
-		}
+	if (p_ep) {
+		p_ep->populate_sysfont_popup(menu);
 	}
+
 	add_child(menu);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyFontNamesArray::_add_font));
 }
@@ -1055,7 +1048,7 @@ bool EditorInspectorPluginSystemFont::can_handle(Object *p_object) {
 
 bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "font_names") {
-		EditorPropertyFontNamesArray *editor = memnew(EditorPropertyFontNamesArray);
+		EditorPropertyFontNamesArray *editor = memnew(EditorPropertyFontNamesArray(ep));
 		editor->setup(p_type, p_hint_text);
 		add_property_editor(p_path, editor);
 		return true;
@@ -1067,16 +1060,198 @@ bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Var
 /* FontEditorPlugin                                                */
 /*************************************************************************/
 
+void FontEditorPlugin::_frame_started() {
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+
+	RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &FontEditorPlugin::_frame_done));
+}
+
+void FontEditorPlugin::_frame_done() {
+	preview_done.post();
+}
+
+void FontEditorPlugin::_thread_func(void *p_ud) {
+	FontEditorPlugin *ep = (FontEditorPlugin *)p_ud;
+
+	_thread_process_font(p_ud, "Sans-Serif");
+	_thread_process_font(p_ud, "Serif");
+	_thread_process_font(p_ud, "Monospace");
+	_thread_process_font(p_ud, "Fantasy");
+	_thread_process_font(p_ud, "Cursive");
+	_thread_process_font(p_ud, String());
+
+	Vector<String> fonts = OS::get_singleton()->get_system_fonts();
+	for (int i = 0; i < fonts.size(); i++) {
+		if (ep->previews_abort.is_set()) {
+			return;
+		}
+		_thread_process_font(p_ud, fonts[i]);
+	}
+
+	{
+		MutexLock lock(ep->fn);
+
+		ep->previews_ready.set();
+		ep->menus_to_update.clear();
+	}
+}
+
+void FontEditorPlugin::_thread_process_font(void *p_ud, const String &p_font) {
+	FontEditorPlugin *ep = (FontEditorPlugin *)p_ud;
+
+	Ref<Image> img;
+	if (!p_font.is_empty()) {
+		String font_path = OS::get_singleton()->get_system_font_path(p_font);
+
+		Ref<FontFile> sampled_font;
+		sampled_font.instantiate();
+		sampled_font->load_dynamic_font(font_path);
+		sampled_font->set_oversampling(1.0);
+
+		String sample;
+		Dictionary ot_strings = sampled_font->get_ot_name_strings();
+		if (ot_strings.has("sample_text")) {
+			sample = ot_strings["sample_text"];
+		} else {
+			static const String sample_base = U"漢字ԱբאבابܐܒހށआআਆઆଆஆఆಆആආกิກິༀကႠა한글ሀᎣᐁᚁᚠᜀᜠᝀᝠកᠠᤁᥐ😀🦄";
+			for (int i = 0; i < sample_base.length(); i++) {
+				if (sampled_font->has_char(sample_base[i])) {
+					sample += sample_base[i];
+					if (sample.length() > 10) {
+						break;
+					}
+				}
+			}
+		}
+
+		int font_size = EDITOR_GET("interface/editor/main_font_size").operator int() * EDSCALE;
+
+		Ref<TextLine> buffer_name;
+		buffer_name.instantiate();
+		if (sample.is_empty()) {
+			buffer_name->add_string(p_font, sampled_font, font_size);
+		} else {
+			buffer_name->add_string(vformat("%s (%s)", p_font, sample), sampled_font, font_size);
+		}
+
+		buffer_name->draw(ep->canvas_item, Point2(), Color(1, 1, 1));
+
+		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(ep, &FontEditorPlugin::_frame_started), Object::CONNECT_ONE_SHOT);
+
+		ep->preview_done.wait();
+
+		RS::get_singleton()->canvas_item_clear(ep->canvas_item);
+
+		img = RS::get_singleton()->texture_2d_get(ep->viewport_texture);
+		if (img.is_valid()) {
+			img->convert(Image::FORMAT_RGBA8);
+			img->crop(buffer_name->get_size().x, buffer_name->get_size().y);
+		}
+	}
+
+	{
+		MutexLock lock(ep->fn);
+
+		FontInfo fi;
+		fi.id = ep->last_id++;
+		fi.name = p_font;
+		fi.image = img;
+		fi.separator = p_font.is_empty();
+		ep->font_info.push_back(fi);
+		for (List<ObjectID>::Element *E = ep->menus_to_update.front(); E; E = E->next()) {
+			callable_mp(ep, &FontEditorPlugin::_add_item).call_deferred(E->get().operator uint64_t(), fi.id, fi.name, fi.image);
+		}
+	}
+}
+
+void FontEditorPlugin::_add_item(ObjectID p_menu_id, int p_id, const String &p_name, const Ref<Image> &p_image) {
+	PopupMenu *pm = Object::cast_to<PopupMenu>(ObjectDB::get_instance(p_menu_id));
+	if (pm) {
+		if (p_name.is_empty()) {
+			pm->add_separator();
+		} else {
+			pm->add_icon_item(ImageTexture::create_from_image(p_image), "", p_id);
+			int idx = pm->get_item_index(p_id);
+			pm->set_item_tooltip(idx, p_name);
+		}
+	}
+}
+
 FontEditorPlugin::FontEditorPlugin() {
+	previews_ready.clear();
+
 	Ref<EditorInspectorPluginFontVariation> fc_plugin;
 	fc_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fc_plugin);
 
 	Ref<EditorInspectorPluginSystemFont> fs_plugin;
 	fs_plugin.instantiate();
+	fs_plugin->set_plugin(this);
 	EditorInspector::add_inspector_plugin(fs_plugin);
 
 	Ref<EditorInspectorPluginFontPreview> fp_plugin;
 	fp_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fp_plugin);
+}
+
+void FontEditorPlugin::populate_sysfont_popup(PopupMenu *p_menu) {
+	generate_sysfont_preview();
+	{
+		MutexLock lock(fn);
+
+		for (List<FontEditorPlugin::FontInfo>::Element *E = font_info.front(); E; E = E->next()) {
+			const FontEditorPlugin::FontInfo &fi = E->get();
+			if (fi.separator) {
+				p_menu->add_separator();
+			} else {
+				p_menu->add_icon_item(ImageTexture::create_from_image(fi.image), "", fi.id);
+				int idx = p_menu->get_item_index(fi.id);
+				p_menu->set_item_tooltip(idx, fi.name);
+			}
+		}
+		if (!previews_ready.is_set()) {
+			menus_to_update.push_back(p_menu->get_instance_id());
+		}
+	}
+}
+
+void FontEditorPlugin::generate_sysfont_preview() {
+	if (previews_ready.is_set() || thread.is_started()) {
+		return;
+	}
+
+	viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_size(viewport, 500 * EDSCALE, 500 * EDSCALE);
+	RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+
+	canvas = RS::get_singleton()->canvas_create();
+	canvas_item = RS::get_singleton()->canvas_item_create();
+
+	RS::get_singleton()->viewport_attach_canvas(viewport, canvas);
+	RS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+
+	previews_abort.clear();
+
+	thread.start(_thread_func, this);
+}
+
+FontEditorPlugin::~FontEditorPlugin() {
+	previews_abort.set();
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
+
+	if (canvas_item.is_valid()) {
+		RS::get_singleton()->free(canvas_item);
+	}
+	if (canvas.is_valid()) {
+		RS::get_singleton()->free(canvas);
+	}
+	if (viewport.is_valid()) {
+		RS::get_singleton()->free(viewport);
+	}
 }
