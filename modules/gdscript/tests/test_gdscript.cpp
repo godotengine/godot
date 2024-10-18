@@ -194,6 +194,12 @@ static void recursively_disassemble_functions(const Ref<GDScript> script, const 
 			}
 			signature += arg_itr->name;
 		}
+		if (mi.flags & METHOD_FLAG_VARARG) {
+			if (!mi.arguments.is_empty()) {
+				signature += ", ";
+			}
+			signature += "..."; // `MethodInfo` does not support the rest parameter name.
+		}
 		print_line(signature + ")");
 #ifdef TOOLS_ENABLED
 		func->disassemble(p_lines);
