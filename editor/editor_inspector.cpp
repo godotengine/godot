@@ -1671,6 +1671,9 @@ void EditorInspectorSection::property_can_revert_changed(const String &p_path, b
 	if (has_revertable_properties() != had_revertable_properties) {
 		queue_redraw();
 	}
+	if (parent_section) {
+		parent_section->property_can_revert_changed(p_path, p_can_revert);
+	}
 }
 
 void EditorInspectorSection::_bind_methods() {
@@ -2842,7 +2845,7 @@ void EditorInspector::update_tree() {
 	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
 
-	HashMap<VBoxContainer *, HashMap<String, VBoxContainer *>> vbox_per_path;
+	HashMap<VBoxContainer *, HashMap<String, EditorInspectorSection *>> section_per_path;
 	HashMap<String, EditorInspectorArray *> editor_inspector_array_per_prefix;
 
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
@@ -3146,26 +3149,28 @@ void EditorInspector::update_tree() {
 			continue;
 		}
 
-		if (!vbox_per_path.has(root_vbox)) {
-			vbox_per_path[root_vbox] = HashMap<String, VBoxContainer *>();
-			vbox_per_path[root_vbox][""] = root_vbox;
+		if (!section_per_path.has(root_vbox)) {
+			section_per_path[root_vbox] = HashMap<String, EditorInspectorSection *>();
+			section_per_path[root_vbox][""] = nullptr;
 		}
 
 		VBoxContainer *current_vbox = root_vbox;
 		String acc_path = "";
+		String parent_section_path = "";
 		int level = 1;
 
 		Vector<String> components = path.split("/");
 		for (int i = 0; i < components.size(); i++) {
 			const String &component = components[i];
+			parent_section_path = acc_path;
 			acc_path += (i > 0) ? "/" + component : component;
 
-			if (!vbox_per_path[root_vbox].has(acc_path)) {
+			if (!section_per_path[root_vbox].has(acc_path)) {
 				// If the section does not exists, create it.
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
 				current_vbox->add_child(section);
 				sections.push_back(section);
-
+				section->set_parent_section(section_per_path[root_vbox][parent_section_path]);
 				String label;
 				String tooltip;
 
@@ -3200,10 +3205,10 @@ void EditorInspector::update_tree() {
 					_parse_added_editors(section->get_vbox(), section, ped);
 				}
 
-				vbox_per_path[root_vbox][acc_path] = section->get_vbox();
+				section_per_path[root_vbox][acc_path] = section;
 			}
 
-			current_vbox = vbox_per_path[root_vbox][acc_path];
+			current_vbox = section_per_path[root_vbox][acc_path] ? section_per_path[root_vbox][acc_path]->get_vbox() : root_vbox;
 			level = (MIN(level + 1, 4));
 		}
 
