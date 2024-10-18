@@ -3275,10 +3275,10 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		p_output.append(CLOSE_BLOCK_L1);
 
-		// Generate On{EventName} method to raise the event.
+		// Generate EmitSignal{EventName} method to raise the event.
 		if (!p_itype.is_singleton) {
 			p_output.append(MEMBER_BEGIN "protected void ");
-			p_output << "On" << p_isignal.proxy_name;
+			p_output << "EmitSignal" << p_isignal.proxy_name;
 			if (is_parameterless) {
 				p_output.append("()\n" OPEN_BLOCK_L1 INDENT2);
 				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ");\n";

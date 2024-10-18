@@ -32,7 +32,7 @@ partial class EventSignals
         add => backing_MySignal += value;
         remove => backing_MySignal -= value;
 }
-    protected void OnMySignal(string str, int num)
+    protected void EmitSignalMySignal(string str, int num)
     {
         EmitSignal(SignalName.MySignal, str, num);
     }
