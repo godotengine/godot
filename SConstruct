@@ -272,6 +272,8 @@ opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
+opts.Add("cache_path", "Path to the directory to use for the SCons cache, if left empty cache is not used", "")
+opts.Add("cache_limit", "Limit, in MB, for the SCons cache (default 1 GB)", 1024)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -616,6 +618,10 @@ if env["production"]:
 
 if env["strict_checks"]:
     env.Append(CPPDEFINES=["STRICT_CHECKS"])
+
+# Fetch cache configuration from the environment if present and unconfigured.
+env["cache_path"] = ARGUMENTS.get("cache_path", os.environ.get("SCONS_CACHE", ""))
+env["cache_limit"] = ARGUMENTS.get("cache_limit", os.environ.get("SCONS_CACHE_LIMIT", 1024))
 
 # Run SCU file generation script if in a SCU build.
 if env["scu_build"]:
@@ -1048,10 +1054,9 @@ GLSL_BUILDERS = {
 }
 env.Append(BUILDERS=GLSL_BUILDERS)
 
-scons_cache_path = os.environ.get("SCONS_CACHE")
-if scons_cache_path is not None:
-    CacheDir(scons_cache_path)
-    print("Scons cache enabled... (path: '" + scons_cache_path + "')")
+if env["cache_path"] != "":
+    CacheDir(env["cache_path"])
+    print("Scons cache enabled... (path: '" + env["cache_path"] + "')")
 
 if env["vsproj"]:
     env.vs_incs = []
