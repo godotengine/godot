@@ -30,7 +30,6 @@
 
 #ifndef TILE_MAP_LAYER_H
 #define TILE_MAP_LAYER_H
-
 #include "scene/resources/2d/tile_set.h"
 
 class TileSetAtlasSource;
@@ -90,7 +89,7 @@ public:
 
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
-	TerrainConstraint() {}
+	TerrainConstraint() {};
 };
 
 #ifdef DEBUG_ENABLED
@@ -275,7 +274,7 @@ private:
 
 	// Properties.
 	HashMap<Vector2i, CellData> tile_map_layer_data;
-
+	Vector<TileMapLayer *> tile_map_layers_in_scene;
 	bool enabled = true;
 	Ref<TileSet> tile_set;
 
@@ -446,6 +445,7 @@ public:
 	bool is_cell_transposed(const Vector2i &p_coords) const;
 
 	// Patterns.
+
 	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
