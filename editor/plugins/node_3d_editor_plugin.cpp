@@ -696,6 +696,21 @@ float Node3DEditorViewport::get_fov() const {
 	return CLAMP(spatial_editor->get_fov() * cursor.fov_scale, MIN_FOV, MAX_FOV);
 }
 
+void Node3DEditorViewport::clear_selection() {
+	if (selection_in_progress) {
+		selection_in_progress = false;
+
+		if (cursor.region_select) {
+			Vector2 center = surface->get_global_position() + (surface->get_size() / 2);
+			cursor.region_begin = center;
+			cursor.region_end = center;
+			cursor.region_select = false;
+			_select_region();
+			surface->queue_redraw();
+		}
+	}
+}
+
 Transform3D Node3DEditorViewport::_get_camera_transform() const {
 	return camera->get_global_transform();
 }
@@ -1721,6 +1736,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
 
+				// cancel select
+				if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+					clear_selection();
+				}
+
 				if (_edit.mode == TRANSFORM_NONE && b->is_pressed()) {
 					if (orbit_mouse_preference == NAVIGATION_RIGHT_MOUSE && _is_nav_modifier_pressed("spatial_editor/viewport_orbit_modifier_1") && _is_nav_modifier_pressed("spatial_editor/viewport_orbit_modifier_2")) {
 						break;
@@ -1959,17 +1979,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
-						selection_in_progress = false;
-
 						if (clicked.is_valid()) {
 							_select_clicked(false);
 						}
 
-						if (cursor.region_select) {
-							_select_region();
-							cursor.region_select = false;
-							surface->queue_redraw();
-						}
+						clear_selection();
 					}
 
 					if (!_edit.instant && _edit.mode != TRANSFORM_NONE) {
@@ -2441,6 +2455,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
 			set_freelook_active(!is_freelook_active());
 
+			if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+				clear_selection();
+			}
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			set_freelook_active(false);
 		}
@@ -3202,6 +3219,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_remove_preview_node();
 			}
 		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (freelook_active) {
+				set_freelook_active(false);
+			}
+
+			clear_selection();
+		} break;
 	}
 }
 
@@ -3246,7 +3271,7 @@ void Node3DEditorViewport::_draw() {
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
 	}
 
-	if (cursor.region_select) {
+	if (cursor.region_select && selection_in_progress) {
 		const Rect2 selection_rect = Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin);
 
 		surface->draw_rect(
