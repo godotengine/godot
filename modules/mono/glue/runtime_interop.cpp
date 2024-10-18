@@ -375,6 +375,10 @@ void godotsharp_ref_destroy(Ref<RefCounted> *p_instance) {
 	p_instance->~Ref();
 }
 
+void godotsharp_ref_to_var(const Ref<RefCounted> *p_ref, Variant *r_dest) {
+	*r_dest = Variant(p_ref->ptr());
+}
+
 void godotsharp_string_name_new_from_string(StringName *r_dest, const String *p_name) {
 	memnew_placement(r_dest, StringName(*p_name));
 }
@@ -1207,6 +1211,42 @@ void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
 	p_self->make_read_only();
 }
 
+void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, const StringName *p_key_class_name, const Variant *p_key_script, uint32_t p_value_type, const StringName *p_value_class_name, const Variant *p_value_script) {
+	p_self->set_typed(p_key_type, *p_key_class_name, *p_key_script, p_value_type, *p_value_class_name, *p_value_script);
+}
+
+bool godotsharp_dictionary_is_typed_key(const Dictionary *p_self) {
+	return p_self->is_typed_key();
+}
+
+bool godotsharp_dictionary_is_typed_value(const Dictionary *p_self) {
+	return p_self->is_typed_value();
+}
+
+uint32_t godotsharp_dictionary_get_typed_key_builtin(const Dictionary *p_self) {
+	return p_self->get_typed_key_builtin();
+}
+
+uint32_t godotsharp_dictionary_get_typed_value_builtin(const Dictionary *p_self) {
+	return p_self->get_typed_value_builtin();
+}
+
+void godotsharp_dictionary_get_typed_key_class_name(const Dictionary *p_self, StringName *r_dest) {
+	memnew_placement(r_dest, StringName(p_self->get_typed_key_class_name()));
+}
+
+void godotsharp_dictionary_get_typed_value_class_name(const Dictionary *p_self, StringName *r_dest) {
+	memnew_placement(r_dest, StringName(p_self->get_typed_value_class_name()));
+}
+
+void godotsharp_dictionary_get_typed_key_script(const Dictionary *p_self, Variant *r_dest) {
+	memnew_placement(r_dest, Variant(p_self->get_typed_key_script()));
+}
+
+void godotsharp_dictionary_get_typed_value_script(const Dictionary *p_self, Variant *r_dest) {
+	memnew_placement(r_dest, Variant(p_self->get_typed_value_script()));
+}
+
 void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
@@ -1470,6 +1510,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_filter_godot_objects_by_non_native,
 	(void *)godotsharp_ref_new_from_ref_counted_ptr,
 	(void *)godotsharp_ref_destroy,
+	(void *)godotsharp_ref_to_var,
 	(void *)godotsharp_string_name_new_from_string,
 	(void *)godotsharp_node_path_new_from_string,
 	(void *)godotsharp_string_name_as_string,
@@ -1610,6 +1651,15 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_make_read_only,
+	(void *)godotsharp_dictionary_set_typed,
+	(void *)godotsharp_dictionary_is_typed_key,
+	(void *)godotsharp_dictionary_is_typed_value,
+	(void *)godotsharp_dictionary_get_typed_key_builtin,
+	(void *)godotsharp_dictionary_get_typed_value_builtin,
+	(void *)godotsharp_dictionary_get_typed_key_class_name,
+	(void *)godotsharp_dictionary_get_typed_value_class_name,
+	(void *)godotsharp_dictionary_get_typed_key_script,
+	(void *)godotsharp_dictionary_get_typed_value_script,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
