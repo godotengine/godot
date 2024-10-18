@@ -809,9 +809,11 @@
 			<param index="1" name="can_drop_func" type="Callable" />
 			<param index="2" name="drop_func" type="Callable" />
 			<description>
-				Forwards the handling of this control's [method _get_drag_data],  [method _can_drop_data] and [method _drop_data] virtual functions to delegate callables.
-				For each argument, if not empty, the delegate callable is used, otherwise the local (virtual) function is used.
-				The function format for each callable should be exactly the same as the virtual functions described above.
+				Sets the given callables to be used instead of the control's own drag-and-drop virtual methods. If a callable is empty, its respective virtual method is used as normal.
+				The arguments for each callable should be exactly the same as their respective virtual methods, which would be:
+				- [param drag_func] corresponds to [method _get_drag_data] and requires a [Vector2];
+				- [param can_drop_func] corresponds to [method _can_drop_data] and requires both a [Vector2] and a [Variant];
+				- [param drop_func] corresponds to [method _drop_data] and requires both a [Vector2] and a [Variant].
 			</description>
 		</method>
 		<method name="set_drag_preview">

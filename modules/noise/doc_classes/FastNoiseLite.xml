@@ -118,7 +118,7 @@
 			Manhattan distance (taxicab metric) to the nearest point.
 		</constant>
 		<constant name="DISTANCE_HYBRID" value="3" enum="CellularDistanceFunction">
-			Blend of [constant DISTANCE_EUCLIDEAN] and [constant DISTANCE_MANHATTAN] to give curved cell boundaries
+			Blend of [constant DISTANCE_EUCLIDEAN] and [constant DISTANCE_MANHATTAN] to give curved cell boundaries.
 		</constant>
 		<constant name="RETURN_CELL_VALUE" value="0" enum="CellularReturnType">
 			The cellular distance function will return the same value for all points within a cell.

@@ -277,7 +277,11 @@
 			HTTP status code [code]102 Processing[/code] (WebDAV). Indicates that the server has received and is processing the request, but no response is available yet.
 		</constant>
 		<constant name="RESPONSE_OK" value="200" enum="ResponseCode">
-			HTTP status code [code]200 OK[/code]. The request has succeeded. Default response for successful requests. Meaning varies depending on the request. GET: The resource has been fetched and is transmitted in the message body. HEAD: The entity headers are in the message body. POST: The resource describing the result of the action is transmitted in the message body. TRACE: The message body contains the request message as received by the server.
+			HTTP status code [code]200 OK[/code]. The request has succeeded. Default response for successful requests. Meaning varies depending on the request:
+			- [constant METHOD_GET]: The resource has been fetched and is transmitted in the message body.
+			- [constant METHOD_HEAD]: The entity headers are in the message body.
+			- [constant METHOD_POST]: The resource describing the result of the action is transmitted in the message body.
+			- [constant METHOD_TRACE]: The message body contains the request message as received by the server.
 		</constant>
 		<constant name="RESPONSE_CREATED" value="201" enum="ResponseCode">
 			HTTP status code [code]201 Created[/code]. The request has succeeded and a new resource has been created as a result of it. This is typically the response sent after a PUT request.

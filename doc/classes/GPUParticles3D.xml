@@ -160,8 +160,8 @@
 	<signals>
 		<signal name="finished">
 			<description>
-				Emitted when all active particles have finished processing. To immediately emit new particles, call [method restart].
-				Never emitted when [member one_shot] is disabled, as particles will be emitted and processed continuously.
+				Emitted when all active particles have finished processing. To immediately restart the emission cycle, call [method restart].
+				This signal is never emitted when [member one_shot] is disabled, as particles will be emitted and processed continuously.
 				[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the signal during which setting [member emitting] to [code]true[/code] will not restart the emission cycle. This delay is avoided by instead calling [method restart].
 			</description>
 		</signal>
