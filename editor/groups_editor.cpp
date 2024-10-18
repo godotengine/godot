@@ -613,6 +613,7 @@ void GroupsEditor::_show_add_group_dialog() {
 	if (!add_group_dialog) {
 		add_group_dialog = memnew(ConfirmationDialog);
 		add_group_dialog->set_title(TTR("Create New Group"));
+		add_group_dialog->set_ok_button_text(TTR("Create"));
 		add_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_add));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
