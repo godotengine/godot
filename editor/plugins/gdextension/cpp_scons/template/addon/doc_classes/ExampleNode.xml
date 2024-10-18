@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ExampleNode" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		GDExtension example node.
+	</brief_description>
+	<description>
+		An example node that demonstrates how to create a node in GDExtension. This example node can also be compiled as a module.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="hello" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns either "Hello, World! From GDExtension." if compiled as GDExtension or "Hello, World! From a module." if compiled as a module.
+			</description>
+		</method>
+	</methods>
+</class>
