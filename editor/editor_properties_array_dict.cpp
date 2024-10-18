@@ -641,8 +641,7 @@ Node *EditorPropertyArray::get_base_node() {
 
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			change_type->clear();
 			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
 			change_type->add_separator();
@@ -1211,8 +1210,7 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			change_type->clear();
 			change_type->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Remove Item"), Variant::VARIANT_MAX);
 			change_type->add_separator();
@@ -1456,8 +1454,7 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 
 void EditorPropertyLocalizableString::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add_item) {
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
 			}
