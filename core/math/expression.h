@@ -51,6 +51,8 @@ private:
 
 	bool sequenced = false;
 	int str_ofs = 0;
+	bool expect_commas = false;
+	bool previous_expect_commas = false;
 	bool expression_dirty = false;
 
 	bool _compile_expression();

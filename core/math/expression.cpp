@@ -362,13 +362,15 @@ Error Expression::_get_token(Token &r_token) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
 									is_float = true;
+								} else if (c == '_') {
+									/*Ignore underscores*/
 								} else {
 									reading = READING_DONE;
 								}
 
 							} break;
 							case READING_BIN: {
-								if (bin_beg && !is_binary_digit(c)) {
+								if (bin_beg && !is_binary_digit(c) && c != '_') {
 									reading = READING_DONE;
 								} else if (c == 'b') {
 									bin_beg = true;
@@ -376,7 +378,7 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_HEX: {
-								if (hex_beg && !is_hex_digit(c)) {
+								if (hex_beg && !is_hex_digit(c) && c != '_') {
 									reading = READING_DONE;
 								} else if (c == 'x') {
 									hex_beg = true;
@@ -387,6 +389,8 @@ Error Expression::_get_token(Token &r_token) {
 								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
+								} else if (c == '_') {
+									/*Ignore underscores*/
 								} else {
 									reading = READING_DONE;
 								}
@@ -399,6 +403,8 @@ Error Expression::_get_token(Token &r_token) {
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
 									exp_sign = true;
 
+								} else if (c == '_') {
+									/*Ignore underscores*/
 								} else {
 									reading = READING_DONE;
 								}
@@ -408,7 +414,10 @@ Error Expression::_get_token(Token &r_token) {
 						if (reading == READING_DONE) {
 							break;
 						}
-						num += String::chr(c);
+
+						if (c != '_') { //Ignore underscores within a number
+							num += String::chr(c);
+						}
 						c = GET_CHAR();
 						is_first_char = false;
 					}
@@ -439,7 +448,8 @@ Error Expression::_get_token(Token &r_token) {
 						cchar = GET_CHAR();
 					}
 
-					str_ofs--; //go back one
+					if (str_ofs != expression.length())
+						str_ofs--; //go back one if current identifier isn't at the end of the expression
 
 					if (id == "in") {
 						r_token.type = TK_OP_IN;
@@ -472,6 +482,14 @@ Error Expression::_get_token(Token &r_token) {
 						r_token.type = TK_OP_AND;
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
+					} else if (id == "if") {
+						_set_error("Invalid identifier \"if\"");
+						r_token.type = TK_ERROR;
+						return ERR_PARSE_ERROR;
+					} else if (id == "else") {
+						_set_error("Invalid identifier \"else\"");
+						r_token.type = TK_ERROR;
+						return ERR_PARSE_ERROR;
 					} else {
 						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 							if (id == Variant::get_type_name(Variant::Type(i))) {
@@ -571,6 +589,8 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_CURLY_BRACKET_OPEN: {
 				//a dictionary
 				DictionaryNode *dn = alloc_node<DictionaryNode>();
+				previous_expect_commas = expect_commas;
+				expect_commas = true;
 
 				while (true) {
 					int cofs = str_ofs;
@@ -611,11 +631,13 @@ Expression::ENode *Expression::_parse_expression() {
 				}
 
 				expr = dn;
+				expect_commas = previous_expect_commas;
 			} break;
 			case TK_BRACKET_OPEN: {
 				//an array
-
 				ArrayNode *an = alloc_node<ArrayNode>();
+				previous_expect_commas = expect_commas;
+				expect_commas = true;
 
 				while (true) {
 					int cofs = str_ofs;
@@ -643,6 +665,7 @@ Expression::ENode *Expression::_parse_expression() {
 				}
 
 				expr = an;
+				expect_commas = previous_expect_commas;
 			} break;
 			case TK_PARENTHESIS_OPEN: {
 				//a suexpression
@@ -670,6 +693,8 @@ Expression::ENode *Expression::_parse_expression() {
 					func_call->method = identifier;
 					SelfNode *self_node = alloc_node<SelfNode>();
 					func_call->base = self_node;
+					previous_expect_commas = expect_commas;
+					expect_commas = true;
 
 					while (true) {
 						int cofs2 = str_ofs;
@@ -698,6 +723,7 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 
 					expr = func_call;
+					expect_commas = previous_expect_commas;
 				} else {
 					//named indexing
 					str_ofs = cofs;
@@ -739,8 +765,10 @@ Expression::ENode *Expression::_parse_expression() {
 			} break;
 			case TK_BASIC_TYPE: {
 				//constructor..
-
 				Variant::Type bt = Variant::Type(int(tk.value));
+				previous_expect_commas = expect_commas;
+				expect_commas = true;
+
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
@@ -777,12 +805,13 @@ Expression::ENode *Expression::_parse_expression() {
 				}
 
 				expr = constructor;
-
+				expect_commas = previous_expect_commas;
 			} break;
 			case TK_BUILTIN_FUNC: {
 				//builtin function
-
 				StringName func = tk.value;
+				previous_expect_commas = expect_commas;
+				expect_commas = true;
 
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
@@ -827,7 +856,7 @@ Expression::ENode *Expression::_parse_expression() {
 				}
 
 				expr = bifunc;
-
+				expect_commas = previous_expect_commas;
 			} break;
 			case TK_OP_SUB: {
 				ExpressionNode e;
@@ -885,6 +914,9 @@ Expression::ENode *Expression::_parse_expression() {
 				} break;
 				case TK_PERIOD: {
 					//named indexing or function call
+					previous_expect_commas = expect_commas;
+					expect_commas = true;
+
 					_get_token(tk);
 					if (tk.type != TK_IDENTIFIER && tk.type != TK_BUILTIN_FUNC) {
 						_set_error("Expected identifier after '.'");
@@ -928,6 +960,7 @@ Expression::ENode *Expression::_parse_expression() {
 						}
 
 						expr = func_call;
+						expect_commas = previous_expect_commas;
 					} else {
 						//named indexing
 						str_ofs = cofs;
@@ -1034,6 +1067,17 @@ Expression::ENode *Expression::_parse_expression() {
 				break;
 			case TK_OP_BIT_INVERT:
 				op = Variant::OP_BIT_NEGATE;
+				break;
+			case TK_IDENTIFIER:
+			case TK_CONSTANT:
+				// There's 2 consecutive constants/identifiers
+				_set_error("Expected operator.");
+				return nullptr;
+			case TK_COMMA:
+				if (!expect_commas) {
+					_set_error("Unexpected ','");
+					return nullptr;
+				}
 				break;
 			default: {
 			}
@@ -1473,6 +1517,8 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	error_str = String();
 	error_set = false;
 	str_ofs = 0;
+	expect_commas = false;
+	previous_expect_commas = false;
 	input_names = p_input_names;
 
 	expression = p_expression;
