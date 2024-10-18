@@ -32,6 +32,7 @@
 #define GDSCRIPT_COMPILER_H
 
 #include "gdscript.h"
+#include "gdscript_analyzer.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
 #include "gdscript_parser.h"
