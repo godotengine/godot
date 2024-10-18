@@ -2944,7 +2944,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 		}
 
-		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
+		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.155, 0.151, 0.236));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 		if (p_show_boot_logo) {

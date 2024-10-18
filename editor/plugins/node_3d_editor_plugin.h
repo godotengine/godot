@@ -807,6 +807,7 @@ private:
 	Label *environ_title = nullptr;
 	VBoxContainer *environ_vb = nullptr;
 	ColorPickerButton *environ_sky_color = nullptr;
+	ColorPickerButton *environ_hz_color = nullptr;
 	ColorPickerButton *environ_ground_color = nullptr;
 	EditorSpinSlider *environ_energy = nullptr;
 	Button *environ_ao_button = nullptr;
