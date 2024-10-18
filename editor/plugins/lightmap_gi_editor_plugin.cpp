@@ -93,10 +93,13 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 				file_dialog->popup_file_dialog();
 			} break;
 			case LightmapGI::BAKE_ERROR_NO_MESHES: {
-				EditorNode::get_singleton()->show_warning(TTR("No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake Light' flag is on."));
+				EditorNode::get_singleton()->show_warning(
+						TTR("No meshes with lightmapping support to bake. Make sure they contain UV2 data and their Global Illumination property is set to Static.") +
+						String::utf8("\n\n•  ") + TTR("To import scenes with lightmapping support, set Meshes > Light Baking to Static Lightmaps in the Import dock.") +
+						String::utf8("\n•  ") + TTR("To enable lightmapping support on primitive meshes, edit the PrimitiveMesh resource in the inspector and check Add UV2."));
 			} break;
 			case LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE: {
-				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images, make sure path is writable."));
+				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images. Make sure the lightmap destination path is writable."));
 			} break;
 			case LightmapGI::BAKE_ERROR_NO_SCENE_ROOT: {
 				EditorNode::get_singleton()->show_warning(TTR("No editor scene root found."));
@@ -108,7 +111,7 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 				EditorNode::get_singleton()->show_warning(TTR("Maximum texture size is too small for the lightmap images.\nWhile this can be fixed by increasing the maximum texture size, it is recommended you split the scene into more objects instead."));
 			} break;
 			case LightmapGI::BAKE_ERROR_LIGHTMAP_TOO_SMALL: {
-				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images. Make sure all meshes selected to bake have `lightmap_size_hint` value set high enough, and `texel_scale` value of LightmapGI is not too low."));
+				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images. Make sure all meshes to bake have the Lightmap Size Hint property set high enough, and the LightmapGI's Texel Scale value is not too low."));
 			} break;
 			case LightmapGI::BAKE_ERROR_ATLAS_TOO_SMALL: {
 				EditorNode::get_singleton()->show_warning(TTR("Failed fitting a lightmap image into an atlas. This should never happen and should be reported."));
