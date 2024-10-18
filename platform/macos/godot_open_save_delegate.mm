@@ -125,7 +125,7 @@
 					for (int j = 0; j < filter_slice_count; j++) {
 						String str = (flt.get_slice(",", j).strip_edges());
 						if (!str.is_empty()) {
-							[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+							[type_filters addObject:[NSString stringWithUTF8String:str.remove_string("*.").strip_edges().utf8().get_data()]];
 						}
 					}
 
@@ -153,7 +153,7 @@
 				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
 					if (!str.is_empty()) {
-						[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+						[type_filters addObject:[NSString stringWithUTF8String:str.remove_string("*.").strip_edges().utf8().get_data()]];
 					}
 				}
 

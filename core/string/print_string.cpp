@@ -105,15 +105,15 @@ void __print_line_rich(const String &p_string) {
 	p_string_ansi = p_string_ansi.replace("[/s]", "\u001b[29m");
 
 	p_string_ansi = p_string_ansi.replace("[indent]", "    ");
-	p_string_ansi = p_string_ansi.replace("[/indent]", "");
+	p_string_ansi = p_string_ansi.remove_string("[/indent]");
 	p_string_ansi = p_string_ansi.replace("[code]", "\u001b[2m");
 	p_string_ansi = p_string_ansi.replace("[/code]", "\u001b[22m");
-	p_string_ansi = p_string_ansi.replace("[url]", "");
-	p_string_ansi = p_string_ansi.replace("[/url]", "");
+	p_string_ansi = p_string_ansi.remove_string("[url]");
+	p_string_ansi = p_string_ansi.remove_string("[/url]");
 	p_string_ansi = p_string_ansi.replace("[center]", "\n\t\t\t");
-	p_string_ansi = p_string_ansi.replace("[/center]", "");
+	p_string_ansi = p_string_ansi.remove_string("[/center]");
 	p_string_ansi = p_string_ansi.replace("[right]", "\n\t\t\t\t\t\t");
-	p_string_ansi = p_string_ansi.replace("[/right]", "");
+	p_string_ansi = p_string_ansi.remove_string("[/right]");
 
 	if (p_string_ansi.contains("[color")) {
 		p_string_ansi = p_string_ansi.replace("[color=black]", "\u001b[30m");
