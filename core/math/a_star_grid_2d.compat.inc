@@ -40,9 +40,19 @@ Vector<Vector2> AStarGrid2D::_get_point_path_bind_compat_88047(const Vector2i &p
 	return get_point_path(p_from_id, p_to_id, false);
 }
 
+TypedArray<Vector2i> AStarGrid2D::_get_id_path_bind_compat_98324(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
+	return get_id_path(p_from_id, p_to_id, p_allow_partial_path, 1);
+}
+
+Vector<Vector2> AStarGrid2D::_get_point_path_bind_compat_98324(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
+	return get_point_path(p_from_id, p_to_id, p_allow_partial_path, 1);
+}
+
 void AStarGrid2D::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStarGrid2D::_get_id_path_bind_compat_88047);
 	ClassDB::bind_compatibility_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStarGrid2D::_get_point_path_bind_compat_88047);
+	ClassDB::bind_compatibility_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::_get_id_path_bind_compat_98324, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::_get_point_path_bind_compat_98324, DEFVAL(false));
 }
 
 #endif // DISABLE_DEPRECATED

@@ -76,8 +76,9 @@
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<param index="2" name="allow_partial_path" type="bool" default="false" />
+			<param index="3" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the IDs of the points that form the path found by AStar2D between the given points using the given [param navigation_layers]. The array is ordered from the starting point to the ending point of the path.
 				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 				[b]Note:[/b] When [param allow_partial_path] is [code]true[/code] and [param to_id] is solid the search may take an unusually long time to finish.
 			</description>
@@ -89,13 +90,21 @@
 				Returns an array of dictionaries with point data ([code]id[/code]: [Vector2i], [code]position[/code]: [Vector2], [code]solid[/code]: [bool], [code]weight_scale[/code]: [float]) within a [param region].
 			</description>
 		</method>
+		<method name="get_point_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="Vector2i" />
+			<description>
+				Returns the navigation layers bitmask for the specified point.
+			</description>
+		</method>
 		<method name="get_point_path">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<param index="2" name="allow_partial_path" type="bool" default="false" />
+			<param index="3" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns an array with the points that are in the path found by [AStarGrid2D] between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the points that are in the path found by [AStarGrid2D] between the given points using the given [param navigation_layers]. The array is ordered from the starting point to the ending point of the path.
 				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.
 				Additionally, when [param allow_partial_path] is [code]true[/code] and [param to_id] is solid the search may take an unusually long time to finish.
@@ -141,6 +150,14 @@
 			<param index="0" name="id" type="Vector2i" />
 			<description>
 				Returns [code]true[/code] if a point is disabled for pathfinding. By default, all points are enabled.
+			</description>
+		</method>
+		<method name="set_point_layers">
+			<return type="void" />
+			<param index="0" name="id" type="Vector2i" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Sets the points navigation layers with the given [param navigation_layers] bitmask.
 			</description>
 		</method>
 		<method name="set_point_solid">

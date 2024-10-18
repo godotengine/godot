@@ -60,6 +60,7 @@ class AStar3D : public RefCounted {
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+		uint32_t point_layers = 1;
 
 		// Used for getting closest_point_of_last_pathing_call.
 		real_t abs_g_score = 0;
@@ -115,7 +116,7 @@ class AStar3D : public RefCounted {
 	HashSet<Segment, Segment> segments;
 	Point *last_closest_point = nullptr;
 
-	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
+	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path, uint32_t p_point_layers);
 
 protected:
 	static void _bind_methods();
@@ -129,13 +130,17 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
 	Vector<Vector3> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	void _add_point_bind_compat_98324(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
+	int64_t _get_closest_point_bind_compat_98324(const Vector3 &p_point, bool p_include_disabled = false) const;
+	Vector<int64_t> _get_id_path_bind_compat_98324(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<Vector3> _get_point_path_bind_compat_98324(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	static void _bind_compatibility_methods();
 #endif
 
 public:
 	int64_t get_available_point_id() const;
 
-	void add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
+	void add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale = 1, uint32_t p_point_layers = 1);
 	Vector3 get_point_position(int64_t p_id) const;
 	void set_point_position(int64_t p_id, const Vector3 &p_pos);
 	real_t get_point_weight_scale(int64_t p_id) const;
@@ -148,6 +153,9 @@ public:
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
 
+	void set_point_layers(int64_t p_id, uint32_t p_point_layers);
+	uint32_t get_point_layers(int64_t p_id) const;
+
 	void connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional = true);
 	void disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectional = true);
 	bool are_points_connected(int64_t p_id, int64_t p_with_id, bool bidirectional = true) const;
@@ -157,11 +165,11 @@ public:
 	void reserve_space(int64_t p_num_nodes);
 	void clear();
 
-	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
+	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false, uint32_t p_point_layers = 1) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false, uint32_t p_point_layers = 1);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false, uint32_t p_point_layers = 1);
 
 	AStar3D() {}
 	~AStar3D();
@@ -171,7 +179,7 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path);
+	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path, uint32_t p_point_layers);
 
 protected:
 	static void _bind_methods();
@@ -185,13 +193,17 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
 	Vector<Vector2> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	void _add_point_bind_compat_98324(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale = 1);
+	int64_t _get_closest_point_bind_compat_98324(const Vector2 &p_point, bool p_include_disabled = false) const;
+	Vector<int64_t> _get_id_path_bind_compat_98324(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<Vector2> _get_point_path_bind_compat_98324(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 	static void _bind_compatibility_methods();
 #endif
 
 public:
 	int64_t get_available_point_id() const;
 
-	void add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale = 1);
+	void add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale = 1, uint32_t p_point_layers = 1);
 	Vector2 get_point_position(int64_t p_id) const;
 	void set_point_position(int64_t p_id, const Vector2 &p_pos);
 	real_t get_point_weight_scale(int64_t p_id) const;
@@ -204,6 +216,9 @@ public:
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
 
+	void set_point_layers(int64_t p_id, uint32_t p_point_layers);
+	uint32_t get_point_layers(int64_t p_id) const;
+
 	void connect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional = true);
 	void disconnect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional = true);
 	bool are_points_connected(int64_t p_id, int64_t p_with_id, bool p_bidirectional = true) const;
@@ -213,11 +228,11 @@ public:
 	void reserve_space(int64_t p_num_nodes);
 	void clear();
 
-	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
+	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false, uint32_t p_point_layers = 1) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
-	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false, uint32_t p_point_layers = 1);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false, uint32_t p_point_layers = 1);
 
 	AStar2D() {}
 	~AStar2D() {}
