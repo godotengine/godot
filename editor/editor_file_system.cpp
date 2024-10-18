@@ -2079,15 +2079,17 @@ void EditorFileSystem::_update_script_documentation() {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
-				bool should_reload_script = _should_reload_script(path);
 				Ref<Script> scr = ResourceLoader::load(path);
 				if (scr.is_null()) {
 					continue;
 				}
-				if (should_reload_script) {
-					// Reloading the script from disk. Otherwise, the ResourceLoader::load will
-					// return the last loaded version of the script (without the modifications).
-					scr->reload_from_file();
+				if (lang->get_name() != "C#") {
+					bool should_reload_script = _should_reload_script(path);
+					if (should_reload_script) {
+						// Reloading the script from disk. Otherwise, the ResourceLoader::load will
+						// return the last loaded version of the script (without the modifications).
+						scr->reload_from_file();
+					}
 				}
 				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
 					EditorHelp::get_doc_data()->add_doc(cd);
