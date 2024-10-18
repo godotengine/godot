@@ -183,6 +183,17 @@ ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {
 	return update_mode;
 }
 
+void ReflectionProbe::set_priority(int p_priority) {
+	ERR_FAIL_INDEX_MSG(p_priority, 101, "Probe priority should be a value between 0 and 100"); // should be between 0 - 100
+	priority = p_priority;
+
+	RS::get_singleton()->reflection_probe_set_priority(probe, p_priority);
+}
+
+int ReflectionProbe::get_priority() const {
+	return priority;
+}
+
 AABB ReflectionProbe::get_aabb() const {
 	AABB aabb;
 	aabb.position = -origin_offset;
@@ -241,6 +252,9 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &ReflectionProbe::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &ReflectionProbe::get_update_mode);
 
+	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &ReflectionProbe::set_priority);
+	ClassDB::bind_method(D_METHOD("get_priority"), &ReflectionProbe::get_priority);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp,suffix:m"), "set_max_distance", "get_max_distance");
@@ -252,6 +266,7 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "reflection_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_reflection_mask", "get_reflection_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,100,1"), "set_priority", "get_priority");
 
 	ADD_GROUP("Ambient", "ambient_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,Constant Color"), "set_ambient_mode", "get_ambient_mode");
