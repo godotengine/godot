@@ -162,10 +162,10 @@ public:
 	PopupMenu *get_export_as_menu();
 
 	void set_input_event_forwarding_always_enabled();
-	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }
+	bool is_input_event_forwarding_always_enabled() const { return input_event_forwarding_always_enabled; }
 
 	void set_force_draw_over_forwarding_enabled();
-	bool is_force_draw_over_forwarding_enabled() { return force_draw_over_forwarding_enabled; }
+	bool is_force_draw_over_forwarding_enabled() const { return force_draw_over_forwarding_enabled; }
 
 	void notify_main_screen_changed(const String &screen_name);
 	void notify_scene_changed(const Node *scn_root);
@@ -257,7 +257,7 @@ public:
 	void disable_plugin();
 
 	EditorPlugin() {}
-	virtual ~EditorPlugin() {}
+	~EditorPlugin() override {}
 };
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
@@ -282,7 +282,7 @@ class EditorPlugins {
 public:
 	static int get_plugin_count() { return creation_func_count; }
 	static EditorPlugin *create(int p_idx) {
-		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
+		(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx]();
 	}
 
@@ -292,7 +292,7 @@ public:
 	}
 
 	static void add_create_func(EditorPluginCreateFunc p_func) {
-		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
+		(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
 	}
 };

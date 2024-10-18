@@ -227,7 +227,7 @@ class ProjectManager : public Control {
 
 	// Input and I/O.
 
-	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
+	void shortcut_input(const Ref<InputEvent> &p_ev) override;
 
 	void _files_dropped(PackedStringArray p_files);
 
@@ -247,7 +247,7 @@ public:
 	void add_new_tag(const String &p_tag);
 
 	ProjectManager();
-	~ProjectManager();
+	~ProjectManager() override;
 };
 
 #endif // PROJECT_MANAGER_H
