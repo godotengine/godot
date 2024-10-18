@@ -4279,6 +4279,7 @@ void EditorInspector::_add_meta_confirm() {
 }
 
 void EditorInspector::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("edit", "object"), &EditorInspector::edit);
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 	ClassDB::bind_method("get_selected_path", &EditorInspector::get_selected_path);
 	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
