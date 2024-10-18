@@ -627,6 +627,12 @@ public:
 
 	};
 
+	enum NavigationScheme {
+		NAVIGATION_GODOT,
+		NAVIGATION_MAYA,
+		NAVIGATION_MODO,
+	};
+
 private:
 	EditorSelection *editor_selection = nullptr;
 
@@ -872,6 +878,8 @@ private:
 	void _add_environment_to_scene(bool p_already_added_sun = false);
 
 	void _update_theme();
+
+	void _update_tool_button_tooltips();
 
 protected:
 	void _notification(int p_what);
