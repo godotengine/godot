@@ -35,6 +35,7 @@
 #include "core/extension/gdextension.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
+#include "core/io/resource_importer.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
@@ -1245,7 +1246,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (has_import_file) {
 			String importer_type = config->get_value("remap", "importer");
 
-			if (importer_type == "keep") {
+			if (importer_type == "keep" || !ResourceFormatImporter::get_singleton()->is_import_read_only(path)) {
 				// Just keep file as-is.
 				Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
 				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
