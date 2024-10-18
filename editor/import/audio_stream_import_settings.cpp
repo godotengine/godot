@@ -580,12 +580,10 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	bar_beats_edit->set_max(32);
 	bar_beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bar_beats_edit);
-	interactive_hb->add_spacer();
 	main_vbox->add_margin_child(TTR("Music Playback:"), interactive_hb);
 
 	color_rect = memnew(ColorRect);
-	main_vbox->add_margin_child(TTR("Preview:"), color_rect);
-
+	main_vbox->add_margin_child(TTR("Preview:"), color_rect, true);
 	color_rect->set_custom_minimum_size(Size2(600, 200) * EDSCALE);
 	color_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
