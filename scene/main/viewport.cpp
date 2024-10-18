@@ -687,7 +687,7 @@ void Viewport::_process_picking() {
 		physics_picking_events.clear();
 		return;
 	}
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	if (use_xr) {
 		if (XRServer::get_singleton() != nullptr) {
 			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
@@ -698,7 +698,7 @@ void Viewport::_process_picking() {
 			}
 		}
 	}
-#endif
+#endif // _XR_DISABLED
 
 	_drop_physics_mouseover(true);
 
@@ -1004,7 +1004,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	if (!use_xr) {
 #endif
 
@@ -1014,7 +1014,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 		}
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	} // if (!use_xr)
 #endif
 
@@ -1043,7 +1043,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 }
 
 Size2i Viewport::_get_size() const {
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 	if (use_xr) {
 		if (XRServer::get_singleton() != nullptr) {
 			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
@@ -1054,7 +1054,7 @@ Size2i Viewport::_get_size() const {
 		}
 		return Size2i();
 	}
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 	return size;
 }
@@ -3646,9 +3646,11 @@ void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
 		case VRS_TEXTURE: {
 			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_TEXTURE);
 		} break;
+#ifndef _XR_DISABLED
 		case VRS_XR: {
 			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_XR);
 		} break;
+#endif //  _XR_DISABLED
 		default: {
 			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_DISABLED);
 		} break;
@@ -4431,6 +4433,7 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 	}
 }
 
+#ifndef _XR_DISABLED
 void Viewport::set_use_xr(bool p_use_xr) {
 	ERR_MAIN_THREAD_GUARD;
 	if (use_xr != p_use_xr) {
@@ -4457,6 +4460,7 @@ bool Viewport::is_using_xr() {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_xr;
 }
+#endif // _XR_DISABLED
 
 void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
 	ERR_MAIN_THREAD_GUARD;
@@ -4691,8 +4695,10 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
 	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
+#ifndef _XR_DISABLED
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
+#endif // _XR_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &Viewport::set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &Viewport::get_scaling_3d_mode);
@@ -4716,7 +4722,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+#ifndef _XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+#endif // _XR_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 #endif // _3D_DISABLED
@@ -4866,7 +4874,9 @@ void Viewport::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(VRS_DISABLED);
 	BIND_ENUM_CONSTANT(VRS_TEXTURE);
+#ifndef _XR_DISABLED
 	BIND_ENUM_CONSTANT(VRS_XR);
+#endif // _XR_DISABLED
 	BIND_ENUM_CONSTANT(VRS_MAX);
 
 	BIND_ENUM_CONSTANT(VRS_UPDATE_DISABLED);

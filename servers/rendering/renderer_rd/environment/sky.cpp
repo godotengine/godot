@@ -752,11 +752,13 @@ void SkyRD::init() {
 
 		sky_shader.shader.initialize(sky_modes, defines);
 
+#ifndef _XR_DISABLED
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_BACKGROUND_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_HALF_RES_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_QUARTER_RES_MULTIVIEW, false);
 		}
+#endif // _XR_DISABLED
 	}
 
 	// register our shader funds

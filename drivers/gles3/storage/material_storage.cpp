@@ -1377,7 +1377,11 @@ MaterialStorage::MaterialStorage() {
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
+#ifndef _XR_DISABLED
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
+#else
+		actions.check_multiview_samplers = false;
+#endif // _XR_DISABLED
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 		actions.instance_uniform_index_variable = "instance_offset";
 

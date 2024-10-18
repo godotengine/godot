@@ -564,9 +564,11 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		shader.initialize(shader_versions, p_defines);
 
+#ifndef _XR_DISABLED
 		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			shader.enable_group(SHADER_GROUP_MULTIVIEW);
 		}
+#endif // _XR_DISABLED
 	}
 
 	material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_3D, _create_shader_funcs);
@@ -764,7 +766,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "instances.data[instance_index_interp].instance_uniforms_ofs";
 
+#ifndef _XR_DISABLED
 		actions.check_multiview_samplers = RendererCompositorRD::get_singleton()->is_xr_enabled(); // Make sure we check sampling multiview textures.
+#endif // _XR_DISABLED
 
 		compiler.initialize(actions);
 	}
@@ -878,9 +882,14 @@ void SceneShaderForwardClustered::set_default_specialization(const ShaderSpecial
 }
 
 void SceneShaderForwardClustered::enable_advanced_shader_group(bool p_needs_multiview) {
-	if (p_needs_multiview || RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+	if (p_needs_multiview) {
 		shader.enable_group(SHADER_GROUP_ADVANCED_MULTIVIEW);
 	}
+#ifndef _XR_DISABLED
+	if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+		shader.enable_group(SHADER_GROUP_ADVANCED_MULTIVIEW);
+	}
+#endif // _XR_DISABLED
 	shader.enable_group(SHADER_GROUP_ADVANCED);
 }
 
