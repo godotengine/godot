@@ -5,10 +5,11 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
-from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
 from typing import Generator, List, Optional, Union
+
+from misc.utility.colorize import Ansi, print_error, print_info, print_warning
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -16,59 +17,11 @@ base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
 _scu_folders = set()
-# Colors are disabled in non-TTY environments such as pipes. This means
-# that if output is redirected to a file, it won't contain color codes.
-# Colors are always enabled on continuous integration.
-_colorize = bool(sys.stdout.isatty() or os.environ.get("CI"))
 
 
 def set_scu_folders(scu_folders):
     global _scu_folders
     _scu_folders = scu_folders
-
-
-class ANSI(Enum):
-    """
-    Enum class for adding ansi colorcodes directly into strings.
-    Automatically converts values to strings representing their
-    internal value, or an empty string in a non-colorized scope.
-    """
-
-    RESET = "\x1b[0m"
-
-    BOLD = "\x1b[1m"
-    ITALIC = "\x1b[3m"
-    UNDERLINE = "\x1b[4m"
-    STRIKETHROUGH = "\x1b[9m"
-    REGULAR = "\x1b[22;23;24;29m"
-
-    BLACK = "\x1b[30m"
-    RED = "\x1b[31m"
-    GREEN = "\x1b[32m"
-    YELLOW = "\x1b[33m"
-    BLUE = "\x1b[34m"
-    MAGENTA = "\x1b[35m"
-    CYAN = "\x1b[36m"
-    WHITE = "\x1b[37m"
-
-    PURPLE = "\x1b[38;5;93m"
-    PINK = "\x1b[38;5;206m"
-    ORANGE = "\x1b[38;5;214m"
-    GRAY = "\x1b[38;5;244m"
-
-    def __str__(self) -> str:
-        global _colorize
-        return str(self.value) if _colorize else ""
-
-
-def print_warning(*values: object) -> None:
-    """Prints a warning message with formatting."""
-    print(f"{ANSI.YELLOW}{ANSI.BOLD}WARNING:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
-
-
-def print_error(*values: object) -> None:
-    """Prints an error message with formatting."""
-    print(f"{ANSI.RED}{ANSI.BOLD}ERROR:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
@@ -199,7 +152,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("BUILD_NAME") is not None:
         build_name = str(os.getenv("BUILD_NAME"))
         if not silent:
-            print(f"Using custom build name: '{build_name}'.")
+            print_info(f"Using custom build name: '{build_name}'.")
 
     import version
 
@@ -221,7 +174,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("GODOT_VERSION_STATUS") is not None:
         version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
         if not silent:
-            print(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
+            print_info(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
 
     # Parse Git hash if we're in a Git repo.
     githash = ""
@@ -508,7 +461,7 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def no_verbose(env):
-    colors = [ANSI.BLUE, ANSI.BOLD, ANSI.REGULAR, ANSI.RESET]
+    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
@@ -1610,7 +1563,7 @@ def generate_copyright_header(filename: str) -> str:
 """
     filename = filename.split("/")[-1].ljust(MARGIN)
     if len(filename) > MARGIN:
-        print(f'WARNING: Filename "{filename}" too large for copyright header.')
+        print_warning(f'Filename "{filename}" too large for copyright header.')
     return TEMPLATE % filename
 
 
