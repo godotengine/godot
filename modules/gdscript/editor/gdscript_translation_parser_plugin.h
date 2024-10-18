@@ -32,15 +32,22 @@
 #define GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 
 #include "../gdscript_parser.h"
+#include "../gdscript_tokenizer.h"
 
+#include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "editor/editor_translation_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
 	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
+	const HashMap<int, GDScriptTokenizer::CommentData> *comment_data = nullptr;
+
 	Vector<String> *ids = nullptr;
 	Vector<Vector<String>> *ids_ctx_plural = nullptr;
+
+	Vector<String> ids_comment;
+	Vector<String> ids_ctx_plural_comment;
 
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";
@@ -57,6 +64,11 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 
 	static bool _is_constant_string(const GDScriptParser::ExpressionNode *p_expression);
 
+	String _parse_comment(int p_line, bool &r_skip) const;
+
+	void _add_id(const String &p_id, int p_line);
+	void _add_id_ctx_plural(const Vector<String> &p_id_ctx_plural, int p_line);
+
 	void _traverse_class(const GDScriptParser::ClassNode *p_class);
 	void _traverse_function(const GDScriptParser::FunctionNode *p_func);
 	void _traverse_block(const GDScriptParser::SuiteNode *p_suite);
@@ -65,11 +77,12 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	void _assess_assignment(const GDScriptParser::AssignmentNode *p_assignment);
 	void _assess_call(const GDScriptParser::CallNode *p_call);
 
-	void _extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression);
+	void _extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression, int p_line);
 	void _extract_fd_filter_array(const GDScriptParser::ExpressionNode *p_expression);
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;
+	virtual void get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) override;
 	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
 
 	GDScriptEditorTranslationParserPlugin();
