@@ -36,6 +36,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 
@@ -635,6 +636,10 @@ void ImportDock::_advanced_options() {
 }
 
 void ImportDock::_reimport() {
+	// Get the current object in the inspector.
+	Object *inspector_current_object = InspectorDock::get_inspector_singleton()->get_edited_object();
+	String reload_inspector_resource_path;
+
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
@@ -687,12 +692,26 @@ void ImportDock::_reimport() {
 		}
 
 		config->save(params->paths[i] + ".import");
+
+		// If the list of resources to import includes the currently edited object in the inspector,
+		// Save its path so we can load its reimported version later.
+		Ref<Resource> res = ResourceLoader::load(params->paths[i]);
+		if (*res == inspector_current_object) {
+			reload_inspector_resource_path = params->paths[i];
+		}
 	}
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
 
 	_set_dirty(false);
+
+	// Load the reimported version of the edited resource and push it to EditorNode.
+	// This needs to be deferred because the scene tree will also try to regain focus after reimport.
+	if (!reload_inspector_resource_path.is_empty()) {
+		Ref<Resource> res = ResourceLoader::load(reload_inspector_resource_path);
+		EditorNode::get_singleton()->call_deferred("push_item", *res);
+	}
 }
 
 void ImportDock::_notification(int p_what) {
