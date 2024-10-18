@@ -2995,10 +2995,11 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		}
 	}
 
-	for (int i = 0; i < p_original->get_child_count(); i++) {
+	for (int i = 0; i < p_copy->get_child_count(); i++) {
 		Node *copy_child = p_copy->get_child(i);
 		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_properties(p_root, p_original->get_child(i), copy_child, p_flags);
+		NodePath child_path = p_copy->get_path_to(copy_child);
+		_duplicate_properties(p_root, p_original->get_node(child_path), copy_child, p_flags);
 	}
 }
 
