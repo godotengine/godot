@@ -18,7 +18,7 @@
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns mesh arrays used to constitute surface of [Mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
+				Returns mesh arrays used to constitute surface of [Mesh]. This takes [member add_uv2] into account, but not [member generate_lods] or [member generate_shadow_mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
 				[codeblocks]
 				[gdscript]
 				var c = CylinderMesh.new()
@@ -50,6 +50,14 @@
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
 			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
 			This gives the same result as using [constant BaseMaterial3D.CULL_FRONT] in [member BaseMaterial3D.cull_mode].
+		</member>
+		<member name="generate_lods" type="bool" setter="set_generate_lods" getter="is_generating_lods" default="false">
+			If [code]true[/code], generates automatic mesh LOD based on the mesh's contents using [url=https://github.com/zeux/meshoptimizer]meshoptimizer[/url]. This works best on primitive meshes with smooth curved geometry such as [CapsuleMesh], [SphereMesh], and [TorusMesh].
+			[b]Note:[/b] Generating LODs slows down the mesh [i]generation[/i] process, so avoid enabling this property if the mesh's properties change during gameplay.
+		</member>
+		<member name="generate_shadow_mesh" type="bool" setter="set_generate_shadow_mesh" getter="is_generating_shadow_mesh" default="false">
+			If [code]true[/code], generates a shadow mesh with vertices welded together to improve rendering efficiency.
+			[b]Note:[/b] Generating a shadow mesh slows down the mesh [i]generation[/i] process, so avoid enabling this property if the mesh's properties change during gameplay.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.
