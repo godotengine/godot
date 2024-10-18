@@ -1833,8 +1833,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
-			if (!text.is_empty()) {
+			if (!stack_externally_modified) {
 				_apply_translation();
 			}
 
@@ -3109,6 +3108,10 @@ void RichTextLabel::add_text(const String &p_text) {
 }
 
 void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline) {
+	if (!internal_stack_editing) {
+		stack_externally_modified = true;
+	}
+
 	p_item->parent = current;
 	p_item->E = current->subitems.push_back(p_item);
 	p_item->index = current_idx++;
@@ -4015,6 +4018,8 @@ void RichTextLabel::clear() {
 	_stop_thread();
 	set_process_internal(false);
 	MutexLock data_lock(data_mutex);
+
+	stack_externally_modified = false;
 
 	main->_clear_children();
 	current = main;
@@ -5818,11 +5823,15 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 		return;
 	}
 
+	stack_externally_modified = false;
+
 	text = p_bbcode;
 	_apply_translation();
 }
 
 void RichTextLabel::_apply_translation() {
+	internal_stack_editing = true;
+
 	String xl_text = atr(text);
 	if (use_bbcode) {
 		parse_bbcode(xl_text);
@@ -5830,6 +5839,8 @@ void RichTextLabel::_apply_translation() {
 		clear();
 		add_text(xl_text);
 	}
+
+	internal_stack_editing = false;
 }
 
 String RichTextLabel::get_text() const {
@@ -5843,8 +5854,7 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	use_bbcode = p_enable;
 	notify_property_list_changed();
 
-	// If `text` is empty, it could mean that the tag stack is being used instead. Leave it be.
-	if (!text.is_empty()) {
+	if (!stack_externally_modified) {
 		_apply_translation();
 	}
 }
@@ -5854,7 +5864,7 @@ bool RichTextLabel::is_using_bbcode() const {
 }
 
 String RichTextLabel::get_parsed_text() const {
-	String txt = "";
+	String txt;
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_DROPCAP) {
@@ -5881,7 +5891,7 @@ void RichTextLabel::set_text_direction(Control::TextDirection p_text_direction) 
 
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
-		if (!text.is_empty()) {
+		if (!stack_externally_modified) {
 			_apply_translation();
 		} else {
 			main->first_invalid_line.store(0); // Invalidate all lines.
@@ -5901,7 +5911,7 @@ void RichTextLabel::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 
 	if (default_alignment != p_alignment) {
 		default_alignment = p_alignment;
-		if (!text.is_empty()) {
+		if (!stack_externally_modified) {
 			_apply_translation();
 		} else {
 			main->first_invalid_line.store(0); // Invalidate all lines.
@@ -5920,7 +5930,7 @@ void RichTextLabel::set_justification_flags(BitField<TextServer::JustificationFl
 
 	if (default_jst_flags != p_flags) {
 		default_jst_flags = p_flags;
-		if (!text.is_empty()) {
+		if (!stack_externally_modified) {
 			_apply_translation();
 		} else {
 			main->first_invalid_line.store(0); // Invalidate all lines.
@@ -5939,7 +5949,7 @@ void RichTextLabel::set_tab_stops(const PackedFloat32Array &p_tab_stops) {
 
 	if (default_tab_stops != p_tab_stops) {
 		default_tab_stops = p_tab_stops;
-		if (!text.is_empty()) {
+		if (!stack_externally_modified) {
 			_apply_translation();
 		} else {
 			main->first_invalid_line.store(0); // Invalidate all lines.
@@ -5958,7 +5968,7 @@ void RichTextLabel::set_structured_text_bidi_override(TextServer::StructuredText
 		_stop_thread();
 
 		st_parser = p_parser;
-		if (!text.is_empty()) {
+		if (!stack_externally_modified) {
 			_apply_translation();
 		} else {
 			main->first_invalid_line.store(0); // Invalidate all lines.
@@ -5992,7 +6002,7 @@ void RichTextLabel::set_language(const String &p_language) {
 		_stop_thread();
 
 		language = p_language;
-		if (!text.is_empty()) {
+		if (!stack_externally_modified) {
 			_apply_translation();
 		} else {
 			main->first_invalid_line.store(0); // Invalidate all lines.
