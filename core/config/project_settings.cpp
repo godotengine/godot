@@ -507,6 +507,22 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 			}
 		}
 	}
+	if (p_from_version <= 5) {
+		// Converts the device in events from -1 (emulated events) to -3 (all events).
+		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
+			Variant value = E.value.variant;
+			if (String(E.key).begins_with("input/")) {
+				Dictionary action = value;
+				Array events = action["events"];
+				for (int i = 0; i < events.size(); i++) {
+					Ref<InputEvent> x = events[i];
+					if (x->get_device() == -1) { // -1 was the previous value (GH-97707).
+						x->set_device(InputEvent::DEVICE_ID_ALL_DEVICES);
+					}
+				}
+			}
+		}
+	}
 }
 
 /*

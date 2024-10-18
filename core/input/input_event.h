@@ -64,6 +64,7 @@ protected:
 public:
 	static const int DEVICE_ID_EMULATION;
 	static const int DEVICE_ID_INTERNAL;
+	static const int DEVICE_ID_ALL_DEVICES;
 
 	void set_device(int p_device);
 	int get_device() const;
