@@ -46,7 +46,7 @@ int64_t AStar3D::get_available_point_id() const {
 	return last_free_id;
 }
 
-void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
+void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale, uint32_t p_point_layers) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
 
@@ -62,6 +62,7 @@ void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scal
 		pt->open_pass = 0;
 		pt->closed_pass = 0;
 		pt->enabled = true;
+		pt->point_layers = p_point_layers;
 		points.set(p_id, pt);
 	} else {
 		found_pt->pos = p_pos;
@@ -265,13 +266,13 @@ void AStar3D::reserve_space(int64_t p_num_nodes) {
 	points.reserve(p_num_nodes);
 }
 
-int64_t AStar3D::get_closest_point(const Vector3 &p_point, bool p_include_disabled) const {
+int64_t AStar3D::get_closest_point(const Vector3 &p_point, bool p_include_disabled, uint32_t p_point_layers) const {
 	int64_t closest_id = -1;
 	real_t closest_dist = 1e20;
 
 	for (OAHashMap<int64_t, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
-		if (!p_include_disabled && !(*it.value)->enabled) {
-			continue; // Disabled points should not be considered.
+		if (!p_include_disabled && !(*it.value)->enabled && (p_point_layers & (*it.value)->point_layers) == 0) {
+			continue; // Disabled points and points that aren't in the layer should not be considered.
 		}
 
 		// Keep the closest point's ID, and in case of multiple closest IDs,
@@ -319,11 +320,11 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	return closest_point;
 }
 
-bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_path) {
+bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_path, uint32_t p_point_layers) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (!end_point->enabled && !p_allow_partial_path) {
+	if ((!end_point->enabled || (p_point_layers & end_point->point_layers) == 0) && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -358,7 +359,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 		for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbors.iter(); it.valid; it = p->neighbors.next_iter(it)) {
 			Point *e = *(it.value); // The neighbor point.
 
-			if (!e->enabled || e->closed_pass == pass) {
+			if (!e->enabled || e->closed_pass == pass || (p_point_layers & e->point_layers) == 0) {
 				continue;
 			}
 
@@ -425,7 +426,7 @@ real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
+Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path, uint32_t p_point_layers) {
 	Point *a = nullptr;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -443,7 +444,7 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path, p_point_layers);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<Vector3>();
@@ -479,7 +480,7 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	return path;
 }
 
-Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
+Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path, uint32_t p_point_layers) {
 	Point *a = nullptr;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
@@ -497,7 +498,7 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path, p_point_layers);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<int64_t>();
@@ -549,9 +550,25 @@ bool AStar3D::is_point_disabled(int64_t p_id) const {
 	return !p->enabled;
 }
 
+void AStar3D::set_point_layers(int64_t p_id, uint32_t p_point_layers) {
+	Point *p = nullptr;
+	bool p_exists = points.lookup(p_id, p);
+	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point layers. Point with id: %d doesn't exist.", p_id));
+
+	p->point_layers = p_point_layers;
+}
+
+uint32_t AStar3D::get_point_layers(int64_t p_id) const {
+	Point *p = nullptr;
+	bool p_exists = points.lookup(p_id, p);
+	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get point layers. Point with id: %d doesn't exist.", p_id));
+
+	return p->point_layers;
+}
+
 void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar3D::get_available_point_id);
-	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar3D::add_point, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale", "navigation_layers"), &AStar3D::add_point, DEFVAL(1.0), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStar3D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_position", "id", "position"), &AStar3D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar3D::get_point_weight_scale);
@@ -564,6 +581,9 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar3D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar3D::is_point_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_point_layers", "id", "navigation_layers"), &AStar3D::set_point_layers);
+	ClassDB::bind_method(D_METHOD("get_point_layers", "id"), &AStar3D::get_point_layers);
+
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar3D::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar3D::disconnect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar3D::are_points_connected, DEFVAL(true));
@@ -573,11 +593,11 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar3D::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar3D::clear);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar3D::get_closest_point, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled", "navigation_layers"), &AStar3D::get_closest_point, DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar3D::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_point_path, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_id_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path", "navigation_layers"), &AStar3D::get_point_path, DEFVAL(false), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path", "navigation_layers"), &AStar3D::get_id_path, DEFVAL(false), DEFVAL(1));
 
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
@@ -593,8 +613,8 @@ int64_t AStar2D::get_available_point_id() const {
 	return astar.get_available_point_id();
 }
 
-void AStar2D::add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale) {
-	astar.add_point(p_id, Vector3(p_pos.x, p_pos.y, 0), p_weight_scale);
+void AStar2D::add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale, uint32_t p_point_layers) {
+	astar.add_point(p_id, Vector3(p_pos.x, p_pos.y, 0), p_weight_scale, p_point_layers);
 }
 
 Vector2 AStar2D::get_point_position(int64_t p_id) const {
@@ -638,6 +658,14 @@ bool AStar2D::is_point_disabled(int64_t p_id) const {
 	return astar.is_point_disabled(p_id);
 }
 
+void AStar2D::set_point_layers(int64_t p_id, uint32_t p_point_layers) {
+	astar.set_point_layers(p_id, p_point_layers);
+}
+
+uint32_t AStar2D::get_point_layers(int64_t p_id) const {
+	return astar.get_point_layers(p_id);
+}
+
 void AStar2D::connect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional) {
 	astar.connect_points(p_id, p_with_id, p_bidirectional);
 }
@@ -666,8 +694,8 @@ void AStar2D::reserve_space(int64_t p_num_nodes) {
 	astar.reserve_space(p_num_nodes);
 }
 
-int64_t AStar2D::get_closest_point(const Vector2 &p_point, bool p_include_disabled) const {
-	return astar.get_closest_point(Vector3(p_point.x, p_point.y, 0), p_include_disabled);
+int64_t AStar2D::get_closest_point(const Vector2 &p_point, bool p_include_disabled, uint32_t p_point_layers) const {
+	return astar.get_closest_point(Vector3(p_point.x, p_point.y, 0), p_include_disabled, p_point_layers);
 }
 
 Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
@@ -709,7 +737,7 @@ real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
+Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path, uint32_t p_point_layers) {
 	AStar3D::Point *a = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -726,7 +754,7 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path, p_point_layers);
 	if (!found_route) {
 		if (!p_allow_partial_path || astar.last_closest_point == nullptr) {
 			return Vector<Vector2>();
@@ -762,7 +790,7 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	return path;
 }
 
-Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
+Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path, uint32_t p_point_layers) {
 	AStar3D::Point *a = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
@@ -780,7 +808,7 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path, p_point_layers);
 	if (!found_route) {
 		if (!p_allow_partial_path || astar.last_closest_point == nullptr) {
 			return Vector<int64_t>();
@@ -816,11 +844,11 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	return path;
 }
 
-bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path) {
+bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path, uint32_t p_point_layers) {
 	astar.last_closest_point = nullptr;
 	astar.pass++;
 
-	if (!end_point->enabled && !p_allow_partial_path) {
+	if ((!end_point->enabled || (p_point_layers & end_point->point_layers) == 0) && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -855,7 +883,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 		for (OAHashMap<int64_t, AStar3D::Point *>::Iterator it = p->neighbors.iter(); it.valid; it = p->neighbors.next_iter(it)) {
 			AStar3D::Point *e = *(it.value); // The neighbor point.
 
-			if (!e->enabled || e->closed_pass == astar.pass) {
+			if (!e->enabled || e->closed_pass == astar.pass || (p_point_layers & e->point_layers) == 0) {
 				continue;
 			}
 
@@ -890,7 +918,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 
 void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar2D::get_available_point_id);
-	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale"), &AStar2D::add_point, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("add_point", "id", "position", "weight_scale", "navigation_layers"), &AStar2D::add_point, DEFVAL(1.0), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStar2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_position", "id", "position"), &AStar2D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStar2D::get_point_weight_scale);
@@ -903,6 +931,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar2D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_point_layers", "id", "navigation_layers"), &AStar2D::set_point_layers);
+	ClassDB::bind_method(D_METHOD("get_point_layers", "id"), &AStar2D::get_point_layers);
+
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar2D::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar2D::disconnect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar2D::are_points_connected, DEFVAL(true));
@@ -912,11 +943,11 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar2D::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar2D::clear);
 
-	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar2D::get_closest_point, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled", "navigation_layers"), &AStar2D::get_closest_point, DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar2D::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_point_path, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_id_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path", "navigation_layers"), &AStar2D::get_point_path, DEFVAL(false), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path", "navigation_layers"), &AStar2D::get_id_path, DEFVAL(false), DEFVAL(1));
 
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")

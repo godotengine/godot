@@ -227,6 +227,20 @@ bool AStarGrid2D::is_point_solid(const Vector2i &p_id) const {
 	return _get_solid_unchecked(p_id);
 }
 
+void AStarGrid2D::set_point_layers(const Vector2i &p_id, uint32_t p_point_layers) {
+	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point layers. Point %s out of bounds %s.", p_id, region));
+
+	_get_point_unchecked(p_id.x, p_id.y)->point_layers = p_point_layers;
+}
+
+uint32_t AStarGrid2D::get_point_layers(const Vector2i &p_id) const {
+	ERR_FAIL_COND_V_MSG(dirty, false, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), false, vformat("Can't get point layers. Point %s out of bounds %s.", p_id, region));
+
+	return _get_point_unchecked(p_id)->point_layers;
+}
+
 void AStarGrid2D::set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point's weight scale. Point %s out of bounds %s.", p_id, region));
@@ -491,11 +505,11 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 	}
 }
 
-bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path) {
+bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path, uint32_t p_point_layers) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (_get_solid_unchecked(p_end_point->id) && !p_allow_partial_path) {
+	if ((_get_solid_unchecked(p_end_point->id) || (p_point_layers & p_end_point->point_layers) == 0) && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -541,7 +555,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 					continue;
 				}
 			} else {
-				if (_get_solid_unchecked(e->id) || e->closed_pass == pass) {
+				if (_get_solid_unchecked(e->id) || e->closed_pass == pass || (p_point_layers & e->point_layers) == 0) {
 					continue;
 				}
 				weight_scale = e->weight_scale;
@@ -630,7 +644,7 @@ TypedArray<Dictionary> AStarGrid2D::get_point_data_in_region(const Rect2i &p_reg
 	return data;
 }
 
-Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
+Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path, uint32_t p_point_layers) {
 	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
@@ -647,7 +661,7 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path, p_point_layers);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return Vector<Vector2>();
@@ -683,7 +697,7 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	return path;
 }
 
-TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
+TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path, uint32_t p_point_layers) {
 	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Vector2i>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
@@ -700,7 +714,7 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path, p_point_layers);
 	if (!found_route) {
 		if (!p_allow_partial_path || last_closest_point == nullptr) {
 			return TypedArray<Vector2i>();
@@ -759,6 +773,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_estimate_heuristic"), &AStarGrid2D::get_default_estimate_heuristic);
 	ClassDB::bind_method(D_METHOD("set_point_solid", "id", "solid"), &AStarGrid2D::set_point_solid, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_solid", "id"), &AStarGrid2D::is_point_solid);
+	ClassDB::bind_method(D_METHOD("set_point_layers", "id", "navigation_layers"), &AStarGrid2D::set_point_layers);
+	ClassDB::bind_method(D_METHOD("get_point_layers", "id"), &AStarGrid2D::get_point_layers);
 	ClassDB::bind_method(D_METHOD("set_point_weight_scale", "id", "weight_scale"), &AStarGrid2D::set_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStarGrid2D::get_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("fill_solid_region", "region", "solid"), &AStarGrid2D::fill_solid_region, DEFVAL(true));
@@ -767,8 +783,8 @@ void AStarGrid2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_data_in_region", "region"), &AStarGrid2D::get_point_data_in_region);
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_point_path, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_id_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path", "navigation_layers"), &AStarGrid2D::get_point_path, DEFVAL(false), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path", "navigation_layers"), &AStarGrid2D::get_id_path, DEFVAL(false), DEFVAL(1));
 
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
