@@ -401,6 +401,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="get_system_menu_no_default_items" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns [code]true[/code] if system menu has no default items.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="has_feature" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="feature" type="int" enum="NativeMenu.Feature" />
@@ -720,7 +728,76 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="set_system_menu_hidden">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="hidden" type="bool" />
+			<description>
+				Hides/shows the system menu. Only system menus with no default items can be hidden. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_system_menu_name">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="string" type="String" />
+			<description>
+				Sets system menu name. If set to empty string, default menu name is restored.
+				[b]Note:[/b] On macOS, only [constant FILE_MENU_ID] can be renamed.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="can_copy" type="bool" setter="set_can_copy" getter="get_can_copy">
+			If set to [code]true[/code], standard "Copy" item is enabled.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="can_cut" type="bool" setter="set_can_cut" getter="get_can_cut">
+			If set to [code]true[/code] if standard "Cut" item is enabled.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="can_paste" type="bool" setter="set_can_paste" getter="get_can_paste">
+			If set to [code]true[/code] if standard "Paste" item is enabled.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="can_redo" type="bool" setter="set_can_redo" getter="get_can_redo">
+			If set to [code]true[/code] if standard "Redo" item is enabled.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="can_undo" type="bool" setter="set_can_undo" getter="get_can_undo">
+			If set to [code]true[/code] if standard "Undo" item is enabled.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="copy" type="Callable" setter="set_copy_callback" getter="get_copy_callback">
+			Sets callable to emit when standard "Copy" menu item is selected. If not set, [code]"ui_copy"[/code] action is triggered.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="cut" type="Callable" setter="set_cut_callback" getter="get_cut_callback">
+			Sets callable to emit when standard "Cut" menu item is selected. If not set, [code]"ui_cut"[/code] action is triggered.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="paste" type="Callable" setter="set_paste_callback" getter="get_paste_callback">
+			Sets callable to emit when standard "Paste" menu item is selected. If not set, [code]"ui_paste"[/code] action is triggered.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="redo" type="Callable" setter="set_redo_callback" getter="get_redo_callback">
+			Sets callable to emit when standard "Redo" menu item is selected. If not set, [code]"ui_redo"[/code] action is triggered.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="redo_description" type="String" setter="set_redo_description" getter="get_redo_description">
+			Sets custom text for standard "Redo" menu item.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="undo" type="Callable" setter="set_undo_callback" getter="get_undo_callback">
+			Sets callable to emit when standard "Undo" menu item is selected. If not set, [code]"ui_undo"[/code] action is triggered.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+		<member name="undo_description" type="String" setter="set_undo_description" getter="get_undo_description">
+			Sets custom text for standard "Undo" menu item.
+			[b]Note:[/b] This property is implemented only on macOS.
+		</member>
+	</members>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
 			[NativeMenu] supports native global main menu.
@@ -736,6 +813,9 @@
 		</constant>
 		<constant name="FEATURE_KEY_CALLBACK" value="4" enum="Feature">
 			[NativeMenu] supports menu item accelerator/key callback.
+		</constant>
+		<constant name="FEATURE_COPY_CUT_PASTE_CALLBACK" value="5" enum="Feature">
+			[NativeMenu] supports setting callbacks for "Copy", "Cut", and "Paste" standard items. See [member can_copy], [member can_cut], [member can_paste], [member can_undo], [member can_redo], [member copy], [member cut], [member paste], [member undo] and [member redo].
 		</constant>
 		<constant name="INVALID_MENU_ID" value="0" enum="SystemMenus">
 			Invalid special system menu ID.
@@ -754,6 +834,12 @@
 		</constant>
 		<constant name="DOCK_MENU_ID" value="5" enum="SystemMenus">
 			Dock icon right-click menu ID (on macOS this menu include standard application control items and a list of open windows).
+		</constant>
+		<constant name="EDIT_MENU_ID" value="6" enum="SystemMenus">
+			"Edit" menu ID (on macOS this menu includes "Cut", "Copy", and "Paste" items).
+		</constant>
+		<constant name="FILE_MENU_ID" value="7" enum="SystemMenus">
+			"File" menu ID (on macOS this menu is empty and is hidden by default, this menu is shown before "Edit" menu).
 		</constant>
 	</constants>
 </class>

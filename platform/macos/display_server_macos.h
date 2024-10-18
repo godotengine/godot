@@ -217,6 +217,8 @@ private:
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd);
 
+	void _get_action_key(const StringName &p_name, String &r_keycode, unsigned int &r_keymask) const;
+
 	void _update_displays_arrangement();
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);

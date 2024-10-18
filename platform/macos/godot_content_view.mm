@@ -337,6 +337,43 @@
 	return NO;
 }
 
+// MARK: Edit menu actions
+
+- (void)undo:(id)sender {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_undo_action(window_id);
+	}
+}
+
+- (void)redo:(id)sender {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_redo_action(window_id);
+	}
+}
+
+- (void)copy:(id)sender {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_copy_action(window_id);
+	}
+}
+
+- (void)cut:(id)sender {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_cut_action(window_id);
+	}
+}
+
+- (void)paste:(id)sender {
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_paste_action(window_id);
+	}
+}
+
 // MARK: Focus
 
 - (BOOL)canBecomeKeyView {

@@ -34,6 +34,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display/native_menu.h"
+#include "servers/display_server.h"
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
@@ -58,12 +59,40 @@ class NativeMenuMacOS : public NativeMenu {
 	NSMenu *window_menu_ns = nullptr;
 	NSMenu *help_menu_ns = nullptr;
 	NSMenu *dock_menu_ns = nullptr;
+	NSMenu *edit_menu_ns = nullptr;
+	NSMenu *file_menu_ns = nullptr;
+
+	NSMenuItem *file_menu_item = nullptr;
 
 	RID main_menu;
 	RID application_menu;
 	RID window_menu;
 	RID help_menu;
 	RID dock_menu;
+	RID edit_menu;
+	RID file_menu;
+
+	NSMenuItem *copy_item = nullptr;
+	bool can_copy = true;
+	Callable copy_cb;
+
+	NSMenuItem *cut_item = nullptr;
+	bool can_cut = true;
+	Callable cut_cb;
+
+	NSMenuItem *paste_item = nullptr;
+	bool can_paste = true;
+	Callable paste_cb;
+
+	NSMenuItem *undo_item = nullptr;
+	bool can_undo = true;
+	Callable undo_cb;
+	String undo_description;
+
+	NSMenuItem *redo_item = nullptr;
+	bool can_redo = true;
+	Callable redo_cb;
+	String redo_description;
 
 	int _get_system_menu_start(const NSMenu *p_menu) const;
 	int _get_system_menu_count(const NSMenu *p_menu) const;
@@ -71,8 +100,15 @@ class NativeMenuMacOS : public NativeMenu {
 	NSMenuItem *_menu_add_item(NSMenu *p_menu, const String &p_label, Key p_accel, int p_index, int *r_out);
 
 public:
-	void _register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu);
+	void _register_system_menus(NSMenu *p_main_menu, NSMenu *p_application_menu, NSMenu *p_window_menu, NSMenu *p_help_menu, NSMenu *p_dock_menu, NSMenu *p_edit_menu, NSMenu *p_file_menu, NSMenuItem *p_file_menu_item, NSMenuItem *p_copy_item, NSMenuItem *p_cut_item, NSMenuItem *p_paste_item, NSMenuItem *p_undo_item, NSMenuItem *p_redo_item);
 	NSMenu *_get_dock_menu();
+
+	void _process_ui_event(DisplayServer::WindowID p_window_id, const StringName &p_name);
+	void _copy_action(DisplayServer::WindowID p_window_id);
+	void _cut_action(DisplayServer::WindowID p_window_id);
+	void _paste_action(DisplayServer::WindowID p_window_id);
+	void _undo_action(DisplayServer::WindowID p_window_id);
+	void _redo_action(DisplayServer::WindowID p_window_id);
 
 	void _menu_need_update(NSMenu *p_menu);
 	void _menu_open(NSMenu *p_menu);
@@ -83,6 +119,10 @@ public:
 
 	virtual bool has_system_menu(SystemMenus p_menu_id) const override;
 	virtual RID get_system_menu(SystemMenus p_menu_id) const override;
+
+	virtual bool get_system_menu_no_default_items(SystemMenus p_menu_id) const override;
+	virtual void set_system_menu_name(SystemMenus p_menu_id, const String &p_string) override;
+	virtual void set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden) override;
 
 	virtual RID create_menu() override;
 	virtual bool has_menu(const RID &p_rid) const override;
@@ -156,6 +196,37 @@ public:
 
 	virtual void remove_item(const RID &p_rid, int p_idx) override;
 	virtual void clear(const RID &p_rid) override;
+
+	virtual void set_can_copy(bool p_enabled) override;
+	virtual bool get_can_copy() const override;
+	virtual void set_copy_callback(const Callable &p_callback) override;
+	virtual Callable get_copy_callback() const override;
+
+	virtual void set_can_cut(bool p_enabled) override;
+	virtual bool get_can_cut() const override;
+	virtual void set_cut_callback(const Callable &p_callback) override;
+	virtual Callable get_cut_callback() const override;
+
+	virtual void set_can_paste(bool p_enabled) override;
+	virtual bool get_can_paste() const override;
+	virtual void set_paste_callback(const Callable &p_callback) override;
+	virtual Callable get_paste_callback() const override;
+
+	virtual void set_can_undo(bool p_enabled) override;
+	virtual bool get_can_undo() const override;
+	virtual void set_undo_callback(const Callable &p_callback) override;
+	virtual Callable get_undo_callback() const override;
+
+	virtual void set_undo_description(const String &p_description) override;
+	virtual String get_undo_description() const override;
+
+	virtual void set_can_redo(bool p_enabled) override;
+	virtual bool get_can_redo() const override;
+	virtual void set_redo_callback(const Callable &p_callback) override;
+	virtual Callable get_redo_callback() const override;
+
+	virtual void set_redo_description(const String &p_description) override;
+	virtual String get_redo_description() const override;
 
 	NativeMenuMacOS();
 	~NativeMenuMacOS();
