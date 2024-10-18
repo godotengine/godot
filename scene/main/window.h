@@ -234,6 +234,8 @@ private:
 	void _mouse_leave_viewport() override;
 
 	Ref<Shortcut> debugger_stop_shortcut;
+	Ref<Shortcut> debugger_run_main_shortcut;
+	Ref<Shortcut> debugger_run_current_shortcut;
 
 	static int root_layout_direction;
 

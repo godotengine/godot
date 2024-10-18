@@ -950,6 +950,7 @@ public:
 	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	bool ensure_main_scene(bool p_from_native);
+	EditorRunBar *get_project_run_bar();
 };
 
 class EditorPluginList : public Object {
