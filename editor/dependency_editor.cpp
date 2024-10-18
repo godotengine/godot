@@ -39,6 +39,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/separator.h"
 
 void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;
@@ -527,6 +528,22 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 	}
 }
 
+void DependencyRemoveDialog::show_delete_list() {
+	to_be_deleted_files->clear();
+
+	for (const String &s : files_to_delete) {
+		String t = s.substr(s.rfind("/") + 1);
+		to_be_deleted_files->add_item(t);
+	}
+
+	for (const String &s : dirs_to_delete) {
+		String t = s.substr(s.rfind("/", s.length() - 2) + 1);
+		to_be_deleted_files->add_item(t);
+	}
+
+	to_be_deleted_files->show();
+}
+
 void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<String> &p_files) {
 	all_remove_files.clear();
 	dirs_to_delete.clear();
@@ -547,6 +564,9 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
 	_find_localization_remaps_of_removed_files(removed_deps);
 	removed_deps.sort();
+
+	show_delete_list();
+
 	if (removed_deps.is_empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove the selected files from the project? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
@@ -666,10 +686,22 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	set_ok_button_text(TTR("Remove"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(vb);
 
 	text = memnew(Label);
 	vb->add_child(text);
+
+	Label *lbl = memnew(Label);
+	lbl->set_theme_type_variation("HeaderSmall");
+	lbl->set_text("Files to be deleted:");
+	vb->add_child(lbl);
+
+	to_be_deleted_files = memnew(ItemList);
+	to_be_deleted_files->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	to_be_deleted_files->set_auto_height(true);
+	to_be_deleted_files->hide();
+	vb->add_child(to_be_deleted_files);
 
 	owners = memnew(Tree);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
