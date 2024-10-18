@@ -166,6 +166,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->set_text(E);
 			name->set_editable(!read_only);
 			name->set_expand_to_text_length_enabled(true);
+			name->set_custom_minimum_size(Vector2(100, 0) * EDSCALE);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
 			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
@@ -205,6 +206,14 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 				prop->update_property();
 				prop->set_name_split_ratio(0);
 				prop->connect("property_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
+
+				if (F.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					// Give the resource editor some more space to make the inside readable.
+					prop->set_custom_minimum_size(Vector2(180, 0) * EDSCALE);
+					// Align the size of the node with the resource editor, its un-expanding does not trigger a resize.
+					prop->connect(SceneStringName(resized), Callable(node, "reset_size"));
+				}
+
 				node->add_child(prop);
 				visible_properties.push_back(prop);
 			}
@@ -266,17 +275,14 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
 		}
 
-		// TODO: Avoid using strings, expose a method on GraphNode instead.
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SceneStringName(panel));
-		Color c = sb->get_border_color();
-		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
-		mono_color.a = 0.85;
-		c = mono_color;
+		Ref<StyleBox> sb_panel = node->get_theme_stylebox(SceneStringName(panel), "GraphNode")->duplicate();
+		if (sb_panel.is_valid()) {
+			sb_panel->set_content_margin(SIDE_TOP, 12 * EDSCALE);
+			sb_panel->set_content_margin(SIDE_BOTTOM, 12 * EDSCALE);
+			node->add_theme_style_override(SceneStringName(panel), sb_panel);
+		}
 
-		node->add_theme_color_override("title_color", c);
-		c.a = 0.7;
-		node->add_theme_color_override("close_color", c);
-		node->add_theme_color_override("resizer_color", c);
+		node->add_theme_constant_override("separation", 4 * EDSCALE);
 	}
 
 	List<AnimationNodeBlendTree::NodeConnection> node_connections;
