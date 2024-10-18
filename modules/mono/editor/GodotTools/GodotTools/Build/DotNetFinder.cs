@@ -31,6 +31,22 @@ namespace GodotTools.Build
                 {
                     return dotnet;
                 }
+                if (RuntimeInformation.OSArchitecture == Architecture.X64)
+                {
+                    string dotnet_hb = "/usr/local/opt/dotnet/libexec/dotnet"; // Look for Intel homebrew version.
+                    if (File.Exists(dotnet_hb))
+                    {
+                        return dotnet_hb;
+                    }
+                }
+                else
+                {
+                    string dotnet_hb = "/opt/homebrew/opt/dotnet/libexec/dotnet"; // Look for ARM homebrew version.
+                    if (File.Exists(dotnet_hb))
+                    {
+                        return dotnet_hb;
+                    }
+                }
             }
 
             return OS.PathWhich("dotnet");
