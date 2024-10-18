@@ -1248,6 +1248,8 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		}
 		TreeItem *list_item = edit_type_list->create_item(list_root);
 		list_item->set_text(0, E);
+		list_item->set_metadata(0, E);
+		list_item->set_editable(0, true);
 		list_item->set_icon(0, item_icon);
 		list_item->add_button(0, get_editor_theme_icon(SNAME("Remove")), TYPES_TREE_REMOVE_ITEM, false, TTR("Remove Type"));
 
@@ -1309,6 +1311,33 @@ void ThemeItemEditorDialog::_edited_type_selected() {
 	TreeItem *selected_item = edit_type_list->get_selected();
 	String selected_type = selected_item->get_text(0);
 	_update_edit_item_tree(selected_type);
+}
+
+void ThemeItemEditorDialog::_edited_type_edited() {
+	TreeItem *edited_item = edit_type_list->get_selected();
+	const String old_type_name = edited_item->get_metadata(0);
+	String new_type_name = edited_item->get_text(0).strip_edges();
+	if (!new_type_name.is_empty()) { // The type name can be empty, unlike the item name.
+		new_type_name = new_type_name.validate_ascii_identifier();
+	}
+
+	if (old_type_name == new_type_name) {
+		edited_item->set_text(0, old_type_name);
+		return;
+	}
+
+	List<StringName> theme_types;
+	edited_theme->get_type_list(&theme_types);
+	if (theme_types.find(new_type_name) != nullptr) {
+		edited_item->set_text(0, old_type_name);
+		return;
+	}
+
+	// The list will be recreated, but let's update the item just in case.
+	edited_item->set_metadata(0, new_type_name);
+	edited_item->set_text(0, new_type_name);
+
+	_rename_theme_type(old_type_name, new_type_name);
 }
 
 void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
@@ -1525,22 +1554,26 @@ void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_colu
 	}
 }
 
-void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
-	const String new_type = edit_add_type_value->get_text().strip_edges();
+void ThemeItemEditorDialog::_add_theme_type() {
+	String new_type_name = edit_add_type_value->get_text().strip_edges();
+	if (!new_type_name.is_empty()) { // The type name can be empty, unlike the item name.
+		new_type_name = new_type_name.validate_ascii_identifier();
+	}
 	edit_add_type_value->clear();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Add Theme Type"));
 
-	ur->add_do_method(*edited_theme, "add_type", new_type);
-	ur->add_undo_method(*edited_theme, "remove_type", new_type);
+	ur->add_do_method(*edited_theme, "add_type", new_type_name);
+	ur->add_undo_method(*edited_theme, "remove_type", new_type_name);
+
 	ur->add_do_method(this, "_update_edit_types");
 	ur->add_undo_method(this, "_update_edit_types");
 
 	ur->commit_action();
 }
 
-void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type) {
+void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, const String &p_item_name, const String &p_item_type) {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Create Theme Item"));
 
@@ -1584,18 +1617,31 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 
 void ThemeItemEditorDialog::_remove_theme_type(const String &p_theme_type) {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
-	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Theme Type"));
 
-	new_snapshot->remove_type(p_theme_type);
-
-	ur->add_do_method(*edited_theme, "clear");
-	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
+	ur->add_do_method(*edited_theme, "remove_type", p_theme_type);
 	// If the type was empty, it cannot be restored with merge, but thankfully we can fake it.
 	ur->add_undo_method(*edited_theme, "add_type", p_theme_type);
 	ur->add_undo_method(*edited_theme, "merge_with", old_snapshot);
+
+	ur->add_do_method(this, "_update_edit_types");
+	ur->add_undo_method(this, "_update_edit_types");
+
+	ur->commit_action();
+}
+
+void ThemeItemEditorDialog::_rename_theme_type(const String &p_old_theme_type, const String &p_new_theme_type) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Rename Theme Type"));
+
+	ur->add_do_method(*edited_theme, "rename_type", p_old_theme_type, p_new_theme_type);
+	ur->add_undo_method(*edited_theme, "rename_type", p_new_theme_type, p_old_theme_type);
+
+	// Set `edited_item_type`.
+	ur->add_do_method(this, "_update_edit_item_tree", p_new_theme_type);
+	ur->add_undo_method(this, "_update_edit_item_tree", p_old_theme_type);
 
 	ur->add_do_method(this, "_update_edit_types");
 	ur->add_undo_method(this, "_update_edit_types");
@@ -1626,8 +1672,8 @@ void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type,
 	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
 	ur->add_undo_method(*edited_theme, "merge_with", old_snapshot);
 
-	ur->add_do_method(theme_type_editor, "_update_edit_item_tree", edited_item_type);
-	ur->add_undo_method(theme_type_editor, "_update_edit_item_tree", edited_item_type);
+	ur->add_do_method(this, "_update_edit_item_tree", edited_item_type);
+	ur->add_undo_method(this, "_update_edit_item_tree", edited_item_type);
 
 	ur->commit_action();
 }
@@ -1811,14 +1857,16 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 }
 
 void ThemeItemEditorDialog::_confirm_edit_theme_item() {
+	const String new_item_name = theme_item_name->get_text().strip_edges().validate_ascii_identifier();
+
 	if (item_popup_mode == CREATE_THEME_ITEM) {
-		_add_theme_item(edit_item_data_type, theme_item_name->get_text(), edited_item_type);
+		_add_theme_item(edit_item_data_type, new_item_name, edited_item_type);
 	} else if (item_popup_mode == RENAME_THEME_ITEM) {
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Rename Theme Item"));
 
-		ur->add_do_method(*edited_theme, "rename_theme_item", edit_item_data_type, edit_item_old_name, theme_item_name->get_text(), edited_item_type);
-		ur->add_undo_method(*edited_theme, "rename_theme_item", edit_item_data_type, theme_item_name->get_text(), edit_item_old_name, edited_item_type);
+		ur->add_do_method(*edited_theme, "rename_theme_item", edit_item_data_type, edit_item_old_name, new_item_name, edited_item_type);
+		ur->add_undo_method(*edited_theme, "rename_theme_item", edit_item_data_type, new_item_name, edit_item_old_name, edited_item_type);
 
 		ur->add_do_method(this, "_update_edit_item_tree", edited_item_type);
 		ur->add_undo_method(this, "_update_edit_item_tree", edited_item_type);
@@ -1936,6 +1984,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect(SceneStringName(item_selected), callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
+	edit_type_list->connect("item_edited", callable_mp(this, &ThemeItemEditorDialog::_edited_type_edited));
 	edit_type_list->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
 
 	Label *edit_add_type_label = memnew(Label);
@@ -1946,11 +1995,11 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_dialog_side_vb->add_child(edit_add_type_hb);
 	edit_add_type_value = memnew(LineEdit);
 	edit_add_type_value->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	edit_add_type_value->connect("text_submitted", callable_mp(this, &ThemeItemEditorDialog::_add_theme_type));
+	edit_add_type_value->connect("text_submitted", callable_mp(this, &ThemeItemEditorDialog::_add_theme_type).unbind(1));
 	edit_add_type_hb->add_child(edit_add_type_value);
 	edit_add_type_button = memnew(Button);
 	edit_add_type_hb->add_child(edit_add_type_button);
-	edit_add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_add_theme_type).bind(""));
+	edit_add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_add_theme_type));
 
 	VBoxContainer *edit_items_vb = memnew(VBoxContainer);
 	edit_items_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2351,7 +2400,13 @@ void ThemeTypeEditor::_update_type_list() {
 
 	theme_type_list->clear();
 
-	if (theme_types.size() > 0) {
+	if (theme_types.is_empty()) {
+		theme_type_list->set_disabled(true);
+		theme_type_list->add_item(TTR("None"));
+
+		edited_type = "";
+		_update_type_items();
+	} else {
 		theme_type_list->set_disabled(false);
 
 		bool item_reselected = false;
@@ -2372,19 +2427,16 @@ void ThemeTypeEditor::_update_type_list() {
 			e_idx++;
 		}
 
-		if (!item_reselected) {
+		if (item_reselected) {
+			_update_type_items();
+		} else {
 			theme_type_list->select(0);
 			_list_type_selected(0);
-		} else {
-			_update_type_items();
 		}
-	} else {
-		theme_type_list->set_disabled(true);
-		theme_type_list->add_item(TTR("None"));
-
-		edited_type = "";
-		_update_type_items();
 	}
+
+	rename_type_button->set_disabled(theme_types.is_empty());
+	remove_type_button->set_disabled(theme_types.is_empty());
 
 	updating = false;
 }
@@ -2812,6 +2864,55 @@ void ThemeTypeEditor::_add_type_button_cbk() {
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
 
+void ThemeTypeEditor::_rename_type_button_cbk() {
+	theme_type_rename_line_edit->set_text(edited_type);
+	theme_type_rename_dialog->reset_size();
+	theme_type_rename_dialog->popup_centered();
+	theme_type_rename_line_edit->grab_focus();
+}
+
+void ThemeTypeEditor::_theme_type_rename_dialog_confirmed() {
+	String new_type_name = theme_type_rename_line_edit->get_text().strip_edges();
+	if (!new_type_name.is_empty()) { // The type name can be empty, unlike the item name.
+		new_type_name = new_type_name.validate_ascii_identifier();
+	}
+
+	if (edited_type == new_type_name) {
+		return;
+	}
+
+	List<StringName> theme_types;
+	edited_theme->get_type_list(&theme_types);
+	if (theme_types.find(new_type_name) != nullptr) {
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Rename Theme Type"));
+
+	ur->add_do_method(*edited_theme, "rename_type", edited_type, new_type_name);
+	ur->add_undo_method(*edited_theme, "rename_type", new_type_name, edited_type);
+
+	ur->add_do_method(this, "select_type", new_type_name);
+	ur->add_undo_method(this, "select_type", edited_type);
+
+	ur->commit_action();
+}
+
+void ThemeTypeEditor::_remove_type_button_cbk() {
+	Ref<Theme> old_snapshot = edited_theme->duplicate();
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Remove Theme Type"));
+
+	ur->add_do_method(*edited_theme, "remove_type", edited_type);
+	// If the type was empty, it cannot be restored with merge, but thankfully we can fake it.
+	ur->add_undo_method(*edited_theme, "add_type", edited_type);
+	ur->add_undo_method(*edited_theme, "merge_with", old_snapshot);
+
+	ur->commit_action();
+}
+
 void ThemeTypeEditor::_add_default_type_items() {
 	List<StringName> names;
 	String default_type = edited_type;
@@ -2905,7 +3006,8 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 		return;
 	}
 
-	String item_name = le->get_text().strip_edges();
+	const String item_name = le->get_text().strip_edges().validate_ascii_identifier();
+
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Add Theme Item"));
 
@@ -3063,7 +3165,7 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 		return;
 	}
 
-	String new_name = le->get_text().strip_edges();
+	const String new_name = le->get_text().strip_edges().validate_ascii_identifier();
 	if (new_name == p_item_name) {
 		_item_rename_canceled(p_data_type, p_item_name, p_control);
 		return;
@@ -3372,6 +3474,8 @@ void ThemeTypeEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			add_type_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			rename_type_button->set_icon(get_editor_theme_icon(SNAME("Rename")));
+			remove_type_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 
 			data_type_tabs->set_tab_icon(0, get_editor_theme_icon(SNAME("Color")));
 			data_type_tabs->set_tab_icon(1, get_editor_theme_icon(SNAME("MemberConstant")));
@@ -3391,6 +3495,7 @@ void ThemeTypeEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_pin_leading_stylebox"), &ThemeTypeEditor::_pin_leading_stylebox);
 	ClassDB::bind_method(D_METHOD("_unpin_leading_stylebox"), &ThemeTypeEditor::_unpin_leading_stylebox);
 	ClassDB::bind_method(D_METHOD("_change_pinned_stylebox"), &ThemeTypeEditor::_change_pinned_stylebox);
+	ClassDB::bind_method(D_METHOD("select_type", "type_name"), &ThemeTypeEditor::select_type);
 }
 
 void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
@@ -3460,6 +3565,29 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	add_type_button->set_tooltip_text(TTR("Add a type from a list of available types or create a new one."));
 	type_list_hb->add_child(add_type_button);
 	add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_button_cbk));
+
+	rename_type_button = memnew(Button);
+	rename_type_button->set_disabled(true);
+	rename_type_button->set_tooltip_text(TTR("Rename current type."));
+	type_list_hb->add_child(rename_type_button);
+	rename_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_rename_type_button_cbk));
+
+	theme_type_rename_dialog = memnew(ConfirmationDialog);
+	theme_type_rename_dialog->set_title(TTR("Rename Theme Type"));
+	theme_type_rename_dialog->set_min_size(Size2(256, 64) * EDSCALE);
+	add_child(theme_type_rename_dialog);
+	theme_type_rename_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeTypeEditor::_theme_type_rename_dialog_confirmed));
+
+	theme_type_rename_line_edit = memnew(LineEdit);
+	theme_type_rename_line_edit->set_select_all_on_focus(true);
+	theme_type_rename_dialog->add_child(theme_type_rename_line_edit);
+	theme_type_rename_dialog->register_text_enter(theme_type_rename_line_edit);
+
+	remove_type_button = memnew(Button);
+	remove_type_button->set_disabled(true);
+	remove_type_button->set_tooltip_text(TTR("Remove current type."));
+	type_list_hb->add_child(remove_type_button);
+	remove_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_remove_type_button_cbk));
 
 	HBoxContainer *type_controls = memnew(HBoxContainer);
 	main_vb->add_child(type_controls);
