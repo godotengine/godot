@@ -136,6 +136,7 @@ class PopupMenu : public Popup {
 	bool hide_on_item_selection = true;
 	bool hide_on_checkable_item_selection = true;
 	bool hide_on_multistate_item_selection = false;
+	bool hide_on_parent_unfocused = true;
 	Vector2 moved;
 
 	HashMap<Ref<Shortcut>, int> shortcut_refcount;
@@ -209,6 +210,7 @@ class PopupMenu : public Popup {
 	bool _set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie);
 	void _set_item_checkable_type(int p_index, int p_checkable_type);
 	int _get_item_checkable_type(int p_index) const;
+	void _parent_unfocused();
 
 protected:
 	virtual void add_child_notify(Node *p_child) override;
@@ -359,6 +361,9 @@ public:
 
 	void set_hide_on_multistate_item_selection(bool p_enabled);
 	bool is_hide_on_multistate_item_selection() const;
+
+	void set_hide_on_parent_unfocused(bool p_enabled);
+	bool is_hide_on_parent_unfocused() const;
 
 	void set_submenu_popup_delay(float p_time);
 	float get_submenu_popup_delay() const;
