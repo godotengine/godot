@@ -29,7 +29,7 @@
 		<method name="is_natively_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if the OpenXR runtime natively supports this composition layer type.
+				Returns [code]true[/code] if the OpenXR runtime natively supports this composition layer type.
 				[b]Note:[/b] This will only return an accurate result after the OpenXR session has started.
 			</description>
 		</method>

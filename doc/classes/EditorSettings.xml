@@ -152,7 +152,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="update_current" type="bool" />
 			<description>
-				Sets the initial value of the setting specified by [param name] to [param value]. This is used to provide a value for the Revert button in the Editor Settings. If [param update_current] is true, the current value of the setting will be set to [param value] as well.
+				Sets the initial value of the setting specified by [param name] to [param value]. This is used to provide a value for the Revert button in the Editor Settings. If [param update_current] is [code]true[/code], the setting is reset to [param value] as well.
 			</description>
 		</method>
 		<method name="set_project_metadata">

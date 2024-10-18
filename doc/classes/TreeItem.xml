@@ -267,7 +267,7 @@
 		<method name="get_next" qualifiers="const">
 			<return type="TreeItem" />
 			<description>
-				Returns the next sibling TreeItem in the tree or a null object if there is none.
+				Returns the next sibling TreeItem in the tree or a [code]null[/code] object if there is none.
 			</description>
 		</method>
 		<method name="get_next_in_tree">
@@ -289,13 +289,13 @@
 		<method name="get_parent" qualifiers="const">
 			<return type="TreeItem" />
 			<description>
-				Returns the parent TreeItem or a null object if there is none.
+				Returns the parent TreeItem or a [code]null[/code] object if there is none.
 			</description>
 		</method>
 		<method name="get_prev">
 			<return type="TreeItem" />
 			<description>
-				Returns the previous sibling TreeItem in the tree or a null object if there is none.
+				Returns the previous sibling TreeItem in the tree or a [code]null[/code] object if there is none.
 			</description>
 		</method>
 		<method name="get_prev_in_tree">

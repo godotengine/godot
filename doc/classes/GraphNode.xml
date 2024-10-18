@@ -154,7 +154,7 @@
 			<return type="bool" />
 			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns true if the background [StyleBox] of the slot with the given [param slot_index] is drawn.
+				Returns [code]true[/code] if the background [StyleBox] of the slot with the given [param slot_index] is drawn.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">

@@ -32,7 +32,7 @@
 			<param index="3" name="userdata" type="Variant" />
 			<description>
 				Queue the [param resource] being edited for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called.
-				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be null.
+				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be [code]null[/code].
 			</description>
 		</method>
 		<method name="queue_resource_preview">
@@ -43,7 +43,7 @@
 			<param index="3" name="userdata" type="Variant" />
 			<description>
 				Queue a resource file located at [param path] for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called.
-				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be null.
+				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be [code]null[/code].
 			</description>
 		</method>
 		<method name="remove_preview_generator">
