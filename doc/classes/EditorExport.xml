@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExport" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Hosts data related to a project's export configuration.
+	</brief_description>
+	<description>
+		Editor-only singleton that hosts a project's [EditorExportPlatform], [EditorExportPreset], and [EditorExportPlugin] objects. Use this class to retrieve information about a project's export configuration.
+	</description>
+	<tutorials>
+		<link title="Export">$DOCS_URL/tutorials/export/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_export_platform">
+			<return type="EditorExportPlatform" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the [EditorExportPlatform] at index [param idx]. [param idx] must be equal to or greater than [code]0[/code] and less than the result of [method get_export_platform_count].
+			</description>
+		</method>
+		<method name="get_export_platform_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of unique platforms available for export. This includes platforms that do not have an export preset in the current project.
+			</description>
+		</method>
+		<method name="get_export_preset">
+			<return type="EditorExportPreset" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the [EditorExportPreset] at index [param idx]. [param idx] must be equal to or greater than [code]0[/code] and less than the result of [method get_export_preset_count].
+			</description>
+		</method>
+		<method name="get_export_preset_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of export presets in the project.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="export_presets_runnable_updated">
+			<description>
+				Emitted when the [code]runnable[/code] property of an [EditorExportPreset] has been updated or when an [EditorExportPreset] has been added to or removed from the project.
+			</description>
+		</signal>
+		<signal name="export_presets_updated">
+			<description>
+				Emitted when the properties of an [EditorExportPreset] have been updated.
+			</description>
+		</signal>
+	</signals>
+</class>
