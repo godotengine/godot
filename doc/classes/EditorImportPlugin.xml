@@ -127,6 +127,12 @@
 				If this method is not overridden, it will return [code]true[/code] by default (i.e., safe for parallel importing).
 			</description>
 		</method>
+		<method name="_get_format_version" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Gets the format version of this importer. Increment the version when making incompatible changes to the format of the imported resources.
+			</description>
+		</method>
 		<method name="_get_import_options" qualifiers="virtual const">
 			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />
