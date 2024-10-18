@@ -32,9 +32,11 @@
 #define EDITOR_SETTINGS_DIALOG_H
 
 #include "editor/action_map_editor.h"
+#include "editor/editor_inspector.h"
 #include "scene/gui/dialogs.h"
 
 class CheckButton;
+class EventListenerLineEdit;
 class PanelContainer;
 class SectionedInspector;
 class TabContainer;
@@ -136,7 +138,44 @@ public:
 	static void update_navigation_preset();
 
 	EditorSettingsDialog();
-	~EditorSettingsDialog();
+};
+
+class EditorSettingsPropertyWrapper : public EditorProperty {
+	GDCLASS(EditorSettingsPropertyWrapper, EditorProperty);
+
+	String property;
+	EditorProperty *editor_property = nullptr;
+
+	BoxContainer *container = nullptr;
+	Button *override_button = nullptr;
+
+	HBoxContainer *override_info = nullptr;
+	Label *override_label = nullptr;
+	Button *goto_button = nullptr;
+	Button *remove_button = nullptr;
+
+	void _update_override();
+	void _create_override();
+	void _remove_override();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual void update_property() override;
+	void setup(const String &p_property, EditorProperty *p_editor_property);
+};
+
+class EditorSettingsInspectorPlugin : public EditorInspectorPlugin {
+	GDCLASS(EditorSettingsInspectorPlugin, EditorInspectorPlugin);
+
+	Object *current_object = nullptr;
+
+public:
+	SectionedInspector *inspector = nullptr;
+
+	virtual bool can_handle(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 #endif // EDITOR_SETTINGS_DIALOG_H
