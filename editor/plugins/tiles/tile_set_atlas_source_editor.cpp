@@ -1699,7 +1699,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 
 void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	// Check for shortcuts.
-	if (ED_IS_SHORTCUT("tiles_editor/delete_tile", p_event)) {
+	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		if (tools_button_group->get_pressed_button() == tool_select_button && !selection.is_empty()) {
 			_menu_option(TILE_DELETE);
 			accept_event();
@@ -2711,7 +2711,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
 	alternative_tile_popup_menu = memnew(PopupMenu);
-	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
+	alternative_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
 	alternative_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(alternative_tile_popup_menu);
 
