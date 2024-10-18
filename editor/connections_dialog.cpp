@@ -31,6 +31,7 @@
 #include "connections_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/string/string_builder.h"
 #include "core/templates/hash_set.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
@@ -1267,6 +1268,15 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 		case SLOT_MENU_GO_TO_METHOD: {
 			_go_to_method(*item);
 		} break;
+		case SLOT_MENU_GO_TO_NODE: {
+			const Connection meta = item->get_metadata(0);
+			const ConnectDialog::ConnectionData con = meta;
+			Node *target = Object::cast_to<Node>(con.target);
+			ERR_FAIL_NULL(target);
+
+			SceneTreeDock::get_singleton()->set_selection({ target });
+			SceneTreeDock::get_singleton()->set_selected(target, true);
+		} break;
 		case SLOT_MENU_DISCONNECT: {
 			Connection connection = item->get_metadata(0);
 			_disconnect(connection);
@@ -1551,28 +1561,31 @@ void ConnectionsDock::update_tree() {
 					continue;
 				}
 
-				String path = String(selected_node->get_path_to(target)) + " :: " + cd.method + "()";
+				StringBuilder path_builder;
+				path_builder.append(" :: " + cd.method + "()");
 				if (cd.flags & CONNECT_DEFERRED) {
-					path += " (deferred)";
+					path_builder.append(" (deferred)");
 				}
 				if (cd.flags & CONNECT_ONE_SHOT) {
-					path += " (one-shot)";
+					path_builder.append(" (one-shot)");
 				}
 				if (cd.unbinds > 0) {
-					path += " unbinds(" + itos(cd.unbinds) + ")";
+					path_builder.append(" unbinds(" + itos(cd.unbinds) + ")");
 				} else if (!cd.binds.is_empty()) {
-					path += " binds(";
+					path_builder.append(" binds(");
 					for (int i = 0; i < cd.binds.size(); i++) {
 						if (i > 0) {
-							path += ", ";
+							path_builder.append(", ");
 						}
-						path += cd.binds[i].operator String();
+						path_builder.append(cd.binds[i]);
 					}
-					path += ")";
+					path_builder.append(")");
 				}
+				const String path = path_builder.as_string();
 
 				TreeItem *connection_item = tree->create_item(signal_item);
-				connection_item->set_text(0, path);
+				connection_item->set_text(0, String(target->get_name()) + path);
+				connection_item->set_tooltip_text(0, String(selected_node->get_path_to(target)) + path);
 				connection_item->set_metadata(0, connection);
 				connection_item->set_icon(0, get_editor_theme_icon(SNAME("Slot")));
 
@@ -1649,6 +1662,7 @@ ConnectionsDock::ConnectionsDock() {
 	slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_slot_menu_about_to_popup));
 	slot_menu->add_item(TTR("Edit..."), SLOT_MENU_EDIT);
 	slot_menu->add_item(TTR("Go to Method"), SLOT_MENU_GO_TO_METHOD);
+	slot_menu->add_item(TTR("Go to Node"), SLOT_MENU_GO_TO_NODE);
 	slot_menu->add_shortcut(ED_SHORTCUT("connections_editor/disconnect", TTR("Disconnect"), Key::KEY_DELETE), SLOT_MENU_DISCONNECT);
 	add_child(slot_menu);
 
