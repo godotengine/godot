@@ -15,7 +15,7 @@ thirdparty_sources = [
     "Dither.cpp",
     "ProcessDxtc.cpp",
     "ProcessRGB.cpp",
-    "Tables.cpp",
+    "Tables.cpp"
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
