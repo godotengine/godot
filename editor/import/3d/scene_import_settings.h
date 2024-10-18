@@ -244,6 +244,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum CameraView {
+		CAMERA_VIEW_ORTHOGRAPHIC,
+		CAMERA_VIEW_PERSPECTIVE,
+	};
+
 	bool is_editing_animation() const { return editing_animation; }
 	void request_generate_collider();
 	void update_view();
