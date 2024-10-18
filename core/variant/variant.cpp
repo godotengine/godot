@@ -1891,7 +1891,7 @@ Variant::operator Vector2() const {
 	} else if (type == VECTOR4I) {
 		return Vector2(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y);
 	} else {
-		return Vector2();
+		ERR_FAIL_V_MSG(Vector2(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(VECTOR2) + "'.");
 	}
 }
 
@@ -1909,7 +1909,7 @@ Variant::operator Vector2i() const {
 	} else if (type == VECTOR4I) {
 		return Vector2(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y);
 	} else {
-		return Vector2i();
+		ERR_FAIL_V_MSG(Vector2i(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(VECTOR2I) + "'.");
 	}
 }
 
@@ -1919,7 +1919,7 @@ Variant::operator Rect2() const {
 	} else if (type == RECT2I) {
 		return *reinterpret_cast<const Rect2i *>(_data._mem);
 	} else {
-		return Rect2();
+		ERR_FAIL_V_MSG(Rect2(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(RECT2) + "'.");
 	}
 }
 
@@ -1929,7 +1929,7 @@ Variant::operator Rect2i() const {
 	} else if (type == RECT2) {
 		return *reinterpret_cast<const Rect2 *>(_data._mem);
 	} else {
-		return Rect2i();
+		ERR_FAIL_V_MSG(Rect2i(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(RECT2I) + "'.");
 	}
 }
 
@@ -1947,7 +1947,7 @@ Variant::operator Vector3() const {
 	} else if (type == VECTOR4I) {
 		return Vector3(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y, reinterpret_cast<const Vector4i *>(_data._mem)->z);
 	} else {
-		return Vector3();
+		ERR_FAIL_V_MSG(Vector3(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(VECTOR3) + "'.");
 	}
 }
 
@@ -1965,7 +1965,7 @@ Variant::operator Vector3i() const {
 	} else if (type == VECTOR4I) {
 		return Vector3i(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y, reinterpret_cast<const Vector4i *>(_data._mem)->z);
 	} else {
-		return Vector3i();
+		ERR_FAIL_V_MSG(Vector3i(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(VECTOR3I) + "'.");
 	}
 }
 
@@ -1983,7 +1983,7 @@ Variant::operator Vector4() const {
 	} else if (type == VECTOR3I) {
 		return Vector4(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0.0);
 	} else {
-		return Vector4();
+		ERR_FAIL_V_MSG(Vector4(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(VECTOR4) + "'.");
 	}
 }
 
@@ -2002,7 +2002,7 @@ Variant::operator Vector4i() const {
 	} else if (type == VECTOR3I) {
 		return Vector4i(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0.0);
 	} else {
-		return Vector4i();
+		ERR_FAIL_V_MSG(Vector4i(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(VECTOR4I) + "'.");
 	}
 }
 
@@ -2010,7 +2010,7 @@ Variant::operator Plane() const {
 	if (type == PLANE) {
 		return *reinterpret_cast<const Plane *>(_data._mem);
 	} else {
-		return Plane();
+		ERR_FAIL_V_MSG(Plane(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(PLANE) + "'.");
 	}
 }
 
@@ -2018,7 +2018,7 @@ Variant::operator ::AABB() const {
 	if (type == AABB) {
 		return *_data._aabb;
 	} else {
-		return ::AABB();
+		ERR_FAIL_V_MSG(::AABB(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(AABB) + "'.");
 	}
 }
 
@@ -2030,7 +2030,7 @@ Variant::operator Basis() const {
 	} else if (type == TRANSFORM3D) { // unexposed in Variant::can_convert?
 		return _data._transform3d->basis;
 	} else {
-		return Basis();
+		ERR_FAIL_V_MSG(Basis(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(BASIS) + "'.");
 	}
 }
 
@@ -2042,7 +2042,7 @@ Variant::operator Quaternion() const {
 	} else if (type == TRANSFORM3D) {
 		return _data._transform3d->basis;
 	} else {
-		return Quaternion();
+		ERR_FAIL_V_MSG(Quaternion(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(QUATERNION) + "'.");
 	}
 }
 
@@ -2066,7 +2066,7 @@ Variant::operator Transform3D() const {
 	} else if (type == PROJECTION) {
 		return *_data._projection;
 	} else {
-		return Transform3D();
+		ERR_FAIL_V_MSG(Transform3D(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(TRANSFORM3D) + "'.");
 	}
 }
 
@@ -2090,7 +2090,7 @@ Variant::operator Projection() const {
 	} else if (type == PROJECTION) {
 		return *_data._projection;
 	} else {
-		return Projection();
+		ERR_FAIL_V_MSG(Projection(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(PROJECTION) + "'.");
 	}
 }
 
@@ -2108,7 +2108,7 @@ Variant::operator Transform2D() const {
 		m.columns[2][1] = t.origin[1];
 		return m;
 	} else {
-		return Transform2D();
+		ERR_FAIL_V_MSG(Transform2D(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(TRANSFORM2D) + "'.");
 	}
 }
 
@@ -2120,7 +2120,7 @@ Variant::operator Color() const {
 	} else if (type == INT) {
 		return Color::hex(operator int());
 	} else {
-		return Color();
+		ERR_FAIL_V_MSG(Color(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(COLOR) + "'.");
 	}
 }
 
@@ -2130,7 +2130,7 @@ Variant::operator NodePath() const {
 	} else if (type == STRING) {
 		return NodePath(operator String());
 	} else {
-		return NodePath();
+		ERR_FAIL_V_MSG(NodePath(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(NODE_PATH) + "'.");
 	}
 }
 
@@ -2152,7 +2152,7 @@ Variant::operator ::RID() const {
 		}
 		return ::RID();
 	} else {
-		return ::RID();
+		ERR_FAIL_V_MSG(::RID(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(RID) + "'.");
 	}
 }
 
@@ -2187,7 +2187,7 @@ Variant::operator Dictionary() const {
 	if (type == DICTIONARY) {
 		return *reinterpret_cast<const Dictionary *>(_data._mem);
 	} else {
-		return Dictionary();
+		ERR_FAIL_V_MSG(Dictionary(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(DICTIONARY) + "'.");
 	}
 }
 
@@ -2195,7 +2195,7 @@ Variant::operator Callable() const {
 	if (type == CALLABLE) {
 		return *reinterpret_cast<const Callable *>(_data._mem);
 	} else {
-		return Callable();
+		ERR_FAIL_V_MSG(Callable(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(CALLABLE) + "'.");
 	}
 }
 
@@ -2203,7 +2203,7 @@ Variant::operator Signal() const {
 	if (type == SIGNAL) {
 		return *reinterpret_cast<const Signal *>(_data._mem);
 	} else {
-		return Signal();
+		ERR_FAIL_V_MSG(Signal(), "Unable to convert from '" + Variant::get_type_name(type) + "' to '" + Variant::get_type_name(SIGNAL) + "'.");
 	}
 }
 
