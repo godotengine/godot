@@ -1012,9 +1012,16 @@
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
-		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
+		<member name=" " type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
+		<member name="pivot_mode" type="int" setter="set_pivot_mode" getter="get_pivot_mode" enum="Control.LayoutPivotMode" default="0">
+			Allow to switch between a fixed pixel offset and an automatic pixel offset based on [member size] and [member pivot_offset_ratio].
+		</member>
 		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
 			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
+		</member>
+		<member name="pivot_offset_ratio" type="Vector2" setter="set_pivot_offset_ratio" getter="get_pivot_offset_ratio" default="Vector2(0, 0)">
+			Set the [member pivot_offset] automatically when [member size] is changed. By default, the node's pivot ratio is its top-left corner [code](0, 0)[/code]. Set this property to [code](0.5, 0.5)[/code] to automatically set the pivot around the Control's center.
+			[b]Note:[/b] The ratio can be less than 0 and greater than 1.
 		</member>
 		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
 			The node's position, relative to its containing node. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].
