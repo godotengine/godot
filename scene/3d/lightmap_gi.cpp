@@ -98,15 +98,15 @@ Array LightmapGIData::_get_user_data() const {
 }
 
 void LightmapGIData::set_lightmap_textures(const TypedArray<TextureLayered> &p_data) {
-	light_textures = p_data;
+	storage_light_textures = p_data;
 	if (p_data.is_empty()) {
-		light_texture = Ref<TextureLayered>();
+		combined_light_texture = Ref<TextureLayered>();
 		_reset_lightmap_textures();
 		return;
 	}
 
 	if (p_data.size() == 1) {
-		light_texture = p_data[0];
+		combined_light_texture = p_data[0];
 	} else {
 		Vector<Ref<Image>> images;
 		for (int i = 0; i < p_data.size(); i++) {
@@ -121,13 +121,13 @@ void LightmapGIData::set_lightmap_textures(const TypedArray<TextureLayered> &p_d
 		combined_texture.instantiate();
 
 		combined_texture->create_from_images(images);
-		light_texture = combined_texture;
+		combined_light_texture = combined_texture;
 	}
 	_reset_lightmap_textures();
 }
 
 TypedArray<TextureLayered> LightmapGIData::get_lightmap_textures() const {
-	return light_textures;
+	return storage_light_textures;
 }
 
 RID LightmapGIData::get_rid() const {
@@ -139,7 +139,7 @@ void LightmapGIData::clear() {
 }
 
 void LightmapGIData::_reset_lightmap_textures() {
-	RS::get_singleton()->lightmap_set_textures(lightmap, light_texture.is_valid() ? light_texture->get_rid() : RID(), uses_spherical_harmonics);
+	RS::get_singleton()->lightmap_set_textures(lightmap, combined_light_texture.is_valid() ? combined_light_texture->get_rid() : RID(), uses_spherical_harmonics);
 }
 
 void LightmapGIData::set_uses_spherical_harmonics(bool p_enable) {
@@ -238,10 +238,10 @@ void LightmapGIData::set_light_texture(const Ref<TextureLayered> &p_light_textur
 }
 
 Ref<TextureLayered> LightmapGIData::get_light_texture() const {
-	if (light_textures.is_empty()) {
+	if (storage_light_textures.is_empty()) {
 		return Ref<TextureLayered>();
 	}
-	return light_textures.get(0);
+	return storage_light_textures.get(0);
 }
 
 void LightmapGIData::_set_light_textures_data(const Array &p_data) {
@@ -249,7 +249,7 @@ void LightmapGIData::_set_light_textures_data(const Array &p_data) {
 }
 
 Array LightmapGIData::_get_light_textures_data() const {
-	return Array(light_textures);
+	return Array(storage_light_textures);
 }
 #endif
 
@@ -274,7 +274,7 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_NO_EDITOR), "set_lightmap_textures", "get_lightmap_textures");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
@@ -287,8 +287,8 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_light_textures_data", "data"), &LightmapGIData::_set_light_textures_data);
 	ClassDB::bind_method(D_METHOD("_get_light_textures_data"), &LightmapGIData::_get_light_textures_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_EDITOR), "set_light_texture", "get_light_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
 #endif
 }
 
@@ -740,6 +740,74 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 	}
 }
 
+LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_compress) const {
+	Vector<Ref<Image>> images;
+	images.resize(p_lightmapper->get_bake_texture_count());
+
+	for (int i = 0; i < images.size(); i++) {
+		images.set(i, p_lightmapper->get_bake_texture(i));
+	}
+
+	const int slice_count = images.size();
+	const int slice_width = images[0]->get_width();
+	const int slice_height = images[0]->get_height();
+
+	const int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+	const int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+	const int last_count = slice_count % slices_per_texture;
+
+	r_textures.resize(texture_count);
+
+	for (int i = 0; i < texture_count; i++) {
+		const int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
+
+		Ref<Image> texture_image = Image::create_empty(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+
+		for (int j = 0; j < texture_slice_count; j++) {
+			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
+		}
+
+		const String atlas_path = (texture_count > 1 ? p_base_name + "_" + itos(i) : p_base_name) + ".exr";
+		const String config_path = atlas_path + ".import";
+
+		Ref<ConfigFile> config;
+		config.instantiate();
+
+		// Load an import configuration if present.
+		if (FileAccess::exists(config_path)) {
+			config->load(config_path);
+		}
+
+		config->set_value("remap", "importer", "2d_array_texture");
+		config->set_value("remap", "type", "CompressedTexture2DArray");
+		if (!config->has_section_key("params", "compress/mode")) {
+			// Do not override an existing compression mode.
+			config->set_value("params", "compress/mode", p_compress ? 2 : 3);
+		}
+		config->set_value("params", "compress/channel_pack", 1);
+		config->set_value("params", "mipmaps/generate", false);
+		config->set_value("params", "slices/horizontal", 1);
+		config->set_value("params", "slices/vertical", texture_slice_count);
+
+		config->save(config_path);
+
+		// Save the file.
+		Error save_err = texture_image->save_exr(atlas_path, false);
+
+		ERR_FAIL_COND_V(save_err, LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE);
+
+		// Reimport the file.
+		ResourceLoader::import(atlas_path);
+		Ref<TextureLayered> t = ResourceLoader::load(atlas_path); // If already loaded, it will be updated on refocus?
+		ERR_FAIL_COND_V(t.is_null(), LightmapGI::BAKE_ERROR_CANT_CREATE_IMAGE);
+
+		// Store the atlas in the array.
+		r_textures[i] = t;
+	}
+
+	return LightmapGI::BAKE_ERROR_OK;
+}
+
 LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 	if (p_image_data_path.is_empty()) {
 		if (get_light_data().is_null()) {
@@ -1127,80 +1195,30 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	// POSTBAKE: Save Textures.
 
-	TypedArray<TextureLayered> textures;
-	{
-		Vector<Ref<Image>> images;
-		images.resize(lightmapper->get_bake_texture_count());
-		for (int i = 0; i < images.size(); i++) {
-			images.set(i, lightmapper->get_bake_texture(i));
-		}
+	TypedArray<TextureLayered> lightmap_textures;
 
-		int slice_count = images.size();
-		int slice_width = images[0]->get_width();
-		int slice_height = images[0]->get_height();
+	const String texture_filename = p_image_data_path.get_basename();
 
-		int slices_per_texture = Image::MAX_HEIGHT / slice_height;
-		int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+	// Save the lightmap atlases.
+	BakeError save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename, lightmap_textures, false);
+	ERR_FAIL_COND_V(save_err != BAKE_ERROR_OK, save_err);
 
-		textures.resize(texture_count);
-
-		String base_path = p_image_data_path.get_basename();
-
-		int last_count = slice_count % slices_per_texture;
-		for (int i = 0; i < texture_count; i++) {
-			int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
-
-			Ref<Image> texture_image = Image::create_empty(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
-
-			for (int j = 0; j < texture_slice_count; j++) {
-				texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
-			}
-
-			String texture_path = texture_count > 1 ? base_path + "_" + itos(i) + ".exr" : base_path + ".exr";
-
-			Ref<ConfigFile> config;
-			config.instantiate();
-
-			if (FileAccess::exists(texture_path + ".import")) {
-				config->load(texture_path + ".import");
-			}
-
-			config->set_value("remap", "importer", "2d_array_texture");
-			config->set_value("remap", "type", "CompressedTexture2DArray");
-			if (!config->has_section_key("params", "compress/mode")) {
-				// User may want another compression, so leave it be, but default to VRAM uncompressed.
-				config->set_value("params", "compress/mode", 3);
-			}
-			config->set_value("params", "compress/channel_pack", 1);
-			config->set_value("params", "mipmaps/generate", false);
-			config->set_value("params", "slices/horizontal", 1);
-			config->set_value("params", "slices/vertical", texture_slice_count);
-
-			config->save(texture_path + ".import");
-
-			Error err = texture_image->save_exr(texture_path, false);
-			ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
-			ResourceLoader::import(texture_path);
-			Ref<TextureLayered> t = ResourceLoader::load(texture_path); // If already loaded, it will be updated on refocus?
-			ERR_FAIL_COND_V(t.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
-			textures[i] = t;
-		}
-	}
-
-	/* POSTBAKE: Save Light Data */
+	// POSTBAKE: Save Light Data.
 
 	Ref<LightmapGIData> gi_data;
+
 	if (get_light_data().is_valid()) {
 		gi_data = get_light_data();
-		set_light_data(Ref<LightmapGIData>()); //clear
+		set_light_data(Ref<LightmapGIData>()); // Clear.
 		gi_data->clear();
+
 	} else {
 		gi_data.instantiate();
 	}
 
-	gi_data->set_lightmap_textures(textures);
-	gi_data->_set_uses_packed_directional(directional); // New SH lightmaps are packed automatically.
+	gi_data->set_lightmap_textures(lightmap_textures);
 	gi_data->set_uses_spherical_harmonics(directional);
+	gi_data->_set_uses_packed_directional(directional); // New SH lightmaps are packed automatically.
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
 		Dictionary d = lightmapper->get_bake_mesh_userdata(i);
