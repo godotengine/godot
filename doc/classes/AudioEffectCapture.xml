@@ -61,6 +61,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="active_channel" type="int" setter="set_active_channel" getter="get_active_channel" default="0">
+			The audio bus channel that is captured by the effect.
+		</member>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.1">
 			Length of the internal ring buffer, in seconds. Setting the buffer length will have no effect if already initialized.
 		</member>
