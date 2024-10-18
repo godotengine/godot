@@ -657,15 +657,55 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 	real_t closest_point_distance_squared = FLT_MAX;
 
 	for (const gd::Polygon &polygon : p_polygons) {
-		for (size_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
-			const Face3 face(polygon.points[0].pos, polygon.points[point_id - 1].pos, polygon.points[point_id].pos);
-			const Vector3 closest_point_on_face = face.get_closest_point_to(p_point);
-			const real_t distance_squared_to_point = closest_point_on_face.distance_squared_to(p_point);
-			if (distance_squared_to_point < closest_point_distance_squared) {
-				result.point = closest_point_on_face;
-				result.normal = face.get_plane().normal;
+		Vector3 plane_normal = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
+		bool inside = true;
+		Vector3 previous = polygon.points[polygon.points.size() - 1].pos;
+		for (size_t point_id = 0; point_id < polygon.points.size(); point_id += 1) {
+			Vector3 edge = polygon.points[point_id].pos - previous;
+			Vector3 to_point = p_point - previous;
+			Vector3 edgeToPointNormal = edge.cross(to_point);
+			bool clockwise = edgeToPointNormal.dot(plane_normal) > 0;
+			// If we are not clockwise, the point will never be inside the polygon and so the closest point will be on an edge
+			if (clockwise == false) {
+				inside = false;
+				real_t point_projected_on_edge = edge.dot(to_point);
+				real_t edgeSquare = edge.length_squared();
+				// If the projection is greater than the edge size, the result will be on the next edge
+				if (point_projected_on_edge <= edgeSquare) {
+					real_t percent = point_projected_on_edge / edgeSquare;
+					Vector3 closest_on_edge = previous + MAX(percent, 0.f) * edge;
+					real_t distance_squared = closest_on_edge.distance_squared_to(p_point);
+					if (distance_squared < closest_point_distance_squared) {
+						closest_point_distance_squared = distance_squared;
+						result.point = closest_on_edge;
+						result.normal = plane_normal;
+						result.owner = polygon.owner->get_self();
+					}
+
+					// The projection being below 1 is our usual stop, but if we are on the first side we check
+					// and we are below 0 there could be a better point on the previous side. If we are between 0 and 1
+					// then we must stop, we will not find a better point for this polygon
+					if ((point_id > 0) || (percent >= 0.f)) {
+						break;
+					}
+				}
+			}
+			previous = polygon.points[point_id].pos;
+		}
+
+		if (inside) {
+			Vector3 plane_normalized = plane_normal.normalized();
+			real_t distance = plane_normalized.dot(p_point - polygon.points[0].pos);
+			real_t distance_squared = distance * distance;
+			if (distance_squared < closest_point_distance_squared) {
+				closest_point_distance_squared = distance_squared;
+				result.point = p_point - plane_normalized * distance;
+				result.normal = plane_normal;
 				result.owner = polygon.owner->get_self();
-				closest_point_distance_squared = distance_squared_to_point;
+
+				if (Math::is_equal_approx(distance, (real_t)0)) {
+					break;
+				}
 			}
 		}
 	}
