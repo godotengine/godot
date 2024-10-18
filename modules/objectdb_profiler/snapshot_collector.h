@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  snapshot_collector.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef SNAPSHOT_COLLECTOR_H
+#define SNAPSHOT_COLLECTOR_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "scene/debugger/scene_debugger.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+struct SnapshotDataTransportObject : public SceneDebuggerObject {
+	SnapshotDataTransportObject() :
+			SceneDebuggerObject() {}
+	SnapshotDataTransportObject(Object *p_obj) :
+			SceneDebuggerObject(p_obj) {}
 
-	void _inspect_shader(RID p_shader);
-
-protected:
-	static void _bind_methods();
-
-public:
-	EditorNativeShaderSourceVisualizer();
+	Dictionary extra_debug_data;
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+class SnapshotCollector {
+public:
+	static HashMap<int, Vector<uint8_t>> pending_snapshots;
+	static void snapshot_objects(Array *p_arr, Dictionary snapshot_context = Dictionary());
+	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+	static void initialize();
+	static void deinitialize();
+	static String get_godot_version_string();
+};
+
+#endif // SNAPSHOT_COLLECTOR_H
