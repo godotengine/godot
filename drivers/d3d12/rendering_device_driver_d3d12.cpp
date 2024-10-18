@@ -2398,10 +2398,10 @@ void RenderingDeviceDriverD3D12::_swap_chain_release_buffers(SwapChain *p_swap_c
 	p_swap_chain->framebuffers.clear();
 }
 
-RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
+RDD::RenderPassID RenderingDeviceDriverD3D12::_swap_chain_create_render_pass(RDD::DataFormat p_format) {
 	// Create the render pass that will be used to draw to the swap chain's framebuffers.
 	RDD::Attachment attachment;
-	attachment.format = DATA_FORMAT_R8G8B8A8_UNORM;
+	attachment.format = p_format;
 	attachment.samples = RDD::TEXTURE_SAMPLES_1;
 	attachment.load_op = RDD::ATTACHMENT_LOAD_OP_CLEAR;
 	attachment.store_op = RDD::ATTACHMENT_STORE_OP_STORE;
@@ -2412,13 +2412,22 @@ RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1);
+	return render_pass_create(attachment, subpass, {}, 1);
+}
+
+RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
+	RDD::DataFormat format = DATA_FORMAT_R8G8B8A8_UNORM;
+	if (context_driver->surface_get_hdr_output_enabled(p_surface)) {
+		format = DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+	}
+
+	RenderPassID render_pass = _swap_chain_create_render_pass(format);
 	ERR_FAIL_COND_V(!render_pass, SwapChainID());
 
 	// Create the empty swap chain until it is resized.
 	SwapChain *swap_chain = memnew(SwapChain);
 	swap_chain->surface = p_surface;
-	swap_chain->data_format = attachment.format;
+	swap_chain->data_format = format;
 	swap_chain->render_pass = render_pass;
 	return SwapChainID(swap_chain);
 }
@@ -2463,10 +2472,26 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 	print_verbose("Using swap chain flags: " + itos(creation_flags) + ", sync interval: " + itos(sync_interval) + ", present flags: " + itos(present_flags));
 
-	if (swap_chain->d3d_swap_chain != nullptr && creation_flags != swap_chain->creation_flags) {
-		// The swap chain must be recreated if the creation flags are different.
+	RDD::DataFormat new_data_format;
+	if (context_driver->surface_get_hdr_output_enabled(swap_chain->surface)) {
+		// DXGI_FORMAT_R10G10B10A2_UNORM for DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020
+		new_data_format = DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+	} else {
+		new_data_format = DATA_FORMAT_R8G8B8A8_UNORM;
+	}
+
+	if (swap_chain->d3d_swap_chain != nullptr && (creation_flags != swap_chain->creation_flags || new_data_format != swap_chain->data_format)) {
+		// The swap chain must be recreated if the creation flags or data format are different.
 		_swap_chain_release(swap_chain);
 	}
+
+	if (new_data_format != swap_chain->data_format) {
+		render_pass_free(swap_chain->render_pass);
+		swap_chain->render_pass = _swap_chain_create_render_pass(new_data_format);
+		ERR_FAIL_COND_V(!swap_chain->render_pass, ERR_CANT_CREATE);
+	}
+
+	swap_chain->data_format = new_data_format;
 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
 	if (swap_chain->d3d_swap_chain != nullptr) {
@@ -2500,6 +2525,12 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 		swap_chain_1.As(&swap_chain->d3d_swap_chain);
 		ERR_FAIL_NULL_V(swap_chain->d3d_swap_chain, ERR_CANT_CREATE);
+
+		if (swap_chain->data_format == DATA_FORMAT_A2B10G10R10_UNORM_PACK32) {
+			print_verbose("D3D12: Set HDR swap chain color space to BT.2020 (ST2084 PQ)");
+			res = swap_chain->d3d_swap_chain->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
+			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+		}
 
 		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
@@ -2582,6 +2613,19 @@ RDD::RenderPassID RenderingDeviceDriverD3D12::swap_chain_get_render_pass(SwapCha
 RDD::DataFormat RenderingDeviceDriverD3D12::swap_chain_get_format(SwapChainID p_swap_chain) {
 	const SwapChain *swap_chain = (const SwapChain *)(p_swap_chain.id);
 	return swap_chain->data_format;
+}
+
+RDD::ColorSpace RenderingDeviceDriverD3D12::swap_chain_get_color_space(SwapChainID p_swap_chain) {
+	const SwapChain *swap_chain = (const SwapChain *)(p_swap_chain.id);
+	switch (swap_chain->data_format) {
+		case DATA_FORMAT_A2B10G10R10_UNORM_PACK32:
+			return COLOR_SPACE_HDR10_ST2084;
+		case DATA_FORMAT_R8G8B8A8_UNORM:
+			return RDD::COLOR_SPACE_SRGB_NONLINEAR;
+		default:
+			DEV_ASSERT(false && "Unknown swap chain color space.");
+			return COLOR_SPACE_MAX;
+	}
 }
 
 void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
@@ -6525,6 +6569,57 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		print_verbose("- Depth bounds test supported");
 	} else {
 		print_verbose("- Depth bounds test not supported");
+	}
+
+	// DEBUG
+	if (is_print_verbose_enabled()) {
+		print_line("- DXGI Outputs:");
+
+		ComPtr<IDXGIOutput> dxgi_output;
+		// FIXME: Using just one adapter doesn't work on NVIDIA Optimus!
+		for (int i = 0; (res = adapter->EnumOutputs(i, &dxgi_output)) != DXGI_ERROR_NOT_FOUND; i++) {
+			if (!SUCCEEDED(res)) {
+				print_error(vformat("EnumOutputs failed: 0x%08X", (int)res));
+				break;
+			}
+
+			ComPtr<IDXGIOutput6> dxgi_output_6;
+			res = dxgi_output.As(&dxgi_output_6);
+			if (!SUCCEEDED(res)) {
+				print_error(vformat("Failed to get IDXGIOutput6: 0x%08X", (int)res));
+				continue;
+			}
+
+			DXGI_OUTPUT_DESC1 desc1;
+			res = dxgi_output_6->GetDesc1(&desc1);
+			if (!SUCCEEDED(res)) {
+				print_error(vformat("Failed to get DXGI_OUTPUT_DESC1: 0x%08X", (int)res));
+				continue;
+			}
+
+			print_line("Device Name:", String::utf16((const char16_t *)desc1.DeviceName, 32));
+			print_line(vformat("hMonitor: 0x%08X", (uintptr_t)desc1.Monitor));
+			print_line("Bits per color:", desc1.BitsPerColor);
+			switch (desc1.ColorSpace) {
+				case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709:
+					print_line("Color space: sRGB (SDR)");
+					break;
+				case DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020:
+					print_line("Color space: BT.2020 ST2084 PQ (HDR)");
+					break;
+				default:
+					print_line("Color space: Other -", desc1.ColorSpace);
+					break;
+			}
+			print_line("RedPrimary:", desc1.RedPrimary[0], desc1.RedPrimary[1]);
+			print_line("GreenPrimary:", desc1.GreenPrimary[0], desc1.GreenPrimary[1]);
+			print_line("BluePrimary:", desc1.BluePrimary[0], desc1.BluePrimary[1]);
+			print_line("WhitePoint:", desc1.WhitePoint[0], desc1.WhitePoint[1]);
+			print_line("MinLuminance:", desc1.MinLuminance);
+			print_line("MaxLuminance:", desc1.MaxLuminance);
+			print_line("MaxFullFrameLuminance:", desc1.MaxFullFrameLuminance);
+			print_line("");
+		}
 	}
 
 	return OK;
