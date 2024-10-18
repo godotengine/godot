@@ -3164,7 +3164,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	HashMap<String, ScriptLanguage::CodeCompletionOption> options;
 
 	GDScriptParser::CompletionContext completion_context = parser.get_completion_context();
-	completion_context.base = p_owner;
+	if (completion_context.current_class != nullptr && completion_context.current_class->outer == nullptr) {
+		completion_context.base = p_owner;
+	}
 	bool is_function = false;
 
 	switch (completion_context.type) {
