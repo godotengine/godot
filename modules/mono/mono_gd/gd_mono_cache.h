@@ -42,8 +42,6 @@
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 
-#include <stdint.h>
-
 class CSharpScript;
 
 namespace GDMonoCache {
