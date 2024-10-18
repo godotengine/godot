@@ -390,11 +390,11 @@ StringName::StringName(const String &p_name, bool p_static) {
 
 	ERR_FAIL_COND(!configured);
 
+	MutexLock lock(mutex);
+
 	if (p_name.is_empty()) {
 		return;
 	}
-
-	MutexLock lock(mutex);
 
 	uint32_t hash = p_name.hash();
 	uint32_t idx = hash & STRING_TABLE_MASK;
