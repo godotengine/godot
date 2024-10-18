@@ -314,7 +314,7 @@ namespace Godot
         /// <returns>The capitalized string.</returns>
         public static string Capitalize(this string instance)
         {
-            string aux = instance.CamelcaseToUnderscore(true).Replace("_", " ", StringComparison.Ordinal).Trim();
+            string aux = instance.SeparateCompoundWords(true).Trim();
             string cap = string.Empty;
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
@@ -371,7 +371,20 @@ namespace Godot
                 return Marshaling.ConvertStringToManaged(snakeCase);
         }
 
-        private static string CamelcaseToUnderscore(this string instance, bool lowerCase)
+        /// <summary>
+        /// Returns the string converted to <c>kebab-case</c>.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static string ToKebabCase(this string instance)
+        {
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_to_kebab_case(instanceStr, out godot_string kebabCase);
+            using (kebabCase)
+                return Marshaling.ConvertStringToManaged(kebabCase);
+        }
+
+        private static string SeparateCompoundWords(this string instance, bool lowerCase)
         {
             string newString = string.Empty;
             int startIndex = 0;
@@ -407,12 +420,14 @@ namespace Godot
                 bool shouldSplit = condA || condB || condC || canBreakNumberLetter || canBreakLetterNumber;
                 if (shouldSplit)
                 {
-                    newString += string.Concat(instance.AsSpan(startIndex, i - startIndex), "_");
+                    newString += string.Concat(instance.AsSpan(startIndex, i - startIndex), " ");
                     startIndex = i;
                 }
             }
 
             newString += instance.Substring(startIndex, instance.Length - startIndex);
+            newString = newString.Replace("_", " ", StringComparison.Ordinal);
+            newString = newString.Replace("-", " ", StringComparison.Ordinal);
             return lowerCase ? newString.ToLowerInvariant() : newString;
         }
 
