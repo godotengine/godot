@@ -47,11 +47,19 @@ class Timer : public Node {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	enum TimerProcessCallback {
 		TIMER_PROCESS_PHYSICS,
 		TIMER_PROCESS_IDLE,
+	};
+
+	// Type instead of Mode to prevent name collisions when upgrading from 3 to 4
+	// Godot 3 used TimerProcessMode which is now TimerProcessCallback
+	enum TimerProcessType {
+		TIMER_PROCESS_TYPE_TIME,
+		TIMER_PROCESS_TYPE_FRAMES,
 	};
 
 	void set_wait_time(double p_time);
@@ -77,13 +85,19 @@ public:
 
 	void set_timer_process_callback(TimerProcessCallback p_callback);
 	TimerProcessCallback get_timer_process_callback() const;
+
+	void set_timer_process_type(TimerProcessType p_type);
+	TimerProcessType get_timer_process_type() const;
+
 	Timer();
 
 private:
 	TimerProcessCallback timer_process_callback = TIMER_PROCESS_IDLE;
+	TimerProcessType timer_process_type = TIMER_PROCESS_TYPE_TIME;
 	void _set_process(bool p_process, bool p_force = false);
 };
 
 VARIANT_ENUM_CAST(Timer::TimerProcessCallback);
+VARIANT_ENUM_CAST(Timer::TimerProcessType);
 
 #endif // TIMER_H
