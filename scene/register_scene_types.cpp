@@ -489,7 +489,7 @@ void register_scene_types() {
 	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
 #endif
 
-	int root_dir = GLOBAL_GET("internationalization/rendering/root_node_layout_direction");
+	const Node::ResolvedLayoutDirection root_dir = (Node::ResolvedLayoutDirection)GLOBAL_GET("internationalization/rendering/root_node_layout_direction").operator int();
 	Control::set_root_layout_direction(root_dir);
 	Window::set_root_layout_direction(root_dir);
 

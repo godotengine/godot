@@ -41,9 +41,9 @@
 
 // Editor integration.
 
-int Window::root_layout_direction = 0;
+Node::ResolvedLayoutDirection Window::root_layout_direction = Node::RESOLVED_LAYOUT_DIRECTION_APPLICATION_LOCALE;
 
-void Window::set_root_layout_direction(int p_root_dir) {
+void Window::set_root_layout_direction(ResolvedLayoutDirection p_root_dir) {
 	root_layout_direction = p_root_dir;
 }
 
@@ -2646,69 +2646,79 @@ Window::LayoutDirection Window::get_layout_direction() const {
 	return layout_dir;
 }
 
-bool Window::is_layout_rtl() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
+Node::ResolvedLayoutDirection Window::get_resolved_layout_direction() const {
+	switch (layout_dir) {
+		case LAYOUT_DIRECTION_LTR: {
+			return RESOLVED_LAYOUT_DIRECTION_LTR;
+		} break;
+
+		case LAYOUT_DIRECTION_RTL: {
+			return RESOLVED_LAYOUT_DIRECTION_RTL;
+		} break;
+
+		case LAYOUT_DIRECTION_LOCALE: {
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				return RESOLVED_LAYOUT_DIRECTION_RTL;
+			} else {
+				return RESOLVED_LAYOUT_DIRECTION_APPLICATION_LOCALE;
+			}
+		} break;
+
+		default: { // LAYOUT_DIRECTION_INHERITED
 #ifdef TOOLS_ENABLED
-		if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-			return true;
-		}
-		if (is_inside_tree()) {
-			Node *edited_scene_root = get_tree()->get_edited_scene_root();
-			if (edited_scene_root == this) {
-				int proj_root_layout_direction = GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction"));
-				if (proj_root_layout_direction == 1) {
-					return false;
-				} else if (proj_root_layout_direction == 2) {
-					return true;
-				} else if (proj_root_layout_direction == 3) {
-					String locale = OS::get_singleton()->get_locale();
-					return TS->is_locale_right_to_left(locale);
-				} else {
-					String locale = TranslationServer::get_singleton()->get_tool_locale();
-					return TS->is_locale_right_to_left(locale);
+			if (is_part_of_edited_scene() && GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				return RESOLVED_LAYOUT_DIRECTION_RTL;
+			}
+			if (is_inside_tree()) {
+				Node *edited_scene_root = get_tree()->get_edited_scene_root();
+				if (edited_scene_root == this) {
+					return (ResolvedLayoutDirection)GLOBAL_GET(SNAME("internationalization/rendering/root_node_layout_direction")).operator int();
 				}
 			}
-		}
 #else
-		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-			return true;
-		}
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				return RESOLVED_LAYOUT_DIRECTION_RTL;
+			}
 #endif
-		Node *parent_node = get_parent();
-		while (parent_node) {
-			Control *parent_control = Object::cast_to<Control>(parent_node);
-			if (parent_control) {
-				return parent_control->is_layout_rtl();
+			Node *parent_node = get_parent();
+			while (parent_node) {
+				Control *parent_control = Object::cast_to<Control>(parent_node);
+				if (parent_control) {
+					return parent_control->get_resolved_layout_direction();
+				}
+
+				Window *parent_window = Object::cast_to<Window>(parent_node);
+				if (parent_window) {
+					return parent_window->get_resolved_layout_direction();
+				}
+				parent_node = parent_node->get_parent();
 			}
 
-			Window *parent_window = Object::cast_to<Window>(parent_node);
-			if (parent_window) {
-				return parent_window->is_layout_rtl();
-			}
-			parent_node = parent_node->get_parent();
-		}
+			return root_layout_direction;
+		} break;
+	}
+}
 
-		if (root_layout_direction == 1) {
+bool Window::is_layout_rtl() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	switch (get_resolved_layout_direction()) {
+		case RESOLVED_LAYOUT_DIRECTION_LTR: {
 			return false;
-		} else if (root_layout_direction == 2) {
+		} break;
+
+		case RESOLVED_LAYOUT_DIRECTION_RTL: {
 			return true;
-		} else if (root_layout_direction == 3) {
-			String locale = OS::get_singleton()->get_locale();
+		} break;
+
+		case RESOLVED_LAYOUT_DIRECTION_SYSTEM_LOCALE: {
+			const String &locale = OS::get_singleton()->get_locale();
 			return TS->is_locale_right_to_left(locale);
-		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
+		} break;
+
+		default: { // RESOLVED_LAYOUT_DIRECTION_APPLICATION_LOCALE
+			const String &locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
-		}
-	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
-		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
-			return true;
-		} else {
-			String locale = TranslationServer::get_singleton()->get_tool_locale();
-			return TS->is_locale_right_to_left(locale);
-		}
-	} else {
-		return (layout_dir == LAYOUT_DIRECTION_RTL);
+		} break;
 	}
 }
 
