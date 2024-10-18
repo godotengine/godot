@@ -420,6 +420,12 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 			smat->set_shader_parameter(E.name, texture);
 		} else {
 			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+
+			// "_texture_channel" params need to be converted to vec4.
+			if (value.get_type() == Variant::PLANE && E.name.contains("_texture_channel")) {
+				Plane p = value;
+				value = Vector4(p.normal.x, p.normal.y, p.normal.z, p.d);
+			}
 			smat->set_shader_parameter(E.name, value);
 		}
 	}
