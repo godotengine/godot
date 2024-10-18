@@ -93,19 +93,21 @@ bool SceneReplicationInterface::_has_authority(const Node *p_node) {
 }
 
 void SceneReplicationInterface::on_peer_change(int p_id, bool p_connected) {
-	if (p_connected) {
-		peers_info[p_id] = PeerInfo();
-		for (const ObjectID &oid : spawned_nodes) {
-			_update_spawn_visibility(p_id, oid);
-		}
-		for (const ObjectID &oid : sync_nodes) {
-			_update_sync_visibility(p_id, get_id_as<MultiplayerSynchronizer>(oid));
-		}
-	} else {
-		ERR_FAIL_COND(!peers_info.has(p_id));
-		_free_remotes(peers_info[p_id]);
-		peers_info.erase(p_id);
-	}
+    if (p_connected) {
+        peers_info[p_id] = PeerInfo();
+        for (const ObjectID &oid : spawned_nodes) {
+            _update_spawn_visibility(p_id, oid);
+        }
+        for (const ObjectID &oid : sync_nodes) {
+            _update_sync_visibility(p_id, get_id_as<MultiplayerSynchronizer>(oid));
+        }
+    } else {
+        ERR_FAIL_COND(!peers_info.has(p_id));
+        if (delete_spawned_nodes_on_peer_exit) {
+            _free_remotes(peers_info[p_id]);
+        }
+        peers_info.erase(p_id);
+    }
 }
 
 void SceneReplicationInterface::on_reset() {
@@ -195,31 +197,36 @@ void SceneReplicationInterface::_node_ready(const ObjectID &p_oid) {
 }
 
 Error SceneReplicationInterface::on_despawn(Object *p_obj, Variant p_config) {
-	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
-	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(p_config.get_validated_object());
-	ERR_FAIL_COND_V(!p_obj || !spawner, ERR_INVALID_PARAMETER);
-	// Forcibly despawn to all peers that knowns me.
-	int len = 0;
-	Error err = _make_despawn_packet(node, len);
-	ERR_FAIL_COND_V(err != OK, ERR_BUG);
-	const ObjectID oid = p_obj->get_instance_id();
-	for (const KeyValue<int, PeerInfo> &E : peers_info) {
-		if (!E.value.spawn_nodes.has(oid)) {
-			continue;
-		}
-		_send_raw(packet_cache.ptr(), len, E.key, true);
-	}
-	// Also remove spawner tracking from the replication state.
-	ERR_FAIL_COND_V(!tracked_nodes.has(oid), ERR_INVALID_PARAMETER);
-	TrackedNode &tobj = _track(oid);
-	ERR_FAIL_COND_V(tobj.spawner != spawner->get_instance_id(), ERR_INVALID_PARAMETER);
-	tobj.spawner = ObjectID();
-	spawned_nodes.erase(oid);
-	for (KeyValue<int, PeerInfo> &E : peers_info) {
-		E.value.spawn_nodes.erase(oid);
-	}
-	return OK;
+    Node *node = Object::cast_to<Node>(p_obj);
+    ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
+    MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(p_config.get_validated_object());
+    ERR_FAIL_COND_V(!p_obj || !spawner, ERR_INVALID_PARAMETER);
+
+    const ObjectID oid = p_obj->get_instance_id();
+
+    if (delete_spawned_nodes_on_peer_exit) {
+        // Forcibly despawn to all peers that known me.
+        int len = 0;
+        Error err = _make_despawn_packet(node, len);
+        ERR_FAIL_COND_V(err != OK, ERR_BUG);
+        for (const KeyValue<int, PeerInfo> &E : peers_info) {
+            if (!E.value.spawn_nodes.has(oid)) {
+                continue;
+            }
+            _send_raw(packet_cache.ptr(), len, E.key, true);
+        }
+    }
+
+    // Also remove spawner tracking from the replication state.
+    ERR_FAIL_COND_V(!tracked_nodes.has(oid), ERR_INVALID_PARAMETER);
+    TrackedNode &tobj = _track(oid);
+    ERR_FAIL_COND_V(tobj.spawner != spawner->get_instance_id(), ERR_INVALID_PARAMETER);
+    tobj.spawner = ObjectID();
+    spawned_nodes.erase(oid);
+    for (KeyValue<int, PeerInfo> &E : peers_info) {
+        E.value.spawn_nodes.erase(oid);
+    }
+    return OK;
 }
 
 Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_config) {
@@ -917,4 +924,12 @@ void SceneReplicationInterface::set_max_delta_packet_size(int p_size) {
 
 int SceneReplicationInterface::get_max_delta_packet_size() const {
 	return delta_mtu;
+}
+
+void SceneReplicationInterface::set_delete_spawned_nodes_on_peer_exit(bool value) {
+    delete_spawned_nodes_on_peer_exit = value;
+}
+
+bool SceneReplicationInterface::get_delete_spawned_nodes_on_peer_exit() const {
+    return delete_spawned_nodes_on_peer_exit;
 }
