@@ -2187,15 +2187,15 @@ void postinitialize_handler(Object *p_object) {
 }
 
 void ObjectDB::debug_objects(DebugFunc p_func) {
-	spin_lock.lock();
-
-	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
-		if (object_slots[i].validator) {
-			p_func(object_slots[i].object);
-			count--;
-		}
-	}
-	spin_lock.unlock();
+	mutex.lock();
+	// PagedArray<ObjectDB::ObjectSlot> &slots = *object_slots;
+	// for (uint32_t i = 0, count = slot_count; i < slots.size() && count != 0; i++) {
+	// 	if (slots[i].validator) {
+	// 		p_func(slots[i].object);
+	// 		count--;
+	// 	}
+	// }
+	mutex.unlock();
 }
 
 #ifdef TOOLS_ENABLED
@@ -2244,11 +2244,43 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 }
 #endif
 
-SpinLock ObjectDB::spin_lock;
+BinaryMutex ObjectDB::mutex;
 uint32_t ObjectDB::slot_count = 0;
-uint32_t ObjectDB::slot_max = 0;
-ObjectDB::ObjectSlot *ObjectDB::object_slots = nullptr;
+uint32_t ObjectDB::block_count = 0;
 uint64_t ObjectDB::validator_counter = 0;
+
+int ObjectDB::blocks_max_sizes[] = {
+	128,
+	256,
+	512,
+	1024,
+	2048,
+	4096,
+	8192,
+	16384,
+	32768,
+	65536,
+	131072,
+	262144,
+	524288,
+	1048576,
+	2097152,
+	4194304,
+	8388608,
+	16777216,
+	33554432,
+	67108864,
+	134217728,
+	268435456,
+};
+
+ObjectDB::ObjectSlot *ObjectDB::blocks[22] = { 
+	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 
+	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 
+	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 
+	nullptr };
+
+
 
 int ObjectDB::get_object_count() {
 	return slot_count;
@@ -2376,4 +2408,8 @@ void ObjectDB::cleanup() {
 	}
 
 	spin_lock.unlock();
+}
+
+Object *ObjectDB::get_instance(ObjectID p_instance_id) {
+	
 }

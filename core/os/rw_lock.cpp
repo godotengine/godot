@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rw_lock.h                                                             */
+/*  rw_lock.cpp                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,72 +28,94 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RW_LOCK_H
-#define RW_LOCK_H
+#include "rw_lock.h"
 
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
 #include "core/typedefs.h"
 
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.shared_mutex.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
-#include <shared_mutex>
-#define THREADING_NAMESPACE std
-#endif
+int RWLock::threads_number = -1;
 
-class RWLock {
-	struct ThreadData;
-
-	static int threads_number;
-
-	mutable ThreadData *threads_data = nullptr;
-	mutable THREADING_NAMESPACE::shared_timed_mutex mutex; // Used when OS singletom == nullptr;
-
-	static int get_thread_pos();
-
-	void init() const;
-
-public:
-	// Lock the RWLock, block if locked by someone else.
-	void read_lock() const;
-
-	// Unlock the RWLock, let other threads continue.
-	void read_unlock() const;
-
-	// Lock the RWLock, block if locked by someone else.
-	void write_lock();
-
-	// Unlock the RWLock, let other threads continue.
-	void write_unlock();
-
-	~RWLock();
+struct RWLock::ThreadData {
+	uint8_t _offset[128 - sizeof(BinaryMutex) / 2];
+	SpinLock mtx;
 };
 
-class RWLockRead {
-	const RWLock &lock;
+int RWLock::get_thread_pos() {
+	return Thread::get_caller_id() % threads_number;
+}
 
-public:
-	_ALWAYS_INLINE_ RWLockRead(const RWLock &p_lock) :
-			lock(p_lock) {
-		lock.read_lock();
+void RWLock::init() const {
+	if (unlikely(threads_number == -1)) {
+		threads_number = OS::get_singleton()->get_processor_count();
+		if (threads_number < 1) {
+			threads_number = 1;
+		}
 	}
-	_ALWAYS_INLINE_ ~RWLockRead() {
-		lock.read_unlock();
+	threads_data = (ThreadData *)memalloc(sizeof(ThreadData) * threads_number);
+	for (int i = 0; i < threads_number; i++) {
+		memnew_placement(&threads_data[i], ThreadData());
 	}
-};
+}
 
-class RWLockWrite {
-	RWLock &lock;
-
-public:
-	_ALWAYS_INLINE_ RWLockWrite(RWLock &p_lock) :
-			lock(p_lock) {
-		lock.write_lock();
+void RWLock::read_lock() const {
+	if (unlikely(OS::get_singleton() == nullptr && threads_number == -1)) {
+		mutex.lock_shared();
+		printf("Go here\n");
+		return;
 	}
-	_ALWAYS_INLINE_ ~RWLockWrite() {
-		lock.write_unlock();
-	}
-};
 
-#endif // RW_LOCK_H
+	if (unlikely(threads_data == nullptr)) {
+		init();
+	}
+	threads_data[get_thread_pos()].mtx.lock();
+}
+
+void RWLock::read_unlock() const {
+	if (unlikely(threads_number == -1)) {
+		printf("Go here\n");
+		mutex.unlock_shared();
+		return;
+	}
+
+	CRASH_COND(threads_data == nullptr);
+	threads_data[get_thread_pos()].mtx.unlock();
+}
+
+void RWLock::write_lock() {
+	if (unlikely(OS::get_singleton() == nullptr && threads_number == -1)) {
+		mutex.lock();
+		return;
+	}
+
+	if (unlikely(threads_data == nullptr)) {
+		init();
+	}
+
+	for (int i = 0; i < threads_number; i++) {
+		threads_data[i].mtx.lock();
+	}
+}
+
+void RWLock::write_unlock() {
+	if (unlikely(threads_number == -1)) {
+		mutex.unlock();
+		return;
+	}
+	CRASH_COND(threads_data == nullptr);
+
+	for (int i = 0; i < threads_number; i++) {
+		threads_data[i].mtx.unlock();
+	}
+}
+
+RWLock::~RWLock() {
+	if (threads_data != nullptr) {
+		for (int i = 0; i < threads_number; i++) {
+			threads_data[i].~ThreadData();
+		}
+		memfree(threads_data);
+		threads_data = nullptr;
+	}
+}
