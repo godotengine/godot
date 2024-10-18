@@ -108,8 +108,8 @@ constexpr T ABS(T m_v) {
 }
 
 template <typename T>
-constexpr const T SIGN(const T m_v) {
-	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : 0.0f);
+constexpr T SIGN(const T m_v) {
+	return m_v > 0 ? +1.0F : (m_v < 0 ? -1.0F : 0.0F);
 }
 
 template <typename T, typename T2>
