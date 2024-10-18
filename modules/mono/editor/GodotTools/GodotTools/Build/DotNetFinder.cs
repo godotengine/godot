@@ -11,8 +11,55 @@ namespace GodotTools.Build
 {
     public static class DotNetFinder
     {
-        public static string? FindDotNetExe()
+        private static string DOTNET_ROOT_ENVIRONMENT_VARIABLE = "DOTNET_ROOT";
+
+        public static string? FindDotNetExe(string? overrideDotnetExecutable)
         {
+            if (string.IsNullOrEmpty(overrideDotnetExecutable) == false)
+            {
+                if (File.Exists(overrideDotnetExecutable))
+                {
+                    return overrideDotnetExecutable;
+                }
+            }
+            // Simplified parallel to modules/mono/editor/hostfxr_resolver.cpp's get_dotnet_root_from_env where
+            // DOTNET_ROOT is checked before path.
+            // https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-environment-variables#net-sdk-and-cli-environment-variables
+            // Further support would be to handle DOTNET_ROOT, DOTNET_ROOT(x86), DOTNET_ROOT_X86, DOTNET_ROOT_X64 for specific architectures.
+            string envVariableToDotnetPath = Environment.GetEnvironmentVariable(DOTNET_ROOT_ENVIRONMENT_VARIABLE);
+            if (string.IsNullOrEmpty(envVariableToDotnetPath) == false)
+            {
+                if (Directory.Exists(envVariableToDotnetPath))
+                {
+                    string defaultDotnet = OS.PathWhich("dotnet");
+                    if (string.IsNullOrEmpty(defaultDotnet) == false)
+                    {
+                        string fileName = Path.GetFileName(defaultDotnet);
+
+                        string dotnetExecutable = Path.Join(envVariableToDotnetPath, fileName);
+                        if (File.Exists(dotnetExecutable))
+                        {
+                            return dotnetExecutable;
+                        }
+                        else if (Godot.OS.IsStdOutVerbose())
+                        {
+                            Console.WriteLine(
+                                    $"Environment Variable \"{DOTNET_ROOT_ENVIRONMENT_VARIABLE}\"= \"{envVariableToDotnetPath}\" but does not contain a valid path to \"{dotnetExecutable}\".");
+                        }
+                    }
+                    else if (Godot.OS.IsStdOutVerbose())
+                    {
+                        Console.WriteLine(
+                            $"No default dotnet to use as method to connect \"{DOTNET_ROOT_ENVIRONMENT_VARIABLE}\" with correct executable name for platform.");
+                    }
+                }
+                else if (Godot.OS.IsStdOutVerbose())
+                {
+                    Console.WriteLine(
+                        $"Environment Variable \"{DOTNET_ROOT_ENVIRONMENT_VARIABLE}\" = \"{envVariableToDotnetPath}\" but is not a directory.");
+                }
+            }
+
             // In the future, this method may do more than just search in PATH. We could look in
             // known locations or use Godot's linked nethost to search from the hostfxr location.
 
@@ -38,6 +85,7 @@ namespace GodotTools.Build
 
         public static bool TryFindDotNetSdk(
             Version expectedVersion,
+            string? overrideDotnetExecutable,
             [NotNullWhen(true)] out Version? version,
             [NotNullWhen(true)] out string? path
         )
@@ -45,7 +93,7 @@ namespace GodotTools.Build
             version = null;
             path = null;
 
-            string? dotNetExe = FindDotNetExe();
+            string? dotNetExe = FindDotNetExe(overrideDotnetExecutable);
 
             if (string.IsNullOrEmpty(dotNetExe))
                 return false;
