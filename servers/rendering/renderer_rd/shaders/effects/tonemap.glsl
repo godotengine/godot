@@ -207,6 +207,14 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 
 #endif // !USE_GLOW_FILTER_BICUBIC
 
+// Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
+vec3 tonemap_reinhard(vec3 color, float white) {
+	float white_squared = white * white;
+	vec3 white_squared_color = white_squared * color;
+	// Equivalent to color * (1 + color / white_squared) / (1 + color)
+	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+}
+
 vec3 tonemap_filmic(vec3 color, float white) {
 	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
 	// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
@@ -256,12 +264,78 @@ vec3 tonemap_aces(vec3 color, float white) {
 	return color_tonemapped / white_tonemapped;
 }
 
-// Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
-vec3 tonemap_reinhard(vec3 color, float white) {
-	float white_squared = white * white;
-	vec3 white_squared_color = white_squared * color;
-	// Equivalent to color * (1 + color / white_squared) / (1 + color)
-	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+// Mean error^2: 3.6705141e-06
+vec3 agx_default_contrast_approx(vec3 x) {
+	vec3 x2 = x * x;
+	vec3 x4 = x2 * x2;
+
+	return +15.5 * x4 * x2 - 40.14 * x4 * x + 31.96 * x4 - 6.868 * x2 * x + 0.4298 * x2 + 0.1191 * x - 0.00232;
+}
+
+vec3 agx(vec3 val) {
+	const mat3 agx_mat = transpose(mat3(
+			0.544813, 0.37379614, 0.08139087,
+			0.14041554, 0.75414325, 0.10544122,
+			0.0888119, 0.17888511, 0.73230299));
+
+	// AgX does not provide whitepoint adjustments, so hardcode it to a value that matches the Blender appearance closely.
+	const float white = 16.016004;
+
+	const float min_ev = -12.47393;
+	const float max_ev = log2(white);
+
+	// Input transform (inset).
+	val = agx_mat * val;
+
+	// Log2 space encoding.
+	val = clamp(log2(val), min_ev, max_ev);
+	val = (val - min_ev) / (max_ev - min_ev);
+
+	// Apply sigmoid function approximation.
+	val = agx_default_contrast_approx(val);
+
+	return val;
+}
+
+vec3 agx_eotf(vec3 val) {
+	const mat3 agx_mat_inv = transpose(mat3(
+			1.96489403, -0.85600791, -0.10888612,
+			-0.29930908, 1.32639189, -0.02708281,
+			-0.16435644, -0.2382074, 1.40256385));
+
+	// Inverse input transform (outset).
+	val = agx_mat_inv * val;
+
+	// sRGB IEC 61966-2-1 2.2 Exponent Reference EOTF Display
+	// NOTE: We're linearizing the output here. Comment/adjust when
+	// *not* using a sRGB render target.
+	val = pow(val, vec3(2.2));
+
+	return val;
+}
+
+vec3 agx_look_punchy(vec3 val) {
+	const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+	float luma = dot(val, lw);
+
+	vec3 offset = vec3(0.0);
+	vec3 slope = vec3(1.0);
+	vec3 power = vec3(1.35, 1.35, 1.35);
+	float sat = 1.4;
+
+	// ASC CDL.
+	val = pow(val * slope + offset, power);
+	return luma + sat * (val - luma);
+}
+
+// Adapted from https://iolite-engine.com/blog_posts/minimal_agx_implementation
+vec3 tonemap_agx(vec3 color, bool punchy) {
+	color = agx(color);
+	if (punchy) {
+		color = agx_look_punchy(color);
+	}
+	color = agx_eotf(color);
+	return color;
 }
 
 vec3 linear_to_srgb(vec3 color) {
@@ -275,6 +349,8 @@ vec3 linear_to_srgb(vec3 color) {
 #define TONEMAPPER_REINHARD 1
 #define TONEMAPPER_FILMIC 2
 #define TONEMAPPER_ACES 3
+#define TONEMAPPER_AGX 4
+#define TONEMAPPER_AGX_PUNCHY 5
 
 vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 	// Ensure color values passed to tonemappers are positive.
@@ -285,8 +361,12 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 		return tonemap_reinhard(max(vec3(0.0f), color), white);
 	} else if (params.tonemapper == TONEMAPPER_FILMIC) {
 		return tonemap_filmic(max(vec3(0.0f), color), white);
-	} else { // TONEMAPPER_ACES
+	} else if (params.tonemapper == TONEMAPPER_ACES) {
 		return tonemap_aces(max(vec3(0.0f), color), white);
+	} else if (params.tonemapper == TONEMAPPER_AGX) {
+		return tonemap_agx(max(vec3(0.0f), color), false);
+	} else { // TONEMAPPER_AGX_PUNCHY
+		return tonemap_agx(max(vec3(0.0f), color), true);
 	}
 }
 
