@@ -107,6 +107,16 @@ namespace Godot.SourceGenerators
                 "Types not derived from Node should not export Node members. Node export is only supported in Node-derived classes.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0107"));
 
+        public static readonly DiagnosticDescriptor ToolsCanOnlyExportToolsRule =
+            new DiagnosticDescriptor(id: "GD0108",
+                title: "Tools can only export tools or core types",
+                messageFormat: "Tools can only export tools or core types",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "Types with the '[Tool]' attribute should not export members of custom types that do not have the '[Tool]' attribute.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0108"));
+
         public static readonly DiagnosticDescriptor SignalDelegateMissingSuffixRule =
             new DiagnosticDescriptor(id: "GD0201",
                 title: "The name of the delegate must end with 'EventHandler'",

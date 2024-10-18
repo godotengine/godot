@@ -287,8 +287,22 @@ namespace Godot.SourceGenerators
         public static bool IsGodotGlobalClassAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GlobalClassAttr;
 
+        public static bool IsGodotToolAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ToolAttr;
+
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;
+
+        public static bool SelfOrContainerHasToolAttribute(this ITypeSymbol symbol)
+        {
+            bool isTool = symbol.GetAttributes()
+                .Any(a => a.AttributeClass?.IsGodotToolAttribute() ?? false);
+            if (!isTool && symbol.ContainingType != null)
+            {
+                isTool = symbol.ContainingType.SelfOrContainerHasToolAttribute();
+            }
+            return isTool;
+        }
 
         public static GodotMethodData? HasGodotCompatibleSignature(
             this IMethodSymbol method,
