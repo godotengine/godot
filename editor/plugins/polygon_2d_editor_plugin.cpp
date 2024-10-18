@@ -275,7 +275,11 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		uv_button[UV_MODE_REMOVE_POLYGON]->hide();
 		uv_button[UV_MODE_PAINT_WEIGHT]->hide();
 		uv_button[UV_MODE_CLEAR_WEIGHT]->hide();
-		_uv_mode(UV_MODE_EDIT_POINT);
+		if (node->get_polygon().is_empty()) {
+			_uv_mode(UV_MODE_CREATE);
+		} else {
+			_uv_mode(UV_MODE_EDIT_POINT);
+		}
 
 		bone_scroll_main_vb->hide();
 		bone_paint_strength->hide();
@@ -317,9 +321,16 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 	uv_edit_draw->queue_redraw();
 }
 
+void Polygon2DEditor::_uv_edit_popup_show() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->connect("version_changed", callable_mp(this, &Polygon2DEditor::_update_available_modes));
+}
+
 void Polygon2DEditor::_uv_edit_popup_hide() {
 	EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "uv_editor", Rect2(uv_edit->get_position(), uv_edit->get_size()));
 	_cancel_editing();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->disconnect("version_changed", callable_mp(this, &Polygon2DEditor::_update_available_modes));
 }
 
 void Polygon2DEditor::_menu_option(int p_option) {
@@ -346,6 +357,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 				uv_edit->popup_centered_ratio(0.85);
 			}
 			_update_bone_list();
+			_update_available_modes();
 			get_tree()->connect("process_frame", callable_mp(this, &Polygon2DEditor::_center_view), CONNECT_ONE_SHOT);
 		} break;
 		case UVEDIT_POLYGON_TO_UV: {
@@ -408,6 +420,7 @@ void Polygon2DEditor::_cancel_editing() {
 		node->set_polygons(polygons_prev);
 
 		_update_polygon_editing_state();
+		_update_available_modes();
 	} else if (uv_drag) {
 		uv_drag = false;
 		if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
@@ -566,6 +579,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							uv_drag = false;
 							uv_create = false;
 
+							_update_available_modes();
 							_uv_mode(UV_MODE_EDIT_POINT);
 							_menu_option(MODE_EDIT);
 						} else {
@@ -973,6 +987,23 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+void Polygon2DEditor::_update_available_modes() {
+	// Force point editing mode if there's no polygon yet.
+	if (node->get_polygon().is_empty()) {
+		if (!uv_edit_mode[1]->is_pressed()) {
+			uv_edit_mode[1]->set_pressed(true);
+			_uv_edit_mode_select(1);
+		}
+		uv_edit_mode[0]->set_disabled(true);
+		uv_edit_mode[2]->set_disabled(true);
+		uv_edit_mode[3]->set_disabled(true);
+	} else {
+		uv_edit_mode[0]->set_disabled(false);
+		uv_edit_mode[2]->set_disabled(false);
+		uv_edit_mode[3]->set_disabled(false);
+	}
+}
+
 void Polygon2DEditor::_center_view() {
 	Size2 texture_size;
 	if (node->get_texture().is_valid()) {
@@ -1324,6 +1355,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	add_child(uv_edit);
 	uv_edit->connect(SceneStringName(confirmed), callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 	uv_edit->connect("canceled", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
+	uv_edit->connect("about_to_popup", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_show));
 
 	VBoxContainer *uv_main_vb = memnew(VBoxContainer);
 	uv_edit->add_child(uv_main_vb);
