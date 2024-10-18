@@ -3025,6 +3025,24 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 #endif
 
+	if (!p_binary_op->left_operand->is_constant) {
+		bool reduced = false;
+		Variant reduced_value = make_expression_reduced_value(p_binary_op->left_operand, reduced);
+		if (reduced) {
+			p_binary_op->left_operand->is_constant = true;
+			p_binary_op->left_operand->reduced_value = reduced_value;
+		}
+	}
+
+	if (!p_binary_op->right_operand->is_constant) {
+		bool reduced = false;
+		Variant reduced_value = make_expression_reduced_value(p_binary_op->right_operand, reduced);
+		if (reduced) {
+			p_binary_op->right_operand->is_constant = true;
+			p_binary_op->right_operand->reduced_value = reduced_value;
+		}
+	}
+
 	if (p_binary_op->left_operand->is_constant && p_binary_op->right_operand->is_constant) {
 		p_binary_op->is_constant = true;
 		if (p_binary_op->variant_op < Variant::OP_MAX) {
