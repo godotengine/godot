@@ -390,6 +390,14 @@ bool AudioStreamPlaybackPlaylist::is_playing() const {
 	return active;
 }
 
+Ref<AudioStream> AudioStreamPlaybackPlaylist::get_playing_stream() const {
+	if (active) {
+		return playlist->audio_streams[play_order[play_index]];
+	}
+
+	return nullptr;
+}
+
 void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 	stop();
 
@@ -400,4 +408,8 @@ void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 			playback[i].unref();
 		}
 	}
+}
+
+void AudioStreamPlaybackPlaylist::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_playing_stream"), &AudioStreamPlaybackPlaylist::get_playing_stream);
 }

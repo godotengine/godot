@@ -1025,7 +1025,30 @@ bool AudioStreamPlaybackInteractive::is_playing() const {
 	return active;
 }
 
+Vector<Ref<AudioStream>> AudioStreamPlaybackInteractive::get_playing_streams() const {
+	Vector<Ref<AudioStream>> playing_streams = Vector<Ref<AudioStream>>();
+	if (active) {
+		for (int i = 0; i < AudioStreamInteractive::MAX_CLIPS; i++) {
+			if (states[i].playback.is_valid() && states[i].playback->is_playing()) {
+				playing_streams.push_back(states[i].stream);
+			}
+		}
+	}
+	return playing_streams;
+}
+
+TypedArray<AudioStream> AudioStreamPlaybackInteractive::_get_playing_streams() const {
+	TypedArray<AudioStream> ret;
+	Vector<Ref<AudioStream>> streams = get_playing_streams();
+	int streams_amount = streams.size();
+	for (int i = 0; i < streams_amount; i++) {
+		ret.push_back(streams[i]);
+	}
+	return ret;
+}
+
 void AudioStreamPlaybackInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("switch_to_clip_by_name", "clip_name"), &AudioStreamPlaybackInteractive::switch_to_clip_by_name);
 	ClassDB::bind_method(D_METHOD("switch_to_clip", "clip_index"), &AudioStreamPlaybackInteractive::switch_to_clip);
+	ClassDB::bind_method(D_METHOD("get_playing_streams"), &AudioStreamPlaybackInteractive::_get_playing_streams);
 }

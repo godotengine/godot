@@ -7,4 +7,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_playing_stream" qualifiers="const">
+			<return type="AudioStream" />
+			<description>
+				Returns the currently playing stream from the playlist.
+			</description>
+		</method>
+	</methods>
 </class>
