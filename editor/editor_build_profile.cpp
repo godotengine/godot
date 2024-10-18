@@ -56,7 +56,21 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"module_freetype_enabled",
 	"brotli",
 	"graphite",
-	"module_msdfgen_enabled"
+	"module_msdfgen_enabled",
+	"module_upnp_enabled",
+	"module_webrtc_enabled",
+	"module_websocket_enabled",
+	"module_jsonrpc_enabled",
+	"module_enet_enabled",
+	"module_bmp_enabled",
+	"module_dds_enabled",
+	"module_hdr_enabled",
+	"module_jpg_enabled",
+	"module_ktx_enabled",
+	"module_svg_enabled",
+	"module_tga_enabled",
+	"module_tinyexr_enabled",
+	"module_webp_enabled",
 };
 
 const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX] = {
@@ -75,6 +89,20 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // WOFF2_FONTS
 	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
+	false, // UPNP
+	false, // WEBRTC
+	false, // WEBSOCKET
+	false, // JSONRPC
+	false, // ENET
+	false, // BMP
+	false, // DDS
+	false, // HDR
+	false, // JPG
+	false, // KTX
+	false, // SVG
+	false, // TGA
+	false, // TINYEXR
+	false, // WEBP
 };
 
 const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
@@ -93,6 +121,20 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	false, // WOFF2_FONTS
 	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
+	false, // UPNP
+	false, // WEBRTC
+	false, // WEBSOCKET
+	false, // JSONRPC
+	false, // ENET
+	false, // BMP
+	false, // DDS
+	false, // HDR
+	false, // JPG
+	false, // KTX
+	false, // SVG
+	false, // TGA
+	false, // TINYEXR
+	false, // WEBP
 };
 
 const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_category[BUILD_OPTION_MAX] = {
@@ -110,6 +152,20 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // WOFF2_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRAPHITE_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // MSDFGEN
+	BUILD_OPTION_CATEGORY_NETWORKING, // UPNP
+	BUILD_OPTION_CATEGORY_NETWORKING, // WEBRTC
+	BUILD_OPTION_CATEGORY_NETWORKING, // WEBSOCKET
+	BUILD_OPTION_CATEGORY_NETWORKING, // JSONRPC
+	BUILD_OPTION_CATEGORY_NETWORKING, // ENET
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // BMP
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // DDS
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // HDR
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // JPG
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // KTX
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // SVG
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // TGA
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // TINYEXR
+	BUILD_OPTION_CATEGORY_IMAGE_FORMATS, // WEBP
 };
 
 void EditorBuildProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -184,6 +240,20 @@ String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 		TTRC("WOFF2 Fonts"),
 		TTRC("SIL Graphite Fonts"),
 		TTRC("Multi-channel Signed Distance Field Font Rendering"),
+		TTRC("UPnP"),
+		TTRC("WebRTC"),
+		TTRC("WebSocket"),
+		TTRC("JSON-RPC"),
+		TTRC("ENet"),
+		TTRC("BMP"),
+		TTRC("DDS"),
+		TTRC("HDR"),
+		TTRC("JPG"),
+		TTRC("KTX"),
+		TTRC("SVG"),
+		TTRC("TGA"),
+		TTRC("EXR"),
+		TTRC("WEBP"),
 	};
 	return TTRGET(build_option_names[p_build_option]);
 }
@@ -206,6 +276,20 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 		TTRC("WOFF2 font format support using FreeType and Brotli libraries."),
 		TTRC("SIL Graphite smart font technology support (supported by Advanced Text Server only)."),
 		TTRC("Multi-channel signed distance field font rendering support using msdfgen library (pre-rendered MSDF fonts can be used even if this option disabled)."),
+		TTRC("UPnP support"),
+		TTRC("WebRTC support"),
+		TTRC("WebSocket support"),
+		TTRC("JSON-RPC support"),
+		TTRC("ENet support"),
+		TTRC("BMP support"),
+		TTRC("DDS support"),
+		TTRC("HDR support"),
+		TTRC("JPG support"),
+		TTRC("KTX support"),
+		TTRC("SVG support"),
+		TTRC("TGA support"),
+		TTRC("EXR support"),
+		TTRC("WEBP support"),
 	};
 
 	return TTRGET(build_option_descriptions[p_build_option]);
@@ -222,6 +306,8 @@ String EditorBuildProfile::get_build_option_category_name(BuildOptionCategory p_
 	const char *build_option_subcategories[BUILD_OPTION_CATEGORY_MAX]{
 		TTRC("General Features:"),
 		TTRC("Text Rendering and Font Options:"),
+		TTRC("Networking:"),
+		TTRC("Image Formats:"),
 	};
 
 	return TTRGET(build_option_subcategories[p_build_option_category]);
@@ -347,10 +433,25 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_WOFF2_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_GRAPHITE_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MSDFGEN);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_UPNP);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_WEBRTC);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_WEBSOCKET);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_JSONRPC);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_ENET);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_BMP);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_DDS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_HDR);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_JPG);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_KTX);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_SVG);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_TGA);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_TINYEXR);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_WEBP);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MAX);
 
 	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_GENERAL);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_TEXT_SERVER);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_NETWORKING);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_CATEGORY_MAX);
 }
 
