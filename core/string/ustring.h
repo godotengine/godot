@@ -305,6 +305,7 @@ public:
 	bool is_subsequence_of(const String &p_string) const;
 	bool is_subsequence_ofn(const String &p_string) const;
 	bool is_quoted() const;
+	bool is_whitespace() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
 	String format(const Variant &values, const String &placeholder = "{_}") const;
