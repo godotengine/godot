@@ -38,6 +38,10 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
+class TabContainer;
+class JSON;
+class EditorChecklistDialog;
+
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
 
@@ -48,6 +52,8 @@ class CreateDialog : public ConfirmationDialog {
 	};
 
 	LineEdit *search_box = nullptr;
+	LineEdit *category_box = nullptr;
+	TabContainer *tabs = nullptr;
 	Tree *search_options = nullptr;
 
 	String base_type;
@@ -61,15 +67,19 @@ class CreateDialog : public ConfirmationDialog {
 	ItemList *recent = nullptr;
 	EditorHelpBit *help_bit = nullptr;
 
+	Button *add_category = nullptr;
+	Ref<JSON> json;
 	HashMap<String, TreeItem *> search_options_types;
 	HashMap<String, String> custom_type_parents;
 	HashMap<String, int> custom_type_indices;
 	List<StringName> type_list;
 	HashSet<StringName> type_blacklist;
 
+	EditorChecklistDialog *checklist_dialog = nullptr;
+
 	void _update_search();
 	bool _should_hide_type(const StringName &p_type) const;
-	void _add_type(const StringName &p_type, TypeCategory p_type_category);
+	void _add_type(const StringName &p_type, TypeCategory p_type_category, Tree *current_tree, Array current_metadata);
 	void _configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category);
 	float _score_type(const String &p_type, const String &p_search) const;
 	bool _is_type_preferred(const String &p_type) const;
@@ -81,12 +91,24 @@ class CreateDialog : public ConfirmationDialog {
 	void _text_changed(const String &p_newtext);
 	void select_type(const String &p_type, bool p_center_on_item = true);
 	void _item_selected();
+	void _custom_item_selected();
 	void _hide_requested();
 
 	void _confirmed();
+	void _custom_confirmed();
 	virtual void cancel_pressed() override;
 
 	void _favorite_toggled();
+
+	Variant _create_tab_metadata(const Dictionary &p_node_names = Dictionary()) const;
+	void _add_tab(const String &p_name, const Dictionary &p_node_names = Dictionary());
+	void _add_category_pressed();
+	void _add_node_pressed();
+	void _remove_node_pressed();
+	void _checklist_confirmed();
+	void _tab_changed(int p_idx);
+	void _tab_closed(int p_idx);
+	void _tab_rearranged(int p_idx_to);
 
 	void _history_selected(int p_idx);
 	void _favorite_selected();
@@ -99,13 +121,14 @@ class CreateDialog : public ConfirmationDialog {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class) const;
-	void _load_favorites_and_history();
+	void _load_favorites_and_history_and_tabs();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	void _save_and_update_favorite_list();
+	void _save_and_update_tabs();
 
 public:
 	Variant instantiate_selected();
