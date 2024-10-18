@@ -102,6 +102,7 @@ public:
 		p_array[p_result] = p_array[p_first];
 		adjust_heap(p_first, 0, p_last - p_first, p_value, p_array);
 	}
+
 	inline void pop_heap(int64_t p_first, int64_t p_last, T *p_array) const {
 		pop_heap(p_first, p_last - 1, p_last - 1, p_array[p_last - 1], p_array);
 	}

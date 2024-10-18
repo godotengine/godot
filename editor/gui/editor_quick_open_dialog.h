@@ -31,6 +31,7 @@
 #ifndef EDITOR_QUICK_OPEN_DIALOG_H
 #define EDITOR_QUICK_OPEN_DIALOG_H
 
+#include "core/string/fuzzy_search.h"
 #include "core/templates/oa_hash_map.h"
 #include "scene/gui/dialogs.h"
 
@@ -55,13 +56,22 @@ enum class QuickOpenDisplayMode {
 	LIST,
 };
 
+struct QuickOpenResultCandidate {
+	String file_name;
+	String file_directory;
+
+	Ref<Texture2D> thumbnail;
+	Ref<FuzzySearchResult> result;
+};
+
 class QuickOpenResultContainer : public VBoxContainer {
 	GDCLASS(QuickOpenResultContainer, VBoxContainer)
 
 public:
 	void init(const Vector<StringName> &p_base_types);
 	void handle_search_box_input(const Ref<InputEvent> &p_ie);
-	void update_results(const String &p_query);
+	void set_query_and_update(const String &p_query);
+	void update_results();
 
 	bool has_nothing_selected() const;
 	String get_selected() const;
@@ -76,21 +86,15 @@ protected:
 	void _notification(int p_what);
 
 private:
-	static const int TOTAL_ALLOCATED_RESULT_ITEMS = 100;
 	static const int SHOW_ALL_FILES_THRESHOLD = 30;
 
-	struct Candidate {
-		String file_name;
-		String file_directory;
-
-		Ref<Texture2D> thumbnail;
-		float score = 0;
-	};
-
+	Ref<FuzzySearch> fuzzy_search;
 	Vector<StringName> base_types;
-	Vector<Candidate> candidates;
+	Vector<String> filepaths;
+	OAHashMap<String, StringName> filetypes;
+	Vector<QuickOpenResultCandidate> candidates;
 
-	OAHashMap<StringName, List<Candidate>> selected_history;
+	OAHashMap<StringName, List<QuickOpenResultCandidate>> selected_history;
 
 	String query;
 	int selection_index = -1;
@@ -114,15 +118,16 @@ private:
 	Label *file_details_path = nullptr;
 	Button *display_mode_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
+	CheckButton *fuzzy_search_toggle = nullptr;
 
 	OAHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
 	static QuickOpenDisplayMode get_adaptive_display_mode(const Vector<StringName> &p_base_types);
 
-	void _create_initial_results(bool p_include_addons);
-	void _find_candidates_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
+	void _create_initial_results();
+	void _find_filepaths_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
-	int _sort_candidates(const String &p_query);
+	void _score_and_sort_candidates();
 	void _update_result_items(int p_new_visible_results_count, int p_new_selection_index);
 
 	void _move_selection_index(Key p_key);
@@ -133,6 +138,7 @@ private:
 	void _set_display_mode(QuickOpenDisplayMode p_display_mode);
 	void _toggle_display_mode();
 	void _toggle_include_addons(bool p_pressed);
+	void _toggle_fuzzy_search(bool p_pressed);
 
 	static void _bind_methods();
 };
@@ -143,7 +149,10 @@ class QuickOpenResultGridItem : public VBoxContainer {
 public:
 	QuickOpenResultGridItem();
 
-	void set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file_name);
+	Ref<FuzzySearchResult> result;
+
+	void set_content(const QuickOpenResultCandidate &p_candidate);
+	Vector<Rect2i> get_search_highlights();
 	void reset();
 	void highlight_item(const Color &p_color);
 	void remove_highlight();
@@ -159,7 +168,10 @@ class QuickOpenResultListItem : public HBoxContainer {
 public:
 	QuickOpenResultListItem();
 
-	void set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file_name, const String &p_file_directory);
+	Ref<FuzzySearchResult> result;
+
+	void set_content(const QuickOpenResultCandidate &p_candidate);
+	Vector<Rect2i> get_search_highlights();
 	void reset();
 	void highlight_item(const Color &p_color);
 	void remove_highlight();
@@ -184,11 +196,13 @@ class QuickOpenResultItem : public HBoxContainer {
 public:
 	QuickOpenResultItem();
 
-	void set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file_name, const String &p_file_directory);
+	bool enable_highlights = true;
+
+	void set_content(const QuickOpenResultCandidate &p_candidate);
 	void set_display_mode(QuickOpenDisplayMode p_display_mode);
 	void reset();
-
 	void highlight_item(bool p_enabled);
+	void draw_search_highlights();
 
 protected:
 	void _notification(int p_what);
@@ -203,6 +217,7 @@ private:
 
 	bool is_hovering = false;
 	bool is_selected = false;
+	bool dirty_highlights = false;
 
 	void _set_enabled(bool p_enabled);
 };

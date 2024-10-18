@@ -45,6 +45,14 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
+const Vector2i MAGIC_HIGHLIGHT_OFFSET = { 4, 5 };
+const String DISPLAY_MODE_SETTING = "filesystem/quick_open_dialog/default_display_mode";
+const String FUZZY_MATCHING_SETTING = "filesystem/quick_open_dialog/enable_fuzzy_matching";
+const String INCLUDE_ADDONS_SETTING = "filesystem/quick_open_dialog/include_addons";
+const String MAX_RESULTS_SETTING = "filesystem/quick_open_dialog/max_results";
+const String MAX_MISSES_SETTING = "filesystem/quick_open_dialog/max_fuzzy_misses";
+const String SEARCH_HIGHLIGHT_SETTING = "filesystem/quick_open_dialog/show_search_highlight";
+
 EditorQuickOpenDialog::EditorQuickOpenDialog() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->add_theme_constant_override("separation", 0);
@@ -100,7 +108,7 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 	get_ok_button()->set_disabled(container->has_nothing_selected());
 
 	set_title(get_dialog_title(p_base_types));
-	popup_centered_clamped(Size2(710, 650) * EDSCALE, 0.8f);
+	popup_centered_clamped(Size2(655, 650) * EDSCALE, 0.8f);
 	search_box->grab_focus();
 }
 
@@ -119,14 +127,20 @@ void EditorQuickOpenDialog::cancel_pressed() {
 }
 
 void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
-	container->update_results(p_query.to_lower());
-
+	container->set_query_and_update(p_query);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
 }
 
 //------------------------- Result Container
 
+void style_button(Button *p_button) {
+	p_button->set_flat(true);
+	p_button->set_focus_mode(Control::FOCUS_NONE);
+	p_button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
+}
+
 QuickOpenResultContainer::QuickOpenResultContainer() {
+	fuzzy_search.instantiate();
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_theme_constant_override("separation", 0);
@@ -177,6 +191,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 	{
 		// Bottom bar
 		HBoxContainer *bottom_bar = memnew(HBoxContainer);
+		bottom_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		add_child(bottom_bar);
 
 		file_details_path = memnew(Label);
@@ -190,10 +205,14 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			hbc->add_theme_constant_override("separation", 3);
 			bottom_bar->add_child(hbc);
 
+			fuzzy_search_toggle = memnew(CheckButton);
+			style_button(fuzzy_search_toggle);
+			fuzzy_search_toggle->set_tooltip_text(TTR("Enable fuzzy matching"));
+			fuzzy_search_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_fuzzy_search));
+			hbc->add_child(fuzzy_search_toggle);
+
 			include_addons_toggle = memnew(CheckButton);
-			include_addons_toggle->set_flat(true);
-			include_addons_toggle->set_focus_mode(Control::FOCUS_NONE);
-			include_addons_toggle->set_default_cursor_shape(CURSOR_POINTING_HAND);
+			style_button(include_addons_toggle);
 			include_addons_toggle->set_tooltip_text(TTR("Include files from addons"));
 			include_addons_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_include_addons));
 			hbc->add_child(include_addons_toggle);
@@ -204,9 +223,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			hbc->add_child(vsep);
 
 			display_mode_toggle = memnew(Button);
-			display_mode_toggle->set_flat(true);
-			display_mode_toggle->set_focus_mode(Control::FOCUS_NONE);
-			display_mode_toggle->set_default_cursor_shape(CURSOR_POINTING_HAND);
+			style_button(display_mode_toggle);
 			display_mode_toggle->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_display_mode));
 			hbc->add_child(display_mode_toggle);
 		}
@@ -214,8 +231,8 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 
 	// Creating and deleting nodes while searching is slow, so we allocate
 	// a bunch of result nodes and fill in the content based on result ranking.
-	result_items.resize(TOTAL_ALLOCATED_RESULT_ITEMS);
-	for (int i = 0; i < TOTAL_ALLOCATED_RESULT_ITEMS; i++) {
+	result_items.resize(EDITOR_GET(MAX_RESULTS_SETTING));
+	for (int i = 0; i < result_items.size(); i++) {
 		QuickOpenResultItem *item = memnew(QuickOpenResultItem);
 		item->connect(SceneStringName(gui_input), callable_mp(this, &QuickOpenResultContainer::_item_input).bind(i));
 		result_items.write[i] = item;
@@ -232,34 +249,45 @@ QuickOpenResultContainer::~QuickOpenResultContainer() {
 
 void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 	base_types = p_base_types;
-	never_opened = false;
 
-	const int display_mode_behavior = EDITOR_GET("filesystem/quick_open_dialog/default_display_mode");
+	const int display_mode_behavior = EDITOR_GET(DISPLAY_MODE_SETTING);
 	const bool adaptive_display_mode = (display_mode_behavior == 0);
 
 	if (adaptive_display_mode) {
-		_set_display_mode(get_adaptive_display_mode(p_base_types));
+		_set_display_mode(adaptive_display_mode ? get_adaptive_display_mode(p_base_types) : QuickOpenDisplayMode::LIST);
+	} else if (never_opened) {
+		int last = EditorSettings::get_singleton()->get_project_metadata("quick_open_dialog", "last_mode", (int)QuickOpenDisplayMode::LIST);
+		_set_display_mode((QuickOpenDisplayMode)last);
 	}
 
-	const bool include_addons = EDITOR_GET("filesystem/quick_open_dialog/include_addons");
+	const bool fuzzy_matching = EDITOR_GET(FUZZY_MATCHING_SETTING);
+	const bool include_addons = EDITOR_GET(INCLUDE_ADDONS_SETTING);
+	fuzzy_search_toggle->set_pressed_no_signal(fuzzy_matching);
 	include_addons_toggle->set_pressed_no_signal(include_addons);
+	never_opened = false;
 
-	_create_initial_results(include_addons);
+	const bool enable_highlights = EDITOR_GET(SEARCH_HIGHLIGHT_SETTING);
+	for (QuickOpenResultItem *E : result_items) {
+		E->enable_highlights = enable_highlights;
+	}
+
+	_create_initial_results();
 }
 
-void QuickOpenResultContainer::_create_initial_results(bool p_include_addons) {
-	file_type_icons.insert("__default_icon", get_editor_theme_icon(SNAME("Object")));
-	_find_candidates_in_folder(EditorFileSystem::get_singleton()->get_filesystem(), p_include_addons);
-	max_total_results = MIN(candidates.size(), TOTAL_ALLOCATED_RESULT_ITEMS);
+void QuickOpenResultContainer::_create_initial_results() {
 	file_type_icons.clear();
-
-	update_results(query);
+	file_type_icons.insert("__default_icon", get_editor_theme_icon(SNAME("Object")));
+	filepaths.clear();
+	filetypes.clear();
+	_find_filepaths_in_folder(EditorFileSystem::get_singleton()->get_filesystem(), include_addons_toggle->is_pressed());
+	max_total_results = MIN(filepaths.size(), result_items.size());
+	update_results();
 }
 
-void QuickOpenResultContainer::_find_candidates_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons) {
+void QuickOpenResultContainer::_find_filepaths_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons) {
 	for (int i = 0; i < p_directory->get_subdir_count(); i++) {
 		if (p_include_addons || p_directory->get_name() != "addons") {
-			_find_candidates_in_folder(p_directory->get_subdir(i), p_include_addons);
+			_find_filepaths_in_folder(p_directory->get_subdir(i), p_include_addons);
 		}
 	}
 
@@ -276,127 +304,67 @@ void QuickOpenResultContainer::_find_candidates_in_folder(EditorFileSystemDirect
 			bool is_valid = ClassDB::is_parent_class(engine_type, parent_type) || (!is_engine_type && EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type));
 
 			if (is_valid) {
-				Candidate c;
-				c.file_name = file_path.get_file();
-				c.file_directory = file_path.get_base_dir();
-
-				EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(file_path);
-				if (item.preview.is_valid()) {
-					c.thumbnail = item.preview;
-				} else if (file_type_icons.has(actual_type)) {
-					c.thumbnail = *file_type_icons.lookup_ptr(actual_type);
-				} else if (has_theme_icon(actual_type, EditorStringName(EditorIcons))) {
-					c.thumbnail = get_editor_theme_icon(actual_type);
-					file_type_icons.insert(actual_type, c.thumbnail);
-				} else {
-					c.thumbnail = *file_type_icons.lookup_ptr("__default_icon");
-				}
-
-				candidates.push_back(c);
-
+				filepaths.append(file_path);
+				filetypes.insert(file_path, actual_type);
 				break; // Stop testing base types as soon as we get a match.
 			}
 		}
 	}
 }
 
-void QuickOpenResultContainer::update_results(const String &p_query) {
+void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 	query = p_query;
-
-	int relevant_candidates = _sort_candidates(p_query);
-	_update_result_items(MIN(relevant_candidates, max_total_results), 0);
+	update_results();
 }
 
-int QuickOpenResultContainer::_sort_candidates(const String &p_query) {
-	if (p_query.is_empty()) {
-		return 0;
+void QuickOpenResultContainer::update_results() {
+	_score_and_sort_candidates();
+	_update_result_items(MIN(candidates.size(), max_total_results), 0);
+}
+
+void QuickOpenResultContainer::_score_and_sort_candidates() {
+	candidates.clear();
+
+	if (query.is_empty()) {
+		return;
 	}
 
-	const PackedStringArray search_tokens = p_query.to_lower().replace("/", " ").split(" ", false);
+	fuzzy_search->set_query(query);
+	fuzzy_search->max_results = max_total_results;
+	bool fuzzy_matching = EDITOR_GET(FUZZY_MATCHING_SETTING);
+	int max_misses = EDITOR_GET(MAX_MISSES_SETTING);
+	fuzzy_search->allow_subsequences = fuzzy_matching;
+	fuzzy_search->max_misses = fuzzy_matching ? max_misses : 0;
 
-	if (search_tokens.is_empty()) {
-		return 0;
+	Vector<Ref<FuzzySearchResult>> results = fuzzy_search->search_all(filepaths);
+	candidates.resize(results.size());
+
+	for (int i = 0; i < results.size(); i++) {
+		String filename = results[i]->target;
+		StringName actual_type = *filetypes.lookup_ptr(results[i]->target);
+		QuickOpenResultCandidate candidate;
+		candidate.file_name = filename.get_file();
+		candidate.file_directory = filename.get_base_dir();
+		candidate.result = results[i];
+
+		EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(filename);
+		if (item.preview.is_valid()) {
+			candidate.thumbnail = item.preview;
+		} else if (file_type_icons.has(actual_type)) {
+			candidate.thumbnail = *file_type_icons.lookup_ptr(actual_type);
+		} else if (has_theme_icon(actual_type, EditorStringName(EditorIcons))) {
+			candidate.thumbnail = get_editor_theme_icon(actual_type);
+			file_type_icons.insert(actual_type, candidate.thumbnail);
+		} else {
+			candidate.thumbnail = *file_type_icons.lookup_ptr("__default_icon");
+		}
+
+		candidates.set(i, candidate);
 	}
-
-	// First, we assign a score to each candidate.
-	int num_relevant_candidates = 0;
-	for (Candidate &c : candidates) {
-		c.score = 0;
-		int prev_token_match_pos = -1;
-
-		for (const String &token : search_tokens) {
-			const int file_pos = c.file_name.findn(token);
-			const int dir_pos = c.file_directory.findn(token);
-
-			const bool file_match = file_pos > -1;
-			const bool dir_match = dir_pos > -1;
-			if (!file_match && !dir_match) {
-				c.score = -1.0f;
-				break;
-			}
-
-			float token_score = file_match ? 0.6f : 0.1999f;
-
-			// Add bias for shorter filenames/paths: they resemble the query more.
-			const String &matched_string = file_match ? c.file_name : c.file_directory;
-			int matched_string_token_pos = file_match ? file_pos : dir_pos;
-			token_score += 0.1f * (1.0f - ((float)matched_string_token_pos / (float)matched_string.length()));
-
-			// Add bias if the match happened in the file name, not the extension.
-			if (file_match) {
-				int ext_pos = matched_string.rfind(".");
-				if (ext_pos == -1 || ext_pos > matched_string_token_pos) {
-					token_score += 0.1f;
-				}
-			}
-
-			// Add bias if token is in order.
-			{
-				int candidate_string_token_pos = file_match ? (c.file_directory.length() + file_pos) : dir_pos;
-
-				if (prev_token_match_pos != -1 && candidate_string_token_pos > prev_token_match_pos) {
-					token_score += 0.2f;
-				}
-
-				prev_token_match_pos = candidate_string_token_pos;
-			}
-
-			c.score += token_score;
-		}
-
-		if (c.score > 0.0f) {
-			num_relevant_candidates++;
-		}
-	}
-
-	// Now we will sort the candidates based on score, resolving ties by favoring:
-	// 1. Shorter file length.
-	// 2. Shorter directory length.
-	// 3. Lower alphabetic order.
-	struct CandidateComparator {
-		_FORCE_INLINE_ bool operator()(const Candidate &p_a, const Candidate &p_b) const {
-			if (!Math::is_equal_approx(p_a.score, p_b.score)) {
-				return p_a.score > p_b.score;
-			}
-
-			if (p_a.file_name.length() != p_b.file_name.length()) {
-				return p_a.file_name.length() < p_b.file_name.length();
-			}
-
-			if (p_a.file_directory.length() != p_b.file_directory.length()) {
-				return p_a.file_directory.length() < p_b.file_directory.length();
-			}
-
-			return p_a.file_name < p_b.file_name;
-		}
-	};
-	candidates.sort_custom<CandidateComparator>();
-
-	return num_relevant_candidates;
 }
 
 void QuickOpenResultContainer::_update_result_items(int p_new_visible_results_count, int p_new_selection_index) {
-	List<Candidate> *type_history = nullptr;
+	List<QuickOpenResultCandidate> *type_history = nullptr;
 
 	showing_history = false;
 
@@ -424,13 +392,7 @@ void QuickOpenResultContainer::_update_result_items(int p_new_visible_results_co
 		QuickOpenResultItem *item = result_items[i];
 
 		if (i < num_visible_results) {
-			if (type_history) {
-				const Candidate &c = type_history->get(i);
-				item->set_content(c.thumbnail, c.file_name, c.file_directory);
-			} else {
-				const Candidate &c = candidates[i];
-				item->set_content(c.thumbnail, c.file_name, c.file_directory);
-			}
+			item->set_content(type_history ? type_history->get(i) : candidates[i]);
 		} else {
 			item->reset();
 		}
@@ -443,7 +405,7 @@ void QuickOpenResultContainer::_update_result_items(int p_new_visible_results_co
 	no_results_container->set_visible(!any_results);
 
 	if (!any_results) {
-		if (candidates.is_empty()) {
+		if (filepaths.is_empty()) {
 			no_results_label->set_text(TTR("No files found for this type"));
 		} else if (query.is_empty()) {
 			no_results_label->set_text(TTR("Start searching to find files..."));
@@ -471,10 +433,11 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 			} break;
 			case Key::LEFT:
 			case Key::RIGHT: {
-				// Both grid and the search box use left/right keys. By default, grid will take it.
-				// It would be nice if we could check for ALT to give the event to the searchbox cursor.
-				// However, if you press ALT, the searchbox also denies the input.
-				move_selection = (content_display_mode == QuickOpenDisplayMode::GRID);
+				if (content_display_mode == QuickOpenDisplayMode::GRID) {
+					if (key_event->get_modifiers_mask() == 0) {
+						move_selection = true;
+					}
+				}
 			} break;
 			default:
 				break; // Let the event through so it will reach the search box.
@@ -562,11 +525,15 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 	}
 }
 
-void QuickOpenResultContainer::_toggle_include_addons(bool p_pressed) {
-	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/include_addons", p_pressed);
+void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
+	EditorSettings::get_singleton()->set(FUZZY_MATCHING_SETTING, p_pressed);
+	update_results();
+}
 
+void QuickOpenResultContainer::_toggle_include_addons(bool p_pressed) {
+	EditorSettings::get_singleton()->set(INCLUDE_ADDONS_SETTING, p_pressed);
 	cleanup();
-	_create_initial_results(p_pressed);
+	_create_initial_results();
 }
 
 void QuickOpenResultContainer::_toggle_display_mode() {
@@ -576,6 +543,7 @@ void QuickOpenResultContainer::_toggle_display_mode() {
 
 void QuickOpenResultContainer::_set_display_mode(QuickOpenDisplayMode p_display_mode) {
 	content_display_mode = p_display_mode;
+	EditorSettings::get_singleton()->set_project_metadata("quick_open_dialog", "last_mode", (int)content_display_mode);
 
 	const bool show_list = (content_display_mode == QuickOpenDisplayMode::LIST);
 	if ((show_list && list->is_visible()) || (!show_list && grid->is_visible())) {
@@ -629,12 +597,12 @@ String QuickOpenResultContainer::get_selected() const {
 	ERR_FAIL_COND_V_MSG(has_nothing_selected(), String(), "Tried to get selected file, but nothing was selected.");
 
 	if (showing_history) {
-		const List<Candidate> *type_history = selected_history.lookup_ptr(base_types[0]);
+		const List<QuickOpenResultCandidate> *type_history = selected_history.lookup_ptr(base_types[0]);
 
-		const Candidate &c = type_history->get(selection_index);
+		const QuickOpenResultCandidate &c = type_history->get(selection_index);
 		return c.file_directory.path_join(c.file_name);
 	} else {
-		const Candidate &c = candidates[selection_index];
+		const QuickOpenResultCandidate &c = candidates[selection_index];
 		return c.file_directory.path_join(c.file_name);
 	}
 }
@@ -671,14 +639,14 @@ void QuickOpenResultContainer::save_selected_item() {
 
 	const StringName &base_type = base_types[0];
 
-	List<Candidate> *type_history = selected_history.lookup_ptr(base_type);
+	List<QuickOpenResultCandidate> *type_history = selected_history.lookup_ptr(base_type);
 	if (!type_history) {
-		selected_history.insert(base_type, List<Candidate>());
+		selected_history.insert(base_type, List<QuickOpenResultCandidate>());
 		type_history = selected_history.lookup_ptr(base_type);
 	} else {
-		const Candidate &selected = candidates[selection_index];
+		const QuickOpenResultCandidate &selected = candidates[selection_index];
 
-		for (const Candidate &candidate : *type_history) {
+		for (const QuickOpenResultCandidate &candidate : *type_history) {
 			if (candidate.file_directory == selected.file_directory && candidate.file_name == selected.file_name) {
 				return;
 			}
@@ -743,23 +711,28 @@ QuickOpenResultItem::QuickOpenResultItem() {
 void QuickOpenResultItem::set_display_mode(QuickOpenDisplayMode p_display_mode) {
 	if (p_display_mode == QuickOpenDisplayMode::LIST) {
 		grid_item->hide();
+		grid_item->reset();
 		list_item->show();
 	} else {
 		list_item->hide();
+		list_item->reset();
 		grid_item->show();
 	}
 
+	dirty_highlights = true;
 	queue_redraw();
 }
 
-void QuickOpenResultItem::set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file, const String &p_file_directory) {
+void QuickOpenResultItem::set_content(const QuickOpenResultCandidate &p_candidate) {
 	_set_enabled(true);
 
 	if (list_item->is_visible()) {
-		list_item->set_content(p_thumbnail, p_file, p_file_directory);
+		list_item->set_content(p_candidate);
 	} else {
-		grid_item->set_content(p_thumbnail, p_file);
+		grid_item->set_content(p_candidate);
 	}
+
+	queue_redraw();
 }
 
 void QuickOpenResultItem::reset() {
@@ -767,12 +740,8 @@ void QuickOpenResultItem::reset() {
 
 	is_hovering = false;
 	is_selected = false;
-
-	if (list_item->is_visible()) {
-		list_item->reset();
-	} else {
-		grid_item->reset();
-	}
+	list_item->reset();
+	grid_item->reset();
 }
 
 void QuickOpenResultItem::highlight_item(bool p_enabled) {
@@ -795,6 +764,34 @@ void QuickOpenResultItem::highlight_item(bool p_enabled) {
 	queue_redraw();
 }
 
+void QuickOpenResultItem::draw_search_highlights() {
+	if (dirty_highlights) {
+		// When initially switching layouts, the new sub-item has not yet been positioned, so this
+		// delays finding and drawing highlights until after that happens.
+		dirty_highlights = false;
+		callable_mp(Object::cast_to<CanvasItem>(this), &CanvasItem::queue_redraw).call_deferred();
+		return;
+	}
+
+	Control *item;
+	Vector<Rect2i> highlights;
+
+	if (list_item->is_visible()) {
+		item = list_item;
+		highlights = list_item->get_search_highlights();
+	} else {
+		item = grid_item;
+		highlights = grid_item->get_search_highlights();
+	}
+
+	Vector2i offset = item->get_position() + MAGIC_HIGHLIGHT_OFFSET * EDSCALE;
+	for (Rect2i rect : highlights) {
+		rect.position += offset;
+		draw_rect(rect, Color(1, 1, 1, 0.07), true);
+		draw_rect(rect, Color(0.5, 0.7, 1.0, 0.4), false, 1);
+	}
+}
+
 void QuickOpenResultItem::_set_enabled(bool p_enabled) {
 	set_visible(p_enabled);
 	set_process(p_enabled);
@@ -814,6 +811,9 @@ void QuickOpenResultItem::_notification(int p_what) {
 			highlighted_font_color = get_theme_color("font_focus_color", EditorStringName(Editor));
 		} break;
 		case NOTIFICATION_DRAW: {
+			if (enable_highlights) {
+				draw_search_highlights();
+			}
 			if (is_selected) {
 				draw_style_box(selected_stylebox, Rect2(Point2(), get_size()));
 			} else if (is_hovering) {
@@ -824,6 +824,29 @@ void QuickOpenResultItem::_notification(int p_what) {
 }
 
 //----------------- List item
+
+Vector2i get_path_interval(const Vector2i p_interval, const int p_dir_index) {
+	if (p_interval.x >= p_dir_index || p_interval.y < 1) {
+		return { -1, -1 };
+	}
+	return { p_interval.x, MIN(p_interval.x + p_interval.y, p_dir_index) - p_interval.x };
+}
+
+Vector2i get_name_interval(const Vector2i p_interval, const int p_dir_index) {
+	if (p_interval.x + p_interval.y <= p_dir_index || p_interval.y < 1) {
+		return { -1, -1 };
+	}
+	int first_name_idx = p_dir_index + 1;
+	int start = MAX(p_interval.x, first_name_idx);
+	return { start - first_name_idx, p_interval.y - start + p_interval.x };
+}
+
+Rect2i get_highlight_region(Ref<Font> &p_font, const int p_font_size, const String &p_string, const Vector2i p_substr) {
+	Vector2i prefix = p_font->get_string_size(p_string.substr(0, p_substr.x), HORIZONTAL_ALIGNMENT_LEFT, -1, p_font_size);
+	prefix.y = 0;
+	Vector2i size = p_font->get_string_size(p_string.substr(p_substr.x, p_substr.y), HORIZONTAL_ALIGNMENT_LEFT, -1, p_font_size);
+	return { prefix, size };
+}
 
 QuickOpenResultListItem::QuickOpenResultListItem() {
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -866,18 +889,19 @@ QuickOpenResultListItem::QuickOpenResultListItem() {
 	}
 }
 
-void QuickOpenResultListItem::set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file, const String &p_file_directory) {
-	thumbnail->set_texture(p_thumbnail);
-	name->set_text(p_file);
-	path->set_text(p_file_directory);
+void QuickOpenResultListItem::set_content(const QuickOpenResultCandidate &p_candidate) {
+	result = p_candidate.result;
+	thumbnail->set_texture(p_candidate.thumbnail);
+	name->set_text(p_candidate.file_name);
+	path->set_text(p_candidate.file_directory);
 
 	const int max_size = 32 * EDSCALE;
-	bool uses_icon = p_thumbnail->get_width() < max_size;
+	bool uses_icon = p_candidate.thumbnail->get_width() < max_size;
 
 	if (uses_icon) {
-		thumbnail->set_custom_minimum_size(p_thumbnail->get_size());
+		thumbnail->set_custom_minimum_size(p_candidate.thumbnail->get_size());
 
-		int margin_needed = (max_size - p_thumbnail->get_width()) / 2;
+		int margin_needed = (max_size - p_candidate.thumbnail->get_width()) / 2;
 		image_container->add_theme_constant_override("margin_left", CONTAINER_MARGIN + margin_needed);
 		image_container->add_theme_constant_override("margin_right", margin_needed);
 	} else {
@@ -887,10 +911,43 @@ void QuickOpenResultListItem::set_content(const Ref<Texture2D> &p_thumbnail, con
 	}
 }
 
+Vector<Rect2i> QuickOpenResultListItem::get_search_highlights() {
+	Vector<Rect2i> highlights;
+	Ref<Font> font = get_theme_font(SceneStringName(font));
+
+	if (result.is_null() || font.is_null()) {
+		return highlights;
+	}
+
+	int path_font_size = path->get_theme_font_size(SceneStringName(font_size));
+	int name_font_size = name->get_theme_font_size(SceneStringName(font_size));
+	Vector2i path_position = path->get_screen_position() - get_screen_position();
+	Vector2i name_position = name->get_screen_position() - get_screen_position();
+
+	for (Ref<FuzzyTokenMatch> match : result->token_matches) {
+		for (Vector2i interval : match->substrings) {
+			Vector2i path_interval = get_path_interval(interval, result->dir_index);
+			Vector2i name_interval = get_name_interval(interval, result->dir_index);
+			if (path_interval.x != -1) {
+				Rect2i path_highlight = get_highlight_region(font, path_font_size, path->get_text(), path_interval);
+				path_highlight.position += path_position;
+				highlights.append(path_highlight);
+			}
+			if (name_interval.x != -1) {
+				Rect2i name_highlight = get_highlight_region(font, name_font_size, name->get_text(), name_interval);
+				name_highlight.position += name_position;
+				highlights.append(name_highlight);
+			}
+		}
+	}
+	return highlights;
+}
+
 void QuickOpenResultListItem::reset() {
-	name->set_text("");
 	thumbnail->set_texture(nullptr);
+	name->set_text("");
 	path->set_text("");
+	result = nullptr;
 }
 
 void QuickOpenResultListItem::highlight_item(const Color &p_color) {
@@ -919,7 +976,7 @@ QuickOpenResultGridItem::QuickOpenResultGridItem() {
 	thumbnail = memnew(TextureRect);
 	thumbnail->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	thumbnail->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	thumbnail->set_custom_minimum_size(Size2i(80 * EDSCALE, 64 * EDSCALE));
+	thumbnail->set_custom_minimum_size(Size2i(120 * EDSCALE, 64 * EDSCALE));
 	add_child(thumbnail);
 
 	name = memnew(Label);
@@ -930,16 +987,15 @@ QuickOpenResultGridItem::QuickOpenResultGridItem() {
 	add_child(name);
 }
 
-void QuickOpenResultGridItem::set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file) {
-	thumbnail->set_texture(p_thumbnail);
+void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_candidate) {
+	result = p_candidate.result;
+	thumbnail->set_texture(p_candidate.thumbnail);
+	name->set_text(p_candidate.file_name);
+	name->set_tooltip_text(p_candidate.file_name);
 
-	const String &file_name = p_file.get_basename();
-	name->set_text(file_name);
-	name->set_tooltip_text(file_name);
+	bool uses_icon = p_candidate.thumbnail->get_width() < (32 * EDSCALE);
 
-	bool uses_icon = p_thumbnail->get_width() < (32 * EDSCALE);
-
-	if (uses_icon || p_thumbnail->get_height() <= thumbnail->get_custom_minimum_size().y) {
+	if (uses_icon || p_candidate.thumbnail->get_height() <= thumbnail->get_custom_minimum_size().y) {
 		thumbnail->set_expand_mode(TextureRect::EXPAND_KEEP_SIZE);
 		thumbnail->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
 	} else {
@@ -948,9 +1004,44 @@ void QuickOpenResultGridItem::set_content(const Ref<Texture2D> &p_thumbnail, con
 	}
 }
 
+Vector<Rect2i> QuickOpenResultGridItem::get_search_highlights() {
+	Vector<Rect2i> highlights;
+	Ref<Font> font = get_theme_font(SceneStringName(font));
+
+	if (result.is_null() || font.is_null()) {
+		return highlights;
+	}
+
+	int font_size = name->get_theme_font_size(SceneStringName(font_size));
+	Rect2i name_rect = name->get_rect();
+	// Rect and string offsets are to handle centered text and trailing ellipsis
+	name_rect.size.x -= (MAGIC_HIGHLIGHT_OFFSET.x + 5) * EDSCALE;
+	int name_width = font->get_string_size(name->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	// The lower bound was tested to work well with EDSCALE = 1 and EDSCALE = 2
+	int str_offset = MAX(2 * EDSCALE - 1, (name_rect.size.x - name_width) / 2);
+
+	if (!name_rect.has_area()) {
+		return highlights;
+	}
+
+	for (Ref<FuzzyTokenMatch> match : result->token_matches) {
+		for (Vector2i interval : match->substrings) {
+			Vector2i name_interval = get_name_interval(interval, result->dir_index);
+			if (name_interval.x != -1) {
+				Rect2i name_highlight = get_highlight_region(font, font_size, name->get_text(), name_interval);
+				name_highlight.position += name_rect.position;
+				name_highlight.position.x += str_offset;
+				highlights.append(name_rect.intersection(name_highlight));
+			}
+		}
+	}
+	return highlights;
+}
+
 void QuickOpenResultGridItem::reset() {
 	name->set_text("");
 	thumbnail->set_texture(nullptr);
+	result = nullptr;
 }
 
 void QuickOpenResultGridItem::highlight_item(const Color &p_color) {
