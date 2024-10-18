@@ -30,6 +30,7 @@
 
 #include "code_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
@@ -1776,6 +1777,8 @@ void CodeTextEditor::update_toggle_scripts_button() {
 }
 
 CodeTextEditor::CodeTextEditor() {
+	ProjectSettings::get_singleton()->connect("global_script_classes_changed", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
+
 	code_complete_func = nullptr;
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
