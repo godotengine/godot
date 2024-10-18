@@ -205,6 +205,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 		status.pressing_inside = false;
 	}
 	queue_redraw();
+	update_minimum_size();
 }
 
 bool BaseButton::is_disabled() const {
