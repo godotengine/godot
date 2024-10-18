@@ -5569,7 +5569,7 @@ void GLTFDocument::_convert_bone_attachment_to_gltf(BoneAttachment3D *p_bone_att
 	Skeleton3D *skeleton;
 	// Note that relative transforms to external skeletons and pose overrides are not supported.
 	if (p_bone_attachment->get_use_external_skeleton()) {
-		skeleton = cast_to<Skeleton3D>(p_bone_attachment->get_node_or_null(p_bone_attachment->get_external_skeleton()));
+		skeleton = cast_to<Skeleton3D>(p_bone_attachment->get_node_or_null(p_bone_attachment->get_external_skeleton_path()));
 	} else {
 		skeleton = cast_to<Skeleton3D>(p_bone_attachment->get_parent());
 	}
