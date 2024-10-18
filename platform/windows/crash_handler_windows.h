@@ -36,7 +36,9 @@
 
 // Crash handler exception only enabled with MSVC
 #if defined(DEBUG_ENABLED)
+#if !defined(__clang__)
 #define CRASH_HANDLER_EXCEPTION 1
+#endif
 
 #ifdef _MSC_VER
 extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
