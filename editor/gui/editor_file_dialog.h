@@ -91,7 +91,7 @@ private:
 	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
 
-	GridContainer *grid_options = nullptr;
+	VBoxContainer *vbox_options = nullptr;
 	VBoxContainer *vbox = nullptr;
 	FileMode mode = FILE_MODE_SAVE_FILE;
 	bool can_create_dir = false;
