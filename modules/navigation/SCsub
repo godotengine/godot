@@ -11,7 +11,7 @@ env_navigation = env_modules.Clone()
 thirdparty_obj = []
 
 # Recast Thirdparty source files
-if env["builtin_recastnavigation"]:
+if not env["disable_3d"] and env["builtin_recastnavigation"]:
     thirdparty_dir = "#thirdparty/recastnavigation/Recast/"
     thirdparty_sources = [
         "Source/Recast.cpp",
@@ -52,7 +52,7 @@ if env["builtin_rvo2_2d"]:
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
 # RVO 3D Thirdparty source files
-if env["builtin_rvo2_3d"]:
+if not env["disable_3d"] and env["builtin_rvo2_3d"]:
     thirdparty_dir = "#thirdparty/rvo2/rvo2_3d/"
     thirdparty_sources = [
         "Agent3d.cpp",
@@ -76,8 +76,7 @@ module_obj = []
 
 env_navigation.add_source_files(module_obj, "*.cpp")
 env_navigation.add_source_files(module_obj, "2d/*.cpp")
-if not env["disable_3d"]:
-    env_navigation.add_source_files(module_obj, "3d/*.cpp")
+env_navigation.add_source_files(module_obj, "3d/*.cpp")
 if env.editor_build:
     env_navigation.add_source_files(module_obj, "editor/*.cpp")
 env.modules_sources += module_obj

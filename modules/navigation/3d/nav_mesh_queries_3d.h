@@ -31,8 +31,6 @@
 #ifndef NAV_MESH_QUERIES_3D_H
 #define NAV_MESH_QUERIES_3D_H
 
-#ifndef _3D_DISABLED
-
 #include "../nav_map.h"
 
 class NavMeshQueries3D {
@@ -48,7 +46,5 @@ public:
 
 	static void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners, const Vector3 &p_map_up);
 };
-
-#endif // _3D_DISABLED
 
 #endif // NAV_MESH_QUERIES_3D_H
