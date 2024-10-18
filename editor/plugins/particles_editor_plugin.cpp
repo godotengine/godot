@@ -64,7 +64,7 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 			menu->set_text(handled_type);
 
 			PopupMenu *popup = menu->get_popup();
-			popup->add_shortcut(ED_SHORTCUT("particles/restart_emission", TTR("Restart Emission"), KeyModifierMask::CTRL | Key::R), MENU_RESTART);
+			popup->add_shortcut(ED_SHORTCUT("particles/restart_emission", TTRC("Restart Emission"), KeyModifierMask::CTRL | Key::R), MENU_RESTART);
 			_add_menu_options(popup);
 			popup->add_item(conversion_option_name, MENU_OPTION_CONVERT);
 		} break;

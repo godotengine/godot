@@ -1995,9 +1995,9 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	set_clip_contents(true);
 
-	ED_SHORTCUT("animation_bezier_editor/focus", TTR("Focus"), Key::F);
-	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
-	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/focus", TTRC("Focus"), Key::F);
+	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTRC("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTRC("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
