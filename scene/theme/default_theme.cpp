@@ -671,10 +671,39 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("title_height", "Window", 36 * scale);
 	theme->set_constant("resize_margin", "Window", Math::round(4 * scale));
 
+	Ref<StyleBoxFlat> style_decoration_button_normal = make_flat_stylebox(style_normal_color, 0, 0, 0, 0);
+	style_decoration_button_normal->set_corner_radius_all(0);
+	theme->set_stylebox("decoration_button_normal", "Window", style_decoration_button_normal);
+
+	Ref<StyleBoxFlat> style_decoration_button_hover = make_flat_stylebox(style_hover_color, 0, 0, 0, 0);
+	style_decoration_button_hover->set_corner_radius_all(0);
+	theme->set_stylebox("decoration_button_hover", "Window", style_decoration_button_hover);
+
+	Ref<StyleBoxFlat> style_decoration_button_pressed = make_flat_stylebox(style_pressed_color, 0, 0, 0, 0);
+	style_decoration_button_pressed->set_corner_radius_all(0);
+	theme->set_stylebox("decoration_button_pressed", "Window", style_decoration_button_pressed);
+
+	theme->set_color("decoration_button_normal_modulate", "Window", control_font_color);
+	theme->set_color("decoration_button_hover_modulate", "Window", control_font_hover_color);
+	theme->set_color("decoration_button_pressed_modulate", "Window", control_font_pressed_color);
+
+	theme->set_icon("minimize", "Window", icons["minimize"]);
+	theme->set_icon("minimize_pressed", "Window", icons["minimize_hl"]);
+	theme->set_constant("minimize_h_offset", "Window", 54 * scale);
+	theme->set_constant("minimize_v_offset", "Window", 20 * scale);
+
+	theme->set_icon("maximize", "Window", icons["maximize"]);
+	theme->set_icon("maximize_pressed", "Window", icons["maximize_hl"]);
+	theme->set_icon("maximize_disabled", "Window", icons["maximize_disabled"]);
+	theme->set_icon("restore", "Window", icons["restore"]);
+	theme->set_icon("restore_pressed", "Window", icons["restore_hl"]);
+	theme->set_constant("maximize_h_offset", "Window", 36 * scale);
+	theme->set_constant("maximize_v_offset", "Window", 20 * scale);
+
 	theme->set_icon("close", "Window", icons["close"]);
 	theme->set_icon("close_pressed", "Window", icons["close_hl"]);
 	theme->set_constant("close_h_offset", "Window", 18 * scale);
-	theme->set_constant("close_v_offset", "Window", 24 * scale);
+	theme->set_constant("close_v_offset", "Window", 20 * scale);
 
 	// Dialogs
 
