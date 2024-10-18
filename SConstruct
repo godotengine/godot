@@ -213,6 +213,7 @@ opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols 
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
+opts.Add(EnumVariable("cpp_standard", "Set the C++ standard (Experimental)", "17", ("17", "20", "23")))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -643,14 +644,28 @@ cc_version = methods.get_compiler_version(env)
 cc_version_major = cc_version["major"]
 cc_version_minor = cc_version["minor"]
 cc_version_metadata1 = cc_version["metadata1"]
+cpp_std = int(env["cpp_standard"])
 
 if cc_version_major == -1:
     print_warning(
         "Couldn't detect compiler version, skipping version checks. "
-        "Build may fail if the compiler doesn't support C++17 fully."
+        f"Build may fail if the compiler doesn't support C++{cpp_std} fully."
+    )
+elif cpp_std == 23:
+    print_warning(
+        "Using an experimental C++ standard, skipping version checks. "
+        "Build may fail if the compiler doesn't support the latest C++ fully."
     )
 elif methods.using_gcc(env):
-    if cc_version_major < 9:
+    if cpp_std == 20 and cc_version_major < 12:
+        print_error(
+            "Detected GCC version older than 12, which does not fully support "
+            "C++20. Supported versions are GCC 12 and later. Use a newer GCC "
+            'version, or Clang 17 or later by passing "use_llvm=yes" to the '
+            "SCons command line."
+        )
+        Exit(255)
+    elif cpp_std == 17 and cc_version_major < 9:
         print_error(
             "Detected GCC version older than 9, which does not fully support "
             "C++17, or has bugs when compiling Godot. Supported versions are 9 "
@@ -674,13 +689,27 @@ elif methods.using_clang(env):
     # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
     if env["platform"] == "macos" or env["platform"] == "ios":
         vanilla = methods.is_vanilla_clang(env)
-        if vanilla and cc_version_major < 6:
+        if cpp_std == 20 and vanilla and cc_version_major < 17:
+            print_error(
+                "Detected Clang version older than 17, which does not fully support "
+                "C++20. Supported versions are Clang 17 and later."
+            )
+            Exit(255)
+        # XCode started defaulting to c++20 in XCode 14, despite their equivalent Clang
+        # being 14. Assume 14 as the "minimum" version, but full support is uncertain.
+        elif cpp_std == 20 and not vanilla and cc_version_major < 14:
+            print_error(
+                "Detected Apple Clang version older than 14, which does not fully "
+                'support C++20. "Supported" versions are Apple Clang 14 and later.'
+            )
+            Exit(255)
+        elif cpp_std == 17 and vanilla and cc_version_major < 6:
             print_error(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
             Exit(255)
-        elif not vanilla and cc_version_major < 10:
+        elif cpp_std == 17 and not vanilla and cc_version_major < 10:
             print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
@@ -691,7 +720,13 @@ elif methods.using_clang(env):
                 "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
             )
             env["debug_paths_relative"] = False
-    elif cc_version_major < 6:
+    elif cpp_std == 20 and cc_version_major < 17:
+        print_error(
+            "Detected Clang version older than 17, which does not fully support "
+            "C++20. Supported versions are Clang 17 and later."
+        )
+        Exit(255)
+    elif cpp_std == 17 and cc_version_major < 6:
         print_error(
             "Detected Clang version older than 6, which does not fully support "
             "C++17. Supported versions are Clang 6 and later."
@@ -703,19 +738,25 @@ elif methods.using_clang(env):
 elif env.msvc:
     # Ensure latest minor builds of Visual Studio 2017/2019.
     # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
-    if cc_version_major == 16 and cc_version_minor < 11:
+    if cpp_std == 20 and cc_version_major < 16:
+        print_error(
+            "Detected Visual Studio version older than 2019, which does not fully "
+            "support C++20. Supported versions are Visual Studio 2019 and later."
+        )
+        Exit(255)
+    elif cc_version_major == 16 and cc_version_minor < 11:
         print_error(
             "Detected Visual Studio 2019 version older than 16.11, which has bugs "
             "when compiling Godot. Use a newer VS2019 version, or VS2022."
         )
         Exit(255)
-    if cc_version_major == 15 and cc_version_minor < 9:
+    elif cc_version_major == 15 and cc_version_minor < 9:
         print_error(
             "Detected Visual Studio 2017 version older than 15.9, which has bugs "
             "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
         )
         Exit(255)
-    if cc_version_major < 15:
+    elif cc_version_major < 15:
         print_error(
             "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
             "Supported versions are Visual Studio 2017 and later."
@@ -801,11 +842,11 @@ if not env.msvc:
     # Specifying GNU extensions support explicitly, which are supported by
     # both GCC and Clang. Both currently default to gnu11 and gnu++17.
     env.Prepend(CFLAGS=["-std=gnu11"])
-    env.Prepend(CXXFLAGS=["-std=gnu++17"])
+    env.Prepend(CXXFLAGS=[f"-std=gnu++{cpp_std if cpp_std <= 20 else '2b'}"])
 else:
     # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
     # of our supported VS2019 & VS2022 versions; VS2017 will only pass the C++ standard.
-    env.Prepend(CXXFLAGS=["/std:c++17"])
+    env.Prepend(CXXFLAGS=[f"/std:c++{cpp_std if cpp_std <= 20 else 'latest'}"])
     if cc_version_major < 16:
         print_warning("Visual Studio 2017 cannot specify a C-Standard.")
     else:
