@@ -137,10 +137,15 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
-static Array array_from_info(const char *const *info_list) {
+static Array array_from_info(const char *const *info_list, int anonymous_count = 0) {
 	Array arr;
 	for (int i = 0; info_list[i] != nullptr; i++) {
 		arr.push_back(String::utf8(info_list[i]));
+	}
+	if (anonymous_count > 0) {
+		// This function is technically not only used for donors.
+		// But currently only donors have anonymous entries.
+		arr.push_back(vformat(anonymous_count == 1 ? "And %d anonymous donor" : "And %d anonymous donors", anonymous_count));
 	}
 	return arr;
 }
@@ -188,14 +193,14 @@ TypedArray<Dictionary> Engine::get_copyright_info() const {
 
 Dictionary Engine::get_donor_info() const {
 	Dictionary donors;
-	donors["patrons"] = array_from_info(DONORS_PATRONS);
-	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSORS_PLATINUM);
-	donors["gold_sponsors"] = array_from_info(DONORS_SPONSORS_GOLD);
-	donors["silver_sponsors"] = array_from_info(DONORS_SPONSORS_SILVER);
-	donors["diamond_members"] = array_from_info(DONORS_MEMBERS_DIAMOND);
-	donors["titanium_members"] = array_from_info(DONORS_MEMBERS_TITANIUM);
-	donors["platinum_members"] = array_from_info(DONORS_MEMBERS_PLATINUM);
-	donors["gold_members"] = array_from_info(DONORS_MEMBERS_GOLD);
+	donors["patrons"] = array_from_info(DONORS_PATRONS, DONORS_PATRONS_ANONYMOUS);
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSORS_PLATINUM, DONORS_SPONSORS_PLATINUM_ANONYMOUS);
+	donors["gold_sponsors"] = array_from_info(DONORS_SPONSORS_GOLD, DONORS_SPONSORS_GOLD_ANONYMOUS);
+	donors["silver_sponsors"] = array_from_info(DONORS_SPONSORS_SILVER, DONORS_SPONSORS_SILVER_ANONYMOUS);
+	donors["diamond_members"] = array_from_info(DONORS_MEMBERS_DIAMOND, DONORS_MEMBERS_DIAMOND_ANONYMOUS);
+	donors["titanium_members"] = array_from_info(DONORS_MEMBERS_TITANIUM, DONORS_MEMBERS_TITANIUM_ANONYMOUS);
+	donors["platinum_members"] = array_from_info(DONORS_MEMBERS_PLATINUM, DONORS_MEMBERS_PLATINUM_ANONYMOUS);
+	donors["gold_members"] = array_from_info(DONORS_MEMBERS_GOLD, DONORS_MEMBERS_GOLD_ANONYMOUS);
 	return donors;
 }
 
