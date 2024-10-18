@@ -68,7 +68,11 @@ if env["builtin_embree"]:
 
     if not env.msvc:
         if env["arch"] in ["x86_64", "x86_32"]:
-            env_raycast.Append(CCFLAGS=["-msse2", "-mxsave"])
+            # Force building embree with "generic" arch to avoid compilation errors with
+            # unresolved avx instruction support when user passes ccflags="-march=native"
+            # or any other compiler cpu target which supports avx
+            normalized = env["arch"].replace("_", "-")
+            env_raycast.Append(CCFLAGS=["-msse2", "-mxsave", "-march={}".format(normalized)])
 
         if env["platform"] == "windows":
             env_raycast.Append(CCFLAGS=["-mstackrealign"])
