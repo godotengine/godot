@@ -83,6 +83,26 @@ Files extracted from upstream source:
 - `LICENSE.md`
 
 
+## breakpad
+
+- Upstream: https://chromium.googlesource.com/breakpad/breakpad/
+- Version: git (527331a471207d28d015e210c12fb8bb8b6732fd, 2024)
+- License: BSD-3-Clause (main), others
+
+Files extracted from upstream source:
+
+- `src/client` except `.gyp`, upload and test related files
+- `src/common` except `.gyp`, upload and test related files
+- `src/third_party/lss/LICENSE`
+- `src/third_party/lss/linux_syscall_support.h`
+- `src/google_breakpad/common`
+- `LICENSE`
+
+This only contains the crash report generating required files. No files
+related to processing debug symbols, uploading, or receiving crash
+reports are included.
+
+
 ## brotli
 
 - Upstream: https://github.com/google/brotli

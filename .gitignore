@@ -262,6 +262,9 @@ bld/
 !thirdparty/**/arm/
 !thirdparty/**/arm64/
 
+# Do not ignore breakpad source files
+!thirdparty/breakpad/src/client/linux/log
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
