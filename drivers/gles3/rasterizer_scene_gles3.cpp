@@ -1298,6 +1298,11 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					RID light = light_storage->light_instance_get_base_light(light_instance);
 					int32_t shadow_id = light_storage->light_instance_get_shadow_id(light_instance);
 
+					//Skip lights that do not contribute to the current instance
+					if (!(light_storage->light_get_cull_mask(light) & inst->layer_mask)) {
+						continue;
+					}
+
 					if (light_storage->light_has_shadow(light) && shadow_id >= 0) {
 						// Skip static lights when a lightmap is used.
 						if (!inst->lightmap_instance.is_valid() || light_storage->light_get_bake_mode(light) != RenderingServer::LIGHT_BAKE_STATIC) {
