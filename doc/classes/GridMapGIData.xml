@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GridMapGIData" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Contains baked [GridMap] octant meshes to be used in global illumination.
+	</brief_description>
+	<description>
+		Contains baked [GridMap] octant meshes, which are subdivisions of the GridMap, to be used in global illumination. It is replaced every time lightmaps are baked in [LightmapGI].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="baked_meshes" type="Array" setter="set_baked_meshes" getter="get_baked_meshes" default="[]">
+			Contains baked [GridMap] octant meshes, which are subdivisions of the GridMap, to be used in global illumination. It is replaced every time lightmaps are baked in [LightmapGI].
+		</member>
+	</members>
+</class>
