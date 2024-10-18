@@ -878,31 +878,30 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 					ERR_BREAK(hr != S_OK);
 				}
 			}
+		}
 
-			// If we're using the Default output device and it changed finish it so we'll re-init the output device
-			if (ad->audio_input.device_name == "Default" && default_input_device_changed) {
-				Error err = ad->finish_input_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_input_device error");
-				}
+		bool reinitDevice = false;
 
-				default_input_device_changed = false;
+		// If we're using the Default input device and it changed finish it so we'll re-init the input device
+		if (ad->audio_input.device_name == "Default" && default_input_device_changed) {
+			reinitDevice = ad->audio_input.active.is_set();
+			default_input_device_changed = false;
+		}
+
+		// User selected a new input device, finish the current one so we'll init the new input device
+		if (ad->audio_input.device_name != ad->audio_input.new_device) {
+			ad->audio_input.device_name = ad->audio_input.new_device;
+			reinitDevice = ad->audio_input.active.is_set();
+		}
+
+		if (reinitDevice) {
+			Error err = ad->finish_input_device();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: finish_input_device error");
 			}
-
-			// User selected a new input device, finish the current one so we'll init the new input device
-			if (ad->audio_input.device_name != ad->audio_input.new_device) {
-				ad->audio_input.device_name = ad->audio_input.new_device;
-				Error err = ad->finish_input_device();
-				if (err != OK) {
-					ERR_PRINT("WASAPI: finish_input_device error");
-				}
-			}
-
-			if (!ad->audio_input.audio_client) {
-				Error err = ad->init_input_device(true);
-				if (err == OK) {
-					ad->input_start();
-				}
+			err = ad->input_start();
+			if (err != OK) {
+				ERR_PRINT("WASAPI: input_start error");
 			}
 		}
 
@@ -947,14 +946,14 @@ void AudioDriverWASAPI::finish() {
 }
 
 Error AudioDriverWASAPI::input_start() {
+	if (audio_input.active.is_set()) {
+		return FAILED;
+	}
+
 	Error err = init_input_device();
 	if (err != OK) {
 		ERR_PRINT("WASAPI: init_input_device error");
 		return err;
-	}
-
-	if (audio_input.active.is_set()) {
-		return FAILED;
 	}
 
 	audio_input.audio_client->Start();
@@ -963,14 +962,17 @@ Error AudioDriverWASAPI::input_start() {
 }
 
 Error AudioDriverWASAPI::input_stop() {
-	if (audio_input.active.is_set()) {
-		audio_input.audio_client->Stop();
-		audio_input.active.clear();
-
-		return OK;
+	if (!audio_input.active.is_set()) {
+		return FAILED;
 	}
 
-	return FAILED;
+	Error err = finish_input_device();
+	if (err != OK) {
+		ERR_PRINT("WASAPI: finish_input_device error");
+		return err;
+	}
+
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {
