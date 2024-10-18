@@ -134,6 +134,9 @@ class OS_Windows : public OS {
 	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
 	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
 
+	HashMap<String, int> encodings;
+	void _init_encodings();
+
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
@@ -228,6 +231,9 @@ public:
 	void run();
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	virtual String multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const override;
+	virtual PackedByteArray string_to_multibyte(const String &p_encoding, const String &p_string) const override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
