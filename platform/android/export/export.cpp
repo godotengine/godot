@@ -52,8 +52,10 @@ void register_android_exporter() {
 #ifndef ANDROID_ENABLED
 	EDITOR_DEF_BASIC("export/android/java_sdk_path", OS::get_singleton()->get_environment("JAVA_HOME"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/java_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
-	EDITOR_DEF_BASIC("export/android/android_sdk_path", OS::get_singleton()->get_environment("ANDROID_HOME"));
+
+	EDITOR_DEF_BASIC("export/android/android_sdk_path", OS::get_singleton()->has_environment("ANDROID_HOME") ? OS::get_singleton()->get_environment("ANDROID_HOME") : EditorPaths::get_singleton()->get_default_android_sdk_path());
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
+
 	EDITOR_DEF("export/android/force_system_user", false);
 
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
