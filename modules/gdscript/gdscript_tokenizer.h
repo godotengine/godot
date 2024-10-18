@@ -132,6 +132,8 @@ public:
 			STATIC,
 			SUPER,
 			TRAIT,
+			TRAIT_NAME,
+			USES,
 			VAR,
 			VOID,
 			YIELD,
