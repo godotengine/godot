@@ -49,6 +49,7 @@ private:
 
 		Type type = TYPE_NONE;
 		Color color;
+		SyntaxHighlighter::SyntaxFontStyle style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 		String start_key;
 		String end_key;
 		bool line_only = false;
@@ -59,9 +60,13 @@ private:
 	Vector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
 
-	HashMap<StringName, Color> class_names;
-	HashMap<StringName, Color> reserved_keywords;
-	HashMap<StringName, Color> member_keywords;
+	struct ColorRec {
+		Color color;
+		SyntaxHighlighter::SyntaxFontStyle style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
+	};
+	HashMap<StringName, ColorRec> class_names;
+	HashMap<StringName, ColorRec> reserved_keywords;
+	HashMap<StringName, ColorRec> member_keywords;
 	HashSet<StringName> global_functions;
 
 	enum Type {
@@ -83,19 +88,33 @@ private:
 
 	// Colors.
 	Color font_color;
+	SyntaxHighlighter::SyntaxFontStyle font_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color symbol_color;
+	SyntaxHighlighter::SyntaxFontStyle symbol_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color function_color;
+	SyntaxHighlighter::SyntaxFontStyle function_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color global_function_color;
+	SyntaxHighlighter::SyntaxFontStyle global_function_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color function_definition_color;
+	SyntaxHighlighter::SyntaxFontStyle function_definition_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color built_in_type_color;
+	SyntaxHighlighter::SyntaxFontStyle built_in_type_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color number_color;
+	SyntaxHighlighter::SyntaxFontStyle number_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color member_color;
+	SyntaxHighlighter::SyntaxFontStyle member_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color string_color;
+	SyntaxHighlighter::SyntaxFontStyle string_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color node_path_color;
+	SyntaxHighlighter::SyntaxFontStyle node_path_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color node_ref_color;
+	SyntaxHighlighter::SyntaxFontStyle node_ref_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color annotation_color;
+	SyntaxHighlighter::SyntaxFontStyle annotation_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color string_name_color;
+	SyntaxHighlighter::SyntaxFontStyle string_name_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 	Color type_color;
+	SyntaxHighlighter::SyntaxFontStyle type_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR;
 
 	enum CommentMarkerLevel {
 		COMMENT_MARKER_CRITICAL,
@@ -103,10 +122,10 @@ private:
 		COMMENT_MARKER_NOTICE,
 		COMMENT_MARKER_MAX,
 	};
-	Color comment_marker_colors[COMMENT_MARKER_MAX];
+	ColorRec comment_marker_colors[COMMENT_MARKER_MAX];
 	HashMap<String, CommentMarkerLevel> comment_markers;
 
-	void add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only = false, bool p_r_prefix = false);
+	void add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, SyntaxHighlighter::SyntaxFontStyle p_style = SyntaxHighlighter::SYNTAX_STYLE_REGULAR, bool p_line_only = false, bool p_r_prefix = false);
 
 public:
 	virtual void _update_cache() override;

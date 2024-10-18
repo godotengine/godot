@@ -228,23 +228,29 @@ void ShaderTextEditor::_load_theme_settings() {
 	}
 
 	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+	syntax_highlighter->set_number_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/number_style"));
 	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	syntax_highlighter->set_symbol_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/symbol_style"));
 	syntax_highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/function_color"));
+	syntax_highlighter->set_function_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/function_style"));
 	syntax_highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/member_variable_color"));
+	syntax_highlighter->set_member_variable_style((SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/member_variable_style"));
 
-	syntax_highlighter->clear_keyword_colors();
+	syntax_highlighter->clear_keywords();
 
-	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
-	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+	Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	SyntaxHighlighter::SyntaxFontStyle keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/keyword_style");
+	Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+	SyntaxHighlighter::SyntaxFontStyle control_flow_keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_style");
 
 	List<String> keywords;
 	ShaderLanguage::get_keyword_list(&keywords);
 
 	for (const String &E : keywords) {
 		if (ShaderLanguage::is_control_flow_keyword(E)) {
-			syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
+			syntax_highlighter->add_keyword(E, control_flow_keyword_color, control_flow_keyword_style);
 		} else {
-			syntax_highlighter->add_keyword_color(E, keyword_color);
+			syntax_highlighter->add_keyword(E, keyword_color, keyword_style);
 		}
 	}
 
@@ -252,7 +258,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	ShaderPreprocessor::get_keyword_list(&pp_keywords, false);
 
 	for (const String &E : pp_keywords) {
-		syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
+		syntax_highlighter->add_keyword(E, control_flow_keyword_color, control_flow_keyword_style);
 	}
 
 	// Colorize built-ins like `COLOR` differently to make them easier
@@ -304,22 +310,25 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
-	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+	Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
+	SyntaxHighlighter::SyntaxFontStyle user_type_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/user_type_style");
 
 	for (const String &E : built_ins) {
-		syntax_highlighter->add_keyword_color(E, user_type_color);
+		syntax_highlighter->add_keyword(E, user_type_color, user_type_style);
 	}
 
 	// Colorize comments.
-	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-	syntax_highlighter->clear_color_regions();
-	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-	syntax_highlighter->add_color_region("//", "", comment_color, true);
+	Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	SyntaxHighlighter::SyntaxFontStyle comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/comment_style");
+	syntax_highlighter->clear_regions();
+	syntax_highlighter->add_region("/*", "*/", comment_color, comment_style, false, true);
+	syntax_highlighter->add_region("//", "", comment_color, comment_style, true, true);
 
-	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
-	syntax_highlighter->add_color_region("/**", "*/", doc_comment_color, false);
+	Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+	SyntaxHighlighter::SyntaxFontStyle doc_comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/doc_comment_style");
+	syntax_highlighter->add_region("/**", "*/", doc_comment_color, doc_comment_style, false, true);
 	// "/**/" will be treated as the start of the "/**" region, this line is guaranteed to end the color_region.
-	syntax_highlighter->add_color_region("/**/", "", comment_color, true);
+	syntax_highlighter->add_region("/**/", "", comment_color, comment_style, true, true);
 
 	// Disabled preprocessor branches use translucent text color to be easier to distinguish from comments.
 	syntax_highlighter->set_disabled_branch_color(Color(EDITOR_GET("text_editor/theme/highlighting/text_color")) * Color(1, 1, 1, 0.5));
@@ -333,8 +342,9 @@ void ShaderTextEditor::_load_theme_settings() {
 	}
 
 	// Colorize preprocessor include strings.
-	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
-	syntax_highlighter->add_color_region("\"", "\"", string_color, false);
+	Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	SyntaxHighlighter::SyntaxFontStyle string_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/string_style");
+	syntax_highlighter->add_region("\"", "\"", string_color, string_style, false);
 
 	if (warnings_panel) {
 		// Warnings panel.

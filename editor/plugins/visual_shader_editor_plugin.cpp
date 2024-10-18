@@ -1377,22 +1377,30 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 		Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 		Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+
 		Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+		SyntaxHighlighter::SyntaxFontStyle keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/keyword_style");
 		Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+		SyntaxHighlighter::SyntaxFontStyle control_flow_keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_style");
 		Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+		SyntaxHighlighter::SyntaxFontStyle comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/comment_style");
 		Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+		SyntaxHighlighter::SyntaxFontStyle symbol_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/symbol_style");
 		Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
+		SyntaxHighlighter::SyntaxFontStyle function_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/function_style");
 		Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
+		SyntaxHighlighter::SyntaxFontStyle number_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/number_style");
 		Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+		SyntaxHighlighter::SyntaxFontStyle members_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/member_variable_style");
 
 		expression_box->set_syntax_highlighter(expression_syntax_highlighter);
 		expression_box->add_theme_color_override("background_color", background_color);
 
 		for (const String &E : editor->keyword_list) {
 			if (ShaderLanguage::is_control_flow_keyword(E)) {
-				expression_syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
+				expression_syntax_highlighter->add_keyword(E, control_flow_keyword_color, control_flow_keyword_style);
 			} else {
-				expression_syntax_highlighter->add_keyword_color(E, keyword_color);
+				expression_syntax_highlighter->add_keyword(E, keyword_color, keyword_style);
 			}
 		}
 
@@ -1403,11 +1411,15 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression_box->end_bulk_theme_override();
 
 		expression_syntax_highlighter->set_number_color(number_color);
+		expression_syntax_highlighter->set_number_style(number_style);
 		expression_syntax_highlighter->set_symbol_color(symbol_color);
+		expression_syntax_highlighter->set_symbol_style(symbol_style);
 		expression_syntax_highlighter->set_function_color(function_color);
+		expression_syntax_highlighter->set_function_style(function_style);
 		expression_syntax_highlighter->set_member_variable_color(members_color);
-		expression_syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-		expression_syntax_highlighter->add_color_region("//", "", comment_color, true);
+		expression_syntax_highlighter->set_member_variable_style(members_style);
+		expression_syntax_highlighter->add_region("/*", "*/", comment_color, comment_style, false, true);
+		expression_syntax_highlighter->add_region("//", "", comment_color, comment_style, true, true);
 
 		expression_box->clear_comment_delimiters();
 		expression_box->add_comment_delimiter("/*", "*/", false);
@@ -5113,13 +5125,22 @@ void VisualShaderEditor::_notification(int p_what) {
 			{
 				Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 				Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+
 				Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+				SyntaxHighlighter::SyntaxFontStyle keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/keyword_style");
 				Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
+				SyntaxHighlighter::SyntaxFontStyle control_flow_keyword_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_style");
 				Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+				SyntaxHighlighter::SyntaxFontStyle comment_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/comment_style");
 				Color symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
+				SyntaxHighlighter::SyntaxFontStyle symbol_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/symbol_style");
 				Color function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
+				SyntaxHighlighter::SyntaxFontStyle function_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/function_style");
 				Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
+				SyntaxHighlighter::SyntaxFontStyle number_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/number_style");
 				Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+				SyntaxHighlighter::SyntaxFontStyle members_style = (SyntaxHighlighter::SyntaxFontStyle)(int)EDITOR_GET("text_editor/theme/highlighting/member_variable_style");
+
 				Color error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 
 				preview_text->add_theme_color_override("background_color", background_color);
@@ -5127,9 +5148,9 @@ void VisualShaderEditor::_notification(int p_what) {
 
 				for (const String &E : keyword_list) {
 					if (ShaderLanguage::is_control_flow_keyword(E)) {
-						syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
+						syntax_highlighter->add_keyword(E, control_flow_keyword_color, control_flow_keyword_style);
 					} else {
-						syntax_highlighter->add_keyword_color(E, keyword_color);
+						syntax_highlighter->add_keyword(E, keyword_color, keyword_style);
 					}
 				}
 
@@ -5140,12 +5161,16 @@ void VisualShaderEditor::_notification(int p_what) {
 				preview_text->end_bulk_theme_override();
 
 				syntax_highlighter->set_number_color(number_color);
+				syntax_highlighter->set_number_style(number_style);
 				syntax_highlighter->set_symbol_color(symbol_color);
+				syntax_highlighter->set_symbol_style(symbol_style);
 				syntax_highlighter->set_function_color(function_color);
+				syntax_highlighter->set_function_style(function_style);
 				syntax_highlighter->set_member_variable_color(members_color);
-				syntax_highlighter->clear_color_regions();
-				syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
-				syntax_highlighter->add_color_region("//", "", comment_color, true);
+				syntax_highlighter->set_member_variable_style(members_style);
+				syntax_highlighter->clear_regions();
+				syntax_highlighter->add_region("/*", "*/", comment_color, comment_style, false, true);
+				syntax_highlighter->add_region("//", "", comment_color, comment_style, true, true);
 
 				preview_text->clear_comment_delimiters();
 				preview_text->add_comment_delimiter("/*", "*/", false);

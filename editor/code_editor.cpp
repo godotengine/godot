@@ -1069,6 +1069,8 @@ void CodeTextEditor::update_editor_settings() {
 	completion_node_path_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_path_color");
 	completion_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 	completion_doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
+	text_editor->set_use_syntax_highlighter_for_bidi_override(EDITOR_GET("text_editor/syntax_highlighter_for_bidi_override"));
+	text_editor->set_use_syntax_highlighter_font_change(EDITOR_GET("text_editor/syntax_highlighter_can_change_font"));
 
 	// Appearance: Caret
 	text_editor->set_caret_type((TextEdit::CaretType)EDITOR_GET("text_editor/appearance/caret/type").operator int());
@@ -1786,6 +1788,8 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
+	text_editor->set_use_syntax_highlighter_for_bidi_override(EDITOR_GET("text_editor/syntax_highlighter_for_bidi_override"));
+	text_editor->set_use_syntax_highlighter_font_change(EDITOR_GET("text_editor/syntax_highlighter_can_change_font"));
 	text_editor->set_draw_bookmarks_gutter(true);
 
 	text_editor->set_draw_line_numbers(true);
