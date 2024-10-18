@@ -15,15 +15,15 @@
 		extends EditorTranslationParserPlugin
 
 		func _parse_file(path, msgids, msgids_context_plural):
-		    var file = FileAccess.open(path, FileAccess.READ)
-		    var text = file.get_as_text()
-		    var split_strs = text.split(",", false)
-		    for s in split_strs:
-		        msgids.append(s)
-		        #print("Extracted string: " + s)
+			var file = FileAccess.open(path, FileAccess.READ)
+			var text = file.get_as_text()
+			var split_strs = text.split(",", false)
+			for s in split_strs:
+				msgids.append(s)
+				#print("Extracted string: " + s)
 
 		func _get_recognized_extensions():
-		    return ["csv"]
+			return ["csv"]
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -31,22 +31,22 @@
 		[Tool]
 		public partial class CustomParser : EditorTranslationParserPlugin
 		{
-		    public override void _ParseFile(string path, Godot.Collections.Array&lt;string&gt; msgids, Godot.Collections.Array&lt;Godot.Collections.Array&gt; msgidsContextPlural)
-		    {
-		        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-		        string text = file.GetAsText();
-		        string[] splitStrs = text.Split(",", allowEmpty: false);
-		        foreach (string s in splitStrs)
-		        {
-		            msgids.Add(s);
-		            //GD.Print($"Extracted string: {s}");
-		        }
-		    }
+			public override void _ParseFile(string path, Godot.Collections.Array&lt;string&gt; msgids, Godot.Collections.Array&lt;Godot.Collections.Array&gt; msgidsContextPlural)
+			{
+				using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+				string text = file.GetAsText();
+				string[] splitStrs = text.Split(",", allowEmpty: false);
+				foreach (string s in splitStrs)
+				{
+					msgids.Add(s);
+					//GD.Print($"Extracted string: {s}");
+				}
+			}
 
-		    public override string[] _GetRecognizedExtensions()
-		    {
-		        return new string[] { "csv" };
-		    }
+			public override string[] _GetRecognizedExtensions()
+			{
+				return new string[] { "csv" };
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -74,24 +74,24 @@
 		[codeblocks]
 		[gdscript]
 		func _parse_file(path, msgids, msgids_context_plural):
-		    var res = ResourceLoader.load(path, "Script")
-		    var text = res.source_code
-		    # Parsing logic.
+			var res = ResourceLoader.load(path, "Script")
+			var text = res.source_code
+			# Parsing logic.
 
 		func _get_recognized_extensions():
-		    return ["gd"]
+			return ["gd"]
 		[/gdscript]
 		[csharp]
 		public override void _ParseFile(string path, Godot.Collections.Array&lt;string&gt; msgids, Godot.Collections.Array&lt;Godot.Collections.Array&gt; msgidsContextPlural)
 		{
-		    var res = ResourceLoader.Load&lt;Script&gt;(path, "Script");
-		    string text = res.SourceCode;
-		    // Parsing logic.
+			var res = ResourceLoader.Load&lt;Script&gt;(path, "Script");
+			string text = res.SourceCode;
+			// Parsing logic.
 		}
 
 		public override string[] _GetRecognizedExtensions()
 		{
-		    return new string[] { "gd" };
+			return new string[] { "gd" };
 		}
 		[/csharp]
 		[/codeblocks]
