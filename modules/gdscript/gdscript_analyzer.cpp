@@ -764,7 +764,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					}
 					result = ref->get_parser()->head->get_datatype();
 				} else {
-					result = make_script_meta_type(ResourceLoader::load(path, "Script"));
+					Ref<Resource> res = ResourceLoader::load(path, "Script");
+					if (!res.is_valid()) {
+						push_error(vformat(R"(Could not load global class "%s" from "%s".)", first, path), p_type);
+						return bad_type;
+					}
+					result = make_script_meta_type(res);
 				}
 			}
 		} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
@@ -3811,7 +3816,14 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 
 		return ref->get_parser()->head->get_datatype();
 	} else {
-		return make_script_meta_type(ResourceLoader::load(path, "Script"));
+		Ref<Resource> res = ResourceLoader::load(path, "Script");
+		if (res.is_null()) {
+			push_error(vformat(R"(Could not find script for class "%s".)", p_class_name), p_source);
+			type.type_source = GDScriptParser::DataType::UNDETECTED;
+			type.kind = GDScriptParser::DataType::VARIANT;
+			return type;
+		}
+		return make_script_meta_type(res);
 	}
 }
 
