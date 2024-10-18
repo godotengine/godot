@@ -142,6 +142,8 @@ class EditorPropertyPath : public EditorProperty {
 	LineEdit *path = nullptr;
 	Button *path_edit = nullptr;
 
+	String _get_path_text();
+
 	void _path_selected(const String &p_path);
 	void _path_pressed();
 	void _path_focus_exited();
