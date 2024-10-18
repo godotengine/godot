@@ -1294,7 +1294,7 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 	}
 
 	return true;
-};
+}
 
 void OpenXRAPI::destroy_session() {
 	// TODO need to figure out if we're still rendering our current frame
@@ -2353,7 +2353,7 @@ void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_post_draw_viewport(p_render_target);
 	}
-};
+}
 
 void OpenXRAPI::end_frame() {
 	XrResult result;

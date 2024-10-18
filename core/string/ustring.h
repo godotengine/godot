@@ -118,7 +118,7 @@ public:
 	Char16String &operator+=(char16_t p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char16_t *get_data() const;
-	operator const char16_t *() const { return get_data(); };
+	operator const char16_t *() const { return get_data(); }
 
 protected:
 	void copy_from(const char16_t *p_cstr);
@@ -160,7 +160,7 @@ public:
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
-	operator const char *() const { return get_data(); };
+	operator const char *() const { return get_data(); }
 
 protected:
 	void copy_from(const char *p_cstr);

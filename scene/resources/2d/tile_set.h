@@ -278,7 +278,7 @@ public:
 		bool operator==(const TerrainsPattern &p_terrains_pattern) const;
 		bool operator!=(const TerrainsPattern &p_terrains_pattern) const {
 			return !operator==(p_terrains_pattern);
-		};
+		}
 
 		void set_terrain(int p_terrain);
 		int get_terrain() const;
@@ -812,8 +812,8 @@ public:
 
 	// Scenes accessors. Lot are similar to "Alternative tiles".
 	int get_scene_tiles_count() { return get_alternative_tiles_count(Vector2i()); }
-	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); };
-	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); };
+	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); }
+	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); }
 	int create_scene_tile(Ref<PackedScene> p_packed_scene = Ref<PackedScene>(), int p_id_override = -1);
 	void set_scene_tile_id(int p_id, int p_new_id);
 	void set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene);

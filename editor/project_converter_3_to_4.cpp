@@ -1270,7 +1270,7 @@ bool ProjectConverter3To4::test_single_array(const char *p_array[][2], bool p_ig
 		}
 	}
 	return valid;
-};
+}
 
 // Returns arguments from given function execution, this cannot be really done as regex.
 // `abc(d,e(f,g),h)` -> [d], [e(f,g)], [h]
@@ -1469,7 +1469,7 @@ void ProjectConverter3To4::rename_colors(Vector<SourceLine> &source_lines, const
 			}
 		}
 	}
-};
+}
 
 // Convert hexadecimal colors from ARGB to RGBA
 void ProjectConverter3To4::convert_hexadecimal_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
@@ -1566,7 +1566,7 @@ void ProjectConverter3To4::rename_classes(Vector<SourceLine> &source_lines, cons
 			}
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
@@ -1618,7 +1618,7 @@ void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceLine> &source_
 			process_gdscript_line(line, reg_container, builtin);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin) {
 	int current_line = 1;
@@ -2438,7 +2438,7 @@ void ProjectConverter3To4::rename_csharp_functions(Vector<SourceLine> &source_li
 			process_csharp_line(line, reg_container);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container) {
 	int current_line = 1;
@@ -2847,7 +2847,7 @@ void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const
 			line = reg.sub(line, to, true);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, const String &from, const String &to) {
 	Vector<String> found_renames;

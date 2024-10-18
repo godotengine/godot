@@ -351,12 +351,12 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 	} else {
 		animation_hb->hide();
 	}
-};
+}
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
-};
+}
 
 void Skeleton3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_all"), &Skeleton3DEditor::update_all);
