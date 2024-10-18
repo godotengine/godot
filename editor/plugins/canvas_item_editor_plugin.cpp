@@ -180,7 +180,7 @@ public:
 		container->add_child(memnew(HSeparator));
 
 		// We need to create another GridContainer with the same column count,
-		// so we can put an HSeparator above
+		// so we can put an HSeparator above.
 		child_container = memnew(GridContainer);
 		child_container->set_columns(2);
 		container->add_child(child_container);
@@ -321,7 +321,7 @@ void CanvasItemEditor::_snap_other_nodes(
 		const Node *p_current) {
 	const CanvasItem *ci = Object::cast_to<CanvasItem>(p_current);
 
-	// Check if the element is in the exception
+	// Check if the element is in the exception.
 	bool exception = false;
 	for (const CanvasItem *&E : p_exceptions) {
 		if (E == p_current) {
@@ -356,14 +356,14 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 
-	// Smart snap using the canvas position
+	// Smart snap using the canvas position.
 	Vector2 output = p_target;
 	real_t rotation = 0.0;
 
 	if (p_self_canvas_item) {
 		rotation = p_self_canvas_item->get_global_transform_with_canvas().get_rotation();
 
-		// Parent sides and center
+		// Parent sides/center snap.
 		if ((is_snap_active && snap_node_parent && (p_modes & SNAP_NODE_PARENT)) || (p_forced_modes & SNAP_NODE_PARENT)) {
 			if (const Control *c = Object::cast_to<Control>(p_self_canvas_item)) {
 				Point2 begin = p_self_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(0, 0)));
@@ -385,7 +385,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 			}
 		}
 
-		// Self anchors
+		// Self anchors snap.
 		if ((is_snap_active && snap_node_anchors && (p_modes & SNAP_NODE_ANCHORS)) || (p_forced_modes & SNAP_NODE_ANCHORS)) {
 			if (const Control *c = Object::cast_to<Control>(p_self_canvas_item)) {
 				Point2 begin = p_self_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(SIDE_LEFT), c->get_anchor(SIDE_TOP))));
@@ -395,7 +395,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 			}
 		}
 
-		// Self sides
+		// Self sides snap.
 		if ((is_snap_active && snap_node_sides && (p_modes & SNAP_NODE_SIDES)) || (p_forced_modes & SNAP_NODE_SIDES)) {
 			if (p_self_canvas_item->_edit_use_rect()) {
 				Point2 begin = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_position());
@@ -405,7 +405,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 			}
 		}
 
-		// Self center
+		// Self center snap.
 		if ((is_snap_active && snap_node_center && (p_modes & SNAP_NODE_CENTER)) || (p_forced_modes & SNAP_NODE_CENTER)) {
 			if (p_self_canvas_item->_edit_use_rect()) {
 				Point2 center = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_center());
@@ -417,7 +417,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 		}
 	}
 
-	// Other nodes sides
+	// Other nodes sides snap.
 	if ((is_snap_active && snap_other_nodes && (p_modes & SNAP_OTHER_NODES)) || (p_forced_modes & SNAP_OTHER_NODES)) {
 		Transform2D to_snap_transform;
 		List<const CanvasItem *> exceptions = List<const CanvasItem *>();
@@ -438,8 +438,9 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	}
 
 	if (((is_snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, (real_t)360.0) == 0.0) {
-		// Guides.
-		if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
+		// Guides snap.
+		Node *scene = EditorNode::get_singleton()->get_edited_scene();
+		if (scene) {
 			Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
 			for (int i = 0; i < vguides.size(); i++) {
 				_snap_if_closer_float(p_target.x, output.x, snap_target[0], vguides[i], SNAP_TARGET_GUIDE);
@@ -453,7 +454,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	}
 
 	if (((grid_snap_active && (p_modes & SNAP_GRID)) || (p_forced_modes & SNAP_GRID)) && fmod(rotation, (real_t)360.0) == 0.0) {
-		// Grid
+		// Grid snap.
 		Point2 offset = grid_offset;
 		if (snap_relative) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
@@ -470,7 +471,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	}
 
 	if (((snap_pixel && (p_modes & SNAP_PIXEL)) || (p_forced_modes & SNAP_PIXEL)) && rotation == 0.0) {
-		// Pixel
+		// Pixel snap.
 		output = output.snappedf(1);
 	}
 
@@ -494,24 +495,23 @@ real_t CanvasItemEditor::snap_angle(real_t p_target, real_t p_start) const {
 void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
-	Ref<InputEventKey> k = p_ev;
-
 	if (!is_visible_in_tree()) {
 		return;
 	}
 
-	if (k.is_valid()) {
+	Ref<InputEventKey> k = p_ev;
+	if (k.is_valid() && !k->is_echo()) {
 		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT) {
 			viewport->queue_redraw();
 		}
 
-		if (k->is_pressed() && !k->is_command_or_control_pressed() && !k->is_echo() && (grid_snap_active || _is_grid_visible())) {
+		if (k->is_pressed() && !k->is_command_or_control_pressed() && (grid_snap_active || _is_grid_visible())) {
 			if (multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->matches_event(p_ev)) {
-				// Multiply the grid size
+				// Multiply the grid size.
 				grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
 				viewport->queue_redraw();
 			} else if (divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->matches_event(p_ev)) {
-				// Divide the grid size
+				// Divide the grid size.
 				Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
 				if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0) {
 					grid_step_multiplier--;
@@ -543,11 +543,11 @@ void CanvasItemEditor::_keying_changed() {
 Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *> &p_list) {
 	ERR_FAIL_COND_V(p_list.is_empty(), Rect2());
 
-	// Handles the first element
+	// Handles the first element.
 	CanvasItem *ci = p_list.front()->get();
 	Rect2 rect = Rect2(ci->get_global_transform_with_canvas().xform(ci->_edit_get_rect().get_center()), Size2());
 
-	// Expand with the other ones
+	// Expand with the other ones.
 	for (CanvasItem *ci2 : p_list) {
 		Transform2D xform = ci2->get_global_transform_with_canvas();
 
@@ -654,18 +654,18 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 
 	_find_canvas_items_at_pos(p_pos, scene, r_items);
 
-	//Remove invalid results
+	// Remove invalid results.
 	for (int i = 0; i < r_items.size(); i++) {
 		Node *node = r_items[i].item;
 
-		// Make sure the selected node is in the current scene, or editable
+		// Make sure the selected node is in the current scene, or editable.
 		if (node && node != get_tree()->get_edited_scene_root()) {
 			node = scene->get_deepest_editable_node(node);
 		}
 
 		CanvasItem *ci = Object::cast_to<CanvasItem>(node);
 		if (!p_allow_locked) {
-			// Replace the node by the group if grouped
+			// Replace the node by the group if grouped.
 			while (node && node != scene->get_parent()) {
 				CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(node);
 				if (ci_tmp && node->has_meta("_edit_group_")) {
@@ -675,7 +675,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 			}
 		}
 
-		// Check if the canvas item is already in the list (for groups or scenes)
+		// Check if the canvas item is already in the list (for groups or scenes).
 		bool duplicate = false;
 		for (int j = 0; j < i; j++) {
 			if (r_items[j].item == ci) {
@@ -684,7 +684,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 			}
 		}
 
-		//Remove the item if invalid
+		// Remove the item if invalid.
 		if (!ci || duplicate || (ci != scene && ci->get_owner() != scene && !scene->is_editable_instance(ci->get_owner())) || (!p_allow_locked && _is_node_locked(ci))) {
 			r_items.remove_at(i);
 			i--;
@@ -755,7 +755,7 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 	bool still_selected = true;
 	if (p_append && !editor_selection->get_selected_node_list().is_empty()) {
 		if (editor_selection->is_selected(item)) {
-			// Already in the selection, remove it from the selected nodes
+			// Already in the selection, remove it from the selected nodes.
 			editor_selection->remove_node(item);
 			still_selected = false;
 
@@ -763,15 +763,15 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 				EditorNode::get_singleton()->push_item(editor_selection->get_selected_node_list().front()->get());
 			}
 		} else {
-			// Add the item to the selection
+			// Add the item to the selection.
 			editor_selection->add_node(item);
 		}
 	} else {
 		if (!editor_selection->is_selected(item)) {
-			// Select a new one and clear previous selection
+			// Select a new one and clear previous selection.
 			editor_selection->clear();
 			editor_selection->add_node(item);
-			// Reselect
+			// Reselect.
 			if (Engine::get_singleton()->is_editor_hint()) {
 				selected_from_canvas = true;
 			}
@@ -1062,86 +1062,82 @@ void CanvasItemEditor::_switch_theme_preview(int p_mode) {
 	EditorNode::get_singleton()->update_preview_themes(theme_preview);
 }
 
+// Updates dragged guide index, drag start position, and drag type in response to mouse motion and left clicks over guides.
+void CanvasItemEditor::_is_hovering_guide(const Point2 &p_pos, bool p_is_pressed) {
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
+	Array hguides = scene->get_meta("_edit_horizontal_guides_", Array());
+	Transform2D xform = viewport_scrollable->get_transform() * transform;
+	int hovered_guide_index = -1;
+
+	if (p_pos.x < RULER_WIDTH) {
+		// Check if we are hovering an existing horizontal guide.
+		for (int i = 0; i < hguides.size(); i++) {
+			if (ABS(xform.xform(Point2(0, hguides[i])).y - p_pos.y) < 8) {
+				is_hovering_h_guide = true;
+				hovered_guide_index = i;
+				break;
+			}
+		}
+		if (!is_hovering_h_guide && p_is_pressed) {
+			drag_type = DRAG_V_GUIDE;
+		}
+	} else if (p_pos.y < RULER_WIDTH) {
+		// Check if we are hovering an existing vertical guide.
+		for (int i = 0; i < vguides.size(); i++) {
+			if (Math::abs(xform.xform(Point2(vguides[i], 0)).x - p_pos.x) < 8) {
+				is_hovering_v_guide = true;
+				hovered_guide_index = i;
+				break;
+			}
+		}
+		if (p_is_pressed) {
+			drag_from = xform.affine_inverse().xform(p_pos);
+			if (!is_hovering_v_guide) {
+				drag_type = DRAG_H_GUIDE;
+			}
+		}
+	}
+	if (p_is_pressed) {
+		dragged_guide_index = hovered_guide_index;
+		if (hovered_guide_index >= 0) {
+			drag_type = is_hovering_h_guide ? DRAG_H_GUIDE : DRAG_V_GUIDE;
+		}
+		drag_to = xform.affine_inverse().xform(p_pos);
+		dragged_guide_pos = xform.xform(snap_point(drag_to, SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES));
+		viewport->queue_redraw();
+	}
+}
+
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	if (!scene) {
+		return false;
+	}
+
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (drag_type == DRAG_NONE) {
-		if (show_guides && show_rulers && EditorNode::get_singleton()->get_edited_scene()) {
-			Transform2D xform = viewport_scrollable->get_transform() * transform;
-			// Retrieve the guide lists
-			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_", Array());
-			Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_", Array());
-
-			// Hover over guides
-			real_t minimum = 1e20;
+		if (show_guides && show_rulers) {
 			is_hovering_h_guide = false;
 			is_hovering_v_guide = false;
 
-			if (m.is_valid() && m->get_position().x < RULER_WIDTH) {
-				// Check if we are hovering an existing horizontal guide
-				for (int i = 0; i < hguides.size(); i++) {
-					if (ABS(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
-						is_hovering_h_guide = true;
-						is_hovering_v_guide = false;
-						break;
-					}
-				}
-
-			} else if (m.is_valid() && m->get_position().y < RULER_WIDTH) {
-				// Check if we are hovering an existing vertical guide
-				for (int i = 0; i < vguides.size(); i++) {
-					if (ABS(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
-						is_hovering_v_guide = true;
-						is_hovering_h_guide = false;
-						break;
-					}
-				}
+			if (m.is_valid()) {
+				_is_hovering_guide(m->get_position());
 			}
 
-			// Start dragging a guide
+			// Start dragging a guide.
 			if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
-				// Press button
 				if (b->get_position().x < RULER_WIDTH && b->get_position().y < RULER_WIDTH) {
-					// Drag a new double guide
+					// Drag a new double guide.
 					drag_type = DRAG_DOUBLE_GUIDE;
 					dragged_guide_index = -1;
 					return true;
-				} else if (b->get_position().x < RULER_WIDTH) {
-					// Check if we drag an existing horizontal guide
-					dragged_guide_index = -1;
-					for (int i = 0; i < hguides.size(); i++) {
-						if (ABS(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
-							dragged_guide_index = i;
-						}
-					}
-
-					if (dragged_guide_index >= 0) {
-						// Drag an existing horizontal guide
-						drag_type = DRAG_H_GUIDE;
-					} else {
-						// Drag a new vertical guide
-						drag_type = DRAG_V_GUIDE;
-					}
-					return true;
-				} else if (b->get_position().y < RULER_WIDTH) {
-					// Check if we drag an existing vertical guide
-					dragged_guide_index = -1;
-					for (int i = 0; i < vguides.size(); i++) {
-						if (ABS(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
-							dragged_guide_index = i;
-						}
-					}
-
-					if (dragged_guide_index >= 0) {
-						// Drag an existing vertical guide
-						drag_type = DRAG_V_GUIDE;
-					} else {
-						// Drag a new vertical guide
-						drag_type = DRAG_H_GUIDE;
-					}
-					drag_from = xform.affine_inverse().xform(b->get_position());
+				} else if (b->get_position().x < RULER_WIDTH || b->get_position().y < RULER_WIDTH) {
+					// Check if we drag a new or existing guide.
+					_is_hovering_guide(b->get_position(), true);
 					return true;
 				}
 			}
@@ -1149,46 +1145,53 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 	}
 
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE || drag_type == DRAG_H_GUIDE) {
-		// Move the guide
+		// Move the guide.
 		if (m.is_valid()) {
 			Transform2D xform = viewport_scrollable->get_transform() * transform;
 			drag_to = xform.affine_inverse().xform(m->get_position());
 
 			dragged_guide_pos = xform.xform(snap_point(drag_to, SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES));
+			// Only draw one smart snapping line when dragging a single ruler guide.
+			if (drag_type != DRAG_DOUBLE_GUIDE) {
+				snap_target[(drag_type == DRAG_H_GUIDE) ? 0 : 1] = SNAP_TARGET_NONE;
+			}
 			viewport->queue_redraw();
 			return true;
 		}
 
-		// Release confirms the guide move
+		// Release confirms the guide move.
+		// FIXME: Undo/Redo has issues because the previous guides are always equal the current guides.
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
-			if (show_guides && EditorNode::get_singleton()->get_edited_scene()) {
+			if (show_guides) {
 				Transform2D xform = viewport_scrollable->get_transform() * transform;
 
-				// Retrieve the guide lists
-				Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_", Array());
-				Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_", Array());
+				// Retrieve the guide lists.
+				Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
+				Array hguides = scene->get_meta("_edit_horizontal_guides_", Array());
 
 				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
 				if (drag_type == DRAG_V_GUIDE) {
 					Array prev_vguides = vguides.duplicate();
 					if (b->get_position().x > RULER_WIDTH) {
-						// Adds a new vertical guide
+						// Add a new vertical guide.
 						if (dragged_guide_index >= 0) {
 							vguides[dragged_guide_index] = edited.x;
 							undo_redo->create_action(TTR("Move Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_do_method(scene, "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_undo_method(scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_do_method(viewport, "queue_redraw");
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						} else {
 							vguides.push_back(edited.x);
 							undo_redo->create_action(TTR("Create Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_do_method(scene, "set_meta", "_edit_vertical_guides_", vguides);
 							if (prev_vguides.is_empty()) {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+								undo_redo->add_undo_method(scene, "remove_meta", "_edit_vertical_guides_");
 							} else {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+								undo_redo->add_undo_method(scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 							}
+							undo_redo->add_do_method(viewport, "queue_redraw");
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						}
@@ -1197,11 +1200,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							vguides.remove_at(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Vertical Guide"));
 							if (vguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+								undo_redo->add_do_method(scene, "remove_meta", "_edit_vertical_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+								undo_redo->add_do_method(scene, "set_meta", "_edit_vertical_guides_", vguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method(scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_do_method(viewport, "queue_redraw");
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						}
@@ -1209,23 +1213,25 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 				} else if (drag_type == DRAG_H_GUIDE) {
 					Array prev_hguides = hguides.duplicate();
 					if (b->get_position().y > RULER_WIDTH) {
-						// Adds a new horizontal guide
+						// Add a new horizontal guide.
 						if (dragged_guide_index >= 0) {
 							hguides[dragged_guide_index] = edited.y;
 							undo_redo->create_action(TTR("Move Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_do_method(scene, "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_undo_method(scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_do_method(viewport, "queue_redraw");
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						} else {
 							hguides.push_back(edited.y);
 							undo_redo->create_action(TTR("Create Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_do_method(scene, "set_meta", "_edit_horizontal_guides_", hguides);
 							if (prev_hguides.is_empty()) {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+								undo_redo->add_undo_method(scene, "remove_meta", "_edit_horizontal_guides_");
 							} else {
-								undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+								undo_redo->add_undo_method(scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 							}
+							undo_redo->add_do_method(viewport, "queue_redraw");
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						}
@@ -1234,11 +1240,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							hguides.remove_at(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Horizontal Guide"));
 							if (hguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+								undo_redo->add_do_method(scene, "remove_meta", "_edit_horizontal_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+								undo_redo->add_do_method(scene, "set_meta", "_edit_horizontal_guides_", hguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method(scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_do_method(viewport, "queue_redraw");
 							undo_redo->add_undo_method(viewport, "queue_redraw");
 							undo_redo->commit_action();
 						}
@@ -1247,22 +1254,23 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					Array prev_hguides = hguides.duplicate();
 					Array prev_vguides = vguides.duplicate();
 					if (b->get_position().x > RULER_WIDTH && b->get_position().y > RULER_WIDTH) {
-						// Adds a new horizontal guide a new vertical guide
+						// Add a new horizontal and vertical guides.
 						vguides.push_back(edited.x);
 						hguides.push_back(edited.y);
 						undo_redo->create_action(TTR("Create Horizontal and Vertical Guides"));
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+						undo_redo->add_do_method(scene, "set_meta", "_edit_vertical_guides_", vguides);
+						undo_redo->add_do_method(scene, "set_meta", "_edit_horizontal_guides_", hguides);
 						if (prev_vguides.is_empty()) {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+							undo_redo->add_undo_method(scene, "remove_meta", "_edit_vertical_guides_");
 						} else {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method(scene, "set_meta", "_edit_vertical_guides_", prev_vguides);
 						}
 						if (prev_hguides.is_empty()) {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+							undo_redo->add_undo_method(scene, "remove_meta", "_edit_horizontal_guides_");
 						} else {
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method(scene, "set_meta", "_edit_horizontal_guides_", prev_hguides);
 						}
+						undo_redo->add_do_method(viewport, "queue_redraw");
 						undo_redo->add_undo_method(viewport, "queue_redraw");
 						undo_redo->commit_action();
 					}
@@ -1271,7 +1279,6 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			snap_target[0] = SNAP_TARGET_NONE;
 			snap_target[1] = SNAP_TARGET_NONE;
 			_reset_drag();
-			viewport->queue_redraw();
 			return true;
 		}
 	}
@@ -1350,7 +1357,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventKey> k = p_event;
 
-	// Drag the pivot (in pivot mode / with V key)
+	// Drag the pivot (in pivot mode / with V key).
 	if (drag_type == DRAG_NONE) {
 		bool move_temp_pivot = ((b.is_valid() && b->is_shift_pressed()) || (k.is_valid() && k->is_shift_pressed()));
 
@@ -1358,7 +1365,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 				(k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::V && tool == TOOL_SELECT && (k->get_modifiers_mask().is_empty() || move_temp_pivot))) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 
-			// Filters the selection with nodes that allow setting the pivot
+			// Filters the selection with nodes that allow setting the pivot.
 			drag_selection = List<CanvasItem *>();
 			for (CanvasItem *ci : selection) {
 				if (ci->_edit_use_pivot() || move_temp_pivot) {
@@ -1366,7 +1373,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			// Start dragging if we still have nodes
+			// Start dragging if we still have nodes.
 			if (drag_selection.size() > 0) {
 				Vector2 event_pos = (b.is_valid()) ? b->get_position() : viewport->get_local_mouse_position();
 
@@ -1396,7 +1403,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 	}
 
 	if (drag_type == DRAG_PIVOT) {
-		// Move the pivot
+		// Move the pivot.
 		if (m.is_valid()) {
 			drag_to = transform.affine_inverse().xform(m->get_position());
 			_restore_canvas_item_state(drag_selection);
@@ -1412,7 +1419,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Confirm the pivot move
+		// Confirm the pivot move.
 		if (drag_selection.size() >= 1 &&
 				((b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT && tool == TOOL_EDIT_PIVOT) ||
 						(k.is_valid() && !k->is_pressed() && k->get_keycode() == Key::V))) {
@@ -1427,7 +1434,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Cancel a drag
+		// Cancel a drag.
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
@@ -1456,14 +1463,14 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
-	// Start rotation
+	// Start rotation.
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			if ((b->is_command_or_control_pressed() && !b->is_alt_pressed() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
 				bool has_locked_items = false;
 				List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
 
-				// Remove not movable nodes
+				// Remove not movable nodes.
 				for (CanvasItem *E : selection) {
 					if (!_is_node_movable(E, true)) {
 						selection.erase(E);
@@ -1495,12 +1502,12 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	}
 
 	if (drag_type == DRAG_ROTATE) {
-		// Rotate the node
+		// Rotate the node.
 		if (m.is_valid()) {
 			_restore_canvas_item_state(drag_selection);
 			for (CanvasItem *ci : drag_selection) {
 				drag_to = transform.affine_inverse().xform(m->get_position());
-				//Rotate the opposite way if the canvas item's compounded scale has an uneven number of negative elements
+				// Rotate the opposite way if the canvas item's compounded scale has an uneven number of negative elements.
 				bool opposite = (ci->get_global_transform().get_scale().sign().dot(ci->get_transform().get_scale().sign()) == 0);
 				real_t prev_rotation = ci->_edit_get_rotation();
 				real_t new_rotation = snap_angle(ci->_edit_get_rotation() + (opposite ? -1 : 1) * (drag_from - drag_rotation_center).angle_to(drag_to - drag_rotation_center), prev_rotation);
@@ -1517,7 +1524,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Confirms the node rotation
+		// Confirm the node rotation.
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			if (drag_selection.size() != 1) {
 				_commit_canvas_item_state(
@@ -1541,7 +1548,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Cancel a drag
+		// Cancel a drag.
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
@@ -1555,7 +1562,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
-	// Open a sub-scene on double-click
+	// Open a sub-scene on double-click.
 	if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && b->is_double_click() && tool == TOOL_SELECT) {
 		List<CanvasItem *> selection = _get_edited_canvas_items();
 		if (selection.size() == 1) {
@@ -1573,7 +1580,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
-	// Starts anchor dragging if needed
+	// Starts anchor dragging if needed.
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
@@ -1624,7 +1631,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 	}
 
 	if (drag_type == DRAG_ANCHOR_TOP_LEFT || drag_type == DRAG_ANCHOR_TOP_RIGHT || drag_type == DRAG_ANCHOR_BOTTOM_RIGHT || drag_type == DRAG_ANCHOR_BOTTOM_LEFT || drag_type == DRAG_ANCHOR_ALL) {
-		// Drag the anchor
+		// Drag the anchor.
 		if (m.is_valid()) {
 			_restore_canvas_item_state(drag_selection);
 			Control *control = Object::cast_to<Control>(drag_selection.front()->get());
@@ -1694,7 +1701,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Confirms new anchor position
+		// Confirm new anchor position.
 		if (drag_selection.size() >= 1 && b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			_commit_canvas_item_state(
 					drag_selection,
@@ -1706,7 +1713,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Cancel a drag
+		// Cancel a drag.
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			snap_target[0] = SNAP_TARGET_NONE;
@@ -1723,7 +1730,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
-	// Drag resize handles
+	// Drag resize handles.
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
@@ -1787,11 +1794,11 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT || drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM ||
 			drag_type == DRAG_TOP_LEFT || drag_type == DRAG_TOP_RIGHT || drag_type == DRAG_BOTTOM_LEFT || drag_type == DRAG_BOTTOM_RIGHT) {
-		// Resize the node
+		// Resize the node.
 		if (m.is_valid()) {
 			CanvasItem *ci = drag_selection.front()->get();
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
-			//Reset state
+			// Reset state.
 			ci->_edit_set_state(se->undo_state);
 
 			bool uniform = m->is_shift_pressed();
@@ -1818,21 +1825,21 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			Point2 drag_begin = xform.affine_inverse().xform(drag_to_snapped_begin);
 			Point2 drag_end = xform.affine_inverse().xform(drag_to_snapped_end);
 
-			// Horizontal resize
+			// Horizontal resize.
 			if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
 				current_begin.x = MIN(drag_begin.x, max_begin.x);
 			} else if (drag_type == DRAG_RIGHT || drag_type == DRAG_TOP_RIGHT || drag_type == DRAG_BOTTOM_RIGHT) {
 				current_end.x = MAX(drag_end.x, min_end.x);
 			}
 
-			// Vertical resize
+			// Vertical resize.
 			if (drag_type == DRAG_TOP || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_TOP_RIGHT) {
 				current_begin.y = MIN(drag_begin.y, max_begin.y);
 			} else if (drag_type == DRAG_BOTTOM || drag_type == DRAG_BOTTOM_LEFT || drag_type == DRAG_BOTTOM_RIGHT) {
 				current_end.y = MAX(drag_end.y, min_end.y);
 			}
 
-			// Uniform resize
+			// Uniform resize.
 			if (uniform) {
 				if (drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT) {
 					current_end.y = current_begin.y + aspect * (current_end.x - current_begin.x);
@@ -1855,7 +1862,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			// Symmetric resize
+			// Symmetric resize.
 			if (symmetric) {
 				if (drag_type == DRAG_LEFT || drag_type == DRAG_TOP_LEFT || drag_type == DRAG_BOTTOM_LEFT) {
 					current_end.x = 2.0 * center.x - current_begin.x;
@@ -1872,11 +1879,10 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Confirm resize
+		// Confirm resize.
 		if (drag_selection.size() >= 1 && b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			const Node2D *node2d = Object::cast_to<Node2D>(drag_selection.front()->get());
 			if (node2d) {
-				// Extends from Node2D.
 				// Node2D doesn't have an actual stored rect size, unlike Controls.
 				_commit_canvas_item_state(
 						drag_selection,
@@ -1887,7 +1893,6 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 								Math::snapped(drag_selection.front()->get()->_edit_get_scale().y, 0.01)),
 						true);
 			} else {
-				// Extends from Control.
 				_commit_canvas_item_state(
 						drag_selection,
 						vformat(
@@ -1909,7 +1914,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Cancel a drag
+		// Cancel a drag.
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			snap_target[0] = SNAP_TARGET_NONE;
@@ -1926,7 +1931,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
-	// Drag resize handles
+	// Drag resize handles.
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && ((b->is_alt_pressed() && b->is_command_or_control_pressed()) || tool == TOOL_SCALE)) {
 			bool has_locked_items = false;
@@ -1969,7 +1974,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 	}
 
 	if (drag_type == DRAG_SCALE_BOTH || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
-		// Resize the node
+		// Resize the node.
 		if (m.is_valid()) {
 			_restore_canvas_item_state(drag_selection);
 			CanvasItem *ci = drag_selection.front()->get();
@@ -2029,7 +2034,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Confirm resize
+		// Confirm resize.
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			if (drag_selection.size() != 1) {
 				_commit_canvas_item_state(
@@ -2054,7 +2059,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Cancel a drag
+		// Cancel a drag.
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection);
 			_reset_drag();
@@ -2071,7 +2076,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (drag_type == DRAG_NONE) {
-		//Start moving the nodes
+		// Start moving the nodes.
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			if ((b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
 				bool has_locked_items = false;
@@ -2119,7 +2124,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	}
 
 	if (drag_type == DRAG_MOVE || drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y) {
-		// Move the nodes
+		// Move the nodes.
 		if (m.is_valid() && !drag_selection.is_empty()) {
 			_restore_canvas_item_state(drag_selection, true);
 
@@ -2165,7 +2170,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Confirm the move (only if it was moved)
+		// Confirm the move (only if it was moved).
 		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
 			if (transform.affine_inverse().xform(b->get_position()) != drag_from) {
 				if (drag_selection.size() != 1) {
@@ -2198,7 +2203,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Cancel a drag
+		// Cancel a drag.
 		if (ED_IS_SHORTCUT("canvas_item_editor/cancel_transform", p_event) || (b.is_valid() && b->get_button_index() == MouseButton::RIGHT && b->is_pressed())) {
 			_restore_canvas_item_state(drag_selection, true);
 			snap_target[0] = SNAP_TARGET_NONE;
@@ -2209,11 +2214,11 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	// Move the canvas items with the arrow keys
+	// Move the canvas items with the arrow keys.
 	if (k.is_valid() && k->is_pressed() && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
 			(k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::LEFT || k->get_keycode() == Key::RIGHT)) {
 		if (!k->is_echo()) {
-			// Start moving the canvas items with the keyboard, if they are movable
+			// Start moving the canvas items with the keyboard, if they are movable.
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 
 			drag_selection.clear();
@@ -2288,7 +2293,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
 			(k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::LEFT || k->get_keycode() == Key::RIGHT)) {
-		// Confirm canvas items move by arrow keys
+		// Confirm canvas items move by arrow keys.
 		if ((!Input::get_singleton()->is_key_pressed(Key::UP)) &&
 				(!Input::get_singleton()->is_key_pressed(Key::DOWN)) &&
 				(!Input::get_singleton()->is_key_pressed(Key::LEFT)) &&
@@ -2325,7 +2330,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		if (b.is_valid() && b->is_pressed() &&
 				((b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed() && tool == TOOL_SELECT) ||
 						(b->get_button_index() == MouseButton::LEFT && tool == TOOL_LIST_SELECT))) {
-			// Popup the selection menu list
+			// Popup the selection menu list.
 			Point2 click = transform.affine_inverse().xform(b->get_position());
 
 			_get_canvas_items_at_pos(click, selection_results, b->is_alt_pressed() && tool == TOOL_SELECT);
@@ -2338,7 +2343,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 				return true;
 			} else if (!selection_results.is_empty()) {
-				// Sorts items according the their z-index
+				// Sort items according to their z-index.
 				selection_results.sort();
 
 				NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
@@ -2423,8 +2428,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 		if (can_select) {
 			// Single item selection.
-			Node *scene = EditorNode::get_singleton()->get_edited_scene();
-			if (!scene) {
+			if (!EditorNode::get_singleton()->get_edited_scene()) {
 				return true;
 			}
 
@@ -2500,7 +2504,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_BOX_SELECTION) {
 		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
-			// Confirms box selection.
+			// Confirm box selection.
 			Node *scene = EditorNode::get_singleton()->get_edited_scene();
 			if (scene) {
 				List<CanvasItem *> selitems;
@@ -2544,7 +2548,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	}
 
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true) && drag_type == DRAG_NONE) {
-		// Unselect everything
+		// Unselect everything.
 		editor_selection->clear();
 		viewport->queue_redraw();
 	}
@@ -2590,17 +2594,18 @@ bool CanvasItemEditor::_gui_input_ruler_tool(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
+// This function is unclear, since the edited scene root's input is already disabled.
 bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
 		Point2 click = transform.affine_inverse().xform(m->get_position());
 
-		// Checks if the hovered items changed, redraw the viewport if so
+		// Check if the hovered items changed, redraw the viewport if so.
 		Vector<_SelectResult> hovering_results_items;
 		_get_canvas_items_at_pos(click, hovering_results_items);
 		hovering_results_items.sort();
 
-		// Compute the nodes names and icon position
+		// Compute the nodes names and icon position.
 		Vector<_HoverResult> hovering_results_tmp;
 		for (int i = 0; i < hovering_results_items.size(); i++) {
 			CanvasItem *ci = hovering_results_items[i].item;
@@ -2652,29 +2657,17 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	if (EDITOR_GET("editors/panning/simple_panning") || !pan_pressed || release_lmb) {
 		accepted = true;
 		if (_gui_input_rulers_and_guides(p_event)) {
-			// print_line("Rulers and guides");
 		} else if (EditorNode::get_singleton()->get_editor_plugins_over()->forward_gui_input(p_event)) {
-			// print_line("Plugin");
 		} else if (_gui_input_open_scene_on_double_click(p_event)) {
-			// print_line("Open scene on double click");
 		} else if (_gui_input_scale(p_event)) {
-			// print_line("Set scale");
 		} else if (_gui_input_pivot(p_event)) {
-			// print_line("Set pivot");
 		} else if (_gui_input_resize(p_event)) {
-			// print_line("Resize");
 		} else if (_gui_input_rotate(p_event)) {
-			// print_line("Rotate");
 		} else if (_gui_input_move(p_event)) {
-			// print_line("Move");
 		} else if (_gui_input_anchors(p_event)) {
-			// print_line("Anchors");
 		} else if (_gui_input_ruler_tool(p_event)) {
-			// print_line("Measure");
 		} else if (_gui_input_select(p_event)) {
-			// print_line("Selection");
 		} else {
-			// print_line("Not accepted");
 			accepted = false;
 		}
 	}
@@ -2685,7 +2678,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		accept_event();
 	}
 
-	// Handles the mouse hovering
+	// Handles the mouse hovering.
 	_gui_input_hover(p_event);
 
 	if (mb.is_valid()) {
@@ -2693,7 +2686,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		_update_cursor();
 	}
 
-	// Grab focus
+	// Grab focus.
 	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
 		callable_mp((Control *)viewport, &Control::grab_focus).call_deferred();
 	}
@@ -2764,7 +2757,7 @@ void CanvasItemEditor::_update_lock_and_group_button() {
 }
 
 Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) const {
-	// Compute an eventual rotation of the cursor
+	// Compute an eventual rotation of the cursor.
 	const CursorShape rotation_array[4] = { CURSOR_HSIZE, CURSOR_BDIAGSIZE, CURSOR_VSIZE, CURSOR_FDIAGSIZE };
 	int rotation_array_index = 0;
 
@@ -2784,7 +2777,7 @@ Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) con
 		}
 	}
 
-	// Choose the correct cursor
+	// Choose the correct cursor.
 	CursorShape c = get_default_cursor_shape();
 	switch (drag_type) {
 		case DRAG_LEFT:
@@ -2869,7 +2862,7 @@ void CanvasItemEditor::_draw_percentage_at_position(real_t p_value, Point2 p_pos
 }
 
 void CanvasItemEditor::_draw_focus() {
-	// Draw the focus around the base viewport
+	// Draw the focus around the base viewport.
 	if (viewport->has_focus()) {
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(viewport->get_canvas_item(), Rect2(Point2(), viewport->get_size()));
 	}
@@ -2880,7 +2873,8 @@ void CanvasItemEditor::_draw_guides() {
 	Transform2D xform = viewport_scrollable->get_transform() * transform;
 
 	// Guides already there.
-	if (Node *scene = EditorNode::get_singleton()->get_edited_scene()) {
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	if (scene) {
 		Array vguides = scene->get_meta("_edit_vertical_guides_", Array());
 		for (int i = 0; i < vguides.size(); i++) {
 			if (drag_type == DRAG_V_GUIDE && i == dragged_guide_index) {
@@ -2925,6 +2919,10 @@ void CanvasItemEditor::_draw_guides() {
 }
 
 void CanvasItemEditor::_draw_smart_snapping() {
+	if (drag_type == DRAG_NONE) {
+		return;
+	}
+
 	Color line_color = EDITOR_GET("editors/2d/smart_snapping_line_color");
 	if (snap_target[0] != SNAP_TARGET_NONE && snap_target[0] != SNAP_TARGET_GRID) {
 		viewport->draw_set_transform_matrix(viewport->get_transform() * transform * snap_transform);
@@ -2946,7 +2944,7 @@ void CanvasItemEditor::_draw_rulers() {
 	Ref<Font> font = get_theme_font(SNAME("rulers"), EditorStringName(EditorFonts));
 	int font_size = get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts));
 
-	// The rule transform
+	// The rule transform.
 	Transform2D ruler_transform;
 	if (grid_snap_active || _is_grid_visible()) {
 		List<CanvasItem *> selection = _get_edited_canvas_items();
@@ -2971,7 +2969,7 @@ void CanvasItemEditor::_draw_rulers() {
 		ruler_transform.scale(Size2(basic_rule, basic_rule));
 	}
 
-	// Subdivisions
+	// Subdivisions.
 	int major_subdivision = 2;
 	Transform2D major_subdivide;
 	major_subdivide.scale(Size2(1.0 / major_subdivision, 1.0 / major_subdivision));
@@ -2980,11 +2978,11 @@ void CanvasItemEditor::_draw_rulers() {
 	Transform2D minor_subdivide;
 	minor_subdivide.scale(Size2(1.0 / minor_subdivision, 1.0 / minor_subdivision));
 
-	// First and last graduations to draw (in the ruler space)
+	// First and last graduations to draw (In the ruler space).
 	Point2 first = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(Point2(RULER_WIDTH, RULER_WIDTH));
 	Point2 last = (transform * ruler_transform * major_subdivide * minor_subdivide).affine_inverse().xform(viewport->get_size());
 
-	// Draw top ruler
+	// Draw top ruler.
 	viewport->draw_rect(Rect2(Point2(RULER_WIDTH, 0), Size2(viewport->get_size().x, RULER_WIDTH)), bg_color);
 	for (int i = Math::ceil(first.x); i < last.x; i++) {
 		Point2 position = (transform * ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).round();
@@ -3001,7 +2999,7 @@ void CanvasItemEditor::_draw_rulers() {
 		}
 	}
 
-	// Draw left ruler
+	// Draw left ruler.
 	viewport->draw_rect(Rect2(Point2(0, RULER_WIDTH), Size2(RULER_WIDTH, viewport->get_size().y)), bg_color);
 	for (int i = Math::ceil(first.y); i < last.y; i++) {
 		Point2 position = (transform * ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).round();
@@ -3023,13 +3021,13 @@ void CanvasItemEditor::_draw_rulers() {
 		}
 	}
 
-	// Draw the top left corner
+	// Draw the top left corner.
 	viewport->draw_rect(Rect2(Point2(), Size2(RULER_WIDTH, RULER_WIDTH)), graduation_color);
 }
 
 void CanvasItemEditor::_draw_grid() {
 	if (_is_grid_visible()) {
-		// Draw the grid
+		// Draw the grid.
 		Vector2 real_grid_offset;
 		const List<CanvasItem *> selection = _get_edited_canvas_items();
 
@@ -3041,7 +3039,7 @@ void CanvasItemEditor::_draw_grid() {
 			real_grid_offset = grid_offset;
 		}
 
-		// Draw a "primary" line every several lines to make measurements easier.
+		// Draw a primary line every several lines to make measurements easier.
 		// The step is configurable in the Configure Snap dialog.
 		const Color secondary_grid_color = EDITOR_GET("editors/2d/grid_color");
 		const Color primary_grid_color =
@@ -3104,7 +3102,6 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		return;
 	}
 
-	const Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
 	if (ruler_tool_active) {
 		Color ruler_primary_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		Color ruler_secondary_color = ruler_primary_color;
@@ -3155,14 +3152,14 @@ void CanvasItemEditor::_draw_ruler_tool() {
 					? (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0)
 					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
 			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
-			// Constrain arc to triangle height & max size.
+			// Constrain arc to triangle height and maximum size.
 			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
 
 			real_t arc_2_start_angle = end_to_begin.x < 0
 					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
 					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
 			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
-			// Constrain arc to triangle width & max size.
+			// Constrain arc to triangle width and maximum size.
 			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
 
 			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
@@ -3173,6 +3170,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		if (begin.is_equal_approx(end)) {
 			viewport->draw_string_outline(font, text_pos, (String)ruler_tool_origin, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 			viewport->draw_string(font, text_pos, (String)ruler_tool_origin, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+			const Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
 			viewport->draw_texture(position_icon, (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 			return;
 		}
@@ -3244,6 +3242,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		}
 	} else {
 		if (grid_snap_active) {
+			const Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
 			viewport->draw_texture(position_icon, (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 		}
 	}
@@ -3253,7 +3252,7 @@ void CanvasItemEditor::_draw_control_anchors(Control *control) {
 	Transform2D xform = transform * control->get_global_transform_with_canvas();
 	RID ci = viewport->get_canvas_item();
 	if (tool == TOOL_SELECT && !Object::cast_to<Container>(control->get_parent())) {
-		// Compute the anchors
+		// Compute the anchors.
 		real_t anchors_values[4];
 		anchors_values[0] = control->get_anchor(SIDE_LEFT);
 		anchors_values[1] = control->get_anchor(SIDE_TOP);
@@ -3266,7 +3265,7 @@ void CanvasItemEditor::_draw_control_anchors(Control *control) {
 			anchors_pos[i] = xform.xform(_anchor_to_position(control, value));
 		}
 
-		// Draw the anchors handles
+		// Draw the anchors handles.
 		Rect2 anchor_rects[4];
 		if (control->is_layout_rtl()) {
 			anchor_rects[0] = Rect2(anchors_pos[0] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
@@ -3289,10 +3288,10 @@ void CanvasItemEditor::_draw_control_anchors(Control *control) {
 void CanvasItemEditor::_draw_control_helpers(Control *control) {
 	Transform2D xform = transform * control->get_global_transform_with_canvas();
 	if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
-		// Draw the helpers
+		// Draw the helpers.
 		Color color_base = Color(0.8, 0.8, 0.8, 0.5);
 
-		// Compute the anchors
+		// Compute the anchors.
 		real_t anchors_values[4];
 		anchors_values[0] = control->get_anchor(SIDE_LEFT);
 		anchors_values[1] = control->get_anchor(SIDE_TOP);
@@ -3306,7 +3305,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			anchors_pos[i] = xform.xform(_anchor_to_position(control, anchors[i]));
 		}
 
-		// Get which anchor is dragged
+		// Get which anchor is dragged.
 		int dragged_anchor = -1;
 		switch (drag_type) {
 			case DRAG_ANCHOR_ALL:
@@ -3327,7 +3326,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		if (dragged_anchor >= 0) {
-			// Draw the 4 lines when dragged
+			// Draw the 4 lines when dragged.
 			Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
 
 			Vector2 corners_pos[4];
@@ -3345,7 +3344,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				viewport->draw_line(line_starts[i], line_ends[i], anchor_snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 			}
 
-			// Display the percentages next to the lines
+			// Display the percentages next to the lines.
 			real_t percent_val;
 			percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
 			percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
@@ -3364,7 +3363,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Side)((dragged_anchor + 1) % 4));
 		}
 
-		// Draw the margin values and the node width/height when dragging control side
+		// Draw the margin values and the node width/height when dragging control side.
 		const real_t ratio = 0.33;
 		Transform2D parent_transform = xform * control->get_transform().affine_inverse();
 		real_t node_pos_in_parent[4];
@@ -3439,7 +3438,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		switch (drag_type) {
-			//Draw the ghost rect if the node if rotated/scaled
+			// Draw the ghost rect if the node if rotated or scaled.
 			case DRAG_LEFT:
 			case DRAG_TOP_LEFT:
 			case DRAG_TOP:
@@ -3476,7 +3475,7 @@ void CanvasItemEditor::_draw_selection() {
 
 		bool item_locked = ci->has_meta("_edit_lock_");
 
-		// Draw the previous position if we are dragging the node
+		// Draw the previous position if we are dragging the node.
 		if (show_helpers &&
 				(drag_type == DRAG_MOVE || drag_type == DRAG_ROTATE ||
 						drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT || drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM ||
@@ -3502,7 +3501,7 @@ void CanvasItemEditor::_draw_selection() {
 
 		Transform2D xform = transform * ci->get_global_transform_with_canvas();
 
-		// Draw the selected items position / surrounding boxes
+		// Draw position and surrounding box for selected items.
 		if (ci->_edit_use_rect()) {
 			Rect2 rect = ci->_edit_get_rect();
 			const Vector2 endpoints[4] = {
@@ -3512,11 +3511,7 @@ void CanvasItemEditor::_draw_selection() {
 				xform.xform(rect.position + Vector2(0, rect.size.y))
 			};
 
-			Color c = Color(1, 0.6, 0.4, 0.7);
-
-			if (item_locked) {
-				c = Color(0.7, 0.7, 0.7, 0.7);
-			}
+			const Color c = item_locked ? Color(0.7, 0.7, 0.7, 0.7) : Color(1, 0.6, 0.4, 0.7);
 
 			for (int i = 0; i < 4; i++) {
 				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], c, Math::round(2 * EDSCALE));
@@ -3529,10 +3524,9 @@ void CanvasItemEditor::_draw_selection() {
 			viewport->draw_set_transform_matrix(viewport->get_transform());
 		}
 
-		if (single && !item_locked && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
-			// Draw the pivot
+		if (single && !item_locked && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) {
 			if (ci->_edit_use_pivot()) {
-				// Draw the node's pivot
+				// Draw the node's pivot.
 				Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
 				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
@@ -3541,14 +3535,14 @@ void CanvasItemEditor::_draw_selection() {
 				viewport->draw_set_transform_matrix(viewport->get_transform());
 			}
 
-			// Draw control-related helpers
+			// Draw control related helpers.
 			Control *control = Object::cast_to<Control>(ci);
 			if (control && _is_node_movable(control)) {
 				_draw_control_anchors(control);
 				_draw_control_helpers(control);
 			}
 
-			// Draw the resize handles
+			// Draw the resize handles.
 			if (tool == TOOL_SELECT && ci->_edit_use_rect() && _is_node_movable(ci)) {
 				Rect2 rect = ci->_edit_get_rect();
 				const Vector2 endpoints[4] = {
@@ -3573,7 +3567,7 @@ void CanvasItemEditor::_draw_selection() {
 				}
 			}
 
-			// Draw the move handles
+			// Draw the move handles.
 			bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 			bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 			if (tool == TOOL_MOVE && show_transformation_gizmos) {
@@ -3605,7 +3599,7 @@ void CanvasItemEditor::_draw_selection() {
 				}
 			}
 
-			// Draw the rescale handles
+			// Draw the rescale handles.
 			if (show_transformation_gizmos && ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y)) {
 				if (_is_node_movable(ci)) {
 					Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
@@ -3643,7 +3637,7 @@ void CanvasItemEditor::_draw_selection() {
 	}
 
 	if (drag_type == DRAG_BOX_SELECTION) {
-		// Draw the dragging box
+		// Draw the dragging box.
 		Point2 bsfrom = transform.xform(drag_from);
 		Point2 bsto = transform.xform(box_selecting_to);
 
@@ -3659,7 +3653,7 @@ void CanvasItemEditor::_draw_selection() {
 	}
 
 	if (drag_type == DRAG_ROTATE) {
-		// Draw the line when rotating a node
+		// Draw the line when rotating a node.
 		viewport->draw_line(
 				transform.xform(drag_rotation_center),
 				transform.xform(drag_to),
@@ -3673,7 +3667,7 @@ void CanvasItemEditor::_draw_selection() {
 }
 
 void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_color) {
-	// Draw a line going through the whole screen from a vector
+	// Draw a line going through the whole screen from a vector.
 	RID ci = viewport->get_canvas_item();
 	Vector<Point2> points;
 	Point2 from = transform.xform(p_from);
@@ -3681,11 +3675,11 @@ void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_c
 	Size2 viewport_size = viewport->get_size();
 
 	if (to.x == from.x) {
-		// Vertical line
+		// Vertical line.
 		points.push_back(Point2(to.x, 0));
 		points.push_back(Point2(to.x, viewport_size.y));
 	} else if (to.y == from.y) {
-		// Horizontal line
+		// Horizontal line.
 		points.push_back(Point2(0, to.y));
 		points.push_back(Point2(viewport_size.x, to.y));
 	} else {
@@ -3694,7 +3688,6 @@ void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_c
 		real_t y_for_viewport_x = ((to.y - from.y) * (viewport_size.x - from.x)) / (to.x - from.x) + from.y;
 		real_t x_for_viewport_y = ((to.x - from.x) * (viewport_size.y - from.y)) / (to.y - from.y) + from.x; // faux
 
-		//bool start_set = false;
 		if (y_for_zero_x >= 0 && y_for_zero_x <= viewport_size.y) {
 			points.push_back(Point2(0, y_for_zero_x));
 		}
@@ -3769,7 +3762,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 	if (show_position_gizmos && ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
-		// Draw the node's position
+		// Draw the node's position.
 		Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPositionUnselected"));
 		Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
 		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
@@ -3793,7 +3786,7 @@ void CanvasItemEditor::_draw_hover() {
 		Size2 item_size = Size2(icon_size.x + 4 + node_name_size.x, MAX(icon_size.y, node_name_size.y - 3));
 
 		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(icon_size.x, -icon_size.y) / 4);
-		// Rectify the position to avoid overlapping items
+		// Rectify the position to avoid overlapping items.
 		for (const Rect2 &E : previous_rects) {
 			if (E.intersects(Rect2(pos, item_size))) {
 				pos.y = E.get_position().y - item_size.y;
@@ -3802,10 +3795,10 @@ void CanvasItemEditor::_draw_hover() {
 
 		previous_rects.push_back(Rect2(pos, item_size));
 
-		// Draw icon
+		// Draw icon.
 		viewport->draw_texture_rect(node_icon, Rect2(pos, icon_size), false, Color(1.0, 1.0, 1.0, 0.5));
 
-		// Draw name
+		// Draw name.
 		viewport->draw_string(font, pos + Point2(icon_size.x + 4, item_size.y - 3), node_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 	}
 }
@@ -3909,13 +3902,12 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 		Ref<Texture2D> group = get_editor_theme_icon(SNAME("GroupViewport"));
 		if (show_group_gizmos && ci->has_meta("_edit_group_")) {
 			group->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
-			//offset += group->get_size().x;
 		}
 	}
 }
 
 void CanvasItemEditor::_draw_viewport() {
-	// Update the transform
+	// Update the transform.
 	transform = Transform2D();
 	transform.scale_basis(Size2(zoom, zoom));
 	transform.columns[2] = -view_offset * zoom;
@@ -3924,9 +3916,10 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_grid();
 	_draw_ruler_tool();
 	_draw_axis();
-	if (EditorNode::get_singleton()->get_edited_scene()) {
-		_draw_locks_and_groups(EditorNode::get_singleton()->get_edited_scene());
-		_draw_invisible_nodes_positions(EditorNode::get_singleton()->get_edited_scene());
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	if (scene) {
+		_draw_locks_and_groups(scene);
+		_draw_invisible_nodes_positions(scene);
 	}
 	_draw_selection();
 
@@ -4020,7 +4013,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			// Update the viewport if the canvas_item changes
+			// Update the viewport if the canvas item changes.
 			List<CanvasItem *> selection = _get_edited_canvas_items(true);
 			for (CanvasItem *ci : selection) {
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
@@ -4061,10 +4054,10 @@ void CanvasItemEditor::_notification(int p_what) {
 				}
 			}
 
-			// Activate / Deactivate the pivot tool.
+			// Activate/Deactivate the pivot tool.
 			pivot_button->set_disabled(selection.is_empty());
 
-			// Update the viewport if bones changes
+			// Update the viewport if bones changes.
 			for (KeyValue<BoneKey, BoneList> &E : bone_list) {
 				Object *b = ObjectDB::get_instance(E.key.from);
 				if (!b) {
@@ -4174,10 +4167,13 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	// Calculate scrollable area.
 	Rect2 canvas_item_rect = Rect2(Point2(), screen_rect);
-	if (EditorNode::get_singleton()->is_inside_tree() && EditorNode::get_singleton()->get_edited_scene()) {
-		Rect2 content_rect = _get_encompassing_rect(EditorNode::get_singleton()->get_edited_scene());
-		canvas_item_rect.expand_to(content_rect.position);
-		canvas_item_rect.expand_to(content_rect.position + content_rect.size);
+	if (EditorNode::get_singleton()->is_inside_tree()) {
+		Node *scene = EditorNode::get_singleton()->get_edited_scene();
+		if (scene) {
+			Rect2 content_rect = _get_encompassing_rect(scene);
+			canvas_item_rect.expand_to(content_rect.position);
+			canvas_item_rect.expand_to(content_rect.position + content_rect.size);
+		}
 	}
 	canvas_item_rect.size += screen_rect * 2;
 	canvas_item_rect.position -= screen_rect;
@@ -4249,7 +4245,7 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 	// We want to align in-scene pixels to screen pixels, this prevents blurry rendering
 	// of small details (texts, lines).
 	// This correction adds a jitter movement when zooming, so we correct only when the
-	// zoom factor is an integer. (in the other cases, all pixels won't be aligned anyway)
+	// zoom factor is an integer. (In the other cases, all pixels won't be aligned anyway).
 	const real_t closest_zoom_factor = Math::round(zoom);
 	if (Math::is_zero_approx(zoom - closest_zoom_factor)) {
 		// Make sure scene pixel at view_offset is aligned on a screen pixel.
@@ -4345,7 +4341,7 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			}
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
-				//look for an IK chain
+				// Look for an IK chain.
 				List<Node2D *> ik_chain;
 
 				Node2D *n = Object::cast_to<Node2D>(n2d->get_parent_item());
@@ -4505,7 +4501,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case SKELETON_SHOW_BONES: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
 			for (Node *E : selection) {
-				// Add children nodes so they are processed
+				// Add children nodes so they are processed.
 				for (int child = 0; child < E->get_child_count(); child++) {
 					selection.push_back(E->get_child(child));
 				}
@@ -4724,21 +4720,21 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case CLEAR_GUIDES: {
-			Node *const root = EditorNode::get_singleton()->get_edited_scene();
+			Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
-			if (root && (root->has_meta("_edit_horizontal_guides_") || root->has_meta("_edit_vertical_guides_"))) {
+			if (scene && (scene->has_meta("_edit_horizontal_guides_") || scene->has_meta("_edit_vertical_guides_"))) {
 				undo_redo->create_action(TTR("Clear Guides"));
-				if (root->has_meta("_edit_horizontal_guides_")) {
-					Array hguides = root->get_meta("_edit_horizontal_guides_");
+				if (scene->has_meta("_edit_horizontal_guides_")) {
+					Array hguides = scene->get_meta("_edit_horizontal_guides_");
 
-					undo_redo->add_do_method(root, "remove_meta", "_edit_horizontal_guides_");
-					undo_redo->add_undo_method(root, "set_meta", "_edit_horizontal_guides_", hguides);
+					undo_redo->add_do_method(scene, "remove_meta", "_edit_horizontal_guides_");
+					undo_redo->add_undo_method(scene, "set_meta", "_edit_horizontal_guides_", hguides);
 				}
-				if (root->has_meta("_edit_vertical_guides_")) {
-					Array vguides = root->get_meta("_edit_vertical_guides_");
+				if (scene->has_meta("_edit_vertical_guides_")) {
+					Array vguides = scene->get_meta("_edit_vertical_guides_");
 
-					undo_redo->add_do_method(root, "remove_meta", "_edit_vertical_guides_");
-					undo_redo->add_undo_method(root, "set_meta", "_edit_vertical_guides_", vguides);
+					undo_redo->add_do_method(scene, "remove_meta", "_edit_vertical_guides_");
+					undo_redo->add_undo_method(scene, "set_meta", "_edit_vertical_guides_", vguides);
 				}
 				undo_redo->add_do_method(viewport, "queue_redraw");
 				undo_redo->add_undo_method(viewport, "queue_redraw");
@@ -4835,9 +4831,10 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			item_rect = Rect2();
 		}
 
-		Vector2 pos = ci->get_global_transform().get_origin();
-		Vector2 scale = ci->get_global_transform().get_scale();
-		real_t angle = ci->get_global_transform().get_rotation();
+		const Transform2D xform = ci->get_global_transform();
+		const Vector2 pos = xform.get_origin();
+		const Vector2 scale = xform.get_scale();
+		const real_t angle = xform.get_rotation();
 
 		Transform2D t(angle, Vector2(0.f, 0.f));
 		item_rect = t.xform(item_rect);
@@ -5070,7 +5067,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (state.has("show_zoom_control")) {
-		// This one is not user-controllable, but instrumentable
+		// This one is not user-controllable, but instrumentable.
 		zoom_widget->set_visible(state["show_zoom_control"]);
 	}
 
@@ -5215,8 +5212,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
 	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
+	// This prevents the first button's hover/pressed effect from "touching" the panel's border.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
 	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
@@ -5263,7 +5259,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ED_SHORTCUT("canvas_item_editor/cancel_transform", TTR("Cancel Transformation"), Key::ESCAPE);
 
 	// To ensure that scripts can parse the list of shortcuts correctly, we have to define
-	// those shortcuts one by one. Define shortcut before using it (by EditorZoomWidget).
+	// those shortcuts one by one. Define shortcut before using it by EditorZoomWidget.
 	ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_3.125_percent", TTR("Zoom to 3.125%"),
 			{ int32_t(KeyModifierMask::SHIFT | Key::KEY_5), int32_t(KeyModifierMask::SHIFT | Key::KP_5) });
 
@@ -5858,22 +5854,22 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 	Ref<Texture2D> texture = ResourceCache::get_ref(p_path);
 
 	if (p_parent) {
+		Node *scene = EditorNode::get_singleton()->get_edited_scene();
+
 		undo_redo->add_do_method(p_parent, "add_child", p_child, true);
-		undo_redo->add_do_method(p_child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_method(p_child, "set_owner", scene);
 		undo_redo->add_do_reference(p_child);
 		undo_redo->add_undo_method(p_parent, "remove_child", p_child);
+
+		String new_name = p_parent->validate_child_name(p_child);
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		undo_redo->add_do_method(ed, "live_debug_create_node", scene->get_path_to(p_parent), p_child->get_class(), new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(scene->get_path_to(p_parent)) + "/" + new_name));
 	} else { // If no parent is selected, set as root node of the scene.
 		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", p_child);
 		undo_redo->add_do_method(p_child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 		undo_redo->add_do_reference(p_child);
 		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
-	}
-
-	if (p_parent) {
-		String new_name = p_parent->validate_child_name(p_child);
-		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), p_child->get_class(), new_name);
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
 	}
 
 	if (Object::cast_to<TouchScreenButton>(p_child) || Object::cast_to<TextureButton>(p_child)) {
@@ -5882,7 +5878,7 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 		undo_redo->add_do_property(p_child, "texture", texture);
 	}
 
-	// make visible for certain node type
+	// Make visible for certain node type.
 	if (Object::cast_to<Control>(p_child)) {
 		Size2 texture_size = texture->get_size();
 		undo_redo->add_do_property(p_child, "size", texture_size);
@@ -5897,11 +5893,11 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 		undo_redo->add_do_property(p_child, "polygon", list);
 	}
 
-	// Compute the global position
+	// Compute the global position.
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
-	// Adjust position for Control and TouchScreenButton
+	// Adjust position for Control and TouchScreenButton.
 	if (Object::cast_to<Control>(p_child) || Object::cast_to<TouchScreenButton>(p_child)) {
 		target_position -= texture->get_size() / 2;
 	}
@@ -5928,10 +5924,16 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	if (p_parent) {
+		Node *scene = EditorNode::get_singleton()->get_edited_scene();
 		undo_redo->add_do_method(p_parent, "add_child", child, true);
-		undo_redo->add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_method(child, "set_owner", scene);
 		undo_redo->add_do_reference(child);
 		undo_redo->add_undo_method(p_parent, "remove_child", child);
+
+		String new_name = p_parent->validate_child_name(child);
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		undo_redo->add_do_method(ed, "live_debug_create_node", scene->get_path_to(p_parent), child->get_class(), new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(scene->get_path_to(p_parent)) + "/" + new_name));
 	} else { // If no parent is selected, set as root node of the scene.
 		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", child);
 		undo_redo->add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
@@ -5939,14 +5941,7 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
 	}
 
-	if (p_parent) {
-		String new_name = p_parent->validate_child_name(child);
-		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), child->get_class(), new_name);
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
-	}
-
-	// Compute the global position
+	// Compute the global position.
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
@@ -5964,7 +5959,7 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 
 bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	Ref<PackedScene> sdata = ResourceLoader::load(p_path);
-	if (!sdata.is_valid()) { // invalid scene
+	if (sdata.is_null()) { // Invalid scene.
 		return false;
 	}
 
@@ -5973,10 +5968,10 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 		return false;
 	}
 
-	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 
-	if (!edited_scene->get_scene_file_path().is_empty()) { // Cyclic instantiation.
-		if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
+	if (!scene->get_scene_file_path().is_empty()) { // Cyclic instantiation.
+		if (_cyclical_dependency_exists(scene->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
 		}
@@ -5987,15 +5982,15 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	undo_redo->add_do_method(p_parent, "add_child", instantiated_scene, true);
-	undo_redo->add_do_method(instantiated_scene, "set_owner", edited_scene);
+	undo_redo->add_do_method(instantiated_scene, "set_owner", scene);
 	undo_redo->add_do_reference(instantiated_scene);
 	undo_redo->add_undo_method(p_parent, "remove_child", instantiated_scene);
 	undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 
 	String new_name = p_parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	undo_redo->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(p_parent), p_path, new_name);
-	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)) + "/" + new_name));
+	undo_redo->add_do_method(ed, "live_debug_instantiate_node", scene->get_path_to(p_parent), p_path, new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(scene->get_path_to(p_parent)) + "/" + new_name));
 
 	CanvasItem *instance_ci = Object::cast_to<CanvasItem>(instantiated_scene);
 	if (instance_ci) {
@@ -6095,8 +6090,8 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 
 	Vector<String> files = d["files"];
 
-	const Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-	if (!edited_scene && files.size() > 1) {
+	const Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	if (!scene && files.size() > 1) {
 		canvas_item_editor->message = TTR("Can't instantiate multiple nodes without root.");
 		canvas_item_editor->update_viewport();
 		return false;
@@ -6121,7 +6116,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 			if (!instantiated_scene) {
 				continue;
 			}
-			if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
+			if (scene && !scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(scene->get_scene_file_path(), instantiated_scene)) {
 				error_message = vformat(TTR("Circular dependency found at %s."), path.get_file());
 			}
 			memdelete(instantiated_scene);
@@ -6145,7 +6140,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		return false;
 	}
 
-	if (!preview_node->get_parent()) { // create preview only once
+	if (!preview_node->get_parent()) { // create preview only once.
 		_create_preview(files);
 	}
 	ERR_FAIL_COND_V(preview_node->get_child_count() == 0, false);
@@ -6153,7 +6148,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	const Transform2D trans = canvas_item_editor->get_canvas_transform();
 	preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
 
-	if (!edited_scene && instantiate_type & SCENE) {
+	if (!scene && instantiate_type & SCENE) {
 		String scene_file_path = preview_node->get_child(0)->get_scene_file_path();
 		// TRANSLATORS: The placeholder is the file path of the scene being instantiated.
 		canvas_item_editor->message = vformat(TTR("Creating inherited scene from: %s"), scene_file_path);
@@ -6231,19 +6226,19 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	}
 
 	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
-	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
+	Node *scene = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes.front()->get();
 		if (is_alt) {
-			target_node = root_node;
+			target_node = scene;
 		} else if (is_shift) {
 			target_node = selected_node;
 		} else { // Default behavior.
-			target_node = (selected_node != root_node) ? selected_node->get_parent() : root_node;
+			target_node = (selected_node != scene) ? selected_node->get_parent() : scene;
 		}
 	} else {
-		if (root_node) {
-			target_node = root_node;
+		if (scene) {
+			target_node = scene;
 		} else {
 			target_node = nullptr;
 		}
@@ -6293,21 +6288,24 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor) {
 	default_texture_node_type = "Sprite2D";
-	// Node2D
+	// Node2D.
 	texture_node_types.push_back("Sprite2D");
 	texture_node_types.push_back("PointLight2D");
 	texture_node_types.push_back("CPUParticles2D");
 	texture_node_types.push_back("GPUParticles2D");
 	texture_node_types.push_back("Polygon2D");
 	texture_node_types.push_back("TouchScreenButton");
-	// Control
+	// Control.
 	texture_node_types.push_back("TextureRect");
 	texture_node_types.push_back("TextureButton");
 	texture_node_types.push_back("NinePatchRect");
 
 	target_node = nullptr;
 	canvas_item_editor = p_canvas_item_editor;
+
 	preview_node = memnew(Control);
+	// Prevent tool scripts from processing.
+	preview_node->set_process_mode(Node::PROCESS_MODE_DISABLED);
 
 	accept = memnew(AcceptDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
