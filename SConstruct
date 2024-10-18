@@ -322,6 +322,15 @@ opts.Add("rcflags", "Custom flags for Windows resource compiler")
 # in following code (especially platform and custom_modules).
 opts.Update(env)
 
+# Warn user about unrecognized or misspelled builtin_* options.
+# Currently it works only for command line variables
+# TODO: Add the same check for options defined inside profile
+# file. Look at alternative profile loading approach in:
+# <https://github.com/godotengine/godot/pull/91794>
+for key, _ in opts.UnknownVariables().items():
+    if key.startswith("builtin_"):
+        print_warning("Unrecognized {} option. Check option name for misspelling".format(key))
+
 # Copy custom environment variables if set.
 if env["import_env_vars"]:
     for env_var in str(env["import_env_vars"]).split(","):
