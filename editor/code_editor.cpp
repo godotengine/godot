@@ -30,6 +30,7 @@
 
 #include "code_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
@@ -1599,6 +1600,9 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeTextEditor::update_editor_settings));
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
@@ -1748,6 +1752,12 @@ float CodeTextEditor::get_zoom_factor() {
 }
 
 void CodeTextEditor::_bind_methods() {
+	EditorSettings *ed = EditorSettings::get_singleton();
+	int default_indent_type = ed->get("editor/text_editor/behavior/indent/type");
+	int default_indent_size = ed->get("text_editor/behavior/indent/size");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/text_editor/behavior/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces"), default_indent_type);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/text_editor/behavior/indent/size", PROPERTY_HINT_RANGE, "1,64,1"), default_indent_size);
+
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
 	ADD_SIGNAL(MethodInfo("show_errors_panel"));

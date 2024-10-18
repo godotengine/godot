@@ -1419,8 +1419,10 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
-	return EditorSettings::get_singleton()->get(p_setting);
+	String project_override_setting = String("editor/" + p_setting);
+	ERR_FAIL_COND_V(!ProjectSettings::get_singleton() || !EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
+	Variant def_val = EditorSettings::get_singleton()->get(p_setting);
+	return ProjectSettings::get_singleton()->get_setting(project_override_setting, def_val);
 }
 
 bool EditorSettings::_property_can_revert(const StringName &p_name) const {
