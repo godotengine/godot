@@ -73,7 +73,6 @@ class ProgressDialog : public PopupPanel {
 		Label *state = nullptr;
 		uint64_t last_progress_tick = 0;
 	};
-	HBoxContainer *cancel_hb = nullptr;
 	Button *cancel = nullptr;
 
 	HashMap<String, Task> tasks;
