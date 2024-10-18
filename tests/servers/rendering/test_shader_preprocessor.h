@@ -208,6 +208,7 @@ TEST_CASE("[ShaderPreprocessor] Concatenation") {
 			"  A(9);\n"
 			"  Xy = C(X, y);\n"
 			"}\n");
+	//This does not match the GLSL preprocessor!
 	String expected(
 			"fragment() {\n"
 			"  float Xy = 1.2;\n"
@@ -326,6 +327,132 @@ TEST_CASE("[ShaderPreprocessor] Invalid concatenations") {
 	CHECK_NE(preprocessor.preprocess("#define X(y)   ##  ", filename, result), Error::OK);
 	CHECK_NE(preprocessor.preprocess("#define X(y) y ##  ", filename, result), Error::OK);
 	CHECK_NE(preprocessor.preprocess("#define X(y) ## y", filename, result), Error::OK);
+}
+
+TEST_CASE("[ShaderPreprocessor] Duplicate macro argument name") {
+	String result;
+	String code(
+			"#define join(x, x) x ## x\n");
+
+	ShaderPreprocessor preprocessor;
+	String err;
+	//expect error
+	CHECK_NE(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+}
+
+TEST_CASE("[ShaderPreprocessor] Functionlike Macro require parenthesis") {
+	String result;
+	String code(
+			"#define functionlike() 42\n"
+			"const int a = functionlike + functionlike();");
+	String expected(
+			"const int a = functionlike + 42;");
+	ShaderPreprocessor preprocessor;
+	String err;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result, &err), Error::OK);
+	CHECK_SHADER_EQ(result, expected);
+}
+
+TEST_CASE("[ShaderPreprocessor] Functionlike Macro require parenthesis 2") {
+	String result;
+	String code(
+			"#define foo() whatever()\n"
+			"foo foo() foo");
+	String expected(
+			"foo whatever() foo");
+	ShaderPreprocessor preprocessor;
+	String err;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result, &err), Error::OK);
+	CHECK_SHADER_EQ(result, expected);
+}
+
+TEST_CASE("[ShaderPreprocessor] Partial macro in define gets expanded") {
+	String code(
+			"#define A B(\n"
+			"#define B() C\n"
+			"A)");
+	String expected("C");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+
+	CHECK_SHADER_EQ(result, expected);
+}
+
+TEST_CASE("[ShaderPreprocessor] Non-fuctionlike macros expand correctly") {
+	String code(
+			"#define nonfunctionlike f\n"
+			"const int a = nonfunctionlike + nonfunctionlike() + nonfunctionlike(1) + nonfunctionlike(1, 2);");
+	String expected("const int a = f + f() + f(1) + f(1, 2);");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+
+	CHECK_SHADER_EQ(result, expected);
+}
+
+TEST_CASE("[ShaderPreprocessor] Recursion avoidance") {
+	String code(
+			"#define selfCall(x) x(x)+x(X)\n"
+			"selfCall(selfCall);");
+	String expected("selfCall(selfCall) + selfCall(X);");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+
+	CHECK_SHADER_EQ(result, expected);
+}
+
+TEST_CASE("[ShaderPreprocessor] Argument unfolding with token pasting operation") {
+	String code(
+			"#define Twice(x) x ## x\n"
+			"#define kJoin(x) k ## x(1)\n"
+			"kJoin(Twice(j));");
+	String expected("kTwice(j) (1);");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+
+	CHECK_SHADER_EQ(result, expected);
+}
+
+TEST_CASE("[ShaderPreprocessor] Complex macro expansion with nesting and recursion") {
+	String code(
+			"#define X(x) (x + 1)\n"
+			"#define Y(x) X(x) * 2\n"
+			"#define Z(x) Y(x) + 3\n"
+			"#define W(x) Z(x)\n"
+			"#define V(x) W(x + 2)\n"
+			"int result1 = V(1);\n"
+			"int result2 = Z(Y(X(1)));\n"
+			"int result3 = W(V(1));\n");
+	String expected(
+			"int result1 = (1 + 2 + 1) * 2 + 3;\n"
+			"int result2 = ( ( (1 + 1) + 1) * 2 + 1) * 2 + 3;\n"
+			"int result3 = ( (1 + 2 + 1) * 2 + 3 + 1) * 2 + 3;\n");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+
+	CHECK_SHADER_EQ(result, expected);
+}
+
+//This test fails if arguments are replaced sequentially rechecking already replaced sections
+TEST_CASE("[ShaderPreprocessor] Functionlike macro arguments replacement") {
+	String code(
+			"#define f(a, b, c) a+b*c\n"
+			"f(b,2,b)");
+	String expected("b + 2 * b");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+	CHECK_SHADER_EQ(result, expected);
 }
 
 } // namespace TestShaderPreprocessor
