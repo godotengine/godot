@@ -95,6 +95,8 @@ public:
 	StringName bone_enabled_changed;
 	StringName show_rest_only_changed;
 
+	StringName collision_state_changed;
+
 	StringName body_shape_entered;
 	StringName body_entered;
 	StringName body_shape_exited;

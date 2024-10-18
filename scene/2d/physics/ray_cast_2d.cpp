@@ -194,6 +194,7 @@ void RayCast2D::_update_raycast_state() {
 
 	PhysicsDirectSpaceState2D::RayResult rr;
 	bool prev_collision_state = collided;
+	RID prev_against_rid = against_rid;
 
 	PhysicsDirectSpaceState2D::RayParameters ray_params;
 	ray_params.from = gt.get_origin();
@@ -218,8 +219,9 @@ void RayCast2D::_update_raycast_state() {
 		against_shape = 0;
 	}
 
-	if (prev_collision_state != collided) {
+	if (prev_collision_state != collided || prev_against_rid != against_rid) {
 		queue_redraw();
+		emit_signal(SceneStringName(collision_state_changed), is_colliding(), get_collider_rid(), get_collider(), get_collision_point(), get_collision_normal());
 	}
 }
 
@@ -357,6 +359,8 @@ void RayCast2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_hit_from_inside", "enable"), &RayCast2D::set_hit_from_inside);
 	ClassDB::bind_method(D_METHOD("is_hit_from_inside_enabled"), &RayCast2D::is_hit_from_inside_enabled);
+
+	ADD_SIGNAL(MethodInfo("collision_state_changed", PropertyInfo(Variant::BOOL, "colliding"), PropertyInfo(Variant::RID, "collider_rid"), PropertyInfo(Variant::OBJECT, "collider", PROPERTY_HINT_RESOURCE_TYPE, "Node2D"), PropertyInfo(Variant::VECTOR2, "collision_point"), PropertyInfo(Variant::VECTOR2, "collision_normal")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
