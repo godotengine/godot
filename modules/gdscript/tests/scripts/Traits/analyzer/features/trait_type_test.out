@@ -1,0 +1,16 @@
+GDTEST_OK
+>> WARNING
+>> Line: 34
+>> UNSAFE_METHOD_ACCESS
+>> The method "shear()" is not present on the inferred type "Variant" (but may be present on a subtype).
+>> WARNING
+>> Line: 36
+>> UNSAFE_METHOD_ACCESS
+>> The method "milk()" is not present on the inferred type "Variant" (but may be present on a subtype).
+Animal 1
+Shearable ok
+Milkable ok
+Animal 2
+Shearable ok
+Animal 3
+ok
