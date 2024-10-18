@@ -1193,6 +1193,10 @@ void ScriptEditor::_file_dialog_action(const String &p_file) {
 			}
 			[[fallthrough]];
 		}
+		case FILE_OPEN_INTERNAL: {
+			open_file(p_file, true);
+			file_dialog_option = -1;
+		} break;
 		case FILE_OPEN: {
 			open_file(p_file);
 			file_dialog_option = -1;
@@ -1281,7 +1285,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		case FILE_OPEN: {
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-			file_dialog_option = FILE_OPEN;
+			file_dialog_option = FILE_OPEN_INTERNAL;
 
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
@@ -2419,7 +2423,7 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	return OK;
 }
 
-bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus) {
+bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus, bool p_force_builtin_editor) {
 	if (p_resource.is_null()) {
 		return false;
 	}
@@ -2431,6 +2435,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			external_editor_active ||
 			(scr.is_valid() && scr->get_language()->overrides_external_editor());
 	use_external_editor = use_external_editor && !(scr.is_valid() && scr->is_built_in()); // Ignore external editor for built-in scripts.
+	use_external_editor = use_external_editor && !p_force_builtin_editor;
 	const bool open_dominant = EDITOR_GET("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
@@ -2835,7 +2840,7 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 	open_textfile_after_create = false;
 }
 
-Ref<Resource> ScriptEditor::open_file(const String &p_file) {
+Ref<Resource> ScriptEditor::open_file(const String &p_file, bool p_force_internal_editor) {
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
@@ -2846,7 +2851,7 @@ Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 			return Ref<Resource>();
 		}
 
-		edit(scr);
+		edit(scr, true, p_force_internal_editor);
 		return scr;
 	}
 
@@ -2858,7 +2863,7 @@ Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 	}
 
 	if (text_file.is_valid()) {
-		edit(text_file);
+		edit(text_file, true, p_force_internal_editor);
 		return text_file;
 	}
 	return Ref<Resource>();
@@ -3247,7 +3252,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 				continue;
 			}
 
-			Ref<Resource> res = open_file(file);
+			Ref<Resource> res = open_file(file, true);
 			if (res.is_valid()) {
 				const int num_tabs = tab_container->get_tab_count();
 				if (num_tabs > num_tabs_before) {
