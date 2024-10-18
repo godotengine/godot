@@ -413,20 +413,8 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 
 void PopupMenu::_parent_focused() {
 	if (is_embedded()) {
-		Point2 mouse_pos_adjusted;
-		Window *window_parent = Object::cast_to<Window>(get_parent()->get_viewport());
-		while (window_parent) {
-			if (!window_parent->is_embedded()) {
-				mouse_pos_adjusted += window_parent->get_position();
-				break;
-			}
-
-			window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
-		}
-
 		Rect2 safe_area = get_embedder()->subwindow_get_popup_safe_rect(this);
-		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
-		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
+		if (safe_area == Rect2i() || !safe_area.has_point(get_embedder_mouse_position())) {
 			Popup::_parent_focused();
 		} else {
 			grab_focus();
@@ -1149,7 +1137,7 @@ void PopupMenu::_notification(int p_what) {
 
 			// Only used when using operating system windows.
 			if (!activated_by_keyboard && !is_embedded() && autohide_areas.size()) {
-				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
+				Point2 mouse_pos = get_embedder_mouse_position();
 				mouse_pos -= get_position();
 
 				for (const Rect2 &E : autohide_areas) {

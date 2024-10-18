@@ -1361,8 +1361,39 @@ Vector2 Viewport::get_mouse_position() const {
 		return xform.affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
 	} else {
 		// Fallback to Input for getting mouse position in case of emulated mouse.
+		// Reports wrong coordinates, when used in an unfocused native Window.
 		return get_screen_transform_internal().affine_inverse().xform(Input::get_singleton()->get_mouse_position());
 	}
+}
+
+Vector2 Viewport::get_embedder_mouse_position() const {
+	// Return the mouse position in the coordinate system of the Viewport, where this is embedded.
+	// If this is a non-embedded Window, return the mouse position of the DisplayServer, if it supports it.
+	ERR_READ_THREAD_GUARD_V(Vector2());
+
+	const Window *w = Object::cast_to<Window>(this);
+	if (w) {
+		Viewport *e = w->get_embedder();
+		if (e) {
+			return e->get_mouse_position();
+		}
+		// Viewport is a native Window.
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
+			return DisplayServer::get_singleton()->mouse_get_position();
+		}
+		// Fallback to Input for getting mouse position in case of emulated mouse.
+		// Reports wrong coordinates, when used in an unfocused native Window.
+		return Input::get_singleton()->get_mouse_position();
+	}
+
+	// This is a SubViewport.
+	Window *b = get_base_window();
+	if (b) {
+		return b->get_embedder_mouse_position();
+	}
+
+	// Case that SubViewport is not directly attached to screen.
+	return gui.last_mouse_pos;
 }
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
@@ -2431,6 +2462,10 @@ Window *Viewport::get_base_window() const {
 	Viewport *v = const_cast<Viewport *>(this);
 	Window *w = Object::cast_to<Window>(v);
 	while (!w) {
+		if (!Object::cast_to<SubViewportContainer>(v->get_parent())) {
+			// In this case there is no meaningful Window to return.
+			return nullptr;
+		}
 		v = v->get_parent_viewport();
 		w = Object::cast_to<Window>(v);
 	}
