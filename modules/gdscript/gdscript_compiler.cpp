@@ -232,6 +232,8 @@ static bool _is_exact_type(const PropertyInfo &p_par_type, const GDScriptDataTyp
 }
 
 static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+	ERR_FAIL_NULL_V(p_method, false);
+
 	if (p_method->is_vararg()) {
 		// Validated call won't work with vararg methods.
 		return false;
@@ -643,7 +645,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							self.mode = GDScriptCodeGenerator::Address::SELF;
 							MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
 
-							if (_can_use_validate_call(method, arguments)) {
+							if (method && _can_use_validate_call(method, arguments)) {
 								// Exact arguments, use validated call.
 								gen->write_call_method_bind_validated(result, self, method, arguments);
 							} else {
@@ -677,7 +679,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								// It's a static native method call.
 								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
 								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
-								if (_can_use_validate_call(method, arguments)) {
+								if (method && _can_use_validate_call(method, arguments)) {
 									// Exact arguments, use validated call.
 									gen->write_call_native_static_validated(result, method, arguments);
 								} else {
@@ -701,7 +703,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									}
 									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
-										if (_can_use_validate_call(method, arguments)) {
+										if (method && _can_use_validate_call(method, arguments)) {
 											// Exact arguments, use validated call.
 											gen->write_call_method_bind_validated(result, base, method, arguments);
 										} else {
