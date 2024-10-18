@@ -382,6 +382,7 @@ public:
 		String type;
 		String enumeration;
 		bool is_bitfield = false;
+		String qualifiers;
 		String description;
 		String setter, getter;
 		String default_value;
@@ -411,6 +412,10 @@ public:
 				if (p_dict.has("is_bitfield")) {
 					doc.is_bitfield = p_dict["is_bitfield"];
 				}
+			}
+
+			if (p_dict.has("qualifiers")) {
+				doc.qualifiers = p_dict["qualifiers"];
 			}
 
 			if (p_dict.has("description")) {
@@ -477,6 +482,10 @@ public:
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
 				dict["is_bitfield"] = p_doc.is_bitfield;
+			}
+
+			if (!p_doc.qualifiers.is_empty()) {
+				dict["qualifiers"] = p_doc.qualifiers;
 			}
 
 			if (!p_doc.description.is_empty()) {
