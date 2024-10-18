@@ -305,7 +305,11 @@ RID MultiMesh::get_rid() const {
 }
 
 void MultiMesh::set_use_colors(bool p_enable) {
-	ERR_FAIL_COND(instance_count > 0);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, instance_count, RS::MultimeshTransformFormat(transform_format), p_enable, use_custom_data);
+	} else {
+		ERR_FAIL_COND(instance_count > 0);
+	}
 	use_colors = p_enable;
 }
 
@@ -314,7 +318,11 @@ bool MultiMesh::is_using_colors() const {
 }
 
 void MultiMesh::set_use_custom_data(bool p_enable) {
-	ERR_FAIL_COND(instance_count > 0);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, instance_count, RS::MultimeshTransformFormat(transform_format), use_colors, p_enable);
+	} else {
+		ERR_FAIL_COND(instance_count > 0);
+	}
 	use_custom_data = p_enable;
 }
 
@@ -323,7 +331,11 @@ bool MultiMesh::is_using_custom_data() const {
 }
 
 void MultiMesh::set_transform_format(TransformFormat p_transform_format) {
-	ERR_FAIL_COND(instance_count > 0);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, instance_count, RS::MultimeshTransformFormat(p_transform_format), use_colors, use_custom_data);
+	} else {
+		ERR_FAIL_COND(instance_count > 0);
+	}
 	transform_format = p_transform_format;
 }
 
