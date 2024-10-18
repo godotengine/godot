@@ -207,6 +207,9 @@ android {
             } else {
                 signingConfig null
             }
+
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
