@@ -573,6 +573,9 @@ Variant ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::Scalar> default_value = uniform.default_value;
+		if (default_value.is_empty()) {
+			return ShaderLanguage::get_default_datatype_value(uniform.type, uniform.array_size, uniform.hint);
+		}
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
