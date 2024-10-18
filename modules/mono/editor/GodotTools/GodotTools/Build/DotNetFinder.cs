@@ -50,6 +50,20 @@ namespace GodotTools.Build
             if (string.IsNullOrEmpty(dotNetExe))
                 return false;
 
+            // Detect default sdk installed in the system (the newest, usually).
+            if (!GetDotnetVersion(dotNetExe, null, out var systemSdkVersion))
+            {
+                // This should never happen, dotnet always has at least one sdk installed.
+                return false;
+            }
+
+            // Check whether the project requires a different sdk version from the default we detected above.
+            if (GetDotnetVersion(dotNetExe, Environment.CurrentDirectory, out version) && version != systemSdkVersion)
+            {
+                // The project has a required sdk version, use that one instead of the one we guessed.
+                expectedVersion = version;
+            }
+
             using Process process = new Process();
             process.StartInfo = new ProcessStartInfo(dotNetExe, "--list-sdks")
             {
@@ -98,7 +112,15 @@ namespace GodotTools.Build
                 if (!Version.TryParse(sdkLineParts[0], out var lineVersion))
                     continue;
 
-                // We're looking for the exact same major version
+                // This is the exact version we're looking for.
+                if (lineVersion == expectedVersion)
+                {
+                    latestVersionMatch = lineVersion;
+                    matchPath = sdkLineParts[1].TrimStart('[').TrimEnd(']');
+                    break;
+                }
+
+                // We're looking for the exact same major version.
                 if (lineVersion.Major != expectedVersion.Major)
                     continue;
 
@@ -116,6 +138,49 @@ namespace GodotTools.Build
             path = Path.Combine(matchPath!, version.ToString());
 
             return true;
+        }
+
+        private static bool GetDotnetVersion(string dotNetExe, [CanBeNull] string projectPath, out Version version)
+        {
+            version = null;
+
+            var lines = new List<string>();
+
+            using Process process = new Process();
+
+            process.StartInfo = new ProcessStartInfo(dotNetExe, "--version")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                WorkingDirectory = projectPath ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            };
+
+            if (OperatingSystem.IsWindows())
+            {
+                process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+            }
+
+            process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                    lines.Add(e.Data);
+            };
+
+            try
+            {
+                process.Start();
+            }
+            catch
+            {
+                return false;
+            }
+
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+
+            return lines.Count > 0 && Version.TryParse(lines[0].Trim(), out version);
         }
     }
 }
