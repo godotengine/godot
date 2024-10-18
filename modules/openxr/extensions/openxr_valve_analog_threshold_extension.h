@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_editor_plugin.cpp                                              */
+/*  openxr_valve_analog_threshold_extension.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,76 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_editor_plugin.h"
+#ifndef OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
+#define OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
 
-#include "../action_map/openxr_action_map.h"
+#include "../action_map/openxr_binding_modifier.h"
+#include "../util.h"
+#include "core/io/resource.h"
+#include "openxr_extension_wrapper.h"
 
-#include "editor/editor_command_palette.h"
-#include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
+#ifdef TOOLS_ENABLED
+#include "../editor/openxr_binding_modifier_editor.h"
+#endif // TOOLS_ENABLED
 
-void OpenXREditorPlugin::edit(Object *p_node) {
-	if (Object::cast_to<OpenXRActionMap>(p_node)) {
-		String path = Object::cast_to<OpenXRActionMap>(p_node)->get_path();
-		if (path.is_resource_file()) {
-			action_map_editor->open_action_map(path);
-		}
-	}
-}
+class OpenXRValveAnalogThresholdExtension : public OpenXRExtensionWrapper {
+public:
+	static OpenXRValveAnalogThresholdExtension *get_singleton();
 
-bool OpenXREditorPlugin::handles(Object *p_node) const {
-	return (Object::cast_to<OpenXRActionMap>(p_node) != nullptr);
-}
+	OpenXRValveAnalogThresholdExtension();
+	virtual ~OpenXRValveAnalogThresholdExtension() override;
 
-void OpenXREditorPlugin::make_visible(bool p_visible) {
-}
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
-OpenXREditorPlugin::OpenXREditorPlugin() {
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRAnalogThresholdModifier", "OpenXRAnalogThresholdEditor");
-	OpenXRActionMapEditor::register_binding_modifier_editor("OpenXRDpadBindingModifier", "OpenXRDpadBindingEditor");
+	bool is_available();
 
-	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_bottom_panel()->add_item(TTR("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTR("Toggle OpenXR Action Map Bottom Panel")));
+private:
+	static OpenXRValveAnalogThresholdExtension *singleton;
 
-#ifndef ANDROID_ENABLED
-	select_runtime = memnew(OpenXRSelectRuntime);
-	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
-#endif
-}
+	bool binding_modifier_ext = false;
+	bool threshold_ext = false;
+};
 
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}
+class OpenXRAnalogThresholdModifier : public OpenXRBindingModifier {
+	GDCLASS(OpenXRAnalogThresholdModifier, OpenXRBindingModifier);
+
+private:
+	XrInteractionProfileAnalogThresholdVALVE analog_threshold;
+
+protected:
+	static void _bind_methods();
+
+public:
+	OpenXRAnalogThresholdModifier();
+
+	void set_on_threshold(float p_threshold);
+	float get_on_threshold() const;
+
+	void set_off_threshold(float p_threshold);
+	float get_off_threshold() const;
+
+	virtual String get_description() const override { return "Analog threshold modifier"; }
+	virtual PackedByteArray get_ip_modification() override;
+};
+
+#ifdef TOOLS_ENABLED
+
+class OpenXRAnalogThresholdEditor : public OpenXRBindingModifierEditor {
+	GDCLASS(OpenXRAnalogThresholdEditor, OpenXRBindingModifierEditor);
+
+private:
+	EditorPropertyFloat *on_threshold_property = nullptr;
+	EditorPropertyFloat *off_threshold_property = nullptr;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void set_binding_modifier(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier) override;
+
+	OpenXRAnalogThresholdEditor();
+};
+
+#endif // TOOLS_ENABLED
+
+#endif // OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H

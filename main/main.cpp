@@ -2604,6 +2604,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 
+	// OpenXR Binding modifier settings
+	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/analog_threshold", false);
+	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/dpad_binding", false);
+
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
 
