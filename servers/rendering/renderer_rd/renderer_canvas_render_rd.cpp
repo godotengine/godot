@@ -993,36 +993,43 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	Vector<Color> cc;
 	cc.push_back(Color(p_far, p_far, p_far, 1.0));
 
+	Projection projection;
+	{
+		real_t fov = 90;
+		real_t nearp = p_near;
+		real_t farp = p_far;
+		real_t aspect = 1.0;
+
+		real_t ymax = nearp * Math::tan(Math::deg_to_rad(fov * 0.5));
+		real_t ymin = -ymax;
+		real_t xmin = ymin * aspect;
+		real_t xmax = ymax * aspect;
+
+		projection.set_frustum(xmin, xmax, ymin, ymax, nearp, farp);
+	}
+
+	// Precomputed:
+	// Vector3 cam_target = Basis::from_euler(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
+	// projection = projection * Projection(Transform3D().looking_at(cam_targets[i], Vector3(0, 0, -1)).affine_inverse());
+	const Projection projections[4] = {
+		projection * Projection(Vector4(0, 0, -1, 0), Vector4(1, 0, 0, 0), Vector4(0, -1, 0, 0), Vector4(0, 0, 0, 1)),
+
+		projection * Projection(Vector4(-1, 0, 0, 0), Vector4(0, 0, -1, 0), Vector4(0, -1, 0, 0), Vector4(0, 0, 0, 1)),
+
+		projection * Projection(Vector4(0, 0, 1, 0), Vector4(-1, 0, 0, 0), Vector4(0, -1, 0, 0), Vector4(0, 0, 0, 1)),
+
+		projection * Projection(Vector4(1, 0, 0, 0), Vector4(0, 0, 1, 0), Vector4(0, -1, 0, 0), Vector4(0, 0, 0, 1))
+
+	};
+
 	for (int i = 0; i < 4; i++) {
-		//make sure it remains orthogonal, makes easy to read angle later
-
-		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
-
 		Rect2i rect((state.shadow_texture_size / 4) * i, p_shadow_index * 2, (state.shadow_texture_size / 4), 2);
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
-
-		Projection projection;
-		{
-			real_t fov = 90;
-			real_t nearp = p_near;
-			real_t farp = p_far;
-			real_t aspect = 1.0;
-
-			real_t ymax = nearp * Math::tan(Math::deg_to_rad(fov * 0.5));
-			real_t ymin = -ymax;
-			real_t xmin = ymin * aspect;
-			real_t xmax = ymax * aspect;
-
-			projection.set_frustum(xmin, xmax, ymin, ymax, nearp, farp);
-		}
-
-		Vector3 cam_target = Basis::from_euler(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
-		projection = projection * Projection(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
 		ShadowRenderPushConstant push_constant;
 		for (int y = 0; y < 4; y++) {
 			for (int x = 0; x < 4; x++) {
-				push_constant.projection[y * 4 + x] = projection.columns[y][x];
+				push_constant.projection[y * 4 + x] = projections[i].columns[y][x];
 			}
 		}
 		static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
