@@ -35,6 +35,7 @@
 
 #import "ios.h"
 #import "joypad_ios.h"
+#import "virtual_controller_ios.h"
 
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
@@ -61,6 +62,8 @@ private:
 	JoypadIOS *joypad_ios = nullptr;
 
 	MainLoop *main_loop = nullptr;
+
+	IOSVirtualController *virtual_controller = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -127,11 +130,17 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	virtual VirtualController *get_virtual_controller() const override;
+
 	void on_focus_out();
 	void on_focus_in();
 
 	void on_enter_background();
 	void on_exit_background();
+
+	void controller_connected();
+
+	void controller_disconnected();
 };
 
 #endif // IOS_ENABLED

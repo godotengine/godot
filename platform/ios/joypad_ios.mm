@@ -184,6 +184,8 @@ void JoypadIOS::start_processing() {
 	} else {
 		[self addiOSJoypad:controller];
 	}
+
+	OS_IOS::get_singleton()->controller_connected();
 }
 
 - (void)controllerWasDisconnected:(NSNotification *)notification {
@@ -203,6 +205,8 @@ void JoypadIOS::start_processing() {
 		// and remove it from our dictionary
 		[self.connectedJoypads removeObjectForKey:key];
 	}
+
+	OS_IOS::get_singleton()->controller_disconnected();
 }
 
 - (GCControllerPlayerIndex)getFreePlayerIndex {
