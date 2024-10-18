@@ -1300,7 +1300,7 @@ void Thread::_start_func(void *ud) {
 	}
 
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %d: %s.", func_name, t->get_id(), Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce)));
 	}
 }
 
