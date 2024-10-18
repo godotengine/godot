@@ -27,6 +27,9 @@ namespace HumanAnim
             real_local_pose.clear();
             for(auto& it : p_config.virtual_pose) {
                 real_local_pose[it.key] = it.value.rotation;
+				Transform3D& trans = real_pose[it.key];
+				trans.basis = Basis(it.value.rotation);
+				trans.origin = it.value.position;
             }            
         }
 
@@ -106,10 +109,10 @@ namespace HumanAnim
             p_skeleton->_update_bones_nested_set();
 			p_skeleton->force_update_all_bone_transforms(false);
 
-			auto root_bones = p_skeleton->get_root_bones();
+			auto rbs = p_skeleton->get_root_bones();
 
 
-            for(int root_bone = 0; root_bone < root_bones.size(); ++root_bone){
+            for(int root_bone = 0; root_bone < rbs.size(); ++root_bone){
 
                 StringName bone_name = p_skeleton->get_bone_name(root_bone);
                 BonePose pose;
@@ -365,6 +368,7 @@ namespace HumanAnim
                 Basis rot;
                 rot.rotate_to_align( pose.forward, p_skeleton_config.global_lookat[it]);
                 trans.basis = Basis(pose.rotation) * rot;
+				trans.origin = pose.position + p_skeleton_config.root_position[it];
                 p_skeleton_config.real_local_pose[it] = trans.basis.get_rotation_quaternion();
 
 				p_skeleton_config.root_rotion[it] = rot.get_rotation_quaternion();
@@ -568,11 +572,17 @@ namespace HumanAnim
             for(auto& it : pose.child_bones) {
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
-                trans.origin = pose.position;
-                trans.basis = Basis(pose.rotation);
                 trans = parent_trans * trans;
+				Vector3 forward = pose.forward;
+				if (pose.child_bones.size() > 0) {
+					Transform3D & child_trans = p_skeleton_config.real_pose[pose.child_bones[0]];
+					forward = child_trans.origin - trans.origin;
+				}
+				else {
+					forward = trans.origin - parent_trans.origin;
+				}
 
-                rot.rotate_to_align(trans.basis.xform(pose.forward), p_skeleton_config.global_lookat[it] - trans.origin);
+                rot.rotate_to_align(forward, p_skeleton_config.global_lookat[it] - trans.origin);
 
                 trans.origin = pose.position;
                 trans.basis = trans.basis * rot;
