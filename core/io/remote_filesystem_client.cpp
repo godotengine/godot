@@ -154,7 +154,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	ERR_FAIL_COND_V_MSG(!ip.is_valid(), ERR_INVALID_PARAMETER, "Unable to resolve remote filesystem server hostname: " + p_host);
 	print_verbose(vformat("Remote Filesystem: Connecting to host %s, port %d.", ip, p_port));
 	Error err = tcp_client->connect_to_host(ip, p_port);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Unable to open connection to remote file server (" + String(p_host) + ", port " + itos(p_port) + ") failed.");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Unable to open connection to remote file server (%s, port %d) failed.", String(p_host), p_port));
 
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
 		tcp_client->poll();
@@ -162,7 +162,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	}
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-		ERR_FAIL_V_MSG(ERR_CANT_CONNECT, "Connection to remote file server (" + String(p_host) + ", port " + itos(p_port) + ") failed.");
+		ERR_FAIL_V_MSG(ERR_CANT_CONNECT, vformat("Connection to remote file server (%s, port %d) failed.", String(p_host), p_port));
 	}
 
 	// Connection OK, now send the current file state.

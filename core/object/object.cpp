@@ -1210,7 +1210,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
-					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(callable, args, argc, ce) + ".");
+					ERR_PRINT(vformat("Error calling from signal '%s' to callable: %s.", String(p_name), Variant::get_callable_error_text(callable, args, argc, ce)));
 					err = ERR_METHOD_NOT_FOUND;
 				}
 			}
@@ -1377,9 +1377,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		// FIXME: This branch should probably removed in favor of the `is_valid()` branch, but there exist some classes
 		// that call `connect()` before they are fully registered with ClassDB. Until all such classes can be found
 		// and registered soon enough this branch is needed to allow `connect()` to succeed.
-		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+		ERR_FAIL_NULL_V_MSG(p_callable.get_object(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s' to callable '%s': the callable object is null.", p_signal, p_callable));
 	} else {
-		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "': the provided callable is not valid: " + p_callable);
+		ERR_FAIL_COND_V_MSG(!p_callable.is_valid(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s': the provided callable is not valid: '%s'.", p_signal, p_callable));
 	}
 
 	SignalData *s = signal_map.getptr(p_signal);
@@ -1400,7 +1400,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 #endif
 		}
 
-		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
+		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("In Object of type '%s': Attempt to connect nonexistent signal '%s' to callable '%s'.", String(get_class()), p_signal, p_callable));
 
 		signal_map[p_signal] = SignalData();
 		s = &signal_map[p_signal];
@@ -1412,7 +1412,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 			s->slot_map[*p_callable.get_base_comparator()].reference_count++;
 			return OK;
 		} else {
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Signal '%s' is already connected to given callable '%s' in that object.", p_signal, p_callable));
 		}
 	}
 
@@ -1486,11 +1486,11 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
-		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
-	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
+	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in '%s'.", p_signal, to_string()));
 
-	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
+	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 
 	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 

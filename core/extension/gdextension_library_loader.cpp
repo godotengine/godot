@@ -219,7 +219,7 @@ Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
-		ERR_PRINT("GDExtension entry point '" + entry_symbol + "' not found in library " + library_path);
+		ERR_PRINT(vformat("GDExtension entry point '%s' not found in library %s.", entry_symbol, library_path));
 		return err;
 	}
 
