@@ -689,12 +689,22 @@ void WSLPeer::poll() {
 			close(-1);
 			return;
 		}
-		if (wslay_event_get_close_sent(wsl_ctx) && wslay_event_get_close_received(wsl_ctx)) {
-			// Clean close.
-			wslay_event_context_free(wsl_ctx);
-			wsl_ctx = nullptr;
-			close(-1);
-			return;
+		if (wslay_event_get_close_sent(wsl_ctx)) {
+			if (wslay_event_get_close_received(wsl_ctx)) {
+				// Clean close.
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			} else if (wslay_event_get_status_code_sent(wsl_ctx) == WSLAY_CODE_MESSAGE_TOO_BIG) {
+				// wslay seems to completely stop processing incoming events after receiving a message that's too big.
+				close_reason = "Message Too Big";
+				close_code = 1009;
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
 		}
 	}
 }
