@@ -153,7 +153,7 @@ public:
 	bool is_flushing() const;
 	int get_max_buffer_usage() const;
 
-	CallQueue(Allocator *p_custom_allocator = 0, uint32_t p_max_pages = 8192, const String &p_error_text = String());
+	CallQueue(Allocator *p_custom_allocator = nullptr, uint32_t p_max_pages = 8192, const String &p_error_text = String());
 	virtual ~CallQueue();
 };
 
