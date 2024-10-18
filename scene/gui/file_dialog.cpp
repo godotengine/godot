@@ -138,7 +138,7 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 				int filter_slice_count = flt.get_slice_count(",");
 				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
-					if (f.match(str)) {
+					if (f.matchn(str)) {
 						valid = true;
 						break;
 					}
@@ -473,7 +473,7 @@ void FileDialog::_action_pressed() {
 				String flt = filters[i].get_slice(";", 0);
 				for (int j = 0; j < flt.get_slice_count(","); j++) {
 					String str = flt.get_slice(",", j).strip_edges();
-					if (f.match(str)) {
+					if (f.matchn(str)) {
 						valid = true;
 						break;
 					}
@@ -492,7 +492,7 @@ void FileDialog::_action_pressed() {
 				int filterSliceCount = flt.get_slice_count(",");
 				for (int j = 0; j < filterSliceCount; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
-					if (f.match(str)) {
+					if (f.matchn(str)) {
 						valid = true;
 						break;
 					}
