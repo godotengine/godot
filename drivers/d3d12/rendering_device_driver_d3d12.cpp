@@ -2003,6 +2003,8 @@ static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::Text
 	switch (p_texture_layout) {
 		case RDD::TEXTURE_LAYOUT_UNDEFINED:
 			return D3D12_BARRIER_LAYOUT_UNDEFINED;
+		case RDD::TEXTURE_LAYOUT_GENERAL:
+			return D3D12_BARRIER_LAYOUT_COMMON;
 		case RDD::TEXTURE_LAYOUT_STORAGE_OPTIMAL:
 			return D3D12_BARRIER_LAYOUT_UNORDERED_ACCESS;
 		case RDD::TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
@@ -6175,6 +6177,8 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 			return false;
 		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
 			return false;
+		case API_TRAIT_USE_GENERAL_IN_COPY_QUEUES:
+			return true;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
