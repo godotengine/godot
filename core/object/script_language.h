@@ -190,17 +190,6 @@ public:
 	Script() {}
 };
 
-class ScriptCodeCompletionCache {
-	static ScriptCodeCompletionCache *singleton;
-
-public:
-	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
-
-	ScriptCodeCompletionCache();
-
-	virtual ~ScriptCodeCompletionCache() {}
-};
-
 class ScriptLanguage : public Object {
 	GDCLASS(ScriptLanguage, Object)
 
