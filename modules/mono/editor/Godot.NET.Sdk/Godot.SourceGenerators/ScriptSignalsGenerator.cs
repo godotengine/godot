@@ -282,7 +282,7 @@ namespace Godot.SourceGenerators
                     .Append(" -= value;\n")
                     .Append("}\n");
 
-                // Generate On{EventName} method to raise the event
+                // Generate EmitSignal{EventName} method to raise the event
 
                 var invokeMethodSymbol = signalDelegate.InvokeMethodData.Method;
                 int paramCount = invokeMethodSymbol.Parameters.Length;
@@ -291,7 +291,7 @@ namespace Godot.SourceGenerators
                     "private" :
                     "protected";
 
-                source.Append($"    {raiseMethodModifiers} void On{signalName}(");
+                source.Append($"    {raiseMethodModifiers} void EmitSignal{signalName}(");
                 for (int i = 0; i < paramCount; i++)
                 {
                     var paramSymbol = invokeMethodSymbol.Parameters[i];
