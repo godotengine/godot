@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  class_view.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef CLASS_VIEW_H
+#define CLASS_VIEW_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "../snapshot_data.h"
+#include "scene/gui/tree.h"
+#include "snapshot_view.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+struct ClassData {
+	ClassData() {}
+	ClassData(String p_name, String p_parent) :
+			class_name(p_name), parent_class_name(p_parent) {}
+	String class_name;
+	String parent_class_name;
+	HashSet<String> child_classes;
+	List<SnapshotDataObject *> instances;
+	TreeItem *tree_node;
+	HashMap<GameStateSnapshot *, int> recursive_instance_count_cache;
 
-	void _inspect_shader(RID p_shader);
-
-protected:
-	static void _bind_methods();
-
-public:
-	EditorNativeShaderSourceVisualizer();
+	int instance_count(GameStateSnapshot *p_snapshot = nullptr);
+	int get_recursive_instance_count(HashMap<String, ClassData> &p_all_classes, GameStateSnapshot *p_snapshot = nullptr);
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+// Bootstrapped by the plugin
+class SnapshotClassView : public SnapshotView {
+	GDCLASS(SnapshotClassView, SnapshotView);
+
+protected:
+	Tree *class_tree;
+	Tree *object_list;
+	Tree *diff_object_list;
+
+	void _object_selected(Tree *p_tree);
+	void _class_selected();
+	void _add_objects_to_class_map(HashMap<String, ClassData> &p_class_map, GameStateSnapshot *p_objects);
+	void _notification(int p_what);
+
+	Tree *_make_object_list_tree(const String &p_column_name);
+	void _populate_object_list(GameStateSnapshot *p_snapshot, Tree *p_list, const String &p_name_base);
+
+public:
+	SnapshotClassView();
+	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
+};
+
+#endif // CLASS_VIEW_H

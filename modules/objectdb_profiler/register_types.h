@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef OBJECTDB_PROFILER_REGISTER_TYPES_H
+#define OBJECTDB_PROFILER_REGISTER_TYPES_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "modules/register_module_types.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+// yes, the word in the middle must be the same as the module folder name
+void initialize_objectdb_profiler_module(ModuleInitializationLevel p_level);
+void uninitialize_objectdb_profiler_module(ModuleInitializationLevel p_level);
 
-	void _inspect_shader(RID p_shader);
-
-protected:
-	static void _bind_methods();
-
-public:
-	EditorNativeShaderSourceVisualizer();
-};
-
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#endif // OBJECTDB_PROFILER_REGISTER_TYPES_H

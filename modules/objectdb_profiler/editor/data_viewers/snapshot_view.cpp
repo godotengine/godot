@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  snapshot_view.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#include "snapshot_view.h"
+#include "../snapshot_data.h"
+#include "scene/gui/label.h"
+#include "scene/gui/rich_text_label.h"
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+void SnapshotView::clear_snapshot() {
+	snapshot_data = nullptr;
+	diff_data = nullptr;
+	for (int i = 0; i < get_child_count(); i++) {
+		get_child(i)->queue_free();
+	}
+}
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+void SnapshotView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
+	clear_snapshot();
+	snapshot_data = p_data;
+	diff_data = p_diff_data;
+}
 
-	void _inspect_shader(RID p_shader);
+bool SnapshotView::is_showing_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
+	return p_data == snapshot_data && p_diff_data == diff_data;
+}
 
-protected:
-	static void _bind_methods();
-
-public:
-	EditorNativeShaderSourceVisualizer();
-};
-
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+List<TreeItem *> SnapshotView::_get_children_recursive(Tree *p_tree) {
+	List<TreeItem *> found_items;
+	List<TreeItem *> items_to_check;
+	if (p_tree && p_tree->get_root()) {
+		items_to_check.push_back(p_tree->get_root());
+	}
+	while (items_to_check.size() > 0) {
+		TreeItem *to_check = items_to_check.get(0);
+		items_to_check.pop_front();
+		found_items.push_back(to_check);
+		for (int i = 0; i < to_check->get_child_count(); i++) {
+			items_to_check.push_back(to_check->get_child(i));
+		}
+	}
+	return found_items;
+}

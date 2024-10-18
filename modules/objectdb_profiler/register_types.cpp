@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#include "register_types.h"
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#ifdef TOOLS_ENABLED
+#include "editor/objectdb_profiler_plugin.h"
+#endif // TOOLS_ENABLED
+#include "snapshot_collector.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+void initialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<ObjectDBProfilerPlugin>();
+	}
+#endif // TOOLS_ENABLED
 
-	void _inspect_shader(RID p_shader);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		SnapshotCollector::initialize();
+	}
+}
 
-protected:
-	static void _bind_methods();
-
-public:
-	EditorNativeShaderSourceVisualizer();
-};
-
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+void uninitialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		SnapshotCollector::deinitialize();
+	}
+}
