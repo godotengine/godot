@@ -1691,6 +1691,10 @@ void main() {
 			if (light_index == 0xFF) {
 				break;
 			}
+			
+			if(!bool(omni_lights.data[light_index].mask & instances.data[draw_call.instance_index].layer_mask)){
+				continue; //not masked
+			}
 
 			float shadow = light_process_omni_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
 
