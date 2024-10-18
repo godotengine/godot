@@ -46,8 +46,8 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL1RC(bool, _handles, String)
-	GDVIRTUAL3RC(Ref<Texture2D>, _generate, Ref<Resource>, Vector2i, Dictionary)
-	GDVIRTUAL3RC(Ref<Texture2D>, _generate_from_path, String, Vector2i, Dictionary)
+	GDVIRTUAL2RC(Dictionary, _generate, Ref<Resource>, Vector2i)
+	GDVIRTUAL2RC(Dictionary, _generate_from_path, String, Vector2i)
 	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
 	GDVIRTUAL0RC(bool, _can_generate_small_preview)
 

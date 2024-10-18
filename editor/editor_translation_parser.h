@@ -42,7 +42,7 @@ class EditorTranslationParserPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3(_parse_file, String, TypedArray<String>, TypedArray<Array>)
+	GDVIRTUAL1R(Dictionary, _parse_file, String)
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
 
 public:

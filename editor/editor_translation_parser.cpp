@@ -38,25 +38,28 @@
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	TypedArray<String> ids;
-	TypedArray<Array> ids_ctx_plural;
+	Dictionary ret;
 
-	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
-		// Add user's extracted translatable messages.
-		for (int i = 0; i < ids.size(); i++) {
-			r_ids->append(ids[i]);
+	if (GDVIRTUAL_CALL(_parse_file, p_path, ret)) {
+		// TODO: Errors for invalid return?
+		if (ret.has("ids")) {
+			TypedArray<String> ids = ret["ids"];
+			for (const String id : ids) {
+				r_ids->push_back(id);
+			}
 		}
 
-		// Add user's collected translatable messages with context or plurals.
-		for (int i = 0; i < ids_ctx_plural.size(); i++) {
-			Array arr = ids_ctx_plural[i];
-			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `parse_file()` method should have the form [\"message\", \"context\", \"plural message\"]");
+		if (ret.has("ids_ctx_plural")) {
+			TypedArray<Array> ids_ctx_plural = ret["ids_ctx_plural"];
+			for (const Array arr : ids_ctx_plural) {
+				ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `parse_file()` method should have the form [\"message\", \"context\", \"plural message\"]");
 
-			Vector<String> id_ctx_plural;
-			id_ctx_plural.push_back(arr[0]);
-			id_ctx_plural.push_back(arr[1]);
-			id_ctx_plural.push_back(arr[2]);
-			r_ids_ctx_plural->append(id_ctx_plural);
+				Vector<String> id_ctx_plural;
+				id_ctx_plural.push_back(arr[0]);
+				id_ctx_plural.push_back(arr[1]);
+				id_ctx_plural.push_back(arr[2]);
+				r_ids_ctx_plural->push_back(id_ctx_plural);
+			}
 		}
 		return OK;
 	} else {
@@ -77,7 +80,7 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	GDVIRTUAL_BIND(_parse_file, "path", "msgids", "msgids_context_plural");
+	GDVIRTUAL_BIND(_parse_file, "path");
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 }
 

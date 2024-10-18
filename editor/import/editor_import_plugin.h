@@ -51,7 +51,7 @@ protected:
 	GDVIRTUAL0RC(float, _get_priority)
 	GDVIRTUAL0RC(int, _get_import_order)
 	GDVIRTUAL3RC(bool, _get_option_visibility, String, StringName, Dictionary)
-	GDVIRTUAL5RC(Error, _import, String, String, Dictionary, TypedArray<String>, TypedArray<String>)
+	GDVIRTUAL3RC(Dictionary, _import, String, String, Dictionary)
 	GDVIRTUAL0RC(bool, _can_import_threaded)
 
 	Error _append_import_external_resource(const String &p_file, const Dictionary &p_custom_options = Dictionary(), const String &p_custom_importer = String(), Variant p_generator_parameters = Variant());
