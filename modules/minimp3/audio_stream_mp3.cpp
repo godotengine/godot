@@ -133,7 +133,10 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		return;
 	}
 
-	if (p_time >= mp3_stream->get_length()) {
+	double max = mp3_stream->get_length();
+	if (p_time < 0) {
+		p_time = 0;
+	} else if (p_time >= max) {
 		p_time = 0;
 	}
 

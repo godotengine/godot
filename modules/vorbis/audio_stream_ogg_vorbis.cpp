@@ -284,7 +284,10 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 		return;
 	}
 
-	if (p_time >= vorbis_stream->get_length()) {
+	double max = vorbis_stream->get_length();
+	if (p_time < 0) {
+		p_time = 0;
+	} else if (p_time >= max) {
 		p_time = 0;
 	}
 
