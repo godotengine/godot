@@ -39,41 +39,46 @@ class Button;
 class CanvasItemEditor;
 class ConfirmationDialog;
 
+struct Polygon2DEditorVertex {
+	int polygon = -1;
+	int vertex = -1;
+
+	Polygon2DEditorVertex() {}
+	Polygon2DEditorVertex(int p_vertex) :
+			vertex(p_vertex) {}
+	Polygon2DEditorVertex(int p_polygon, int p_vertex) :
+			polygon(p_polygon),
+			vertex(p_vertex) {}
+
+	bool operator==(const Polygon2DEditorVertex &p_vertex) const;
+	bool operator!=(const Polygon2DEditorVertex &p_vertex) const;
+
+	bool valid() const;
+};
+
+struct Polygon2DEditorPosVertex : public Polygon2DEditorVertex {
+	Vector2 pos;
+
+	Polygon2DEditorPosVertex() {}
+	Polygon2DEditorPosVertex(const Polygon2DEditorVertex &p_vertex, const Vector2 &p_pos) :
+			Polygon2DEditorVertex(p_vertex.polygon, p_vertex.vertex),
+			pos(p_pos) {}
+	Polygon2DEditorPosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
+			Polygon2DEditorVertex(p_polygon, p_vertex),
+			pos(p_pos) {}
+};
+
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
+protected:
+	using Vertex = Polygon2DEditorVertex;
+	using PosVertex = Polygon2DEditorPosVertex;
+
+private:
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
 	Button *button_delete = nullptr;
-
-	struct Vertex {
-		Vertex() {}
-		Vertex(int p_vertex) :
-				vertex(p_vertex) {}
-		Vertex(int p_polygon, int p_vertex) :
-				polygon(p_polygon),
-				vertex(p_vertex) {}
-
-		bool operator==(const Vertex &p_vertex) const;
-		bool operator!=(const Vertex &p_vertex) const;
-
-		bool valid() const;
-
-		int polygon = -1;
-		int vertex = -1;
-	};
-
-	struct PosVertex : public Vertex {
-		PosVertex() {}
-		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
-				Vertex(p_vertex.polygon, p_vertex.vertex),
-				pos(p_pos) {}
-		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
-				Vertex(p_polygon, p_vertex),
-				pos(p_pos) {}
-
-		Vector2 pos;
-	};
 
 	PosVertex edited_point;
 	Vertex hover_point; // point under mouse cursor
@@ -103,6 +108,7 @@ protected:
 	int mode = MODE_EDIT;
 
 	virtual void _menu_option(int p_option);
+
 	void _wip_changed();
 	void _wip_close();
 	void _wip_cancel();
@@ -117,13 +123,14 @@ protected:
 
 	bool _is_empty() const;
 
-	virtual Node2D *_get_node() const = 0;
-	virtual void _set_node(Node *p_polygon) = 0;
+	virtual Node2D *_get_target_node() const = 0;
+	virtual void _set_target_node(Node2D *p_node) = 0;
 
 	virtual bool _is_line() const;
 	virtual bool _has_uv() const;
 	virtual int _get_polygon_count() const;
 	virtual Vector2 _get_offset(int p_idx) const;
+
 	virtual Variant _get_polygon(int p_idx) const;
 	virtual void _set_polygon(int p_idx, const Variant &p_polygon) const;
 
@@ -142,27 +149,28 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
-	void edit(Node *p_polygon);
+	void edit(Node2D *p_polygon);
 	AbstractPolygon2DEditor(bool p_wip_destructive = true);
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
-	AbstractPolygon2DEditor *polygon_editor = nullptr;
-	String klass;
+protected:
+	AbstractPolygon2DEditor *editor = nullptr;
+	String target_class;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return polygon_editor->forward_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
 	bool has_main_screen() const override { return false; }
-	virtual String get_name() const override { return klass; }
+	virtual String get_name() const override { return target_class; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, const String &p_class);
+	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_editor, const String &p_target_class);
 	~AbstractPolygon2DEditorPlugin();
 };
 

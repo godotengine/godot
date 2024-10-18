@@ -33,38 +33,38 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
-Node2D *NavigationObstacle2DEditor::_get_node() const {
-	return node;
+Node2D *NavigationObstacle2DEditor::_get_target_node() const {
+	return target_obstacle;
 }
 
-void NavigationObstacle2DEditor::_set_node(Node *p_polygon) {
-	node = Object::cast_to<NavigationObstacle2D>(p_polygon);
+void NavigationObstacle2DEditor::_set_target_node(Node2D *p_node) {
+	target_obstacle = Object::cast_to<NavigationObstacle2D>(p_node);
 }
 
 Variant NavigationObstacle2DEditor::_get_polygon(int p_idx) const {
-	return node->get_vertices();
+	return target_obstacle->get_vertices();
 }
 
 void NavigationObstacle2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
-	node->set_vertices(p_polygon);
+	target_obstacle->set_vertices(p_polygon);
 }
 
 void NavigationObstacle2DEditor::_action_add_polygon(const Variant &p_polygon) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(node, "set_vertices", p_polygon);
-	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
+	undo_redo->add_do_method(target_obstacle, "set_vertices", p_polygon);
+	undo_redo->add_undo_method(target_obstacle, "set_vertices", target_obstacle->get_vertices());
 }
 
 void NavigationObstacle2DEditor::_action_remove_polygon(int p_idx) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(node, "set_vertices", Variant(Vector<Vector2>()));
-	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
+	undo_redo->add_do_method(target_obstacle, "set_vertices", Variant(Vector<Vector2>()));
+	undo_redo->add_undo_method(target_obstacle, "set_vertices", target_obstacle->get_vertices());
 }
 
 void NavigationObstacle2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->add_do_method(node, "set_vertices", p_polygon);
-	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
+	undo_redo->add_do_method(target_obstacle, "set_vertices", p_polygon);
+	undo_redo->add_undo_method(target_obstacle, "set_vertices", target_obstacle->get_vertices());
 }
 
 NavigationObstacle2DEditor::NavigationObstacle2DEditor() {}
