@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  collision_polygon_3d.h                                                */
+/*  editor_configuration_info.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,57 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_POLYGON_3D_H
-#define COLLISION_POLYGON_3D_H
+#ifndef EDITOR_CONFIGURATION_INFO_H
+#define EDITOR_CONFIGURATION_INFO_H
 
-#include "scene/3d/node_3d.h"
-#include "scene/resources/3d/shape_3d.h"
+#include "core/object/configuration_info.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 
-class CollisionObject3D;
-class CollisionPolygon3D : public Node3D {
-	GDCLASS(CollisionPolygon3D, Node3D);
-	real_t margin = 0.04;
-
-protected:
-	real_t depth = 1.0;
-	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
-	Vector<Point2> polygon;
-
-	uint32_t owner_id = 0;
-	CollisionObject3D *collision_object = nullptr;
-
-	bool disabled = false;
-
-	void _build_polygon();
-
-	void _update_in_shape_owner(bool p_xform_only = false);
-
-	bool _is_editable_3d_polygon() const;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
+class EditorConfigurationInfo {
 public:
-	void set_depth(real_t p_depth);
-	real_t get_depth() const;
+	EditorConfigurationInfo() {}
 
-	void set_polygon(const Vector<Point2> &p_polygon);
-	Vector<Point2> get_polygon() const;
+	static Vector<ConfigurationInfo> get_configuration_info(Object *p_object);
+	static ConfigurationInfo::Severity get_max_severity(const Vector<ConfigurationInfo> &p_config_infos);
+	static StringName get_severity_icon(ConfigurationInfo::Severity p_severity);
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
-
-	virtual AABB get_item_rect() const;
-
-	real_t get_margin() const;
-	void set_margin(real_t p_margin);
-
-#ifdef TOOLS_ENABLED
-	Vector<ConfigurationInfo> get_configuration_info() const override;
-#endif
-
-	CollisionPolygon3D();
+	static Vector<ConfigurationInfo> filter_list_for_property(const Vector<ConfigurationInfo> &p_config_infos, const StringName &p_property_name);
+	static String format_as_string(const ConfigurationInfo &p_config_info, bool p_wrap_lines, bool p_prefix_property_name);
+	static String format_list_as_string(const Vector<ConfigurationInfo> &p_config_infos, bool p_wrap_lines, bool p_prefix_property_name);
 };
 
-#endif // COLLISION_POLYGON_3D_H
+#endif // EDITOR_CONFIGURATION_INFO_H

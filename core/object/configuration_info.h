@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  collision_polygon_3d.h                                                */
+/*  configuration_info.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,57 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_POLYGON_3D_H
-#define COLLISION_POLYGON_3D_H
-
-#include "scene/3d/node_3d.h"
-#include "scene/resources/3d/shape_3d.h"
-
-class CollisionObject3D;
-class CollisionPolygon3D : public Node3D {
-	GDCLASS(CollisionPolygon3D, Node3D);
-	real_t margin = 0.04;
-
-protected:
-	real_t depth = 1.0;
-	AABB aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
-	Vector<Point2> polygon;
-
-	uint32_t owner_id = 0;
-	CollisionObject3D *collision_object = nullptr;
-
-	bool disabled = false;
-
-	void _build_polygon();
-
-	void _update_in_shape_owner(bool p_xform_only = false);
-
-	bool _is_editable_3d_polygon() const;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void set_depth(real_t p_depth);
-	real_t get_depth() const;
-
-	void set_polygon(const Vector<Point2> &p_polygon);
-	Vector<Point2> get_polygon() const;
-
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
-
-	virtual AABB get_item_rect() const;
-
-	real_t get_margin() const;
-	void set_margin(real_t p_margin);
+#ifndef CONFIGURATION_INFO_H
+#define CONFIGURATION_INFO_H
 
 #ifdef TOOLS_ENABLED
-	Vector<ConfigurationInfo> get_configuration_info() const override;
+
+#include "core/templates/hash_set.h"
+#include "core/variant/variant.h"
+
+#ifdef ERROR
+#undef ERROR // Define from Windows APIs
 #endif
 
-	CollisionPolygon3D();
+#define CONFIG_WARNING(message) infos.push_back(ConfigurationInfo(message, "", ConfigurationInfo::Severity::WARNING));
+#define CONFIG_WARNING_P(message, property_name) infos.push_back(ConfigurationInfo(message, property_name, ConfigurationInfo::Severity::WARNING));
+
+class ConfigurationInfo {
+public:
+	enum class Severity {
+		INFO,
+		WARNING,
+		ERROR,
+		MAX,
+		NONE = -1,
+	};
+
+private:
+	String message;
+	StringName property_name;
+	Severity severity;
+
+	inline static HashSet<String> queued_errors_to_print;
+
+	static void queue_error_print(const String &p_error);
+	static void _print_errors_from_queue();
+
+public:
+	static void (*configuration_info_changed_func)(Object *p_object);
+
+	static ConfigurationInfo from_variant(const Variant &p_variant);
+	static Severity string_to_severity(const String &p_severity);
+
+	bool ensure_valid(Object *p_owner) const;
+	String get_message() const { return message; }
+	StringName get_property_name() const { return property_name; }
+	Severity get_severity() const { return severity; }
+
+	bool operator==(const ConfigurationInfo &p_val) const {
+		return (message == p_val.message) &&
+				(property_name == p_val.property_name) &&
+				(severity == p_val.severity);
+	}
+
+	ConfigurationInfo();
+	ConfigurationInfo(const Dictionary &p_dict);
+	ConfigurationInfo(const String &p_message, const StringName &p_property_name = StringName(), Severity p_severity = Severity::WARNING);
 };
 
-#endif // COLLISION_POLYGON_3D_H
+#endif // TOOLS_ENABLED
+
+#endif // CONFIGURATION_INFO_H
