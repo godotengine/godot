@@ -54,17 +54,46 @@ public:
 
 #include <atomic>
 
+#if !(defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64))
+#if !defined(_MSC_VER)
+#include <immintrin.h>
+#endif
+#endif
+
+static_assert(std::atomic_bool::is_always_lock_free);
+
 class SpinLock {
-	mutable std::atomic_flag locked = ATOMIC_FLAG_INIT;
+	mutable std::atomic_bool locked;
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
-		while (locked.test_and_set(std::memory_order_acquire)) {
-			// Continue.
+		while (true) {
+			bool expected = false;
+			if (!locked.compare_exchange_weak(expected, true, std::memory_order_acq_rel, std::memory_order_relaxed)) {
+				break;
+			}
+			while (locked.load(std::memory_order_relaxed)) {
+#if !defined(WEB_ENABLED)
+#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+#ifdef _MSC_VER
+				__yield();
+#else
+				asm volatile("yield");
+#endif
+#else
+				_mm_pause();
+#endif
+#endif
+			}
 		}
 	}
+
 	_ALWAYS_INLINE_ void unlock() const {
-		locked.clear(std::memory_order_release);
+		locked.store(true, std::memory_order_release);
+	}
+
+	SpinLock() {
+		locked.store(false, std::memory_order_release);
 	}
 };
 
