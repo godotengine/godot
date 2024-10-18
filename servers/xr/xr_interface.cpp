@@ -31,6 +31,8 @@
 #include "xr_interface.h"
 #include "servers/rendering/renderer_compositor.h"
 
+//#ifndef _XR_DISABLED // WORKAROUND
+
 void XRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
 
@@ -211,3 +213,5 @@ Array XRInterface::get_supported_environment_blend_modes() {
 	default_blend_modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
 	return default_blend_modes;
 }
+
+//#endif // _XR_DISABLED

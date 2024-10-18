@@ -112,10 +112,12 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 
 		copy_to_fb.shader.initialize(copy_modes);
 
+#ifndef _XR_DISABLED
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			copy_to_fb.shader.set_variant_enabled(COPY_TO_FB_MULTIVIEW, false);
 			copy_to_fb.shader.set_variant_enabled(COPY_TO_FB_MULTIVIEW_WITH_DEPTH, false);
 		}
+#endif // _XR_DISABLED
 
 		copy_to_fb.shader_version = copy_to_fb.shader.version_create();
 
@@ -268,12 +270,14 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 
 		specular_merge.shader.initialize(specular_modes);
 
+#ifndef _XR_DISABLED
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_ADD_MULTIVIEW, false);
 			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_SSR_MULTIVIEW, false);
 			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_ADDITIVE_ADD_MULTIVIEW, false);
 			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_ADDITIVE_SSR_MULTIVIEW, false);
 		}
+#endif // _XR_DISABLED
 
 		specular_merge.shader_version = specular_merge.shader.version_create();
 

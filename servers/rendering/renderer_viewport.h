@@ -39,9 +39,9 @@
 #include "servers/rendering_server.h"
 #include "storage/render_scene_buffers.h"
 
-#ifndef _3D_DISABLED
+#ifndef _XR_DISABLED
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
+#endif // _XR_DISABLED
 
 class RendererViewport {
 public:
@@ -52,8 +52,10 @@ public:
 		RID self;
 		RID parent;
 
+#ifndef _XR_DISABLED
 		// use xr interface to override camera positioning and projection matrices and control output
 		bool use_xr = false;
+#endif //  _XR_DISABLED
 
 		Size2i internal_size;
 		Size2i size;
@@ -177,7 +179,9 @@ public:
 			snap_2d_transforms_to_pixel = false;
 			snap_2d_vertices_to_pixel = false;
 
+#ifndef _XR_DISABLED
 			use_xr = false;
+#endif // _XR_DISABLED
 			sdf_active = false;
 
 			time_cpu_begin = 0;
@@ -220,7 +224,9 @@ public:
 	RID viewport_allocate();
 	void viewport_initialize(RID p_rid);
 
+#ifndef _XR_DISABLED
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
+#endif // _XR_DISABLED
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
