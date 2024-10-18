@@ -888,6 +888,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/default_create_reset_tracks", true, true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/animation/default_bezier_key_behavior", 0, "Horizontal,Linear,Balanced Automatic,Mirrored Automatic");
 
 	// Shader editor
 	_initial_set("editors/shader_editor/behavior/files/restore_shaders_on_load", true, true);

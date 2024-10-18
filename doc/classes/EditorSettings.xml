@@ -504,6 +504,13 @@
 		<member name="editors/animation/onion_layers_past_color" type="Color" setter="" getter="">
 			The modulate color to use for "past" frames displayed in the animation editor's onion skinning feature.
 		</member>
+		<member name="editors/animation/default_bezier_key_behavior" type="int" setter="" getter="">
+			The default behavior for newly created Bezier keys in the animation editor.
+			- [b]Horizontal:[/b] Both tangents are fully horizontal regardless of the key's previous and next values.
+			- [b]Linear:[/b] Key is set to linear with no tangents.
+			- [b]Balanced Automatic:[/b] Both tangents are rotated to match the key's previous and next values. The tangents' length is adjusted according to the distance between the previous and next values. If the key that is being added has no previous or next value, only one of the two tangents will be defined.
+			- [b]Mirrored Automatic:[/b] Both tangents are rotated to match the key's previous and next values. The tangents' length is adjusted according to the distance between the previous and next values, but their length is forced to be equal.
+		</member>
 		<member name="editors/bone_mapper/handle_colors/error" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/bone_mapper/handle_colors/missing" type="Color" setter="" getter="">
