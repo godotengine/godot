@@ -7061,6 +7061,7 @@ EditorNode::EditorNode() {
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
+	scene_root->set_transparent_background(true);
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
