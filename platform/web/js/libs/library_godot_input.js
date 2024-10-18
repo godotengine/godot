@@ -454,6 +454,13 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
 const GodotInput = {
 	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
 	$GodotInput: {
+		skipPreventDefaultKeyCodes: [
+			// All 24 function keys.
+			'F1', 'F2', 'F3', 'F4', 'F5', 'F6',
+			'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+			'F13', 'F14', 'F15', 'F16', 'F17', 'F18',
+			'F19', 'F20', 'F21', 'F22', 'F23', 'F24',
+		],
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
 		},
@@ -569,7 +576,10 @@ const GodotInput = {
 			GodotRuntime.stringToHeap(evt.code, code, 32);
 			GodotRuntime.stringToHeap(evt.key, key, 32);
 			func(pressed, evt.repeat, modifiers);
-			evt.preventDefault();
+			const modified = evt.altKey || evt.ctrlKey || evt.shiftKey || evt.metaKey;
+			if (!modified && !GodotInput.skipPreventDefaultKeyCodes.includes(evt.code) && evt.cancelable) {
+				evt.preventDefault();
+			}
 		}
 		GodotEventListeners.add(GodotConfig.canvas, 'keydown', key_cb.bind(null, 1), false);
 		GodotEventListeners.add(GodotConfig.canvas, 'keyup', key_cb.bind(null, 0), false);
