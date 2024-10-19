@@ -126,10 +126,9 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("path\\.\\filename"), "res://path/filename");
 #endif
 
-	// FIXME?: These checks pass, but that doesn't seems correct
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "res://filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "res://path/filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "res://path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "../filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "../path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "../path/filename");
 
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/filename"), "/testroot/filename");
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/path/filename"), "/testroot/path/filename");
