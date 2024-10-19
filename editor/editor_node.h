@@ -487,6 +487,7 @@ private:
 	String import_reload_fn;
 
 	HashSet<String> textfile_extensions;
+	HashSet<String> other_file_extensions;
 	HashSet<FileDialog *> file_dialogs;
 	HashSet<EditorFileDialog *> editor_file_dialogs;
 
@@ -845,6 +846,8 @@ public:
 	};
 
 	HashMap<int, SceneModificationsEntry> scenes_modification_table;
+	List<String> scenes_reimported;
+	List<String> resources_reimported;
 
 	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
 

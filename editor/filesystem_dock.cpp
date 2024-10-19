@@ -270,7 +270,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		List<FileInfo> file_list;
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 			String file_type = p_dir->get_file_type(i);
-			if (file_type != "TextFile" && _is_file_type_disabled_by_feature_profile(file_type)) {
+			if (file_type != "TextFile" && file_type != "OtherFile" && _is_file_type_disabled_by_feature_profile(file_type)) {
 				// If type is disabled, file won't be displayed.
 				continue;
 			}
@@ -1306,6 +1306,15 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	set_process(false);
+}
+
+void FileSystemDock::_directory_created(const String &p_path) {
+	if (!DirAccess::exists(p_path)) {
+		return;
+	}
+	EditorFileSystem::get_singleton()->add_new_directory(p_path);
+	_update_tree(get_uncollapsed_paths());
+	_update_file_list(true);
 }
 
 void FileSystemDock::_set_scanning_mode() {
@@ -4138,7 +4147,7 @@ FileSystemDock::FileSystemDock() {
 
 	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
-	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_rescan).unbind(1));
+	make_dir_dialog->connect("dir_created", callable_mp(this, &FileSystemDock::_directory_created));
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);

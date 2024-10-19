@@ -816,6 +816,7 @@ void EditorNode::_notification(int p_what) {
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 				HashSet<String> updated_textfile_extensions;
+				HashSet<String> updated_other_file_extensions;
 				bool extensions_match = true;
 				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 				for (const String &E : textfile_ext) {
@@ -824,9 +825,17 @@ void EditorNode::_notification(int p_what) {
 						extensions_match = false;
 					}
 				}
+				const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+				for (const String &E : other_file_ext) {
+					updated_other_file_extensions.insert(E);
+					if (extensions_match && !other_file_extensions.has(E)) {
+						extensions_match = false;
+					}
+				}
 
-				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size()) {
+				if (!extensions_match || updated_textfile_extensions.size() < textfile_extensions.size() || updated_other_file_extensions.size() < other_file_extensions.size()) {
 					textfile_extensions = updated_textfile_extensions;
+					other_file_extensions = updated_other_file_extensions;
 					EditorFileSystem::get_singleton()->scan();
 				}
 			}
@@ -1072,30 +1081,32 @@ void EditorNode::_resources_reimporting(const Vector<String> &p_resources) {
 	// the inherited scene. Then, get_modified_properties_for_node will return the mesh property,
 	// which will trigger a recopy of the previous mesh, preventing the reload.
 	scenes_modification_table.clear();
-	List<String> scenes;
+	scenes_reimported.clear();
+	resources_reimported.clear();
+	EditorFileSystem *editor_file_system = EditorFileSystem::get_singleton();
 	for (const String &res_path : p_resources) {
-		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
-			scenes.push_back(res_path);
+		// It's faster to use EditorFileSystem::get_file_type than fetching the resource type from disk.
+		// This makes a big difference when reimporting many resources.
+		String file_type = editor_file_system->get_file_type(res_path);
+		if (file_type.is_empty()) {
+			file_type = ResourceLoader::get_resource_type(res_path);
+		}
+		if (file_type == "PackedScene") {
+			scenes_reimported.push_back(res_path);
+		} else {
+			resources_reimported.push_back(res_path);
 		}
 	}
 
-	if (scenes.size() > 0) {
-		preload_reimporting_with_path_in_edited_scenes(scenes);
+	if (scenes_reimported.size() > 0) {
+		preload_reimporting_with_path_in_edited_scenes(scenes_reimported);
 	}
 }
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
-	List<String> scenes;
 	int current_tab = scene_tabs->get_current_tab();
 
-	for (const String &res_path : p_resources) {
-		String file_type = ResourceLoader::get_resource_type(res_path);
-		if (file_type == "PackedScene") {
-			scenes.push_back(res_path);
-			// Reload later if needed, first go with normal resources.
-			continue;
-		}
-
+	for (const String &res_path : resources_reimported) {
 		if (!ResourceCache::has(res_path)) {
 			// Not loaded, no need to reload.
 			continue;
@@ -1109,15 +1120,19 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	// Editor may crash when related animation is playing while re-importing GLTF scene, stop it in advance.
 	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
-	if (ap && scenes.size() > 0) {
+	if (ap && scenes_reimported.size() > 0) {
 		ap->stop(true);
 	}
 
-	for (const String &E : scenes) {
+	for (const String &E : scenes_reimported) {
 		reload_scene(E);
 	}
 
 	reload_instances_with_path_in_edited_scenes();
+
+	scenes_modification_table.clear();
+	scenes_reimported.clear();
+	resources_reimported.clear();
 
 	_set_current_scene_nocheck(current_tab);
 }
@@ -1303,6 +1318,9 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	} else if (textfile_extensions.has(p_resource.get_extension())) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
+	} else if (other_file_extensions.has(p_resource.get_extension())) {
+		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
+		return OK;
 	}
 	ERR_FAIL_COND_V(!res.is_valid(), ERR_CANT_OPEN);
 
@@ -5236,6 +5254,8 @@ void EditorNode::save_editor_layout_delayed() {
 }
 
 void EditorNode::_load_editor_layout() {
+	EditorProgress ep("loading_editor_layout", TTR("Loading editor"), 5);
+	ep.step(TTR("Loading editor layout..."), 0, true);
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -5257,11 +5277,19 @@ void EditorNode::_load_editor_layout() {
 		return;
 	}
 
+	ep.step(TTR("Loading docks..."), 1, true);
 	editor_dock_manager->load_docks_from_config(config, "docks");
+
+	ep.step(TTR("Reopening scenes..."), 2, true);
 	_load_open_scenes_from_config(config);
+
+	ep.step(TTR("Loading central editor layout..."), 3, true);
 	_load_central_editor_layout_from_config(config);
 
+	ep.step(TTR("Loading plugin window layout..."), 4, true);
 	editor_data.set_plugin_window_layout(config);
+
+	ep.step(TTR("Editor layout ready."), 5, true);
 }
 
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
@@ -6329,8 +6357,6 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 	editor_data.restore_edited_scene_state(editor_selection, &editor_history);
 
-	scenes_modification_table.clear();
-
 	progress.step(TTR("Reloading done."), editor_data.get_edited_scene_count());
 }
 
@@ -6902,6 +6928,10 @@ EditorNode::EditorNode() {
 	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {
 		textfile_extensions.insert(E);
+	}
+	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
+	for (const String &E : other_file_ext) {
+		other_file_extensions.insert(E);
 	}
 
 	resource_preview = memnew(EditorResourcePreview);

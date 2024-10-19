@@ -205,8 +205,11 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
+			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
+		</member>
 		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
-			List of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files).
+			A comma separated list of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files), e.g. [code]"txt,md,cfg,ini,log,json,yml,yaml,toml,xml"[/code].
 		</member>
 		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].

@@ -65,7 +65,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
 	bool changed = _set_only(p_name, p_value);
-	if (changed) {
+	if (changed && initialized) {
 		changed_settings.insert(p_name);
 		emit_signal(SNAME("settings_changed"));
 	}
@@ -330,6 +330,10 @@ bool EditorSettings::has_default_value(const String &p_setting) const {
 	return props[p_setting].has_default_value;
 }
 
+void EditorSettings::_set_initialized() {
+	initialized = true;
+}
+
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_THREAD_SAFE_METHOD_
 // Sets up the editor setting with a default value and hint PropertyInfo.
@@ -586,6 +590,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
+	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
 
 	// Property editor
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "docks/property_editor/auto_refresh_interval", 0.2, "0.01,1,0.001"); // Update 5 times per second by default.
@@ -1926,7 +1931,5 @@ EditorSettings::EditorSettings() {
 	last_order = 0;
 
 	_load_defaults();
-}
-
-EditorSettings::~EditorSettings() {
+	callable_mp(this, &EditorSettings::_set_initialized).call_deferred();
 }
