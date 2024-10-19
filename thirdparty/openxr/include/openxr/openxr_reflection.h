@@ -86,6 +86,8 @@ XR_ENUM_STR(XrResult);
     _(XR_ERROR_LOCALIZED_NAME_INVALID, -49) \
     _(XR_ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING, -50) \
     _(XR_ERROR_RUNTIME_UNAVAILABLE, -51) \
+    _(XR_ERROR_EXTENSION_DEPENDENCY_NOT_ENABLED, -1000710001) \
+    _(XR_ERROR_PERMISSION_INSUFFICIENT, -1000710000) \
     _(XR_ERROR_ANDROID_THREAD_SETTINGS_ID_INVALID_KHR, -1000003000) \
     _(XR_ERROR_ANDROID_THREAD_SETTINGS_FAILURE_KHR, -1000003001) \
     _(XR_ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT, -1000039001) \
@@ -135,10 +137,13 @@ XR_ENUM_STR(XrResult);
     _(XR_ERROR_SPACE_NETWORK_REQUEST_FAILED_FB, -1000169003) \
     _(XR_ERROR_SPACE_CLOUD_STORAGE_DISABLED_FB, -1000169004) \
     _(XR_ERROR_PASSTHROUGH_COLOR_LUT_BUFFER_SIZE_MISMATCH_META, -1000266000) \
+    _(XR_ENVIRONMENT_DEPTH_NOT_AVAILABLE_META, 1000291000) \
     _(XR_ERROR_HINT_ALREADY_SET_QCOM, -1000306000) \
     _(XR_ERROR_NOT_AN_ANCHOR_HTC, -1000319000) \
     _(XR_ERROR_SPACE_NOT_LOCATABLE_EXT, -1000429000) \
     _(XR_ERROR_PLANE_DETECTION_PERMISSION_DENIED_EXT, -1000429001) \
+    _(XR_ERROR_FUTURE_PENDING_EXT, -1000469001) \
+    _(XR_ERROR_FUTURE_INVALID_EXT, -1000469002) \
     _(XR_RESULT_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrStructureType(_) \
@@ -192,6 +197,9 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_ACTIONS_SYNC_INFO, 61) \
     _(XR_TYPE_BOUND_SOURCES_FOR_ACTION_ENUMERATE_INFO, 62) \
     _(XR_TYPE_INPUT_SOURCE_LOCALIZED_NAME_GET_INFO, 63) \
+    _(XR_TYPE_SPACES_LOCATE_INFO, 1000471000) \
+    _(XR_TYPE_SPACE_LOCATIONS, 1000471001) \
+    _(XR_TYPE_SPACE_VELOCITIES, 1000471002) \
     _(XR_TYPE_COMPOSITION_LAYER_CUBE_KHR, 1000006000) \
     _(XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR, 1000008000) \
     _(XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR, 1000010000) \
@@ -457,6 +465,14 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB, 1000287014) \
     _(XR_TYPE_FACE_EXPRESSION_INFO2_FB, 1000287015) \
     _(XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB, 1000287016) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_PROVIDER_CREATE_INFO_META, 1000291000) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_CREATE_INFO_META, 1000291001) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_STATE_META, 1000291002) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_ACQUIRE_INFO_META, 1000291003) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_VIEW_META, 1000291004) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META, 1000291005) \
+    _(XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META, 1000291006) \
+    _(XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META, 1000291007) \
     _(XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC, 1000317001) \
     _(XR_TYPE_PASSTHROUGH_COLOR_HTC, 1000317002) \
     _(XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC, 1000317003) \
@@ -478,6 +494,10 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_PLANE_DETECTOR_LOCATION_EXT, 1000429005) \
     _(XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT, 1000429006) \
     _(XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT, 1000429007) \
+    _(XR_TYPE_FUTURE_CANCEL_INFO_EXT, 1000469000) \
+    _(XR_TYPE_FUTURE_POLL_INFO_EXT, 1000469001) \
+    _(XR_TYPE_FUTURE_COMPLETION_EXT, 1000469002) \
+    _(XR_TYPE_FUTURE_POLL_RESULT_EXT, 1000469003) \
     _(XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT, 1000470000) \
     _(XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT, 1000470001) \
     _(XR_STRUCTURE_TYPE_MAX_ENUM, 0x7FFFFFFF)
@@ -490,7 +510,7 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_ENUM_XrViewConfigurationType(_) \
     _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO, 1) \
     _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 2) \
-    _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_QUAD_VARJO, 1000037000) \
+    _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO_WITH_FOVEATED_INSET, 1000037000) \
     _(XR_VIEW_CONFIGURATION_TYPE_SECONDARY_MONO_FIRST_PERSON_OBSERVER_MSFT, 1000054000) \
     _(XR_VIEW_CONFIGURATION_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
@@ -504,10 +524,10 @@ XR_ENUM_STR(XrResult);
     _(XR_REFERENCE_SPACE_TYPE_VIEW, 1) \
     _(XR_REFERENCE_SPACE_TYPE_LOCAL, 2) \
     _(XR_REFERENCE_SPACE_TYPE_STAGE, 3) \
+    _(XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR, 1000426000) \
     _(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, 1000038000) \
     _(XR_REFERENCE_SPACE_TYPE_COMBINED_EYE_VARJO, 1000121000) \
     _(XR_REFERENCE_SPACE_TYPE_LOCALIZATION_MAP_ML, 1000139000) \
-    _(XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR_EXT, 1000426000) \
     _(XR_REFERENCE_SPACE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrActionType(_) \
@@ -566,6 +586,8 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_SPACE_USER_FB, 1000241000) \
     _(XR_OBJECT_TYPE_PASSTHROUGH_COLOR_LUT_META, 1000266000) \
     _(XR_OBJECT_TYPE_FACE_TRACKER2_FB, 1000287012) \
+    _(XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_PROVIDER_META, 1000291000) \
+    _(XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_META, 1000291001) \
     _(XR_OBJECT_TYPE_PASSTHROUGH_HTC, 1000317000) \
     _(XR_OBJECT_TYPE_PLANE_DETECTOR_EXT, 1000429000) \
     _(XR_OBJECT_TYPE_MAX_ENUM, 0x7FFFFFFF)
@@ -1377,6 +1399,11 @@ XR_ENUM_STR(XrResult);
     _(XR_PLANE_DETECTION_STATE_FATAL_EXT, 4) \
     _(XR_PLANE_DETECTION_STATE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrFutureStateEXT(_) \
+    _(XR_FUTURE_STATE_PENDING_EXT, 1) \
+    _(XR_FUTURE_STATE_READY_EXT, 2) \
+    _(XR_FUTURE_STATE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrHeadsetFitStatusML(_) \
     _(XR_HEADSET_FIT_STATUS_UNKNOWN_ML, 0) \
     _(XR_HEADSET_FIT_STATUS_NOT_WORN_ML, 1) \
@@ -1424,6 +1451,7 @@ XR_ENUM_STR(XrResult);
     _(XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT, 0x00000001) \
     _(XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT, 0x00000002) \
     _(XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT, 0x00000004) \
+    _(XR_COMPOSITION_LAYER_INVERTED_ALPHA_BIT_EXT, 0x00000008) \
 
 #define XR_LIST_BITS_XrViewStateFlags(_) \
     _(XR_VIEW_STATE_ORIENTATION_VALID_BIT, 0x00000001) \
@@ -1572,6 +1600,10 @@ XR_ENUM_STR(XrResult);
     _(XR_PERFORMANCE_METRICS_COUNTER_ANY_VALUE_VALID_BIT_META, 0x00000001) \
     _(XR_PERFORMANCE_METRICS_COUNTER_UINT_VALUE_VALID_BIT_META, 0x00000002) \
     _(XR_PERFORMANCE_METRICS_COUNTER_FLOAT_VALUE_VALID_BIT_META, 0x00000004) \
+
+#define XR_LIST_BITS_XrEnvironmentDepthProviderCreateFlagsMETA(_)
+
+#define XR_LIST_BITS_XrEnvironmentDepthSwapchainCreateFlagsMETA(_)
 
 #define XR_LIST_BITS_XrFoveationDynamicFlagsHTC(_) \
     _(XR_FOVEATION_DYNAMIC_LEVEL_ENABLED_BIT_HTC, 0x00000001) \
@@ -2151,6 +2183,73 @@ XR_ENUM_STR(XrResult);
     _(layerApiVersion) \
     _(getInstanceProcAddr) \
     _(createApiLayerInstance) \
+
+/// Calls your macro with the name of each member of XrColor3f, in order.
+#define XR_LIST_STRUCT_XrColor3f(_) \
+    _(r) \
+    _(g) \
+    _(b) \
+
+/// Calls your macro with the name of each member of XrExtent3Df, in order.
+#define XR_LIST_STRUCT_XrExtent3Df(_) \
+    _(width) \
+    _(height) \
+    _(depth) \
+
+/// Calls your macro with the name of each member of XrSpheref, in order.
+#define XR_LIST_STRUCT_XrSpheref(_) \
+    _(center) \
+    _(radius) \
+
+/// Calls your macro with the name of each member of XrBoxf, in order.
+#define XR_LIST_STRUCT_XrBoxf(_) \
+    _(center) \
+    _(extents) \
+
+/// Calls your macro with the name of each member of XrFrustumf, in order.
+#define XR_LIST_STRUCT_XrFrustumf(_) \
+    _(pose) \
+    _(fov) \
+    _(nearZ) \
+    _(farZ) \
+
+/// Calls your macro with the name of each member of XrUuid, in order.
+#define XR_LIST_STRUCT_XrUuid(_) \
+    _(data) \
+
+/// Calls your macro with the name of each member of XrSpacesLocateInfo, in order.
+#define XR_LIST_STRUCT_XrSpacesLocateInfo(_) \
+    _(type) \
+    _(next) \
+    _(baseSpace) \
+    _(time) \
+    _(spaceCount) \
+    _(spaces) \
+
+/// Calls your macro with the name of each member of XrSpaceLocationData, in order.
+#define XR_LIST_STRUCT_XrSpaceLocationData(_) \
+    _(locationFlags) \
+    _(pose) \
+
+/// Calls your macro with the name of each member of XrSpaceLocations, in order.
+#define XR_LIST_STRUCT_XrSpaceLocations(_) \
+    _(type) \
+    _(next) \
+    _(locationCount) \
+    _(locations) \
+
+/// Calls your macro with the name of each member of XrSpaceVelocityData, in order.
+#define XR_LIST_STRUCT_XrSpaceVelocityData(_) \
+    _(velocityFlags) \
+    _(linearVelocity) \
+    _(angularVelocity) \
+
+/// Calls your macro with the name of each member of XrSpaceVelocities, in order.
+#define XR_LIST_STRUCT_XrSpaceVelocities(_) \
+    _(type) \
+    _(next) \
+    _(velocityCount) \
+    _(velocities) \
 
 /// Calls your macro with the name of each member of XrCompositionLayerCubeKHR, in order.
 #define XR_LIST_STRUCT_XrCompositionLayerCubeKHR(_) \
@@ -3231,10 +3330,6 @@ XR_ENUM_STR(XrResult);
     _(enabled) \
     _(changePending) \
 
-/// Calls your macro with the name of each member of XrUuidEXT, in order.
-#define XR_LIST_STRUCT_XrUuidEXT(_) \
-    _(data) \
-
 /// Calls your macro with the name of each member of XrEventDataSpatialAnchorCreateCompleteFB, in order.
 #define XR_LIST_STRUCT_XrEventDataSpatialAnchorCreateCompleteFB(_) \
     _(type) \
@@ -3857,12 +3952,6 @@ XR_ENUM_STR(XrResult);
     _(amplitudeCount) \
     _(amplitudes) \
 
-/// Calls your macro with the name of each member of XrExtent3DfFB, in order.
-#define XR_LIST_STRUCT_XrExtent3DfFB(_) \
-    _(width) \
-    _(height) \
-    _(depth) \
-
 /// Calls your macro with the name of each member of XrOffset3DfFB, in order.
 #define XR_LIST_STRUCT_XrOffset3DfFB(_) \
     _(x) \
@@ -4348,6 +4437,61 @@ XR_ENUM_STR(XrResult);
     _(dataSource) \
     _(time) \
 
+/// Calls your macro with the name of each member of XrEnvironmentDepthProviderCreateInfoMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthProviderCreateInfoMETA(_) \
+    _(type) \
+    _(next) \
+    _(createFlags) \
+
+/// Calls your macro with the name of each member of XrEnvironmentDepthSwapchainCreateInfoMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthSwapchainCreateInfoMETA(_) \
+    _(type) \
+    _(next) \
+    _(createFlags) \
+
+/// Calls your macro with the name of each member of XrEnvironmentDepthSwapchainStateMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthSwapchainStateMETA(_) \
+    _(type) \
+    _(next) \
+    _(width) \
+    _(height) \
+
+/// Calls your macro with the name of each member of XrEnvironmentDepthImageAcquireInfoMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthImageAcquireInfoMETA(_) \
+    _(type) \
+    _(next) \
+    _(space) \
+    _(displayTime) \
+
+/// Calls your macro with the name of each member of XrEnvironmentDepthImageViewMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthImageViewMETA(_) \
+    _(type) \
+    _(next) \
+    _(fov) \
+    _(pose) \
+
+/// Calls your macro with the name of each member of XrEnvironmentDepthImageMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthImageMETA(_) \
+    _(type) \
+    _(next) \
+    _(swapchainIndex) \
+    _(nearZ) \
+    _(farZ) \
+    _(views) \
+
+/// Calls your macro with the name of each member of XrEnvironmentDepthHandRemovalSetInfoMETA, in order.
+#define XR_LIST_STRUCT_XrEnvironmentDepthHandRemovalSetInfoMETA(_) \
+    _(type) \
+    _(next) \
+    _(enabled) \
+
+/// Calls your macro with the name of each member of XrSystemEnvironmentDepthPropertiesMETA, in order.
+#define XR_LIST_STRUCT_XrSystemEnvironmentDepthPropertiesMETA(_) \
+    _(type) \
+    _(next) \
+    _(supportsEnvironmentDepth) \
+    _(supportsHandRemoval) \
+
 /// Calls your macro with the name of each member of XrPassthroughCreateInfoHTC, in order.
 #define XR_LIST_STRUCT_XrPassthroughCreateInfoHTC(_) \
     _(type) \
@@ -4483,12 +4627,6 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(flags) \
 
-/// Calls your macro with the name of each member of XrExtent3DfEXT, in order.
-#define XR_LIST_STRUCT_XrExtent3DfEXT(_) \
-    _(width) \
-    _(height) \
-    _(depth) \
-
 /// Calls your macro with the name of each member of XrPlaneDetectorBeginInfoEXT, in order.
 #define XR_LIST_STRUCT_XrPlaneDetectorBeginInfoEXT(_) \
     _(type) \
@@ -4538,6 +4676,36 @@ XR_ENUM_STR(XrResult);
     _(vertexCapacityInput) \
     _(vertexCountOutput) \
     _(vertices) \
+
+/// Calls your macro with the name of each member of XrFutureCancelInfoEXT, in order.
+#define XR_LIST_STRUCT_XrFutureCancelInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(future) \
+
+/// Calls your macro with the name of each member of XrFuturePollInfoEXT, in order.
+#define XR_LIST_STRUCT_XrFuturePollInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(future) \
+
+/// Calls your macro with the name of each member of XrFutureCompletionBaseHeaderEXT, in order.
+#define XR_LIST_STRUCT_XrFutureCompletionBaseHeaderEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+
+/// Calls your macro with the name of each member of XrFutureCompletionEXT, in order.
+#define XR_LIST_STRUCT_XrFutureCompletionEXT(_) \
+    _(type) \
+    _(next) \
+    _(futureResult) \
+
+/// Calls your macro with the name of each member of XrFuturePollResultEXT, in order.
+#define XR_LIST_STRUCT_XrFuturePollResultEXT(_) \
+    _(type) \
+    _(next) \
+    _(state) \
 
 /// Calls your macro with the name of each member of XrEventDataUserPresenceChangedEXT, in order.
 #define XR_LIST_STRUCT_XrEventDataUserPresenceChangedEXT(_) \
@@ -4644,6 +4812,9 @@ XR_ENUM_STR(XrResult);
     _(XrEventDataReferenceSpaceChangePending, XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING) \
     _(XrEventDataInteractionProfileChanged, XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED) \
     _(XrHapticVibration, XR_TYPE_HAPTIC_VIBRATION) \
+    _(XrSpacesLocateInfo, XR_TYPE_SPACES_LOCATE_INFO) \
+    _(XrSpaceLocations, XR_TYPE_SPACE_LOCATIONS) \
+    _(XrSpaceVelocities, XR_TYPE_SPACE_VELOCITIES) \
     _(XrCompositionLayerCubeKHR, XR_TYPE_COMPOSITION_LAYER_CUBE_KHR) \
     _(XrCompositionLayerDepthInfoKHR, XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR) \
     _(XrCompositionLayerCylinderKHR, XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR) \
@@ -4873,6 +5044,14 @@ XR_ENUM_STR(XrResult);
     _(XrFaceTrackerCreateInfo2FB, XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB) \
     _(XrFaceExpressionInfo2FB, XR_TYPE_FACE_EXPRESSION_INFO2_FB) \
     _(XrFaceExpressionWeights2FB, XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB) \
+    _(XrEnvironmentDepthProviderCreateInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_PROVIDER_CREATE_INFO_META) \
+    _(XrEnvironmentDepthSwapchainCreateInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_CREATE_INFO_META) \
+    _(XrEnvironmentDepthSwapchainStateMETA, XR_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_STATE_META) \
+    _(XrEnvironmentDepthImageAcquireInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_ACQUIRE_INFO_META) \
+    _(XrEnvironmentDepthImageViewMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_VIEW_META) \
+    _(XrEnvironmentDepthImageMETA, XR_TYPE_ENVIRONMENT_DEPTH_IMAGE_META) \
+    _(XrEnvironmentDepthHandRemovalSetInfoMETA, XR_TYPE_ENVIRONMENT_DEPTH_HAND_REMOVAL_SET_INFO_META) \
+    _(XrSystemEnvironmentDepthPropertiesMETA, XR_TYPE_SYSTEM_ENVIRONMENT_DEPTH_PROPERTIES_META) \
     _(XrPassthroughCreateInfoHTC, XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC) \
     _(XrPassthroughColorHTC, XR_TYPE_PASSTHROUGH_COLOR_HTC) \
     _(XrPassthroughMeshTransformInfoHTC, XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC) \
@@ -4894,6 +5073,10 @@ XR_ENUM_STR(XrResult);
     _(XrPlaneDetectorLocationEXT, XR_TYPE_PLANE_DETECTOR_LOCATION_EXT) \
     _(XrPlaneDetectorLocationsEXT, XR_TYPE_PLANE_DETECTOR_LOCATIONS_EXT) \
     _(XrPlaneDetectorPolygonBufferEXT, XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT) \
+    _(XrFutureCancelInfoEXT, XR_TYPE_FUTURE_CANCEL_INFO_EXT) \
+    _(XrFuturePollInfoEXT, XR_TYPE_FUTURE_POLL_INFO_EXT) \
+    _(XrFutureCompletionEXT, XR_TYPE_FUTURE_COMPLETION_EXT) \
+    _(XrFuturePollResultEXT, XR_TYPE_FUTURE_POLL_RESULT_EXT) \
     _(XrEventDataUserPresenceChangedEXT, XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT) \
     _(XrSystemUserPresencePropertiesEXT, XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT) \
     _(XrEventDataHeadsetFitChangedML, XR_TYPE_EVENT_DATA_HEADSET_FIT_CHANGED_ML) \
@@ -5200,6 +5383,7 @@ XR_ENUM_STR(XrResult);
     _(XR_META_automatic_layer_filter, 272) \
     _(XR_META_touch_controller_plus, 280) \
     _(XR_FB_face_tracking2, 288) \
+    _(XR_META_environment_depth, 292) \
     _(XR_EXT_uuid, 300) \
     _(XR_EXT_hand_interaction, 303) \
     _(XR_QCOM_tracking_optimization_settings, 307) \
@@ -5213,9 +5397,13 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_hand_tracking_data_source, 429) \
     _(XR_EXT_plane_detection, 430) \
     _(XR_OPPO_controller_interaction, 454) \
+    _(XR_EXT_future, 470) \
     _(XR_EXT_user_presence, 471) \
+    _(XR_KHR_locate_spaces, 472) \
     _(XR_ML_user_calibration, 473) \
     _(XR_YVR_controller_interaction, 498) \
+    _(XR_EXT_composition_layer_inverted_alpha, 555) \
+    _(XR_KHR_maintenance1, 711) \
 
 
 
@@ -5289,6 +5477,14 @@ XR_ENUM_STR(XrResult);
     _(CreateApiLayerInstance, LOADER_VERSION_1_0) \
     _(NegotiateLoaderRuntimeInterface, LOADER_VERSION_1_0) \
     _(NegotiateLoaderApiLayerInterface, LOADER_VERSION_1_0) \
+
+
+/// For every function defined by XR_VERSION_1_1 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_VERSION_1_1(_) \
+    _(LocateSpaces, VERSION_1_1) \
 
 
 /// For every function defined by XR_KHR_android_thread_settings in this version of the spec,
@@ -5973,6 +6169,23 @@ XR_ENUM_STR(XrResult);
     _(GetFaceExpressionWeights2FB, FB_face_tracking2) \
 
 
+/// For every function defined by XR_META_environment_depth in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_environment_depth(_) \
+    _(CreateEnvironmentDepthProviderMETA, META_environment_depth) \
+    _(DestroyEnvironmentDepthProviderMETA, META_environment_depth) \
+    _(StartEnvironmentDepthProviderMETA, META_environment_depth) \
+    _(StopEnvironmentDepthProviderMETA, META_environment_depth) \
+    _(CreateEnvironmentDepthSwapchainMETA, META_environment_depth) \
+    _(DestroyEnvironmentDepthSwapchainMETA, META_environment_depth) \
+    _(EnumerateEnvironmentDepthSwapchainImagesMETA, META_environment_depth) \
+    _(GetEnvironmentDepthSwapchainStateMETA, META_environment_depth) \
+    _(AcquireEnvironmentDepthImageMETA, META_environment_depth) \
+    _(SetEnvironmentDepthHandRemovalMETA, META_environment_depth) \
+
+
 /// For every function defined by XR_QCOM_tracking_optimization_settings in this version of the spec,
 /// calls your macro with the function name and extension name.
 /// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
@@ -6026,6 +6239,15 @@ XR_ENUM_STR(XrResult);
     _(GetPlaneDetectionStateEXT, EXT_plane_detection) \
     _(GetPlaneDetectionsEXT, EXT_plane_detection) \
     _(GetPlanePolygonBufferEXT, EXT_plane_detection) \
+
+
+/// For every function defined by XR_EXT_future in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_future(_) \
+    _(PollFutureEXT, EXT_future) \
+    _(CancelFutureEXT, EXT_future) \
 
 
 /// For every function defined by XR_ML_user_calibration in this version of the spec,
