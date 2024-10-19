@@ -227,16 +227,12 @@ public:
 #endif
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
-	if (!classes.has(p_class)) {
-		return false;
-	}
-
-	StringName inherits = p_class;
-	while (inherits.operator String().length()) {
-		if (inherits == p_inherits) {
+	ClassInfo *c = classes.getptr(p_class);
+	while (c) {
+		if (c->name == p_inherits) {
 			return true;
 		}
-		inherits = _get_parent_class(inherits);
+		c = c->inherits_ptr;
 	}
 
 	return false;
