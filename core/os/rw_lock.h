@@ -43,11 +43,11 @@
 #endif
 
 class RWLock {
-	struct ThreadData;
+	struct ThreadMutex;
 
 	static int threads_number;
 
-	mutable ThreadData *threads_data = nullptr;
+	mutable ThreadMutex *threads_data = nullptr;
 	mutable THREADING_NAMESPACE::shared_timed_mutex mutex; // Used when OS singletom == nullptr;
 
 	static int get_thread_pos();

@@ -37,9 +37,9 @@
 
 int RWLock::threads_number = -1;
 
-struct RWLock::ThreadData {
-	uint8_t _offset[128 - sizeof(BinaryMutex) / 2];
-	SpinLock mtx;
+struct RWLock::ThreadMutex {
+	uint8_t _offset[64];
+	BinaryMutex mtx;
 };
 
 int RWLock::get_thread_pos() {
@@ -53,9 +53,9 @@ void RWLock::init() const {
 			threads_number = 1;
 		}
 	}
-	threads_data = (ThreadData *)memalloc(sizeof(ThreadData) * threads_number);
+	threads_data = (ThreadMutex *)memalloc(sizeof(ThreadMutex) * threads_number);
 	for (int i = 0; i < threads_number; i++) {
-		memnew_placement(&threads_data[i], ThreadData());
+		memnew_placement(&threads_data[i], ThreadMutex());
 	}
 }
 
@@ -113,7 +113,7 @@ void RWLock::write_unlock() {
 RWLock::~RWLock() {
 	if (threads_data != nullptr) {
 		for (int i = 0; i < threads_number; i++) {
-			threads_data[i].~ThreadData();
+			threads_data[i].~ThreadMutex();
 		}
 		memfree(threads_data);
 		threads_data = nullptr;

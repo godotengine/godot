@@ -1002,14 +1002,17 @@ class ObjectDB {
 #define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
 #define OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS 5
 #define OBJECTDB_SLOT_MAX_COUNT_BITS 24
-#define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
-#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
+#define OBJECTDB_SLOT_MAX_BLOCKS_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS) - 1)
+#define OBJECTDB_SLOT_MAX_POSITION_MASK ((uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS)) - 1)
+#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS + OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
+#define OBJECTDB_MAX_BLOCKS 22
+
 
 	union NextFree {
-		uint32_t slot : 27;
+		uint32_t position:29;
 		struct {
-			uint16_t block_number : 5;
-			uint16_t block_position : 22;
+			uint32_t block_number : 5;
+			uint32_t block_position : 22;
 		};
 	};
 
@@ -1020,11 +1023,15 @@ class ObjectDB {
 		Object *object = nullptr;
 	};
 
-	static ObjectSlot *blocks[];
-	static int blocks_max_sizes[];
+	static ObjectSlot *blocks[OBJECTDB_MAX_BLOCKS];
+	static int blocks_max_sizes[OBJECTDB_MAX_BLOCKS];
 
 	static uint32_t slot_count;
 	static uint32_t block_count;
+
+	static uint32_t slot_max;
+	static uint32_t block_max;
+
 	static BinaryMutex mutex;
 	static uint64_t validator_counter;
 
