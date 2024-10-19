@@ -318,15 +318,17 @@ public:
 		Vector<Pair<int, int>> last_matches = { { -1, -1 } }; // This value correspond to an impossible match
 		int location = LOCATION_OTHER;
 		String theme_color_name;
+		bool is_swizzling_component = false;
 
 		CodeCompletionOption() {}
 
-		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER, const String &p_theme_color_name = "") {
+		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER, const String &p_theme_color_name = "", bool p_is_swizzling_component = false) {
 			display = p_text;
 			insert_text = p_text;
 			kind = p_kind;
 			location = p_location;
 			theme_color_name = p_theme_color_name;
+			is_swizzling_component = p_is_swizzling_component;
 		}
 
 		TypedArray<int> get_option_characteristics(const String &p_base);

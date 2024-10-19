@@ -332,6 +332,10 @@ void ShaderTextEditor::_load_theme_settings() {
 		te->add_auto_brace_completion_pair("/*", "*/");
 	}
 
+	te->add_code_completion_swizzling_pattern("xyzw");
+	te->add_code_completion_swizzling_pattern("rgba");
+	te->add_code_completion_swizzling_pattern("stpq");
+
 	// Colorize preprocessor include strings.
 	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	syntax_highlighter->add_color_region("\"", "\"", string_color, false);

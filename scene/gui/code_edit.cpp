@@ -2099,6 +2099,14 @@ TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 	return prefixes;
 }
 
+void CodeEdit::add_code_completion_swizzling_pattern(const String &p_pattern) {
+	code_completion_swizzling_patterns.insert(p_pattern);
+}
+
+void CodeEdit::remove_code_completion_swizzling_pattern(const String &p_pattern) {
+	code_completion_swizzling_patterns.erase(p_pattern);
+}
+
 String CodeEdit::get_text_for_code_completion() const {
 	StringBuilder completion_text;
 	const int text_size = get_line_count();
@@ -2164,7 +2172,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	}
 }
 
-void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location) {
+void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location, bool p_is_swizzling_component) {
 	ScriptLanguage::CodeCompletionOption completion_option;
 	completion_option.kind = (ScriptLanguage::CodeCompletionKind)p_type;
 	completion_option.display = p_display_text;
@@ -2172,7 +2180,8 @@ void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const Strin
 	completion_option.font_color = p_text_color;
 	completion_option.icon = p_icon;
 	completion_option.default_value = p_value;
-	completion_option.location = p_location;
+	completion_option.location = p_is_swizzling_component ? p_location + 1 : p_location;
+	completion_option.is_swizzling_component = p_is_swizzling_component;
 	code_completion_option_submitted.push_back(completion_option);
 }
 
@@ -2257,8 +2266,9 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 
 		const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
 		const String &display_text = code_completion_options[code_completion_current_selected].display;
+		const bool is_swizzling_component = code_completion_options[code_completion_current_selected].is_swizzling_component;
 
-		if (p_replace) {
+		if (p_replace && !is_swizzling_component) {
 			// Find end of current section.
 			const String line = get_line(caret_line);
 			int caret_col = get_caret_column(i);
@@ -2287,19 +2297,32 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_remove_line, caret_col);
 			insert_text_at_caret(insert_text, i);
 		} else {
-			// Get first non-matching char.
 			const String line = get_line(caret_line);
 			int caret_col = get_caret_column(i);
-			int matching_chars = code_completion_base.length();
-			for (; matching_chars <= insert_text.length(); matching_chars++) {
-				if (caret_col >= line.length() || line[caret_col] != insert_text[matching_chars]) {
-					break;
-				}
-				caret_col++;
-			}
+			int matching_chars = 0;
 
-			// Remove base completion text.
-			remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_line, get_caret_column(i));
+			if (is_swizzling_component) {
+				if (caret_col < line.length()) {
+					// Remove swizzling component.
+					remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+				}
+				if (code_completion_base.length() > 0) {
+					matching_chars = code_completion_base.length();
+					caret_col++;
+				}
+			} else {
+				// Get first non-matching char.
+				matching_chars = code_completion_base.length();
+				for (; matching_chars <= insert_text.length(); matching_chars++) {
+					if (caret_col >= line.length() || line[caret_col] != insert_text[matching_chars]) {
+						break;
+					}
+					caret_col++;
+				}
+
+				// Remove base completion text.
+				remove_text(caret_line, get_caret_column(i) - code_completion_base.length(), caret_line, get_caret_column(i));
+			}
 
 			// Merge with text.
 			insert_text_at_caret(insert_text.substr(0, code_completion_base.length()), i);
@@ -2777,7 +2800,7 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
 	ClassDB::bind_method(D_METHOD("request_code_completion", "force"), &CodeEdit::request_code_completion, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant()), DEFVAL(LOCATION_OTHER));
+	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location", "is_swizzling_component"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant()), DEFVAL(LOCATION_OTHER), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("update_code_completion_options", "force"), &CodeEdit::update_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_options"), &CodeEdit::get_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_option", "index"), &CodeEdit::get_code_completion_option);
@@ -2792,6 +2815,9 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_code_completion_prefixes", "prefixes"), &CodeEdit::set_code_completion_prefixes);
 	ClassDB::bind_method(D_METHOD("get_code_completion_prefixes"), &CodeEdit::get_code_completion_prefixes);
+
+	ClassDB::bind_method(D_METHOD("add_code_completion_swizzling_pattern", "pattern"), &CodeEdit::add_code_completion_swizzling_pattern);
+	ClassDB::bind_method(D_METHOD("remove_code_completion_swizzling_pattern", "pattern"), &CodeEdit::remove_code_completion_swizzling_pattern);
 
 	// Overridable
 
@@ -3539,6 +3565,21 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 	int max_width = 0;
 	String string_to_complete_lower = string_to_complete.to_lower();
+	String swizzling_pattern;
+
+	if (!code_completion_swizzling_patterns.is_empty() && cofs > 0 && line[cofs - 1] == '.') {
+		for (const String &E : code_completion_swizzling_patterns) {
+			for (int i = 0; i < E.length(); i++) {
+				if (E[i] == string_to_complete[0]) {
+					swizzling_pattern = E;
+					break;
+				}
+			}
+			if (!swizzling_pattern.is_empty()) {
+				break;
+			}
+		}
+	}
 
 	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
 		option.matches.clear();
@@ -3567,6 +3608,22 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (string_to_complete.length() == 0) {
 			option.get_option_characteristics(string_to_complete);
+			code_completion_options_new.push_back(option);
+
+			if (theme_cache.font.is_valid()) {
+				max_width = MAX(max_width, theme_cache.font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + offset);
+			}
+			continue;
+		}
+
+		if (option.is_swizzling_component && swizzling_pattern.contains(option.display)) {
+			if (string_to_complete.length() >= 4) {
+				continue;
+			}
+
+			option.matches = { { 0, string_to_complete.ends_with(option.display) ? 1 : 0 } };
+			option.get_option_characteristics(option.display);
+
 			code_completion_options_new.push_back(option);
 
 			if (theme_cache.font.is_valid()) {

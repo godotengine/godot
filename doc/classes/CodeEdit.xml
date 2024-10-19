@@ -50,10 +50,18 @@
 			<param index="4" name="icon" type="Resource" default="null" />
 			<param index="5" name="value" type="Variant" default="null" />
 			<param index="6" name="location" type="int" default="1024" />
+			<param index="7" name="is_swizzling_component" type="bool" default="false" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
 				[param location] indicates location of the option relative to the location of the code completion query. See [enum CodeEdit.CodeCompletionLocation] for how to set this value.
 				[b]Note:[/b] This list will replace all current candidates.
+			</description>
+		</method>
+		<method name="add_code_completion_swizzling_pattern">
+			<return type="void" />
+			<param index="0" name="pattern" type="String" />
+			<description>
+				Adds a swizzling completion pattern, for example [code]xyzw[/code].
 			</description>
 		</method>
 		<method name="add_comment_delimiter">
@@ -401,6 +409,13 @@
 			<return type="void" />
 			<description>
 				Moves all lines up that are selected or have a caret on them.
+			</description>
+		</method>
+		<method name="remove_code_completion_swizzling_pattern">
+			<return type="void" />
+			<param index="0" name="pattern" type="String" />
+			<description>
+				Removes a swizzling completion pattern.
 			</description>
 		</method>
 		<method name="remove_comment_delimiter">
