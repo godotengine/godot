@@ -1834,24 +1834,52 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 // Can be recursive or not, and limited to owned nodes.
 TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	ERR_THREAD_GUARD_V(TypedArray<Node>());
-	TypedArray<Node> ret;
-	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
-	_update_children_cache();
-	Node *const *cptr = data.children_cache.ptr();
-	int ccount = data.children_cache.size();
-	for (int i = 0; i < ccount; i++) {
-		if (p_owned && !cptr[i]->data.owner) {
-			continue;
+	TypedArray<Node> matches;
+	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), matches);
+
+	// Save basic pattern and type info for faster lookup
+	bool is_pattern_empty = p_pattern.is_empty();
+	bool is_type_empty = p_type.is_empty();
+	bool is_type_global_class = !is_type_empty && ScriptServer::is_global_class(p_type);
+	String type_global_path = is_type_global_class ? ScriptServer::get_global_class_path(p_type) : "";
+
+	LocalVector<Node *> to_search;
+	to_search.push_back((Node *)this);
+	bool is_adding_children = true;
+	while (!to_search.is_empty()) {
+		// Pop the next entry off the search stack
+		Node *entry = Object::cast_to<Node>(to_search[0]);
+		to_search.remove_at(0);
+
+		// Add all the children to the list to search
+		entry->_update_children_cache();
+		if (is_adding_children) {
+			Node *const *cptr = entry->data.children_cache.ptr();
+			int ccount = entry->data.children_cache.size();
+			for (int i = 0; i < ccount; i++) {
+				if (p_owned && !cptr[i]->data.owner) {
+					continue;
+				}
+
+				to_search.push_back(cptr[i]);
+			}
+
+			// Stop further child adding if we don't want recursive
+			if (!p_recursive) {
+				is_adding_children = false;
+			}
 		}
 
-		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
-			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
-				ret.append(cptr[i]);
-			} else if (cptr[i]->get_script_instance()) {
-				Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
+		// Check if the entry matches
+		bool is_pattern_match = is_pattern_empty || entry->data.name.operator String().match(p_pattern);
+		bool is_type_match = is_type_empty || entry->is_class(p_type);
+		bool is_script_type_match = false;
+		if (!is_type_match) {
+			if (ScriptInstance *script_inst = entry->get_script_instance()) {
+				Ref<Script> scr = script_inst->get_script();
 				while (scr.is_valid()) {
-					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
-						ret.append(cptr[i]);
+					if ((is_type_global_class && type_global_path == scr->get_path()) || p_type == scr->get_path()) {
+						is_script_type_match = true;
 						break;
 					}
 
@@ -1860,12 +1888,13 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			}
 		}
 
-		if (p_recursive) {
-			ret.append_array(cptr[i]->find_children(p_pattern, p_type, true, p_owned));
+		// Save it if it matches the pattern and at least one type
+		if (is_pattern_match && (is_type_match || is_script_type_match)) {
+			matches.append(entry);
 		}
 	}
 
-	return ret;
+	return matches;
 }
 
 void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
