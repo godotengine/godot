@@ -557,6 +557,8 @@ namespace HumanAnim
 					forward = trans.origin - parent_pose.origin;
 				}
                 p_skeleton_config.bone_lookat[it] = forward.normalized();
+				BonePose& pose = p_config.virtual_pose[it];
+				build_skeleton_global_lookat(p_config, pose,trans, p_skeleton_config);
 
             }
             
