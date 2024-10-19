@@ -1941,6 +1941,21 @@ void EditorPropertyQuaternion::_set_read_only(bool p_read_only) {
 	}
 }
 
+void EditorPropertyQuaternion::_edit_normalize_quaternion_value() {
+	if (normalize_quaternion_bttn->is_pressed()) {
+		Quaternion temp;
+		for (int i = 0; i < 4; i++) {
+			temp[i] = (real_t)spin[i]->get_value();
+		}
+		temp = temp.normalized();
+		for (int i = 0; i < 4; i++) {
+			spin[i]->set_value_no_signal((double)temp[i]);
+		}
+		_value_changed(-1, "");
+		update_property();
+	}
+}
+
 void EditorPropertyQuaternion::_edit_custom_value() {
 	if (edit_button->is_pressed()) {
 		edit_custom_bc->show();
@@ -2025,6 +2040,7 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
 			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			normalize_quaternion_bttn->set_icon(get_editor_theme_icon(SNAME("Key")));
 			euler_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -2065,6 +2081,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 
 	VBoxContainer *bc = memnew(VBoxContainer);
 	edit_custom_bc = memnew(VBoxContainer);
+	normalize_quaternion = memnew(VBoxContainer);
 	BoxContainer *edit_custom_layout;
 	if (horizontal) {
 		default_layout = memnew(HBoxContainer);
@@ -2076,10 +2093,12 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	}
 	edit_custom_bc->hide();
 	add_child(bc);
+	normalize_quaternion->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit_custom_bc->set_h_size_flags(SIZE_EXPAND_FILL);
 	default_layout->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit_custom_layout->set_h_size_flags(SIZE_EXPAND_FILL);
 	bc->add_child(default_layout);
+	bc->add_child(normalize_quaternion);
 	bc->add_child(edit_custom_bc);
 
 	static const char *desc[4] = { "x", "y", "z", "w" };
@@ -2094,6 +2113,12 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
 	}
+
+	normalize_quaternion_bttn = memnew(Button);
+	normalize_quaternion_bttn->set_flat(true);
+	default_layout->add_child(normalize_quaternion_bttn);
+	normalize_quaternion_bttn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_edit_normalize_quaternion_value));
+	add_focusable(normalize_quaternion_bttn);
 
 	warning = memnew(Button);
 	warning->set_text(TTR("Temporary Euler may be changed implicitly!"));
