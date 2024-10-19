@@ -49,7 +49,6 @@ struct BonePose {
 	Vector3 position;
 	Quaternion rotation;
 	Vector3 scale;
-	Vector3 forward;
 	float length;
 	Vector<StringName> child_bones;
 
@@ -59,7 +58,6 @@ struct BonePose {
 		position = aDict["position"];
 		rotation = aDict["rotation"];
 		scale = aDict["scale"];
-		forward = aDict["forward"];
 		length = aDict["length"];
 		Vector<String> child = aDict["child_bones"];
 
@@ -73,7 +71,6 @@ struct BonePose {
 		aDict["position"] = position;
 		aDict["rotation"] = rotation;
 		aDict["scale"] = scale;
-		aDict["forward"] = forward;
 		aDict["length"] = length;
 		Vector<String> child;
 		for (int i = 0; i < child_bones.size(); i++) {
@@ -87,7 +84,6 @@ struct BonePose {
 		position = Vector3();
 		rotation = Quaternion();
 		scale = Vector3();
-		forward = Vector3();
 		length = 0.0f;
 	}
 

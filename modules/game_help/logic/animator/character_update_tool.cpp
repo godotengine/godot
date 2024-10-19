@@ -236,7 +236,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     const Vector<Animation::Track*> tracks = a->get_tracks();
     Animation::Track* const* tracks_ptr = tracks.ptr();
     real_t a_length = a->get_length();
-    temp_anim_skeleton.clear();
+	temp_anim_skeleton.rest(*human_config.ptr());
 
     double blend = ai.playback_info.weight;
     int count = tracks.size();
