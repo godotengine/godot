@@ -2546,11 +2546,11 @@ void GDScriptLanguage::reload_all_scripts() {
 				}
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	reload_scripts(scripts, true);
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
@@ -2620,7 +2620,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 				}
 			}
 
-#endif
+#endif // TOOLS_ENABLED
 
 			for (const KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : scr->pending_reload_state) {
 				map[F.key] = F.value; //pending to reload, use this one instead
@@ -2688,7 +2688,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 		//if instance states were saved, set them!
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
