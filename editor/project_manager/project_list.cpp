@@ -494,7 +494,7 @@ void ProjectList::_update_icons_async() {
 	set_process(true);
 }
 
-	void ProjectList::_load_project_icon(int p_index) {
+void ProjectList::_load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
 	Ref<Texture2D> default_icon = get_editor_theme_icon(SNAME("DefaultProjectIcon"));
@@ -515,7 +515,7 @@ void ProjectList::_update_icons_async() {
 	}
 
 	item.control->set_project_icon(icon);
-	}
+}
 
 // Project list updates.
 
