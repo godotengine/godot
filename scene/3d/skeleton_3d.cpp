@@ -326,6 +326,8 @@ void Skeleton3D::_notification(int p_what) {
 #ifndef DISABLE_DEPRECATED
 			setup_simulator();
 #endif // _DISABLE_DEPRECATED
+			update_flags = UPDATE_FLAG_POSE;
+			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 			// Update bone transforms to apply unprocessed poses.
