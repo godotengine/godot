@@ -63,7 +63,6 @@ struct HashMapElement {
 };
 bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
 
-bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
 
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,

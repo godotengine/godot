@@ -514,6 +514,12 @@ namespace HumanAnim
 
 				build_skeleton_local_pose(p_skeleton, p_config, pose, p_skeleton_config);
 			}
+			for (auto& it : p_config.root_bone) {
+				BonePose& pose = p_config.virtual_pose[it];
+				Transform3D local_trans;
+				local_trans.basis = Basis(pose.rotation);
+				build_skeleton_global_pose(p_config, pose, local_trans, p_skeleton_config);
+			}
 
 			for (auto& it : p_config.root_bone) {
 				Transform3D& trans = p_skeleton_config.real_pose[it];
@@ -542,24 +548,31 @@ namespace HumanAnim
 
             }
         }
+		static void build_skeleton_global_pose(HumanConfig& p_config, BonePose& bone_pose, Transform3D& parent_pose, HumanSkeleton& p_skeleton_config) {
+			for (auto& it : bone_pose.child_bones) {
+				BonePose& child_pose = p_config.virtual_pose[it];
+				Transform3D& trans = p_skeleton_config.real_pose[it];
+				trans = parent_pose * trans;
+				build_skeleton_global_pose(p_config, child_pose, trans, p_skeleton_config);
+			}
 
-        static void build_skeleton_global_lookat(HumanConfig& p_config, BonePose& pose,Transform3D& parent_pose,HumanSkeleton& p_skeleton_config) {
+		}
 
-            for(auto& it : pose.child_bones) {
+        static void build_skeleton_global_lookat(HumanConfig& p_config, BonePose& bone_pose,Transform3D& parent_pose,HumanSkeleton& p_skeleton_config) {
+
+            for(auto& it : bone_pose.child_bones) {
+				BonePose& child_pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
-                trans = parent_pose * trans;
 				Vector3 forward;
-				if (pose.child_bones.size() > 0) {
-					Transform3D& child_trans = p_skeleton_config.real_pose[pose.child_bones[0]];
+				if (child_pose.child_bones.size() > 0) {
+					Transform3D& child_trans = p_skeleton_config.real_pose[child_pose.child_bones[0]];
 					forward = child_trans.origin - trans.origin;
 				}
 				else {
 					forward = trans.origin - parent_pose.origin;
 				}
                 p_skeleton_config.bone_lookat[it] = forward.normalized();
-				BonePose& pose = p_config.virtual_pose[it];
-				build_skeleton_global_lookat(p_config, pose,trans, p_skeleton_config);
-
+				build_skeleton_global_lookat(p_config, child_pose,trans, p_skeleton_config);
             }
             
         }
