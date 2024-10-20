@@ -644,6 +644,7 @@ private:
 	RID origin_mesh;
 	RID origin_multimesh;
 	RID origin_instance;
+	bool hide_gizmo_subscenes = false;
 	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
@@ -721,7 +722,8 @@ private:
 		MENU_UNLOCK_SELECTED,
 		MENU_GROUP_SELECTED,
 		MENU_UNGROUP_SELECTED,
-		MENU_SNAP_TO_FLOOR
+		MENU_SNAP_TO_FLOOR,
+		MENU_HIDE_SUBSCENES,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -798,6 +800,7 @@ private:
 	void _node_removed(Node *p_node);
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_priority;
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_name;
+	bool hide_subscene_gizmos = false;
 
 	void _register_all_gizmos();
 
