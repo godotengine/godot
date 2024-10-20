@@ -2436,3 +2436,5 @@ func test():
 			print("should not match")
 		packed_color_array_type:
 			print("should not match")
+
+	object_type.free()
