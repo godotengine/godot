@@ -865,7 +865,7 @@ void Skeleton3D::set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
-	if(!p_rotation.is_normalized()) {
+	if (!p_rotation.is_normalized()) {
 		WARN_PRINT_ED("The quaternion bone " + get_bone_name(p_bone) + " pose rotation must be normalized.");
 	}
 
