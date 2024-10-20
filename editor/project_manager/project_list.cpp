@@ -504,7 +504,9 @@ void ProjectList::_load_project_icon(int p_index) {
 		img.instantiate();
 		Error err = img->load(item.icon.replace_first("res://", item.path + "/"));
 		if (err == OK) {
-			img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_LANCZOS);
+			img->convert(Image::FORMAT_RGBA8);
+			img->fix_alpha_edges();
+			img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_CUBIC);
 			icon = ImageTexture::create_from_image(img);
 		}
 	}
