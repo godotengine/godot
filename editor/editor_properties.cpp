@@ -1943,16 +1943,25 @@ void EditorPropertyQuaternion::_set_read_only(bool p_read_only) {
 
 void EditorPropertyQuaternion::_edit_normalize_quaternion_value() {
 	if (normalize_quaternion_bttn->is_pressed()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action("Quaternion Normalized");
+
 		Quaternion temp;
 		for (int i = 0; i < 4; i++) {
 			temp[i] = (real_t)spin[i]->get_value();
+
+			//undo_redo->add_undo_property(spin[i], "Un-Normalize Quaternion", spin[i]);
+			undo_redo->add_undo_property(get_edited_object(), get_edited_property(), spin[i]);
 		}
 		temp = temp.normalized();
 		for (int i = 0; i < 4; i++) {
 			spin[i]->set_value_no_signal((double)temp[i]);
+
+			undo_redo->add_undo_property(get_edited_object(), get_edited_property(), temp[i]);
+			//undo_redo->add_do_property(spin[i], "Re-Normalize Quaternion", temp[i]);
 		}
 		_value_changed(-1, "");
-		update_property();
+		undo_redo->commit_action();
 	}
 }
 
@@ -2040,7 +2049,6 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
 			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			normalize_quaternion_bttn->set_icon(get_editor_theme_icon(SNAME("Key")));
 			euler_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			warning->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -2115,10 +2123,10 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	}
 
 	normalize_quaternion_bttn = memnew(Button);
-	normalize_quaternion_bttn->set_flat(true);
-	default_layout->add_child(normalize_quaternion_bttn);
+	normalize_quaternion_bttn->set_text("Normalize");
 	normalize_quaternion_bttn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_edit_normalize_quaternion_value));
 	add_focusable(normalize_quaternion_bttn);
+	normalize_quaternion->add_child(normalize_quaternion_bttn);
 
 	warning = memnew(Button);
 	warning->set_text(TTR("Temporary Euler may be changed implicitly!"));
