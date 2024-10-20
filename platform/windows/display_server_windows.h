@@ -473,6 +473,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
+		bool extend_to_title = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -501,6 +502,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		Size2 window_rect;
 		Point2 last_pos;
+		RECT border_thickness;
 
 		ObjectID instance_id;
 
@@ -593,7 +595,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_extend_to_title, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
@@ -779,6 +781,8 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+	virtual bool window_maximize_on_title_dbl_click() const override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

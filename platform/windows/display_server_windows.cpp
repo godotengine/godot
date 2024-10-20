@@ -119,6 +119,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
+		case FEATURE_EXTEND_TO_TITLE:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
@@ -1505,6 +1506,9 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 		wd.layered_window = true;
 	}
+	if (p_flags & WINDOW_FLAG_EXTEND_TO_TITLE_BIT) {
+		wd.extend_to_title = true;
+	}
 
 	// Inherit icons from MAIN_WINDOW for all sub windows.
 	HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
@@ -1720,7 +1724,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 	ERR_FAIL_COND_V(!windows.has(p_window), size);
 
 	const WindowData &wd = windows[p_window];
-	if (wd.fullscreen || wd.minimized || wd.borderless) {
+	if (wd.fullscreen || wd.minimized || wd.borderless || wd.extend_to_title) {
 		return size;
 	}
 
@@ -1774,7 +1778,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
 		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
-			if (windows[p_window].borderless) {
+			if (windows[p_window].borderless || windows[p_window].extend_to_title) {
 				points[i].x = windows[p_window].mpath[i].x;
 				points[i].y = windows[p_window].mpath[i].y;
 			} else {
@@ -1901,10 +1905,12 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	rc.bottom = p_position.y + wd.height + offset.y;
 	rc.top = p_position.y + offset.y;
 
-	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
-	const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
+	if (!wd.extend_to_title) {
+		const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
+		const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
 
-	AdjustWindowRectEx(&rc, style, false, exStyle);
+		AdjustWindowRectEx(&rc, style, false, exStyle);
+	}
 	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 	wd.last_pos = p_position;
@@ -2015,7 +2021,7 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen || wd.maximized) {
+	if (wd.fullscreen || wd.maximized || IsIconic(wd.hWnd)) {
 		return;
 	}
 
@@ -2066,7 +2072,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_extend_to_title, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2080,7 +2086,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 		}
 	}
 
-	if (p_fullscreen || p_borderless) {
+	if (p_fullscreen || p_borderless || p_extend_to_title) {
 		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
 		if (p_minimized) {
 			r_style |= WS_MINIMIZE;
@@ -2092,6 +2098,18 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 
 			if (p_resizable) {
 				r_style |= WS_MAXIMIZEBOX;
+			}
+			if (!p_borderless && !p_fullscreen) {
+				// Extend to title mode.
+				if (!p_maximized && !p_maximized_fs) {
+					// Needs a border to resize the window without WS_SYSMENU.
+					r_style |= WS_SIZEBOX;
+				}
+				// Without this, the Project Manager preview when minimized is blank in Windows Task Bar
+				// and restoring from minimized state is not possible.
+				if (p_minimized) {
+					r_style |= WS_MINIMIZE;
+				}
 			}
 		}
 		if ((p_fullscreen && p_multiwindow_fs) || p_maximized_fs) {
@@ -2119,7 +2137,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
 
-	if (!p_borderless && !p_no_activate_focus && p_initialized) {
+	if ((!p_borderless || !p_extend_to_title) && !p_no_activate_focus && p_initialized) {
 		r_style |= WS_VISIBLE;
 	}
 
@@ -2136,13 +2154,28 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.extend_to_title, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
 	if (icon.is_valid()) {
 		set_icon(icon);
+	}
+
+	if (wd.extend_to_title) {
+		// We need to keep the border thickness so we could use it in Non Client Hit Test (WM_NCHITTEST).
+		// The simple way to get the border thickness is to call AdjustWindowRectEx on a window of size (0, 0).
+		SetRectEmpty(&wd.border_thickness);
+		AdjustWindowRectEx(&wd.border_thickness, style, FALSE, style_ex);
+		wd.border_thickness.left *= -1;
+		wd.border_thickness.top *= -1;
+
+		// We need to set the bottom margin to keep the rounded corner and the drop shadow.
+		MARGINS margins = { 0, 0, 0, 1 };
+		::DwmExtendFrameIntoClientArea(wd.hWnd, &margins);
+	} else {
+		SetRectEmpty(&wd.border_thickness);
 	}
 
 	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
@@ -2159,6 +2192,11 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	WindowMode old_mode = window_get_mode(p_window);
+	if (old_mode == p_mode) {
+		return; // Do nothing.
+	}
 
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		RECT rect;
@@ -2243,6 +2281,9 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, nullptr, 0);
 		}
 	}
+
+	// Notify a possible change in the titlebar.
+	_send_window_event(wd, DisplayServerWindows::WINDOW_EVENT_TITLEBAR_CHANGE);
 }
 
 DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_window) const {
@@ -2337,6 +2378,12 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			ERR_FAIL_COND_MSG(IsWindowVisible(wd.hWnd) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			wd.is_popup = p_enabled;
 		} break;
+		case WINDOW_FLAG_EXTEND_TO_TITLE: {
+			wd.extend_to_title = p_enabled;
+			_update_window_style(p_window);
+			// Notify a possible change in the titlebar.
+			_send_window_event(wd, DisplayServerWindows::WINDOW_EVENT_TITLEBAR_CHANGE);
+		} break;
 		default:
 			break;
 	}
@@ -2368,6 +2415,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
+		} break;
+		case WINDOW_FLAG_EXTEND_TO_TITLE: {
+			return wd.extend_to_title;
 		} break;
 		default:
 			break;
@@ -3640,6 +3690,10 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+bool DisplayServerWindows::window_maximize_on_title_dbl_click() const {
+	return true;
+}
+
 void DisplayServerWindows::set_context(Context p_context) {
 }
 
@@ -4025,9 +4079,46 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 		} break;
+		case WM_NCCALCSIZE:
+			if (windows[window_id].extend_to_title) {
+				if (lParam) {
+					// Returning zero here tells Windows to keep the received area in lParam the same
+					// which should be the hole window area.
+					// Without that, on Windows 7/10, we have a white bar on top of the window.
+					return 0;
+				}
+			}
+			break;
 		case WM_NCHITTEST: {
 			if (windows[window_id].mpass) {
 				return HTTRANSPARENT;
+			} else if (windows[window_id].extend_to_title) {
+				if (windows[window_id].borderless || windows[window_id].fullscreen || windows[window_id].maximized || !windows[window_id].resizable) {
+					return HTCLIENT;
+				} else {
+					// We disabled the Non Client Area in (WM_NCCALCSIZE) so we need to do the hit test
+					// by ourself. Unfornunately, the hit needs to be inside the window since we don't have
+					// a client area anymore.
+					POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+					ScreenToClient(windows[window_id].hWnd, &pt);
+					RECT rc;
+					GetClientRect(windows[window_id].hWnd, &rc);
+					bool hitLeft = (pt.x < windows[window_id].border_thickness.left);
+					bool hitRight = (pt.x > rc.right - windows[window_id].border_thickness.right);
+					bool hitTop = (pt.y < windows[window_id].border_thickness.top);
+					bool hitBottom = (pt.y > rc.bottom - windows[window_id].border_thickness.bottom);
+
+					if (hitLeft) {
+						return (hitTop ? HTTOPLEFT : (hitBottom ? HTBOTTOMLEFT : HTLEFT));
+					} else if (hitRight) {
+						return (hitTop ? HTTOPRIGHT : (hitBottom ? HTBOTTOMRIGHT : HTRIGHT));
+					} else if (hitTop) {
+						return HTTOP;
+					} else if (hitBottom) {
+						return HTBOTTOM;
+					}
+					return HTCLIENT;
+				}
 			}
 		} break;
 		case WM_MOUSEACTIVATE: {
@@ -4068,7 +4159,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					min_max_info->ptMaxTrackSize.x = windows[window_id].max_size.x + decor.x;
 					min_max_info->ptMaxTrackSize.y = windows[window_id].max_size.y + decor.y;
 				}
-				if (windows[window_id].borderless) {
+				if (windows[window_id].borderless || windows[window_id].extend_to_title) {
 					Rect2i screen_rect = screen_get_usable_rect(window_get_current_screen(window_id));
 
 					// Set the size of (borderless) maximized mode to exclude taskbar (or any other panel) if present.
@@ -4076,6 +4167,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					min_max_info->ptMaxPosition.y = screen_rect.position.y;
 					min_max_info->ptMaxSize.x = screen_rect.size.x;
 					min_max_info->ptMaxSize.y = screen_rect.size.y;
+
+					// When DwmExtendFrameIntoClientArea is called, we set a margin of 1 at the bottom to retain the drop shadow.
+					// This has the side effect of leaving an empty pixel at the bottom when maximized.
+					// Adding a pixel at the bottom seems to fix the issue.
+					if (windows[window_id].extend_to_title) {
+						min_max_info->ptMaxSize.y += 1;
+					}
 				}
 				return 0;
 			}
@@ -5547,7 +5645,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), p_flags & WINDOW_FLAG_EXTEND_TO_TITLE_BIT, dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -5587,7 +5685,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.top += offset.y;
 	WindowRect.bottom += offset.y;
 
-	if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN && !(p_flags & WINDOW_FLAG_EXTEND_TO_TITLE_BIT)) {
 		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 	}
 
@@ -5804,8 +5902,14 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 		// Set size of maximized borderless window (by default it covers the entire screen).
-		if (p_mode == WINDOW_MODE_MAXIMIZED && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
+		if (p_mode == WINDOW_MODE_MAXIMIZED && ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) || (p_flags & WINDOW_FLAG_EXTEND_TO_TITLE_BIT))) {
 			Rect2i srect = screen_get_usable_rect(rq_screen);
+			// When DwmExtendFrameIntoClientArea is called, we set a margin of 1 at the bottom to retain the drop shadow.
+			// This has the side effect of leaving an empty pixel at the bottom when maximized.
+			// Adding a pixel at the bottom seems to fix the issue.
+			if (p_flags & WINDOW_FLAG_EXTEND_TO_TITLE_BIT) {
+				srect.size.height += 1;
+			}
 			SetWindowPos(wd.hWnd, HWND_TOP, srect.position.x, srect.position.y, srect.size.width, srect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 

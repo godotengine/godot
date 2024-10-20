@@ -1511,6 +1511,7 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) and height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+				[b]Note:[/b] On Linux and Windows, this method always returns [constant Vector2.ZERO], since the decoration buttons are not displayed by the OS when the [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">
@@ -1873,7 +1874,7 @@
 			Display server supports text-to-speech. See [code]tts_*[/code] methods. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
-			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
+			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS, Linux, Windows[/b]
 		</constant>
 		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
 			Display server supports reading screen pixels. See [method screen_get_pixel].
@@ -2094,7 +2095,8 @@
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
 			Use [method window_set_window_buttons_offset] to adjust minimize/maximize/close buttons offset.
 			Use [method window_get_safe_title_margins] to determine area under the title bar that is not covered by decorations.
-			[b]Note:[/b] This flag is implemented only on macOS.
+			[b]Note:[/b] This flag is implemented on macOS, Linux, and Windows.
+			[b]Note:[/b] On Linux and Windows, the decoration buttons (Minimize, Maximize and Close) are rendered by Godot and use the theme of the Window.
 		</constant>
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
 			All mouse events are passed to the underlying window of the same application.
