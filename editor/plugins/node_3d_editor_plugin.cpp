@@ -6272,6 +6272,7 @@ Dictionary Node3DEditor::get_state() const {
 
 	d["viewports"] = vpdata;
 
+	d["hide_subscenes"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_HIDE_SUBSCENES));
 	d["show_grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
 	d["fov"] = get_fov();
@@ -6382,6 +6383,19 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 	if (d.has("fov")) {
 		settings_fov->set_value(double(d["fov"]));
 	}
+	if (d.has("hide_subscenes")) {
+		bool use = d["hide_subscenes"];
+
+		if (use != view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_HIDE_SUBSCENES))) {
+			_menu_item_pressed(MENU_HIDE_SUBSCENES);
+		}
+		for (int j = 0; j < gizmo_plugins_by_name.size(); ++j) {
+			if (!gizmo_plugins_by_name[j]->can_be_hidden()) {
+				continue;
+			}
+			gizmo_plugins_by_name.write[j]->set_state_subscenes(view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_HIDE_SUBSCENES)));
+		}
+	}
 	if (d.has("show_grid")) {
 		bool use = d["show_grid"];
 
@@ -6417,6 +6431,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 			}
 
 			gizmo_plugins_by_name.write[j]->set_state(state);
+			gizmo_plugins_by_name.write[j]->set_state_subscenes(hide_subscene_gizmos);
 		}
 		_update_gizmos_menu();
 	}
@@ -6590,7 +6605,6 @@ void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 	const int idx = gizmos_menu->get_item_index(p_option);
 	gizmos_menu->toggle_item_multistate(idx);
-
 	// Change icon
 	const int state = gizmos_menu->get_item_state(idx);
 	switch (state) {
@@ -6605,7 +6619,14 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 			break;
 	}
 
-	gizmo_plugins_by_name.write[p_option]->set_state(state);
+	if (p_option < gizmo_plugins_by_name.size()) {
+		gizmo_plugins_by_name.write[p_option]->set_state(state);
+	} else {
+		hide_subscene_gizmos = !hide_subscene_gizmos;
+	}
+	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
+		gizmo_plugins_by_name.write[i]->set_state_subscenes(hide_subscene_gizmos);
+	}
 
 	update_all_gizmos();
 }
@@ -6732,6 +6753,15 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), true);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+
+		} break;
+		case MENU_HIDE_SUBSCENES: {
+			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
+			hide_gizmo_subscenes = !is_checked;
+			for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
+				gizmo_plugins_by_name.write[i]->set_state_subscenes(hide_gizmo_subscenes);
+			}
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), hide_gizmo_subscenes);
 
 		} break;
 		case MENU_VIEW_ORIGIN: {
@@ -7432,6 +7462,16 @@ void fragment() {
 void Node3DEditor::_update_gizmos_menu() {
 	gizmos_menu->clear();
 
+	gizmos_menu->add_multistate_item("Nested Gizmos", 2, 0, gizmo_plugins_by_name.size());
+	const int id = gizmos_menu->get_item_index(gizmo_plugins_by_name.size());
+	gizmos_menu->set_item_tooltip(
+			id,
+			TTR("Click to toggle between visibility states.\n\nOpen eye: Subscenes are visible.\nClosed eye: Subscenes invisible."));
+	if (!hide_subscene_gizmos) {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_visible")));
+	} else {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
+	}
 	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
@@ -7458,6 +7498,12 @@ void Node3DEditor::_update_gizmos_menu() {
 }
 
 void Node3DEditor::_update_gizmos_menu_theme() {
+	const int id = gizmos_menu->get_item_index(gizmo_plugins_by_name.size());
+	if (!hide_subscene_gizmos) {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_visible")));
+	} else {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
+	}
 	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
@@ -8923,6 +8969,9 @@ Node3DEditor::Node3DEditor() {
 	gizmos_menu->set_hide_on_checkable_item_selection(false);
 	p->add_submenu_node_item(TTR("Gizmos"), gizmos_menu);
 	gizmos_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_gizmo_toggled));
+
+	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/hide_subscenes", TTR("Hide Subscenes")), MENU_HIDE_SUBSCENES);
+	p->set_item_checked(p->get_item_index(MENU_HIDE_SUBSCENES), false);
 
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
