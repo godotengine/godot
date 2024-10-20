@@ -6417,6 +6417,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 			}
 
 			gizmo_plugins_by_name.write[j]->set_state(state);
+			gizmo_plugins_by_name.write[j]->set_state_subscenes(hide_subscene_gizmos);
 		}
 		_update_gizmos_menu();
 	}
@@ -6590,7 +6591,6 @@ void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 	const int idx = gizmos_menu->get_item_index(p_option);
 	gizmos_menu->toggle_item_multistate(idx);
-
 	// Change icon
 	const int state = gizmos_menu->get_item_state(idx);
 	switch (state) {
@@ -6605,7 +6605,14 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 			break;
 	}
 
-	gizmo_plugins_by_name.write[p_option]->set_state(state);
+	if (p_option < gizmo_plugins_by_name.size()) {
+		gizmo_plugins_by_name.write[p_option]->set_state(state);
+	} else {
+		hide_subscene_gizmos = !hide_subscene_gizmos;
+	}
+	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
+		gizmo_plugins_by_name.write[i]->set_state_subscenes(hide_subscene_gizmos);
+	}
 
 	update_all_gizmos();
 }
@@ -7432,6 +7439,16 @@ void fragment() {
 void Node3DEditor::_update_gizmos_menu() {
 	gizmos_menu->clear();
 
+	gizmos_menu->add_multistate_item("Nested Gizmos", 2, 0, gizmo_plugins_by_name.size());
+	const int id = gizmos_menu->get_item_index(gizmo_plugins_by_name.size());
+	gizmos_menu->set_item_tooltip(
+			id,
+			TTR("Click to toggle between visibility states.\n\nOpen eye: Subscenes are visible.\nClosed eye: Subscenes invisible."));
+	if (!hide_subscene_gizmos) {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_visible")));
+	} else {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
+	}
 	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;
@@ -7458,6 +7475,12 @@ void Node3DEditor::_update_gizmos_menu() {
 }
 
 void Node3DEditor::_update_gizmos_menu_theme() {
+	const int id = gizmos_menu->get_item_index(gizmo_plugins_by_name.size());
+	if (!hide_subscene_gizmos) {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_visible")));
+	} else {
+		gizmos_menu->set_item_icon(id, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
+	}
 	for (int i = 0; i < gizmo_plugins_by_name.size(); ++i) {
 		if (!gizmo_plugins_by_name[i]->can_be_hidden()) {
 			continue;

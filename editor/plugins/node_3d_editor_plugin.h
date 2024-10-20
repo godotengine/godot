@@ -801,6 +801,7 @@ private:
 	void _node_removed(Node *p_node);
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_priority;
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_name;
+	bool hide_subscene_gizmos = false;
 
 	void _register_all_gizmos();
 
