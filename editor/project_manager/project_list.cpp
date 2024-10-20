@@ -494,28 +494,28 @@ void ProjectList::_update_icons_async() {
 	set_process(true);
 }
 
-void ProjectList::_load_project_icon(int p_index) {
-    Item &item = _projects.write[p_index];
+	void ProjectList::_load_project_icon(int p_index) {
+	Item &item = _projects.write[p_index];
 
-    Ref<Texture2D> default_icon = get_editor_theme_icon(SNAME("DefaultProjectIcon"));
-    Ref<Texture2D> icon;
-    if (!item.icon.is_empty()) {
-        Ref<Image> img;
-        img.instantiate();
-        Error err = img->load(item.icon.replace_first("res://", item.path + "/"));
-        if (err == OK) {
-            img->convert(Image::FORMAT_RGBA8);
+	Ref<Texture2D> default_icon = get_editor_theme_icon(SNAME("DefaultProjectIcon"));
+	Ref<Texture2D> icon;
+	if (!item.icon.is_empty()) {
+		Ref<Image> img;
+		img.instantiate();
+		Error err = img->load(item.icon.replace_first("res://", item.path + "/"));
+		if (err == OK) {
+			img->convert(Image::FORMAT_RGBA8);
 			img->fix_alpha_edges();
-            img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_CUBIC);
-            icon = ImageTexture::create_from_image(img);
-        }
-    }
-    if (icon.is_null()) {
-        icon = default_icon;
-    }
+			img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_CUBIC);
+			icon = ImageTexture::create_from_image(img);
+		}
+	}
+	if (icon.is_null()) {
+		icon = default_icon;
+	}
 
-    item.control->set_project_icon(icon);
-}
+	item.control->set_project_icon(icon);
+	}
 
 // Project list updates.
 
