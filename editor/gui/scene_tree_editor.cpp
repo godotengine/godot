@@ -1684,24 +1684,30 @@ void SceneTreeDialog::_show_all_nodes_changed(bool p_button_pressed) {
 }
 
 void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
-	if (p_valid.is_empty()) {
-		return;
+	if (allowed_types_hbox) {
+		allowed_types_hbox->queue_free();
+		allowed_types_hbox = nullptr;
+		valid_type_icons.clear();
 	}
 
 	tree->set_valid_types(p_valid);
 
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	content->add_child(hbox);
-	content->move_child(hbox, 0);
+	if (p_valid.is_empty()) {
+		return;
+	}
+
+	allowed_types_hbox = memnew(HBoxContainer);
+	content->add_child(allowed_types_hbox);
+	content->move_child(allowed_types_hbox, 0);
 
 	{
 		Label *label = memnew(Label);
-		hbox->add_child(label);
+		allowed_types_hbox->add_child(label);
 		label->set_text(TTR("Allowed:"));
 	}
 
 	HFlowContainer *hflow = memnew(HFlowContainer);
-	hbox->add_child(hflow);
+	allowed_types_hbox->add_child(hflow);
 	hflow->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	for (const StringName &type : p_valid) {
@@ -1735,6 +1741,9 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 	}
 
 	show_all_nodes->show();
+	if (is_inside_tree()) {
+		_update_valid_type_icons();
+	}
 }
 
 void SceneTreeDialog::_notification(int p_what) {
@@ -1753,16 +1762,20 @@ void SceneTreeDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			for (TextureRect *trect : valid_type_icons) {
-				trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
-				trect->set_texture(trect->get_meta("icon"));
-			}
+			_update_valid_type_icons();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDialog::_select));
 		} break;
+	}
+}
+
+void SceneTreeDialog::_update_valid_type_icons() {
+	filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+	for (TextureRect *trect : valid_type_icons) {
+		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)), 0));
+		trect->set_texture(trect->get_meta("icon"));
 	}
 }
 
