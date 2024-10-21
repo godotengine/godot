@@ -276,6 +276,19 @@ String OS_MacOS::get_cache_path() const {
 	return get_config_path();
 }
 
+String OS_MacOS::get_temp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			ret = String::utf8([url.path UTF8String]);
+			ret = ret.trim_prefix("file://");
+		}
+	}
+	return ret;
+}
+
 String OS_MacOS::get_bundle_resource_dir() const {
 	String ret;
 

@@ -287,6 +287,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
+	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
 
