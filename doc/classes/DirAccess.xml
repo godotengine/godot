@@ -105,6 +105,17 @@
 				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
 			</description>
 		</method>
+		<method name="create_temp" qualifiers="static">
+			<return type="DirAccess" />
+			<param index="0" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="1" name="keep" type="bool" default="false" />
+			<description>
+				Creates a temporary directory. This directory will be freed when the returned [DirAccess] is freed.
+				If [param prefix] is not empty, it will be prefixed to the directory name, separated by a [code]-[/code].
+				If [param keep] is [code]true[/code], the directory is not deleted when the returned [DirAccess] is freed.
+				Returns [code]null[/code] if opening the directory failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool" />
 			<description>
