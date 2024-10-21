@@ -122,6 +122,11 @@ private:
 
 	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags);
 
+	bool _is_tmp_file = false;
+	bool _tmp_keep_after_use = false;
+	String _tmp_path;
+	void _delete_tmp();
+
 public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
 
@@ -228,13 +233,18 @@ public:
 	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path, &last_file_open_error); }
 	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path, &last_file_open_error); }
 
+	static Ref<FileAccess> create_tmp(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false, Error *r_error = nullptr);
+	static Ref<FileAccess> _create_tmp(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false) {
+		return create_tmp(p_mode_flags, p_prefix, p_extension, p_keep, &last_file_open_error);
+	}
+
 	template <typename T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;
 	}
 
 	FileAccess() {}
-	virtual ~FileAccess() {}
+	virtual ~FileAccess();
 };
 
 VARIANT_ENUM_CAST(FileAccess::CompressionMode);

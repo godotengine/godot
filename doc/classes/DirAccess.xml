@@ -104,6 +104,16 @@
 				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
 			</description>
 		</method>
+		<method name="create_tmp" qualifiers="static">
+			<return type="DirAccess" />
+			<param index="0" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="1" name="keep" type="bool" default="false" />
+			<description>
+				Creates a temporary directory.
+				If [param keep] is [code]true[/code], the directory will outlive the [DirAccess] instance. When [code]false[/code], the directory will be deleted, including all its files.
+				If the returned value is [code]null[/code], use [method get_open_error] to get some context.
+			</description>
+		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool" />
 			<description>

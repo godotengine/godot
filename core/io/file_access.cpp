@@ -68,6 +68,19 @@ void FileAccess::_set_access_type(AccessType p_access) {
 	_access_type = p_access;
 }
 
+void FileAccess::_delete_tmp() {
+	// Remove created tmp file.
+	if (!_is_tmp_file || _tmp_keep_after_use) {
+		return;
+	}
+
+	if (!FileAccess::exists(_tmp_path)) {
+		return;
+	}
+
+	DirAccess::remove_absolute(_tmp_path);
+}
+
 Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	Ref<FileAccess> ret;
 	if (p_path.begins_with("res://")) {
@@ -80,6 +93,42 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_FILESYSTEM);
 	}
 
+	return ret;
+}
+
+Ref<FileAccess> FileAccess::create_tmp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
+	const String TMP_DIR = OS::get_singleton()->get_tmp_path();
+	String extension = p_extension;
+	if (extension.begins_with(".")) {
+		extension = extension.replace_first(".", "");
+	}
+	String hash;
+	String tmp_file_path;
+	while (true) {
+		hash = itos(Math::rand()).sha256_text().substr(0, 10);
+		tmp_file_path = TMP_DIR.path_join((p_prefix.is_empty() ? "" : p_prefix + "-") + hash + (extension.is_empty() ? "" : "." + extension));
+		if (!DirAccess::exists(tmp_file_path)) {
+			break;
+		}
+	}
+	Error err;
+	{
+		// Create file first with WRITE mode.
+		// Otherwise, it would fail to open with a READ mode.
+		Ref<FileAccess> ret = FileAccess::open(tmp_file_path, FileAccess::ModeFlags::WRITE, &err);
+		if (err != OK) {
+			*r_error = err;
+			return Ref<FileAccess>();
+		}
+		ret->flush();
+	}
+	// Open then the tmp file with the correct mode flag.
+	Ref<FileAccess> ret = FileAccess::open(tmp_file_path, p_mode_flags, &err);
+	if (ret.is_valid()) {
+		ret->_is_tmp_file = true;
+		ret->_tmp_keep_after_use = p_keep;
+		ret->_tmp_path = ret->get_path_absolute();
+	}
 	return ret;
 }
 
@@ -810,6 +859,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_open_error"), &FileAccess::get_open_error);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("create_tmp", "mode_flags", "prefix", "extension", "keep"), &FileAccess::_create_tmp, DEFVAL(""), DEFVAL(""), DEFVAL(false));
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
@@ -896,4 +946,8 @@ void FileAccess::_bind_methods() {
 	BIND_BITFIELD_FLAG(UNIX_SET_USER_ID);
 	BIND_BITFIELD_FLAG(UNIX_SET_GROUP_ID);
 	BIND_BITFIELD_FLAG(UNIX_RESTRICTED_DELETE);
+}
+
+FileAccess::~FileAccess() {
+	_delete_tmp();
 }

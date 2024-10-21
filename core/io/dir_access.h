@@ -61,6 +61,11 @@ private:
 	bool include_navigational = false;
 	bool include_hidden = false;
 
+	bool _is_tmp = false;
+	bool _tmp_keep_after_free = false;
+	String _tmp_path;
+	void _delete_tmp();
+
 protected:
 	static void _bind_methods();
 
@@ -128,6 +133,7 @@ public:
 	static Ref<DirAccess> create_for_path(const String &p_path);
 
 	static Ref<DirAccess> create(AccessType p_access);
+	static Ref<DirAccess> create_tmp(const String &p_prefix = "", bool p_keep = false);
 	static Error get_open_error();
 
 	template <typename T>
@@ -162,7 +168,7 @@ public:
 	virtual bool is_case_sensitive(const String &p_path) const;
 
 	DirAccess() {}
-	virtual ~DirAccess() {}
+	virtual ~DirAccess();
 };
 
 #endif // DIR_ACCESS_H
