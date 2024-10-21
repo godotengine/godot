@@ -282,7 +282,6 @@ class EditorPlugins {
 public:
 	static int get_plugin_count() { return creation_func_count; }
 	static EditorPlugin *create(int p_idx) {
-		(p_idx, creation_func_count, nullptr);
 		return creation_funcs[p_idx]();
 	}
 
