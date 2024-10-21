@@ -433,13 +433,13 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 						"$trigger = New-ScheduledTaskTrigger -Once -At 00:00\n"
 						"$settings = New-ScheduledTaskSettingsSet\n"
 						"$task = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings\n"
-						"Register-ScheduledTask godot_remote_debug -InputObject $task -Force:$true\n"
-						"Start-ScheduledTask -TaskName godot_remote_debug\n"
-						"while (Get-ScheduledTask -TaskName godot_remote_debug | ? State -eq running) { Start-Sleep -Milliseconds 100 }\n"
-						"Unregister-ScheduledTask -TaskName godot_remote_debug -Confirm:$false -ErrorAction:SilentlyContinue";
+						"Register-ScheduledTask blazium_remote_debug -InputObject $task -Force:$true\n"
+						"Start-ScheduledTask -TaskName blazium_remote_debug\n"
+						"while (Get-ScheduledTask -TaskName blazium_remote_debug | ? State -eq running) { Start-Sleep -Milliseconds 100 }\n"
+						"Unregister-ScheduledTask -TaskName blazium_remote_debug -Confirm:$false -ErrorAction:SilentlyContinue";
 
-	String cleanup_script = "Stop-ScheduledTask -TaskName godot_remote_debug -ErrorAction:SilentlyContinue\n"
-							"Unregister-ScheduledTask -TaskName godot_remote_debug -Confirm:$false -ErrorAction:SilentlyContinue\n"
+	String cleanup_script = "Stop-ScheduledTask -TaskName blazium_remote_debug -ErrorAction:SilentlyContinue\n"
+							"Unregister-ScheduledTask -TaskName blazium_remote_debug -Confirm:$false -ErrorAction:SilentlyContinue\n"
 							"Remove-Item -Recurse -Force '{temp_dir}'";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
