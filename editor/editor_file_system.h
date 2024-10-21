@@ -107,7 +107,7 @@ public:
 	void force_update();
 
 	EditorFileSystemDirectory();
-	~EditorFileSystemDirectory();
+	~EditorFileSystemDirectory() override;
 };
 
 class EditorFileSystemImportFormatSupportQuery : public RefCounted {
@@ -384,7 +384,7 @@ public:
 	void add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	void remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	EditorFileSystem();
-	~EditorFileSystem();
+	~EditorFileSystem() override;
 };
 
 #endif // EDITOR_FILE_SYSTEM_H
