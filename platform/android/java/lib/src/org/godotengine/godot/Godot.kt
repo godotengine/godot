@@ -81,6 +81,10 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
+import android.net.Uri
+import android.provider.DocumentsContract
+import org.godotengine.godot.io.file.MediaStoreData
+
 /**
  * Core component used to interface with the native layer of the engine.
  *
@@ -136,6 +140,8 @@ class Godot(private val context: Context) {
 	val netUtils = GodotNetUtils(context)
 	private val commandLineFileParser = CommandLineFileParser()
 	private val godotInputHandler = GodotInputHandler(context, this)
+
+	val FILE_PICKER_REQUEST = 1000
 
 	/**
 	 * Task to run when the engine terminates.
@@ -670,6 +676,48 @@ class Godot(private val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
+
+		if (requestCode == FILE_PICKER_REQUEST) {
+			if (resultCode == Activity.RESULT_CANCELED) {
+				Log.d(TAG, "File picker canceled")
+				GodotLib.filePickerCallback(false, emptyArray(), 0)
+				return
+			}
+			if (resultCode == Activity.RESULT_OK) {
+				val selectedPaths: MutableList<String> = mutableListOf()
+				if (data?.clipData != null) {
+					// Handle multiple file selection
+					val clipData = data.clipData
+					for (i in 0 until clipData!!.itemCount) {
+						val uri = clipData.getItemAt(i).uri
+						uri?.let {
+							val filepath = MediaStoreData.getFilePathFromUri(context,uri)
+							if (filepath != null) {
+								selectedPaths.add(filepath)
+							} else {
+								Log.d(TAG, "null filepath URI: $it")
+							}
+						}
+					}
+				} else {
+					val uri: Uri? = data?.data
+					uri?.let {
+						val filepath = MediaStoreData.getFilePathFromUri(context,uri)
+						if (filepath != null) {
+							selectedPaths.add(filepath)
+						} else {
+							Log.d(TAG, "null filepath URI: $it")
+						}
+					}
+				}
+
+				if (selectedPaths.isNotEmpty()) {
+					GodotLib.filePickerCallback(true, selectedPaths.toTypedArray(), 0)
+				} else {
+					GodotLib.filePickerCallback(false, emptyArray(), 0)
+				}
+			}
+		}
 	}
 
 	/**
@@ -875,6 +923,40 @@ class Godot(private val context: Context) {
 		val clip = ClipData.newPlainText("myLabel", text)
 		mClipboard.setPrimaryClip(clip)
 	}
+
+	fun ShowFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
+		val intent = when (fileMode) {
+			2 -> Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+			4 -> Intent(Intent.ACTION_CREATE_DOCUMENT)
+			else -> Intent(Intent.ACTION_OPEN_DOCUMENT)
+		}
+		val initialDirectory = MediaStoreData.getUriFromDirectoryPath(context, currentDirectory)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && initialDirectory != null) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialDirectory)
+        } else {
+			Log.d(TAG, "Error cannot set initial directory")
+		}
+		if (fileMode == 1) {
+			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true) // Set multi select for FILE_MODE_OPEN_FILES
+		} else if (fileMode == 4) {
+			intent.putExtra(Intent.EXTRA_TITLE, filename) // Set filename for FILE_MODE_SAVE_FILE
+		}
+		// ACTION_OPEN_DOCUMENT_TREE does not support type
+		if (fileMode != 2) {
+			intent.type = "*/*"
+			if (filters.isNotEmpty()) {
+				if (filters.size == 1) {
+					intent.type = filters[0]
+				} else {
+					intent.putExtra(Intent.EXTRA_MIME_TYPES, filters)
+				}
+			}
+			intent.addCategory(Intent.CATEGORY_OPENABLE)
+		}
+		intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+		getActivity()?.startActivityForResult(intent, FILE_PICKER_REQUEST)
+	}
+
 
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.

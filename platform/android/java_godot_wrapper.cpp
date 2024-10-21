@@ -67,6 +67,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
+	_show_file_picker = p_env->GetMethodID(godot_class, "ShowFilePicker", "(Ljava/lang/String;Ljava/lang/String;I[Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
@@ -265,6 +266,28 @@ bool GodotJavaWrapper::has_clipboard() {
 		return env->CallBooleanMethod(godot_instance, _has_clipboard);
 	} else {
 		return false;
+	}
+}
+
+Error GodotJavaWrapper::show_file_picker(const String &p_current_directory, const String &p_filename, const int &p_mode, const Vector<String> &p_filters) {
+	if (_show_file_picker) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring j_current_directory = env->NewStringUTF(p_current_directory.utf8().get_data());
+		jstring j_filename = env->NewStringUTF(p_filename.utf8().get_data());
+		jint j_mode = p_mode;
+		jobjectArray j_filters = env->NewObjectArray(p_filters.size(), env->FindClass("java/lang/String"), nullptr);
+		for (int i = 0; i < p_filters.size(); ++i) {
+			jstring j_filter = env->NewStringUTF(p_filters[i].utf8().get_data());
+			env->SetObjectArrayElement(j_filters, i, j_filter);
+			env->DeleteLocalRef(j_filter);
+		}
+		env->CallVoidMethod(godot_instance, _show_file_picker, j_current_directory, j_filename, j_mode, j_filters);
+		env->DeleteLocalRef(j_current_directory);
+		env->DeleteLocalRef(j_filters);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
 	}
 }
 
