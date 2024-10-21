@@ -50,6 +50,20 @@
 				[b]Note:[/b] [FileAccess] will automatically close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
 			</description>
 		</method>
+		<method name="create_temp" qualifiers="static">
+			<return type="FileAccess" />
+			<param index="0" name="mode_flags" type="int" />
+			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="2" name="extension" type="String" default="&quot;&quot;" />
+			<param index="3" name="keep" type="bool" default="false" />
+			<description>
+				Creates a temporary file. This file will be freed when the returned [FileAccess] is freed.
+				If [param prefix] is not empty, it will be prefixed to the file name, separated by a [code]-[/code].
+				If [param extension] is not empty, it will be appended to the temporary file name.
+				If [param keep] is [code]true[/code], the file is not deleted when the returned [FileAccess] is freed.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
 		<method name="eof_reached" qualifiers="const">
 			<return type="bool" />
 			<description>

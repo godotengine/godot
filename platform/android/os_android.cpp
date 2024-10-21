@@ -677,6 +677,19 @@ String OS_Android::get_cache_path() const {
 	return ".";
 }
 
+String OS_Android::get_temp_path() const {
+	if (!temp_dir_cache.is_empty()) {
+		return temp_dir_cache;
+	}
+
+	String temp_dir = godot_io_java->get_temp_dir();
+	if (!temp_dir.is_empty()) {
+		temp_dir_cache = _remove_symlink(temp_dir);
+		return temp_dir_cache;
+	}
+	return ".";
+}
+
 String OS_Android::get_unique_id() const {
 	String unique_id = godot_io_java->get_unique_id();
 	if (!unique_id.is_empty()) {

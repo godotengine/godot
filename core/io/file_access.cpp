@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
@@ -82,6 +83,79 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	}
 
 	return ret;
+}
+
+Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
+	const String ERROR_COMMON_PREFIX = "Error while creating temporary file";
+
+	if (!p_prefix.is_valid_filename()) {
+		*r_error = ERR_FILE_BAD_PATH;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+	}
+
+	if (!p_extension.is_valid_filename()) {
+		*r_error = ERR_FILE_BAD_PATH;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid extension.)", ERROR_COMMON_PREFIX, p_extension));
+	}
+
+	const String TEMP_DIR = OS::get_singleton()->get_temp_path();
+	String extension = p_extension.trim_prefix(".");
+
+	uint32_t suffix_i = 0;
+	String path;
+	while (true) {
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().replace("-", "").replace("T", "").replace(":", "");
+		datetime += itos(Time::get_singleton()->get_ticks_usec());
+		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+		path = TEMP_DIR.path_join((p_prefix.is_empty() ? "" : p_prefix + "-") + suffix + (extension.is_empty() ? "" : "." + extension));
+		if (!DirAccess::exists(path)) {
+			break;
+		}
+		suffix_i += 1;
+	}
+
+	Error err;
+	{
+		// Create file first with WRITE mode.
+		// Otherwise, it would fail to open with a READ mode.
+		Ref<FileAccess> ret = FileAccess::open(path, FileAccess::ModeFlags::WRITE, &err);
+		if (err != OK) {
+			*r_error = err;
+			ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: could not create "%s".)", ERROR_COMMON_PREFIX, path));
+		}
+		ret->flush();
+	}
+
+	// Open then the temp file with the correct mode flag.
+	Ref<FileAccess> ret = FileAccess::open(path, p_mode_flags, &err);
+	if (err != OK) {
+		*r_error = err;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: could not open "%s".)", ERROR_COMMON_PREFIX, path));
+	}
+	if (ret.is_valid()) {
+		ret->_is_temp_file = true;
+		ret->_temp_keep_after_use = p_keep;
+		ret->_temp_path = ret->get_path_absolute();
+	}
+
+	*r_error = OK;
+	return ret;
+}
+
+Ref<FileAccess> FileAccess::_create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep) {
+	return create_temp(p_mode_flags, p_prefix, p_extension, p_keep, &last_file_open_error);
+}
+
+void FileAccess::_delete_temp() {
+	if (!_is_temp_file || _temp_keep_after_use) {
+		return;
+	}
+
+	if (!FileAccess::exists(_temp_path)) {
+		return;
+	}
+
+	DirAccess::remove_absolute(_temp_path);
 }
 
 Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
@@ -834,6 +908,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_open_error"), &FileAccess::get_open_error);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("create_temp", "mode_flags", "prefix", "extension", "keep"), &FileAccess::_create_temp, DEFVAL(""), DEFVAL(""), DEFVAL(false));
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
@@ -922,4 +997,8 @@ void FileAccess::_bind_methods() {
 	BIND_BITFIELD_FLAG(UNIX_SET_USER_ID);
 	BIND_BITFIELD_FLAG(UNIX_SET_GROUP_ID);
 	BIND_BITFIELD_FLAG(UNIX_RESTRICTED_DELETE);
+}
+
+FileAccess::~FileAccess() {
+	_delete_temp();
 }
