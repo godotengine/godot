@@ -30,8 +30,13 @@
 
 #include "main_timer_sync.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
 #include "core/os/os.h"
 #include "servers/display_server.h"
+#include <cmath>
+#include <cstdint>
 
 void MainFrameTime::clamp_process_step(double min_process_step, double max_process_step) {
 	if (process_step < min_process_step) {
@@ -147,25 +152,24 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 			}
 
 			return;
-		} else {
-			_hits_below_estimated++;
-
-			// don't allow large lowering if we are established at a refresh rate, as it will probably be dropped frames
-			bool established = _estimate_complete && (_hits_at_estimated > 10);
-
-			// macro changes
-			// note there is a large barrier to macro lowering. That is because it is more likely to be dropped frames
-			// than mis-estimation of the refresh rate.
-			if (!established) {
-				if (((_hits_below_estimated / 8) > _hits_at_estimated) && (_hits_below_estimated > SIGNIFICANCE_DOWN)) {
-					// decrease the estimate
-					_estimated_fps--;
-					made_new_estimate();
-				}
-			}
-
-			return;
 		}
+		_hits_below_estimated++;
+
+		// don't allow large lowering if we are established at a refresh rate, as it will probably be dropped frames
+		bool established = _estimate_complete && (_hits_at_estimated > 10);
+
+		// macro changes
+		// note there is a large barrier to macro lowering. That is because it is more likely to be dropped frames
+		// than mis-estimation of the refresh rate.
+		if (!established) {
+			if (((_hits_below_estimated / 8) > _hits_at_estimated) && (_hits_below_estimated > SIGNIFICANCE_DOWN)) {
+				// decrease the estimate
+				_estimated_fps--;
+				made_new_estimate();
+			}
+		}
+
+		return;
 	}
 
 	// Changes increasing the estimate.
@@ -178,21 +182,20 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 			made_new_estimate();
 		}
 		return;
-	} else {
-		_hits_above_estimated++;
-
-		// macro changes
-		if ((_hits_above_estimated > _hits_at_estimated) && (_hits_above_estimated > SIGNIFICANCE_UP)) {
-			// increase the estimate
-			int change = fps - _estimated_fps;
-			change /= 2;
-			change = MAX(1, change);
-
-			_estimated_fps += change;
-			made_new_estimate();
-		}
-		return;
 	}
+	_hits_above_estimated++;
+
+	// macro changes
+	if ((_hits_above_estimated > _hits_at_estimated) && (_hits_above_estimated > SIGNIFICANCE_UP)) {
+		// increase the estimate
+		int change = fps - _estimated_fps;
+		change /= 2;
+		change = MAX(1, change);
+
+		_estimated_fps += change;
+		made_new_estimate();
+	}
+	return;
 }
 
 bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
@@ -214,11 +217,7 @@ bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
 
 				//print_line("ratio : " + String(Variant(ratio)));
 
-				if ((ratio > 0.95) && (ratio < 1.05)) {
-					_measurement_allows_smoothing = true;
-				} else {
-					_measurement_allows_smoothing = false;
-				}
+				_measurement_allows_smoothing = (ratio > 0.95) && (ratio < 1.05);
 			}
 		} // estimate complete
 
@@ -313,13 +312,15 @@ int MainTimerSync::get_average_physics_steps(double &p_min, double &p_max) {
 		const double current_min = typical_lower / (i + 1);
 		if (current_min > p_max) {
 			return i; // bail out if further restrictions would void the interval
-		} else if (current_min > p_min) {
+		}
+		if (current_min > p_min) {
 			p_min = current_min;
 		}
 		const double current_max = (typical_lower + 1) / (i + 1);
 		if (current_max < p_min) {
 			return i;
-		} else if (current_max < p_max) {
+		}
+		if (current_max < p_max) {
 			p_max = current_max;
 		}
 	}
@@ -431,7 +432,8 @@ MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physic
 	// first, least important clamping: keep ret.process_step consistent with typical_physics_steps.
 	// this smoothes out the process steps and culls small but quick variations.
 	{
-		double min_average_physics_steps, max_average_physics_steps;
+		double min_average_physics_steps;
+		double max_average_physics_steps;
 		int consistent_steps = get_average_physics_steps(min_average_physics_steps, max_average_physics_steps);
 		if (consistent_steps > 3) {
 			ret.clamp_process_step(min_average_physics_steps * p_physics_step, max_average_physics_steps * p_physics_step);

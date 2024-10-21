@@ -57,7 +57,7 @@ class Performance : public Object {
 		Vector<Variant> _arguments;
 
 	public:
-		MonitorCall(Callable p_callable, Vector<Variant> p_arguments);
+		MonitorCall(const Callable &p_callable, Vector<Variant> p_arguments);
 		MonitorCall();
 		Variant call(bool &r_error, String &r_error_message);
 	};
@@ -130,7 +130,7 @@ public:
 	Variant get_custom_monitor(const StringName &p_id);
 	TypedArray<StringName> get_custom_monitor_names();
 
-	uint64_t get_monitor_modification_time();
+	uint64_t get_monitor_modification_time() const;
 
 	static Performance *get_singleton() { return singleton; }
 

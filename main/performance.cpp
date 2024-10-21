@@ -30,8 +30,22 @@
 
 #include "performance.h"
 
+#include "core/config/engine.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
+#include "core/object/object.h"
+#include "core/os/main_loop.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
@@ -40,6 +54,7 @@
 
 // 2D
 #include "servers/physics_server_2d.h"
+#include <cstdint>
 
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
@@ -110,7 +125,7 @@ int Performance::_get_node_count() const {
 }
 
 String Performance::get_monitor_name(Monitor p_monitor) const {
-	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
+	(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
 		PNAME("time/fps"),
 		PNAME("time/process"),
@@ -257,7 +272,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 }
 
 Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const {
-	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
+	(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
 	// ugly
 	static const MonitorType types[MONITOR_MAX] = {
 		MONITOR_TYPE_QUANTITY,
@@ -315,13 +330,13 @@ void Performance::set_navigation_process_time(double p_pt) {
 }
 
 void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args) {
-	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
+	(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
 	_monitor_map.insert(p_id, MonitorCall(p_callable, p_args));
 	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
 }
 
 void Performance::remove_custom_monitor(const StringName &p_id) {
-	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
 	_monitor_map.erase(p_id);
 	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
 }
@@ -331,17 +346,17 @@ bool Performance::has_custom_monitor(const StringName &p_id) {
 }
 
 Variant Performance::get_custom_monitor(const StringName &p_id) {
-	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
 	bool error;
 	String error_message;
 	Variant return_value = _monitor_map[p_id].call(error, error_message);
-	ERR_FAIL_COND_V_MSG(error, return_value, "Error calling from custom monitor '" + String(p_id) + "' to callable: " + error_message);
+	(error, return_value, "Error calling from custom monitor '" + String(p_id) + "' to callable: " + error_message);
 	return return_value;
 }
 
 TypedArray<StringName> Performance::get_custom_monitor_names() {
 	if (!_monitor_map.size()) {
-		return TypedArray<StringName>();
+		return {};
 	}
 	TypedArray<StringName> return_array;
 	return_array.resize(_monitor_map.size());
@@ -353,7 +368,7 @@ TypedArray<StringName> Performance::get_custom_monitor_names() {
 	return return_array;
 }
 
-uint64_t Performance::get_monitor_modification_time() {
+uint64_t Performance::get_monitor_modification_time() const {
 	return _monitor_modification_time;
 }
 
@@ -365,7 +380,7 @@ Performance::Performance() {
 	singleton = this;
 }
 
-Performance::MonitorCall::MonitorCall(Callable p_callable, Vector<Variant> p_arguments) {
+Performance::MonitorCall::MonitorCall(const Callable &p_callable, Vector<Variant> p_arguments) {
 	_callable = p_callable;
 	_arguments = p_arguments;
 }
@@ -379,7 +394,7 @@ Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
 	for (int i = 0; i < _arguments.size(); i++) {
 		arguments_mem.write[i] = &_arguments[i];
 	}
-	const Variant **args = (const Variant **)arguments_mem.ptr();
+	const auto **args = (const Variant **)arguments_mem.ptr();
 	int argc = _arguments.size();
 	Variant return_value;
 	Callable::CallError error;
