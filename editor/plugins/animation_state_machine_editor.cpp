@@ -228,9 +228,12 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 		}
 
-		//test the lines now
+		// Test the transition lines.
 		int closest = -1;
 		float closest_d = 1e20;
+		Vector<int> close_candidates;
+
+		// First find closest lines using point-to-segment distance.
 		for (int i = 0; i < transition_lines.size(); i++) {
 			Vector2 s[2] = {
 				transition_lines[i].from,
@@ -238,13 +241,34 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			};
 			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), s);
 			float d = cpoint.distance_to(mb->get_position());
+
 			if (d > transition_lines[i].width) {
 				continue;
 			}
 
-			if (d < closest_d) {
-				closest = i;
+			// If this is very close to our current closest distance, add it to candidates.
+			if (Math::abs(d - closest_d) < 2.0) { // Within 2 pixels.
+				close_candidates.push_back(i);
+			} else if (d < closest_d) {
 				closest_d = d;
+				closest = i;
+				close_candidates.clear();
+				close_candidates.push_back(i);
+			}
+		}
+
+		// Use midpoint distance as bias.
+		if (close_candidates.size() > 1) {
+			float best_midpoint_dist = 1e20;
+
+			for (int idx : close_candidates) {
+				Vector2 midpoint = (transition_lines[idx].from + transition_lines[idx].to) / 2.0;
+				float midpoint_dist = midpoint.distance_to(mb->get_position());
+
+				if (midpoint_dist < best_midpoint_dist) {
+					best_midpoint_dist = midpoint_dist;
+					closest = idx;
+				}
 			}
 		}
 
