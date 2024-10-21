@@ -95,7 +95,7 @@ void RendererCanvasCull::_collect_ysort_children(RendererCanvasCull::Item *p_can
 			}
 
 			if (snapping_2d_transforms_to_pixel) {
-				child_xform.columns[2] = child_xform.columns[2].round();
+				child_xform.columns[2] = (child_xform.columns[2] + Point2(0.5, 0.5)).floor();
 			}
 
 			r_items[r_index] = child_items[i];
@@ -303,8 +303,8 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		Transform2D parent_xform = p_parent_xform;
 
 		if (snapping_2d_transforms_to_pixel) {
-			self_xform.columns[2] = self_xform.columns[2].round();
-			parent_xform.columns[2] = parent_xform.columns[2].round();
+			self_xform.columns[2] = (self_xform.columns[2] + Point2(0.5, 0.5)).floor();
+			parent_xform.columns[2] = (parent_xform.columns[2] + Point2(0.5, 0.5)).floor();
 		}
 
 		final_xform = parent_xform * self_xform;
