@@ -156,7 +156,6 @@ protected:
 	void _menu_option(int p_id);
 	void _update_debug_options();
 
-protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -183,7 +182,7 @@ public:
 	String get_var_value(const String &p_var) const;
 	Ref<Script> get_dump_stack_script() const { return stack_script; } // Why do we need this?
 
-	bool get_debug_with_external_editor() { return debug_with_external_editor; }
+	bool get_debug_with_external_editor() const { return debug_with_external_editor; }
 
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
