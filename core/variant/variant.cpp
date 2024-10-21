@@ -2349,6 +2349,86 @@ Variant::operator PackedVector4Array() const {
 	}
 }
 
+Variant::operator PackedByteArrayRef() {
+	if (type == PACKED_BYTE_ARRAY) {
+		return PackedByteArrayRef(static_cast<PackedArrayRef<uint8_t> *>(_data.packed_array));
+	} else {
+		return PackedByteArrayRef(_convert_array_from_variant<PackedByteArray>(*this));
+	}
+}
+
+Variant::operator PackedInt32ArrayRef() {
+	if (type == PACKED_INT32_ARRAY) {
+		return PackedInt32ArrayRef(static_cast<PackedArrayRef<int32_t> *>(_data.packed_array));
+	} else {
+		return PackedInt32ArrayRef(_convert_array_from_variant<PackedInt32Array>(*this));
+	}
+}
+
+Variant::operator PackedInt64ArrayRef() {
+	if (type == PACKED_INT64_ARRAY) {
+		return PackedInt64ArrayRef(static_cast<PackedArrayRef<int64_t> *>(_data.packed_array));
+	} else {
+		return PackedInt64ArrayRef(_convert_array_from_variant<PackedInt64Array>(*this));
+	}
+}
+
+Variant::operator PackedFloat32ArrayRef() {
+	if (type == PACKED_FLOAT32_ARRAY) {
+		return PackedFloat32ArrayRef(static_cast<PackedArrayRef<float> *>(_data.packed_array));
+	} else {
+		return PackedFloat32ArrayRef(_convert_array_from_variant<PackedFloat32Array>(*this));
+	}
+}
+
+Variant::operator PackedFloat64ArrayRef() {
+	if (type == PACKED_FLOAT64_ARRAY) {
+		return PackedFloat64ArrayRef(static_cast<PackedArrayRef<double> *>(_data.packed_array));
+	} else {
+		return PackedFloat64ArrayRef(_convert_array_from_variant<PackedFloat64Array>(*this));
+	}
+}
+
+Variant::operator PackedStringArrayRef() {
+	if (type == PACKED_STRING_ARRAY) {
+		return PackedStringArrayRef(static_cast<PackedArrayRef<String> *>(_data.packed_array));
+	} else {
+		return PackedStringArrayRef(_convert_array_from_variant<PackedStringArray>(*this));
+	}
+}
+
+Variant::operator PackedVector2ArrayRef() {
+	if (type == PACKED_VECTOR2_ARRAY) {
+		return PackedVector2ArrayRef(static_cast<PackedArrayRef<Vector2> *>(_data.packed_array));
+	} else {
+		return PackedVector2ArrayRef(_convert_array_from_variant<PackedVector2Array>(*this));
+	}
+}
+
+Variant::operator PackedVector3ArrayRef() {
+	if (type == PACKED_VECTOR3_ARRAY) {
+		return PackedVector3ArrayRef(static_cast<PackedArrayRef<Vector3> *>(_data.packed_array));
+	} else {
+		return PackedVector3ArrayRef(_convert_array_from_variant<PackedVector3Array>(*this));
+	}
+}
+
+Variant::operator PackedColorArrayRef() {
+	if (type == PACKED_COLOR_ARRAY) {
+		return PackedColorArrayRef(static_cast<PackedArrayRef<Color> *>(_data.packed_array));
+	} else {
+		return PackedColorArrayRef(_convert_array_from_variant<PackedColorArray>(*this));
+	}
+}
+
+Variant::operator PackedVector4ArrayRef() {
+	if (type == PACKED_VECTOR4_ARRAY) {
+		return PackedVector4ArrayRef(static_cast<PackedArrayRef<Vector4> *>(_data.packed_array));
+	} else {
+		return PackedVector4ArrayRef(_convert_array_from_variant<PackedVector4Array>(*this));
+	}
+}
+
 /* helpers */
 
 Variant::operator Vector<::RID>() const {
@@ -2694,6 +2774,56 @@ Variant::Variant(const PackedColorArray &p_color_array) :
 Variant::Variant(const PackedVector4Array &p_vector4_array) :
 		type(PACKED_VECTOR4_ARRAY) {
 	_data.packed_array = PackedArrayRef<Vector4>::create(p_vector4_array);
+}
+
+Variant::Variant(PackedByteArrayRef &p_byte_array) :
+		type(PACKED_BYTE_ARRAY) {
+	_data.packed_array = p_byte_array.ref->reference();
+}
+
+Variant::Variant(PackedInt32ArrayRef &p_int32_array) :
+		type(PACKED_INT32_ARRAY) {
+	_data.packed_array = p_int32_array.ref->reference();
+}
+
+Variant::Variant(PackedInt64ArrayRef &p_int64_array) :
+		type(PACKED_INT64_ARRAY) {
+	_data.packed_array = p_int64_array.ref->reference();
+}
+
+Variant::Variant(PackedFloat32ArrayRef &p_float32_array) :
+		type(PACKED_FLOAT32_ARRAY) {
+	_data.packed_array = p_float32_array.ref->reference();
+}
+
+Variant::Variant(PackedFloat64ArrayRef &p_float64_array) :
+		type(PACKED_FLOAT64_ARRAY) {
+	_data.packed_array = p_float64_array.ref->reference();
+}
+
+Variant::Variant(PackedStringArrayRef &p_string_array) :
+		type(PACKED_STRING_ARRAY) {
+	_data.packed_array = p_string_array.ref->reference();
+}
+
+Variant::Variant(PackedVector2ArrayRef &p_vector2_array) :
+		type(PACKED_VECTOR2_ARRAY) {
+	_data.packed_array = p_vector2_array.ref->reference();
+}
+
+Variant::Variant(PackedVector3ArrayRef &p_vector3_array) :
+		type(PACKED_VECTOR3_ARRAY) {
+	_data.packed_array = p_vector3_array.ref->reference();
+}
+
+Variant::Variant(PackedColorArrayRef &p_color_array) :
+		type(PACKED_COLOR_ARRAY) {
+	_data.packed_array = p_color_array.ref->reference();
+}
+
+Variant::Variant(PackedVector4ArrayRef &p_vector4_array) :
+		type(PACKED_VECTOR4_ARRAY) {
+	_data.packed_array = p_vector4_array.ref->reference();
 }
 
 /* helpers */
