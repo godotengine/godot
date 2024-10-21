@@ -72,7 +72,7 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
 		case FEATURE_NATIVE_DIALOG_INPUT:
-		//case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE:
 		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
@@ -187,6 +187,19 @@ Error DisplayServerAndroid::dialog_input_text(String p_title, String p_descripti
 void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
 	if (input_dialog_callback.is_valid()) {
 		input_dialog_callback.call_deferred(p_text);
+	}
+}
+
+Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, FAILED);
+	file_picker_callback = p_callback;
+	return godot_java->show_file_picker(p_current_directory, p_filename, p_mode, p_filters);
+}
+
+void DisplayServerAndroid::emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths) {
+	if (file_picker_callback.is_valid()) {
+		file_picker_callback.call_deferred(p_ok, p_selected_paths, 0);
 	}
 }
 
