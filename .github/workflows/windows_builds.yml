@@ -29,14 +29,14 @@ jobs:
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
-            bin: "./bin/godot.windows.editor.x86_64.exe"
+            bin: "./bin/blazium.windows.editor.x86_64.exe"
             compiler: msvc
 
           - name: Editor w/ Mono (target=editor)
             cache-name: windows-editor-mono
             target: editor
             sconsflags: module_mono_enabled=yes
-            bin: ./bin/godot.windows.editor.x86_64.mono.exe
+            bin: ./bin/blazium.windows.editor.x86_64.mono.exe
             build-mono: true
             tests: false # Disabled due freeze caused by mix Mono build and CI
             doc-test: true
@@ -49,7 +49,7 @@ jobs:
             target: editor
             tests: true
             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
-            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
+            bin: ./bin/blazium.windows.editor.x86_64.llvm.exe
             compiler: clang
 
           - name: Template (target=template_release)
@@ -57,7 +57,7 @@ jobs:
             target: template_release
             tests: true
             sconsflags: debug_symbols=no tests=yes
-            bin: "./bin/godot.windows.template_release.x86_64.console.exe"
+            bin: "./bin/blazium.windows.template_release.x86_64.console.exe"
             compiler: msvc
             artifact: true
 
@@ -67,7 +67,7 @@ jobs:
             target: template_release
             tests: true
             sconsflags: debug_symbols=no use_mingw=yes
-            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            bin: ./bin/blazium.windows.template_release.x86_64.console.exe
             compiler: gcc
 
     steps:
@@ -116,7 +116,7 @@ jobs:
 
       - name: Generate Glue Code
         if: ${{ matrix.cache-name == 'windows-editor-mono' }}
-        run: ./bin/godot.windows.editor.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
+        run: ./bin/blazium.windows.editor.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
 
       - name: Build GodotSharp
         if: ${{ matrix.cache-name == 'windows-editor-mono' }}
