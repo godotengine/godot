@@ -39,9 +39,8 @@ struct ValidatedVariant {
 	Variant value;
 	bool valid;
 
-	ValidatedVariant(const Variant &p_value, const bool p_valid) {
-		value = p_value;
-		valid = p_valid;
+	ValidatedVariant(const Variant &p_value, const bool p_valid) :
+			value(p_value), valid(p_valid) {
 	}
 };
 
@@ -50,25 +49,37 @@ struct ContainerTypeValidate {
 	StringName class_name;
 	Ref<Script> script;
 
-	bool is_array_of_structs = false;
-	const StructInfo *struct_info = nullptr; // TODO: if is_array_of_structs == true, then require struct_info != nullptr, but not sure the best way to enforce this.
 	const char *where = "container";
 
-	ContainerTypeValidate() {};
-	ContainerTypeValidate(const Variant::Type p_type, const StringName &p_class_name, const Ref<Script> &p_script, const char *p_where = "container") {
-		type = p_type;
-		class_name = p_class_name;
-		script = p_script;
-		struct_info = nullptr;
-		where = p_where;
+private:
+	// is_struct must be false if struct_info == nullptr
+	// if is_struct is false and struct_info != nullptr, the container is a TypedArray of Structs.
+	const StructInfo *struct_info = nullptr;
+	bool is_struct = false;
+
+public:
+	ContainerTypeValidate() {}
+	ContainerTypeValidate(const Variant::Type p_type, const StringName &p_class_name, const Ref<Script> &p_script, const char *p_where = "container") :
+			type(p_type), class_name(p_class_name), script(p_script), where(p_where) {
 	}
-	ContainerTypeValidate(const StructInfo &p_struct_info, bool p_is_array_of_structs = false) {
-		type = Variant::ARRAY;
-		class_name = p_struct_info.name;
-		script = Ref<Script>();
-		is_array_of_structs = p_is_array_of_structs;
-		struct_info = &p_struct_info;
-		where = p_is_array_of_structs ? "TypedArray" : "Struct";
+	ContainerTypeValidate(const StructInfo &p_struct_info, bool p_is_struct = true) :
+			type(Variant::ARRAY), class_name(p_struct_info.name), script(Ref<Script>()), where(p_is_struct ? "Struct" : "TypedArray"), struct_info(&p_struct_info), is_struct(p_is_struct) {
+	}
+
+	_FORCE_INLINE_ void set_struct_info(const StructInfo *p_struct_info) {
+		struct_info = p_struct_info;
+		if (!struct_info) {
+			is_struct = false;
+		}
+	}
+	_FORCE_INLINE_ const StructInfo *get_struct_info() const {
+		return struct_info;
+	}
+	_FORCE_INLINE_ bool get_is_struct() const {
+		return is_struct;
+	}
+	_FORCE_INLINE_ bool is_array_of_structs() const {
+		return !is_struct && struct_info != nullptr;
 	}
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
@@ -78,7 +89,7 @@ struct ContainerTypeValidate {
 		if (type != p_type.type) {
 			return false;
 		}
-		if (is_array_of_structs != p_type.is_array_of_structs) {
+		if (is_struct != p_type.is_struct) {
 			return false;
 		}
 		if (!StructInfo::is_compatible(struct_info, p_type.struct_info)) {
@@ -108,10 +119,10 @@ struct ContainerTypeValidate {
 	}
 
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script && is_array_of_structs == p_type.is_array_of_structs && StructInfo::is_compatible(struct_info, p_type.struct_info);
+		return type == p_type.type && class_name == p_type.class_name && script == p_type.script && is_struct == p_type.is_struct && StructInfo::is_compatible(struct_info, p_type.struct_info);
 	}
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script || is_array_of_structs != p_type.is_array_of_structs || !StructInfo::is_compatible(struct_info, p_type.struct_info);
+		return type != p_type.type || class_name != p_type.class_name || script != p_type.script || is_struct != p_type.is_struct || !StructInfo::is_compatible(struct_info, p_type.struct_info);
 	}
 
 	_FORCE_INLINE_ static ValidatedVariant validate_variant_type(const Variant::Type p_type, const Variant &p_variant, const char *p_where, const char *p_operation = "use") {
@@ -185,8 +196,8 @@ struct ContainerTypeValidate {
 		if (!ret.valid) {
 			return ret;
 		}
-
 		// Variant types match
+
 		if (type == Variant::ARRAY) {
 			const Array array = p_variant;
 			if (array.is_struct()) { // validating a struct into a typed array of structs
@@ -209,16 +220,26 @@ struct ContainerTypeValidate {
 		if (!ret.valid) {
 			return ret;
 		}
-
 		// Variant types match
-		if (variant_type == Variant::ARRAY) {
-			const Array array = p_variant;
-			// Valid if (the struct member is itself a struct and the other array is a compatible struct) or (neither the struct member nor the other array are a struct).
-			ret.valid = StructInfo::is_compatible(struct_info->struct_member_infos[p_struct_index], array.get_struct_info());
-		} else if (variant_type == Variant::OBJECT) {
-			ret.valid = validate_object(struct_info->class_names[p_struct_index], Ref<Script>(), p_variant, where, p_operation);
+
+		switch (variant_type) {
+			case Variant::ARRAY: {
+				const Array &default_array = struct_info->default_values[p_struct_index];
+				ret.valid = default_array.can_reference(p_variant);
+				return ret;
+			}
+			case Variant::DICTIONARY: {
+				const Dictionary &default_dict = struct_info->default_values[p_struct_index];
+				ret.valid = default_dict.can_reference(p_variant);
+				return ret;
+			}
+			case Variant::OBJECT: {
+				ret.valid = validate_object(struct_info->type_names[p_struct_index], static_cast<Ref<Script>>(struct_info->scripts[p_struct_index]), p_variant, where, p_operation);
+				return ret;
+			}
+			default:
+				return ret;
 		}
-		return ret;
 	}
 };
 

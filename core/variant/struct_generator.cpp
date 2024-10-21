@@ -30,13 +30,15 @@
 
 #include "struct_generator.h"
 
+#include "core/object/script_language.h"
 #include "core/variant/struct.h"
 #include "core/variant/typed_array.h"
 
 Variant StructInfo::types::to_variant(const Vector<Variant::Type> &p_value) {
 	PackedInt32Array packed_types;
-	packed_types.resize(p_value.size());
-	for (int i = 0; i < p_value.size(); i++) {
+	const Vector<Variant::Type>::Size size = p_value.size();
+	packed_types.resize(size);
+	for (int i = 0; i < size; i++) {
 		packed_types.write[i] = p_value[i];
 	}
 	return packed_types;
@@ -45,35 +47,46 @@ Variant StructInfo::types::to_variant(const Vector<Variant::Type> &p_value) {
 Vector<Variant::Type> StructInfo::types::from_variant(const Variant &p_variant) {
 	const PackedInt32Array &packed_types = p_variant;
 	Vector<Variant::Type> types;
-	types.resize(packed_types.size());
-	for (int i = 0; i < packed_types.size(); i++) {
+	const PackedInt32Array::Size size = packed_types.size();
+	types.resize(size);
+	for (int i = 0; i < size; i++) {
 		types.write[i] = static_cast<Variant::Type>(packed_types[i]);
 	}
 	return types;
 }
 
-Dictionary StructInfo::to_dict() const {
-	Dictionary dict;
-	dict["name"] = name;
-	dict["count"] = count;
-	dict["names"] = names;
-	PackedInt32Array packed_types;
-	packed_types.resize(count);
-	for (int i = 0; i < count; i++) {
-		packed_types.write[i] = types[i];
+Variant StructInfo::scripts::to_variant(const Vector<const Script *> &p_value) {
+	TypedArray<Script> scripts;
+	const Vector<const Script *>::Size size = p_value.size();
+	scripts.resize(size);
+	for (int i = 0; i < size; i++) {
+		scripts[i] = p_value[i];
 	}
-	dict["types"] = packed_types;
-	dict["class_names"] = class_names;
-	TypedArray<Dictionary> member_info_dictionaries;
-	member_info_dictionaries.resize(count);
-	for (int i = 0; i < count; i++) {
-		const StructInfo *member_info = struct_member_infos[i];
-		// TODO: Recursion limit?
-		member_info_dictionaries[i] = member_info ? member_info->to_dict() : Dictionary();
+	return scripts;
+}
+
+Vector<const Script *> StructInfo::scripts::from_variant(const Variant &p_variant) {
+	const TypedArray<Script> &script_array = p_variant;
+	Vector<const Script *> script_vector;
+	const int size = script_array.size();
+	script_vector.resize(size);
+	for (int i = 0; i < size; i++) {
+		script_vector.ptrw()[i] = static_cast<Ref<Script>>(script_array[i]).ptr();
 	}
-	dict["struct_member_infos"] = member_info_dictionaries;
-	dict["default_values"] = default_values;
-	return dict;
+	return script_vector;
+}
+
+// The following three methods need to be .cpp to avoid circular dependency between StructLayout and StructInfo
+const StructInfo &StructInfo::get_struct_info() {
+	return Layout::get_struct_info();
+}
+
+StructInfo::StructInfo(const Dictionary &p_dict) {
+	Layout::fill_struct(p_dict, *this);
+}
+
+StructInfo::StructInfo(const Array &p_array) {
+	Layout::fill_struct(p_array, *this);
 }
 
 // Needs to be in .cpp so struct.h can be included

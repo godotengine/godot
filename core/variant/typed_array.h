@@ -86,10 +86,10 @@ public:
 			Array(p_array.is_array_of_structs() ? p_array : Array({ p_array }, T::get_struct_info()), T::get_struct_info()) {
 	}
 	_FORCE_INLINE_ TypedArray() {
-		initialize_struct_type(T::get_struct_info(), true);
+		initialize_struct_type(T::get_struct_info(), false);
 	}
 	_FORCE_INLINE_ TypedArray(const List<T> *p_list) {
-		initialize_struct_type(T::get_struct_info(), true);
+		initialize_struct_type(T::get_struct_info(), false);
 		for (const typename List<T>::Element *E = p_list->front(); E; E = E->next()) {
 			push_back(Struct<T>(E->get()));
 		}

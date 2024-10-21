@@ -507,6 +507,7 @@ public:
 
 	bool class_has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false) const;
 	TypedArray<Dictionary> class_get_struct_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	// TODO: class_get_struct_members seems kind of pointless. It should maybe just be class_get_struct or something.
 	TypedArray<Dictionary> class_get_struct_members(const StringName &p_class, const StringName &p_struct) const;
 
 #ifdef TOOLS_ENABLED

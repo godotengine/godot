@@ -1301,7 +1301,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			if (array->is_struct()) {
 				const StructInfo *struct_info = array->get_struct_info();
 				for (int32_t i = 0; i < struct_info->count; i++) {
-					p_list->push_back(PropertyInfo(struct_info->types[i], struct_info->names[i], PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, struct_info->class_names[i]));
+					p_list->push_back(PropertyInfo(struct_info->types[i], struct_info->names[i], PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, struct_info->type_names[i]));
 				}
 				break;
 			}

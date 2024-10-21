@@ -42,7 +42,6 @@ class StringName;
 class Callable;
 template <typename T>
 class Vector;
-struct StructMember;
 struct ContainerTypeValidate;
 struct StructInfo;
 class Dictionary;
@@ -144,6 +143,7 @@ public:
 	uint32_t recursive_hash(int recursion_count) const;
 	void operator=(const Array &p_array);
 
+	bool can_reference(const Array &p_array) const;
 	void assign(const Array &p_array);
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
@@ -201,11 +201,11 @@ public:
 
 	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
-	void set_struct(const StructInfo &p_struct_info, bool p_is_array_of_structs = false);
+	void set_struct(const StructInfo &p_struct_info, bool p_is_struct = true);
 
 protected:
 	void initialize_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
-	void initialize_struct_type(const StructInfo &p_struct_info, bool p_is_array_of_structs = false);
+	void initialize_struct_type(const StructInfo &p_struct_info, bool p_is_struct = true);
 
 public:
 	bool is_typed() const;
@@ -226,7 +226,7 @@ public:
 	Array(const Array &p_from);
 	Array(const Array &p_from, const StructInfo &p_struct_info);
 	Array(const Dictionary &p_from, const StructInfo &p_struct_info);
-	Array(const StructInfo &p_struct_info, bool p_is_array_of_structs = false);
+	Array(const StructInfo &p_struct_info, bool p_is_struct = true);
 	Array();
 	~Array();
 };
