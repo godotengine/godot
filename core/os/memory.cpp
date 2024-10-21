@@ -178,7 +178,9 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 }
 
 void Memory::free_static(void *p_ptr, bool p_pad_align) {
-	ERR_FAIL_NULL(p_ptr);
+	if(p_ptr == nullptr) {
+		printf("Null \n");
+	}
 
 	uint8_t *mem = (uint8_t *)p_ptr;
 

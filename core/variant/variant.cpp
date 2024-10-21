@@ -1102,6 +1102,9 @@ void Variant::ObjData::ref_pointer(Object *p_object) {
 
 	if (p_object) {
 		*this = ObjData{ p_object->get_instance_id(), p_object };
+		if(id.is_null()) {
+			print_line("Id == 0");
+		}
 		if (p_object->is_ref_counted()) {
 			RefCounted *reference = static_cast<RefCounted *>(p_object);
 			if (!reference->init_ref()) {
