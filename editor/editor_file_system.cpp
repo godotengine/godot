@@ -3018,7 +3018,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 							current_index = tdata.max_index.get();
 							ep->step(reimport_files[current_index].path.get_file(), current_index, false);
 						}
-						OS::get_singleton()->delay_usec(1);
+						Thread::yield();
 					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
 
 					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
