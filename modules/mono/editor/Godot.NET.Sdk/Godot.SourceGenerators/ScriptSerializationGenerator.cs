@@ -123,10 +123,12 @@ namespace Godot.SourceGenerators
 
             // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
             // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-            var godotClassProperties = propertySymbols.Where(property => !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
+            var godotClassProperties = propertySymbols
+                .Where(property => !(property.IsReadOnly || property.IsWriteOnly) && property.SetMethodOrBaseSetMethod() is { IsInitOnly: false })
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
-            var godotClassFields = fieldSymbols.Where(property => !property.IsReadOnly)
+            var godotClassFields = fieldSymbols
+                .Where(property => !property.IsReadOnly)
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
 
