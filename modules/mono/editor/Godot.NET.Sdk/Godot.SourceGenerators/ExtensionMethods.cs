@@ -384,5 +384,15 @@ namespace Godot.SourceGenerators
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
                ?? location.GetLineSpan().StartLinePosition.Line;
+
+        public static IMethodSymbol? GetMethodOrBaseGetMethod(this IPropertySymbol symbol)
+        {
+            return symbol.GetMethod ?? symbol.OverriddenProperty?.GetMethodOrBaseGetMethod();
+        }
+
+        public static IMethodSymbol? SetMethodOrBaseSetMethod(this IPropertySymbol symbol)
+        {
+            return symbol.SetMethod ?? symbol.OverriddenProperty?.SetMethodOrBaseSetMethod();
+        }
     }
 }

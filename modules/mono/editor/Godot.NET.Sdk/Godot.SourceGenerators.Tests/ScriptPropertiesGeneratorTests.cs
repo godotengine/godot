@@ -66,4 +66,13 @@ public class ScriptPropertiesGeneratorTests
             "AbstractGenericNode(Of T)_ScriptProperties.generated.cs"
         );
     }
+
+    [Fact]
+    public async void Inheritance()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            new string[] { "Inheritance.cs" },
+            new string[] { "InheritanceBase_ScriptProperties.generated.cs", "InheritanceChild_ScriptProperties.generated.cs" }
+        );
+    }
 }
