@@ -863,6 +863,33 @@ void CharacterBodyMain::update_bone_visble()
 	bone_label->init(get_skeleton(), play_animation->get_bone_map());
     
 }
+
+
+static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, Dictionary& p_bone_map,int bode_parent) {
+	int index = bode_parent;
+	if (bode_parent == -1 || p_bone_map.has(p_node->get_name())) {
+		if (p_bone_map.has(p_node->get_name())) {
+			index = p_ske->add_bone(p_bone_map[p_node->get_name()]);
+		}
+		else {
+			index = p_ske->add_bone(p_node->get_name());
+		}
+		p_ske->set_bone_parent(index, bode_parent);
+		Transform3D trans = p_node->get_transform();
+		p_ske->set_bone_pose(index, trans);
+
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); ++i) {
+		Node3D* node = Object::cast_to<Node3D>(p_node->get_child(i));
+		if (node != nullptr) {
+			node_to_bone_skeleton(p_ske, node, p_bone_map, index);
+
+		}
+	}
+	
+}
+
 void CharacterBodyMain::editor_build_animation()
 {
     if(!FileAccess::exists(editor_animation_file_path))
@@ -928,24 +955,30 @@ void CharacterBodyMain::editor_build_animation()
 			human_bone_name_index[bone_names[i]] = i;
 		}
 	}
-	scene = ResourceLoader::load(CharacterManager::get_singleton()->get_skeleton_root_path(body_prefab->get_is_human()).path_join(bone_map->get_skeleton_path()));	
-    if (!scene.is_valid())
-    {
-        ERR_FAIL_MSG("load skeleton failed:" + bone_map->get_skeleton_path());
-        return;
-    }
-    Node* ins = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
-    if (ins == nullptr) {
-        ERR_FAIL_MSG("init skeleton instantiate failed:" + bone_map->get_skeleton_path());
-        return;
-    }
-    Skeleton3D* bone_map_skeleton = Object::cast_to<Skeleton3D>(ins);
-    if (bone_map_skeleton == nullptr)
-    {
-        ERR_FAIL_MSG("scene is not Skeleton3D:" + bone_map->get_skeleton_path());
-		bone_map_skeleton->queue_free();
-        return;
-    }
+	bool is_node_skeleton = false;
+	Skeleton3D* bone_map_skeleton;
+
+	Ref<HumanConfig> animation_human_config;
+	if (skeleton == nullptr) {
+		is_node_skeleton = true;
+		bone_map_skeleton = new Skeleton3D();
+		Dictionary bp = bone_map->get_bone_map();
+		node_to_bone_skeleton(bone_map_skeleton, (Node3D*)p_node, bp,-1);
+		animation_human_config.instantiate();
+		HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
+		HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton,  *animation_human_config.ptr(), _bone_label);
+		
+	}
+	else {
+		bone_map_skeleton = skeleton;
+		animation_human_config = bone_map_skeleton->get_human_config();
+		if (animation_human_config.is_null()) {
+			animation_human_config.instantiate();
+			HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
+			HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton, *animation_human_config.ptr(), _bone_label);
+
+		}
+	}
 
 
 
@@ -964,7 +997,7 @@ void CharacterBodyMain::editor_build_animation()
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (editor_human_config.is_valid()) {
 				Dictionary bp = bone_map->get_bone_map();
-				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *editor_human_config.ptr(), new_animation, bp);
+				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bp);
 			}
             new_animation->optimize();
             new_animation->compress();
@@ -1003,7 +1036,9 @@ void CharacterBodyMain::editor_build_animation()
         }
     }
     // 释放内存啦
-    bone_map_skeleton->queue_free();
+	if (is_node_skeleton) {
+		bone_map_skeleton->queue_free();
+	}
     p_node->queue_free();
 }
 
