@@ -559,7 +559,11 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n");
 	print_help_option("-u, --upwards", "Scan folders upwards for project.godot file.\n");
 	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n");
-	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\", \"safe\", \"separate\").\n");
+#ifdef DISABLE_DEPRECATED
+	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
+#else
+	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
+#endif
 	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n");
 	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n");
 
@@ -1000,7 +1004,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool skip_breakpoints = false;
 	String main_pack;
 	bool quiet_stdout = false;
-	int rtm = -1;
+	int separate_thread_render = -1;
 
 	String remotefs;
 	String remotefs_pass;
@@ -1391,13 +1395,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (N) {
 				if (N->get() == "safe") {
-					rtm = OS::RENDER_THREAD_SAFE;
+					separate_thread_render = 0;
+#ifndef DISABLE_DEPRECATED
 				} else if (N->get() == "unsafe") {
-					rtm = OS::RENDER_THREAD_UNSAFE;
+					OS::get_singleton()->print("The --render-thread unsafe option is unsupported in Godot 4 and will be removed.\n");
+					separate_thread_render = 0;
+#endif
 				} else if (N->get() == "separate") {
-					rtm = OS::RENDER_SEPARATE_THREAD;
+					separate_thread_render = 1;
 				} else {
-					OS::get_singleton()->print("Unknown render thread mode, aborting.\nValid options are 'unsafe', 'safe' and 'separate'.\n");
+					OS::get_singleton()->print("Unknown render thread mode, aborting.\n");
+#ifdef DISABLE_DEPRECATED
+					OS::get_singleton()->print("Valid options are 'safe' and 'separate'.\n");
+#else
+					OS::get_singleton()->print("Valid options are 'unsafe', 'safe' and 'separate'.\n");
+#endif
 					goto error;
 				}
 
@@ -2465,20 +2477,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
-	if (rtm == -1) {
-		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
+	if (separate_thread_render == -1) {
+		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/run_on_separate_thread", false);
 	}
 
-	if (rtm >= 0 && rtm < 3) {
-		if (editor || project_manager) {
-			// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
-			rtm = OS::RENDER_THREAD_SAFE;
-		}
-#if !defined(THREADS_ENABLED)
-		rtm = OS::RENDER_THREAD_SAFE;
-#endif
-		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
+	if (editor || project_manager) {
+		// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
+		separate_thread_render = 0;
 	}
+#if !defined(THREADS_ENABLED)
+	separate_thread_render = 0;
+#endif
+	OS::get_singleton()->_separate_thread_render = separate_thread_render;
 
 	/* Determine audio and video drivers */
 
@@ -3043,10 +3053,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 	}
 
-	if (OS::get_singleton()->_render_thread_mode == OS::RENDER_SEPARATE_THREAD) {
-		WARN_PRINT("The Multi-Threaded rendering thread model is experimental. Feel free to try it since it will eventually become a stable feature.\n"
+	if (OS::get_singleton()->_separate_thread_render) {
+		WARN_PRINT("The separate rendering thread feature is experimental. Feel free to try it since it will eventually become a stable feature.\n"
 				   "However, bear in mind that at the moment it can lead to project crashes or instability.\n"
-				   "So, unless you want to test the engine, use the Single-Safe option in the project settings instead.");
+				   "So, unless you want to test the engine, disable the \"rendering/driver/run_on_separate_thread\" project setting to false.");
 	}
 
 	/* Initialize Pen Tablet Driver */
@@ -3085,7 +3095,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Rendering");
 
-		rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
+		rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->is_separate_thread_rendering_enabled()));
 
 		rendering_server->init();
 		//rendering_server->call_set_use_vsync(OS::get_singleton()->_use_vsync);
