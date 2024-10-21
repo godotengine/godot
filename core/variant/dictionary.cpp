@@ -395,6 +395,10 @@ Array Dictionary::values() const {
 	return varr;
 }
 
+bool Dictionary::can_reference(const Dictionary &p_dictionary) const {
+	return _p->typed_key.can_reference(p_dictionary._p->typed_key) && _p->typed_value.can_reference(p_dictionary._p->typed_value);
+}
+
 void Dictionary::assign(const Dictionary &p_dictionary) {
 	const ContainerTypeValidate &typed_key = _p->typed_key;
 	const ContainerTypeValidate &typed_key_source = p_dictionary._p->typed_key;

@@ -1666,16 +1666,7 @@ TypedArray<Dictionary> ClassDB::class_get_struct_list(const StringName &p_class,
 	TypedArray<Dictionary> ret;
 	::ClassDB::get_struct_list(p_class, &structs, p_no_inheritance);
 	for (const StructInfo &struct_info : structs) {
-		Dictionary struct_dict;
-		for (int i = 0; i < struct_info.count; i++) {
-			Dictionary member_dict;
-			member_dict[SNAME("name")] = struct_info.names[i];
-			member_dict[SNAME("type")] = struct_info.types[i];
-			member_dict[SNAME("class_name")] = struct_info.class_names[i];
-			member_dict[SNAME("default_value")] = struct_info.default_values[i];
-			struct_dict[struct_info.name] = member_dict;
-		}
-		ret.push_back(struct_dict);
+		ret.push_back(StructInfo::Layout::to_dict(struct_info));
 	}
 	return ret;
 }
@@ -1691,7 +1682,7 @@ TypedArray<Dictionary> ClassDB::class_get_struct_members(const StringName &p_cla
 		Dictionary dict;
 		dict[SNAME("name")] = struct_info->names[i];
 		dict[SNAME("type")] = struct_info->types[i];
-		dict[SNAME("class_name")] = struct_info->class_names[i];
+		dict[SNAME("type_name")] = struct_info->type_names[i];
 		dict[SNAME("default_value")] = struct_info->default_values[i];
 		ret.push_back(dict);
 	}

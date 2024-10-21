@@ -39,6 +39,8 @@ class TypedArray;
 template <typename T>
 class Struct;
 
+class Script;
+
 /* The following set of macros let you seamlessly add reflection data to
  * a C++ struct or class so that it can be exposed as a Godot Struct.
  * The StructInfo struct below uses these macros and serves as a good
@@ -70,7 +72,7 @@ class Struct;
 	_FORCE_INLINE_ static Variant get_variant(const StructType &p_struct) { return to_variant(p_struct.m_member_name); }                         \
 	_FORCE_INLINE_ static const Variant get_default_value_variant() { return to_variant(m_default); }                                            \
 	_FORCE_INLINE_ static Type get(const StructType &p_struct) { return p_struct.m_member_name; }                                                \
-	_FORCE_INLINE_ static const Type get_default_value() { return m_default; }                                                                   \
+	_FORCE_INLINE_ static const m_type *get_default_value() { return m_default; }                                                                \
 	_FORCE_INLINE_ static void set_variant(StructType &p_struct, const Variant &p_variant) { p_struct.m_member_name = from_variant(p_variant); } \
 	_FORCE_INLINE_ static void set(StructType &p_struct, Type p_value) { p_struct.m_member_name = p_value; }
 
@@ -88,8 +90,8 @@ class Struct;
 		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                 \
 		STRUCT_MEMBER_TYPEDEF_ALIAS(m_type, m_member_name, m_member_name_alias, m_default);                 \
 		_FORCE_INLINE_ static Variant::Type get_variant_type() { return to_variant(m_default).get_type(); } \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                    \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                               \
+		_FORCE_INLINE_ static StringName get_type_name() { return StringName(); }                           \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                                \
 	}
 
 #define STRUCT_MEMBER(m_type, m_member_name, m_default) \
@@ -104,8 +106,8 @@ class Struct;
 		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }                 \
 		STRUCT_MEMBER_TYPEDEF(m_type, m_member_name, m_default);                                            \
 		_FORCE_INLINE_ static Variant::Type get_variant_type() { return to_variant(m_default).get_type(); } \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                    \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                               \
+		_FORCE_INLINE_ static StringName get_type_name() { return StringName(); }                           \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                                \
 	}
 
 // Macros that include _TO allow you to customize the way the struct is converted to a Variant. You must
@@ -117,8 +119,8 @@ class Struct;
 		static Variant to_variant(const m_type &p_value);                                                   \
 		STRUCT_MEMBER_TYPEDEF_ALIAS(m_type, m_member_name, m_member_name_alias, m_default);                 \
 		_FORCE_INLINE_ static Variant::Type get_variant_type() { return to_variant(m_default).get_type(); } \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                    \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                               \
+		_FORCE_INLINE_ static StringName get_type_name() { return StringName(); }                           \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                                \
 	}
 
 #define STRUCT_MEMBER_FROM_TO(m_type, m_member_name, m_default) \
@@ -131,8 +133,8 @@ class Struct;
 		_FORCE_INLINE_ static Variant to_variant(m_type *p_value) { return p_value; }                                       \
 		STRUCT_MEMBER_TYPEDEF_POINTER(m_type, m_member_name, m_default);                                                    \
 		_FORCE_INLINE_ static Variant::Type get_variant_type() { return Variant::OBJECT; }                                  \
-		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_type); }                                  \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                                               \
+		_FORCE_INLINE_ static StringName get_type_name() { return SNAME(#m_type); }                                         \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                                                \
 	}
 
 #define STRUCT_MEMBER_CLASS_VALUE(m_type, m_member_name, m_default)                               \
@@ -142,19 +144,19 @@ class Struct;
 		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return p_value; }       \
 		STRUCT_MEMBER_TYPEDEF(m_type, m_member_name, m_default);                                  \
 		_FORCE_INLINE_ static Variant::Type get_variant_type() { return Variant::OBJECT; }        \
-		_FORCE_INLINE_ static const StringName get_class_name() { return SNAME(#m_type); }        \
-		static const StructInfo *get_struct_member_info() { return nullptr; }                     \
+		_FORCE_INLINE_ static StringName get_type_name() { return SNAME(#m_type); }               \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                      \
 	}
 
-#define STRUCT_MEMBER_STRUCT(m_type, m_member_name, m_default)                                                          \
-	m_type m_member_name = m_default;                                                                                   \
-	struct m_member_name {                                                                                              \
-		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return Struct<m_type>(p_variant); }       \
-		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return Struct<m_type>(p_value); }             \
-		STRUCT_MEMBER_TYPEDEF(m_type, m_member_name, m_default);                                                        \
-		_FORCE_INLINE_ static Variant::Type get_variant_type() { return Variant::ARRAY; }                               \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }                                \
-		_FORCE_INLINE_ static const StructInfo *get_struct_member_info() { return &m_type::Layout::get_struct_info(); } \
+#define STRUCT_MEMBER_STRUCT(m_type, m_member_name, m_default)                                                    \
+	m_type m_member_name = m_default;                                                                             \
+	struct m_member_name {                                                                                        \
+		_FORCE_INLINE_ static m_type from_variant(const Variant &p_variant) { return Struct<m_type>(p_variant); } \
+		_FORCE_INLINE_ static Variant to_variant(const m_type &p_value) { return Struct<m_type>(p_value); }       \
+		STRUCT_MEMBER_TYPEDEF(m_type, m_member_name, m_default);                                                  \
+		_FORCE_INLINE_ static Variant::Type get_variant_type() { return Variant::ARRAY; }                         \
+		_FORCE_INLINE_ static StringName get_type_name() { return m_type::get_struct_name(); }                    \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                                      \
 	}
 
 #define STRUCT_MEMBER_STRUCT_FROM_TO_ALIAS(m_type, m_member_name, m_member_name_alias, m_default) \
@@ -164,10 +166,8 @@ class Struct;
 		static Variant to_variant(const m_type &p_value);                                         \
 		STRUCT_MEMBER_TYPEDEF_ALIAS(m_type, m_member_name, m_member_name_alias, m_default);       \
 		_FORCE_INLINE_ static Variant::Type get_variant_type() { return Variant::ARRAY; }         \
-		_FORCE_INLINE_ static const StringName get_class_name() { return StringName(); }          \
-		_FORCE_INLINE_ static const StructInfo *get_struct_member_info() {                        \
-			return &m_type::Layout::get_struct_info();                                            \
-		}                                                                                         \
+		_FORCE_INLINE_ static StringName get_type_name() { return m_type::get_struct_name(); }    \
+		_FORCE_INLINE_ static const Script *get_script() { return nullptr; }                      \
 	}
 
 #define STRUCT_MEMBER_STRUCT_FROM_TO(m_type, m_member_name, m_default) \
@@ -193,6 +193,76 @@ class Struct;
 // Most of the time, the exposed name of a struct follows the pattern "OwningClass.StructName".
 #define STRUCT_LAYOUT(m_owner, m_struct, ...) STRUCT_LAYOUT_ALIAS(#m_owner "." #m_struct, m_struct, __VA_ARGS__)
 
+template <typename StructType, typename... StructMembers>
+struct StructLayout;
+
+/* Represents the type data of both native and user Godot Structs.
+ * StructInfo is itself exposed as a Godot Struct, so it serves as
+ * a good example for how to expose other structs. */
+struct StructInfo {
+	STRUCT_DECLARE(StructInfo);
+	STRUCT_MEMBER(StringName, name, StringName());
+	STRUCT_MEMBER(int32_t, count, 0);
+	STRUCT_MEMBER(Vector<StringName>, names, Vector<StringName>());
+	STRUCT_MEMBER_FROM_TO(Vector<Variant::Type>, types, Vector<Variant::Type>());
+	STRUCT_MEMBER(Vector<StringName>, type_names, Vector<StringName>());
+	STRUCT_MEMBER_FROM_TO(Vector<const Script *>, scripts, Vector<const Script *>()); // wants to be Vector<Ref<Script>> but can't include Ref here.
+	STRUCT_MEMBER(Vector<Variant>, default_values, Vector<Variant>());
+
+	/* Normally, you would write
+	 * STRUCT_LAYOUT(StructInfo, struct name, struct count, struct names, struct types, struct type_names, struct scripts, struct default_values);
+	 * but we can't do that for StructInfo or it will create a circular dependency. */
+	static const StringName get_struct_name() {
+		return SNAME("StructInfo");
+	}
+	static const StructInfo &get_struct_info();
+	using Layout = StructLayout<StructInfo, struct name, struct count, struct names, struct types, struct type_names, struct scripts, struct default_values>;
+	StructInfo(const Dictionary &p_dict);
+	StructInfo(const Array &p_array);
+
+	StructInfo() {}
+	StructInfo(const StringName &p_name, const int32_t p_count) :
+			name(p_name), count(p_count) {
+		names.resize(p_count);
+		types.resize(p_count);
+		type_names.resize(p_count);
+		scripts.resize(p_count);
+		default_values.resize(p_count);
+	}
+	StructInfo(const StringName &p_name, const int32_t p_count, const Vector<StringName> &p_names, const Vector<Variant::Type> &p_types, const Vector<StringName> &p_type_names, const Vector<const Script *> &p_scripts, const Vector<Variant> &p_default_values) :
+			name(p_name),
+			count(p_count),
+			names(p_names),
+			types(p_types),
+			type_names(p_type_names),
+			scripts(p_scripts),
+			default_values(p_default_values) {}
+
+	_FORCE_INLINE_ void set(int32_t p_index, const StringName &p_name, const Variant::Type &p_type, const StringName &p_type_name, const Script *p_script, const Variant &p_default_value) {
+		names.write[p_index] = p_name;
+		types.write[p_index] = p_type;
+		type_names.write[p_index] = p_type_name;
+		scripts.write[p_index] = p_script;
+		default_values.write[p_index] = p_default_value;
+	}
+
+	_FORCE_INLINE_ bool operator==(const StructInfo &p_struct_info) const {
+		return name == p_struct_info.name;
+	}
+	_FORCE_INLINE_ bool operator!=(const StructInfo &p_struct_info) const {
+		return name != p_struct_info.name;
+	}
+	_FORCE_INLINE_ static bool is_compatible(const StructInfo *p_struct_info_1, const StructInfo *p_struct_info_2) {
+		if (p_struct_info_1) {
+			if (p_struct_info_2) {
+				return *p_struct_info_1 == *p_struct_info_2;
+			}
+			return false;
+		}
+		return p_struct_info_2 == nullptr;
+	}
+};
+
 /* The StructLayout template manages all the reflection data for a native struct. It automatically generates
  * functions for converting the C++ struct to and from a Godot Struct, Array, or Dictionary.
  * The StructType argument is expected to be a struct declared with STRUCT_DECLARE and the StructMember
@@ -206,10 +276,10 @@ struct StructLayout {
 	_FORCE_INLINE_ static const StructInfo &get_struct_info() {
 		static const Vector<StringName> names = { StructMembers::get_name()... };
 		static const Vector<Variant::Type> types = { StructMembers::get_variant_type()... };
-		static const Vector<StringName> class_names = { StructMembers::get_class_name()... };
-		static const Vector<const StructInfo *> struct_member_infos = { StructMembers::get_struct_member_info()... };
+		static const Vector<StringName> type_names = { StructMembers::get_type_name()... };
+		static const Vector<const Script *> scripts = { StructMembers::get_script()... };
 		static const Vector<Variant> default_values = { StructMembers::get_default_value_variant()... };
-		static const StructInfo info = StructInfo(get_struct_name(), struct_member_count, names, types, class_names, struct_member_infos, default_values);
+		static const StructInfo info = StructInfo(get_struct_name(), struct_member_count, names, types, type_names, scripts, default_values);
 		return info;
 	}
 
@@ -272,66 +342,6 @@ private:
 	struct TypeFinder<TypeToFind, TypeToCheck, TypesRemaining...> {
 		static constexpr int remaining_count = TypeFinder<TypeToFind, TypesRemaining...>::remaining_count;
 	};
-};
-
-/* Represents the type data of both native and user Godot Structs.
- * StructInfo is itself exposed as a Godot Struct, so it serves as
- * a good example for how to expose other structs. */
-struct StructInfo {
-	STRUCT_DECLARE(StructInfo);
-	STRUCT_MEMBER(StringName, name, StringName());
-	STRUCT_MEMBER(int32_t, count, 0);
-	STRUCT_MEMBER(Vector<StringName>, names, Vector<StringName>());
-	STRUCT_MEMBER_FROM_TO(Vector<Variant::Type>, types, Vector<Variant::Type>());
-	STRUCT_MEMBER(Vector<StringName>, class_names, Vector<StringName>());
-	STRUCT_MEMBER(Vector<Variant>, default_values, Vector<Variant>());
-	STRUCT_LAYOUT_ALIAS("StructInfo", StructInfo, struct name, struct count, struct names, struct types, struct class_names, struct default_values);
-
-	Vector<const StructInfo *> struct_member_infos;
-
-	StructInfo() {};
-	StructInfo(const StringName &p_name, const int32_t p_count) :
-			name(p_name), count(p_count) {
-		names.resize(p_count);
-		types.resize(p_count);
-		class_names.resize(p_count);
-		struct_member_infos.resize(p_count);
-		default_values.resize(p_count);
-	}
-	StructInfo(const StringName &p_name, const int32_t p_count, const Vector<StringName> &p_names, const Vector<Variant::Type> &p_types, const Vector<StringName> &p_class_names, const Vector<const StructInfo *> &p_struct_member_infos, const Vector<Variant> &p_default_values) :
-			name(p_name),
-			count(p_count),
-			names(p_names),
-			types(p_types),
-			class_names(p_class_names),
-			struct_member_infos(p_struct_member_infos),
-			default_values(p_default_values) {};
-
-	Dictionary to_dict() const;
-
-	_FORCE_INLINE_ void set(int32_t p_index, const StringName &p_name, const Variant::Type &p_type, const StringName &p_class_name, const StructInfo *p_struct_member_info, const Variant &p_default_value) {
-		names.write[p_index] = p_name;
-		types.write[p_index] = p_type;
-		class_names.write[p_index] = p_class_name;
-		struct_member_infos.write[p_index] = p_struct_member_info;
-		default_values.write[p_index] = p_default_value;
-	}
-
-	_FORCE_INLINE_ bool operator==(const StructInfo &p_struct_info) const {
-		return name == p_struct_info.name;
-	}
-	_FORCE_INLINE_ bool operator!=(const StructInfo &p_struct_info) const {
-		return name != p_struct_info.name;
-	}
-	_FORCE_INLINE_ static bool is_compatible(const StructInfo *p_struct_info_1, const StructInfo *p_struct_info_2) {
-		if (p_struct_info_1) {
-			if (p_struct_info_2) {
-				return *p_struct_info_1 == *p_struct_info_2;
-			}
-			return false;
-		}
-		return p_struct_info_2 == nullptr;
-	}
 };
 
 #endif // STRUCT_GENERATOR_H

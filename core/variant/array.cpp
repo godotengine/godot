@@ -51,22 +51,18 @@ public:
 	ContainerTypeValidate typed;
 
 	_FORCE_INLINE_ bool is_struct() const {
-		return !typed.is_array_of_structs && typed.struct_info != nullptr;
+		return typed.get_is_struct();
 	}
 
 	_FORCE_INLINE_ bool is_array_of_structs() const {
-		return typed.is_array_of_structs;
-	}
-
-	_FORCE_INLINE_ bool is_struct_array() const {
-		return false; // TODO: not supported yet
+		return typed.is_array_of_structs();
 	}
 
 	_FORCE_INLINE_ int32_t find_member_index(const StringName &p_member) const {
 		// TODO: is there a better way to do this than linear search?
-		ERR_FAIL_NULL_V_MSG(typed.struct_info, -1, "Can only find member on a Struct");
-		for (int32_t i = 0; i < typed.struct_info->count; i++) {
-			if (p_member == typed.struct_info->names[i]) {
+		ERR_FAIL_COND_V_MSG(!typed.get_is_struct(), -1, "Can only find member on a Struct");
+		for (int32_t i = 0; i < typed.get_struct_info()->count; i++) {
+			if (p_member == typed.get_struct_info()->names[i]) {
 				return i;
 			}
 		}
@@ -75,9 +71,9 @@ public:
 
 	_FORCE_INLINE_ int32_t rfind_member_index(const StringName &p_member) const {
 		// TODO: is there a better way to do this than linear search?
-		ERR_FAIL_NULL_V_MSG(typed.struct_info, -1, "Can only find member on a Struct");
-		for (int32_t i = typed.struct_info->count - 1; i >= 0; i--) {
-			if (p_member == typed.struct_info->names[i]) {
+		ERR_FAIL_COND_V_MSG(!typed.get_is_struct(), -1, "Can only find member on a Struct");
+		for (int32_t i = typed.get_struct_info()->count - 1; i >= 0; i--) {
+			if (p_member == typed.get_struct_info()->names[i]) {
 				return i;
 			}
 		}
@@ -250,6 +246,10 @@ void Array::operator=(const Array &p_array) {
 	_ref(p_array);
 }
 
+bool Array::can_reference(const Array &p_array) const {
+	return _p->typed.can_reference(p_array._p->typed);
+}
+
 void Array::assign(const Array &p_array) {
 	const ContainerTypeValidate &typed = _p->typed;
 	const ContainerTypeValidate &source_typed = p_array._p->typed;
@@ -363,7 +363,7 @@ Error Array::resize(int p_new_size) {
 	if (err || variant_type == Variant::NIL || variant_type == Variant::OBJECT) {
 		return err;
 	}
-	if (const StructInfo *info = _p->typed.struct_info) { // Typed array of structs
+	if (const StructInfo *info = _p->typed.get_struct_info()) { // Typed array of structs
 		for (int i = old_size; i < p_new_size; i++) {
 			_p->array.write[i] = Array(*info);
 		}
@@ -603,7 +603,7 @@ const Variant &Array::get_named(const StringName &p_member) const {
 
 const StringName Array::get_member_name(int p_idx) const {
 	// TODO: probably need some error handling here.
-	return _p->typed.struct_info->names[p_idx];
+	return _p->typed.get_struct_info()->names[p_idx];
 }
 
 int Array::find_member(const StringName &p_member) const {
@@ -629,7 +629,7 @@ Array Array::duplicate(bool p_deep) const {
 Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	Array new_arr;
 	if (const StructInfo *struct_info = get_struct_info()) {
-		new_arr.set_struct(*struct_info, is_array_of_structs());
+		new_arr.set_struct(*struct_info, is_struct());
 	} else {
 		new_arr._p->typed = _p->typed;
 		if (p_deep) {
@@ -1002,13 +1002,13 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed = ContainerTypeValidate(Variant::Type(p_type), p_class_name, script, "TypedArray");
 }
 
-void Array::set_struct(const StructInfo &p_struct_info, bool p_is_array_of_structs) {
+void Array::set_struct(const StructInfo &p_struct_info, bool p_is_struct) {
 	if (validate_set_type() != OK) {
 		return;
 	}
 	const int32_t size = p_struct_info.count;
 	_p->array.resize(size);
-	_p->typed = ContainerTypeValidate(p_struct_info, p_is_array_of_structs);
+	_p->typed = ContainerTypeValidate(p_struct_info, p_is_struct);
 }
 
 void Array::initialize_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
@@ -1019,11 +1019,11 @@ void Array::initialize_typed(uint32_t p_type, const StringName &p_class_name, co
 	_p->typed = ContainerTypeValidate(Variant::Type(p_type), p_class_name, script, "TypedArray");
 }
 
-void Array::initialize_struct_type(const StructInfo &p_struct_info, bool is_array_of_structs) {
-	if (!is_array_of_structs) {
+void Array::initialize_struct_type(const StructInfo &p_struct_info, bool p_is_struct) {
+	if (p_is_struct) {
 		_p->array.resize(p_struct_info.count);
 	}
-	_p->typed = ContainerTypeValidate(p_struct_info, is_array_of_structs);
+	_p->typed = ContainerTypeValidate(p_struct_info, p_is_struct);
 }
 
 bool Array::is_typed() const {
@@ -1059,7 +1059,7 @@ Variant Array::get_typed_script() const {
 }
 
 const StructInfo *Array::get_struct_info() const {
-	return _p->typed.struct_info;
+	return _p->typed.get_struct_info();
 }
 
 Array Array::create_read_only() {
@@ -1087,7 +1087,7 @@ Array::Array(const Array &p_from, const StructInfo &p_struct_info) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 
-	initialize_struct_type(p_struct_info, p_from.is_array_of_structs());
+	initialize_struct_type(p_struct_info, true);
 	assign(p_from);
 }
 
@@ -1095,19 +1095,19 @@ Array::Array(const Dictionary &p_from, const StructInfo &p_struct_info) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init(); // TODO: should this be _ref(p_from)?
 
-	initialize_struct_type(p_struct_info, false);
+	initialize_struct_type(p_struct_info, true);
 	Variant *pw = _p->array.ptrw();
 	for (int32_t i = 0; i < p_struct_info.count; i++) {
 		pw[i] = p_from.has(p_struct_info.names[i]) ? p_from[p_struct_info.names[i]] : p_struct_info.default_values[i];
 	}
 }
 
-Array::Array(const StructInfo &p_struct_info, bool is_array_of_structs) {
+Array::Array(const StructInfo &p_struct_info, bool p_is_struct) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
 
-	initialize_struct_type(p_struct_info, is_array_of_structs);
-	if (!is_array_of_structs) {
+	initialize_struct_type(p_struct_info, p_is_struct);
+	if (p_is_struct) {
 		Variant *pw = _p->array.ptrw();
 		for (int32_t i = 0; i < p_struct_info.count; i++) {
 			pw[i] = p_struct_info.default_values[i].duplicate(true);

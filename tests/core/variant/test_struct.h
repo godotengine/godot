@@ -238,7 +238,7 @@ TEST_CASE("[Struct] StructInfo") {
 		CHECK_EQ(info_as_c_struct.count, info_as_godot_struct.get_member<struct StructInfo::count>());
 		CHECK_EQ(info_as_c_struct.names, info_as_godot_struct.get_member<struct StructInfo::names>());
 		CHECK_EQ(info_as_c_struct.types, info_as_godot_struct.get_member<struct StructInfo::types>());
-		CHECK_EQ(info_as_c_struct.class_names, info_as_godot_struct.get_member<struct StructInfo::class_names>());
+		CHECK_EQ(info_as_c_struct.type_names, info_as_godot_struct.get_member<struct StructInfo::type_names>());
 		CHECK_EQ(info_as_c_struct.default_values, info_as_godot_struct.get_member<struct StructInfo::default_values>());
 	}
 
@@ -332,7 +332,7 @@ TEST_CASE("[Struct] Nesting") {
 		STRUCT_MEMBER(int, int_val, 4);
 		STRUCT_MEMBER(float, float_val, 5.5f);
 		STRUCT_LAYOUT(TestStruct, BasicStruct, struct int_val, struct float_val);
-		BasicStruct() {};
+		BasicStruct() {}
 	};
 	struct BasicStructLookalike {
 		STRUCT_DECLARE(BasicStructLookalike);
@@ -348,8 +348,6 @@ TEST_CASE("[Struct] Nesting") {
 	};
 
 	REQUIRE_EQ(NestedStruct::Layout::struct_member_count, 2);
-	CHECK_EQ(NestedStruct::Layout::get_struct_info().struct_member_infos[0], nullptr);
-	CHECK_EQ(NestedStruct::Layout::get_struct_info().struct_member_infos[1]->count, 2);
 
 	Struct<BasicStruct> basic_struct;
 	Struct<BasicStructLookalike> basic_struct_lookalike;
@@ -425,7 +423,7 @@ TEST_CASE("[Struct] ClassDB") {
 	CHECK_EQ(struct_info->name, "Object.PropertyInfo");
 	CHECK_EQ(struct_info->names[3], "hint");
 	CHECK_EQ(struct_info->types[3], Variant::INT);
-	CHECK_EQ(struct_info->class_names[3], "");
+	CHECK_EQ(struct_info->type_names[3], "");
 	CHECK_EQ((int)struct_info->default_values[3], PROPERTY_HINT_NONE);
 }
 
