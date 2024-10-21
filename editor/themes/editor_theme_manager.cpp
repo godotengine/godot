@@ -2499,6 +2499,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			Ref<StyleBoxFlat> sm_node_playing_style = sm_node_selected_style->duplicate();
 			sm_node_playing_style->set_border_color(p_config.warning_color);
 			sm_node_playing_style->set_shadow_color(p_config.warning_color * Color(1, 1, 1, 0.2));
+			sm_node_playing_style->set_draw_center(false);
 
 			p_theme->set_stylebox("node_frame", "GraphStateMachine", sm_node_style);
 			p_theme->set_stylebox("node_frame_selected", "GraphStateMachine", sm_node_selected_style);
