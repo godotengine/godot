@@ -32,7 +32,7 @@
 #define RID_OWNER_H
 
 #include "core/os/memory.h"
-#include "core/os/mutex.h"
+#include "core/os/spin_lock.h"
 #include "core/string/print_string.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -42,6 +42,20 @@
 
 #include <stdio.h>
 #include <typeinfo>
+
+#ifdef SANITIZERS_ENABLED
+#ifdef __has_feature
+#if __has_feature(thread_sanitizer)
+#define TSAN_ENABLED
+#endif
+#elif defined(__SANITIZE_THREAD__)
+#define TSAN_ENABLED
+#endif
+#endif
+
+#ifdef TSAN_ENABLED
+#include <sanitizer/tsan_interface.h>
+#endif
 
 class RID_AllocBase {
 	static SafeNumeric<uint64_t> base_id;
@@ -83,18 +97,18 @@ class RID_Alloc : public RID_AllocBase {
 
 	const char *description = nullptr;
 
-	mutable Mutex mutex;
+	AcqRelSpinLock spin;
 
 	_FORCE_INLINE_ RID _allocate_rid() {
 		if constexpr (THREAD_SAFE) {
-			mutex.lock();
+			spin.lock();
 		}
 
 		if (alloc_count == max_alloc) {
 			//allocate a new chunk
 			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk);
 			if (THREAD_SAFE && chunk_count == chunk_limit) {
-				mutex.unlock();
+				spin.unlock();
 				if (description != nullptr) {
 					ERR_FAIL_V_MSG(RID(), vformat("Element limit for RID of type '%s' reached.", String(description)));
 				} else {
@@ -120,7 +134,8 @@ class RID_Alloc : public RID_AllocBase {
 				free_list_chunks[chunk_count][i] = alloc_count + i;
 			}
 
-			max_alloc += elements_in_chunk;
+			// Store atomically to avoid data race with the load in get_or_null().
+			((std::atomic<uint32_t> *)&max_alloc)->store(max_alloc + elements_in_chunk, std::memory_order_relaxed);
 		}
 
 		uint32_t free_index = free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk];
@@ -140,7 +155,7 @@ class RID_Alloc : public RID_AllocBase {
 		alloc_count++;
 
 		if constexpr (THREAD_SAFE) {
-			mutex.unlock();
+			spin.unlock();
 		}
 
 		return _make_from_id(id);
@@ -168,9 +183,13 @@ public:
 			return nullptr;
 		}
 
+		spin.acquire();
+
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= max_alloc)) {
+		// Read atomically to avoid data race with the store in _allocate_rid().
+		uint32_t ma = ((std::atomic<uint32_t> *)&max_alloc)->load(std::memory_order_acquire);
+		if (unlikely(idx >= ma)) {
 			return nullptr;
 		}
 
@@ -180,6 +199,9 @@ public:
 		uint32_t validator = uint32_t(id >> 32);
 
 		Chunk &c = chunks[idx_chunk][idx_element];
+#ifdef TSAN_ENABLED
+		__tsan_acquire(&c.validator); // We know not a race in practice.
+#endif
 		if (unlikely(p_initialize)) {
 			if (unlikely(!(c.validator & 0x80000000))) {
 				ERR_FAIL_V_MSG(nullptr, "Initializing already initialized RID");
@@ -189,7 +211,8 @@ public:
 				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
 			}
 
-			c.validator &= 0x7FFFFFFF; //initialized
+			// Mark initialized.
+			c.validator &= 0x7FFFFFFF;
 
 		} else if (unlikely(c.validator != validator)) {
 			if ((c.validator & 0x80000000) && c.validator != 0xFFFFFFFF) {
@@ -197,6 +220,9 @@ public:
 			}
 			return nullptr;
 		}
+#ifdef TSAN_ENABLED
+		__tsan_release(&c.validator);
+#endif
 
 		T *ptr = &c.data;
 
@@ -205,24 +231,39 @@ public:
 	void initialize_rid(RID p_rid) {
 		T *mem = get_or_null(p_rid, true);
 		ERR_FAIL_NULL(mem);
+#ifdef TSAN_ENABLED
+		__tsan_acquire(mem); // We know not a race in practice.
+#endif
 		memnew_placement(mem, T);
+#ifdef TSAN_ENABLED
+		__tsan_release(mem);
+#endif
+		spin.release();
 	}
+
 	void initialize_rid(RID p_rid, const T &p_value) {
 		T *mem = get_or_null(p_rid, true);
 		ERR_FAIL_NULL(mem);
+#ifdef TSAN_ENABLED
+		__tsan_acquire(mem); // We know not a race in practice.
+#endif
 		memnew_placement(mem, T(p_value));
+#ifdef TSAN_ENABLED
+		__tsan_release(mem);
+#endif
+		spin.release();
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
 		if constexpr (THREAD_SAFE) {
-			mutex.lock();
+			spin.lock();
 		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
 			if constexpr (THREAD_SAFE) {
-				mutex.unlock();
+				spin.unlock();
 			}
 			return false;
 		}
@@ -235,7 +276,7 @@ public:
 		bool owned = (validator != 0x7FFFFFFF) && (chunks[idx_chunk][idx_element].validator & 0x7FFFFFFF) == validator;
 
 		if constexpr (THREAD_SAFE) {
-			mutex.unlock();
+			spin.unlock();
 		}
 
 		return owned;
@@ -243,14 +284,14 @@ public:
 
 	_FORCE_INLINE_ void free(const RID &p_rid) {
 		if constexpr (THREAD_SAFE) {
-			mutex.lock();
+			spin.lock();
 		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
 			if constexpr (THREAD_SAFE) {
-				mutex.unlock();
+				spin.unlock();
 			}
 			ERR_FAIL();
 		}
@@ -261,12 +302,12 @@ public:
 		uint32_t validator = uint32_t(id >> 32);
 		if (unlikely(chunks[idx_chunk][idx_element].validator & 0x80000000)) {
 			if constexpr (THREAD_SAFE) {
-				mutex.unlock();
+				spin.unlock();
 			}
 			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID");
 		} else if (unlikely(chunks[idx_chunk][idx_element].validator != validator)) {
 			if constexpr (THREAD_SAFE) {
-				mutex.unlock();
+				spin.unlock();
 			}
 			ERR_FAIL();
 		}
@@ -278,7 +319,7 @@ public:
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
 
 		if constexpr (THREAD_SAFE) {
-			mutex.unlock();
+			spin.unlock();
 		}
 	}
 
@@ -287,35 +328,35 @@ public:
 	}
 	void get_owned_list(List<RID> *p_owned) const {
 		if constexpr (THREAD_SAFE) {
-			mutex.lock();
+			spin.lock();
 		}
 		for (size_t i = 0; i < max_alloc; i++) {
-			uint64_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
+			uint32_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
 			if (validator != 0xFFFFFFFF) {
-				p_owned->push_back(_make_from_id((validator << 32) | i));
+				p_owned->push_back(_make_from_id(((uint64_t)validator << 32) | i));
 			}
 		}
 		if constexpr (THREAD_SAFE) {
-			mutex.unlock();
+			spin.unlock();
 		}
 	}
 
 	//used for fast iteration in the elements or RIDs
 	void fill_owned_buffer(RID *p_rid_buffer) const {
 		if constexpr (THREAD_SAFE) {
-			mutex.lock();
+			spin.lock();
 		}
 		uint32_t idx = 0;
 		for (size_t i = 0; i < max_alloc; i++) {
-			uint64_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
+			uint32_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
 			if (validator != 0xFFFFFFFF) {
-				p_rid_buffer[idx] = _make_from_id((validator << 32) | i);
+				p_rid_buffer[idx] = _make_from_id(((uint64_t)validator << 32) | i);
 				idx++;
 			}
 		}
 
 		if constexpr (THREAD_SAFE) {
-			mutex.unlock();
+			spin.unlock();
 		}
 	}
 
@@ -329,16 +370,21 @@ public:
 			chunk_limit = (p_maximum_number_of_elements / elements_in_chunk) + 1;
 			chunks = (Chunk **)memalloc(sizeof(Chunk *) * chunk_limit);
 			free_list_chunks = (uint32_t **)memalloc(sizeof(uint32_t *) * chunk_limit);
+			spin.release();
 		}
 	}
 
 	~RID_Alloc() {
+		if constexpr (THREAD_SAFE) {
+			spin.lock();
+		}
+
 		if (alloc_count) {
 			print_error(vformat("ERROR: %d RID allocations of type '%s' were leaked at exit.",
 					alloc_count, description ? description : typeid(T).name()));
 
 			for (size_t i = 0; i < max_alloc; i++) {
-				uint64_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
+				uint32_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
 				if (validator & 0x80000000) {
 					continue; //uninitialized
 				}
