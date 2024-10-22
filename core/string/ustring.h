@@ -39,19 +39,19 @@
 #include "core/typedefs.h"
 #include "core/variant/array.h"
 
-/*************************************************************************/
-/*  CharProxy                                                            */
-/*************************************************************************/
+class String;
+template <typename T>
+class CharStringT;
 
 template <typename T>
 class CharProxy {
-	friend class Char16String;
-	friend class CharString;
 	friend class String;
+	template <typename TS>
+	friend class CharStringT;
 
 	const int _index;
 	CowData<T> &_cowdata;
-	static const T _null = 0;
+	static constexpr T _null = 0;
 
 	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &p_cowdata) :
 			_index(p_index),
@@ -83,92 +83,58 @@ public:
 	}
 };
 
-/*************************************************************************/
-/*  Char16String                                                         */
-/*************************************************************************/
+template <typename T>
+class CharStringT {
+	friend class String;
 
-class Char16String {
-	CowData<char16_t> _cowdata;
-	static const char16_t _null;
+	CowData<T> _cowdata;
+	static constexpr T _null = 0;
 
 public:
-	_FORCE_INLINE_ char16_t *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const char16_t *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ char16_t get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char16_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char16_t &operator[](int p_index) const {
+	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ const T &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
 		}
 
 		return _cowdata.get(p_index);
 	}
-	_FORCE_INLINE_ CharProxy<char16_t> operator[](int p_index) { return CharProxy<char16_t>(p_index, _cowdata); }
+	_FORCE_INLINE_ CharProxy<T> operator[](int p_index) { return CharProxy<T>(p_index, _cowdata); }
 
-	_FORCE_INLINE_ Char16String() {}
-	_FORCE_INLINE_ Char16String(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ void operator=(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ Char16String(const char16_t *p_cstr) { copy_from(p_cstr); }
+	_FORCE_INLINE_ CharStringT() {}
+	_FORCE_INLINE_ CharStringT(const CharStringT<T> &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ void operator=(const CharStringT<T> &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ CharStringT(const T *p_cstr) { copy_from(p_cstr); }
+	_FORCE_INLINE_ void operator=(const T *p_cstr) { copy_from(p_cstr); }
 
-	void operator=(const char16_t *p_cstr);
-	bool operator<(const Char16String &p_right) const;
-	Char16String &operator+=(char16_t p_char);
-	int length() const { return size() ? size() - 1 : 0; }
-	const char16_t *get_data() const;
-	operator const char16_t *() const { return get_data(); };
+	bool operator==(const CharStringT<T> &p_other) const;
+	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
+	bool operator<(const CharStringT<T> &p_other) const;
+	CharStringT<T> &operator+=(T p_char);
 
-protected:
-	void copy_from(const char16_t *p_cstr);
-};
-
-/*************************************************************************/
-/*  CharString                                                           */
-/*************************************************************************/
-
-class CharString {
-	CowData<char> _cowdata;
-	static const char _null;
-
-public:
-	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const char *ptr() const { return _cowdata.ptr(); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
-
-	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size())) {
-			return _null;
+	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
+	_FORCE_INLINE_ const T *get_data() const {
+		if (size()) {
+			return &operator[](0);
 		}
-
-		return _cowdata.get(p_index);
+		return &_null;
 	}
-	_FORCE_INLINE_ CharProxy<char> operator[](int p_index) { return CharProxy<char>(p_index, _cowdata); }
-
-	_FORCE_INLINE_ CharString() {}
-	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ void operator=(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
-
-	void operator=(const char *p_cstr);
-	bool operator<(const CharString &p_right) const;
-	bool operator==(const CharString &p_right) const;
-	CharString &operator+=(char p_char);
-	int length() const { return size() ? size() - 1 : 0; }
-	const char *get_data() const;
-	operator const char *() const { return get_data(); };
+	_FORCE_INLINE_ operator const T *() const { return get_data(); };
 
 protected:
-	void copy_from(const char *p_cstr);
+	void copy_from(const T *p_cstr);
 };
 
-/*************************************************************************/
-/*  String                                                               */
-/*************************************************************************/
+using CharString = CharStringT<char>;
+using Char16String = CharStringT<char16_t>;
+using Char32String = CharStringT<char32_t>;
+using CharWideString = CharStringT<wchar_t>;
 
 struct StrRange {
 	const char32_t *c_str;
