@@ -36,7 +36,7 @@
 
 static PhysicsServer2D *_createGodotPhysics2DCallback() {
 #ifdef THREADS_ENABLED
-	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
+	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread") && !Engine::get_singleton()->is_editor_hint();
 #else
 	bool using_threads = false;
 #endif

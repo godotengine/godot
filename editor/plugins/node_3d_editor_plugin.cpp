@@ -2862,7 +2862,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			bool vp_visible = is_visible_in_tree();
 
 			set_process(vp_visible);
-			set_physics_process(vp_visible);
 
 			if (vp_visible) {
 				orthogonal = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
@@ -3082,14 +3081,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 				float locked_half_width = locked_label->get_size().width / 2.0f;
 				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 			}
-		} break;
 
-		case NOTIFICATION_PHYSICS_PROCESS: {
 			if (collision_reposition) {
-				List<Node *> &selection = editor_selection->get_selected_node_list();
-
-				if (selection.size() == 1) {
-					Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+				if (editor_selection->get_selected_node_list().size() == 1) {
+					Node3D *first_selected_node = Object::cast_to<Node3D>(editor_selection->get_selected_node_list().front()->get());
 					double snap = EDITOR_GET("interface/inspector/default_float_step");
 					int snap_step_decimals = Math::range_step_decimals(snap);
 					set_message(TTR("Translating:") + " (" + String::num(first_selected_node->get_global_position().x, snap_step_decimals) + ", " +
@@ -8115,7 +8110,7 @@ void Node3DEditor::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_PROCESS: {
 			if (do_snap_selected_nodes_to_floor) {
 				_snap_selected_nodes_to_floor();
 				do_snap_selected_nodes_to_floor = false;
@@ -9321,12 +9316,9 @@ void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		spatial_editor->show();
 		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
-
 	} else {
 		spatial_editor->hide();
 		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
 	}
 }
 
