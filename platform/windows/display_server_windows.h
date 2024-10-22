@@ -38,6 +38,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
@@ -350,6 +351,12 @@ typedef struct {
 	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
 } ICONDIR, *LPICONDIR;
 
+typedef enum _SHC_PROCESS_DPI_AWARENESS {
+	SHC_PROCESS_DPI_UNAWARE = 0,
+	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
+	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
+} SHC_PROCESS_DPI_AWARENESS;
+
 class DisplayServerWindows : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
@@ -387,6 +394,14 @@ class DisplayServerWindows : public DisplayServer {
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
 	Vector<String> tablet_drivers;
+
+	enum DriverID {
+		DRIVER_ID_COMPAT_OPENGL3 = 1 << 0,
+		DRIVER_ID_COMPAT_ANGLE_D3D11 = 1 << 1,
+		DRIVER_ID_RD_VULKAN = 1 << 2,
+		DRIVER_ID_RD_D3D12 = 1 << 3,
+	};
+	static BitField<DriverID> tested_drivers;
 
 	enum TimerID {
 		TIMER_ID_MOVE_REDRAW = 1,
@@ -459,6 +474,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
+		bool sharp_corners = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -510,6 +526,8 @@ class DisplayServerWindows : public DisplayServer {
 
 		bool is_popup = false;
 		Rect2i parent_safe_rect;
+
+		bool initialized = false;
 	};
 
 	JoypadWindows *joypad = nullptr;
@@ -523,7 +541,7 @@ class DisplayServerWindows : public DisplayServer {
 	RBMap<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
-
+	WindowID last_mouse_button_down_window = INVALID_WINDOW_ID;
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;
@@ -536,13 +554,48 @@ class DisplayServerWindows : public DisplayServer {
 	IndicatorID indicator_id_counter = 0;
 	HashMap<IndicatorID, IndicatorData> indicators;
 
+	struct FileDialogData {
+		HWND hwnd_owner = 0;
+		Rect2i wrect;
+		String appid;
+		String title;
+		String current_directory;
+		String root;
+		String filename;
+		bool show_hidden = false;
+		DisplayServer::FileDialogMode mode = FileDialogMode::FILE_DIALOG_MODE_OPEN_ANY;
+		Vector<String> filters;
+		TypedArray<Dictionary> options;
+		WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		Callable callback;
+		bool options_in_cb = false;
+		Thread listener_thread;
+		SafeFlag close_requested;
+		SafeFlag finished;
+	};
+	Mutex file_dialog_mutex;
+	List<FileDialogData *> file_dialogs;
+	HashMap<HWND, FileDialogData *> file_dialog_wnd;
+	struct FileDialogCallback {
+		Callable callback;
+		Variant status;
+		Variant files;
+		Variant index;
+		Variant options;
+		bool opt_in_cb = false;
+	};
+	List<FileDialogCallback> pending_cbs;
+	void process_file_dialog_callbacks();
+
+	static void _thread_fd_monitor(void *p_ud);
+
 	HashMap<int64_t, MouseButton> pointer_prev_button;
 	HashMap<int64_t, MouseButton> pointer_button;
 	HashMap<int64_t, LONG> pointer_down_time;
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
@@ -597,6 +650,7 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 public:
+	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 

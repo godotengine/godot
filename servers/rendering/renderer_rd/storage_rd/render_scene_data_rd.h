@@ -48,6 +48,7 @@ public:
 	Transform3D cam_transform;
 	Projection cam_projection;
 	Vector2 taa_jitter;
+	float taa_frame_count = 0.0f;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
 	bool flip_y = false;
@@ -95,8 +96,6 @@ public:
 	virtual RID get_uniform_buffer() const override;
 
 private:
-	static void _bind_methods();
-
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
 
 	// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
@@ -150,8 +149,8 @@ private:
 
 		float fog_height_density;
 		float fog_depth_curve;
-		float pad;
 		float fog_depth_begin;
+		float taa_frame_count; // Used to add break up samples over multiple frames. Value is an integer from 0 to taa_phase_count -1.
 
 		float fog_light_color[3];
 		float fog_depth_end;

@@ -31,6 +31,7 @@
 #ifndef TEXT_SERVER_H
 #define TEXT_SERVER_H
 
+#include "core/io/image.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/rid.h"
@@ -396,6 +397,7 @@ public:
 
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const = 0;
 	virtual String font_get_supported_chars(const RID &p_font_rid) const = 0;
+	virtual PackedInt32Array font_get_supported_glyphs(const RID &p_font_rid) const = 0;
 
 	virtual void font_render_range(const RID &p_font, const Vector2i &p_size, int64_t p_start, int64_t p_end) = 0;
 	virtual void font_render_glyph(const RID &p_font_rid, const Vector2i &p_size, int64_t p_index) = 0;

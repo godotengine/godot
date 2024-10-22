@@ -165,10 +165,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	base_control->draw_set_transform_matrix(xform);
 
 	// Draw fill rect under texture region.
-	Rect2 texture_rect(-background_region.size / 2, background_region.size);
+	Rect2 texture_rect(Vector2(), background_region.size);
 	if (tile_data) {
 		texture_rect.position -= tile_data->get_texture_origin();
+		if (tile_data->get_transpose()) {
+			texture_rect.size = Size2(texture_rect.size.y, texture_rect.size.x);
+		}
 	}
+	texture_rect.position -= texture_rect.size / 2; // Half-size offset must be applied after transposing.
 	base_control->draw_rect(texture_rect, Color(1, 1, 1, 0.3));
 
 	// Draw the background.
@@ -180,18 +184,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		if (tile_data->get_flip_v()) {
 			region_size.y = -region_size.y;
 		}
-		base_control->draw_texture_rect_region(background_atlas_source->get_texture(), Rect2(-background_region.size / 2 - tile_data->get_texture_origin(), region_size), background_region, tile_data->get_modulate(), tile_data->get_transpose());
+		// Destination rect position must account for transposing, size must not.
+		base_control->draw_texture_rect_region(background_atlas_source->get_texture(), Rect2(texture_rect.position, region_size), background_region, tile_data->get_modulate(), tile_data->get_transpose());
 	}
 
 	// Compute and draw the grid area.
 	Rect2 grid_area = Rect2(-base_tile_size / 2, base_tile_size);
-	if (tile_data) {
-		grid_area.expand_to(-background_region.get_size() / 2 - tile_data->get_texture_origin());
-		grid_area.expand_to(background_region.get_size() / 2 - tile_data->get_texture_origin());
-	} else {
-		grid_area.expand_to(-background_region.get_size() / 2);
-		grid_area.expand_to(background_region.get_size() / 2);
-	}
+	grid_area.expand_to(texture_rect.position);
+	grid_area.expand_to(texture_rect.get_end());
 	base_control->draw_rect(grid_area, Color(1, 1, 1, 0.3), false);
 
 	// Draw grid.
@@ -522,6 +522,21 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
 	xform.set_scale(Vector2(editor_zoom_widget->get_zoom(), editor_zoom_widget->get_zoom()));
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+		panning += pan_gesture->get_delta() * 8;
+		drag_last_pos = Vector2();
+		button_center_view->set_disabled(panning.is_zero_approx());
+		accept_event();
+	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
+		editor_zoom_widget->set_zoom(editor_zoom_widget->get_zoom() * magnify_gesture->get_factor());
+		_zoom_changed();
+		accept_event();
+	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
@@ -859,6 +874,11 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 				button_expand->set_pressed_no_signal(false);
 			}
 		} break;
+
+		case NOTIFICATION_READY: {
+			get_parent()->connect(SceneStringName(tree_exited), callable_mp(TileSetEditor::get_singleton(), &TileSetEditor::remove_expanded_editor));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			button_expand->set_icon(get_editor_theme_icon(SNAME("DistractionFree")));
 			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
@@ -902,7 +922,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
-	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
+	button_expand->connect(SceneStringName(toggled), callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
 	toolbar->add_child(button_expand);
 
 	toolbar->add_child(memnew(VSeparator));
@@ -1082,7 +1102,7 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 	}
 };
 
-void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){
+void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
 
 };
 
@@ -1385,10 +1405,8 @@ void TileDataTextureOriginEditor::draw_over_tile(CanvasItem *p_canvas_item, Tran
 
 	TileSetSource *source = *(tile_set->get_source(p_cell.source_id));
 	TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-	if (atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, -tile_set_tile_size / 2) && atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, tile_set_tile_size / 2 - Vector2(1, 1))) {
-		Transform2D tile_xform;
-		tile_xform.set_scale(tile_set_tile_size);
-		tile_set->draw_tile_shape(p_canvas_item, p_transform * tile_xform, color);
+	if (atlas_source->is_rect_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, Rect2(Vector2(-tile_set_tile_size) / 2, tile_set_tile_size))) {
+		tile_set->draw_tile_shape(p_canvas_item, p_transform.scaled_local(tile_set_tile_size), color);
 	}
 
 	if (atlas_source->is_position_in_tile_texture_region(p_cell.get_atlas_coords(), p_cell.alternative_tile, Vector2())) {
@@ -1469,30 +1487,36 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	debug_occlusion_color.push_back(color);
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
-	Ref<OccluderPolygon2D> occluder = tile_data->get_occluder(occlusion_layer);
-	if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
-		p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		Ref<OccluderPolygon2D> occluder = tile_data->get_occluder_polygon(occlusion_layer, i);
+		if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
+			p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+		}
 	}
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
 
 Variant TileDataOcclusionShapeEditor::_get_painted_value() {
-	Ref<OccluderPolygon2D> occluder_polygon;
-	if (polygon_editor->get_polygon_count() >= 1) {
+	Array polygons;
+	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon;
 		occluder_polygon.instantiate();
-		occluder_polygon->set_polygon(polygon_editor->get_polygon(0));
+		occluder_polygon->set_polygon(polygon_editor->get_polygon(i));
+		polygons.push_back(occluder_polygon);
 	}
-	return occluder_polygon;
+	return polygons;
 }
 
 void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
 
-	Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer);
 	polygon_editor->clear_polygons();
-	if (occluder_polygon.is_valid()) {
-		polygon_editor->add_polygon(occluder_polygon->get_polygon());
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder_polygon(occlusion_layer, i);
+		if (occluder_polygon.is_valid()) {
+			polygon_editor->add_polygon(occluder_polygon->get_polygon());
+		}
 	}
 	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
@@ -1500,8 +1524,13 @@ void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile
 void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
-	Ref<OccluderPolygon2D> occluder_polygon = p_value;
-	tile_data->set_occluder(occlusion_layer, occluder_polygon);
+
+	Array polygons = p_value;
+	tile_data->set_occluder_polygons_count(occlusion_layer, polygons.size());
+	for (int i = 0; i < polygons.size(); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon = polygons[i];
+		tile_data->set_occluder_polygon(occlusion_layer, i, occluder_polygon);
+	}
 
 	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
@@ -1509,7 +1538,11 @@ void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atl
 Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL_V(tile_data, Variant());
-	return tile_data->get_occluder(occlusion_layer);
+	Array polygons;
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		polygons.push_back(tile_data->get_occluder_polygon(occlusion_layer, i));
+	}
+	return polygons;
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, const Variant &p_new_value) {
@@ -1535,6 +1568,7 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
 	polygon_editor = memnew(GenericTilePolygonEditor);
+	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);
 }
 

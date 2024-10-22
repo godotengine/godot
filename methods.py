@@ -8,7 +8,7 @@ from collections import OrderedDict
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Generator, List, Optional, Union
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -163,7 +163,7 @@ def add_source_files(self, sources, files, allow_gen=False):
 
 def disable_warnings(self):
     # 'self' is the environment
-    if self.msvc:
+    if self.msvc and not using_clang(self):
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
         self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
@@ -467,16 +467,6 @@ def use_windows_spawn_fix(self, platform=None):
     if os.name != "nt":
         return  # not needed, only for windows
 
-    # On Windows, due to the limited command line length, when creating a static library
-    # from a very high number of objects SCons will invoke "ar" once per object file;
-    # that makes object files with same names to be overwritten so the last wins and
-    # the library loses symbols defined by overwritten objects.
-    # By enabling quick append instead of the default mode (replacing), libraries will
-    # got built correctly regardless the invocation strategy.
-    # Furthermore, since SCons will rebuild the library from scratch when an object file
-    # changes, no multiple versions of the same object file will be present.
-    self.Replace(ARFLAGS="q")
-
     def mySubProcess(cmdline, env):
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -495,22 +485,22 @@ def use_windows_spawn_fix(self, platform=None):
         rv = proc.wait()
         if rv:
             print_error(err)
+        elif len(err) > 0 and not err.isspace():
+            print(err)
         return rv
 
     def mySpawn(sh, escape, cmd, args, env):
+        # Used by TEMPFILE.
+        if cmd == "del":
+            os.remove(args[1])
+            return 0
+
         newargs = " ".join(args[1:])
         cmdline = cmd + " " + newargs
 
         rv = 0
         env = {str(key): str(value) for key, value in iter(env.items())}
-        if len(cmdline) > 32000 and cmd.endswith("ar"):
-            cmdline = cmd + " " + args[1] + " " + args[2] + " "
-            for i in range(3, len(args)):
-                rv = mySubProcess(cmdline + args[i], env)
-                if rv:
-                    break
-        else:
-            rv = mySubProcess(cmdline, env)
+        rv = mySubProcess(cmdline, env)
 
         return rv
 
@@ -805,9 +795,9 @@ def get_compiler_version(env):
         "major": -1,
         "minor": -1,
         "patch": -1,
-        "metadata1": None,
-        "metadata2": None,
-        "date": None,
+        "metadata1": "",
+        "metadata2": "",
+        "date": "",
         "apple_major": -1,
         "apple_minor": -1,
         "apple_patch1": -1,
@@ -815,21 +805,48 @@ def get_compiler_version(env):
         "apple_patch3": -1,
     }
 
-    if not env.msvc:
-        # Not using -dumpversion as some GCC distros only return major, and
-        # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+    if env.msvc and not using_clang(env):
         try:
-            version = (
-                subprocess.check_output([env.subst(env["CXX"]), "--version"], shell=(os.name == "nt"))
-                .strip()
-                .decode("utf-8")
-            )
+            # FIXME: `-latest` works for most cases, but there are edge-cases where this would
+            # benefit from a more nuanced search.
+            # https://github.com/godotengine/godot/pull/91069#issuecomment-2358956731
+            # https://github.com/godotengine/godot/pull/91069#issuecomment-2380836341
+            args = [
+                env["VSWHERE"],
+                "-latest",
+                "-prerelease",
+                "-products",
+                "*",
+                "-requires",
+                "Microsoft.Component.MSBuild",
+                "-utf8",
+            ]
+            version = subprocess.check_output(args, encoding="utf-8").strip()
+            for line in version.splitlines():
+                split = line.split(":", 1)
+                if split[0] == "catalog_productDisplayVersion":
+                    sem_ver = split[1].split(".")
+                    ret["major"] = int(sem_ver[0])
+                    ret["minor"] = int(sem_ver[1])
+                    ret["patch"] = int(sem_ver[2].split()[0])
+                # Could potentially add section for determining preview version, but
+                # that can wait until metadata is actually used for something.
+                if split[0] == "catalog_buildVersion":
+                    ret["metadata1"] = split[1]
         except (subprocess.CalledProcessError, OSError):
-            print_warning("Couldn't parse CXX environment variable to infer compiler version.")
-            return ret
-    else:
-        # TODO: Implement for MSVC
+            print_warning("Couldn't find vswhere to determine compiler version.")
         return ret
+
+    # Not using -dumpversion as some GCC distros only return major, and
+    # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
+    try:
+        version = subprocess.check_output(
+            [env.subst(env["CXX"]), "--version"], shell=(os.name == "nt"), encoding="utf-8"
+        ).strip()
+    except (subprocess.CalledProcessError, OSError):
+        print_warning("Couldn't parse CXX environment variable to infer compiler version.")
+        return ret
+
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
         r"(?P<major>\d+)"
@@ -905,21 +922,18 @@ def show_progress(env):
     node_count_fname = str(env.Dir("#")) + "/.scons_node_count"
 
     import math
-    import time
 
     class cache_progress:
-        # The default is 1 GB cache and 12 hours half life
-        def __init__(self, path=None, limit=1073741824, half_life=43200):
+        # The default is 1 GB cache
+        def __init__(self, path=None, limit=pow(1024, 3)):
             self.path = path
             self.limit = limit
-            self.exponent_scale = math.log(2) / half_life
             if env["verbose"] and path is not None:
                 screen.write(
                     "Current cache limit is {} (used: {})\n".format(
                         self.convert_size(limit), self.convert_size(self.get_size(path))
                     )
                 )
-            self.delete(self.file_list())
 
         def __call__(self, node, *args, **kw):
             nonlocal node_count, node_count_max, node_count_interval, node_count_fname, show_progress
@@ -936,12 +950,66 @@ def show_progress(env):
                     screen.write("\r[Initial build] ")
                     screen.flush()
 
+        def convert_size(self, size_bytes):
+            if size_bytes == 0:
+                return "0 bytes"
+            size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+            i = int(math.floor(math.log(size_bytes, 1024)))
+            p = math.pow(1024, i)
+            s = round(size_bytes / p, 2)
+            return "%s %s" % (int(s) if i == 0 else s, size_name[i])
+
+        def get_size(self, start_path="."):
+            total_size = 0
+            for dirpath, dirnames, filenames in os.walk(start_path):
+                for f in filenames:
+                    fp = os.path.join(dirpath, f)
+                    total_size += os.path.getsize(fp)
+            return total_size
+
+    def progress_finish(target, source, env):
+        nonlocal node_count, progressor
+        try:
+            with open(node_count_fname, "w", encoding="utf-8", newline="\n") as f:
+                f.write("%d\n" % node_count)
+        except Exception:
+            pass
+
+    try:
+        with open(node_count_fname, "r", encoding="utf-8") as f:
+            node_count_max = int(f.readline())
+    except Exception:
+        pass
+
+    cache_directory = os.environ.get("SCONS_CACHE")
+    # Simple cache pruning, attached to SCons' progress callback. Trim the
+    # cache directory to a size not larger than cache_limit.
+    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
+    progressor = cache_progress(cache_directory, cache_limit)
+    Progress(progressor, interval=node_count_interval)
+
+    progress_finish_command = Command("progress_finish", [], progress_finish)
+    AlwaysBuild(progress_finish_command)
+
+
+def clean_cache(env):
+    import atexit
+    import time
+
+    class cache_clean:
+        def __init__(self, path=None, limit=pow(1024, 3)):
+            self.path = path
+            self.limit = limit
+
+        def clean(self):
+            self.delete(self.file_list())
+
         def delete(self, files):
             if len(files) == 0:
                 return
             if env["verbose"]:
                 # Utter something
-                screen.write("\rPurging %d %s from cache...\n" % (len(files), len(files) > 1 and "files" or "file"))
+                print("Purging %d %s from cache..." % (len(files), "files" if len(files) > 1 else "file"))
             [os.remove(f) for f in files]
 
         def file_list(self):
@@ -975,47 +1043,20 @@ def show_progress(env):
             else:
                 return [x[0] for x in file_stat[mark:]]
 
-        def convert_size(self, size_bytes):
-            if size_bytes == 0:
-                return "0 bytes"
-            size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-            i = int(math.floor(math.log(size_bytes, 1024)))
-            p = math.pow(1024, i)
-            s = round(size_bytes / p, 2)
-            return "%s %s" % (int(s) if i == 0 else s, size_name[i])
-
-        def get_size(self, start_path="."):
-            total_size = 0
-            for dirpath, dirnames, filenames in os.walk(start_path):
-                for f in filenames:
-                    fp = os.path.join(dirpath, f)
-                    total_size += os.path.getsize(fp)
-            return total_size
-
-    def progress_finish(target, source, env):
-        nonlocal node_count, progressor
+    def cache_finally():
+        nonlocal cleaner
         try:
-            with open(node_count_fname, "w", encoding="utf-8", newline="\n") as f:
-                f.write("%d\n" % node_count)
-            progressor.delete(progressor.file_list())
+            cleaner.clean()
         except Exception:
             pass
-
-    try:
-        with open(node_count_fname, "r", encoding="utf-8") as f:
-            node_count_max = int(f.readline())
-    except Exception:
-        pass
 
     cache_directory = os.environ.get("SCONS_CACHE")
     # Simple cache pruning, attached to SCons' progress callback. Trim the
     # cache directory to a size not larger than cache_limit.
     cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
-    progressor = cache_progress(cache_directory, cache_limit)
-    Progress(progressor, interval=node_count_interval)
+    cleaner = cache_clean(cache_directory, cache_limit)
 
-    progress_finish_command = Command("progress_finish", [], progress_finish)
-    AlwaysBuild(progress_finish_command)
+    atexit.register(cache_finally)
 
 
 def dump(env):
@@ -1641,3 +1682,43 @@ def generated_wrapper(
             file.write(f"\n\n#endif // {header_guard}")
 
         file.write("\n")
+
+
+def to_raw_cstring(value: Union[str, List[str]]) -> str:
+    MAX_LITERAL = 16 * 1024
+
+    if isinstance(value, list):
+        value = "\n".join(value) + "\n"
+
+    split: List[bytes] = []
+    offset = 0
+    encoded = value.encode()
+
+    while offset <= len(encoded):
+        segment = encoded[offset : offset + MAX_LITERAL]
+        offset += MAX_LITERAL
+        if len(segment) == MAX_LITERAL:
+            # Try to segment raw strings at double newlines to keep readable.
+            pretty_break = segment.rfind(b"\n\n")
+            if pretty_break != -1:
+                segment = segment[: pretty_break + 1]
+                offset -= MAX_LITERAL - pretty_break - 1
+            # If none found, ensure we end with valid utf8.
+            # https://github.com/halloleo/unicut/blob/master/truncate.py
+            elif segment[-1] & 0b10000000:
+                last_11xxxxxx_index = [i for i in range(-1, -5, -1) if segment[i] & 0b11000000 == 0b11000000][0]
+                last_11xxxxxx = segment[last_11xxxxxx_index]
+                if not last_11xxxxxx & 0b00100000:
+                    last_char_length = 2
+                elif not last_11xxxxxx & 0b0010000:
+                    last_char_length = 3
+                elif not last_11xxxxxx & 0b0001000:
+                    last_char_length = 4
+
+                if last_char_length > -last_11xxxxxx_index:
+                    segment = segment[:last_11xxxxxx_index]
+                    offset += last_11xxxxxx_index
+
+        split += [segment]
+
+    return " ".join(f'R"<!>({x.decode()})<!>"' for x in split)

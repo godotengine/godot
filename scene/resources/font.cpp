@@ -1482,8 +1482,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
-					base_size = f->get_16();
-					if (base_size <= 0) {
+					base_size = ABS(static_cast<int16_t>(f->get_16()));
+					if (base_size == 0) {
 						base_size = 16;
 					}
 					uint8_t flags = f->get_8();
@@ -1776,7 +1776,10 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 
 			if (type == "info") {
 				if (keys.has("size")) {
-					base_size = keys["size"].to_int();
+					base_size = ABS(keys["size"].to_int());
+					if (base_size == 0) {
+						base_size = 16;
+					}
 				}
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();
@@ -2909,13 +2912,13 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	List<Ref<Theme>> themes = global_context->get_themes();
+	Vector<Ref<Theme>> themes = global_context->get_themes();
 	if (Engine::get_singleton()->is_editor_hint()) {
-		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
 	}
 
 	for (const Ref<Theme> &theme : themes) {
@@ -3277,8 +3280,8 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
 	for (const Ref<Theme> &theme : global_context->get_themes()) {

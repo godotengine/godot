@@ -17,10 +17,23 @@
 		<link title="XrPosef documentation">https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrPosef.html</link>
 	</tutorials>
 	<methods>
+		<method name="begin_debug_label_region">
+			<return type="void" />
+			<param index="0" name="label_name" type="String" />
+			<description>
+				Begins a new debug label region, this label will be reported in debug messages for any calls following this until [method end_debug_label_region] is called. Debug labels can be stacked.
+			</description>
+		</method>
 		<method name="can_render">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OpenXR is initialized for rendering with an XR viewport.
+			</description>
+		</method>
+		<method name="end_debug_label_region">
+			<return type="void" />
+			<description>
+				Marks the end of a debug label region. Removes the latest debug label region added by calling [method begin_debug_label_region].
 			</description>
 		</method>
 		<method name="get_error_string">
@@ -88,6 +101,13 @@
 				Returns the id of the system, which is a [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSystemId.html]XrSystemId[/url] cast to an integer.
 			</description>
 		</method>
+		<method name="insert_debug_label">
+			<return type="void" />
+			<param index="0" name="label_name" type="String" />
+			<description>
+				Inserts a debug label, this label is reported in any debug message resulting from the OpenXR calls that follows, until any of [method begin_debug_label_region], [method end_debug_label_region], or [method insert_debug_label] is called.
+			</description>
+		</method>
 		<method name="is_environment_blend_mode_alpha_supported">
 			<return type="int" enum="OpenXRAPIExtension.OpenXRAlphaBlendModeSupport" />
 			<description>
@@ -125,6 +145,15 @@
 			<param index="0" name="enabled" type="bool" />
 			<description>
 				If set to [code]true[/code], an OpenXR extension is loaded which is capable of emulating the [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] blend mode.
+			</description>
+		</method>
+		<method name="set_object_name">
+			<return type="void" />
+			<param index="0" name="object_type" type="int" />
+			<param index="1" name="object_handle" type="int" />
+			<param index="2" name="object_name" type="String" />
+			<description>
+				Set the object name of an OpenXR object, used for debug output. [param object_type] must be a valid OpenXR [code]XrObjectType[/code] enum and [param object_handle] must be a valid OpenXR object handle.
 			</description>
 		</method>
 		<method name="transform_from_pose">

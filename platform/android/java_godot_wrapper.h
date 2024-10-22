@@ -75,6 +75,10 @@ private:
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
 	jmethodID _has_feature = nullptr;
+	jmethodID _sign_apk = nullptr;
+	jmethodID _verify_apk = nullptr;
+	jmethodID _enable_immersive_mode = nullptr;
+	jmethodID _is_in_immersive_mode = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -116,6 +120,13 @@ public:
 
 	// Return true if the given feature is supported.
 	bool has_feature(const String &p_feature) const;
+
+	// Sign and verify apks
+	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
+	Error verify_apk(const String &p_apk_path);
+
+	void enable_immersive_mode(bool p_enabled);
+	bool is_in_immersive_mode();
 };
 
 #endif // JAVA_GODOT_WRAPPER_H

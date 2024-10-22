@@ -229,6 +229,14 @@ char* strDuplicate(const char *str, size_t n)
     return (char *) memcpy(ret, str, n);
 }
 
+char* strAppend(char* lhs, const char* rhs, size_t n)
+{
+    if (!rhs) return lhs;
+    if (!lhs) return strDuplicate(rhs, n);
+    lhs = (char*)realloc(lhs, strlen(lhs) + n + 1);
+    return strncat(lhs, rhs, n);
+}
+
 char* strDirname(const char* path)
 {
     const char *ptr = strrchr(path, '/');

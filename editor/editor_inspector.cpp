@@ -32,8 +32,10 @@
 #include "editor_inspector.compat.inc"
 
 #include "core/os/keyboard.h"
+#include "editor/add_metadata_dialog.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
@@ -891,6 +893,7 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 
 	Label *drag_label = memnew(Label);
 	drag_label->set_text(property);
+	drag_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate raw property name.
 	set_drag_preview(drag_label);
 	return dp;
 }
@@ -1037,7 +1040,7 @@ void EditorProperty::menu_option(int p_option) {
 		} break;
 		case MENU_OPEN_DOCUMENTATION: {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
-			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
 	}
 }
@@ -1297,7 +1300,7 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPEN_DOCS:
 			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
-			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 			break;
 	}
 }
@@ -1500,12 +1503,6 @@ void EditorInspectorSection::_notification(int p_what) {
 				draw_string(font, text_offset, label, text_align, available, font_size, font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 			}
 
-			// Draw dropping highlight.
-			if (dropping && !vbox->is_visible_in_tree()) {
-				Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-				draw_rect(Rect2(Point2(), get_size()), accent_color, false);
-			}
-
 			// Draw section indentation.
 			if (section_indent_style.is_valid() && section_indent > 0) {
 				Rect2 indent_rect = Rect2(Vector2(), Vector2(indent_depth * section_indent_size, get_size().height));
@@ -1527,14 +1524,14 @@ void EditorInspectorSection::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
-			if (dropping || dropping_for_unfold) {
+			if (dropping_for_unfold) {
 				dropping_unfold_timer->start();
 			}
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (dropping || dropping_for_unfold) {
+			if (dropping_for_unfold) {
 				dropping_unfold_timer->stop();
 			}
 			queue_redraw();
@@ -2251,7 +2248,7 @@ void EditorInspectorArray::_setup() {
 			}
 			move_vbox->add_child(ae.move_texture_rect);
 
-			if (element_position < _get_array_count() - 1) {
+			if (element_position < count - 1) {
 				ae.move_down = memnew(Button);
 				ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				ae.move_down->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position + 2));
@@ -2766,8 +2763,9 @@ void EditorInspector::update_tree() {
 	// TODO: Can be useful to store more context for the focusable, such as the caret position in LineEdit.
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
-	// Temporarily disable focus following to avoid jumping while the inspector is updating.
-	set_follow_focus(false);
+
+	// Temporarily disable focus following on the root inspector to avoid jumping while the inspector is updating.
+	get_root_inspector()->set_follow_focus(false);
 
 	if (property_focusable != -1) {
 		// Check that focusable is actually focusable.
@@ -2795,6 +2793,7 @@ void EditorInspector::update_tree() {
 	_clear(!object);
 
 	if (!object) {
+		get_root_inspector()->set_follow_focus(true);
 		return;
 	}
 
@@ -3532,7 +3531,8 @@ void EditorInspector::update_tree() {
 		// Updating inspector might invalidate some editing owners.
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
-	set_follow_focus(true);
+
+	get_root_inspector()->set_follow_focus(true);
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -3777,11 +3777,10 @@ void EditorInspector::set_use_wide_editors(bool p_enable) {
 	wide_editors = p_enable;
 }
 
-void EditorInspector::set_sub_inspector(bool p_enable) {
-	sub_inspector = p_enable;
-	if (!is_inside_tree()) {
-		return;
-	}
+void EditorInspector::set_root_inspector(EditorInspector *p_root_inspector) {
+	root_inspector = p_root_inspector;
+	// Only the root inspector should follow focus.
+	set_follow_focus(false);
 }
 
 void EditorInspector::set_use_deletable_properties(bool p_enabled) {
@@ -4099,13 +4098,13 @@ void EditorInspector::_notification(int p_what) {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			if (!sub_inspector) {
+			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			if (!sub_inspector && is_inside_tree()) {
+			if (!is_sub_inspector() && is_inside_tree()) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 			edit(nullptr);
@@ -4164,7 +4163,7 @@ void EditorInspector::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			bool needs_update = false;
-			if (EditorThemeManager::is_generated_theme_outdated() && !sub_inspector) {
+			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			}
 
@@ -4250,92 +4249,33 @@ Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
 }
 
-void EditorInspector::_add_meta_confirm() {
-	String name = add_meta_name->get_text();
-
-	object->editor_set_section_unfold("metadata", true); // Ensure metadata is unfolded when adding a new metadata.
-
-	Variant defval;
-	Callable::CallError ce;
-	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
-	undo_redo->add_do_method(object, "set_meta", name, defval);
-	undo_redo->add_undo_method(object, "remove_meta", name);
-	undo_redo->commit_action();
-}
-
-void EditorInspector::_check_meta_name() {
-	const String meta_name = add_meta_name->get_text();
-
-	if (meta_name.is_empty()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name can't be empty."), EditorValidationPanel::MSG_ERROR);
-	} else if (!meta_name.is_valid_identifier()) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name must be a valid identifier."), EditorValidationPanel::MSG_ERROR);
-	} else if (object->has_meta(meta_name)) {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, vformat(TTR("Metadata with name \"%s\" already exists."), meta_name), EditorValidationPanel::MSG_ERROR);
-	} else if (meta_name[0] == '_') {
-		validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Names starting with _ are reserved for editor-only metadata."), EditorValidationPanel::MSG_ERROR);
-	}
-}
-
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
-		add_meta_dialog = memnew(ConfirmationDialog);
-
-		VBoxContainer *vbc = memnew(VBoxContainer);
-		add_meta_dialog->add_child(vbc);
-
-		HBoxContainer *hbc = memnew(HBoxContainer);
-		vbc->add_child(hbc);
-		hbc->add_child(memnew(Label(TTR("Name:"))));
-
-		add_meta_name = memnew(LineEdit);
-		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
-		hbc->add_child(add_meta_name);
-		hbc->add_child(memnew(Label(TTR("Type:"))));
-
-		add_meta_type = memnew(OptionButton);
-		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
-				continue; //not editable by inspector.
-			}
-			String type = i == Variant::OBJECT ? String("Resource") : Variant::get_type_name(Variant::Type(i));
-
-			add_meta_type->add_icon_item(get_editor_theme_icon(type), type, i);
-		}
-		hbc->add_child(add_meta_type);
-
-		Control *spacing = memnew(Control);
-		vbc->add_child(spacing);
-		spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
-
-		add_meta_dialog->set_ok_button_text(TTR("Add"));
-		add_child(add_meta_dialog);
-		add_meta_dialog->register_text_enter(add_meta_name);
+		add_meta_dialog = memnew(AddMetadataDialog());
 		add_meta_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspector::_add_meta_confirm));
-
-		validation_panel = memnew(EditorValidationPanel);
-		vbc->add_child(validation_panel);
-		validation_panel->add_line(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Metadata name is valid."));
-		validation_panel->set_update_callback(callable_mp(this, &EditorInspector::_check_meta_name));
-		validation_panel->set_accept_button(add_meta_dialog->get_ok_button());
-
-		add_meta_name->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+		add_child(add_meta_dialog);
 	}
 
+	StringName dialog_title;
 	Node *node = Object::cast_to<Node>(object);
-	if (node) {
-		add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), node->get_name()));
-	} else {
-		// This should normally be reached when the object is derived from Resource.
-		add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), object->get_class()));
-	}
+	// If object is derived from Node use node name, if derived from Resource use classname.
+	dialog_title = node ? node->get_name() : StringName(object->get_class());
 
-	add_meta_dialog->popup_centered();
-	add_meta_name->grab_focus();
-	add_meta_name->set_text("");
-	validation_panel->update();
+	List<StringName> existing_meta_keys;
+	object->get_meta_list(&existing_meta_keys);
+	add_meta_dialog->open(dialog_title, existing_meta_keys);
+}
+
+void EditorInspector::_add_meta_confirm() {
+	// Ensure metadata is unfolded when adding a new metadata.
+	object->editor_set_section_unfold("metadata", true);
+
+	String name = add_meta_dialog->get_meta_name();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
+	undo_redo->add_do_method(object, "set_meta", name, add_meta_dialog->get_meta_defval());
+	undo_redo->add_undo_method(object, "remove_meta", name);
+	undo_redo->commit_action();
 }
 
 void EditorInspector::_bind_methods() {

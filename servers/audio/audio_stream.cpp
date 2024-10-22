@@ -72,7 +72,7 @@ void AudioStreamPlayback::seek(double p_time) {
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
 	return ret;
 }
 
@@ -132,12 +132,12 @@ void AudioStreamPlaybackResampled::begin_resample() {
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	GDVIRTUAL_CALL(_mix_resampled, p_buffer, p_frames, ret);
 	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
 	float ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	GDVIRTUAL_CALL(_get_stream_sampling_rate, ret);
 	return ret;
 }
 
@@ -173,12 +173,12 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		}
 
 		float mu2 = mu * mu;
-		AudioFrame a0 = 3 * y1 - 3 * y2 + y3 - y0;
-		AudioFrame a1 = 2 * y0 - 5 * y1 + 4 * y2 - y3;
-		AudioFrame a2 = y2 - y0;
-		AudioFrame a3 = 2 * y1;
+		float h11 = mu2 * (mu - 1);
+		float z = mu2 - h11;
+		float h01 = z - h11;
+		float h10 = mu - z;
 
-		p_buffer[i] = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3) / 2;
+		p_buffer[i] = y1 + (y2 - y1) * h01 + ((y2 - y0) * h10 + (y3 - y1) * h11) * 0.5;
 
 		mix_offset += mix_increment;
 
@@ -340,12 +340,6 @@ double AudioStreamMicrophone::get_length() const {
 
 bool AudioStreamMicrophone::is_monophonic() const {
 	return true;
-}
-
-void AudioStreamMicrophone::_bind_methods() {
-}
-
-AudioStreamMicrophone::AudioStreamMicrophone() {
 }
 
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {

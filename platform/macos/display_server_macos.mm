@@ -139,10 +139,18 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #ifdef VULKAN_ENABLED
 				RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
 #endif
+#ifdef METAL_ENABLED
+				RenderingContextDriverMetal::WindowPlatformData metal;
+#endif
 			} wpd;
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
+			}
+#endif
+#ifdef METAL_ENABLED
+			if (rendering_driver == "metal") {
+				wpd.metal.layer = (CAMetalLayer *)layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -1885,6 +1893,12 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 		was_fullscreen = true;
 	}
 
+	bool was_maximized = false;
+	if (!was_fullscreen && NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+		[wd.window_object zoom:nil];
+		was_maximized = true;
+	}
+
 	Rect2i srect = screen_get_usable_rect(p_screen);
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 	Size2i wsize = window_get_size(p_window);
@@ -1892,6 +1906,10 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 
 	wpos = wpos.clamp(srect.position, srect.position + srect.size - wsize / 3);
 	window_set_position(wpos, p_window);
+
+	if (was_maximized) {
+		[wd.window_object zoom:nil];
+	}
 
 	if (was_fullscreen) {
 		// Re-enter fullscreen mode.
@@ -2332,7 +2350,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	wd.wb_offset = p_offset / scale;
 	wd.wb_offset = wd.wb_offset.maxi(12);
 	if (wd.window_button_view) {
-		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+		[(GodotButtonView *)wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}
 }
 
@@ -2700,7 +2718,7 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 		gl_manager_legacy->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
@@ -2717,7 +2735,7 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 		return (gl_manager_legacy->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
 	}
@@ -3301,6 +3319,9 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
+#if defined(METAL_ENABLED)
+	drivers.push_back("metal");
+#endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
@@ -3598,8 +3619,13 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager_angle = nullptr;
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
-				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
+#ifdef EGL_STATIC
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
+#endif
 				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
@@ -3623,13 +3649,26 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
 #endif
+#if defined(METAL_ENABLED)
+	if (rendering_driver == "metal") {
+		rendering_context = memnew(RenderingContextDriverMetal);
+	}
+#endif
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
 			memdelete(rendering_context);
 			rendering_context = nullptr;
-			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize " + rendering_driver);
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else {
+				r_error = ERR_CANT_CREATE;
+				ERR_FAIL_MSG("Could not initialize " + rendering_driver);
+			}
 		}
 	}
 #endif

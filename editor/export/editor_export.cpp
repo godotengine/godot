@@ -83,6 +83,8 @@ void EditorExport::_save() {
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
 		config->set_value(section, "export_path", preset->get_export_path());
+		config->set_value(section, "patches", preset->get_patches());
+
 		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
@@ -124,7 +126,17 @@ void EditorExport::_bind_methods() {
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
 	export_platforms.push_back(p_platform);
+
 	should_update_presets = true;
+	should_reload_presets = true;
+}
+
+void EditorExport::remove_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	export_platforms.erase(p_platform);
+	p_platform->cleanup();
+
+	should_update_presets = true;
+	should_reload_presets = true;
 }
 
 int EditorExport::get_export_platform_count() {
@@ -244,7 +256,7 @@ void EditorExport::load_config() {
 
 		if (!preset.is_valid()) {
 			index++;
-			ERR_CONTINUE(!preset.is_valid());
+			continue; // Unknown platform, skip without error (platform might be loaded later).
 		}
 
 		preset->set_name(config->get_value(section, "name"));
@@ -293,6 +305,7 @@ void EditorExport::load_config() {
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
 		preset->set_export_path(config->get_value(section, "export_path", ""));
 		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
+		preset->set_patches(config->get_value(section, "patches", Vector<String>()));
 
 		if (config->has_section_key(section, "encrypt_pck")) {
 			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));
@@ -342,6 +355,12 @@ void EditorExport::load_config() {
 
 void EditorExport::update_export_presets() {
 	HashMap<StringName, List<EditorExportPlatform::ExportOption>> platform_options;
+
+	if (should_reload_presets) {
+		should_reload_presets = false;
+		export_presets.clear();
+		load_config();
+	}
 
 	for (int i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];

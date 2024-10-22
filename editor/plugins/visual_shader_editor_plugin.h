@@ -34,6 +34,7 @@
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "editor/plugins/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
@@ -49,6 +50,7 @@ class RichTextLabel;
 class Tree;
 
 class VisualShaderEditor;
+class MaterialEditor;
 
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
@@ -195,8 +197,8 @@ public:
 	VisualShaderEditedProperty() {}
 };
 
-class VisualShaderEditor : public VBoxContainer {
-	GDCLASS(VisualShaderEditor, VBoxContainer);
+class VisualShaderEditor : public ShaderEditor {
+	GDCLASS(VisualShaderEditor, ShaderEditor);
 	friend class VisualShaderGraphPlugin;
 
 	PopupPanel *property_editor_popup = nullptr;
@@ -205,11 +207,18 @@ class VisualShaderEditor : public VBoxContainer {
 	int editing_port = -1;
 	Ref<VisualShaderEditedProperty> edited_property_holder;
 
+	MaterialEditor *material_editor = nullptr;
 	Ref<VisualShader> visual_shader;
+	Ref<ShaderMaterial> preview_material;
+	Ref<Environment> env;
+	String param_filter_name;
+	EditorProperty *current_prop = nullptr;
+	VBoxContainer *shader_preview_vbox = nullptr;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
 	MenuButton *varying_button = nullptr;
-	Button *preview_shader = nullptr;
+	Button *code_preview_button = nullptr;
+	Button *shader_preview_button = nullptr;
 
 	OptionButton *edit_type = nullptr;
 	OptionButton *edit_type_standard = nullptr;
@@ -221,8 +230,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool pending_update_preview = false;
 	bool shader_error = false;
-	Window *preview_window = nullptr;
-	VBoxContainer *preview_vbox = nullptr;
+	AcceptDialog *code_preview_window = nullptr;
+	VBoxContainer *code_preview_vbox = nullptr;
 	CodeEdit *preview_text = nullptr;
 	Ref<CodeHighlighter> syntax_highlighter = nullptr;
 	PanelContainer *error_panel = nullptr;
@@ -260,8 +269,17 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupPanel *frame_tint_color_pick_popup = nullptr;
 	ColorPicker *frame_tint_color_picker = nullptr;
 
-	bool preview_first = true;
-	bool preview_showed = false;
+	bool code_preview_first = true;
+	bool code_preview_showed = false;
+
+	bool shader_preview_showed = true;
+
+	LineEdit *param_filter = nullptr;
+	String selected_param_id;
+	Tree *parameters = nullptr;
+	HashMap<String, PropertyInfo> parameter_props;
+	VBoxContainer *param_vbox = nullptr;
+	VBoxContainer *param_vbox2 = nullptr;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -348,6 +366,10 @@ class VisualShaderEditor : public VBoxContainer {
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();
 
+	void _clear_preview_param();
+	void _update_preview_parameter_list();
+	bool _update_preview_parameter_tree();
+
 	void _update_nodes();
 	void _update_graph();
 
@@ -392,6 +414,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int custom_node_option_idx;
 	int curve_node_option_idx;
 	int curve_xyz_node_option_idx;
+	int mesh_emitter_option_idx;
 	List<String> keyword_list;
 
 	List<VisualShaderNodeParameterRef> uniform_refs;
@@ -412,6 +435,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_next_previews(int p_node_id);
 	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
+
+	void _show_shader_preview();
 
 	Vector<int> nodes_link_to_frame_buffer; // Contains the nodes that are requested to be linked to a frame. This is used to perform one Undo/Redo operation for dragging nodes.
 	int frame_node_id_to_link_to = -1;
@@ -551,9 +576,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
 
 	void _member_filter_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _member_selected();
-	void _member_unselected();
 	void _member_create();
 	void _member_cancel();
 
@@ -591,11 +615,23 @@ class VisualShaderEditor : public VBoxContainer {
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _resources_removed();
 
+	void _param_property_changed(const String &p_property, const Variant &p_value, const String &p_field = "", bool p_changing = false);
+	void _update_current_param();
+	void _param_filter_changed(const String &p_text);
+	void _param_selected();
+	void _param_unselected();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void edit_shader(const Ref<Shader> &p_shader) override;
+	virtual void apply_shaders() override;
+	virtual bool is_unsaved() const override;
+	virtual void save_external_data(const String &p_str = "") override;
+	virtual void validate_script() override;
+
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
@@ -609,10 +645,7 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void edit(VisualShader *p_visual_shader);
 	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
-
-	void validate_script();
 
 	VisualShaderEditor();
 };
@@ -629,9 +662,6 @@ class EditorPropertyVisualShaderMode : public EditorProperty {
 	OptionButton *options = nullptr;
 
 	void _option_selected(int p_which);
-
-protected:
-	static void _bind_methods();
 
 public:
 	void setup(const Vector<String> &p_options);
@@ -651,6 +681,7 @@ public:
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
 	Ref<VisualShader> shader;
+	Ref<ShaderMaterial> preview_mat;
 	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
@@ -658,11 +689,10 @@ class VisualShaderNodePortPreview : public Control {
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
+	void setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {

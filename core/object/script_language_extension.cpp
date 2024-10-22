@@ -142,6 +142,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_debug_get_current_stack_info);
 
 	GDVIRTUAL_BIND(_reload_all_scripts);
+	GDVIRTUAL_BIND(_reload_scripts, "scripts", "soft_reload");
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);

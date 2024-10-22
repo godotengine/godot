@@ -38,7 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "scene/resources/theme.h"
@@ -277,6 +277,10 @@ static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Ve
 		// Check found entry on name and data type.
 		if (to.name == from.name && to.data_type == from.data_type) {
 			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
 			to.keywords = from.keywords;
 		}
 	}
@@ -571,6 +575,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							prop.type = retinfo.class_name;
 						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
+						} else if (retinfo.type == Variant::DICTIONARY && retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+							prop.type = "Dictionary[" + retinfo.hint_string.replace(";", ", ") + "]";
 						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 							prop.type = retinfo.hint_string;
 						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -1420,6 +1426,14 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								prop2.type = parser->get_named_attribute_value("type");
 								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
 								prop2.data_type = parser->get_named_attribute_value("data_type");
+								if (parser->has_attribute("deprecated")) {
+									prop2.is_deprecated = true;
+									prop2.deprecated_message = parser->get_named_attribute_value("deprecated");
+								}
+								if (parser->has_attribute("experimental")) {
+									prop2.is_experimental = true;
+									prop2.experimental_message = parser->get_named_attribute_value("experimental");
+								}
 								if (parser->has_attribute("keywords")) {
 									prop2.keywords = parser->get_named_attribute_value("keywords");
 								}
@@ -1737,6 +1751,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				String additional_attributes;
 				if (!ti.default_value.is_empty()) {
 					additional_attributes += String(" default=\"") + ti.default_value.xml_escape(true) + "\"";
+				}
+				if (ti.is_deprecated) {
+					additional_attributes += " deprecated=\"" + ti.deprecated_message.xml_escape(true) + "\"";
+				}
+				if (ti.is_experimental) {
+					additional_attributes += " experimental=\"" + ti.experimental_message.xml_escape(true) + "\"";
 				}
 				if (!ti.keywords.is_empty()) {
 					additional_attributes += String(" keywords=\"") + ti.keywords.xml_escape(true) + "\"";

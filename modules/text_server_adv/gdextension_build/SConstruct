@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
 import atexit
 import sys
 import time
@@ -385,6 +387,7 @@ thirdparty_harfbuzz_sources = [
     "src/hb-ucd.cc",
     "src/hb-unicode.cc",
     # "src/hb-uniscribe.cc",
+    "src/OT/Var/VARC/VARC.cc",
 ]
 
 if env["freetype_enabled"]:
@@ -415,6 +418,7 @@ if env["platform"] == "android" or env["platform"] == "linuxbsd":
 
 env_harfbuzz.Append(
     CCFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
         "-DU_HAVE_LIB_SUFFIX=1",
         "-DU_LIB_SUFFIX_C_NAME=_godot",
         "-DHAVE_ICU_BUILTIN",
@@ -746,6 +750,7 @@ env_icu.Append(
 )
 env.Append(
     CXXFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
         "-DU_HAVE_LIB_SUFFIX=1",
         "-DU_LIB_SUFFIX_C_NAME=_godot",
         "-DICU_DATA_NAME=" + icu_data_name,

@@ -468,7 +468,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 					update_skeletons = false;
 				}
 				// Canvas group begins here, render until before this item
-				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info, material_screen_texture_mipmaps_cached);
 				item_count = 0;
 
 				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
@@ -499,7 +499,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, true, r_render_info, material_screen_texture_mipmaps_cached);
 			item_count = 0;
 
 			if (ci->canvas_group->blur_mipmaps) {
@@ -523,7 +523,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 			}
 			//render anything pending, including clearing if no items
 
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, false, r_render_info, material_screen_texture_mipmaps_cached);
 			item_count = 0;
 
 			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
@@ -553,7 +553,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				mesh_storage->update_mesh_instances();
 				update_skeletons = false;
 			}
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr, r_render_info);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, r_sdf_used, canvas_group_owner != nullptr, r_render_info, material_screen_texture_mipmaps_cached);
 			//then reset
 			item_count = 0;
 		}
@@ -573,10 +573,10 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 	state.current_instance_buffer_index = 0;
 }
 
-void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info) {
+void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer, RenderingMethod::RenderInfo *r_render_info, bool p_backbuffer_has_mipmaps) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
-	canvas_begin(p_to_render_target, p_to_backbuffer);
+	canvas_begin(p_to_render_target, p_to_backbuffer, p_backbuffer_has_mipmaps);
 
 	if (p_item_count <= 0) {
 		// Nothing to draw, just call canvas_begin() to clear the render target and return.
@@ -647,18 +647,17 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 			_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used, Point2());
 		} else {
 			Point2 start_pos = ci->repeat_size * -(ci->repeat_times / 2);
-			Point2 end_pos = ci->repeat_size * ci->repeat_times + ci->repeat_size + start_pos;
-			Point2 pos = start_pos;
+			Point2 offset;
 
-			do {
-				do {
-					_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used, pos);
-					pos.y += ci->repeat_size.y;
-				} while (pos.y < end_pos.y);
-
-				pos.x += ci->repeat_size.x;
-				pos.y = start_pos.y;
-			} while (pos.x < end_pos.x);
+			int repeat_times_x = ci->repeat_size.x ? ci->repeat_times : 0;
+			int repeat_times_y = ci->repeat_size.y ? ci->repeat_times : 0;
+			for (int ry = 0; ry <= repeat_times_y; ry++) {
+				offset.y = start_pos.y + ry * ci->repeat_size.y;
+				for (int rx = 0; rx <= repeat_times_x; rx++) {
+					offset.x = start_pos.x + rx * ci->repeat_size.x;
+					_record_item_commands(ci, p_to_render_target, p_canvas_transform_inverse, current_clip, blend_mode, p_lights, index, batch_broken, r_sdf_used, offset);
+				}
+			}
 		}
 	}
 
@@ -809,7 +808,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	state.last_item_index += index;
 }
 
-void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, const Point2 &p_offset) {
+void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, const Point2 &p_repeat_offset) {
 	RenderingServer::CanvasItemTextureFilter texture_filter = p_item->texture_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? state.default_filter : p_item->texture_filter;
 
 	if (texture_filter != state.canvas_instance_batches[state.current_batch_index].filter) {
@@ -826,11 +825,11 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		state.canvas_instance_batches[state.current_batch_index].repeat = texture_repeat;
 	}
 
-	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
-
-	if (p_offset.x || p_offset.y) {
-		base_transform *= Transform2D(0, p_offset / p_item->xform_curr.get_scale()); // TODO: Interpolate or explain why not needed.
+	Transform2D base_transform = p_item->final_transform;
+	if (p_item->repeat_source_item && (p_repeat_offset.x || p_repeat_offset.y)) {
+		base_transform.columns[2] += p_item->repeat_source_item->final_transform.basis_xform(p_repeat_offset);
 	}
+	base_transform = p_canvas_transform_inverse * base_transform;
 
 	Transform2D draw_transform; // Used by transform command
 
@@ -1735,7 +1734,7 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 
 	Vector2 center = p_clip_rect.get_center();
 
-	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(light_dir)) - light_dir.dot(center));
+	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(-light_dir)) - light_dir.dot(center));
 
 	Vector2 from_pos = center - light_dir * (to_edge_distance + p_cull_distance);
 	float distance = to_edge_distance * 2.0 + p_cull_distance;
@@ -2170,7 +2169,7 @@ bool RasterizerCanvasGLES3::free(RID p_rid) {
 void RasterizerCanvasGLES3::update() {
 }
 
-void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backbuffer) {
+void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backbuffer, bool p_backbuffer_has_mipmaps) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 
@@ -2185,6 +2184,9 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
+		if (render_target->backbuffer != 0) {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p_backbuffer_has_mipmaps ? render_target->mipmap_count - 1 : 0);
+		}
 	}
 
 	if (render_target->is_transparent || p_to_backbuffer) {

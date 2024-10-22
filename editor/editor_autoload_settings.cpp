@@ -88,14 +88,9 @@ void EditorAutoloadSettings::_notification(int p_what) {
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-	if (!p_name.is_valid_identifier()) {
+	if (!p_name.is_valid_unicode_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " ";
-			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
-				*r_error += TTR("Cannot begin with a digit.");
-			} else {
-				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
-			}
+			*r_error = TTR("Invalid name.") + " " + TTR("Must be a valid Unicode identifier.");
 		}
 
 		return false;
@@ -457,7 +452,9 @@ void EditorAutoloadSettings::init_autoloads() {
 
 	for (const AutoloadInfo &info : autoload_cache) {
 		if (info.node && info.in_editor) {
-			callable_mp((Node *)get_tree()->get_root(), &Node::add_child).call_deferred(info.node, false, Node::INTERNAL_MODE_DISABLED);
+			// It's important to add the node without deferring because code in plugins or tool scripts
+			// could use the autoload node when they are enabled.
+			get_tree()->get_root()->add_child(info.node);
 		}
 	}
 }
@@ -642,6 +639,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 	for (int i = 0; i < max_size; i++) {
 		Label *label = memnew(Label(autoloads[i]));
 		label->set_self_modulate(Color(1, 1, 1, Math::lerp(1, 0, float(i) / PREVIEW_LIST_MAX_SIZE)));
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 		preview->add_child(label);
 	}

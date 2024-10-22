@@ -30,6 +30,9 @@
 
 #include "register_types.h"
 
+#if defined(LINUXBSD_ENABLED)
+#include "camera_linux.h"
+#endif
 #if defined(WINDOWS_ENABLED)
 #include "camera_win.h"
 #endif
@@ -45,6 +48,9 @@ void initialize_camera_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
+#if defined(LINUXBSD_ENABLED)
+	CameraServer::make_default<CameraLinux>();
+#endif
 #if defined(WINDOWS_ENABLED)
 	CameraServer::make_default<CameraWindows>();
 #endif

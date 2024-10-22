@@ -452,23 +452,28 @@ public:
 	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
-	Error parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const;
+	Error parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const;
 
 	String property_name_encode() const;
 
 	// node functions
 	static String get_invalid_node_name_characters(bool p_allow_internal = false);
 	String validate_node_name() const;
-	String validate_identifier() const;
+	String validate_ascii_identifier() const;
+	String validate_unicode_identifier() const;
 	String validate_filename() const;
 
-	bool is_valid_identifier() const;
+	bool is_valid_ascii_identifier() const;
+	bool is_valid_unicode_identifier() const;
 	bool is_valid_int() const;
 	bool is_valid_float() const;
 	bool is_valid_hex_number(bool p_with_prefix) const;
 	bool is_valid_html_color() const;
 	bool is_valid_ip_address() const;
 	bool is_valid_filename() const;
+
+	// Use `is_valid_ascii_identifier()` instead. Kept for compatibility.
+	bool is_valid_identifier() const { return is_valid_ascii_identifier(); }
 
 	/**
 	 * The constructors must not depend on other overloads

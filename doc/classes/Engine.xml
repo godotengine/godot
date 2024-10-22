@@ -337,6 +337,10 @@
 			[b]Note:[/b] This property does not impact the editor's Errors tab when running a project from the editor.
 			[b]Warning:[/b] If set to [code]false[/code] anywhere in the project, important error messages may be hidden even if they are emitted from other scripts. In a [code]@tool[/code] script, this will also impact the editor itself. Do [i]not[/i] report bugs before ensuring error messages are enabled (as they are by default).
 		</member>
+		<member name="print_to_stdout" type="bool" setter="set_print_to_stdout" getter="is_printing_to_stdout" default="true">
+			If [code]false[/code], stops printing messages (for example using [method @GlobalScope.print]) to the console, log files, and editor Output log. This property is equivalent to the [member ProjectSettings.application/run/disable_stdout] project setting.
+			[b]Note:[/b] This does not stop printing errors or warnings produced by scripts to the console or log files, for more details see [member print_error_messages].
+		</member>
 		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
 			The speed multiplier at which the in-game clock updates, compared to real time. For example, if set to [code]2.0[/code] the game runs twice as fast, and if set to [code]0.5[/code] the game runs half as fast.
 			This value affects [Timer], [SceneTreeTimer], and all other simulations that make use of [code]delta[/code] time (such as [method Node._process] and [method Node._physics_process]).

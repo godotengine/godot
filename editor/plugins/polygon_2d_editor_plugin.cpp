@@ -181,7 +181,7 @@ void Polygon2DEditor::_sync_bones() {
 			}
 
 			if (weights.size() == 0) { //create them
-				weights.resize(node->get_polygon().size());
+				weights.resize(wc);
 				float *w = weights.ptrw();
 				for (int j = 0; j < wc; j++) {
 					w[j] = 0.0;
@@ -326,12 +326,6 @@ void Polygon2DEditor::_menu_option(int p_option) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case MODE_EDIT_UV: {
-			if (node->get_texture().is_null()) {
-				error->set_text(TTR("No texture in this polygon.\nSet a texture to be able to edit UV."));
-				error->popup_centered();
-				return;
-			}
-
 			uv_edit_draw->set_texture_filter(node->get_texture_filter_in_tree());
 
 			Vector<Vector2> points = node->get_polygon();
@@ -850,8 +844,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	if (mm.is_valid()) {
 		if (uv_drag) {
 			Vector2 uv_drag_to = mm->get_position();
-			uv_drag_to = snap_point(uv_drag_to); // FIXME: Only works correctly with 'UV_MODE_EDIT_POINT', it's imprecise with the rest.
-			Vector2 drag = mtx.affine_inverse().xform(uv_drag_to) - mtx.affine_inverse().xform(uv_drag_from);
+			uv_drag_to = snap_point(uv_drag_to);
+			Vector2 drag = mtx.affine_inverse().basis_xform(uv_drag_to - uv_drag_from);
 
 			switch (uv_move_current) {
 				case UV_MODE_CREATE: {
@@ -1059,9 +1053,6 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	Ref<Texture2D> base_tex = node->get_texture();
-	if (base_tex.is_null()) {
-		return;
-	}
 
 	String warning;
 
@@ -1071,12 +1062,14 @@ void Polygon2DEditor::_uv_draw() {
 
 	// Draw texture as a background if editing uvs or no uv mapping exist.
 	if (uv_edit_mode[0]->is_pressed() || uv_mode == UV_MODE_CREATE || node->get_polygon().is_empty() || node->get_uv().size() != node->get_polygon().size()) {
-		Transform2D texture_transform = Transform2D(node->get_texture_rotation(), node->get_texture_offset());
-		texture_transform.scale(node->get_texture_scale());
-		texture_transform.affine_invert();
-		RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx * texture_transform);
-		uv_edit_draw->draw_texture(base_tex, Point2());
-		RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
+		if (base_tex.is_valid()) {
+			Transform2D texture_transform = Transform2D(node->get_texture_rotation(), node->get_texture_offset());
+			texture_transform.scale(node->get_texture_scale());
+			texture_transform.affine_invert();
+			RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx * texture_transform);
+			uv_edit_draw->draw_texture(base_tex, Point2());
+			RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), Transform2D());
+		}
 		preview_polygon->hide();
 	} else {
 		preview_polygon->set_transform(mtx);
@@ -1166,12 +1159,8 @@ void Polygon2DEditor::_uv_draw() {
 		poly_line_color.a *= 0.25;
 	}
 	Color polygon_line_color = Color(0.5, 0.5, 0.9);
-	Vector<Color> polygon_fill_color;
-	{
-		Color pf = polygon_line_color;
-		pf.a *= 0.5;
-		polygon_fill_color.push_back(pf);
-	}
+	Color polygon_fill_color = polygon_line_color;
+	polygon_fill_color.a *= 0.5;
 	Color prev_color = Color(0.5, 0.5, 0.5);
 
 	int uv_draw_max = uvs.size();
@@ -1216,7 +1205,7 @@ void Polygon2DEditor::_uv_draw() {
 			uv_edit_draw->draw_line(mtx.xform(uvs[idx]), mtx.xform(uvs[idx_next]), polygon_line_color, Math::round(EDSCALE));
 		}
 		if (points.size() >= 3) {
-			uv_edit_draw->draw_polygon(polypoints, polygon_fill_color);
+			uv_edit_draw->draw_colored_polygon(polypoints, polygon_fill_color);
 		}
 	}
 
@@ -1255,44 +1244,43 @@ void Polygon2DEditor::_uv_draw() {
 
 		//draw skeleton
 		NodePath skeleton_path = node->get_skeleton();
-		if (node->has_node(skeleton_path)) {
-			Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node(skeleton_path));
-			if (skeleton) {
-				for (int i = 0; i < skeleton->get_bone_count(); i++) {
-					Bone2D *bone = skeleton->get_bone(i);
-					if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0)) {
-						continue; //not set
+		Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node_or_null(skeleton_path));
+		if (skeleton) {
+			Transform2D skeleton_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * skeleton->get_global_transform();
+			for (int i = 0; i < skeleton->get_bone_count(); i++) {
+				Bone2D *bone = skeleton->get_bone(i);
+				if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0)) {
+					continue; //not set
+				}
+
+				bool current = bone_path == skeleton->get_path_to(bone);
+
+				bool found_child = false;
+
+				for (int j = 0; j < bone->get_child_count(); j++) {
+					Bone2D *n = Object::cast_to<Bone2D>(bone->get_child(j));
+					if (!n) {
+						continue;
 					}
 
-					bool current = bone_path == skeleton->get_path_to(bone);
+					found_child = true;
 
-					bool found_child = false;
+					Transform2D bone_xform = skeleton_xform * bone->get_skeleton_rest();
+					Transform2D endpoint_xform = bone_xform * n->get_transform();
 
-					for (int j = 0; j < bone->get_child_count(); j++) {
-						Bone2D *n = Object::cast_to<Bone2D>(bone->get_child(j));
-						if (!n) {
-							continue;
-						}
+					Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
+				}
 
-						found_child = true;
+				if (!found_child) {
+					//draw normally
+					Transform2D bone_xform = skeleton_xform * bone->get_skeleton_rest();
+					Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_length(), 0)).rotated(bone->get_bone_angle());
 
-						Transform2D bone_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * (skeleton->get_global_transform() * bone->get_skeleton_rest());
-						Transform2D endpoint_xform = bone_xform * n->get_transform();
-
-						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
-					}
-
-					if (!found_child) {
-						//draw normally
-						Transform2D bone_xform = node->get_global_transform().affine_inverse().translated(-node->get_offset()) * (skeleton->get_global_transform() * bone->get_skeleton_rest());
-						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_length(), 0));
-
-						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
-					}
+					Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+					uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
 				}
 			}
 		}
@@ -1309,8 +1297,8 @@ void Polygon2DEditor::_bind_methods() {
 
 Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	if (use_snap) {
-		p_target.x = Math::snap_scalar(snap_offset.x * uv_draw_zoom - uv_draw_ofs.x, snap_step.x * uv_draw_zoom, p_target.x);
-		p_target.y = Math::snap_scalar(snap_offset.y * uv_draw_zoom - uv_draw_ofs.y, snap_step.y * uv_draw_zoom, p_target.y);
+		p_target.x = Math::snap_scalar((snap_offset.x - uv_draw_ofs.x) * uv_draw_zoom, snap_step.x * uv_draw_zoom, p_target.x);
+		p_target.y = Math::snap_scalar((snap_offset.y - uv_draw_ofs.y) * uv_draw_zoom, snap_step.y * uv_draw_zoom, p_target.y);
 	}
 
 	return p_target;
@@ -1388,7 +1376,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_button[UV_MODE_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
 	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
-	uv_button[UV_MODE_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + find_keycode_name(key) + TTR(": Rotate") + "\n" + TTR("Shift: Move All") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Shift: Scale"));
+	// TRANSLATORS: %s is Control or Command key name.
+	uv_button[UV_MODE_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
 	uv_button[UV_MODE_MOVE]->set_tooltip_text(TTR("Move Polygon"));
 	uv_button[UV_MODE_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
 	uv_button[UV_MODE_SCALE]->set_tooltip_text(TTR("Scale Polygon"));
@@ -1472,7 +1461,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_enable->set_toggle_mode(true);
 	b_snap_enable->set_pressed(use_snap);
 	b_snap_enable->set_tooltip_text(TTR("Enable Snap"));
-	b_snap_enable->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_use_snap));
+	b_snap_enable->connect(SceneStringName(toggled), callable_mp(this, &Polygon2DEditor::_set_use_snap));
 
 	b_snap_grid = memnew(Button);
 	b_snap_grid->set_theme_type_variation("FlatButton");
@@ -1482,11 +1471,11 @@ Polygon2DEditor::Polygon2DEditor() {
 	b_snap_grid->set_toggle_mode(true);
 	b_snap_grid->set_pressed(snap_show_grid);
 	b_snap_grid->set_tooltip_text(TTR("Show Grid"));
-	b_snap_grid->connect("toggled", callable_mp(this, &Polygon2DEditor::_set_show_grid));
+	b_snap_grid->connect(SceneStringName(toggled), callable_mp(this, &Polygon2DEditor::_set_show_grid));
 
 	grid_settings = memnew(AcceptDialog);
 	grid_settings->set_title(TTR("Configure Grid:"));
-	add_child(grid_settings);
+	uv_edit->add_child(grid_settings);
 	VBoxContainer *grid_settings_vb = memnew(VBoxContainer);
 	grid_settings->add_child(grid_settings_vb);
 

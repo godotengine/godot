@@ -13,19 +13,20 @@
 # C H O P O <ograncthulhu@gmail.com>, 2024.
 # ninjum <ninhum@gmx.com>, 2024.
 # spukes <soyceltista@hotmail.com>, 2024.
+# "Aquiles T. M." <aquiles.sonido@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-08-12 20:09+0000\n"
-"Last-Translator: spukes <soyceltista@hotmail.com>\n"
+"PO-Revision-Date: 2024-09-05 14:09+0000\n"
+"Last-Translator: \"Aquiles T. M.\" <aquiles.sonido@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -526,6 +527,12 @@ msgstr "Facer os Manipuladores equilibrados"
 msgid "Make Handles Mirrored"
 msgstr "Facer os manipuladores simétricos"
 
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Facer os Manipuladores equilibrados (Tanxente Automática)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Facer os Manipuladores espellados (Tanxente Automática)"
+
 msgid "Add Bezier Point"
 msgstr "Engadir Punto Bezier"
 
@@ -696,6 +703,21 @@ msgstr "Relaxación:"
 
 msgid "In-Handle:"
 msgstr "No manexo:"
+
+msgid "Out-Handle:"
+msgstr "Manipulador de saída:"
+
+msgid "Handle mode: Free\n"
+msgstr "Modo de manexo: Libre\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Modo de manexo: Lineal\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Modo de manexo: Equilibrado\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Modo de manexo: Espellado\n"
 
 msgid "Stream:"
 msgstr "Fluxo:"
@@ -902,6 +924,15 @@ msgstr "Pegar Pistas"
 
 msgid "Animation Scale Keys"
 msgstr "Escalar Claves de Animación"
+
+msgid "Animation Set Start Offset"
+msgstr "Definir Offset Inicial da Animación"
+
+msgid "Animation Set End Offset"
+msgstr "Definir Offset Final da Animación"
+
+msgid "Make Easing Keys"
+msgstr "Crear Chaves de Interpolación"
 
 msgid "Animation Add RESET Keys"
 msgstr "Añadir Claves de Animación de RESET"
@@ -1588,8 +1619,14 @@ msgstr "Crear Cartafol"
 msgid "Folder name is valid."
 msgstr "O nome do cartafol é válido."
 
+msgid "Double-click to open in browser."
+msgstr "Dobre-clic para abrir no navegador."
+
 msgid "Thanks from the Godot community!"
 msgstr "Moitas grazas de parte da comunidade de Godot!"
+
+msgid "(unknown)"
+msgstr "(descoñecido)"
 
 msgid "Godot Engine contributors"
 msgstr "Colaboradores de Godot Engine"
@@ -1609,6 +1646,9 @@ msgstr "Desenvolvedores"
 
 msgid "Authors"
 msgstr "Autores"
+
+msgid "Patrons"
+msgstr "Mecenas"
 
 msgid "Platinum Sponsors"
 msgstr "Patrocinadores Platino"
@@ -2874,6 +2914,33 @@ msgstr "Duplicar..."
 msgid "Rename..."
 msgstr "Renomear..."
 
+msgid "Yellow"
+msgstr "Amarelo"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Teal"
+msgstr "Verde Azulado"
+
+msgid "Blue"
+msgstr "Azul"
+
+msgid "Purple"
+msgstr "Morado"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Gray"
+msgstr "Gris"
+
+msgid "Go to previous selected folder/file."
+msgstr "Ir ao cartafol previamente seleccionado."
+
+msgid "Go to next selected folder/file."
+msgstr "Ir ao seguinte cartafol seleccionado."
+
 msgid "Re-Scan Filesystem"
 msgstr "Reexaminar Sistema de Arquivos"
 
@@ -2939,6 +3006,19 @@ msgstr "Mover"
 msgid "Select Current Folder"
 msgstr "Seleccionar Cartafol Actual"
 
+msgid "Cannot save file with an empty filename."
+msgstr "Non pode gardar un ficheiro cun nome baleiro."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Non pode gardar un ficheiro cun nome que comeza cun punto."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"O ficheiro \"%s\" xa existe.\n"
+"Quere sobreescribilo?"
+
 msgid "Select This Folder"
 msgstr "Seleccionar Este Cartafol"
 
@@ -2962,6 +3042,9 @@ msgstr "Abrir un Arquivo ou Directorio"
 
 msgid "Save a File"
 msgstr "Gardar un Arquivo"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Non se puido crear o cartafol. Xa existe un ficheiro con ese nome."
 
 msgid "Go Back"
 msgstr "Retroceder"

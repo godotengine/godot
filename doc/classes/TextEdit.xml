@@ -1299,6 +1299,9 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
+		<member name="empty_selection_clipboard_enabled" type="bool" setter="set_empty_selection_clipboard_enabled" getter="is_empty_selection_clipboard_enabled" default="true">
+			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled" default="false">
 			If [code]true[/code], all occurrences of the selected text will be highlighted.
@@ -1327,7 +1330,10 @@
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
 		<member name="scroll_fit_content_height" type="bool" setter="set_fit_content_height_enabled" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines.
+			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines. When both this property and [member scroll_fit_content_width] are [code]true[/code], no scrollbars will be displayed.
+		</member>
+		<member name="scroll_fit_content_width" type="bool" setter="set_fit_content_width_enabled" getter="is_fit_content_width_enabled" default="false">
+			If [code]true[/code], [TextEdit] will disable horizontal scroll and fit minimum width to the widest line in the text. When both this property and [member scroll_fit_content_height] are [code]true[/code], no scrollbars will be displayed.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.
@@ -1358,7 +1364,8 @@
 			Set additional options for BiDi override.
 		</member>
 		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
-			Sets the [SyntaxHighlighter] to use.
+			The syntax highlighter to use.
+			[b]Note:[/b] A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].

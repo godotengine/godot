@@ -49,7 +49,7 @@ namespace RendererRD {
 
 class LightStorage : public RendererLightStorage {
 public:
-	enum ShadowAtlastQuadrant {
+	enum ShadowAtlastQuadrant : uint32_t {
 		QUADRANT_SHIFT = 27,
 		OMNI_LIGHT_FLAG = 1 << 26,
 		SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
@@ -332,6 +332,7 @@ private:
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 		float baked_exposure = 1.0;
+		Vector2i light_texture_size;
 		int32_t array_index = -1; //unassigned
 		PackedVector3Array points;
 		PackedColorArray point_sh;
@@ -432,6 +433,11 @@ private:
 
 	HashMap<int, ShadowCubemap> shadow_cubemaps;
 	ShadowCubemap *_get_shadow_cubemap(int p_size);
+
+	/* PIPELINE HINTS */
+
+	bool shadow_cubemaps_used = false;
+	bool shadow_dual_paraboloid_used = false;
 
 public:
 	static LightStorage *get_singleton();
@@ -937,6 +943,10 @@ public:
 	void set_max_reflection_probes(const uint32_t p_max_reflection_probes);
 	RID get_reflection_probe_buffer() { return reflection_buffer; }
 	void update_reflection_probe_buffer(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
+	static RD::DataFormat get_reflection_probe_color_format();
+	static uint32_t get_reflection_probe_color_usage_bits();
+	static RD::DataFormat get_reflection_probe_depth_format();
+	static uint32_t get_reflection_probe_depth_usage_bits();
 
 	/* LIGHTMAP */
 
@@ -984,6 +994,10 @@ public:
 		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->uses_spherical_harmonics;
+	}
+	_FORCE_INLINE_ Vector2i lightmap_get_light_texture_size(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		return lm->light_texture_size;
 	}
 	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
 		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
@@ -1074,6 +1088,8 @@ public:
 	}
 
 	virtual void shadow_atlas_update(RID p_atlas) override;
+	static RD::DataFormat get_shadow_atlas_depth_format(bool p_16_bits);
+	static uint32_t get_shadow_atlas_depth_usage_bits();
 
 	/* DIRECTIONAL SHADOW */
 
@@ -1104,6 +1120,13 @@ public:
 
 	RID get_cubemap(int p_size);
 	RID get_cubemap_fb(int p_size, int p_pass);
+	static RD::DataFormat get_cubemap_depth_format();
+	static uint32_t get_cubemap_depth_usage_bits();
+
+	/* PIPELINE HINTS */
+
+	bool get_shadow_cubemaps_used() const;
+	bool get_shadow_dual_paraboloid_used() const;
 };
 
 } // namespace RendererRD

@@ -189,6 +189,14 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	}
 	builder.append("\n"); //make sure defines begin at newline
 
+	// Optional support for external textures.
+	if (GLES3::Config::get_singleton()->external_texture_supported) {
+		builder.append("#extension GL_OES_EGL_image_external : enable\n");
+		builder.append("#extension GL_OES_EGL_image_external_essl3 : enable\n");
+	} else {
+		builder.append("#define samplerExternalOES sampler2D\n");
+	}
+
 	// Insert multiview extension loading, because it needs to appear before
 	// any non-preprocessor code (like the "precision highp..." lines below).
 	builder.append("#ifdef USE_MULTIVIEW\n");
@@ -698,7 +706,8 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 void ShaderGLES3::_initialize_version(Version *p_version) {
 	ERR_FAIL_COND(p_version->variants.size() > 0);
-	if (shader_cache_dir_valid && _load_from_cache(p_version)) {
+	bool use_cache = shader_cache_dir_valid && !(feedback_count > 0 && GLES3::Config::get_singleton()->disable_transform_feedback_shader_cache);
+	if (use_cache && _load_from_cache(p_version)) {
 		return;
 	}
 	p_version->variants.reserve(variant_count);
@@ -709,7 +718,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);
 	}
-	if (shader_cache_dir_valid) {
+	if (use_cache) {
 		_save_to_cache(p_version);
 	}
 }

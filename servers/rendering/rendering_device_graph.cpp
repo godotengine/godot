@@ -34,6 +34,7 @@
 #define FORCE_FULL_ACCESS_BITS 0
 #define PRINT_RESOURCE_TRACKER_TOTAL 0
 #define PRINT_COMMAND_RECORDING 0
+#define INSERT_BREADCRUMBS 1
 
 RenderingDeviceGraph::RenderingDeviceGraph() {
 	driver_honors_barriers = false;
@@ -438,6 +439,15 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		// Always update the access of the tracker according to the latest usage.
 		resource_tracker->usage_access = new_usage_access;
 
+		// Always accumulate the stages of the tracker with the commands that use it.
+		search_tracker->current_frame_stages = search_tracker->current_frame_stages | r_command->self_stages;
+
+		if (!search_tracker->previous_frame_stages.is_empty()) {
+			// Add to the command the stages the tracker was used on in the previous frame.
+			r_command->previous_stages = r_command->previous_stages | search_tracker->previous_frame_stages;
+			search_tracker->previous_frame_stages.clear();
+		}
+
 		if (different_usage) {
 			// Even if the usage of the resource isn't a write usage explicitly, a different usage implies a transition and it should therefore be considered a write.
 			write_usage = true;
@@ -823,6 +833,9 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 
 				const RecordedDrawListCommand *draw_list_command = reinterpret_cast<const RecordedDrawListCommand *>(command);
 				const VectorView clear_values(draw_list_command->clear_values(), draw_list_command->clear_values_count);
+#if INSERT_BREADCRUMBS
+				driver->command_insert_breadcrumb(r_command_buffer, draw_list_command->breadcrumb);
+#endif
 				driver->command_begin_render_pass(r_command_buffer, draw_list_command->render_pass, draw_list_command->framebuffer, draw_list_command->command_buffer_type, draw_list_command->region, clear_values);
 				_run_draw_list_command(r_command_buffer, draw_list_command->instruction_data(), draw_list_command->instruction_data_size);
 				driver->command_end_render_pass(r_command_buffer);
@@ -871,7 +884,7 @@ void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_comm
 	}
 
 	if (p_ignore_previous_value || p_new_label_index != r_current_label_index || p_new_level != r_current_label_level) {
-		if (!p_ignore_previous_value && (p_use_label_for_empty || r_current_label_index >= 0)) {
+		if (!p_ignore_previous_value && (p_use_label_for_empty || r_current_label_index >= 0 || r_current_label_level >= 0)) {
 			// End the current label.
 			driver->command_end_label(p_command_buffer);
 		}
@@ -885,6 +898,8 @@ void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_comm
 		} else if (p_use_label_for_empty) {
 			label_name = "Command graph";
 			label_color = Color(1, 1, 1, 1);
+		} else {
+			return;
 		}
 
 		// Add the level to the name.
@@ -1399,8 +1414,9 @@ void RenderingDeviceGraph::add_buffer_update(RDD::BufferID p_dst, ResourceTracke
 	_add_command_to_graph(&p_dst_tracker, &buffer_usage, 1, command_index, command);
 }
 
-void RenderingDeviceGraph::add_compute_list_begin() {
+void RenderingDeviceGraph::add_compute_list_begin(RDD::BreadcrumbMarker p_phase, uint32_t p_breadcrumb_data) {
 	compute_instruction_list.clear();
+	compute_instruction_list.breadcrumb = p_breadcrumb_data | (p_phase & ((1 << 16) - 1));
 	compute_instruction_list.index++;
 }
 
@@ -1490,12 +1506,13 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
 }
 
-void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth) {
+void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb) {
 	draw_instruction_list.clear();
 	draw_instruction_list.index++;
 	draw_instruction_list.render_pass = p_render_pass;
 	draw_instruction_list.framebuffer = p_framebuffer;
 	draw_instruction_list.region = p_region;
+	draw_instruction_list.breadcrumb = p_breadcrumb;
 	draw_instruction_list.clear_values.resize(p_clear_values.size());
 	for (uint32_t i = 0; i < p_clear_values.size(); i++) {
 		draw_instruction_list.clear_values[i] = p_clear_values[i];
@@ -1706,6 +1723,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	command->framebuffer = draw_instruction_list.framebuffer;
 	command->command_buffer_type = command_buffer_type;
 	command->region = draw_instruction_list.region;
+	command->breadcrumb = draw_instruction_list.breadcrumb;
 	command->clear_values_count = draw_instruction_list.clear_values.size();
 
 	RDD::RenderPassClearValue *clear_values = command->clear_values();
@@ -1964,6 +1982,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			2, // TYPE_TEXTURE_GET_DATA
 			2, // TYPE_TEXTURE_RESOLVE
 			2, // TYPE_TEXTURE_UPDATE
+			2, // TYPE_INSERT_BREADCRUMB
 		};
 
 		commands_sorted.clear();
@@ -2057,7 +2076,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			}
 		}
 
-		_run_label_command_change(r_command_buffer, -1, -1, true, false, nullptr, 0, current_label_index, current_label_level);
+		_run_label_command_change(r_command_buffer, -1, -1, false, false, nullptr, 0, current_label_index, current_label_level);
 
 #if PRINT_COMMAND_RECORDING
 		print_line(vformat("Recorded %d commands", command_count));

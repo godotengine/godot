@@ -29,12 +29,11 @@
 /**************************************************************************/
 
 #include "window.h"
-#include "window.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/shortcut.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
@@ -1224,6 +1223,7 @@ void Window::_update_viewport_size() {
 			TS->font_set_global_oversampling(font_oversampling);
 			if (!ci_updated) {
 				update_canvas_items();
+				emit_signal(SNAME("size_changed"));
 			}
 		}
 	}
@@ -1602,7 +1602,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max;
+	return max * content_scale_factor;
 }
 
 void Window::child_controls_changed() {
@@ -2149,8 +2149,8 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 		return theme_icon_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<Texture2D> icon = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 	theme_icon_cache[p_theme_type][p_name] = icon;
 	return icon;
@@ -2173,8 +2173,8 @@ Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringN
 		return theme_style_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<StyleBox> style = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 	theme_style_cache[p_theme_type][p_name] = style;
 	return style;
@@ -2197,8 +2197,8 @@ Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_t
 		return theme_font_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<Font> font = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 	theme_font_cache[p_theme_type][p_name] = font;
 	return font;
@@ -2221,8 +2221,8 @@ int Window::get_theme_font_size(const StringName &p_name, const StringName &p_th
 		return theme_font_size_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	int font_size = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 	theme_font_size_cache[p_theme_type][p_name] = font_size;
 	return font_size;
@@ -2245,8 +2245,8 @@ Color Window::get_theme_color(const StringName &p_name, const StringName &p_them
 		return theme_color_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Color color = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 	theme_color_cache[p_theme_type][p_name] = color;
 	return color;
@@ -2269,8 +2269,8 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 		return theme_constant_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	int constant = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
@@ -2315,8 +2315,8 @@ bool Window::has_theme_icon(const StringName &p_name, const StringName &p_theme_
 		}
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
@@ -2332,8 +2332,8 @@ bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_th
 		}
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
@@ -2349,8 +2349,8 @@ bool Window::has_theme_font(const StringName &p_name, const StringName &p_theme_
 		}
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
@@ -2366,8 +2366,8 @@ bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_t
 		}
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
@@ -2383,8 +2383,8 @@ bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme
 		}
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
@@ -2400,8 +2400,8 @@ bool Window::has_theme_constant(const StringName &p_name, const StringName &p_th
 		}
 	}
 
-	List<StringName> theme_types;
-	theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
@@ -2635,7 +2635,7 @@ void Window::set_unparent_when_invisible(bool p_unparent) {
 
 void Window::set_layout_direction(Window::LayoutDirection p_direction) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_direction, 4);
+	ERR_FAIL_INDEX(p_direction, LAYOUT_DIRECTION_MAX);
 
 	layout_dir = p_direction;
 	propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
@@ -2700,11 +2700,18 @@ bool Window::is_layout_rtl() const {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
-	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
+	} else if (layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 			return true;
 		} else {
 			String locale = TranslationServer::get_singleton()->get_tool_locale();
+			return TS->is_locale_right_to_left(locale);
+		}
+	} else if (layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
+		if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+			return true;
+		} else {
+			String locale = OS::get_singleton()->get_locale();
 			return TS->is_locale_right_to_left(locale);
 		}
 	} else {
@@ -2755,12 +2762,16 @@ Transform2D Window::get_popup_base_transform() const {
 	return popup_base_transform;
 }
 
-bool Window::is_directly_attached_to_screen() const {
+Viewport *Window::get_section_root_viewport() const {
 	if (get_embedder()) {
-		return get_embedder()->is_directly_attached_to_screen();
+		return get_embedder()->get_section_root_viewport();
 	}
-	// Distinguish between the case that this is a native Window and not inside the tree.
-	return is_inside_tree();
+	if (is_inside_tree()) {
+		// Native window.
+		return SceneTree::get_singleton()->get_root();
+	}
+	Window *vp = const_cast<Window *>(this);
+	return vp;
 }
 
 bool Window::is_attached_in_viewport() const {
@@ -2997,6 +3008,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "sharp_corners"), "set_flag", "get_flag", FLAG_SHARP_CORNERS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
@@ -3050,6 +3062,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_POPUP);
 	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FLAG_MOUSE_PASSTHROUGH);
+	BIND_ENUM_CONSTANT(FLAG_SHARP_CORNERS);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
@@ -3066,9 +3079,14 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_STRETCH_INTEGER);
 
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
-	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_APPLICATION_LOCALE);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_RTL);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_SYSTEM_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_MAX);
+#ifndef DISABLE_DEPRECATED
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_ABSOLUTE);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN);

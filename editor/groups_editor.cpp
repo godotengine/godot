@@ -648,7 +648,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_description->set_editable(false);
 		gc->add_child(add_group_description);
 
-		global_group_button->connect("toggled", callable_mp(add_group_description, &LineEdit::set_editable));
+		global_group_button->connect(SceneStringName(toggled), callable_mp(add_group_description, &LineEdit::set_editable));
 
 		add_group_dialog->register_text_enter(add_group_name);
 		add_group_dialog->register_text_enter(add_group_description);
@@ -840,7 +840,7 @@ GroupsEditor::GroupsEditor() {
 	add_child(hbc);
 
 	add = memnew(Button);
-	add->set_flat(true);
+	add->set_theme_type_variation("FlatMenuButton");
 	add->set_tooltip_text(TTR("Add a new group."));
 	add->connect(SceneStringName(pressed), callable_mp(this, &GroupsEditor::_show_add_group_dialog));
 	hbc->add_child(add);

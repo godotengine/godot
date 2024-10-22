@@ -104,14 +104,14 @@ struct VersatileResourceTemplate {
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
-	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
+	static T *allocate(PagedAllocator<VersatileResourceTemplate, true> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
 		memnew_placement(obj, T);
 		return obj;
 	}
 
 	template <typename T>
-	static void free(PagedAllocator<VersatileResourceTemplate> &p_allocator, T *p_object) {
+	static void free(PagedAllocator<VersatileResourceTemplate, true> &p_allocator, T *p_object) {
 		p_object->~T();
 		p_allocator.free((VersatileResourceTemplate *)p_object);
 	}
@@ -220,6 +220,7 @@ public:
 
 	enum TextureLayout {
 		TEXTURE_LAYOUT_UNDEFINED,
+		TEXTURE_LAYOUT_GENERAL,
 		TEXTURE_LAYOUT_STORAGE_OPTIMAL,
 		TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
@@ -476,6 +477,7 @@ public:
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
+	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
 
 protected:
 	// An optional service to implementations.
@@ -709,6 +711,11 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
 
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) = 0;
+
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
@@ -744,6 +751,7 @@ public:
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
 		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 	};
 
 	enum ShaderChangeInvalidation {
@@ -759,6 +767,7 @@ public:
 		DEVICE_OPENGL,
 		DEVICE_VULKAN,
 		DEVICE_DIRECTX,
+		DEVICE_METAL,
 	};
 
 	struct Capabilities {

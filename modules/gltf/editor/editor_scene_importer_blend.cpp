@@ -115,8 +115,15 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		List<String> *r_missing_deps, Error *r_err) {
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
-	if (blender_major_version == -1 || blender_minor_version == -1) {
-		_get_blender_version(blender_path, blender_major_version, blender_minor_version, nullptr);
+	ERR_FAIL_COND_V_MSG(blender_path.is_empty(), nullptr, "Blender path is empty, check your Editor Settings.");
+	ERR_FAIL_COND_V_MSG(!FileAccess::exists(blender_path), nullptr, vformat("Invalid Blender path: %s, check your Editor Settings.", blender_path));
+
+	if (blender_major_version == -1 || blender_minor_version == -1 || last_tested_blender_path != blender_path) {
+		String error;
+		if (!_get_blender_version(blender_path, blender_major_version, blender_minor_version, &error)) {
+			ERR_FAIL_V_MSG(nullptr, error);
+		}
+		last_tested_blender_path = blender_path;
 	}
 
 	// Get global paths for source and sink.
@@ -227,6 +234,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_normals"] = false;
 	}
+
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 1)) {
+		if (p_options.has(SNAME("blender/meshes/export_geometry_nodes_instances")) && p_options[SNAME("blender/meshes/export_geometry_nodes_instances")]) {
+			parameters_map["export_gn_mesh"] = true;
+			if (blender_major_version == 4 && blender_minor_version == 1) {
+				// There is a bug in Blender 4.1 where it can't export lights and geometry nodes at the same time, one must be disabled.
+				parameters_map["export_lights"] = false;
+			}
+		} else {
+			parameters_map["export_gn_mesh"] = false;
+		}
+	}
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
 	} else {
@@ -317,7 +336,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 #endif
 }
 
-Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 		const HashMap<StringName, Variant> &p_options) {
 	if (p_path.get_extension().to_lower() != "blend") {
 		return true;
@@ -350,6 +369,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/meshes/colors", false);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
+	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
 	ADD_OPTION_BOOL("blender/meshes/tangents", true);
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);

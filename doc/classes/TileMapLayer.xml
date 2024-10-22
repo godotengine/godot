@@ -153,6 +153,27 @@
 				Returns whether the provided [param body] [RID] belongs to one of this [TileMapLayer]'s cells.
 			</description>
 		</method>
+		<method name="is_cell_flipped_h" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is flipped horizontally. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_flipped_v" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is flipped vertically. The result is valid only for atlas sources.
+			</description>
+		</method>
+		<method name="is_cell_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the cell at coordinates [param coords] is transposed. The result is valid only for atlas sources.
+			</description>
+		</method>
 		<method name="local_to_map" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="local_position" type="Vector2" />
@@ -262,6 +283,9 @@
 		</member>
 		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMapLayer.DebugVisibilityMode" default="0">
 			Show or hide the [TileMapLayer]'s navigation meshes. If set to [constant DEBUG_VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
+		</member>
+		<member name="occlusion_enabled" type="bool" setter="set_occlusion_enabled" getter="is_occlusion_enabled" default="true">
+			Enable or disable light occlusion.
 		</member>
 		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
 			The [TileMapLayer]'s quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.

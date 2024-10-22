@@ -86,8 +86,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		transform_toolbar->show();
 		tools_settings_vsep_2->show();
 		random_tile_toggle->show();
-		scatter_label->show();
-		scatter_spinbox->show();
+		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	} else {
 		tools_settings_vsep->show();
 		picker_button->show();
@@ -96,8 +95,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		tools_settings_vsep_2->show();
 		bucket_contiguous_checkbox->show();
 		random_tile_toggle->show();
-		scatter_label->show();
-		scatter_spinbox->show();
+		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	}
 }
 
@@ -1366,10 +1364,12 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 				Vector2i coords;
 				HashMap<Vector2i, TileMapCell> cells_undo;
 				for (int i = 0; i < selection_used_cells.size(); i++) {
-					coords = tile_set->map_pattern(top_left, selection_used_cells[i], selection_pattern);
-					cells_undo[coords] = TileMapCell(drag_modified[coords].source_id, drag_modified[coords].get_atlas_coords(), drag_modified[coords].alternative_tile);
 					coords = tile_set->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
 					cells_undo[coords] = TileMapCell(edited_layer->get_cell_source_id(coords), edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
+				}
+				for (int i = 0; i < selection_used_cells.size(); i++) {
+					coords = tile_set->map_pattern(top_left, selection_used_cells[i], selection_pattern);
+					cells_undo[coords] = TileMapCell(drag_modified[coords].source_id, drag_modified[coords].get_atlas_coords(), drag_modified[coords].alternative_tile);
 				}
 
 				// Build the list of cells to do.
@@ -2330,7 +2330,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	random_tile_toggle->set_theme_type_variation("FlatButton");
 	random_tile_toggle->set_toggle_mode(true);
 	random_tile_toggle->set_tooltip_text(TTR("Place Random Tile"));
-	random_tile_toggle->connect("toggled", callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_random_tile_checkbox_toggled));
+	random_tile_toggle->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_random_tile_checkbox_toggled));
 	tools_settings->add_child(random_tile_toggle);
 
 	// Random tile scattering.
@@ -2368,7 +2368,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	tiles_bottom_panel->set_name(TTR("Tiles"));
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Go to the TileSet bottom panel to add one."));
+	missing_source_label->set_text(TTR("This TileMap's TileSet has no Tile Source configured. Go to the TileSet bottom panel to add one."));
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -4486,7 +4486,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	toggle_highlight_selected_layer_button->set_theme_type_variation("FlatButton");
 	toggle_highlight_selected_layer_button->set_toggle_mode(true);
 	toggle_highlight_selected_layer_button->set_pressed(true);
-	toggle_highlight_selected_layer_button->connect("toggled", callable_mp(this, &TileMapLayerEditor::_highlight_selected_layer_button_toggled));
+	toggle_highlight_selected_layer_button->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditor::_highlight_selected_layer_button_toggled));
 	toggle_highlight_selected_layer_button->set_tooltip_text(TTR("Highlight Selected TileMap Layer"));
 	tile_map_toolbar->add_child(toggle_highlight_selected_layer_button);
 
@@ -4497,7 +4497,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	toggle_grid_button->set_theme_type_variation("FlatButton");
 	toggle_grid_button->set_toggle_mode(true);
 	toggle_grid_button->set_tooltip_text(TTR("Toggle grid visibility."));
-	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapLayerEditor::_on_grid_toggled));
+	toggle_grid_button->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditor::_on_grid_toggled));
 	tile_map_toolbar->add_child(toggle_grid_button);
 
 	// Advanced settings menu button.

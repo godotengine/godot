@@ -4,8 +4,8 @@ import re
 import shutil
 import stat
 import subprocess
-from types import TracebackType
-from typing import Any, Callable, Tuple, Type
+import sys
+from typing import Any, Callable
 
 git_tag = "v4.3.1"
 
@@ -100,9 +100,7 @@ subprocess.run(["git", "checkout", git_tag])
 commit_hash = str(subprocess.check_output(["git", "rev-parse", "HEAD"], universal_newlines=True)).strip()
 
 
-def on_rm_error(
-    function: Callable[..., Any], path: str, excinfo: Tuple[Type[Exception], Exception, TracebackType]
-) -> None:
+def on_rm_error(function: Callable[..., Any], path: str, excinfo: Exception) -> None:
     """
     Error handler for `shutil.rmtree()`.
 
@@ -113,10 +111,12 @@ def on_rm_error(
     os.unlink(path)
 
 
-# 3.12 Python and beyond should replace `onerror` with `onexc`.
 # We remove the .git directory because it contains
 # a lot of read-only files that are problematic on Windows.
-shutil.rmtree(".git", onerror=on_rm_error)
+if sys.version_info >= (3, 12):
+    shutil.rmtree(".git", onexc=on_rm_error)
+else:
+    shutil.rmtree(".git", onerror=on_rm_error)  # type: ignore
 
 all_files = set(cpp_files)
 

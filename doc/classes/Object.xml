@@ -136,7 +136,7 @@
 				        }
 				    }
 
-				    private List&lt;int&gt; _numbers = new();
+				    private Godot.Collections.Array&lt;int&gt; _numbers = new();
 
 				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				    {
@@ -173,7 +173,7 @@
 				        if (propertyName.StartsWith("number_"))
 				        {
 				            int index = int.Parse(propertyName.Substring("number_".Length));
-				            numbers[index] = value.As&lt;int&gt;();
+				            _numbers[index] = value.As&lt;int&gt;();
 				            return true;
 				        }
 				        return false;
@@ -190,6 +190,55 @@
 			<description>
 				Called when the object's script is instantiated, oftentimes after the object is initialized in memory (through [code]Object.new()[/code] in GDScript, or [code]new GodotObject[/code] in C#). It can be also defined to take in parameters. This method is similar to a constructor in most programming languages.
 				[b]Note:[/b] If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.
+			</description>
+		</method>
+		<method name="_iter_get" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="iter" type="Variant" />
+			<description>
+				Returns the current iterable value. [param iter] stores the iteration state, but unlike [method _iter_init] and [method _iter_next] the state is supposed to be read-only, so there is no [Array] wrapper.
+			</description>
+		</method>
+		<method name="_iter_init" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+				Example:
+				[codeblock]
+				class MyRange:
+				    var _from
+				    var _to
+
+				    func _init(from, to):
+				        assert(from &lt;= to)
+				        _from = from
+				        _to = to
+
+				    func _iter_init(iter):
+				        iter[0] = _from
+				        return iter[0] &lt; _to
+
+				    func _iter_next(iter):
+				        iter[0] += 1
+				        return iter[0] &lt; _to
+
+				    func _iter_get(iter):
+				        return iter
+
+				func _ready():
+				    var my_range = MyRange.new(2, 5)
+				    for x in my_range:
+				        print(x) # Prints 2, 3, 4.
+				[/codeblock]
+				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
+			</description>
+		</method>
+		<method name="_iter_next" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -769,6 +818,20 @@
 				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>
+		<method name="get_translation_domain" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
+		<method name="has_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Returns [code]true[/code] if any connection exists on the given [param signal] name.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
 		<method name="has_meta" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -1021,6 +1084,13 @@
 				If a script already exists, its instance is detached, and its property values and state are lost. Built-in property values are still kept.
 			</description>
 		</method>
+		<method name="set_translation_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Sets the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
 		<method name="to_string">
 			<return type="String" />
 			<description>
@@ -1072,7 +1142,7 @@
 			Notification received when the object is initialized, before its script is attached. Used internally.
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
-			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
+			Notification received when the object is about to be deleted. Can be used like destructors in object-oriented programming languages.
 		</constant>
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.

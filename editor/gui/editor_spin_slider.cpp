@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/theme/theme_db.h"
 
 bool EditorSpinSlider::is_text_field() const {
 	return true;
@@ -184,10 +185,6 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (is_read_only()) {
-		return;
-	}
-
 	if (grabbing_grabber) {
 		if (mb.is_valid()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
@@ -240,7 +237,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
+	if (k.is_valid() && k->is_pressed() && !read_only) {
 		Key code = k->get_keycode();
 
 		switch (code) {
@@ -314,7 +311,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	bool rtl = is_layout_rtl();
 	Vector2 size = get_size();
 
-	Ref<StyleBox> sb = get_theme_stylebox(is_read_only() ? SNAME("read_only") : CoreStringName(normal), SNAME("LineEdit"));
+	Ref<StyleBox> sb = get_theme_stylebox(read_only ? SNAME("read_only") : CoreStringName(normal), SNAME("LineEdit"));
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
@@ -326,14 +323,14 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
-	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
+	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
 	String numstr = get_text_value();
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
-	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
-	Color lc = get_theme_color(is_read_only() ? SNAME("read_only_label_color") : SNAME("label_color"));
+	Color fc = get_theme_color(read_only ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
+	Color lc = get_theme_color(read_only ? SNAME("read_only_label_color") : SNAME("label_color"));
 
 	if (flat && !label.is_empty()) {
 		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
@@ -383,7 +380,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	if (!hide_slider) {
 		if (get_step() == 1) {
-			Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
+			Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
 			int updown_vofs = (size.height - updown2->get_height()) / 2;
 			if (rtl) {
 				updown_offset = sb->get_margin(SIDE_LEFT);
@@ -603,7 +600,7 @@ void EditorSpinSlider::_value_focus_exited() {
 		return;
 	}
 
-	if (is_read_only()) {
+	if (read_only) {
 		// Spin slider has become read only while it was being edited.
 		return;
 	}
@@ -614,13 +611,13 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> TAB was pressed
 	// -> modal_close was not called
 	// -> need to close/hide manually
-	if (value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+	if (!is_visible_in_tree() || value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
+		// Hidden or something else took focus.
 		if (value_input_popup) {
 			value_input_popup->hide();
 		}
-		//tab was pressed
 	} else {
-		//enter, click, esc
+		// Enter or Esc was pressed.
 		grab_focus();
 	}
 
@@ -639,7 +636,7 @@ void EditorSpinSlider::_grabber_mouse_exited() {
 
 void EditorSpinSlider::set_read_only(bool p_enable) {
 	read_only = p_enable;
-	if (read_only && value_input) {
+	if (read_only && value_input && value_input->is_inside_tree()) {
 		value_input->release_focus();
 	}
 
@@ -664,6 +661,10 @@ bool EditorSpinSlider::is_grabbing() const {
 }
 
 void EditorSpinSlider::_focus_entered() {
+	if (read_only) {
+		return;
+	}
+
 	_ensure_input_popup();
 	value_input->set_text(get_text_value());
 	value_input_popup->set_size(get_size());
@@ -701,6 +702,9 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("ungrabbed"));
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_icon, "updown");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_disabled_icon, "updown_disabled");
 }
 
 void EditorSpinSlider::_ensure_input_popup() {

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
 
 #nullable enable
@@ -51,7 +52,7 @@ namespace Godot
         /// </summary>
         /// <param name="instance">The instance to check.</param>
         /// <returns>If the instance is a valid object.</returns>
-        public static bool IsInstanceValid(GodotObject? instance)
+        public static bool IsInstanceValid([NotNullWhen(true)] GodotObject? instance)
         {
             return instance != null && instance.NativeInstance != IntPtr.Zero;
         }

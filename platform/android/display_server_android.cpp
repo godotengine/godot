@@ -258,7 +258,6 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 		screen_scale = MIN(screen_scale, MIN(width_scale, height_scale));
 	}
 
-	print_line("Selected screen scale: ", screen_scale);
 	return screen_scale;
 }
 
@@ -303,6 +302,13 @@ int DisplayServerAndroid::virtual_keyboard_get_height() const {
 	ERR_FAIL_NULL_V(godot_io_java, 0);
 
 	return godot_io_java->get_vk_height();
+}
+
+bool DisplayServerAndroid::has_hardware_keyboard() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, false);
+
+	return godot_io_java->has_hardware_keyboard();
 }
 
 void DisplayServerAndroid::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
@@ -455,11 +461,15 @@ Size2i DisplayServerAndroid::window_get_size_with_decorations(DisplayServer::Win
 }
 
 void DisplayServerAndroid::window_set_mode(DisplayServer::WindowMode p_mode, DisplayServer::WindowID p_window) {
-	// Not supported on Android.
+	OS_Android::get_singleton()->get_godot_java()->enable_immersive_mode(p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
 }
 
 DisplayServer::WindowMode DisplayServerAndroid::window_get_mode(DisplayServer::WindowID p_window) const {
-	return WINDOW_MODE_FULLSCREEN;
+	if (OS_Android::get_singleton()->get_godot_java()->is_in_immersive_mode()) {
+		return WINDOW_MODE_FULLSCREEN;
+	} else {
+		return WINDOW_MODE_MAXIMIZED;
+	}
 }
 
 bool DisplayServerAndroid::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
@@ -604,11 +614,19 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support Vulkan, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else {
+				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+				r_error = ERR_UNAVAILABLE;
+				return;
+			}
 		}
 
 		union {

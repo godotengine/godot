@@ -41,17 +41,17 @@ void EditorVCSInterface::popup_error(const String &p_msg) {
 
 bool EditorVCSInterface::initialize(const String &p_project_path) {
 	bool result = false;
-	GDVIRTUAL_REQUIRED_CALL(_initialize, p_project_path, result);
+	GDVIRTUAL_CALL(_initialize, p_project_path, result);
 	return result;
 }
 
 void EditorVCSInterface::set_credentials(const String &p_username, const String &p_password, const String &p_ssh_public_key, const String &p_ssh_private_key, const String &p_ssh_passphrase) {
-	GDVIRTUAL_REQUIRED_CALL(_set_credentials, p_username, p_password, p_ssh_public_key, p_ssh_private_key, p_ssh_passphrase);
+	GDVIRTUAL_CALL(_set_credentials, p_username, p_password, p_ssh_public_key, p_ssh_private_key, p_ssh_passphrase);
 }
 
 List<String> EditorVCSInterface::get_remotes() {
 	TypedArray<String> result;
-	if (!GDVIRTUAL_REQUIRED_CALL(_get_remotes, result)) {
+	if (!GDVIRTUAL_CALL(_get_remotes, result)) {
 		return {};
 	}
 
@@ -64,7 +64,7 @@ List<String> EditorVCSInterface::get_remotes() {
 
 List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data() {
 	TypedArray<Dictionary> result;
-	if (!GDVIRTUAL_REQUIRED_CALL(_get_modified_files_data, result)) {
+	if (!GDVIRTUAL_CALL(_get_modified_files_data, result)) {
 		return {};
 	}
 
@@ -76,24 +76,24 @@ List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data
 }
 
 void EditorVCSInterface::stage_file(const String &p_file_path) {
-	GDVIRTUAL_REQUIRED_CALL(_stage_file, p_file_path);
+	GDVIRTUAL_CALL(_stage_file, p_file_path);
 }
 
 void EditorVCSInterface::unstage_file(const String &p_file_path) {
-	GDVIRTUAL_REQUIRED_CALL(_unstage_file, p_file_path);
+	GDVIRTUAL_CALL(_unstage_file, p_file_path);
 }
 
 void EditorVCSInterface::discard_file(const String &p_file_path) {
-	GDVIRTUAL_REQUIRED_CALL(_discard_file, p_file_path);
+	GDVIRTUAL_CALL(_discard_file, p_file_path);
 }
 
 void EditorVCSInterface::commit(const String &p_msg) {
-	GDVIRTUAL_REQUIRED_CALL(_commit, p_msg);
+	GDVIRTUAL_CALL(_commit, p_msg);
 }
 
 List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(const String &p_identifier, TreeArea p_area) {
 	TypedArray<Dictionary> result;
-	if (!GDVIRTUAL_REQUIRED_CALL(_get_diff, p_identifier, int(p_area), result)) {
+	if (!GDVIRTUAL_CALL(_get_diff, p_identifier, int(p_area), result)) {
 		return {};
 	}
 
@@ -106,7 +106,7 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(const String &p_
 
 List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_max_commits) {
 	TypedArray<Dictionary> result;
-	if (!GDVIRTUAL_REQUIRED_CALL(_get_previous_commits, p_max_commits, result)) {
+	if (!GDVIRTUAL_CALL(_get_previous_commits, p_max_commits, result)) {
 		return {};
 	}
 
@@ -119,7 +119,7 @@ List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_
 
 List<String> EditorVCSInterface::get_branch_list() {
 	TypedArray<String> result;
-	if (!GDVIRTUAL_REQUIRED_CALL(_get_branch_list, result)) {
+	if (!GDVIRTUAL_CALL(_get_branch_list, result)) {
 		return {};
 	}
 
@@ -131,48 +131,48 @@ List<String> EditorVCSInterface::get_branch_list() {
 }
 
 void EditorVCSInterface::create_branch(const String &p_branch_name) {
-	GDVIRTUAL_REQUIRED_CALL(_create_branch, p_branch_name);
+	GDVIRTUAL_CALL(_create_branch, p_branch_name);
 }
 
 void EditorVCSInterface::create_remote(const String &p_remote_name, const String &p_remote_url) {
-	GDVIRTUAL_REQUIRED_CALL(_create_remote, p_remote_name, p_remote_url);
+	GDVIRTUAL_CALL(_create_remote, p_remote_name, p_remote_url);
 }
 
 void EditorVCSInterface::remove_branch(const String &p_branch_name) {
-	GDVIRTUAL_REQUIRED_CALL(_remove_branch, p_branch_name);
+	GDVIRTUAL_CALL(_remove_branch, p_branch_name);
 }
 
 void EditorVCSInterface::remove_remote(const String &p_remote_name) {
-	GDVIRTUAL_REQUIRED_CALL(_remove_remote, p_remote_name);
+	GDVIRTUAL_CALL(_remove_remote, p_remote_name);
 }
 
 String EditorVCSInterface::get_current_branch_name() {
 	String result;
-	GDVIRTUAL_REQUIRED_CALL(_get_current_branch_name, result);
+	GDVIRTUAL_CALL(_get_current_branch_name, result);
 	return result;
 }
 
 bool EditorVCSInterface::checkout_branch(const String &p_branch_name) {
 	bool result = false;
-	GDVIRTUAL_REQUIRED_CALL(_checkout_branch, p_branch_name, result);
+	GDVIRTUAL_CALL(_checkout_branch, p_branch_name, result);
 	return result;
 }
 
 void EditorVCSInterface::pull(const String &p_remote) {
-	GDVIRTUAL_REQUIRED_CALL(_pull, p_remote);
+	GDVIRTUAL_CALL(_pull, p_remote);
 }
 
 void EditorVCSInterface::push(const String &p_remote, bool p_force) {
-	GDVIRTUAL_REQUIRED_CALL(_push, p_remote, p_force);
+	GDVIRTUAL_CALL(_push, p_remote, p_force);
 }
 
 void EditorVCSInterface::fetch(const String &p_remote) {
-	GDVIRTUAL_REQUIRED_CALL(_fetch, p_remote);
+	GDVIRTUAL_CALL(_fetch, p_remote);
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(const String &p_file_path, const String &p_text) {
 	TypedArray<Dictionary> result;
-	if (!GDVIRTUAL_REQUIRED_CALL(_get_line_diff, p_file_path, p_text, result)) {
+	if (!GDVIRTUAL_CALL(_get_line_diff, p_file_path, p_text, result)) {
 		return {};
 	}
 
@@ -185,13 +185,13 @@ List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(const Strin
 
 bool EditorVCSInterface::shut_down() {
 	bool result = false;
-	GDVIRTUAL_REQUIRED_CALL(_shut_down, result);
+	GDVIRTUAL_CALL(_shut_down, result);
 	return result;
 }
 
 String EditorVCSInterface::get_vcs_name() {
 	String result;
-	GDVIRTUAL_REQUIRED_CALL(_get_vcs_name, result);
+	GDVIRTUAL_CALL(_get_vcs_name, result);
 	return result;
 }
 

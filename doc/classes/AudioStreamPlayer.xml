@@ -77,7 +77,7 @@
 		<member name="playback_type" type="int" setter="set_playback_type" getter="get_playback_type" enum="AudioServer.PlaybackType" default="0" experimental="">
 			The playback type of the stream player. If set other than to the default value, it will force that playback type.
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], this node is playing sounds. Setting this property has the same effect as [method play] and [method stop].
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">

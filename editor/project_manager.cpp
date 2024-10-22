@@ -38,7 +38,6 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_about.h"
 #include "editor/editor_settings.h"
@@ -46,6 +45,7 @@
 #include "editor/engine_update_label.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
+#include "editor/gui/editor_version_button.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -93,6 +93,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
 			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
 			project_list->set_order_option(default_sorting);
@@ -190,7 +191,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
 	}
 
-	List<Ref<Theme>> editor_themes;
+	Vector<Ref<Theme>> editor_themes;
 	editor_themes.push_back(theme);
 	editor_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 
@@ -397,12 +398,6 @@ void ProjectManager::_restart_confirmed() {
 	get_tree()->quit();
 }
 
-// Footer.
-
-void ProjectManager::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_text());
-}
-
 // Project list.
 
 void ProjectManager::_update_list_placeholder() {
@@ -579,7 +574,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	if (!unsupported_features.is_empty()) {
 		String warning_message = "";
 		for (int i = 0; i < unsupported_features.size(); i++) {
-			String feature = unsupported_features[i];
+			const String &feature = unsupported_features[i];
 			if (feature == "Double Precision") {
 				warning_message += TTR("Warning: This project uses double precision floats, but this version of\nGodot uses single precision floats. Opening this project may cause data loss.\n\n");
 				unsupported_features.remove_at(i);
@@ -589,6 +584,7 @@ void ProjectManager::_open_selected_projects_ask() {
 				unsupported_features.remove_at(i);
 				i--;
 			} else if (ProjectList::project_feature_looks_like_version(feature)) {
+				version_convert_feature = feature;
 				warning_message += vformat(TTR("Warning: This project was last edited in Godot %s. Opening will change it to Godot %s.\n\n"), Variant(feature), Variant(VERSION_BRANCH));
 				unsupported_features.remove_at(i);
 				i--;
@@ -606,6 +602,16 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 
 	// Open if the project is up-to-date.
+	_open_selected_projects();
+}
+
+void ProjectManager::_open_selected_projects_with_migration() {
+#ifndef DISABLE_DEPRECATED
+	if (project_list->get_selected_projects().size() == 1) {
+		// Only migrate if a single project is opened.
+		_minor_project_migrate();
+	}
+#endif
 	_open_selected_projects();
 }
 
@@ -876,6 +882,34 @@ void ProjectManager::add_new_tag(const String &p_tag) {
 
 // Project converter/migration tool.
 
+#ifndef DISABLE_DEPRECATED
+void ProjectManager::_minor_project_migrate() {
+	const ProjectList::Item migrated_project = project_list->get_selected_projects()[0];
+
+	if (version_convert_feature.begins_with("4.3")) {
+		// Migrate layout after scale changes.
+		const float edscale = EDSCALE;
+		if (edscale != 1.0) {
+			Ref<ConfigFile> layout_file;
+			layout_file.instantiate();
+
+			const String layout_path = migrated_project.path.path_join(".godot/editor/editor_layout.cfg");
+			Error err = layout_file->load(layout_path);
+			if (err == OK) {
+				for (int i = 0; i < 4; i++) {
+					const String key = "dock_hsplit_" + itos(i + 1);
+					int old_value = layout_file->get_value("docks", key, 0);
+					if (old_value != 0) {
+						layout_file->set_value("docks", key, old_value / edscale);
+					}
+				}
+				layout_file->save(layout_path);
+			}
+		}
+	}
+}
+#endif
+
 void ProjectManager::_full_convert_button_pressed() {
 	ask_update_settings->hide();
 	ask_full_convert_dialog->popup_centered(Size2i(600.0 * EDSCALE, 0));
@@ -1040,6 +1074,8 @@ void ProjectManager::_titlebar_resized() {
 
 ProjectManager::ProjectManager() {
 	singleton = this;
+
+	set_translation_domain("godot.editor");
 
 	// Turn off some servers we aren't going to be using in the Project Manager.
 	NavigationServer3D::get_singleton()->set_active(false);
@@ -1417,23 +1453,9 @@ ProjectManager::ProjectManager() {
 		update_label->connect("offline_clicked", callable_mp(this, &ProjectManager::_show_quick_settings));
 #endif
 
-		version_btn = memnew(LinkButton);
-		String hash = String(VERSION_HASH);
-		if (hash.length() != 0) {
-			hash = " " + vformat("[%s]", hash.left(9));
-		}
-		version_btn->set_text("v" VERSION_FULL_BUILD + hash);
+		EditorVersionButton *version_btn = memnew(EditorVersionButton(EditorVersionButton::FORMAT_WITH_BUILD));
 		// Fade the version label to be less prominent, but still readable.
 		version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
-		version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		String build_date;
-		if (VERSION_TIMESTAMP > 0) {
-			build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
-		} else {
-			build_date = TTR("(unknown)");
-		}
-		version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
-		version_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_version_button_pressed));
 		footer_bar->add_child(version_btn);
 	}
 
@@ -1486,7 +1508,7 @@ ProjectManager::ProjectManager() {
 
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
-		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
+		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
 		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
 		full_convert_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);

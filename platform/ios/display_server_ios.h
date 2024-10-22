@@ -41,12 +41,12 @@
 #if defined(VULKAN_ENABLED)
 #import "rendering_context_driver_vulkan_ios.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 #endif // VULKAN_ENABLED
+
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif // METAL_ENABLED
 #endif // RD_ENABLED
 
 #if defined(GLES3_ENABLED)
@@ -224,6 +224,7 @@ public:
 
 	void virtual_keyboard_set_height(int height);
 	virtual int virtual_keyboard_get_height() const override;
+	virtual bool has_hardware_keyboard() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;

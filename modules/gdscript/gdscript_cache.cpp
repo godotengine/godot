@@ -144,6 +144,14 @@ GDScriptParserRef::~GDScriptParserRef() {
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
 
+SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex() {
+	return GDScriptCache::mutex;
+}
+
+template <>
+thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::tls_data(_get_gdscript_cache_mutex());
+SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> GDScriptCache::mutex;
+
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 	if (singleton == nullptr || p_from == p_to) {
 		return;
@@ -289,6 +297,7 @@ Vector<uint8_t> GDScriptCache::get_binary_tokens(const String &p_path) {
 
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->mutex);
+
 	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
@@ -299,7 +308,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 		return singleton->shallow_gdscript_cache[p_path];
 	}
 
-	String remapped_path = ResourceLoader::path_remap(p_path);
+	const String remapped_path = ResourceLoader::path_remap(p_path);
 
 	Ref<GDScript> script;
 	script.instantiate();
@@ -324,6 +333,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	}
 
 	singleton->shallow_gdscript_cache[p_path] = script;
+
 	return script;
 }
 
@@ -351,16 +361,18 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 		}
 	}
 
+	const String remapped_path = ResourceLoader::path_remap(p_path);
+
 	if (p_update_from_disk) {
-		if (p_path.get_extension().to_lower() == "gdc") {
-			Vector<uint8_t> buffer = get_binary_tokens(p_path);
+		if (remapped_path.get_extension().to_lower() == "gdc") {
+			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;
 				return script;
 			}
 			script->set_binary_tokens_source(buffer);
 		} else {
-			r_error = script->load_source_code(p_path);
+			r_error = script->load_source_code(remapped_path);
 			if (r_error) {
 				return script;
 			}
@@ -369,7 +381,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 
 	// Allowing lifting the lock might cause a script to be reloaded multiple times,
 	// which, as a last resort deadlock prevention strategy, is a good tradeoff.
-	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(&singleton->mutex);
+	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
 	r_error = script->reload(true);
 	WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 	if (r_error) {

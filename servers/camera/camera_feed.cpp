@@ -33,9 +33,6 @@
 #include "servers/rendering_server.h"
 
 void CameraFeed::_bind_methods() {
-	// The setters prefixed with _ are only exposed so we can have feeds through GDExtension!
-	// They should not be called by the end user.
-
 	ClassDB::bind_method(D_METHOD("get_id"), &CameraFeed::get_id);
 	ClassDB::bind_method(D_METHOD("get_name"), &CameraFeed::get_name);
 	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
@@ -46,13 +43,31 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &CameraFeed::is_active);
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &CameraFeed::set_active);
 
+	ClassDB::bind_method(D_METHOD("get_name"), &CameraFeed::get_name);
+	ClassDB::bind_method(D_METHOD("set_name", "name"), &CameraFeed::set_name);
+
+	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &CameraFeed::set_position);
+
 	// Note, for transform some feeds may override what the user sets (such as ARKit)
 	ClassDB::bind_method(D_METHOD("get_transform"), &CameraFeed::get_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CameraFeed::set_transform);
 
+	ClassDB::bind_method(D_METHOD("set_rgb_image", "rgb_image"), &CameraFeed::set_rgb_image);
+	ClassDB::bind_method(D_METHOD("set_ycbcr_image", "ycbcr_image"), &CameraFeed::set_ycbcr_image);
+
+	ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
+
+	ClassDB::bind_method(D_METHOD("get_formats"), &CameraFeed::get_formats);
+	ClassDB::bind_method(D_METHOD("set_format", "index", "parameters"), &CameraFeed::set_format);
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("format_changed"));
+
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "feed_transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "formats"), "", "get_formats");
 
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
@@ -80,13 +95,11 @@ void CameraFeed::set_active(bool p_is_active) {
 	} else if (p_is_active) {
 		// attempt to activate this feed
 		if (activate_feed()) {
-			print_line("Activate " + name);
 			active = true;
 		}
 	} else {
 		// just deactivate it
 		deactivate_feed();
-		print_line("Deactivate " + name);
 		active = false;
 	}
 }
@@ -177,4 +190,17 @@ bool CameraFeed::activate_feed() {
 
 void CameraFeed::deactivate_feed() {
 	// nothing to do here
+}
+
+bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {
+	return false;
+}
+
+Array CameraFeed::get_formats() const {
+	return Array();
+}
+
+CameraFeed::FeedFormat CameraFeed::get_format() const {
+	FeedFormat feed_format = {};
+	return feed_format;
 }

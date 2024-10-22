@@ -142,7 +142,7 @@ void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list) const {
 			const Property &property = E.value;
 
 			PropertyInfo info = property.info;
-			if (_call_getter(&property, i) == property.default_value) {
+			if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, i) == property.default_value) {
 				info.usage &= (~PROPERTY_USAGE_STORAGE);
 			}
 

@@ -6,7 +6,7 @@
 	<description>
 		The [CameraServer] keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
 		It is notably used to provide AR modules with a video feed from the camera.
-		[b]Note:[/b] This class currently only supports macOS, iOS and Windows platform. On other platforms, supported [CameraFeed]s are in development.
+		[b]Note:[/b] This class currently only supports macOS, iOS, Android and Windows platform. On other platforms, supported [CameraFeed]s are in development.
 	</description>
 	<tutorials>
 	</tutorials>

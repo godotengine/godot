@@ -40,12 +40,12 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
-		// Let the connection happen on the call queue, later, since signals are not thread-safe.
-		call_deferred("emit_signal", CoreStringName(changed));
-	} else {
-		emit_signal(CoreStringName(changed));
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		ResourceLoader::resource_changed_emit(this);
+		return;
 	}
+
+	emit_signal(CoreStringName(changed));
 }
 
 void Resource::_resource_path_changed() {
@@ -60,32 +60,32 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		p_take_over = false; // Can't take over an empty path
 	}
 
-	ResourceCache::lock.lock();
+	{
+		MutexLock lock(ResourceCache::lock);
 
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources.erase(path_cache);
-	}
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources.erase(path_cache);
+		}
 
-	path_cache = "";
+		path_cache = "";
 
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+		Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (existing.is_valid()) {
-		if (p_take_over) {
-			existing->path_cache = String();
-			ResourceCache::resources.erase(p_path);
-		} else {
-			ResourceCache::lock.unlock();
-			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+		if (existing.is_valid()) {
+			if (p_take_over) {
+				existing->path_cache = String();
+				ResourceCache::resources.erase(p_path);
+			} else {
+				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			}
+		}
+
+		path_cache = p_path;
+
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources[path_cache] = this;
 		}
 	}
-
-	path_cache = p_path;
-
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources[path_cache] = this;
-	}
-	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -96,33 +96,45 @@ String Resource::get_path() const {
 
 void Resource::set_path_cache(const String &p_path) {
 	path_cache = p_path;
+	GDVIRTUAL_CALL(_set_path_cache, p_path);
+}
+
+static thread_local RandomPCG unique_id_gen(0, RandomPCG::DEFAULT_INC);
+
+void Resource::seed_scene_unique_id(uint32_t p_seed) {
+	unique_id_gen.seed(p_seed);
 }
 
 String Resource::generate_scene_unique_id() {
 	// Generate a unique enough hash, but still user-readable.
 	// If it's not unique it does not matter because the saver will try again.
-	OS::DateTime dt = OS::get_singleton()->get_datetime();
-	uint32_t hash = hash_murmur3_one_32(OS::get_singleton()->get_ticks_usec());
-	hash = hash_murmur3_one_32(dt.year, hash);
-	hash = hash_murmur3_one_32(dt.month, hash);
-	hash = hash_murmur3_one_32(dt.day, hash);
-	hash = hash_murmur3_one_32(dt.hour, hash);
-	hash = hash_murmur3_one_32(dt.minute, hash);
-	hash = hash_murmur3_one_32(dt.second, hash);
-	hash = hash_murmur3_one_32(Math::rand(), hash);
+	if (unique_id_gen.get_seed() == 0) {
+		OS::DateTime dt = OS::get_singleton()->get_datetime();
+		uint32_t hash = hash_murmur3_one_32(OS::get_singleton()->get_ticks_usec());
+		hash = hash_murmur3_one_32(dt.year, hash);
+		hash = hash_murmur3_one_32(dt.month, hash);
+		hash = hash_murmur3_one_32(dt.day, hash);
+		hash = hash_murmur3_one_32(dt.hour, hash);
+		hash = hash_murmur3_one_32(dt.minute, hash);
+		hash = hash_murmur3_one_32(dt.second, hash);
+		hash = hash_murmur3_one_32(Math::rand(), hash);
+		unique_id_gen.seed(hash);
+	}
+
+	uint32_t random_num = unique_id_gen.rand();
 
 	static constexpr uint32_t characters = 5;
 	static constexpr uint32_t char_count = ('z' - 'a');
 	static constexpr uint32_t base = char_count + ('9' - '0');
 	String id;
 	for (uint32_t i = 0; i < characters; i++) {
-		uint32_t c = hash % base;
+		uint32_t c = random_num % base;
 		if (c < char_count) {
 			id += String::chr('a' + c);
 		} else {
 			id += String::chr('0' + (c - char_count));
 		}
-		hash /= base;
+		random_num /= base;
 	}
 
 	return id;
@@ -166,28 +178,29 @@ bool Resource::editor_can_reload_from_file() {
 }
 
 void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
-	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
-		// Let the check and connection happen on the call queue, later, since signals are not thread-safe.
-		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		ResourceLoader::resource_changed_connect(this, p_callable, p_flags);
 		return;
 	}
+
 	if (!is_connected(CoreStringName(changed), p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
 		connect(CoreStringName(changed), p_callable, p_flags);
 	}
 }
 
 void Resource::disconnect_changed(const Callable &p_callable) {
-	if (ResourceLoader::is_within_load() && MessageQueue::get_main_singleton() != MessageQueue::get_singleton() && !MessageQueue::get_singleton()->is_flushing()) {
-		// Let the check and disconnection happen on the call queue, later, since signals are not thread-safe.
-		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		ResourceLoader::resource_changed_disconnect(this, p_callable);
 		return;
 	}
+
 	if (is_connected(CoreStringName(changed), p_callable)) {
 		disconnect(CoreStringName(changed), p_callable);
 	}
 }
 
 void Resource::reset_state() {
+	GDVIRTUAL_CALL(_reset_state);
 }
 
 Error Resource::copy_from(const Ref<Resource> &p_resource) {
@@ -416,21 +429,15 @@ void Resource::_take_over_path(const String &p_path) {
 }
 
 RID Resource::get_rid() const {
-	if (get_script_instance()) {
-		Callable::CallError ce;
-		RID ret = get_script_instance()->callp(SNAME("_get_rid"), nullptr, 0, ce);
-		if (ce.error == Callable::CallError::CALL_OK && ret.is_valid()) {
-			return ret;
+	RID ret;
+	if (!GDVIRTUAL_CALL(_get_rid, ret)) {
+#ifndef DISABLE_DEPRECATED
+		if (_get_extension() && _get_extension()->get_rid) {
+			ret = RID::from_uint64(_get_extension()->get_rid(_get_extension_instance()));
 		}
+#endif
 	}
-	if (_get_extension() && _get_extension()->get_rid) {
-		RID ret = RID::from_uint64(_get_extension()->get_rid(_get_extension_instance()));
-		if (ret.is_valid()) {
-			return ret;
-		}
-	}
-
-	return RID();
+	return ret;
 }
 
 #ifdef TOOLS_ENABLED
@@ -492,20 +499,18 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::lock);
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
 	} else {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
-
-	ResourceCache::lock.unlock();
 }
 
-#ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
+#ifdef TOOLS_ENABLED
 	if (p_id.is_empty()) {
 		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
@@ -515,9 +520,11 @@ void Resource::set_id_for_path(const String &p_path, const String &p_id) {
 		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
 		ResourceCache::path_cache_lock.write_unlock();
 	}
+#endif
 }
 
 String Resource::get_id_for_path(const String &p_path) const {
+#ifdef TOOLS_ENABLED
 	ResourceCache::path_cache_lock.read_lock();
 	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
 		String result = ResourceCache::resource_path_cache[p_path][get_path()];
@@ -527,13 +534,16 @@ String Resource::get_id_for_path(const String &p_path) const {
 		ResourceCache::path_cache_lock.read_unlock();
 		return "";
 	}
-}
+#else
+	return "";
 #endif
+}
 
 void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &Resource::get_path);
+	ClassDB::bind_method(D_METHOD("set_path_cache", "path"), &Resource::set_path_cache);
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Resource::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Resource::get_name);
 	ClassDB::bind_method(D_METHOD("get_rid"), &Resource::get_rid);
@@ -541,6 +551,12 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_local_to_scene"), &Resource::is_local_to_scene);
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
+	ClassDB::bind_method(D_METHOD("reset_state"), &Resource::reset_state);
+
+	ClassDB::bind_method(D_METHOD("set_id_for_path", "path", "id"), &Resource::set_id_for_path);
+	ClassDB::bind_method(D_METHOD("get_id_for_path", "path"), &Resource::get_id_for_path);
+
+	ClassDB::bind_method(D_METHOD("is_built_in"), &Resource::is_built_in);
 
 	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
 	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
@@ -558,11 +574,10 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
 
-	MethodInfo get_rid_bind("_get_rid");
-	get_rid_bind.return_val.type = Variant::RID;
-
-	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
 	GDVIRTUAL_BIND(_setup_local_to_scene);
+	GDVIRTUAL_BIND(_get_rid);
+	GDVIRTUAL_BIND(_reset_state);
+	GDVIRTUAL_BIND(_set_path_cache, "path");
 }
 
 Resource::Resource() :
@@ -573,14 +588,13 @@ Resource::~Resource() {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock lock(ResourceCache::lock);
 	// Only unregister from the cache if this is the actual resource listed there.
 	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
 	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
 	if (likely(E && E->value == this)) {
 		ResourceCache::resources.remove(E);
 	}
-	ResourceCache::lock.unlock();
 }
 
 HashMap<String, Resource *> ResourceCache::resources;
@@ -609,18 +623,20 @@ void ResourceCache::clear() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.lock();
+	Resource **res = nullptr;
 
-	Resource **res = resources.getptr(p_path);
+	{
+		MutexLock mutex_lock(lock);
 
-	if (res && (*res)->get_reference_count() == 0) {
-		// This resource is in the process of being deleted, ignore its existence.
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
+		res = resources.getptr(p_path);
+
+		if (res && (*res)->get_reference_count() == 0) {
+			// This resource is in the process of being deleted, ignore its existence.
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	lock.unlock();
 
 	if (!res) {
 		return false;
@@ -631,28 +647,27 @@ bool ResourceCache::has(const String &p_path) {
 
 Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 	Ref<Resource> ref;
-	lock.lock();
+	{
+		MutexLock mutex_lock(lock);
+		Resource **res = resources.getptr(p_path);
 
-	Resource **res = resources.getptr(p_path);
+		if (res) {
+			ref = Ref<Resource>(*res);
+		}
 
-	if (res) {
-		ref = Ref<Resource>(*res);
+		if (res && !ref.is_valid()) {
+			// This resource is in the process of being deleted, ignore its existence
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	if (res && !ref.is_valid()) {
-		// This resource is in the process of being deleted, ignore its existence
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
-	}
-
-	lock.unlock();
 
 	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.lock();
+	MutexLock mutex_lock(lock);
 
 	LocalVector<String> to_remove;
 
@@ -672,14 +687,9 @@ void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 	for (const String &E : to_remove) {
 		resources.erase(E);
 	}
-
-	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.lock();
-	int rc = resources.size();
-	lock.unlock();
-
-	return rc;
+	MutexLock mutex_lock(lock);
+	return resources.size();
 }

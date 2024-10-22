@@ -104,7 +104,6 @@
 			<param index="1" name="event" type="InputEvent" />
 			<description>
 				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
@@ -119,8 +118,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes.
-				[b]Example:[/b]
+				This method must return [constant AFTER_GUI_INPUT_PASS] in order to forward the [InputEvent] to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
@@ -188,8 +186,7 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes.
-				[b]Example:[/b]
+				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 2D viewport. If this method returns [code]true[/code], [param event] is intercepted by this [EditorPlugin], otherwise [param event] is forwarded to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent from reaching other Editor classes.
@@ -204,8 +201,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes.
-				[b]Example:[/b]
+				This method must return [code]false[/code] in order to forward the [InputEvent] to other Editor classes.
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
@@ -405,6 +401,15 @@
 				Adds a script at [param path] to the Autoload list as [param name].
 			</description>
 		</method>
+		<method name="add_context_menu_plugin">
+			<return type="void" />
+			<param index="0" name="slot" type="int" enum="EditorContextMenuPlugin.ContextMenuSlot" />
+			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
+			<description>
+				Adds a plugin to the context menu. [param slot] is the context menu where the plugin will be added.
+				See [enum EditorContextMenuPlugin.ContextMenuSlot] for available context menus. A plugin instance can belong only to a single context menu slot.
+			</description>
+		</method>
 		<method name="add_control_to_bottom_panel">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
@@ -457,6 +462,13 @@
 			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
+			</description>
+		</method>
+		<method name="add_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Registers a new [EditorExportPlatform]. Export platforms provides functionality of exporting to the specific platform.
 			</description>
 		</method>
 		<method name="add_export_plugin">
@@ -621,6 +633,13 @@
 				Removes an Autoload [param name] from the list.
 			</description>
 		</method>
+		<method name="remove_context_menu_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorContextMenuPlugin" />
+			<description>
+				Removes the specified context menu plugin.
+			</description>
+		</method>
 		<method name="remove_control_from_bottom_panel">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
@@ -657,6 +676,13 @@
 				Removes the debugger plugin with given script from the Debugger.
 			</description>
 		</method>
+		<method name="remove_export_platform">
+			<return type="void" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<description>
+				Removes an export platform registered by [method add_export_platform].
+			</description>
+		</method>
 		<method name="remove_export_plugin">
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorExportPlugin" />
@@ -675,7 +701,7 @@
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorInspectorPlugin" />
 			<description>
-				Removes an inspector plugin registered by [method add_import_plugin]
+				Removes an inspector plugin registered by [method add_inspector_plugin].
 			</description>
 		</method>
 		<method name="remove_node_3d_gizmo_plugin">

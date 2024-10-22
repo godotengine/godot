@@ -171,7 +171,7 @@ void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_config) {
 	// Set the importer class to fetch the correct class in the XML class reference.
 	// This allows tooltips to display when hovering properties.
-	if (params->importer != nullptr) {
+	if (params->importer.is_valid()) {
 		// Null check to avoid crashing if the "Keep File (exported as is)" mode is selected.
 		import_opts->set_object_class(params->importer->get_class_name());
 	}
@@ -606,23 +606,25 @@ void ImportDock::_reimport_and_cleanup() {
 	List<Ref<Resource>> external_resources;
 	ResourceCache::get_cached_resources(&external_resources);
 
+	Vector<Ref<Resource>> old_resources_to_replace;
+	Vector<Ref<Resource>> new_resources_to_replace;
 	for (const String &path : need_cleanup) {
 		Ref<Resource> old_res = old_resources[path];
-		Ref<Resource> new_res;
 		if (params->importer.is_valid()) {
-			new_res = ResourceLoader::load(path);
-		}
-
-		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-			Node *edited_scene_root = EditorNode::get_editor_data().get_edited_scene_root(i);
-			if (likely(edited_scene_root)) {
-				_replace_resource_in_object(edited_scene_root, old_res, new_res);
+			Ref<Resource> new_res = ResourceLoader::load(path);
+			if (new_res.is_valid()) {
+				old_resources_to_replace.append(old_res);
+				new_resources_to_replace.append(new_res);
 			}
 		}
-		for (Ref<Resource> res : external_resources) {
-			_replace_resource_in_object(res.ptr(), old_res, new_res);
-		}
 	}
+
+	EditorNode::get_singleton()->replace_resources_in_scenes(old_resources_to_replace, new_resources_to_replace);
+
+	for (Ref<Resource> res : external_resources) {
+		EditorNode::get_singleton()->replace_resources_in_object(res.ptr(), old_resources_to_replace, new_resources_to_replace);
+	}
+
 	need_cleanup.clear();
 }
 
@@ -691,37 +693,6 @@ void ImportDock::_reimport() {
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
 
 	_set_dirty(false);
-}
-
-void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource) {
-	ERR_FAIL_NULL(p_object);
-
-	List<PropertyInfo> props;
-	p_object->get_property_list(&props);
-
-	for (const PropertyInfo &p : props) {
-		if (p.type != Variant::OBJECT || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
-			continue;
-		}
-
-		Ref<Resource> res = p_object->get(p.name);
-		if (res.is_null()) {
-			continue;
-		}
-
-		if (res == old_resource) {
-			p_object->set(p.name, new_resource);
-		} else {
-			_replace_resource_in_object(res.ptr(), old_resource, new_resource);
-		}
-	}
-
-	Node *n = Object::cast_to<Node>(p_object);
-	if (n) {
-		for (int i = 0; i < n->get_child_count(); i++) {
-			_replace_resource_in_object(n->get_child(i), old_resource, new_resource);
-		}
-	}
 }
 
 void ImportDock::_notification(int p_what) {

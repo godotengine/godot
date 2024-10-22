@@ -90,7 +90,7 @@ public:
 
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
-	TerrainConstraint(){};
+	TerrainConstraint() {}
 };
 
 #ifdef DEBUG_ENABLED
@@ -108,7 +108,7 @@ struct CellData {
 	// Rendering.
 	Ref<RenderingQuadrant> rendering_quadrant;
 	SelfList<CellData> rendering_quadrant_list_element;
-	LocalVector<RID> occluders;
+	LocalVector<LocalVector<RID>> occluders;
 
 	// Physics.
 	LocalVector<RID> bodies;
@@ -254,6 +254,7 @@ public:
 		DIRTY_FLAGS_LAYER_COLLISION_ENABLED,
 		DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES,
 		DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE,
+		DIRTY_FLAGS_LAYER_OCCLUSION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED,
 		DIRTY_FLAGS_LAYER_NAVIGATION_MAP,
 		DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE,
@@ -287,6 +288,8 @@ private:
 	bool collision_enabled = true;
 	bool use_kinematic_bodies = false;
 	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
+
+	bool occlusion_enabled = true;
 
 	bool navigation_enabled = true;
 	RID navigation_map_override;
@@ -438,6 +441,10 @@ public:
 	TypedArray<Vector2i> get_used_cells_by_id(int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
 	Rect2i get_used_rect() const;
 
+	bool is_cell_flipped_h(const Vector2i &p_coords) const;
+	bool is_cell_flipped_v(const Vector2i &p_coords) const;
+	bool is_cell_transposed(const Vector2i &p_coords) const;
+
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
@@ -492,6 +499,9 @@ public:
 	bool is_using_kinematic_bodies() const;
 	void set_collision_visibility_mode(DebugVisibilityMode p_show_collision);
 	DebugVisibilityMode get_collision_visibility_mode() const;
+
+	void set_occlusion_enabled(bool p_enabled);
+	bool is_occlusion_enabled() const;
 
 	void set_navigation_enabled(bool p_enabled);
 	bool is_navigation_enabled() const;

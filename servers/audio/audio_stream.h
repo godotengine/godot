@@ -48,8 +48,10 @@ class AudioSamplePlayback : public RefCounted {
 
 public:
 	Ref<AudioStream> stream;
+	Ref<AudioStreamPlayback> stream_playback;
 
 	float offset = 0.0f;
+	float pitch_scale = 1.0;
 	Vector<AudioFrame> volume_vector;
 	StringName bus;
 };
@@ -87,7 +89,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_loop_count)
 	GDVIRTUAL0RC(double, _get_playback_position)
 	GDVIRTUAL1(_seek, double)
-	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
+	GDVIRTUAL3R_REQUIRED(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
 	GDVIRTUAL2(_set_parameter, const StringName &, const Variant &)
 	GDVIRTUAL1RC(Variant, _get_parameter, const StringName &)
@@ -139,8 +141,8 @@ protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
 	virtual float get_stream_sampling_rate();
 
-	GDVIRTUAL2R(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
-	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
+	GDVIRTUAL2R_REQUIRED(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
+	GDVIRTUAL0RC_REQUIRED(float, _get_stream_sampling_rate)
 
 	static void _bind_methods();
 
@@ -219,9 +221,6 @@ class AudioStreamMicrophone : public AudioStream {
 
 	HashSet<AudioStreamPlaybackMicrophone *> playbacks;
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
@@ -229,8 +228,6 @@ public:
 	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
-
-	AudioStreamMicrophone();
 };
 
 class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {

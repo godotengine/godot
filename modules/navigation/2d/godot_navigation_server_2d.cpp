@@ -318,6 +318,11 @@ int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_start, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_end, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 
+Vector2 GodotNavigationServer2D::region_get_closest_point(RID p_region, const Vector2 &p_point) const {
+	Vector3 result = NavigationServer3D::get_singleton()->region_get_closest_point(p_region, v2_to_v3(p_point));
+	return v3_to_v2(result);
+}
+
 Vector2 GodotNavigationServer2D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
 	Vector3 result = NavigationServer3D::get_singleton()->region_get_random_point(p_region, p_navigation_layers, p_uniformly);
 	return v3_to_v2(result);

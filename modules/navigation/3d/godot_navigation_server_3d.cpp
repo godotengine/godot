@@ -509,22 +509,52 @@ void GodotNavigationServer3D::region_bake_navigation_mesh(Ref<NavigationMesh> p_
 int GodotNavigationServer3D::region_get_connections_count(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, 0);
-
-	return region->get_connections_count();
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connections_count(region);
+	}
+	return 0;
 }
 
 Vector3 GodotNavigationServer3D::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, Vector3());
-
-	return region->get_connection_pathway_start(p_connection_id);
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connection_pathway_start(region, p_connection_id);
+	}
+	return Vector3();
 }
 
 Vector3 GodotNavigationServer3D::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, Vector3());
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connection_pathway_end(region, p_connection_id);
+	}
+	return Vector3();
+}
 
-	return region->get_connection_pathway_end(p_connection_id);
+Vector3 GodotNavigationServer3D::region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_closest_point_to_segment(p_from, p_to, p_use_collision);
+}
+
+Vector3 GodotNavigationServer3D::region_get_closest_point(RID p_region, const Vector3 &p_point) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_closest_point_info(p_point).point;
+}
+
+Vector3 GodotNavigationServer3D::region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_closest_point_info(p_point).normal;
 }
 
 Vector3 GodotNavigationServer3D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
@@ -1298,6 +1328,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	int _new_pm_edge_merge_count = 0;
 	int _new_pm_edge_connection_count = 0;
 	int _new_pm_edge_free_count = 0;
+	int _new_pm_obstacle_count = 0;
 
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
@@ -1315,6 +1346,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 		_new_pm_edge_merge_count += active_maps[i]->get_pm_edge_merge_count();
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
+		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
 
 		// Emit a signal if a map changed.
 		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
@@ -1332,6 +1364,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	pm_edge_merge_count = _new_pm_edge_merge_count;
 	pm_edge_connection_count = _new_pm_edge_connection_count;
 	pm_edge_free_count = _new_pm_edge_free_count;
+	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void GodotNavigationServer3D::init() {
@@ -1565,6 +1598,9 @@ int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
 		} break;
 		case INFO_EDGE_FREE_COUNT: {
 			return pm_edge_free_count;
+		} break;
+		case INFO_OBSTACLE_COUNT: {
+			return pm_obstacle_count;
 		} break;
 	}
 

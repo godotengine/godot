@@ -38,7 +38,6 @@
 				- [code]name[/code]: [String] (the name of the property)
 				- [code]type[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var settings = EditorInterface.get_editor_settings()
@@ -182,8 +181,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="asset_library/use_threads" type="bool" setter="" getter="">
+			If [code]true[/code], the Asset Library uses multiple threads for its HTTP requests. This prevents the Asset Library from blocking the main thread for every loaded asset.
+		</member>
 		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
 			If [code]true[/code], automatically switches to the [b]Remote[/b] scene tree when running the project from the editor. If [code]false[/code], stays on the [b]Local[/b] scene tree when running the project from the editor.
+			[b]Warning:[/b] Enabling this setting can cause stuttering when running a project with a large amount of nodes (typically a few thousands of nodes or more), even if the editor window isn't focused. This is due to the remote scene tree being updated every second regardless of whether the editor is focused.
 		</member>
 		<member name="debugger/profile_native_calls" type="bool" setter="" getter="">
 			If [code]true[/code], enables collection of profiling data from non-GDScript Godot functions, such as engine class methods. Enabling this slows execution while profiling further.
@@ -195,6 +198,9 @@
 			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
 			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
 		</member>
+		<member name="debugger/profiler_target_fps" type="int" setter="" getter="">
+			The target frame rate shown in the visual profiler graph, in frames per second.
+		</member>
 		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
 			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
 		</member>
@@ -205,8 +211,11 @@
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
 			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
 		</member>
+		<member name="docks/filesystem/other_file_extensions" type="String" setter="" getter="">
+			A comma separated list of unsupported file extensions to show in the FileSystem dock, e.g. [code]"ico,icns"[/code].
+		</member>
 		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
-			List of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files).
+			A comma separated list of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files), e.g. [code]"txt,md,cfg,ini,log,json,yml,yaml,toml,xml"[/code].
 		</member>
 		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
@@ -216,6 +225,12 @@
 		</member>
 		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
 			The tint intensity to use for the subresources background in the Inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
+		</member>
+		<member name="docks/scene_tree/ask_before_deleting_related_animation_tracks" type="bool" setter="" getter="">
+			If [code]true[/code], when a node is deleted with animation tracks referencing it, a confirmation dialog appears before the tracks are deleted. The dialog will appear even when using the "Delete (No Confirm)" shortcut.
+		</member>
+		<member name="docks/scene_tree/ask_before_revoking_unique_name" type="bool" setter="" getter="">
+			If [code]true[/code], displays a confirmation dialog before left-clicking the "percent" icon next to a node name in the Scene tree dock. When clicked, this icon revokes the node's scene-unique name, which can impact the behavior of scripts that rely on this scene-unique name due to identifiers not being found anymore.
 		</member>
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
@@ -259,10 +274,13 @@
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
 		</member>
 		<member name="editors/2d/use_integer_zoom_by_default" type="bool" setter="" getter="">
-			If [code]true[/code], the 2D editor will snap to integer zoom values while not holding the [kbd]Alt[/kbd] key and powers of two while holding it. If [code]false[/code], this behavior is swapped.
+			If [code]true[/code], the 2D editor will snap to integer zoom values when not holding the [kbd]Alt[/kbd] key. If [code]false[/code], this behavior is swapped.
 		</member>
 		<member name="editors/2d/viewport_border_color" type="Color" setter="" getter="">
 			The color of the viewport border in the 2D editor. This border represents the viewport's size at the base resolution defined in the Project Settings. Objects placed outside this border will not be visible unless a [Camera2D] node is used, or unless the window is resized and the stretch mode is set to [code]disabled[/code].
+		</member>
+		<member name="editors/2d/zoom_speed_factor" type="float" setter="" getter="">
+			The factor to use when zooming in or out in the 2D editor. For example, [code]1.1[/code] will zoom in by 10% with every step. If set to [code]2.0[/code], zooming will only cycle through powers of two.
 		</member>
 		<member name="editors/3d/default_fov" type="float" setter="" getter="">
 			The default camera vertical field of view to use in the 3D editor (in degrees). The camera field of view can be adjusted on a per-scene basis using the [b]View[/b] menu at the top of the 3D editor. If a scene had its camera field of view adjusted using the [b]View[/b] menu, this setting is ignored in the scene in question. This setting is also ignored while a [Camera3D] node is being previewed in the editor.
@@ -311,18 +329,23 @@
 			The grid size in units. Higher values prevent the grid from appearing "cut off" at certain angles, but make the grid more demanding to render. Depending on the camera's position, the grid may not be fully visible since a shader is used to fade it progressively.
 		</member>
 		<member name="editors/3d/grid_xy_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an XY plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], renders the grid on the XY plane in perspective view. This can be useful for 3D side-scrolling games.
 		</member>
 		<member name="editors/3d/grid_xz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on an XZ plane.
+			If [code]true[/code], renders the grid on the XZ plane in perspective view.
 		</member>
 		<member name="editors/3d/grid_yz_plane" type="bool" setter="" getter="">
-			If [code]true[/code], render the grid on a YZ plane. This can be useful for 3D side-scrolling games.
+			If [code]true[/code], renders the grid on the YZ plane in perspective view. This can be useful for 3D side-scrolling games.
+		</member>
+		<member name="editors/3d/manipulator_gizmo_opacity" type="float" setter="" getter="">
+			Opacity of the default gizmo for moving, rotating, and scaling 3D nodes.
+		</member>
+		<member name="editors/3d/manipulator_gizmo_size" type="int" setter="" getter="">
+			Size of the default gizmo for moving, rotating, and scaling 3D nodes.
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
 			When 3-button mouse emulation mode is enabled, the pan, zoom and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
-			[b]Note:[/b] No matter the orbit modifier configured in [member editors/3d/navigation/orbit_modifier], [kbd]Alt[/kbd] will always remain usable for orbiting in this mode to improve usability with graphics tablets.
 		</member>
 		<member name="editors/3d/navigation/emulate_numpad" type="bool" setter="" getter="">
 			If [code]true[/code], allows using the top row [kbd]0[/kbd]-[kbd]9[/kbd] keys to function as their equivalent numpad keys for 3D editor navigation. This should be enabled on keyboards that have no numeric keypad available.
@@ -334,28 +357,31 @@
 			If [code]true[/code], invert the vertical mouse axis when panning, orbiting, or using freelook mode in the 3D editor.
 		</member>
 		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
-			The navigation scheme to use in the 3D editor. Changing this setting will affect the mouse buttons that must be held down to perform certain operations in the 3D editor viewport.
-			- [b]Godot[/b] Middle mouse button to orbit, [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Mouse wheel[/kbd] to zoom.
-			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Mouse wheel[/kbd] to zoom.
+			The navigation scheme preset to use in the 3D editor. Changing this setting will affect the mouse button and modifier controls used to navigate the 3D editor viewport.
+			All schemes can use [kbd]Mouse wheel[/kbd] to zoom.
+			- [b]Godot:[/b] [kbd]Middle mouse button[/kbd] to orbit. [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Ctrl + Shift + Middle mouse button[/kbd] to zoom.
+			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Alt + Right mouse button[/kbd] to zoom.
 			- [b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
-			See also [member editors/3d/freelook/freelook_navigation_scheme].
+			See also [member editors/3d/navigation/orbit_mouse_button], [member editors/3d/navigation/pan_mouse_button], [member editors/3d/navigation/zoom_mouse_button], and [member editors/3d/freelook/freelook_navigation_scheme].
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
-		<member name="editors/3d/navigation/orbit_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to orbit in the 3D editor.
-			[b]Note:[/b] If [member editors/3d/navigation/emulate_3_button_mouse] is [code]true[/code], [kbd]Alt[/kbd] will always remain usable for orbiting to improve usability with graphics tablets.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/orbit_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to orbit in the 3D editor viewport.
 		</member>
-		<member name="editors/3d/navigation/pan_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to pan in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/pan_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to pan in the 3D editor viewport.
+		</member>
+		<member name="editors/3d/navigation/show_viewport_navigation_gizmo" type="bool" setter="" getter="">
+			If [code]true[/code], shows gizmos for moving and rotating the camera in the bottom corners of the 3D editor's viewport. Useful for devices that use touch screen.
+		</member>
+		<member name="editors/3d/navigation/show_viewport_rotation_gizmo" type="bool" setter="" getter="">
+			If [code]true[/code], shows a small orientation gizmo in the top-right corner of the 3D editor's viewports.
 		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
-		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
-			The modifier key that must be held to zoom in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		<member name="editors/3d/navigation/zoom_mouse_button" type="int" setter="" getter="">
+			The mouse button that needs to be held down to zoom in the 3D editor viewport.
 		</member>
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
@@ -387,11 +413,77 @@
 		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
 			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].
 		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/camera" type="Color" setter="" getter="">
+			The 3D editor gizmo color for [Camera3D]s.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/csg" type="Color" setter="" getter="">
+			The 3D editor gizmo color for CSG nodes (such as [CSGShape3D] or [CSGBox3D]).
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/decal" type="Color" setter="" getter="">
+			The 3D editor gizmo color for [Decal] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/fog_volume" type="Color" setter="" getter="">
+			The 3D editor gizmo color for [FogVolume] nodes.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
 			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/joint" type="Color" setter="" getter="">
 			The 3D editor gizmo color for [Joint3D]s and [PhysicalBone3D]s.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/joint_body_a" type="Color" setter="" getter="">
+			Color for representing [member Joint3D.node_a] for some [Joint3D] types.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/joint_body_b" type="Color" setter="" getter="">
+			Color for representing [member Joint3D.node_b] for some [Joint3D] types.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/lightmap_lines" type="Color" setter="" getter="">
+			Color of lines displayed in baked [LightmapGI] node's grid.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/lightprobe_lines" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [LightmapProbe] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/occluder" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [OccluderInstance3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/particle_attractor" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [GPUParticlesAttractor3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/particle_collision" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [GPUParticlesCollision3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/particles" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [CPUParticles3D] and [GPUParticles3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/path_tilt" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [Path3D] tilt circles, which indicate the direction the [Curve3D] is tilted towards.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/reflection_probe" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [ReflectionProbe] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/selected_bone" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for the currently selected [Skeleton3D] bone.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/skeleton" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [Skeleton3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/stream_player_3d" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [AudioStreamPlayer3D]'s emission angle.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/visibility_notifier" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [VisibleOnScreenNotifier3D] and [VisibleOnScreenEnabler3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/voxel_gi" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [VoxelGI] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/bone_axis_length" type="float" setter="" getter="">
+			The length of [Skeleton3D] bone gizmos in the 3D editor.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/bone_shape" type="int" setter="" getter="">
+			The shape of [Skeleton3D] bone gizmos in the 3D editor. [b]Wire[/b] is a thin line, while [b]Octahedron[/b] is a set of lines that represent a thicker hollow line pointing in a specific direction (similar to most 3D animation software).
+		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size" type="float" setter="" getter="">
+			Size of the disk gizmo displayed when editing [Path3D]'s tilt handles.
 		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
@@ -412,8 +504,25 @@
 		<member name="editors/animation/onion_layers_past_color" type="Color" setter="" getter="">
 			The modulate color to use for "past" frames displayed in the animation editor's onion skinning feature.
 		</member>
+		<member name="editors/bone_mapper/handle_colors/error" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/bone_mapper/handle_colors/missing" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/bone_mapper/handle_colors/set" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
+		</member>
+		<member name="editors/grid_map/editor_side" type="int" setter="" getter="">
+			Specifies the side of 3D editor's viewport where GridMap's mesh palette will appear.
+		</member>
+		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
+			Minimum width of GridMap's mesh palette side panel.
+		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
+		</member>
+		<member name="editors/grid_map/preview_size" type="int" setter="" getter="">
+			Texture size of mesh previews generated for GridMap's MeshLibrary.
 		</member>
 		<member name="editors/panning/2d_editor_pan_speed" type="int" setter="" getter="">
 			The panning speed when using the mouse wheel or touchscreen events in the 2D editor. This setting does not apply to panning by holding down the middle or right mouse buttons.
@@ -524,6 +633,13 @@
 		<member name="editors/visual_editors/visual_shader/port_preview_size" type="int" setter="" getter="">
 			The size to use for port previews in the visual shader uniforms (toggled by clicking the "eye" icon next to an output). The value is defined in pixels at 100% zoom, and will scale with zoom automatically.
 		</member>
+		<member name="export/ssh/scp" type="String" setter="" getter="">
+			Path to the SCP (secure copy) executable (used for remote deploy to desktop platforms). If left empty, the editor will attempt to run [code]scp[/code] from [code]PATH[/code].
+			[b]Note:[/b] SCP is not the same as SFTP. Specifying the SFTP executable here will not work.
+		</member>
+		<member name="export/ssh/ssh" type="String" setter="" getter="">
+			Path to the SSH executable (used for remote deploy to desktop platforms). If left empty, the editor will attempt to run [code]ssh[/code] from [code]PATH[/code].
+		</member>
 		<member name="filesystem/directories/autoscan_project_path" type="String" setter="" getter="">
 			The folder where projects should be scanned for (recursively), in a way similar to the project manager's [b]Scan[/b] button. This can be set to the same value as [member filesystem/directories/default_project_path] for convenience.
 			[b]Note:[/b] Setting this path to a folder with very large amounts of files/folders can slow down the project manager startup significantly. To keep the project manager quick to start up, it is recommended to set this value to a folder as "specific" as possible.
@@ -569,6 +685,12 @@
 		<member name="filesystem/file_dialog/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the editor's file dialogs (in pixels). See also [member docks/filesystem/thumbnail_size].
 		</member>
+		<member name="filesystem/file_server/password" type="String" setter="" getter="">
+			Password used for file server when exporting project with remote file system.
+		</member>
+		<member name="filesystem/file_server/port" type="int" setter="" getter="">
+			Port used for file server when exporting project with remote file system.
+		</member>
 		<member name="filesystem/import/blender/blender_path" type="String" setter="" getter="">
 			The path to the directory containing the Blender executable used for converting the Blender 3D scene files [code].blend[/code] to glTF 2.0 format during import. Blender 3.0 or later is required.
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
@@ -591,6 +713,12 @@
 		<member name="filesystem/on_save/safe_save_on_backup_then_rename" type="bool" setter="" getter="">
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
+		</member>
+		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
+			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
+		</member>
+		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
+			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
 		</member>
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
@@ -650,11 +778,14 @@
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
-			The preferred monitor to display the editor.
+			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across restarts.
 		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
+		</member>
+		<member name="interface/editor/font_allow_msdf" type="bool" setter="" getter="">
+			If set to [code]true[/code], MSDF font rendering will be used for the visual shader graph editor. You may need to set this to [code]false[/code] when using a custom main font, as some fonts will look broken due to the use of self-intersecting outlines in their font data. Downloading the font from the font maker's official website as opposed to a service like Google Fonts can help resolve this issue.
 		</member>
 		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
 			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
@@ -674,6 +805,9 @@
 		</member>
 		<member name="interface/editor/import_resources_when_unfocused" type="bool" setter="" getter="">
 			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
+		</member>
+		<member name="interface/editor/keep_screen_on" type="bool" setter="" getter="">
+			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
 		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
 			If [code]true[/code], setting names in the editor are localized when possible.
@@ -746,6 +880,12 @@
 			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
 			[b]Note:[/b] V-Sync modes other than [b]Enabled[/b] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
+		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
+			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
+		</member>
+		<member name="interface/editors/show_scene_tree_root_selection" type="bool" setter="" getter="">
+			If [code]true[/code], the Scene dock will display buttons to quickly add a root node to a newly created scene.
+		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
 			If [code]true[/code], automatically expands property groups in the Inspector dock when opening a scene that hasn't been opened previously. If [code]false[/code], all groups remain collapsed by default.
 		</member>
@@ -767,7 +907,7 @@
 		</member>
 		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
 			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
-			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored
+			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored.
 		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
@@ -956,7 +1096,18 @@
 			If [code]true[/code], on Linux/BSD, the editor will check for Wayland first instead of X11 (if available).
 		</member>
 		<member name="run/window_placement/android_window" type="int" setter="" getter="">
-			The Android window to display the project on when starting the project from the editor.
+			Specifies how the Play window is launched relative to the Android editor.
+			- [b]Auto (based on screen size)[/b] (default) will automatically choose how to launch the Play window based on the device and screen metrics. Defaults to [b]Same as Editor[/b] on phones and [b]Side-by-side with Editor[/b] on tablets.
+			- [b]Same as Editor[/b] will launch the Play window in the same window as the Editor.
+			- [b]Side-by-side with Editor[/b] will launch the Play window side-by-side with the Editor window.
+			- [b]Launch in PiP mode[/b] will launch the Play window directly in picture-in-picture (PiP) mode if PiP mode is supported and enabled. When maximized, the Play window will occupy the same window as the Editor.
+			[b]Note:[/b] Only available in the Android editor.
+		</member>
+		<member name="run/window_placement/play_window_pip_mode" type="int" setter="" getter="">
+			Specifies the picture-in-picture (PiP) mode for the Play window.
+			- [b]Disabled:[/b] PiP is disabled for the Play window.
+			- [b]Enabled:[/b] If the device supports it, PiP is always enabled for the Play window. The Play window will contain a button to enter PiP mode.
+			- [b]Enabled when Play window is same as Editor[/b] (default for Android editor): If the device supports it, PiP is enabled when the Play window is the same as the Editor. The Play window will contain a button to enter PiP mode.
 			[b]Note:[/b] Only available in the Android editor.
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
@@ -1028,6 +1179,9 @@
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
 			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen.
 		</member>
+		<member name="text_editor/behavior/files/auto_reload_and_parse_scripts_on_save" type="bool" setter="" getter="">
+			If [code]true[/code], tool scripts will be automatically soft-reloaded after they are saved.
+		</member>
 		<member name="text_editor/behavior/files/auto_reload_scripts_on_external_change" type="bool" setter="" getter="">
 			If [code]true[/code], automatically reloads scripts in the editor when they have been modified and saved by external editors.
 		</member>
@@ -1037,6 +1191,9 @@
 		<member name="text_editor/behavior/files/convert_indent_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], converts indentation to match the script editor's indentation settings when saving a script. See also [member text_editor/behavior/indent/type].
 		</member>
+		<member name="text_editor/behavior/files/open_dominant_script_on_scene_change" type="bool" setter="" getter="">
+			If [code]true[/code], opening a scene automatically opens the script attached to the root node, or the topmost node if the root has no script.
+		</member>
 		<member name="text_editor/behavior/files/restore_scripts_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], reopens scripts that were opened in the last session when the editor is reopened on a given project.
 		</member>
@@ -1045,6 +1202,9 @@
 		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
+		</member>
+		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
+			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
 		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
@@ -1124,6 +1284,15 @@
 		<member name="text_editor/completion/use_single_quotes" type="bool" setter="" getter="">
 			If [code]true[/code], performs string autocompletion with single quotes. If [code]false[/code], performs string autocompletion with double quotes (which matches the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url]).
 		</member>
+		<member name="text_editor/external/exec_flags" type="String" setter="" getter="">
+			The command-line arguments to pass to the external text editor that is run when [member text_editor/external/use_external_editor] is [code]true[/code]. See also [member text_editor/external/exec_path].
+		</member>
+		<member name="text_editor/external/exec_path" type="String" setter="" getter="">
+			The path to the text editor executable used to edit text files if [member text_editor/external/use_external_editor] is [code]true[/code].
+		</member>
+		<member name="text_editor/external/use_external_editor" type="bool" setter="" getter="">
+			If [code]true[/code], uses an external editor instead of the built-in Script Editor. See also [member text_editor/external/exec_path] and [member text_editor/external/exec_flags].
+		</member>
 		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
 			Controls which multi-line code blocks should be displayed in the editor help. This setting does not affect single-line code literals in the editor help.
 		</member>
@@ -1139,12 +1308,30 @@
 		<member name="text_editor/help/show_help_index" type="bool" setter="" getter="">
 			If [code]true[/code], displays a table of contents at the left of the editor help (at the location where the members overview would appear when editing a script).
 		</member>
+		<member name="text_editor/help/sort_functions_alphabetically" type="bool" setter="" getter="">
+			If [code]true[/code], the script's method list in the Script Editor is sorted alphabetically.
+		</member>
+		<member name="text_editor/script_list/group_help_pages" type="bool" setter="" getter="">
+			If [code]true[/code], class reference pages are grouped together at the bottom of the Script Editor's script list.
+		</member>
+		<member name="text_editor/script_list/list_script_names_as" type="int" setter="" getter="">
+			Specifies how script paths should be displayed in Script Editor's script list. If using the "Name" option and some scripts share the same file name, more parts of their paths are revealed to avoid conflicts.
+		</member>
+		<member name="text_editor/script_list/script_temperature_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], the names of recently opened scripts in the Script Editor are highlighted with the accent color, with its intensity based on how recently they were opened.
+		</member>
+		<member name="text_editor/script_list/script_temperature_history_size" type="int" setter="" getter="">
+			How many script names can be highlighted at most, if [member text_editor/script_list/script_temperature_enabled] is [code]true[/code]. Scripts older than this value use the default font color.
+		</member>
 		<member name="text_editor/script_list/show_members_overview" type="bool" setter="" getter="">
 			If [code]true[/code], displays an overview of the current script's member variables and functions at the left of the script editor. See also [member text_editor/script_list/sort_members_outline_alphabetically].
 		</member>
 		<member name="text_editor/script_list/sort_members_outline_alphabetically" type="bool" setter="" getter="">
 			If [code]true[/code], sorts the members outline (located at the left of the script editor) using alphabetical order. If [code]false[/code], sorts the members outline depending on the order in which members are found in the script.
 			[b]Note:[/b] Only effective if [member text_editor/script_list/show_members_overview] is [code]true[/code].
+		</member>
+		<member name="text_editor/script_list/sort_scripts_by" type="int" setter="" getter="">
+			Specifies sorting used for Script Editor's open script list.
 		</member>
 		<member name="text_editor/theme/color_theme" type="String" setter="" getter="">
 			The syntax theme to use in the script editor.
@@ -1269,6 +1456,18 @@
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
+		</member>
+		<member name="text_editor/theme/line_spacing" type="int" setter="" getter="">
+			The vertical line separation used in text editors, in pixels.
+		</member>
+		<member name="version_control/ssh_private_key_path" type="String" setter="" getter="">
+			Path to private SSH key file for the editor's Version Control integration credentials.
+		</member>
+		<member name="version_control/ssh_public_key_path" type="String" setter="" getter="">
+			Path to public SSH key file for the editor's Version Control integration credentials.
+		</member>
+		<member name="version_control/username" type="String" setter="" getter="">
+			Default username for editor's Version Control integration.
 		</member>
 	</members>
 	<signals>
