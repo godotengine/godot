@@ -51,7 +51,6 @@ public:
 	DisplayServer::VSyncMode window_get_vsync_mode(DisplayServer::WindowID p_window) const;
 	void window_destroy(DisplayServer::WindowID p_window);
 
-public:
 	enum Vendor {
 		VENDOR_UNKNOWN = 0x0,
 		VENDOR_AMD = 0x1002,
