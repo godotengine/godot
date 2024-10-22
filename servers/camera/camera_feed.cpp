@@ -38,28 +38,19 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
 	ClassDB::bind_method(D_METHOD("get_width"), &CameraFeed::get_width);
 	ClassDB::bind_method(D_METHOD("get_heigth"), &CameraFeed::get_height);
-    ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
+	ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
 
 	ClassDB::bind_method(D_METHOD("is_active"), &CameraFeed::is_active);
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &CameraFeed::set_active);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &CameraFeed::get_name);
-	ClassDB::bind_method(D_METHOD("set_name", "name"), &CameraFeed::set_name);
-
 	ClassDB::bind_method(D_METHOD("get_position"), &CameraFeed::get_position);
-	ClassDB::bind_method(D_METHOD("set_position", "position"), &CameraFeed::set_position);
 
 	// Note, for transform some feeds may override what the user sets (such as ARKit)
 	ClassDB::bind_method(D_METHOD("get_transform"), &CameraFeed::get_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CameraFeed::set_transform);
 
-	ClassDB::bind_method(D_METHOD("set_rgb_image", "rgb_image"), &CameraFeed::set_rgb_image);
-	ClassDB::bind_method(D_METHOD("set_ycbcr_image", "ycbcr_image"), &CameraFeed::set_ycbcr_image);
-
 	ClassDB::bind_method(D_METHOD("get_datatype"), &CameraFeed::get_datatype);
-
-	ClassDB::bind_method(D_METHOD("get_formats"), &CameraFeed::get_formats);
-	ClassDB::bind_method(D_METHOD("set_format", "index", "parameters"), &CameraFeed::set_format);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("format_changed"));
@@ -73,12 +64,12 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_FRONT);
 	BIND_ENUM_CONSTANT(FEED_BACK);
 
-    BIND_ENUM_CONSTANT(FEED_UNSUPPORTED);
-    BIND_ENUM_CONSTANT(FEED_RGB);
-    BIND_ENUM_CONSTANT(FEED_RGBA);
-    BIND_ENUM_CONSTANT(FEED_YCBCR);
-    BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
-    BIND_ENUM_CONSTANT(FEED_NV12);
+	BIND_ENUM_CONSTANT(FEED_UNSUPPORTED);
+	BIND_ENUM_CONSTANT(FEED_RGB);
+	BIND_ENUM_CONSTANT(FEED_RGBA);
+	BIND_ENUM_CONSTANT(FEED_YCBCR);
+	BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
+	BIND_ENUM_CONSTANT(FEED_NV12);
 }
 
 int CameraFeed::get_id() const {
@@ -169,7 +160,7 @@ CameraFeed::CameraFeed() {
 	height = 0;
 	active = false;
 	position = CameraFeed::FEED_UNSPECIFIED;
-    datatype = CameraFeed::FEED_UNSUPPORTED;
+	datatype = CameraFeed::FEED_UNSUPPORTED;
 	transform = Transform2D(1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
 	texture = RenderingServer::get_singleton()->canvas_texture_create();
 }
@@ -190,17 +181,4 @@ bool CameraFeed::activate_feed() {
 
 void CameraFeed::deactivate_feed() {
 	// nothing to do here
-}
-
-bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {
-	return false;
-}
-
-Array CameraFeed::get_formats() const {
-	return Array();
-}
-
-CameraFeed::FeedFormat CameraFeed::get_format() const {
-	FeedFormat feed_format = {};
-	return feed_format;
 }
