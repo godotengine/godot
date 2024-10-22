@@ -300,6 +300,7 @@ private:
 	void _select_clicked(bool p_allow_locked);
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
+	void _collision_reposition_selected_nodes();
 
 	Transform3D _get_camera_transform() const;
 	int get_selected_count() const;
@@ -658,6 +659,8 @@ private:
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
 
+	bool using_physics_threads = false;
+
 	/////
 
 	ToolMode tool_mode;
@@ -912,6 +915,8 @@ public:
 
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const;
+
+	bool is_using_separate_physics_thread() const { return using_physics_threads; }
 
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
