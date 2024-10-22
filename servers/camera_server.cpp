@@ -40,6 +40,7 @@ CameraServer::CreateFunc CameraServer::create_func = nullptr;
 
 void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
+    ClassDB::bind_method(D_METHOD("get_feed_by_id", "feed_id"), &CameraServer::get_feed_by_id);
 	ClassDB::bind_method(D_METHOD("get_feed_count"), &CameraServer::get_feed_count);
 	ClassDB::bind_method(D_METHOD("feeds"), &CameraServer::get_feeds);
 
@@ -148,15 +149,6 @@ TypedArray<CameraFeed> CameraServer::get_feeds() {
 	};
 
 	return return_feeds;
-};
-
-RID CameraServer::feed_texture(int p_id, CameraServer::FeedImage p_texture) {
-	int index = get_feed_index(p_id);
-	ERR_FAIL_COND_V(index == -1, RID());
-
-	Ref<CameraFeed> feed = get_feed(index);
-
-	return feed->get_texture(p_texture);
 };
 
 CameraServer::CameraServer() {

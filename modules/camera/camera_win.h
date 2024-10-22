@@ -33,14 +33,51 @@
 
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
+#include <initguid.h>
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mferror.h>
+#include <mfreadwrite.h>
+#include <windows.h>
+
+class CameraFeedWindows : public CameraFeed {
+private:
+	LPCWSTR camera_id;
+	IMFMediaSource *source = NULL;
+	IMFMediaType *type = NULL;
+	GUID format;
+
+	IMFSourceReader *reader = NULL;
+	std::thread *worker;
+	
+	static void capture(CameraFeedWindows *feed);
+	void read();
+
+protected:
+public:
+	CameraFeedWindows(LPCWSTR camera_id, IMFMediaType *type, String name, int width, int height, GUID format);
+	virtual ~CameraFeedWindows();
+
+	bool activate_feed();
+	void deactivate_feed();
+};
 
 class CameraWindows : public CameraServer {
 private:
-	void add_active_cameras();
+	void update_feeds();
 
 public:
 	CameraWindows();
-	~CameraWindows() {}
+	~CameraWindows();
 };
+
+template <class T> void SafeRelease(T **ppT)
+{
+    if (*ppT)
+    {
+        (*ppT)->Release();
+        *ppT = NULL;
+    }
+}
 
 #endif // CAMERA_WIN_H

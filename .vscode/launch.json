@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Godot Editor",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/godot.macos.editor.dev.arm64",
+            "args": [
+                "--editor",
+                "--path",
+                "${workspaceFolder}/examples/camera",
+            ],
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "lldb",
+            "preLaunchTask": "Build Godot"
+        },
+        {
+            "name": "Godot Project",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/godot.macos.editor.dev.arm64",
+            "args": [
+                "--path",
+                "${workspaceFolder}/examples/camera",
+                "--write-movie",
+                "test.ogv",
+                "--fixed-fps",
+                "15"
+            ],
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "lldb",
+            "preLaunchTask": "Build Godot"
+        }
+    ]
+}

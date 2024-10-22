@@ -6,7 +6,7 @@
 	<description>
 		The [CameraServer] keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
 		It is notably used to provide AR modules with a video feed from the camera.
-		[b]Note:[/b] This class is currently only implemented on Linux, macOS, and iOS, on other platforms no [CameraFeed]s will be available. To get a [CameraFeed] on iOS, the camera plugin from [url=https://github.com/godotengine/godot-ios-plugins]godot-ios-plugins[/url] is required.
+		[b]Note:[/b] This class currently only supports macOS, iOS, Android and Windows platform. On other platforms, supported [CameraFeed]s are in development.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -59,18 +59,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="FEED_RGBA_IMAGE" value="0" enum="FeedImage">
-			The RGBA camera image.
-		</constant>
-		<constant name="FEED_YCBCR_IMAGE" value="0" enum="FeedImage">
-			The [url=https://en.wikipedia.org/wiki/YCbCr]YCbCr[/url] camera image.
-		</constant>
-		<constant name="FEED_Y_IMAGE" value="0" enum="FeedImage">
-			The Y component camera image.
-		</constant>
-		<constant name="FEED_CBCR_IMAGE" value="1" enum="FeedImage">
-			The CbCr component camera image.
-		</constant>
-	</constants>
 </class>

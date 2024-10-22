@@ -85,6 +85,7 @@ public:
 
 	void begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
 	void add_frame();
+	void add_frame(const Ref<Image> image);
 
 	static void set_extensions_hint();
 
