@@ -5031,6 +5031,7 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 	// To ensure that the conversion results are consistent between serialization and load, the value is snapped with 0.0625 to be a rational number when FPS mode is used.
 	step->set_step(use_fps ? FPS_STEP_FRACTION : SECOND_DECIMAL);
 	_update_step_spinbox();
+	EditorSettings::get_singleton()->set_project_metadata("animation_editor", "snap_mode", p_mode);
 }
 
 void AnimationTrackEditor::_update_step_spinbox() {
@@ -7613,6 +7614,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_mode = memnew(OptionButton);
 	snap_mode->add_item(TTR("Seconds"));
 	snap_mode->add_item(TTR("FPS"));
+	snap_mode->select(EditorSettings::get_singleton()->get_project_metadata("animation_editor", "snap_mode", 0));
 	bottom_hb->add_child(snap_mode);
 	snap_mode->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_snap_mode_changed));
 	snap_mode->set_disabled(true);
