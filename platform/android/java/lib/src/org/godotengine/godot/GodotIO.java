@@ -131,6 +131,18 @@ public class GodotIO {
 		return activity.getCacheDir().getAbsolutePath();
 	}
 
+	public String getTmpDir() {
+		File tmpDir = new File(getCacheDir() + "/tmp");
+
+		if (!tmpDir.exists()) {
+			if (!tmpDir.mkdirs()) {
+				Log.e(TAG, "Unable to create tmp dir");
+			}
+		}
+
+		return tmpDir.getAbsolutePath();
+	}
+
 	public String getDataDir() {
 		return activity.getFilesDir().getAbsolutePath();
 	}
