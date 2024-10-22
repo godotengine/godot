@@ -205,7 +205,6 @@ public:
 	Array compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose);
 #endif // DISABLE_DEPRECATED
 
-public:
 	static const int INVALID_SOURCE; // -1;
 
 	enum CellNeighbor {

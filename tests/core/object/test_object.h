@@ -570,7 +570,6 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			return p_method == "some_method";
 		}
 
-	public:
 		_SelfDestroyingScriptInstance(Object *p_self) :
 				self(p_self) {}
 	};

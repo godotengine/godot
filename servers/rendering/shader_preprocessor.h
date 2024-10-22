@@ -167,11 +167,9 @@ private:
 		HashSet<Ref<ShaderInclude>> shader_includes;
 	};
 
-private:
 	LocalVector<char32_t> output;
 	State *state = nullptr;
 
-private:
 	static bool is_char_word(char32_t p_char);
 	static bool is_char_space(char32_t p_char);
 	static bool is_char_end(char32_t p_char);

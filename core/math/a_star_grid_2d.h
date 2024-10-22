@@ -117,7 +117,7 @@ private:
 
 	uint64_t pass = 1;
 
-private: // Internal routines.
+	// Internal routines.
 	_FORCE_INLINE_ size_t _to_mask_index(int32_t p_x, int32_t p_y) const {
 		return ((p_y - region.position.y + 1) * (region.size.x + 2)) + p_x - region.position.x + 1;
 	}
