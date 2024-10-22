@@ -2262,7 +2262,7 @@ uint32_t ObjectDB::slot_max = 0;
 uint32_t ObjectDB::block_max = 0;
 uint64_t ObjectDB::validator_counter = 0;
 
-int ObjectDB::blocks_max_sizes[OBJECTDB_MAX_BLOCKS] = {
+uint32_t ObjectDB::blocks_max_sizes[OBJECTDB_MAX_BLOCKS] = {
 	0,
 	128,
 	256,
@@ -2300,7 +2300,7 @@ int ObjectDB::get_object_count() {
 
 ObjectID ObjectDB::add_instance(Object *p_object) {
 	mutex.lock();
-	if(slot_count == blocks_max_sizes[block_count] && blocks[block_count + 1] != nullptr) {
+	if (slot_count == blocks_max_sizes[block_count] && blocks[block_count + 1] != nullptr) {
 		slot_count = 0;
 		block_count++;
 	}

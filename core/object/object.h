@@ -1007,9 +1007,8 @@ class ObjectDB {
 #define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS + OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
 #define OBJECTDB_MAX_BLOCKS 22
 
-
 	union NextFree {
-		uint32_t position:29;
+		uint32_t position : 29;
 		struct {
 			uint32_t block_number : 5;
 			uint32_t block_position : 22;
@@ -1024,7 +1023,7 @@ class ObjectDB {
 	};
 
 	static ObjectSlot *blocks[OBJECTDB_MAX_BLOCKS];
-	static int blocks_max_sizes[OBJECTDB_MAX_BLOCKS];
+	static uint32_t blocks_max_sizes[OBJECTDB_MAX_BLOCKS];
 
 	static uint32_t slot_count;
 	static uint32_t block_count;
