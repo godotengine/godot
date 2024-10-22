@@ -40,7 +40,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
 
-#include <limits.h>
+#include <climits>
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 	float h = p_h;

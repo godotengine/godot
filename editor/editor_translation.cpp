@@ -170,7 +170,7 @@ Vector<Vector<String>> get_extractable_message_list() {
 	Vector<Vector<String>> list;
 
 	while (etl->data) {
-		if (strcmp(etl->lang, "source")) {
+		if (strcmp(etl->lang, "source") != 0) {
 			etl++;
 			continue;
 		}

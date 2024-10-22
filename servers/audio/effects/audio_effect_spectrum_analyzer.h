@@ -80,7 +80,6 @@ public:
 		FFT_SIZE_MAX
 	};
 
-public:
 	friend class AudioEffectSpectrumAnalyzerInstance;
 	float buffer_length;
 	float tapback_pos;

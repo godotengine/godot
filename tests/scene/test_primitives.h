@@ -218,8 +218,9 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 						break;
 					}
 				}
-				if (!normal_correct_direction)
+				if (!normal_correct_direction) {
 					break;
+				}
 			}
 
 			CHECK_MESSAGE(normal_correct_direction,

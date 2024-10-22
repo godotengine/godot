@@ -195,7 +195,6 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 		_estimated_fps += change;
 		made_new_estimate();
 	}
-	return;
 }
 
 bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
