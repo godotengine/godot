@@ -126,8 +126,11 @@ private:
 	Popup *picker_window = nullptr;
 	// Legacy color picking.
 	TextureRect *picker_texture_rect = nullptr;
-	Label *picker_preview_label = nullptr;
+	TextureRect *picker_texture_zoom = nullptr;
+	Panel *picker_preview = nullptr;
+	Panel *picker_preview_color = nullptr;
 	Ref<StyleBoxFlat> picker_preview_style_box;
+	Ref<StyleBoxFlat> picker_preview_style_box_color;
 	Color picker_color;
 
 	MarginContainer *internal_margin = nullptr;
