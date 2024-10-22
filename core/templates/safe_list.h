@@ -91,7 +91,6 @@ public:
 			list->active_iterator_count--;
 		}
 
-	public:
 		T &operator*() {
 			return cursor->val;
 		}
@@ -120,7 +119,6 @@ public:
 		}
 	};
 
-public:
 	// Calling this will cause an allocation.
 	void insert(T p_value) {
 		SafeListNode *new_node = memnew_allocator(SafeListNode, A);

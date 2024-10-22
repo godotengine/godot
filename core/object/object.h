@@ -769,7 +769,6 @@ public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
-public:
 	static constexpr bool _class_is_enabled = true;
 
 	void notify_property_list_changed();

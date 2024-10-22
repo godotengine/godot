@@ -72,7 +72,6 @@ public:
 
 	void grab_focus();
 
-public:
 	EventListenerLineEdit();
 };
 
