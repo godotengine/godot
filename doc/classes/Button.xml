@@ -92,7 +92,7 @@
 			Text [Color] used when the [Button] is being hovered.
 		</theme_item>
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Text [Color] used when the [Button] is being hovered and pressed.
+			Text [Color] used when the [Button] is being hovered and pressed. Only effective when [theme_item hover_pressed] is assigned.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [Button].
@@ -110,7 +110,7 @@
 			Icon modulate [Color] used when the [Button] is being hovered.
 		</theme_item>
 		<theme_item name="icon_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Icon modulate [Color] used when the [Button] is being hovered and pressed.
+			Icon modulate [Color] used when the [Button] is being hovered and pressed. Only effective when [theme_item hover_pressed] is assigned.
 		</theme_item>
 		<theme_item name="icon_normal_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Default icon modulate [Color] of the [Button].
