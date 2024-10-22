@@ -797,7 +797,8 @@ void ShaderPreprocessor::process_pragma(Tokenizer *p_tokenizer) {
 	if (label == "disable_preprocessor") {
 		state->disabled = true;
 	} else {
-		set_error(vformat(RTR("Invalid '%s' directive."), "pragma"), line);
+		// Unrecognized pragma; just skip for glsl3.0 compatibility.
+		p_tokenizer->advance('\n');
 		return;
 	}
 
