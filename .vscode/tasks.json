@@ -196,20 +196,23 @@
       "group": "build",
       "type": "shell",
       "command": "./gradlew",
-      "args": ["generateGodotTemplates"],
+      "args": [
+        "generateGodotTemplates",
+      ],
       "options": {
         "cwd": "${workspaceFolder}/platform/android/java"
       },
       "dependsOrder": "sequence",
-      "dependsOn":["Build Android debug template ARM32",
-                   "Build Android debug template ARM64",
-                   "Build Android debug template X86_32",
-                   "Build Android debug template X86_64",
-                   "Build Android release template ARM32",
-                   "Build Android release template ARM64",
-                   "Build Android release template X86_32",
-                   "Build Android release template X86_64"
-                  ]
+      "dependsOn": [
+        "Build Android debug template ARM32",
+        "Build Android debug template ARM64",
+        "Build Android release template ARM32",
+        "Build Android release template ARM64",
+        //              "Build Android debug template X86_32",
+        //              "Build Android debug template X86_64",
+        //              "Build Android release template X86_32",
+        //              "Build Android release template X86_64"
+      ]
     }
   ]
 }

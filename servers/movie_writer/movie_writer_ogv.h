@@ -46,7 +46,7 @@ class MovieWriterOGV : public MovieWriter {
 	String base_path;
 	uint32_t frame_count = 0;
 	uint32_t fps = 0;
-	int audio_ch = 0;
+	uint32_t audio_ch = 0;
 	uint32_t audio_frames = 0;
 
 	Ref<FileAccess> f;

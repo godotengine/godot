@@ -68,7 +68,11 @@
 		if (!output) {
 			print_line("Couldn't get output device for camera");
 		} else {
-			NSDictionary *settings = @{ (NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) };
+			NSDictionary *settings = @{
+				(NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+				@"Width" : @1280,
+				@"Height" : @720,
+			};
 			output.videoSettings = settings;
 
 			// discard if the data output queue is blocked (as we process the still image)
@@ -137,12 +141,12 @@
 
 		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
 		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-		
+
 		Ref<Image> image = feed->get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE);
-		if (image.is_null() || image->get_width()!=new_width || image->get_height()!=new_height) {
-			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, Image::create_empty(new_width, new_height, false, Image::FORMAT_R8));	
+		if (image.is_null() || image->get_width() != new_width || image->get_height() != new_height) {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, Image::create_empty(new_width, new_height, false, Image::FORMAT_R8));
 		} else {
-			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, dataY, 0, new_width*new_height);
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, dataY, 0, new_width * new_height);
 		}
 	}
 
@@ -158,13 +162,13 @@
 		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
 
 		Ref<Image> image = feed->get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL);
-		if (image.is_null() || image->get_width()!=new_width || image->get_height()!=new_height) {
+		if (image.is_null() || image->get_width() != new_width || image->get_height() != new_height) {
 			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, Image::create_empty(new_width, new_height, false, Image::FORMAT_RG8));
 		} else {
-			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, dataCbCr, 0,  2 * new_width * new_height);
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, dataCbCr, 0, 2 * new_width * new_height);
 		}
 	}
-	
+
 	// and unlock
 	CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 }

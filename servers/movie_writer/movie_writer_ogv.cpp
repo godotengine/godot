@@ -48,9 +48,9 @@ int MovieWriterOGV::encode_audio(const int32_t *p_audio_data) {
 		float **vorbis_buffer = vorbis_analysis_buffer(&vd, audio_frames);
 
 		/* uninterleave samples */
-		int count = 0;
-		for (int i = 0; i < audio_frames; i++) {
-			for (int j = 0; j < audio_ch; j++) {
+		uint32_t count = 0;
+		for (uint32_t i = 0; i < audio_frames; i++) {
+			for (uint32_t j = 0; j < audio_ch; j++) {
 				vorbis_buffer[j][i] = p_audio_data[count] / 2147483647.f;
 				count++;
 			}
