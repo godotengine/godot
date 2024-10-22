@@ -961,9 +961,18 @@ void CharacterBodyMain::editor_build_animation()
 	Ref<HumanConfig> animation_human_config;
 	if (skeleton == nullptr) {
 		is_node_skeleton = true;
-		bone_map_skeleton = new Skeleton3D();
+		bone_map_skeleton = memnew(Skeleton3D);
 		Dictionary bp = bone_map->get_bone_map();
-		node_to_bone_skeleton(bone_map_skeleton, (Node3D*)p_node, bp,-1);
+
+		for (int i = 0; i < p_node->get_child_count(); ++i) {
+			Node3D* child = Object::cast_to<Node3D>(p_node->get_child(i));
+			if (child != nullptr) {
+				if (child->get_child_count() > 0) {
+					node_to_bone_skeleton(bone_map_skeleton, child, bp, -1);
+					break;
+				}
+			}
+		}
 		animation_human_config.instantiate();
 		HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
 		HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton,  *animation_human_config.ptr(), _bone_label);
@@ -1035,9 +1044,9 @@ void CharacterBodyMain::editor_build_animation()
             
         }
     }
-    // 释放内存啦
 	if (is_node_skeleton) {
-		bone_map_skeleton->queue_free();
+		memdelete(bone_map_skeleton);
+		bone_map_skeleton = nullptr;
 	}
     p_node->queue_free();
 }
