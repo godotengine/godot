@@ -31,7 +31,7 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
 
-#include <stddef.h>
+#include <cstddef>
 
 /**
  * Basic definitions and simple functions to be used everywhere.
