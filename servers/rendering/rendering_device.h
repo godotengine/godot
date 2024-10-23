@@ -1500,6 +1500,8 @@ public:
 
 	static RenderingDevice *get_singleton();
 
+	void make_current();
+
 	RenderingDevice();
 	~RenderingDevice();
 
