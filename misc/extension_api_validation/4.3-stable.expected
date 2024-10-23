@@ -205,3 +205,13 @@ GH-99481
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_meta/arguments': size changed value in new API, from 2 to 3.
 
 Optional argument added to set tooltip. Compatibility method registered.
+
+
+GH-98443
+--------
+Validate extension JSON: Error: Field 'classes/Control/properties/offset_bottom': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/Control/properties/offset_left': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/Control/properties/offset_right': type changed value in new API, from "int" to "float".
+Validate extension JSON: Error: Field 'classes/Control/properties/offset_top': type changed value in new API, from "int" to "float".
+
+Property type changed to float to match the actual internal API and documentation.
