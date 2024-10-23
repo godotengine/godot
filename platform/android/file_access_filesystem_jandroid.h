@@ -57,19 +57,21 @@ class FileAccessFilesystemJAndroid : public FileAccess {
 
 	int id;
 	String absolute_path;
-	String path_src;
 
 	void _close(); ///< close a file
 	void _set_eof(bool eof);
 
+	friend class FileSystemProtocolOSJAndroid;
+
+protected:
+	/// returns the path for the current open file
+	virtual String _get_path() const override;
+
 public:
+	virtual bool is_os_file() const override { return true; }
+
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
-
-	/// returns the path for the current open file
-	virtual String get_path() const override;
-	/// returns the absolute path for the current open file
-	virtual String get_path_absolute() const override;
 
 	virtual void seek(uint64_t p_position) override; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
@@ -87,21 +89,8 @@ public:
 	virtual void flush() override;
 	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
-	virtual bool file_exists(const String &p_path) override; ///< return true if a file exists
-
 	static void setup(jobject p_file_access_handler);
 	static void terminate();
-
-	virtual uint64_t _get_modified_time(const String &p_file) override;
-	virtual uint64_t _get_access_time(const String &p_file) override;
-	virtual int64_t _get_size(const String &p_file) override;
-	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return ERR_UNAVAILABLE; }
-
-	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
-	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
-	virtual bool _get_read_only_attribute(const String &p_file) override { return false; }
-	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
 
 	virtual void close() override;
 

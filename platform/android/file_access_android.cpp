@@ -31,6 +31,7 @@
 #include "file_access_android.h"
 
 #include "core/string/print_string.h"
+#include "filesystem_protocol_os_android.h"
 #include "thread_jandroid.h"
 
 #include <android/asset_manager_jni.h>
@@ -38,24 +39,17 @@
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 jobject FileAccessAndroid::j_asset_manager = nullptr;
 
-String FileAccessAndroid::get_path() const {
-	return path_src;
-}
-
-String FileAccessAndroid::get_path_absolute() const {
+String FileAccessAndroid::_get_path() const {
 	return absolute_path;
 }
 
 Error FileAccessAndroid::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
-	path_src = p_path;
-	String path = fix_path(p_path).simplify_path();
+	String path = FileSystemProtocolOSAndroid::fix_path(p_path).simplify_path();
 	absolute_path = path;
 	if (path.begins_with("/")) {
 		path = path.substr(1);
-	} else if (path.begins_with("res://")) {
-		path = path.substr(6);
 	}
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, ERR_UNAVAILABLE); //can't write on android..
@@ -132,10 +126,6 @@ uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 	return r;
 }
 
-int64_t FileAccessAndroid::_get_size(const String &p_file) {
-	return AAsset_getLength64(asset);
-}
-
 Error FileAccessAndroid::get_error() const {
 	return eof ? ERR_FILE_EOF : OK; // not sure what else it may happen
 }
@@ -146,24 +136,6 @@ void FileAccessAndroid::flush() {
 
 bool FileAccessAndroid::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_V(false);
-}
-
-bool FileAccessAndroid::file_exists(const String &p_path) {
-	String path = fix_path(p_path).simplify_path();
-	if (path.begins_with("/")) {
-		path = path.substr(1);
-	} else if (path.begins_with("res://")) {
-		path = path.substr(6);
-	}
-
-	AAsset *at = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
-
-	if (!at) {
-		return false;
-	}
-
-	AAsset_close(at);
-	return true;
 }
 
 void FileAccessAndroid::close() {

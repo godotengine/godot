@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  file_access_encrypted.h                                               */
+/*  filesystem_protocol_os_android.cpp                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,70 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "filesystem_protocol_os_android.h"
+#include "core/io/filesystem.h"
+#include "file_access_android.h"
+#include <android/asset_manager_jni.h>
 
-#include "core/crypto/crypto_core.h"
-#include "core/io/file_access.h"
+String FileSystemProtocolOSAndroid::fix_path(const String &p_path) {
+	String r_path = FileSystem::fix_path(p_path);
+	return r_path;
+}
 
-#define ENCRYPTED_HEADER_MAGIC 0x43454447
+Ref<FileAccess> FileSystemProtocolOSAndroid::open_file(const String &p_path, int p_mode_flags, Error &r_error) const {
+	Ref<FileAccessAndroid> file = Ref<FileAccessAndroid>();
+	file.instantiate();
 
-class FileAccessEncrypted : public FileAccess {
-public:
-	enum Mode : int32_t {
-		MODE_READ,
-		MODE_WRITE_AES256,
-		MODE_MAX
-	};
+	r_error = file->open_internal(p_path, p_mode_flags);
 
-private:
-	Vector<uint8_t> iv;
-	Vector<uint8_t> key;
-	bool writing = false;
-	Ref<FileAccess> file;
-	uint64_t base = 0;
-	uint64_t length = 0;
-	Vector<uint8_t> data;
-	mutable uint64_t pos = 0;
-	mutable bool eofed = false;
-	bool use_magic = true;
+	if (r_error != OK) {
+		file.unref();
+	}
 
-	void _close();
+	return file;
+}
 
-	static CryptoCore::RandomGenerator *_fae_static_rng;
+bool FileSystemProtocolOSAndroid::file_exists(const String &p_path) const {
+	String path = fix_path(p_path).simplify_path();
+	if (path.begins_with("/")) {
+		path = path.substr(1);
+	}
 
-protected:
-	virtual String _get_path() const override; /// returns the path for the current open file
+	AAsset *at = AAssetManager_open(FileAccessAndroid::asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
-public:
-	virtual bool is_os_file() const override;
+	if (!at) {
+		return false;
+	}
 
-	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
-	Error open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode);
+	AAsset_close(at);
+	return true;
+}
 
-	Vector<uint8_t> get_iv() const { return iv; }
+int64_t FileSystemProtocolOSAndroid::get_size(const String &p_path) const {
+	String path = fix_path(p_path).simplify_path();
+	if (path.begins_with("/")) {
+		path = path.substr(1);
+	}
 
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
-	virtual bool is_open() const override; ///< true when file is open
+	AAsset *at = AAssetManager_open(FileAccessAndroid::asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
-	virtual void seek(uint64_t p_position) override; ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
-	virtual uint64_t get_position() const override; ///< get position in the file
-	virtual uint64_t get_length() const override; ///< get size of the file
+	if (!at) {
+		return -1;
+	}
 
-	virtual bool eof_reached() const override; ///< reading passed EOF
+	int64_t size = AAsset_getLength64(at);
 
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
-
-	virtual Error get_error() const override; ///< get last error
-
-	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
-	virtual void flush() override;
-	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
-
-	virtual void close() override;
-
-	static void deinitialize();
-
-	FileAccessEncrypted() {}
-	~FileAccessEncrypted();
-};
+	AAsset_close(at);
+	return size;
+}

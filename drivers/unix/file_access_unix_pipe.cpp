@@ -46,7 +46,7 @@ Error FileAccessUnixPipe::open_existing(int p_rfd, int p_wfd, bool p_blocking) {
 	// Open pipe using handles created by pipe(fd) call in the OS.execute_with_pipe.
 	_close();
 
-	path_src = String();
+	path = String();
 	unlink_on_close = false;
 	ERR_FAIL_COND_V_MSG(fd[0] >= 0 || fd[1] >= 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 	fd[0] = p_rfd;
@@ -64,10 +64,9 @@ Error FileAccessUnixPipe::open_existing(int p_rfd, int p_wfd, bool p_blocking) {
 Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
-	path_src = p_path;
 	ERR_FAIL_COND_V_MSG(fd[0] >= 0 || fd[1] >= 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 
-	path = String("/tmp/") + p_path.replace("pipe://", "").replace_char('/', '_');
+	path = String("/tmp/") + p_path.replace("/", "_");
 	const CharString path_utf8 = path.utf8();
 
 	struct stat st = {};
@@ -125,12 +124,8 @@ bool FileAccessUnixPipe::is_open() const {
 	return (fd[0] >= 0 || fd[1] >= 0);
 }
 
-String FileAccessUnixPipe::get_path() const {
-	return path_src;
-}
-
-String FileAccessUnixPipe::get_path_absolute() const {
-	return path_src;
+String FileAccessUnixPipe::_get_path() const {
+	return path;
 }
 
 uint64_t FileAccessUnixPipe::get_length() const {

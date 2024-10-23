@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  file_access_encrypted.h                                               */
+/*  filesystem_protocol_user.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,68 +30,30 @@
 
 #pragma once
 
-#include "core/crypto/crypto_core.h"
-#include "core/io/file_access.h"
+#include "core/io/filesystem_protocol.h"
 
-#define ENCRYPTED_HEADER_MAGIC 0x43454447
-
-class FileAccessEncrypted : public FileAccess {
-public:
-	enum Mode : int32_t {
-		MODE_READ,
-		MODE_WRITE_AES256,
-		MODE_MAX
-	};
+class FileSystemProtocolUser : public FileSystemProtocol {
+	GDCLASS(FileSystemProtocolUser, FileSystemProtocol);
 
 private:
-	Vector<uint8_t> iv;
-	Vector<uint8_t> key;
-	bool writing = false;
-	Ref<FileAccess> file;
-	uint64_t base = 0;
-	uint64_t length = 0;
-	Vector<uint8_t> data;
-	mutable uint64_t pos = 0;
-	mutable bool eofed = false;
-	bool use_magic = true;
-
-	void _close();
-
-	static CryptoCore::RandomGenerator *_fae_static_rng;
-
-protected:
-	virtual String _get_path() const override; /// returns the path for the current open file
+	Ref<FileSystemProtocol> protocol_os;
 
 public:
-	virtual bool is_os_file() const override;
+	FileSystemProtocolUser();
+	FileSystemProtocolUser(const Ref<FileSystemProtocol> &p_protocol_os);
 
-	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
-	Error open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode);
+	void set_protocol_os(const Ref<FileSystemProtocol> &p_protocol_os);
 
-	Vector<uint8_t> get_iv() const { return iv; }
+	virtual String globalize_path(const String &p_path) const override;
 
-	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
-	virtual bool is_open() const override; ///< true when file is open
+	virtual Ref<FileAccess> open_file(const String &p_path, int p_mode_flags, Error &r_error) const override;
+	virtual bool file_exists(const String &p_path) const override;
 
-	virtual void seek(uint64_t p_position) override; ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
-	virtual uint64_t get_position() const override; ///< get position in the file
-	virtual uint64_t get_length() const override; ///< get size of the file
-
-	virtual bool eof_reached() const override; ///< reading passed EOF
-
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
-
-	virtual Error get_error() const override; ///< get last error
-
-	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
-	virtual void flush() override;
-	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
-
-	virtual void close() override;
-
-	static void deinitialize();
-
-	FileAccessEncrypted() {}
-	~FileAccessEncrypted();
+	virtual uint64_t get_modified_time(const String &p_path) const override;
+	virtual BitField<FileAccess::UnixPermissionFlags> get_unix_permissions(const String &p_path) const override;
+	virtual Error set_unix_permissions(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions) const override;
+	virtual bool get_hidden_attribute(const String &p_path) const override;
+	virtual Error set_hidden_attribute(const String &p_path, bool p_hidden) const override;
+	virtual bool get_read_only_attribute(const String &p_path) const override;
+	virtual Error set_read_only_attribute(const String &p_path, bool p_ro) const override;
 };
