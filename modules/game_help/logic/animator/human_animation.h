@@ -13,6 +13,8 @@ namespace HumanAnim
         HashMap<StringName, Quaternion> real_local_pose; 
         HashMap<StringName, Transform3D> real_pose; 
 
+        HashMap<StringName,Node3D*> bones;
+
         HashMap<StringName, Vector3> bone_lookat;
 		HashMap<StringName, Vector3> root_position;
 
@@ -37,6 +39,10 @@ namespace HumanAnim
             real_local_pose.clear();
             real_pose.clear();
             bone_lookat.clear(); 
+            for(auto& it : bones) {
+                memdelete(it.value);
+            }
+            bones.clear();
         }
 
         void set_human_lookat(StringName p_bone,const Vector3& p_lookat) {
@@ -142,9 +148,8 @@ namespace HumanAnim
 				if (!p_config.virtual_pose.has(parent_bone_name)) {
 					continue;
 				}
-                BonePose& parent_pose = p_config.virtual_pose[parent_bone_name];
                 BonePose& child_pose = p_config.virtual_pose[bone_name];
-                child_pose.position *= parent_pose.scale;
+                child_pose.position *= child_pose.scale;
                 
             }
 
@@ -362,11 +367,13 @@ namespace HumanAnim
                 p_skeleton_config.real_local_pose[it] = trans.basis.get_rotation_quaternion();
 
 				p_skeleton_config.root_global_rotation[it] = rot;
-
+                
 
                 Transform3D local_trans;
 				local_trans.basis = trans.basis;
                 retarget(p_config, pose, local_trans,p_skeleton_config);
+
+                
             }
             
         }
@@ -481,16 +488,10 @@ namespace HumanAnim
 					pose.child_bones.push_back(p_skeleton->get_bone_name(children[j]));
 				}
 				pose.child_bones.sort_custom<SortStringName>();
-                Vector3 bone_foreard = Vector3(0,1,0);
-                if(children.size()>0) {
-					int ci = p_skeleton->find_bone(pose.child_bones[0]);
-                    bone_foreard = p_skeleton->get_bone_global_pose(ci).origin - (trans.origin);
-                    height = bone_foreard.length();
-                }
-                else if(p_skeleton->get_bone_parent(bone_index) >= 0) {
-                    bone_foreard = trans.origin - parent_trans.origin;
-                    height = bone_foreard.length();
-                }
+
+                Vector3 bone_foreard = trans.origin - parent_trans.origin;
+				height = bone_foreard.length();
+
                 Transform3D local_trans = p_skeleton->get_bone_pose(bone_index);
                 pose.position = local_trans.origin;
                 pose.rotation = local_trans.basis.get_rotation_quaternion();
@@ -577,21 +578,18 @@ namespace HumanAnim
                 trans = parent_trans * trans;
 				Vector3 forward;
 				if (pose.child_bones.size() > 0) {
-					Transform3D & child_trans = p_skeleton_config.real_pose[pose.child_bones[0]];
+					Transform3D  child_trans = p_skeleton_config.real_pose[pose.child_bones[0]];
+					child_trans = trans * child_trans;
 					forward = child_trans.origin - trans.origin;
 				}
 				else {
 					forward = trans.origin - parent_trans.origin;
 				}
+				float length = (p_skeleton_config.bone_lookat[it] - trans.origin).length();
+                trans.basis.rotate_to_align(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
 
-				rot = Quaternion(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
-
-                trans.origin = pose.position;
-                trans.basis = trans.basis * rot;
-				trans = parent_trans * trans;
-                
-                Quaternion& local_trans = p_skeleton_config.real_local_pose[it];
-                local_trans = Basis(pose.rotation * rot);
+                Transform3D local_trans = parent_trans.inverse() * trans;
+                p_skeleton_config.real_local_pose[it] = local_trans.basis.get_rotation_quaternion();
                 retarget(p_config,pose,trans,p_skeleton_config);
             }
             
