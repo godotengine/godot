@@ -253,8 +253,6 @@ opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extr
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
-opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
-opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
@@ -1053,7 +1051,7 @@ if scons_cache_path is not None:
     CacheDir(scons_cache_path)
     print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
-if env["vsproj"]:
+if "vsproj" in env and env["vsproj"]:
     env.vs_incs = []
     env.vs_srcs = []
 
@@ -1101,7 +1099,7 @@ SConscript("main/SCsub")
 SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
 
 # Microsoft Visual Studio Project Generation
-if env["vsproj"]:
+if "vsproj" in env and env["vsproj"]:
     methods.generate_cpp_hint_file("cpp.hint")
     env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
     methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])

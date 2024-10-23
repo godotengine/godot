@@ -75,7 +75,7 @@ for name, path in env.module_list.items():
 
     lib = env_modules.add_library("module_%s" % name, env.modules_sources)
     env.Prepend(LIBS=[lib])
-    if env["vsproj"]:
+    if "vsproj" in env and env["vsproj"]:
         vs_sources += env.modules_sources
 
     if env["tests"]:
@@ -104,5 +104,5 @@ env.modules_sources = []
 env_modules.add_source_files(env.modules_sources, register_module_types)
 lib = env_modules.add_library("modules", env.modules_sources)
 env.Prepend(LIBS=[lib])
-if env["vsproj"]:
+if "vsproj" in env and env["vsproj"]:
     env.modules_sources += vs_sources

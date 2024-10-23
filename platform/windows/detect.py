@@ -192,6 +192,8 @@ def get_opts():
             "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.",
             None,
         ),
+        BoolVariable("vsproj", "Generate a Visual Studio solution", False),
+        ("vsproj_name", "Name of the Visual Studio solution", "godot"),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
