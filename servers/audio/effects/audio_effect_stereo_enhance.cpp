@@ -61,7 +61,7 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 
 			delay_ringbuff[ringbuff_pos & ringbuff_mask] = val;
 
-			//right channel is delayed
+			// The right channel is delayed.
 			right = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
 		}
 
