@@ -1082,6 +1082,12 @@ if env["ninja"]:
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
+# Enable `char8_t` on C++17.
+if env.msvc:
+    env.Append(CXXFLAGS=["/Zc:char8_t"])
+else:
+    env.Append(CXXFLAGS=["-fchar8_t"])
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
