@@ -53,6 +53,7 @@ import org.godotengine.godot.error.Error
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.godot.utils.isHorizonOSDevice
+import org.godotengine.godot.utils.isPicoOSDevice
 import org.godotengine.godot.utils.isNativeXRDevice
 import java.util.*
 import kotlin.math.min
@@ -538,6 +539,10 @@ abstract class BaseGodotEditor : GodotActivity() {
 
 		if (featureTag == "horizonos") {
 			return isHorizonOSDevice()
+		}
+
+		if (featureTag == "picoos") {
+			return isPicoOSDevice()
 		}
 
         return false
