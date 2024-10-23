@@ -287,61 +287,10 @@ bool DirAccess::dir_exists_absolute(const String &p_dir) {
 }
 
 Error DirAccess::copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags) {
-	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	// Support copying from res:// to user:// etc.
-	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
-	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
-	return d->copy(from, to, p_chmod_flags);
-}
-
-Error DirAccess::rename_absolute(const String &p_from, const String &p_to) {
-	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
-	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
-	return d->rename(from, to);
-}
-
-Error DirAccess::remove_absolute(const String &p_path) {
-	Ref<DirAccess> d = DirAccess::create_for_path(p_path);
-	return d->remove(p_path);
-}
-
-Ref<DirAccess> DirAccess::create(AccessType p_access) {
-	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
-	if (da.is_valid()) {
-		da->_access_type = p_access;
-
-		// for ACCESS_RESOURCES and ACCESS_FILESYSTEM, current_dir already defaults to where game was started
-		// in case current directory is force changed elsewhere for ACCESS_RESOURCES
-		if (p_access == ACCESS_RESOURCES) {
-			da->change_dir("res://");
-		} else if (p_access == ACCESS_USERDATA) {
-			da->change_dir("user://");
-		}
-	}
-
-	return da;
-}
-
-Error DirAccess::get_open_error() {
-	return last_dir_open_error;
-}
-
-String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
-	Ref<DirAccess> d = DirAccess::create(p_access);
-	if (d.is_null()) {
-		return p_path;
-	}
-
-	d->change_dir(p_path);
-	String full = d->get_current_dir();
-	return full;
-}
-
-Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flags) {
 	ERR_FAIL_COND_V_MSG(p_from == p_to, ERR_INVALID_PARAMETER, "Source and destination path are equal.");
+	ERR_FAIL_COND_V_MSG(p_from.is_relative_path(), ERR_INVALID_PARAMETER, "Source path must be absolute.");
+	ERR_FAIL_COND_V_MSG(p_to.is_relative_path(), ERR_INVALID_PARAMETER, "Destination path must be absolute.");
 
-	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	{
 		Ref<FileAccess> fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
@@ -389,6 +338,56 @@ Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flag
 	}
 
 	return err;
+}
+
+Error DirAccess::rename_absolute(const String &p_from, const String &p_to) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
+	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
+	return d->rename(from, to);
+}
+
+Error DirAccess::remove_absolute(const String &p_path) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_path);
+	return d->remove(p_path);
+}
+
+Ref<DirAccess> DirAccess::create(AccessType p_access) {
+	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
+	if (da.is_valid()) {
+		da->_access_type = p_access;
+
+		// for ACCESS_RESOURCES and ACCESS_FILESYSTEM, current_dir already defaults to where game was started
+		// in case current directory is force changed elsewhere for ACCESS_RESOURCES
+		if (p_access == ACCESS_RESOURCES) {
+			da->change_dir("res://");
+		} else if (p_access == ACCESS_USERDATA) {
+			da->change_dir("user://");
+		}
+	}
+
+	return da;
+}
+
+Error DirAccess::get_open_error() {
+	return last_dir_open_error;
+}
+
+String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
+	Ref<DirAccess> d = DirAccess::create(p_access);
+	if (d.is_null()) {
+		return p_path;
+	}
+
+	d->change_dir(p_path);
+	String full = d->get_current_dir();
+	return full;
+}
+
+Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flags) {
+	const String from = p_from.is_relative_path() ? get_current_dir().path_join(p_from) : p_from;
+	const String to = p_to.is_relative_path() ? get_current_dir().path_join(p_to) : p_to;
+	return copy_absolute(from, to, p_chmod_flags);
 }
 
 // Changes dir for the current scope, returning back to the original dir
