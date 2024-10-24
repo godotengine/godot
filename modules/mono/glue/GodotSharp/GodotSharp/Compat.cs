@@ -176,6 +176,13 @@ partial class RenderingDevice
     {
         return DrawListBegin(framebuffer, initialColorAction, finalColorAction, initialDepthAction, finalDepthAction, clearColorValues, clearDepth, clearStencil, region, new Godot.Collections.Array<Rid>(storageTextures));
     }
+
+    /// <inheritdoc cref="ShaderCreateFromBytecode(byte[], Rid)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Rid ShaderCreateFromBytecode(byte[] binaryData)
+    {
+        return ShaderCreateFromBytecode(binaryData, placeholderRid: default);
+    }
 }
 
 partial class RichTextLabel
