@@ -1138,6 +1138,15 @@ void LightStorage::reflection_probe_set_enable_shadows(RID p_probe, bool p_enabl
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void LightStorage::reflection_probe_set_distance_fade(RID p_probe, bool p_enable, float p_begin, float p_length) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->distance_fade = p_enable;
+	reflection_probe->distance_fade_begin = p_begin;
+	reflection_probe->distance_fade_length = p_length;
+}
+
 void LightStorage::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
@@ -1712,10 +1721,15 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 			continue;
 		}
 
-		Transform3D transform = rpi->transform;
+		const real_t distance = -p_camera_inverse_transform.xform(rpi->transform.origin).z;
+		const ReflectionProbe *probe = reflection_probe_owner.get_or_null(rpi->probe);
+		if (probe->distance_fade && distance > probe->distance_fade_begin + probe->distance_fade_length) {
+			// Don't use this reflection probe, as it's invisible.
+			continue;
+		}
 
 		reflection_sort[reflection_count].probe_instance = rpi;
-		reflection_sort[reflection_count].depth = -p_camera_inverse_transform.xform(transform.origin).z;
+		reflection_sort[reflection_count].depth = distance;
 		reflection_count++;
 	}
 
@@ -1754,7 +1768,17 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		reflection_ubo.box_offset[2] = origin_offset.z;
 		reflection_ubo.mask = probe->reflection_mask;
 
-		reflection_ubo.intensity = probe->intensity;
+		float fade = 1.0;
+		if (probe->distance_fade) {
+			const real_t distance = -p_camera_inverse_transform.xform(rpi->transform.origin).z;
+
+			if (distance > probe->distance_fade_begin) {
+				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
+				fade = Math::smoothstep(0.0f, 1.0f, 1.0f - float(distance - probe->distance_fade_begin) / probe->distance_fade_length);
+			}
+		}
+		reflection_ubo.intensity = probe->intensity * fade;
+
 		reflection_ubo.ambient_mode = probe->ambient_mode;
 
 		reflection_ubo.exterior = !probe->interior;
