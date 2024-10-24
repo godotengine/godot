@@ -88,7 +88,7 @@ void EditorAbout::_item_list_resized(ItemList *p_il) {
 	p_il->set_fixed_column_width(p_il->get_size().x / 3.0 - 16 * EDSCALE * 2.5); // Weird. Should be 3.0 and that's it?.
 }
 
-ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_single_column_flags, const bool p_allow_website) {
+ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int *p_anonymous_counts, const int p_single_column_flags, const bool p_allow_website) {
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_name(p_name);
 	sc->set_v_size_flags(Control::SIZE_EXPAND);
@@ -133,19 +133,19 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 					const String identifier = name.get_slice("<", 0);
 					const String website = name.get_slice_count("<") == 1 ? "" : name.get_slice("<", 1).trim_suffix(">");
 
-					const int name_item_id = il->add_item(identifier, nullptr, false);
-					il->set_item_tooltip_enabled(name_item_id, false);
+					il->add_item(identifier, nullptr, false);
+					il->set_item_tooltip_enabled(-1, !website.is_empty());
 
 					if (!website.is_empty()) {
-						il->set_item_selectable(name_item_id, true);
-						il->set_item_metadata(name_item_id, website);
-						il->set_item_tooltip(name_item_id, website + "\n\n" + TTR("Double-click to open in browser."));
-						il->set_item_tooltip_enabled(name_item_id, true);
+						il->set_item_selectable(-1, true);
+						il->set_item_metadata(-1, website);
+						il->set_item_tooltip(-1, website + "\n\n" + TTR("Double-click to open in browser."));
 					}
-
-					if (!*names_ptr && name.contains(" anonymous ")) {
-						il->set_item_disabled(name_item_id, true);
-					}
+				}
+				if (p_anonymous_counts && p_anonymous_counts[i] > 0) {
+					il->add_item(vformat(TTRN("And %d anonymous donor", "And %d anonymous donors", p_anonymous_counts[i]), p_anonymous_counts[i]), nullptr, false);
+					il->set_item_tooltip_enabled(-1, false);
+					il->set_item_disabled(-1, true);
 				}
 			} else {
 				while (*names_ptr) {
@@ -222,7 +222,7 @@ EditorAbout::EditorAbout() {
 		AUTHORS_PROJECT_MANAGERS,
 		AUTHORS_DEVELOPERS,
 	};
-	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 0b1)); // First section (Project Founders) is always one column.
+	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, nullptr, 0b1)); // First section (Project Founders) is always one column.
 
 	// Donors.
 
@@ -245,7 +245,18 @@ EditorAbout::EditorAbout() {
 		DONORS_MEMBERS_PLATINUM,
 		DONORS_MEMBERS_GOLD,
 	};
-	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 0b1, true)); // First section (Patron) is one column.
+	int anonymous_donors_count[] = {
+		DONORS_PATRONS_ANONYMOUS,
+		DONORS_SPONSORS_PLATINUM_ANONYMOUS,
+		DONORS_SPONSORS_GOLD_ANONYMOUS,
+		DONORS_SPONSORS_SILVER_ANONYMOUS,
+		DONORS_MEMBERS_DIAMOND_ANONYMOUS,
+		DONORS_MEMBERS_TITANIUM_ANONYMOUS,
+		DONORS_MEMBERS_PLATINUM_ANONYMOUS,
+		DONORS_MEMBERS_GOLD_ANONYMOUS,
+	};
+	static_assert(sizeof(donor_src) / sizeof(donor_src[0]) == sizeof(anonymous_donors_count) / sizeof(anonymous_donors_count[0]));
+	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, anonymous_donors_count, 0b1, true)); // First section (Patron) is one column.
 
 	// License.
 
