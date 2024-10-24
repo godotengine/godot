@@ -57,7 +57,7 @@
 			<param index="3" name="font_size" type="int" default="16" />
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a string first character using a custom font.
+				Draws a single character using the given [param font]. [param char] must be a [String] containing a single character.
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
@@ -82,8 +82,8 @@
 			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a circle. See also [method draw_arc], [method draw_polyline], and [method draw_polygon].
-				If [param filled] is [code]true[/code], the circle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
-				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param filled] is [code]true[/code], the circle is filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
+				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the [CanvasItem] is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 			</description>
@@ -146,8 +146,10 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
+				Draws a line from a 2D point to another, with a given color and width.
 				If [param width] is negative, then a two-point primitive will be drawn instead of a four-point one. This means that when the CanvasItem is scaled, the line will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], the line's edges are antialiased.
+				See also [method draw_multiline] and [method draw_polyline].
 			</description>
 		</method>
 		<method name="draw_mesh">
@@ -157,7 +159,7 @@
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
+				Draws a [Mesh] in 2D, using the given texture. See [MeshInstance2D] for related documentation.
 			</description>
 		</method>
 		<method name="draw_msdf_texture_rect_region">
@@ -284,7 +286,10 @@
 			<param index="2" name="uvs" type="PackedVector2Array" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
+				Draws a custom primitive with the given points. Fails if [param points] is empty or its size is greater than 4.
+				The primitive depends on how many points are given: 1 point for a single point, 2 points for a line, 3 points for a triangle, and 4 points for a quad.
+				Optionally, [param texture] can be provided to draw a texture according to the given [param uvs].
+				See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
 			</description>
 		</method>
 		<method name="draw_rect">
@@ -295,10 +300,11 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].
-				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
-				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
-				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
+				Draws a rectangle with the given [param color]. See also [method draw_texture_rect].
+				If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle is drawn with a stroke with the [param color] and [param width] specified.
+				If [param width] is negative and [param filled] is [code]false[/code], two-point primitives are drawn instead of a four-point ones. This means that when the [CanvasItem] is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half-transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] Hollow rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
 				[b]Note:[/b] Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
 			</description>
 		</method>
@@ -308,15 +314,15 @@
 			<param index="1" name="rotation" type="float" default="0.0" />
 			<param index="2" name="scale" type="Vector2" default="Vector2(1, 1)" />
 			<description>
-				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
-				[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [param scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
+				Sets a custom transform for drawing, using individual components. Anything drawn after calling this method will be translated by [param position], rotated by [param rotation], and scaled by [param scale].
+				[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [param scale] into account. A non-default scale will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the Inspector.
 			</description>
 		</method>
 		<method name="draw_set_transform_matrix">
 			<return type="void" />
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
-				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
+				Sets a custom transform for drawing, using a [Transform2D]. Anything drawn after calling this method will be transformed by [param xform].
 			</description>
 		</method>
 		<method name="draw_string" qualifiers="const">
@@ -332,27 +338,28 @@
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
-				[b]Example using the default project font:[/b]
+				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font).
+				If [param width] is greater than or equal to [code]0[/code], the text is clipped if it exceeds the specified width.
+				The text will have its color multiplied by [param modulate].
 				[codeblocks]
 				[gdscript]
-				# If using this method in a script that redraws constantly, move the
-				# `default_font` declaration to a member variable assigned in `_ready()`
-				# so the Control is only created once.
 				var default_font = ThemeDB.fallback_font
 				var default_font_size = ThemeDB.fallback_font_size
-				draw_string(default_font, Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size)
+				draw_string(default_font, Vector2(64, 64),
+				        "Hello world", HORIZONTAL_ALIGNMENT_LEFT,
+				        -1, default_font_size
+				)
 				[/gdscript]
 				[csharp]
-				// If using this method in a script that redraws constantly, move the
-				// `default_font` declaration to a member variable assigned in `_Ready()`
-				// so the Control is only created once.
 				Font defaultFont = ThemeDB.FallbackFont;
 				int defaultFontSize = ThemeDB.FallbackFontSize;
-				DrawString(defaultFont, new Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, defaultFontSize);
+				DrawString(defaultFont, new Vector2(64, 64),
+				    "Hello world", HORIZONTAL_ALIGNMENT_LEFT,
+				    -1, defaultFontSize
+				);
 				[/csharp]
 				[/codeblocks]
-				See also [method Font.draw_string].
+				See also [method draw_string_outline] and [method Font.draw_string]. For more than one line, use [method draw_multiline_string].
 			</description>
 		</method>
 		<method name="draw_string_outline" qualifiers="const">
@@ -369,7 +376,10 @@
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font).
+				If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				The text will have its color multiplied by [param modulate].
+				See also [method draw_string]. For more than one line, use [method draw_multiline_string_outline].
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -377,7 +387,7 @@
 			<param index="0" name="style_box" type="StyleBox" />
 			<param index="1" name="rect" type="Rect2" />
 			<description>
-				Draws a styled rectangle.
+				Draws a rectangle using the given [param style_box].
 			</description>
 		</method>
 		<method name="draw_texture">
@@ -386,7 +396,7 @@
 			<param index="1" name="position" type="Vector2" />
 			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a texture at a given position.
+				Draws a texture at a given [param position] relative to this [CanvasItem].
 			</description>
 		</method>
 		<method name="draw_texture_rect">
@@ -397,7 +407,9 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
-				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
+				Draws a rectangle with the given [param texture].
+				If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				See also [method draw_rect] and [method draw_texture_rect_region].
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -409,7 +421,10 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
+				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a rectangle with the given [param texture], using only the texture region specified by [param src_rect].
+				If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				See also [method draw_texture_rect].
 			</description>
 		</method>
 		<method name="force_update_transform">
