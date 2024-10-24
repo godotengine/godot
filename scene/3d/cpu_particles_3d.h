@@ -81,6 +81,7 @@ public:
 
 private:
 	bool emitting = false;
+	bool autostart = false;
 	bool active = false;
 
 	struct Particle {
@@ -206,6 +207,7 @@ public:
 	AABB get_aabb() const override;
 
 	void set_emitting(bool p_emitting);
+	void set_autostart(bool p_autostart);
 	void set_amount(int p_amount);
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
@@ -218,6 +220,7 @@ public:
 	void set_speed_scale(double p_scale);
 
 	bool is_emitting() const;
+	bool get_autostart() const;
 	int get_amount() const;
 	double get_lifetime() const;
 	bool get_one_shot() const;
