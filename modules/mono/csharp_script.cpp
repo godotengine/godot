@@ -500,8 +500,8 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 	}
 	_recursion_flag_ = true;
 	SCOPE_EXIT {
-		_recursion_flag_ = false;
-	};
+		_recursion_flag_ = false; // clang-format off
+	}; // clang-format on
 
 	if (!gdmono || !gdmono->is_runtime_initialized()) {
 		return Vector<StackInfo>();

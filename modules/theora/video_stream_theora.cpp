@@ -645,7 +645,7 @@ VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 	memdelete(thread_sem);
 #endif
 	clear();
-};
+}
 
 void VideoStreamTheora::_bind_methods() {}
 

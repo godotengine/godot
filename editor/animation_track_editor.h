@@ -716,7 +716,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	struct SelectedKey {
 		int track = 0;
 		int key = 0;
-		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; };
+		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; }
 	};
 
 	struct KeyInfo {

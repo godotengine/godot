@@ -110,7 +110,7 @@ public:
 	PFNEGLIMAGETARGETTEXTURE2DOESPROC eglEGLImageTargetTexture2DOES = nullptr;
 #endif
 
-	static Config *get_singleton() { return singleton; };
+	static Config *get_singleton() { return singleton; }
 
 	Config();
 	~Config();

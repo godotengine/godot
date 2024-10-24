@@ -89,7 +89,7 @@ public:
 		CRASH_COND(!e);
 		_list.move_to_front(*e);
 		return (*e)->get().data;
-	};
+	}
 
 	const TData *getptr(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);

@@ -70,7 +70,7 @@ public:
 				body->remove_constraint(this, i);
 			}
 		}
-	};
+	}
 };
 
 class GodotPinJoint2D : public GodotJoint2D {

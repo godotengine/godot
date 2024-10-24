@@ -245,7 +245,7 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 	}
 
 	return ret;
-};
+}
 
 void InstancePlaceholder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
