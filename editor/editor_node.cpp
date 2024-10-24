@@ -642,6 +642,11 @@ void EditorNode::_notification(int p_what) {
 					EditorFileSystem::get_singleton()->scan();
 				}
 			}
+
+			if (settings_overrides_changed) {
+				EditorSettings::get_singleton()->notify_changes();
+				settings_overrides_changed = false;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -6690,6 +6695,15 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 		*r_output = eta.output;
 	}
 	return eta.exitcode;
+}
+
+void EditorNode::open_setting_override(const String &p_property) {
+	editor_settings_dialog->hide();
+	project_settings_editor->popup_for_override(p_property);
+}
+
+void EditorNode::notify_settings_overrides_changed() {
+	settings_overrides_changed = true;
 }
 
 EditorNode::EditorNode() {
