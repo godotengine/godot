@@ -74,13 +74,13 @@
 		return;                                                           \
 	}
 
-#else
+#else // !DEBUG_ENABLED
 
 #define VALIDATE_ARG_COUNT(m_count)
 #define VALIDATE_ARG_INT(m_arg)
 #define VALIDATE_ARG_NUM(m_arg)
 
-#endif
+#endif // DEBUG_ENABLED
 
 struct GDScriptUtilityFunctionsDefinitions {
 #ifndef DISABLE_DEPRECATED
