@@ -125,6 +125,7 @@ internal class ReflectionUtils
         static void AppendGeneric(StringBuilder sb, Type type)
         {
             var genericArgs = type.GenericTypeArguments;
+            var genericArgsCount = type.GetGenericArguments().Length;
             var genericDefinition = type.GetGenericTypeDefinition();
 
             // Nullable<T>
@@ -148,12 +149,12 @@ internal class ReflectionUtils
                     // This is a hard coded tuple element length check.
                     if (genericArgs.Length != 8)
                     {
-                        AppendParamTypes(sb, genericArgs);
+                        AppendParamTypes(sb, genericArgs, genericArgsCount);
                         break;
                     }
                     else
                     {
-                        AppendParamTypes(sb, genericArgs.AsSpan(0, 7));
+                        AppendParamTypes(sb, genericArgs.AsSpan(0, 7), genericArgsCount);
                         sb.Append(", ");
 
                         // TRest should be a ValueTuple!
@@ -170,19 +171,33 @@ internal class ReflectionUtils
             var typeName = type.Name.AsSpan();
             sb.Append(typeName[..typeName.LastIndexOf('`')]);
             sb.Append('<');
-            AppendParamTypes(sb, genericArgs);
+            AppendParamTypes(sb, genericArgs, genericArgsCount);
             sb.Append('>');
 
-            static void AppendParamTypes(StringBuilder sb, ReadOnlySpan<Type> genericArgs)
+            static void AppendParamTypes(StringBuilder sb, ReadOnlySpan<Type> genericArgs, int genericArgsCount)
             {
-                int n = genericArgs.Length - 1;
-                for (int i = 0; i < n; i += 1)
+                if (genericArgsCount != genericArgs.Length)
                 {
-                    AppendType(sb, genericArgs[i]);
-                    sb.Append(", ");
+                    for (int i = 0; i < genericArgsCount - 1; i++)
+                    {
+                        sb.Append(',');
+                    }
+                    return;
                 }
 
-                AppendType(sb, genericArgs[n]);
+                bool isFirst = true;
+                for (int i = 0; i < genericArgs.Length; i += 1)
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        sb.Append(", ");
+                    }
+                    AppendType(sb, genericArgs[i]);
+                }
             }
         }
 
