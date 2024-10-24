@@ -100,7 +100,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 
 	_set_layout_mode(_layout);
 	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED) {
-		_set_anchors_layout_preset((int)state["anchors_layout_preset"]);
+		_set_anchors_layout_preset((LayoutPreset)(int)state["anchors_layout_preset"]);
 	}
 
 	data.anchor[SIDE_LEFT] = anchors[0];
@@ -490,7 +490,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		// Use the layout mode to display or hide advanced anchoring properties.
-		bool use_custom_anchors = _get_anchors_layout_preset() == -1; // Custom "preset".
+		bool use_custom_anchors = _get_anchors_layout_preset() == PRESET_CUSTOM;
 		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -561,7 +561,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		if (!use_anchors && p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
-		bool use_custom_anchors = use_anchors && _get_anchors_layout_preset() == -1; // Custom "preset".
+		bool use_custom_anchors = use_anchors && _get_anchors_layout_preset() == PRESET_CUSTOM;
 		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -912,7 +912,7 @@ Control::LayoutMode Control::_get_layout_mode() const {
 	}
 
 	// If anchors are not in the top-left position, this is definitely in anchors mode.
-	if (_get_anchors_layout_preset() != (int)LayoutPreset::PRESET_TOP_LEFT) {
+	if (_get_anchors_layout_preset() != LayoutPreset::PRESET_TOP_LEFT) {
 		return LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
 
@@ -939,7 +939,7 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 		return;
 	}
 
-	if (p_preset == -1) {
+	if (p_preset == PRESET_CUSTOM) {
 		if (!data.stored_use_custom_anchors) {
 			data.stored_use_custom_anchors = true;
 			notify_property_list_changed();
@@ -960,6 +960,8 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 
 	// Select correct preset mode.
 	switch (preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_LEFT:
@@ -998,7 +1000,7 @@ int Control::_get_anchors_layout_preset() const {
 
 	// If the custom preset was selected by user, use it.
 	if (data.stored_use_custom_anchors) {
-		return -1;
+		return LayoutPreset::PRESET_CUSTOM;
 	}
 
 	// Check anchors to determine if the current state matches a preset, or not.
@@ -1009,60 +1011,60 @@ int Control::_get_anchors_layout_preset() const {
 	float bottom = get_anchor(SIDE_BOTTOM);
 
 	if (left == ANCHOR_BEGIN && right == ANCHOR_BEGIN && top == ANCHOR_BEGIN && bottom == ANCHOR_BEGIN) {
-		return (int)LayoutPreset::PRESET_TOP_LEFT;
+		return LayoutPreset::PRESET_TOP_LEFT;
 	}
 	if (left == ANCHOR_END && right == ANCHOR_END && top == ANCHOR_BEGIN && bottom == ANCHOR_BEGIN) {
-		return (int)LayoutPreset::PRESET_TOP_RIGHT;
+		return LayoutPreset::PRESET_TOP_RIGHT;
 	}
 	if (left == ANCHOR_BEGIN && right == ANCHOR_BEGIN && top == ANCHOR_END && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_BOTTOM_LEFT;
+		return LayoutPreset::PRESET_BOTTOM_LEFT;
 	}
 	if (left == ANCHOR_END && right == ANCHOR_END && top == ANCHOR_END && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_BOTTOM_RIGHT;
+		return LayoutPreset::PRESET_BOTTOM_RIGHT;
 	}
 
 	if (left == ANCHOR_BEGIN && right == ANCHOR_BEGIN && top == 0.5 && bottom == 0.5) {
-		return (int)LayoutPreset::PRESET_CENTER_LEFT;
+		return LayoutPreset::PRESET_CENTER_LEFT;
 	}
 	if (left == ANCHOR_END && right == ANCHOR_END && top == 0.5 && bottom == 0.5) {
-		return (int)LayoutPreset::PRESET_CENTER_RIGHT;
+		return LayoutPreset::PRESET_CENTER_RIGHT;
 	}
 	if (left == 0.5 && right == 0.5 && top == ANCHOR_BEGIN && bottom == ANCHOR_BEGIN) {
-		return (int)LayoutPreset::PRESET_CENTER_TOP;
+		return LayoutPreset::PRESET_CENTER_TOP;
 	}
 	if (left == 0.5 && right == 0.5 && top == ANCHOR_END && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_CENTER_BOTTOM;
+		return LayoutPreset::PRESET_CENTER_BOTTOM;
 	}
 	if (left == 0.5 && right == 0.5 && top == 0.5 && bottom == 0.5) {
-		return (int)LayoutPreset::PRESET_CENTER;
+		return LayoutPreset::PRESET_CENTER;
 	}
 
 	if (left == ANCHOR_BEGIN && right == ANCHOR_BEGIN && top == ANCHOR_BEGIN && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_LEFT_WIDE;
+		return LayoutPreset::PRESET_LEFT_WIDE;
 	}
 	if (left == ANCHOR_END && right == ANCHOR_END && top == ANCHOR_BEGIN && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_RIGHT_WIDE;
+		return LayoutPreset::PRESET_RIGHT_WIDE;
 	}
 	if (left == ANCHOR_BEGIN && right == ANCHOR_END && top == ANCHOR_BEGIN && bottom == ANCHOR_BEGIN) {
-		return (int)LayoutPreset::PRESET_TOP_WIDE;
+		return LayoutPreset::PRESET_TOP_WIDE;
 	}
 	if (left == ANCHOR_BEGIN && right == ANCHOR_END && top == ANCHOR_END && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_BOTTOM_WIDE;
+		return LayoutPreset::PRESET_BOTTOM_WIDE;
 	}
 
 	if (left == 0.5 && right == 0.5 && top == ANCHOR_BEGIN && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_VCENTER_WIDE;
+		return LayoutPreset::PRESET_VCENTER_WIDE;
 	}
 	if (left == ANCHOR_BEGIN && right == ANCHOR_END && top == 0.5 && bottom == 0.5) {
-		return (int)LayoutPreset::PRESET_HCENTER_WIDE;
+		return LayoutPreset::PRESET_HCENTER_WIDE;
 	}
 
 	if (left == ANCHOR_BEGIN && right == ANCHOR_END && top == ANCHOR_BEGIN && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_FULL_RECT;
+		return LayoutPreset::PRESET_FULL_RECT;
 	}
 
 	// Does not match any preset, return "Custom".
-	return -1;
+	return LayoutPreset::PRESET_CUSTOM;
 }
 
 void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
@@ -1071,6 +1073,8 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 
 	//Left
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
@@ -1099,6 +1103,8 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 
 	// Top
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
@@ -1127,6 +1133,8 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 
 	// Right
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
@@ -1155,6 +1163,8 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 
 	// Bottom
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
@@ -1205,6 +1215,8 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 	}
 	//Left
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
@@ -1233,6 +1245,8 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	// Top
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
@@ -1261,6 +1275,8 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	// Right
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
@@ -1289,6 +1305,8 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 
 	// Bottom
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
@@ -1328,6 +1346,8 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 	ERR_MAIN_THREAD_GUARD;
 	// Select correct horizontal grow direction.
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
@@ -1354,6 +1374,8 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 
 	// Select correct vertical grow direction.
 	switch (p_preset) {
+		case PRESET_CUSTOM:
+			break;
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
@@ -3705,6 +3727,7 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESET_VCENTER_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_HCENTER_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_FULL_RECT);
+	BIND_ENUM_CONSTANT(PRESET_CUSTOM);
 
 	BIND_ENUM_CONSTANT(PRESET_MODE_MINSIZE);
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_WIDTH);
