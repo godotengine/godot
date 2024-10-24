@@ -369,8 +369,15 @@ struct RenderTarget {
 	bool direct_to_screen = false;
 
 	bool used_in_frame = false;
-	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 	bool reattach_textures = false;
+
+	struct RTmsaa2d {
+		RS::ViewportMSAA mode = RS::VIEWPORT_MSAA_DISABLED;
+		bool needs_resolve = false;
+		GLsizei samples = 1;
+		GLuint color = 0;
+		GLuint fbo = 0;
+	} msaa_2d;
 
 	struct RTOverridden {
 		bool is_overridden = false;
