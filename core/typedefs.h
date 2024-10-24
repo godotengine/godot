@@ -253,6 +253,61 @@ static inline uint64_t BSWAP64(uint64_t x) {
 }
 #endif
 
+// Software implementation of count trailing zeros
+static inline int __CTZ32_software(uint32_t x) {
+	if (x == 0) {
+		return 32;
+	}
+	uint32_t n = 1;
+	// clang-format off
+	if ((x & 0x0000FFFF) == 0) { n += 16; x >>= 16; }
+	if ((x & 0x000000FF) == 0) { n +=  8; x >>=  8; }
+	if ((x & 0x0000000F) == 0) { n +=  4; x >>=  4; }
+	if ((x & 0x00000003) == 0) { n +=  2; x >>=  2; }
+	// clang-format on
+	return n - (x & 1);
+}
+
+#if defined(__GNUC__) || defined(__clang__)
+#define CTZ32(x) ((x != 0) ? __builtin_ctzl((uint32_t)(x)) : 32)
+#elif defined(_MSC_VER)
+#include <intrin.h>
+
+static inline int CTZ32(uint32_t x) {
+	unsigned long leading_zero = 0;
+	if (_BitScanForward(&leading_zero, x))
+		return leading_zero;
+	else
+		return 32;
+}
+#else
+#define CTZ32(x) __CTZ32_software(x)
+#endif
+
+static inline int __CTZ64_software(uint64_t x) {
+	uint32_t msw = (uint32_t)(x >> 32);
+	uint32_t lsw = (uint32_t)x;
+	if (lsw == 0) {
+		return 32 + CTZ32(msw);
+	} else {
+		return CTZ32(lsw);
+	}
+}
+
+#if defined(__GNUC__) || defined(__clang__)
+#define CTZ64(x) ((x != 0) ? __builtin_ctzll((uint64_t)(x)) : 64)
+#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
+static inline int CTZ64(uint64_t x) {
+	unsigned long leading_zero = 0;
+	if (_BitScanForward64(&leading_zero, x))
+		return leading_zero;
+	else
+		return 64;
+}
+#else
+#define CTZ64(x) __CTZ64_software(x)
+#endif
+
 // Generic comparator used in Map, List, etc.
 template <typename T>
 struct Comparator {
