@@ -158,6 +158,20 @@
 				Returns the name of the export operating system handled by this [EditorExportPlatform] class, as a friendly string. Possible return values are [code]Windows[/code], [code]Linux[/code], [code]macOS[/code], [code]Android[/code], [code]iOS[/code], and [code]Web[/code].
 			</description>
 		</method>
+		<method name="get_platform_features" qualifiers="const">
+			<return type="String[]" />
+			<description>
+				Returns feature tags that are specific to the export platform. Some feature tags that may be included in this list are [code]mobile[/code], [code]pc[/code], [code]web[/code], [code]android[/code], [code]ios[/code], [code]linux[/code], [code]macos[/code], and [code]windows[/code].
+			</description>
+		</method>
+		<method name="get_preset_features" qualifiers="const">
+			<return type="String[]" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<description>
+				Returns feature tags that are specific to [param preset], excluding custom features. Some feature tags that may be included in this list are texture formats ([code]etc2[/code], [code]bptc[/code], [code]s3tc[/code]), architectures ([code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]arm32[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm32[/code], [code]wasm64[/code], [code]universal[/code]), and other features ([code]threads[/code], [code]nothreads[/code]).
+				Use [method EditorExportPreset.get_custom_features] to get the custom features of an export preset.
+			</description>
+		</method>
 		<method name="get_worst_message_type" qualifiers="const">
 			<return type="int" enum="EditorExportPlatform.ExportMessageType" />
 			<description>
