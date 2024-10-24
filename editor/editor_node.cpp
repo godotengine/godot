@@ -6693,6 +6693,8 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 }
 
 EditorNode::EditorNode() {
+	print_line("Opening editor.");
+
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
