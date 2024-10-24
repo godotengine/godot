@@ -673,7 +673,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) < Variant::VARIANT_MAX) {
 								gen->write_call_builtin_type_static(result, GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name), subscript->attribute->name, arguments);
 							} else if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && call->function_name != SNAME("new") &&
-									ClassDB::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
+									GDScriptAnalyzer::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
 								// It's a static native method call.
 								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
 								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
@@ -699,7 +699,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									} else {
 										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 									}
-									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
+									if (GDScriptAnalyzer::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_can_use_validate_call(method, arguments)) {
 											// Exact arguments, use validated call.
@@ -2699,7 +2699,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->tool = parser->is_tool();
 
 	if (p_script->local_name != StringName()) {
-		if (ClassDB::class_exists(p_script->local_name) && ClassDB::is_class_exposed(p_script->local_name)) {
+		if (GDScriptAnalyzer::class_exists(p_script->local_name)) {
 			_set_error(vformat(R"(The class "%s" shadows a native class)", p_script->local_name), p_class);
 			return ERR_ALREADY_EXISTS;
 		}
