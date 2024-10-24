@@ -923,9 +923,15 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 	RenderingServer *rs = RenderingServer::get_singleton();
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
-	Color debug_collision_color = get_tree()->get_debug_collisions_color();
-	Vector<Color> color;
-	color.push_back(debug_collision_color);
+	bool enabled_edge_lines = Shape2D::is_collision_outline_enabled();
+
+	Color debug_face_color = get_tree()->get_debug_collisions_color();
+	Color debug_edge_color = Color(debug_face_color, 1.0);
+
+	Vector<Color> debug_face_colors;
+	debug_face_colors.push_back(debug_face_color);
+	Vector<Color> debug_edge_colors;
+	debug_edge_colors.push_back(debug_edge_color);
 
 	Transform2D quadrant_to_local(0, p_quadrant_pos);
 	Transform2D global_to_quadrant = (get_global_transform() * quadrant_to_local).affine_inverse();
@@ -938,7 +944,14 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 				const RID &shape = ps->body_get_shape(body, shape_index);
 				const PhysicsServer2D::ShapeType &type = ps->shape_get_type(shape);
 				if (type == PhysicsServer2D::SHAPE_CONVEX_POLYGON) {
-					rs->canvas_item_add_polygon(p_canvas_item, ps->shape_get_data(shape), color);
+					Vector<Vector2> debug_polygon_vertices = ps->shape_get_data(shape);
+
+					rs->canvas_item_add_polygon(p_canvas_item, debug_polygon_vertices, debug_face_colors);
+
+					if (enabled_edge_lines) {
+						debug_polygon_vertices.push_back(debug_polygon_vertices[0]);
+						rs->canvas_item_add_polyline(p_canvas_item, debug_polygon_vertices, debug_edge_colors);
+					}
 				} else {
 					WARN_PRINT("Wrong shape type for a tile, should be SHAPE_CONVEX_POLYGON.");
 				}
