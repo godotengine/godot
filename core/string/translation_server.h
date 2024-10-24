@@ -76,6 +76,7 @@ class TranslationServer : public Object {
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
+	Ref<TranslationDomain> get_main_domain() const { return main_domain; }
 	Ref<TranslationDomain> get_editor_domain() const { return editor_domain; }
 
 	void set_enabled(bool p_enabled) { enabled = p_enabled; }

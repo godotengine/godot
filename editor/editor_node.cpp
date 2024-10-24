@@ -468,6 +468,8 @@ void EditorNode::_update_from_settings() {
 
 	ResourceImporterTexture::get_singleton()->update_imports();
 
+	_update_translations();
+
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
@@ -491,6 +493,12 @@ void EditorNode::_gdextensions_reloaded() {
 
 	// Regenerate documentation.
 	EditorHelp::generate_doc();
+}
+
+void EditorNode::_update_translations() {
+	TranslationServer::get_singleton()->clear();
+	TranslationServer::get_singleton()->load_translations();
+	scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 void EditorNode::_update_theme(bool p_skip_creation) {
@@ -3751,6 +3759,24 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 
 	if (p_auto_add && p_scene) {
 		scene_root->add_child(p_scene, true);
+	}
+}
+
+String EditorNode::get_preview_locale() const {
+	return TranslationServer::get_singleton()->get_main_domain()->get_locale_override();
+}
+
+void EditorNode::set_preview_locale(const String &p_locale) {
+	Ref<TranslationDomain> main_domain = TranslationServer::get_singleton()->get_main_domain();
+	if (main_domain->get_locale_override() == p_locale) {
+		return;
+	}
+	const bool auto_translate_mode_changed = main_domain->get_locale_override().is_empty() != p_locale.is_empty();
+	main_domain->set_locale_override(p_locale);
+	if (auto_translate_mode_changed) {
+		scene_root->set_auto_translate_mode(p_locale.is_empty() ? AUTO_TRANSLATE_MODE_DISABLED : AUTO_TRANSLATE_MODE_ALWAYS);
+	} else {
+		scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
 
@@ -7131,6 +7157,8 @@ EditorNode::EditorNode() {
 	editor_main_screen->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
+	scene_root->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	scene_root->set_translation_domain(StringName());
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
