@@ -12,6 +12,7 @@ def get_doc_classes():
         "EditorSceneFormatImporterGLTF",
         "GLTFAccessor",
         "GLTFAnimation",
+        "GLTFAudioPlayer",
         "GLTFBufferView",
         "GLTFCamera",
         "GLTFDocument",
