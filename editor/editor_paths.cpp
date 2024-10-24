@@ -98,6 +98,18 @@ String EditorPaths::get_feature_profiles_dir() const {
 	return get_config_dir().path_join(feature_profiles_folder);
 }
 
+String EditorPaths::get_default_android_sdk_path() const {
+#ifdef WINDOWS_ENABLED
+	return OS::get_singleton()->get_environment("LOCALAPPDATA").path_join("Android/Sdk");
+#elif LINUXBSD_ENABLED
+	return OS::get_singleton()->get_environment("HOME").path_join("Android/Sdk");
+#elif MACOS_ENABLED
+	return OS::get_singleton()->get_environment("HOME").path_join("Library/Android/sdk");
+#else
+	return String();
+#endif
+}
+
 void EditorPaths::create() {
 	memnew(EditorPaths);
 }

@@ -70,6 +70,8 @@ public:
 	String get_project_script_templates_dir() const;
 	String get_feature_profiles_dir() const;
 
+	String get_default_android_sdk_path() const;
+
 	bool is_self_contained() const;
 	String get_self_contained_file() const;
 
