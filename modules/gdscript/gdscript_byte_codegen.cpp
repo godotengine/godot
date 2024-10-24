@@ -1459,6 +1459,19 @@ void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_tar
 	ct.cleanup();
 }
 
+void GDScriptByteCodeGenerator::write_construct_struct(const GDScriptCodeGenerator::Address &p_target, const GDScriptDataType &p_struct_type, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_STRUCT, 2 + p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	CallTarget ct = get_call_target(p_target);
+	append(ct.target);
+	append(get_constant_pos(p_struct_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+	append(p_arguments.size());
+	append(p_struct_type.native_type);
+	ct.cleanup();
+}
+
 void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) {
 	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_DICTIONARY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -1888,7 +1901,9 @@ void GDScriptByteCodeGenerator::clear_address(const Address &p_address) {
 				}
 				break;
 			case Variant::ARRAY:
-				if (p_address.type.has_container_element_type(0)) {
+				if (p_address.type.get_struct_info()) {
+					write_construct_struct(p_address, p_address.type, Vector<GDScriptCodeGenerator::Address>());
+				} else if (p_address.type.has_container_element_type(0)) {
 					write_construct_typed_array(p_address, p_address.type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
 				} else {
 					write_construct(p_address, p_address.type.builtin_type, Vector<GDScriptCodeGenerator::Address>());

@@ -425,7 +425,9 @@
 		</constant>
 		<constant name="CODE_COMPLETION_KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_MAX" value="10" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_STRUCT" value="10" enum="CodeCompletionKind">
+		</constant>
+		<constant name="CODE_COMPLETION_KIND_MAX" value="11" enum="CodeCompletionKind">
 		</constant>
 	</constants>
 </class>
