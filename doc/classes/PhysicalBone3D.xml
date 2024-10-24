@@ -21,6 +21,9 @@
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<description>
+				Applies a directional impulse without affecting rotation.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_integrate_forces" functions otherwise).
+				This is equivalent to using [method apply_impulse] at the body's center of mass.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -28,21 +31,27 @@
 			<param index="0" name="impulse" type="Vector3" />
 			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
+				Applies a positioned impulse to the PhysicsBone3D.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_integrate_forces" functions otherwise).
+				[param position] is the offset from the PhysicsBone3D origin in global coordinates.
 			</description>
 		</method>
 		<method name="get_bone_id" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the unique identifier of the PhysicsBone3D.
 			</description>
 		</method>
 		<method name="get_simulate_physics">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the PhysicsBone3D is allowed to simulate physics.
 			</description>
 		</method>
 		<method name="is_simulating_physics">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the PhysicsBone3D is currently simulating physics.
 			</description>
 		</method>
 	</methods>
@@ -108,16 +117,22 @@
 			In this mode, the body's damping value replaces any value set in areas or the default value.
 		</constant>
 		<constant name="JOINT_TYPE_NONE" value="0" enum="JointType">
+			No joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_PIN" value="1" enum="JointType">
+			A pin joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_CONE" value="2" enum="JointType">
+			A cone joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_HINGE" value="3" enum="JointType">
+			A hinge joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_SLIDER" value="4" enum="JointType">
+			A slider joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_6DOF" value="5" enum="JointType">
+			A 6 degrees of freedom joint is applied to the PhysicsBone3D.
 		</constant>
 	</constants>
 </class>
