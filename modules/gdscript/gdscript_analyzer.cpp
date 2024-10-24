@@ -2096,6 +2096,9 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 }
 
 void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
+	if (p_if->variable) {
+		resolve_variable(p_if->variable, true);
+	}
 	reduce_expression(p_if->condition);
 
 	resolve_suite(p_if->true_block);
