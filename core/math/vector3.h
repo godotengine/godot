@@ -227,12 +227,11 @@ Vector3 Vector3::round() const {
 	return Vector3(Math::round(x), Math::round(y), Math::round(z));
 }
 
-Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
-	Vector3 res = *this;
-	res.x = Math::lerp(res.x, p_to.x, p_weight);
-	res.y = Math::lerp(res.y, p_to.y, p_weight);
-	res.z = Math::lerp(res.z, p_to.z, p_weight);
-	return res;
+_FORCE_INLINE_ Vector3 Vector3::lerp(const Vector3 &p_to, real_t p_weight) const {
+	return Vector3(
+			Math::lerp(x, p_to.x, p_weight),
+			Math::lerp(y, p_to.y, p_weight),
+			Math::lerp(z, p_to.z, p_weight));
 }
 
 Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
