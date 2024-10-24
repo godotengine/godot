@@ -996,6 +996,15 @@ void ScriptEditor::_copy_script_path() {
 	}
 }
 
+void ScriptEditor::_copy_script_uid() {
+	ScriptEditorBase *se = _get_current_editor();
+	if (se) {
+		Ref<Resource> scr = se->get_edited_resource();
+		ResourceUID::ID uid = ResourceLoader::get_resource_uid(scr->get_path());
+		DisplayServer::get_singleton()->clipboard_set(ResourceUID::get_singleton()->id_to_text(uid));
+	}
+}
+
 void ScriptEditor::_close_other_tabs() {
 	int current_idx = tab_container->get_current_tab();
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
@@ -1570,6 +1579,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case FILE_COPY_PATH: {
 				_copy_script_path();
+			} break;
+			case FILE_COPY_UID: {
+				_copy_script_uid();
 			} break;
 			case SHOW_IN_FILE_SYSTEM: {
 				const Ref<Resource> scr = current->get_edited_resource();
@@ -3419,6 +3431,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 			}
 		}
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), FILE_COPY_UID);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
 		context_menu->add_separator();
 	}
@@ -4261,6 +4274,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Tool Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_uid", TTR("Copy Script UID")), FILE_COPY_UID);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
 
