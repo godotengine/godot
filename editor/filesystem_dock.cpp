@@ -2582,6 +2582,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_COPY_FILENAME: {
+			if (!p_selected.is_empty()) {
+				const String &fpath = p_selected[0];
+				const String file_name = fpath.get_file();
+				DisplayServer::get_singleton()->clipboard_set(file_name);
+			}
+		} break;
+
 		case FILE_COPY_UID: {
 			if (!p_selected.is_empty()) {
 				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
@@ -3305,6 +3313,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (p_paths.size() == 1) {
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_COPY_PATH);
 		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_absolute_path"), FILE_COPY_ABSOLUTE_PATH);
+		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_filename"), FILE_COPY_FILENAME);
 		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_COPY_UID);
 		}
@@ -3661,6 +3670,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_COPY_PATH);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
 			_tree_rmb_option(FILE_COPY_ABSOLUTE_PATH);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_filename", p_event)) {
+			_tree_rmb_option(FILE_COPY_FILENAME);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_uid", p_event)) {
 			_tree_rmb_option(FILE_COPY_UID);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
@@ -3744,6 +3755,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_COPY_PATH);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_absolute_path", p_event)) {
 			_file_list_rmb_option(FILE_COPY_ABSOLUTE_PATH);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_filename", p_event)) {
+			_tree_rmb_option(FILE_COPY_FILENAME);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
 			_file_list_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
@@ -4061,6 +4074,7 @@ FileSystemDock::FileSystemDock() {
 	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_absolute_path", TTR("Copy Absolute Path"));
+	ED_SHORTCUT("filesystem_dock/copy_filename", TTR("Copy Filename"));
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
