@@ -203,6 +203,11 @@ typedef void(GLAPIENTRY *DebugMessageCallbackARB)(DEBUGPROCARB callback, const v
 void RasterizerGLES3::initialize() {
 	Engine::get_singleton()->print_header(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
 
+	if (RS::get_singleton()->get_video_adapter_type() == RenderingDevice::DEVICE_TYPE_CPU) {
+		Engine::get_singleton()->print_header_rich(
+				"[color=yellow][b]WARNING:[/b] OpenGL is currently running on software emulation, which is very slow. Check whether your GPU supports OpenGL and make sure its drivers are up-to-date.");
+	}
+
 	// FLIP XY Bug: Are more devices affected?
 	// Confirmed so far: all Adreno 3xx with old driver (until 2018)
 	// ok on some tested Adreno devices: 4xx, 5xx and 6xx

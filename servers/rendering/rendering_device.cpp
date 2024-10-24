@@ -5990,6 +5990,22 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 		// Output our device version.
 		Engine::get_singleton()->print_header(vformat("%s %s - %s - Using Device #%d: %s - %s", get_device_api_name(), get_device_api_version(), rendering_method, device_index, _get_device_vendor_name(device), device.name));
+
+		if (get_device_type() == DEVICE_TYPE_CPU) {
+			const String driver_name = OS::get_singleton()->get_current_rendering_driver_name();
+			String driver_friendly_name;
+			if (driver_name == "d3d12") {
+				driver_friendly_name = "Direct3D 12";
+			} else if (driver_name == "metal") {
+				driver_friendly_name = "Metal";
+			} else {
+				driver_friendly_name = "Vulkan";
+			}
+			Engine::get_singleton()->print_header_rich(
+					vformat("[color=yellow][b]WARNING:[/b] %s is currently running on software emulation, which is very slow. Check whether your GPU supports %s and make sure its drivers are up-to-date.",
+							driver_friendly_name,
+							driver_friendly_name));
+		}
 	}
 
 	// Pick the main queue family. It is worth noting we explicitly do not request the transfer bit, as apparently the specification defines
