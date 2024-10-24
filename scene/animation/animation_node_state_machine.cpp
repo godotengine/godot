@@ -1841,6 +1841,26 @@ void AnimationNodeStateMachine::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_GROUPED);
 }
 
+Vector<StringName> AnimationNodeStateMachine::get_nodes_with_transitions_from(const StringName &p_node) const {
+	Vector<StringName> result;
+	for (int i = 0; i < transitions.size(); i++) {
+		if (transitions[i].from == p_node) {
+			result.push_back(transitions[i].to);
+		}
+	}
+	return result;
+}
+
+Vector<StringName> AnimationNodeStateMachine::get_nodes_with_transitions_to(const StringName &p_node) const {
+	Vector<StringName> result;
+	for (int i = 0; i < transitions.size(); i++) {
+		if (transitions[i].to == p_node) {
+			result.push_back(transitions[i].from);
+		}
+	}
+	return result;
+}
+
 AnimationNodeStateMachine::AnimationNodeStateMachine() {
 	START_NODE = "Start";
 	END_NODE = "End";
