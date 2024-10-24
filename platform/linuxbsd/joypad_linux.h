@@ -112,6 +112,8 @@ private:
 	static void monitor_joypads_thread_func(void *p_user);
 	void monitor_joypads_thread_run();
 
+	void _auto_remap(Joypad &p_joypad, const StringName &p_guid, const String &p_name, bool p_hat0x_exist, bool p_hat0y_exist);
+
 	void open_joypad(const char *p_path);
 	void setup_joypad_properties(Joypad &p_joypad);
 
