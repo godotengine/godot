@@ -1420,6 +1420,7 @@ public:
 	/* Misc */
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)
 
+	PASS1(reflections_set_filter, RS::ReflectionFilter)
 	PASS1(decals_set_filter, RS::DecalFilter)
 	PASS1(light_projectors_set_filter, RS::LightProjectorFilter)
 	PASS1(lightmaps_set_bicubic_filter, bool)

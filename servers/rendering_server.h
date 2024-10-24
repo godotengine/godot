@@ -642,6 +642,13 @@ public:
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_pixels) = 0;
 
+	enum ReflectionFilter {
+		REFLECTION_FILTER_NEAREST,
+		REFLECTION_FILTER_LINEAR,
+	};
+
+	virtual void reflections_set_filter(ReflectionFilter p_filter) = 0;
+
 	/* DECAL API */
 
 	enum DecalTexture {
@@ -1844,6 +1851,7 @@ VARIANT_ENUM_CAST(RenderingServer::LightDirectionalSkyMode);
 VARIANT_ENUM_CAST(RenderingServer::LightProjectorFilter);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);
+VARIANT_ENUM_CAST(RenderingServer::ReflectionFilter);
 VARIANT_ENUM_CAST(RenderingServer::VoxelGIQuality);
 VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST(RenderingServer::DecalFilter);

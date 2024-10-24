@@ -1026,6 +1026,14 @@ void RendererSceneRenderRD::directional_soft_shadow_filter_set_quality(RS::Shado
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::reflections_set_filter(RenderingServer::ReflectionFilter p_filter) {
+	if (reflections_filter == p_filter) {
+		return;
+	}
+	reflections_filter = p_filter;
+	_update_shader_quality_settings();
+}
+
 void RendererSceneRenderRD::decals_set_filter(RenderingServer::DecalFilter p_filter) {
 	if (decals_filter == p_filter) {
 		return;
@@ -1033,6 +1041,7 @@ void RendererSceneRenderRD::decals_set_filter(RenderingServer::DecalFilter p_fil
 	decals_filter = p_filter;
 	_update_shader_quality_settings();
 }
+
 void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightProjectorFilter p_filter) {
 	if (light_projectors_filter == p_filter) {
 		return;
@@ -1491,6 +1500,7 @@ void RendererSceneRenderRD::init() {
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
 
+	reflections_set_filter(RS::ReflectionFilter(int(GLOBAL_GET("rendering/reflections/filter"))));
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));

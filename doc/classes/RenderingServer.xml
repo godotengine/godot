@@ -1175,7 +1175,7 @@
 			<return type="void" />
 			<param index="0" name="filter" type="int" enum="RenderingServer.DecalFilter" />
 			<description>
-				Sets the texture [param filter] mode to use when rendering decals. This parameter is global and cannot be set on a per-decal basis.
+				Sets the texture [param filter] mode to use when rendering decals. This parameter is global and cannot be set on a per-decal basis. See [member ProjectSettings.rendering/textures/decals/filter].
 			</description>
 		</method>
 		<method name="directional_light_create">
@@ -2050,7 +2050,7 @@
 			<return type="void" />
 			<param index="0" name="filter" type="int" enum="RenderingServer.LightProjectorFilter" />
 			<description>
-				Sets the texture filter mode to use when rendering light projectors. This parameter is global and cannot be set on a per-light basis.
+				Sets the texture filter mode to use when rendering light projectors. This parameter is global and cannot be set on a per-light basis. See [member ProjectSettings.rendering/textures/light_projectors/filter].
 			</description>
 		</method>
 		<method name="light_set_bake_mode">
@@ -3220,6 +3220,13 @@
 			<param index="1" name="mode" type="int" enum="RenderingServer.ReflectionProbeUpdateMode" />
 			<description>
 				Sets how often the reflection probe updates. Can either be once or every frame. See [enum ReflectionProbeUpdateMode] for options.
+			</description>
+		</method>
+		<method name="reflections_set_filter">
+			<return type="void" />
+			<param index="0" name="filter" type="int" enum="RenderingServer.ReflectionFilter" />
+			<description>
+				Sets the texture filter mode to use when rendering sky reflections and reflection probes. This parameter is global and cannot be set on a per-probe basis. See [member ProjectSettings.rendering/reflections/filter].
 			</description>
 		</method>
 		<method name="request_frame_drawn_callback">
@@ -4755,6 +4762,12 @@
 		</constant>
 		<constant name="REFLECTION_PROBE_AMBIENT_COLOR" value="2" enum="ReflectionProbeAmbientMode">
 			Apply custom ambient lighting inside the reflection probe's box defined by its size. See [method reflection_probe_set_ambient_color] and [method reflection_probe_set_ambient_energy].
+		</constant>
+		<constant name="REFLECTION_FILTER_NEAREST" value="0" enum="ReflectionFilter">
+			Nearest-neighbor filter for reflections (use for pixel art reflections).
+		</constant>
+		<constant name="REFLECTION_FILTER_LINEAR" value="1" enum="ReflectionFilter">
+			Linear filter for reflections (use for non-pixel art reflections).
 		</constant>
 		<constant name="DECAL_TEXTURE_ALBEDO" value="0" enum="DecalTexture">
 			Albedo texture slot in a decal ([member Decal.texture_albedo]).
