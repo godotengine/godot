@@ -287,6 +287,13 @@ void OpenXRInterface::_load_action_map() {
 			if (ip.is_valid()) {
 				openxr_api->interaction_profile_clear_bindings(ip);
 
+				for (Ref<OpenXRBindingModifier> xr_binding_modifier : xr_interaction_profile->get_binding_modifiers()) {
+					PackedByteArray bm = xr_binding_modifier->get_ip_modification();
+					if (!bm.is_empty()) {
+						openxr_api->interaction_profile_add_modifier(ip, bm);
+					}
+				}
+
 				Array xr_bindings = xr_interaction_profile->get_bindings();
 				for (int j = 0; j < xr_bindings.size(); j++) {
 					Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
@@ -300,7 +307,18 @@ void OpenXRInterface::_load_action_map() {
 						continue;
 					}
 
-					openxr_api->interaction_profile_add_binding(ip, action->action_rid, xr_binding->get_binding_path());
+					int binding_no = openxr_api->interaction_profile_add_binding(ip, action->action_rid, xr_binding->get_binding_path());
+					if (binding_no >= 0) {
+						for (Ref<OpenXRBindingModifier> xr_binding_modifier : xr_binding->get_binding_modifiers()) {
+							// Binding modifiers on bindings can be added to the interaction profile.
+							PackedByteArray bm = xr_binding_modifier->get_ip_modification();
+							if (!bm.is_empty()) {
+								openxr_api->interaction_profile_add_modifier(ip, bm);
+							}
+
+							// And possibly in the future on the binding itself, we're just preparing for that eventuality.
+						}
+					}
 				}
 
 				// Now submit our suggestions

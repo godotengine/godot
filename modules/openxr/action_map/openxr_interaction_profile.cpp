@@ -39,6 +39,12 @@ void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding_path"), &OpenXRIPBinding::get_binding_path);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "binding_path"), "set_binding_path", "get_binding_path");
 
+	ClassDB::bind_method(D_METHOD("get_binding_modifier_count"), &OpenXRIPBinding::get_binding_modifier_count);
+	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRIPBinding::get_binding_modifier);
+	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRIPBinding::set_binding_modifiers);
+	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRIPBinding::get_binding_modifiers);
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRBindingModifier", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
+
 	// Deprecated
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_paths", "paths"), &OpenXRIPBinding::set_paths);
@@ -79,6 +85,76 @@ void OpenXRIPBinding::set_binding_path(const String &path) {
 
 String OpenXRIPBinding::get_binding_path() const {
 	return binding_path;
+}
+
+int OpenXRIPBinding::get_binding_modifier_count() const {
+	return binding_modifiers.size();
+}
+
+Ref<OpenXRBindingModifier> OpenXRIPBinding::get_binding_modifier(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, binding_modifiers.size(), nullptr);
+
+	return binding_modifiers[p_index];
+}
+
+void OpenXRIPBinding::clear_binding_modifiers() {
+	// Binding modifiers held within our interaction profile set should be released and destroyed but just in case they are still used some where else
+	if (binding_modifiers.size() == 0) {
+		return;
+	}
+
+	for (int i = 0; i < binding_modifiers.size(); i++) {
+		Ref<OpenXRBindingModifier> binding_modifier = binding_modifiers[i];
+		binding_modifier->ip_binding = nullptr;
+	}
+	binding_modifiers.clear();
+	emit_changed();
+}
+
+void OpenXRIPBinding::set_binding_modifiers(Array p_binding_modifiers) {
+	// Any binding modifier not retained in p_binding_modifiers should be freed automatically, those held within our Array will have be relinked to our interaction profile.
+	clear_binding_modifiers();
+
+	for (int i = 0; i < p_binding_modifiers.size(); i++) {
+		// add them anew so we verify our binding modifier pointer
+		add_binding_modifier(p_binding_modifiers[i]);
+	}
+}
+
+Array OpenXRIPBinding::get_binding_modifiers() const {
+	Array ret;
+	for (const Ref<OpenXRBindingModifier> &binding_modifier : binding_modifiers) {
+		ret.push_back(binding_modifier);
+	}
+	return ret;
+}
+
+void OpenXRIPBinding::add_binding_modifier(Ref<OpenXRBindingModifier> p_binding_modifier) {
+	ERR_FAIL_COND(p_binding_modifier.is_null());
+	ERR_FAIL_COND_MSG(!p_binding_modifier->record_on_binding(), "This binding modifier must be added to an interaction profile.");
+
+	if (!binding_modifiers.has(p_binding_modifier)) {
+		if (p_binding_modifier->ip_binding && p_binding_modifier->ip_binding != this) {
+			// binding modifier should only relate to our binding
+			p_binding_modifier->ip_binding->remove_binding_modifier(p_binding_modifier);
+		}
+
+		p_binding_modifier->ip_binding = this;
+		binding_modifiers.push_back(p_binding_modifier);
+		emit_changed();
+	}
+}
+
+void OpenXRIPBinding::remove_binding_modifier(Ref<OpenXRBindingModifier> p_binding_modifier) {
+	int idx = binding_modifiers.find(p_binding_modifier);
+	if (idx != -1) {
+		binding_modifiers.remove_at(idx);
+
+		ERR_FAIL_COND_MSG(p_binding_modifier->ip_binding != this, "Removing binding modifier that belongs to this binding but had incorrect binding pointer."); // this should never happen!
+		p_binding_modifier->ip_binding = nullptr;
+
+		emit_changed();
+	}
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -148,6 +224,12 @@ void OpenXRInteractionProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bindings", "bindings"), &OpenXRInteractionProfile::set_bindings);
 	ClassDB::bind_method(D_METHOD("get_bindings"), &OpenXRInteractionProfile::get_bindings);
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRIPBinding", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
+
+	ClassDB::bind_method(D_METHOD("get_binding_modifier_count"), &OpenXRInteractionProfile::get_binding_modifier_count);
+	ClassDB::bind_method(D_METHOD("get_binding_modifier", "index"), &OpenXRInteractionProfile::get_binding_modifier);
+	ClassDB::bind_method(D_METHOD("set_binding_modifiers", "binding_modifiers"), &OpenXRInteractionProfile::set_binding_modifiers);
+	ClassDB::bind_method(D_METHOD("get_binding_modifiers"), &OpenXRInteractionProfile::get_binding_modifiers);
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "binding_modifiers", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRBindingModifier", PROPERTY_USAGE_NO_EDITOR), "set_binding_modifiers", "get_binding_modifiers");
 }
 
 Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *p_input_profile_path) {
@@ -275,6 +357,77 @@ bool OpenXRInteractionProfile::has_binding_for_action(const Ref<OpenXRAction> p_
 	return false;
 }
 
+int OpenXRInteractionProfile::get_binding_modifier_count() const {
+	return binding_modifiers.size();
+}
+
+Ref<OpenXRBindingModifier> OpenXRInteractionProfile::get_binding_modifier(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, binding_modifiers.size(), nullptr);
+
+	return binding_modifiers[p_index];
+}
+
+void OpenXRInteractionProfile::clear_binding_modifiers() {
+	// Binding modifiers held within our interaction profile set should be released and destroyed but just in case they are still used some where else
+	if (binding_modifiers.size() == 0) {
+		return;
+	}
+
+	for (int i = 0; i < binding_modifiers.size(); i++) {
+		Ref<OpenXRBindingModifier> binding_modifier = binding_modifiers[i];
+		binding_modifier->interaction_profile = nullptr;
+	}
+	binding_modifiers.clear();
+	emit_changed();
+}
+
+void OpenXRInteractionProfile::set_binding_modifiers(Array p_binding_modifiers) {
+	// Any binding modifier not retained in p_binding_modifiers should be freed automatically, those held within our Array will have be relinked to our interaction profile.
+	clear_binding_modifiers();
+
+	for (int i = 0; i < p_binding_modifiers.size(); i++) {
+		// add them anew so we verify our binding modifier pointer
+		add_binding_modifier(p_binding_modifiers[i]);
+	}
+}
+
+Array OpenXRInteractionProfile::get_binding_modifiers() const {
+	Array ret;
+	for (const Ref<OpenXRBindingModifier> &binding_modifier : binding_modifiers) {
+		ret.push_back(binding_modifier);
+	}
+	return ret;
+}
+
+void OpenXRInteractionProfile::add_binding_modifier(Ref<OpenXRBindingModifier> p_binding_modifier) {
+	ERR_FAIL_COND(p_binding_modifier.is_null());
+	ERR_FAIL_COND_MSG(p_binding_modifier->record_on_binding(), "This binding modifier must be added to a binding.");
+
+	if (!binding_modifiers.has(p_binding_modifier)) {
+		if (p_binding_modifier->interaction_profile && p_binding_modifier->interaction_profile != this) {
+			// binding modifier should only relate to our interaction profile
+			p_binding_modifier->interaction_profile->remove_binding_modifier(p_binding_modifier);
+		}
+
+		p_binding_modifier->interaction_profile = this;
+		binding_modifiers.push_back(p_binding_modifier);
+		emit_changed();
+	}
+}
+
+void OpenXRInteractionProfile::remove_binding_modifier(Ref<OpenXRBindingModifier> p_binding_modifier) {
+	int idx = binding_modifiers.find(p_binding_modifier);
+	if (idx != -1) {
+		binding_modifiers.remove_at(idx);
+
+		ERR_FAIL_COND_MSG(p_binding_modifier->interaction_profile != this, "Removing binding modifier that belongs to this interaction profile but had incorrect interaction profile pointer."); // this should never happen!
+		p_binding_modifier->interaction_profile = nullptr;
+
+		emit_changed();
+	}
+}
+
 OpenXRInteractionProfile::~OpenXRInteractionProfile() {
 	bindings.clear();
+	clear_binding_modifiers();
 }
