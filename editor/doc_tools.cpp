@@ -915,7 +915,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			DocData::ConstantDoc constant;
 			constant.name = E;
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
-			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
+			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace_char('\n', ' ');
 			constant.is_value_valid = true;
 			c.constants.push_back(constant);
 		}
