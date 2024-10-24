@@ -5070,14 +5070,12 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT;
 			}
 			break;
-		case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
 		case ShaderNode::Varying::STAGE_VERTEX:
 			if (current_function == varying_function_names.fragment) {
 				*r_message = RTR("Varyings which assigned in 'vertex' function may not be reassigned in 'fragment' or 'light'.");
 				return false;
 			}
 			break;
-		case ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT:
 		case ShaderNode::Varying::STAGE_FRAGMENT:
 			if (current_function == varying_function_names.vertex) {
 				*r_message = RTR("Varyings which assigned in 'fragment' function may not be reassigned in 'vertex' or 'light'.");
@@ -6038,15 +6036,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 														error = true;
 													}
 													break;
-												case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
-													[[fallthrough]];
 												case ShaderNode::Varying::STAGE_VERTEX:
 													if (is_out_arg && current_function != varying_function_names.vertex) { // inout/out
 														error = true;
 													}
 													break;
-												case ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT:
-													[[fallthrough]];
 												case ShaderNode::Varying::STAGE_FRAGMENT:
 													if (!is_out_arg) {
 														if (current_function != varying_function_names.fragment && current_function != varying_function_names.light) {
@@ -6246,36 +6240,14 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								return nullptr;
 							}
 						} else {
-							switch (var.stage) {
-								case ShaderNode::Varying::STAGE_UNKNOWN: {
-									if (var.type < TYPE_INT) {
-										if (current_function == varying_function_names.vertex) {
-											_set_error(vformat(RTR("Varying with '%s' data type may only be used in the 'fragment' function."), get_datatype_name(var.type)));
-										} else {
-											_set_error(vformat(RTR("Varying '%s' must be assigned in the 'fragment' function first."), identifier));
-										}
-										return nullptr;
-									}
-								} break;
-								case ShaderNode::Varying::STAGE_VERTEX:
-									if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
-										var.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
-									}
-									break;
-								case ShaderNode::Varying::STAGE_FRAGMENT:
-									if (current_function == varying_function_names.light) {
-										var.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
-									}
-									break;
-								default:
-									break;
+							if (var.stage == ShaderNode::Varying::STAGE_UNKNOWN && var.type < TYPE_INT) {
+								if (current_function == varying_function_names.vertex) {
+									_set_error(vformat(RTR("Varying with '%s' data type may only be used in the 'fragment' function."), get_datatype_name(var.type)));
+								} else {
+									_set_error(vformat(RTR("Varying '%s' must be assigned in the 'fragment' function first."), identifier));
+								}
+								return nullptr;
 							}
-						}
-
-						if ((var.stage != ShaderNode::Varying::STAGE_FRAGMENT && var.stage != ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT) && var.type < TYPE_FLOAT && var.interpolation != INTERPOLATION_FLAT) {
-							_set_tkpos(var.tkpos);
-							_set_error(RTR("Varying with integer data type must be declared with `flat` interpolation qualifier."));
-							return nullptr;
 						}
 					}
 
@@ -10695,6 +10667,14 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 		}
 
 		tk = _get_token();
+	}
+
+	for (const KeyValue<StringName, ShaderNode::Varying> &kv : shader->varyings) {
+		if (kv.value.stage != ShaderNode::Varying::STAGE_FRAGMENT && (kv.value.type > TYPE_BVEC4 && kv.value.type < TYPE_FLOAT) && kv.value.interpolation != INTERPOLATION_FLAT) {
+			_set_tkpos(kv.value.tkpos);
+			_set_error(vformat(RTR("Varying with integer data type must be declared with `%s` interpolation qualifier."), "flat"));
+			return ERR_PARSE_ERROR;
+		}
 	}
 
 #ifdef DEBUG_ENABLED
