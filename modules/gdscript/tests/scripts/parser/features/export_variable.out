@@ -4,11 +4,11 @@ var test_weak_int: int = 1
 var test_hard_int: int = 2
   hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_range: int = 100
-  hint=RANGE hint_string="0,100" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+  hint=RANGE hint_string="0.0,100.0" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_range_step: int = 101
-  hint=RANGE hint_string="0,100,1" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+  hint=RANGE hint_string="0.0,100.0,1.0" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_range_step_or_greater: int = 102
-  hint=RANGE hint_string="0,100,1,or_greater" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+  hint=RANGE hint_string="0.0,100.0,1.0,or_greater" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_color: Color = Color(0, 0, 0, 1)
   hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
 var test_color_no_alpha: Color = Color(0, 0, 0, 1)

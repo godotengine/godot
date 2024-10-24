@@ -1371,6 +1371,9 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		Dictionary elem = var;
 		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", base_array, p_name_field));
 		String name = elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && elem.has("right_type")) {
 			name += " " + String(elem["right_type"]);
 		}
@@ -1386,6 +1389,9 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 			continue;
 		}
 		String name = old_elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && old_elem.has("right_type")) {
 			name += " " + String(old_elem["right_type"]);
 		}
