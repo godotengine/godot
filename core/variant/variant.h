@@ -449,6 +449,50 @@ public:
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
 
+	bool *get_bool();
+	int64_t *get_int();
+	double *get_float();
+
+	String *get_string();
+	Vector2 *get_vector2();
+	Vector2i *get_vector2i();
+	Rect2 *get_rect2();
+	Rect2i *get_rect2i();
+	Transform2D *get_transform2d();
+	Vector3 *get_vector3();
+	Vector3i *get_vector3i();
+	Vector4 *get_vector4();
+	Vector4i *get_vector4i();
+	Plane *get_plane();
+	::AABB *get_aabb();
+	Quaternion *get_quaternion();
+	Basis *get_basis();
+	Transform3D *get_transform3d();
+	Projection *get_projection();
+	Color *get_color();
+
+	::RID *get_rid();
+
+	Callable *get_callable();
+	Signal *get_signal();
+
+	StringName *get_string_name();
+	NodePath *get_node_path();
+
+	Dictionary *get_dictionary();
+	Array *get_array();
+
+	PackedByteArray *get_packed_byte_array();
+	PackedInt32Array *get_packed_int32_array();
+	PackedInt64Array *get_packed_int64_array();
+	PackedFloat32Array *get_packed_float32_array();
+	PackedFloat64Array *get_packed_float64_array();
+	PackedStringArray *get_packed_string_array();
+	PackedVector2Array *get_packed_vector2_array();
+	PackedVector3Array *get_packed_vector3_array();
+	PackedColorArray *get_packed_color_array();
+	PackedVector4Array *get_packed_vector4_array();
+
 	Variant(bool p_bool);
 	Variant(int64_t p_int64);
 	Variant(int32_t p_int32);

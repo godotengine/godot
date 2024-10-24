@@ -2183,6 +2183,302 @@ Object *Variant::get_validated_object() const {
 	}
 }
 
+bool *Variant::get_bool() {
+	if (type == BOOL) {
+		return &_data._bool;
+	} else {
+		return nullptr;
+	}
+}
+
+int64_t *Variant::get_int() {
+	if (type == INT) {
+		return &_data._int;
+	} else {
+		return nullptr;
+	}
+}
+
+double *Variant::get_float() {
+	if (type == FLOAT) {
+		return &_data._float;
+	} else {
+		return nullptr;
+	}
+}
+
+String *Variant::get_string() {
+	if (type == STRING) {
+		return reinterpret_cast<String *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Vector2 *Variant::get_vector2() {
+	if (type == VECTOR2) {
+		return reinterpret_cast<Vector2 *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Vector2i *Variant::get_vector2i() {
+	if (type == VECTOR2I) {
+		return reinterpret_cast<Vector2i *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Rect2 *Variant::get_rect2() {
+	if (type == RECT2) {
+		return reinterpret_cast<Rect2 *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Rect2i *Variant::get_rect2i() {
+	if (type == RECT2I) {
+		return reinterpret_cast<Rect2i *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Transform2D *Variant::get_transform2d() {
+	if (type == TRANSFORM2D) {
+		return _data._transform2d;
+	} else {
+		return nullptr;
+	}
+}
+
+Vector3 *Variant::get_vector3() {
+	if (type == VECTOR3) {
+		return reinterpret_cast<Vector3 *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Vector3i *Variant::get_vector3i() {
+	if (type == VECTOR3I) {
+		return reinterpret_cast<Vector3i *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Vector4 *Variant::get_vector4() {
+	if (type == VECTOR4) {
+		return reinterpret_cast<Vector4 *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Vector4i *Variant::get_vector4i() {
+	if (type == VECTOR4I) {
+		return reinterpret_cast<Vector4i *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Plane *Variant::get_plane() {
+	if (type == PLANE) {
+		return reinterpret_cast<Plane *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+::AABB *Variant::get_aabb() {
+	if (type == AABB) {
+		return _data._aabb;
+	} else {
+		return nullptr;
+	}
+}
+
+Quaternion *Variant::get_quaternion() {
+	if (type == QUATERNION) {
+		return reinterpret_cast<Quaternion *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Basis *Variant::get_basis() {
+	if (type == BASIS) {
+		return _data._basis;
+	} else {
+		return nullptr;
+	}
+}
+
+Transform3D *Variant::get_transform3d() {
+	if (type == TRANSFORM3D) {
+		return _data._transform3d;
+	} else {
+		return nullptr;
+	}
+}
+
+Projection *Variant::get_projection() {
+	if (type == PROJECTION) {
+		return _data._projection;
+	} else {
+		return nullptr;
+	}
+}
+
+Color *Variant::get_color() {
+	if (type == COLOR) {
+		return reinterpret_cast<Color *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+::RID *Variant::get_rid() {
+	if (type == RID) {
+		return reinterpret_cast<::RID *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Callable *Variant::get_callable() {
+	if (type == CALLABLE) {
+		return reinterpret_cast<Callable *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Signal *Variant::get_signal() {
+	if (type == SIGNAL) {
+		return reinterpret_cast<Signal *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+StringName *Variant::get_string_name() {
+	if (type == STRING_NAME) {
+		return reinterpret_cast<StringName *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+NodePath *Variant::get_node_path() {
+	if (type == NODE_PATH) {
+		return reinterpret_cast<NodePath *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Dictionary *Variant::get_dictionary() {
+	if (type == DICTIONARY) {
+		return reinterpret_cast<Dictionary *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+Array *Variant::get_array() {
+	if (type == ARRAY) {
+		return reinterpret_cast<Array *>(_data._mem);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedByteArray *Variant::get_packed_byte_array() {
+	if (type == PACKED_BYTE_ARRAY) {
+		return PackedArrayRef<uint8_t>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedInt32Array *Variant::get_packed_int32_array() {
+	if (type == PACKED_INT32_ARRAY) {
+		return PackedArrayRef<int32_t>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedInt64Array *Variant::get_packed_int64_array() {
+	if (type == PACKED_INT64_ARRAY) {
+		return PackedArrayRef<int64_t>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedFloat32Array *Variant::get_packed_float32_array() {
+	if (type == PACKED_FLOAT32_ARRAY) {
+		return PackedArrayRef<float>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedFloat64Array *Variant::get_packed_float64_array() {
+	if (type == PACKED_FLOAT64_ARRAY) {
+		return PackedArrayRef<double>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedStringArray *Variant::get_packed_string_array() {
+	if (type == PACKED_STRING_ARRAY) {
+		return PackedArrayRef<String>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedVector2Array *Variant::get_packed_vector2_array() {
+	if (type == PACKED_VECTOR2_ARRAY) {
+		return PackedArrayRef<Vector2>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedVector3Array *Variant::get_packed_vector3_array() {
+	if (type == PACKED_VECTOR3_ARRAY) {
+		return PackedArrayRef<Vector3>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedColorArray *Variant::get_packed_color_array() {
+	if (type == PACKED_COLOR_ARRAY) {
+		return PackedArrayRef<Color>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
+PackedVector4Array *Variant::get_packed_vector4_array() {
+	if (type == PACKED_VECTOR4_ARRAY) {
+		return PackedArrayRef<Vector4>::get_array_ptr(_data.packed_array);
+	} else {
+		return nullptr;
+	}
+}
+
 Variant::operator Dictionary() const {
 	if (type == DICTIONARY) {
 		return *reinterpret_cast<const Dictionary *>(_data._mem);
