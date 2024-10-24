@@ -91,7 +91,7 @@ static Node *_gltf_export_then_import(Node *p_root, String &p_tempfilebase) {
 	options["gltf/naming_version"] = 1;
 
 	// Process gltf file, note that this generates `.scn` resource from the 2nd argument.
-	err = import_scene->import(p_tempfilebase + ".gltf", p_tempfilebase, options, nullptr, nullptr, nullptr);
+	err = import_scene->import(0, p_tempfilebase + ".gltf", p_tempfilebase, options, nullptr, nullptr, nullptr);
 	CHECK_MESSAGE(err == OK, "GLTF import failed.");
 	ResourceImporterScene::remove_scene_importer(import_gltf);
 
