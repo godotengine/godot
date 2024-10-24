@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.14.10
+VERSION=0.15.2
 # Uncomment and set a git hash to use specific commit instead of tag.
 #GIT_COMMIT=
 
@@ -73,6 +73,10 @@ cp -rv src/loaders/external_png ../src/loaders/
 cp -rv src/loaders/external_webp ../src/loaders/
 # Not using external jpg as it's turbojpeg, which we don't have.
 cp -rv src/loaders/jpg ../src/loaders/
+
+cp -rv src/loaders/lottie  ../src/loaders/
+# Disabled: THORVG_LOTTIE_EXPRESSIONS_SUPPORT
+rm -rfv ../src/loaders/lottie/jerryscript
 
 popd
 rm -rf tmp

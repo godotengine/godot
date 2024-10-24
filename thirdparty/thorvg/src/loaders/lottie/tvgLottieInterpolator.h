@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,42 +20,26 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_LINES_H_
-#define _TVG_LINES_H_
+#ifndef _TVG_LOTTIE_INTERPOLATOR_H_
+#define _TVG_LOTTIE_INTERPOLATOR_H_
 
-#include "tvgCommon.h"
+#define SPLINE_TABLE_SIZE 11
 
-namespace tvg
+struct LottieInterpolator
 {
+    char* key;
+    Point outTangent, inTangent;
 
-struct Line
-{
-    Point pt1;
-    Point pt2;
+    float progress(float t);
+    void set(const char* key, Point& inTangent, Point& outTangent);
+
+private:
+    static constexpr float SAMPLE_STEP_SIZE = 1.0f / float(SPLINE_TABLE_SIZE - 1);
+    float samples[SPLINE_TABLE_SIZE];
+
+    float getTForX(float aX);
+    float binarySubdivide(float aX, float aA, float aB);
+    float NewtonRaphsonIterate(float aX, float aGuessT);
 };
 
-float lineLength(const Point& pt1, const Point& pt2);
-void lineSplitAt(const Line& cur, float at, Line& left, Line& right);
-
-
-struct Bezier
-{
-    Point start;
-    Point ctrl1;
-    Point ctrl2;
-    Point end;
-};
-
-void bezSplit(const Bezier&cur, Bezier& left, Bezier& right);
-float bezLength(const Bezier& cur);
-void bezSplitLeft(Bezier& cur, float at, Bezier& left);
-float bezAt(const Bezier& bz, float at, float length);
-void bezSplitAt(const Bezier& cur, float at, Bezier& left, Bezier& right);
-Point bezPointAt(const Bezier& bz, float t);
-float bezAngleAt(const Bezier& bz, float t);
-
-float bezLengthApprox(const Bezier& cur);
-float bezAtApprox(const Bezier& bz, float at, float length);
-}
-
-#endif //_TVG_LINES_H_
+#endif //_TVG_LOTTIE_INTERPOLATOR_H_

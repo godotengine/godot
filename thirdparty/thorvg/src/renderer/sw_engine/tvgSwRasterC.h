@@ -60,7 +60,7 @@ static void inline cRasterPixels(PIXEL_T* dst, PIXEL_T val, uint32_t offset, int
 }
 
 
-static bool inline cRasterTranslucentRle(SwSurface* surface, const SwRleData* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool inline cRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     auto span = rle->spans;
 
@@ -125,7 +125,7 @@ static bool inline cRasterTranslucentRect(SwSurface* surface, const SwBBox& regi
 }
 
 
-static bool inline cRasterABGRtoARGB(Surface* surface)
+static bool inline cRasterABGRtoARGB(RenderSurface* surface)
 {
     TVGLOG("SW_ENGINE", "Convert ColorSpace ABGR - ARGB [Size: %d x %d]", surface->w, surface->h);
 
@@ -156,7 +156,7 @@ static bool inline cRasterABGRtoARGB(Surface* surface)
 }
 
 
-static bool inline cRasterARGBtoABGR(Surface* surface)
+static bool inline cRasterARGBtoABGR(RenderSurface* surface)
 {
     //exactly same with ABGRtoARGB
     return cRasterABGRtoARGB(surface);
