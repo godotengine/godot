@@ -668,6 +668,8 @@ public:
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
 
+	void accept_event();
+
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
 	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
 	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }

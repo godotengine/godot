@@ -353,6 +353,11 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _accept_event_bind_compat_96989();
+	static void _bind_compatibility_methods();
+#endif
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -506,7 +511,6 @@ public:
 	// Input events.
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
-	void accept_event();
 
 	virtual bool has_point(const Point2 &p_point) const;
 

@@ -3473,6 +3473,13 @@ void Node::unhandled_input(const Ref<InputEvent> &p_event) {
 void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 }
 
+void Node::accept_event() {
+	ERR_MAIN_THREAD_GUARD;
+	if (is_inside_tree() && get_viewport()->is_inside_tree()) {
+		get_viewport()->set_input_as_handled();
+	}
+}
+
 Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -3629,6 +3636,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
+	ClassDB::bind_method(D_METHOD("accept_event"), &Node::accept_event);
 
 	ClassDB::bind_method(D_METHOD("set_process_thread_group", "mode"), &Node::set_process_thread_group);
 	ClassDB::bind_method(D_METHOD("get_process_thread_group"), &Node::get_process_thread_group);

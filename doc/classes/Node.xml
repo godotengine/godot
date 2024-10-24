@@ -132,6 +132,13 @@
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
+		<method name="accept_event">
+			<return type="void" />
+			<description>
+				Stops the input from propagating further down the [SceneTree].
+				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
+			</description>
+		</method>
 		<method name="add_child">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
