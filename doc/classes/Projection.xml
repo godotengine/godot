@@ -14,7 +14,8 @@
 		<constructor name="Projection">
 			<return type="Projection" />
 			<description>
-				Constructs a default-initialized [Projection] set to [constant IDENTITY].
+				Constructs a default-initialized [Projection] identical to [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Projection] identical to [constant ZERO].
 			</description>
 		</constructor>
 		<constructor name="Projection">

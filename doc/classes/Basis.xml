@@ -25,6 +25,7 @@
 			<return type="Basis" />
 			<description>
 				Constructs a [Basis] identical to the [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Basis] with all of its components set to [constant Vector3.ZERO].
 			</description>
 		</constructor>
 		<constructor name="Basis">

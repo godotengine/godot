@@ -21,6 +21,7 @@
 			<return type="Transform3D" />
 			<description>
 				Constructs a [Transform3D] identical to the [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Transform3D] with its [member origin] and the components of its [member basis] set to [constant Vector3.ZERO].
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
