@@ -145,5 +145,12 @@
 				Returns [code]true[/code] if this [Texture2D] has an alpha channel.
 			</description>
 		</method>
+		<method name="is_pixel_opaque" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="p_x" type="int" />
+			<param index="1" name="p_y" type="int" />
+			<description>
+			</description>
+		</method>
 	</methods>
 </class>
