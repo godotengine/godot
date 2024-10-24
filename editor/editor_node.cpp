@@ -731,6 +731,10 @@ void EditorNode::_notification(int p_what) {
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
+			if (Engine::get_singleton()->is_safe_mode_hint()) {
+				EditorToaster::get_singleton()->popup_str(TTR("Safe Mode is enabled. Editor functionality has been restricted."), EditorToaster::SEVERITY_WARNING);
+			}
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -1151,7 +1155,13 @@ void EditorNode::_sources_changed(bool p_exist) {
 		if (!singleton->cmdline_export_mode) {
 			EditorResourcePreview::get_singleton()->start();
 		}
+
+		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
 	}
+}
+
+void EditorNode::_remove_lock_file() {
+	OS::get_singleton()->remove_lock_file();
 }
 
 void EditorNode::_scan_external_changes() {
@@ -5349,6 +5359,10 @@ void EditorNode::_save_window_settings_to_config(Ref<ConfigFile> p_layout, const
 }
 
 void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 		return;
 	}

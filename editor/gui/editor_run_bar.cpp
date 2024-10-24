@@ -38,6 +38,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_quick_open_dialog.h"
+#include "editor/gui/editor_toaster.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
@@ -50,7 +51,35 @@ void EditorRunBar::_notification(int p_what) {
 			_reset_play_buttons();
 		} break;
 
+		case NOTIFICATION_READY: {
+			if (Engine::get_singleton()->is_safe_mode_hint()) {
+				safe_mode_show_dialog();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
+			if (Engine::get_singleton()->is_safe_mode_hint()) {
+				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadSafeMode"), EditorStringName(EditorStyles)));
+				safe_mode_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("SafeModeButton"), EditorStringName(EditorStyles)));
+				safe_mode_button->add_theme_style_override("hover", get_theme_stylebox(SNAME("SafeModeButton"), EditorStringName(EditorStyles)));
+
+				safe_mode_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+				safe_mode_reload_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
+
+				safe_mode_button->begin_bulk_theme_override();
+				safe_mode_button->add_theme_color_override("icon_normal_color", Color(0.3, 0.3, 0.3, 1));
+				safe_mode_button->add_theme_color_override("icon_pressed_color", Color(0.4, 0.4, 0.4, 1));
+				safe_mode_button->add_theme_color_override("icon_hover_color", Color(0.6, 0.6, 0.6, 1));
+				Color dark_color = get_theme_color("safe_mode_text_color", EditorStringName(Editor));
+				safe_mode_button->add_theme_color_override(SceneStringName(font_color), dark_color);
+				safe_mode_button->add_theme_color_override("font_pressed_color", dark_color.lightened(0.2));
+				safe_mode_button->add_theme_color_override("font_hover_color", dark_color.lightened(0.4));
+				safe_mode_button->add_theme_color_override("font_hover_pressed_color", dark_color.lightened(0.2));
+				safe_mode_button->end_bulk_theme_override();
+
+				return;
+			}
+
 			_update_play_buttons();
 			pause_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
 			stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
@@ -76,6 +105,10 @@ void EditorRunBar::_notification(int p_what) {
 }
 
 void EditorRunBar::_reset_play_buttons() {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	play_button->set_pressed(false);
 	play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	play_button->set_tooltip_text(TTR("Play the project."));
@@ -90,6 +123,10 @@ void EditorRunBar::_reset_play_buttons() {
 }
 
 void EditorRunBar::_update_play_buttons() {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		return;
+	}
+
 	_reset_play_buttons();
 	if (!is_playing()) {
 		return;
@@ -261,7 +298,20 @@ void EditorRunBar::_run_native(const Ref<EditorExportPreset> &p_preset) {
 	}
 }
 
+void EditorRunBar::safe_mode_show_dialog() {
+	safe_mode_popup->popup_centered();
+}
+
+void EditorRunBar::safe_mode_reload_project() {
+	EditorNode::get_singleton()->trigger_menu_option(EditorNode::RELOAD_CURRENT_PROJECT, false);
+}
+
 void EditorRunBar::play_main_scene(bool p_from_native) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		EditorToaster::get_singleton()->popup_str(TTR("Safe Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+
 	if (p_from_native) {
 		run_native->resume_run_native();
 	} else {
@@ -273,6 +323,11 @@ void EditorRunBar::play_main_scene(bool p_from_native) {
 }
 
 void EditorRunBar::play_current_scene(bool p_reload) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		EditorToaster::get_singleton()->popup_str(TTR("Safe Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+
 	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
 
 	EditorNode::get_singleton()->save_default_environment();
@@ -287,6 +342,11 @@ void EditorRunBar::play_current_scene(bool p_reload) {
 }
 
 void EditorRunBar::play_custom_scene(const String &p_custom) {
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		EditorToaster::get_singleton()->popup_str(TTR("Safe Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+
 	stop_playing();
 
 	current_mode = RunMode::RUN_CUSTOM;
@@ -369,6 +429,35 @@ EditorRunBar::EditorRunBar() {
 
 	main_hbox = memnew(HBoxContainer);
 	main_panel->add_child(main_hbox);
+
+	if (Engine::get_singleton()->is_safe_mode_hint()) {
+		safe_mode_popup = memnew(AcceptDialog);
+		safe_mode_popup->set_min_size(Size2(550, 70));
+		safe_mode_popup->set_title(TTR("Safe Mode"));
+		safe_mode_popup->set_text(TTR("Godot opened the project in Safe Mode, which is a special mode that can help recover projects that crash the engine upon initialization. The following features have been temporarily disabled:\n\n- Tool scripts\n- Editor plugins\n- GDExtension addons\n- Automatic scene restoring\n\nIf the project cannot be opened outside of this mode, then it's very likely any of these components is preventing this project from launching. This mode is intended only for basic editing to troubleshoot such issues, and therefore it is not possible to run a project in this mode.\n\nTo disable Safe Mode, reload the project by pressing the Reload button next to the Safe Mode banner, or by reopening the project normally."));
+		safe_mode_popup->set_autowrap(true);
+		add_child(safe_mode_popup);
+
+		safe_mode_reload_button = memnew(Button);
+		main_hbox->add_child(safe_mode_reload_button);
+		safe_mode_reload_button->set_theme_type_variation("RunBarButton");
+		safe_mode_reload_button->set_focus_mode(Control::FOCUS_NONE);
+		safe_mode_reload_button->set_tooltip_text(TTR("Disable safe mode and reload the project."));
+		safe_mode_reload_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::safe_mode_reload_project));
+
+		safe_mode_panel = memnew(PanelContainer);
+		main_hbox->add_child(safe_mode_panel);
+
+		safe_mode_button = memnew(Button);
+		safe_mode_panel->add_child(safe_mode_button);
+		safe_mode_button->set_theme_type_variation("RunBarButton");
+		safe_mode_button->set_focus_mode(Control::FOCUS_NONE);
+		safe_mode_button->set_text(TTR("Safe Mode"));
+		safe_mode_button->set_tooltip_text(TTR("Safe Mode is enabled. Click for more details."));
+		safe_mode_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::safe_mode_show_dialog));
+
+		return;
+	}
 
 	play_button = memnew(Button);
 	main_hbox->add_child(play_button);

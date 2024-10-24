@@ -114,7 +114,7 @@ public:
 
 	virtual Error shell_open(const String &p_uri) override;
 
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_appname) const override;
 
 	virtual String get_cache_path() const override;
 
