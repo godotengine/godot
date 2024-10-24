@@ -976,6 +976,17 @@ Version: 3.1.0 (009ecd192c1289c7529bff248a16cfe896254816, 2024)
 
 Patches in the `patches` directory should be re-applied after updates.
 
+## wasm3
+
+- Upstream: https://github.com/wasm3/wasm3
+- Version: master (35b5e2fb53c5cbc1ff3d7e42c381cd7cfa14f308, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `source/*.{c,h}`
+- `source/extra/wasi_core.h`
+- `LICENSE`
 
 ## wayland
 
