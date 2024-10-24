@@ -919,18 +919,13 @@ Files extracted from upstream source:
 ## vhacd
 
 - Upstream: https://github.com/kmammou/v-hacd
-- Version: git (1a49edf29c69039df15286181f2f27e17ceb9aef, 2020)
+- Version: git (454913fad7d4071f374e3d9aee3e6ccc98bca84d, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- From `src/VHACD_Lib/`: `inc`, `public` and `src`
+- From `include/`: `VHACD.h`
 - `LICENSE`
-
-Some downstream changes have been made and are identified by
-`// -- GODOT start --` and `// -- GODOT end --` comments.
-They can be reapplied using the patches included in the `vhacd`
-folder.
 
 
 ## volk
