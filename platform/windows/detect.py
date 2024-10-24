@@ -200,6 +200,7 @@ def get_opts():
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
+        BoolVariable("use_windres", "Use the windres compiler, even if Microsoft's rc is installed", True),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
         (
@@ -252,14 +253,31 @@ def build_res_file(target, source, env: "SConsEnvironment"):
         "arm32": "armv7-w64-mingw32",
         "arm64": "aarch64-w64-mingw32",
     }
-    cmdbase = "windres --include-dir . --target=" + arch_aliases[env["arch"]]
 
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
+    if env["platform_tools"]:
+        if env["use_windres"]:
+            cmdbase = "windres"
+            mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
+        else:
+            cmdbase = "rc"
+            mingw_bin_prefix = ""
+    else:
+        cmdbase = env["RC"]
+        mingw_bin_prefix = ""
+
+    if env["use_windres"]:
+        cmdbase += " --include-dir . --target=" + arch_aliases[env["arch"]]
+    else:
+        # rc doesn't seem to have a target architecture arg.  So not passing.
+        cmdbase += " /nologo /i ."
 
     for x in range(len(source)):
         ok = True
         # Try prefixed executable (MinGW on Linux).
-        cmd = mingw_bin_prefix + cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
+        if env["use_windres"]:
+            cmd = mingw_bin_prefix + cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
+        else:
+            cmd = cmdbase + " /fo " + str(target[x]) + " " + str(source[x])
         try:
             out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
             if len(out[1]):
@@ -269,7 +287,10 @@ def build_res_file(target, source, env: "SConsEnvironment"):
 
         # Try generic executable (MSYS2).
         if not ok:
-            cmd = cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
+            if env["use_windres"]:
+                cmd = cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
+            else:
+                cmd = cmdbase + " /fo " + str(target[x]) + " " + str(source[x])
             try:
                 out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
                 if len(out[1]):
@@ -355,8 +376,10 @@ def setup_mingw(env: "SConsEnvironment"):
         )
         sys.exit(255)
 
-    if not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]) and not try_cmd(
-        "clang --version", env["mingw_prefix"], env["arch"]
+    if (
+        env["platform_tools"]
+        and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"])
+        and not try_cmd("clang --version", env["mingw_prefix"], env["arch"])
     ):
         print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
         sys.exit(255)
@@ -715,10 +738,10 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Build type
 
-    if not env["use_llvm"] and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]):
+    if env["platform_tools"] and not env["use_llvm"] and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = True
 
-    if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
+    if env["platform_tools"] and env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
 
     if not env["use_llvm"] and try_cmd("gcc --version", env["mingw_prefix"], env["arch"], True):
@@ -763,26 +786,29 @@ def configure_mingw(env: "SConsEnvironment"):
     mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
 
     if env["use_llvm"]:
-        env["CC"] = mingw_bin_prefix + "clang"
-        env["CXX"] = mingw_bin_prefix + "clang++"
-        if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
-            env["AS"] = mingw_bin_prefix + "as"
-            env.Append(ASFLAGS=["-c"])
-        if try_cmd("ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "ar"
-        if try_cmd("ranlib --version", env["mingw_prefix"], env["arch"]):
-            env["RANLIB"] = mingw_bin_prefix + "ranlib"
         env.extra_suffix = ".llvm" + env.extra_suffix
-    else:
-        env["CC"] = mingw_bin_prefix + "gcc"
-        env["CXX"] = mingw_bin_prefix + "g++"
-        if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
-            env["AS"] = mingw_bin_prefix + "as"
-        ar = "ar" if os.name == "nt" else "gcc-ar"
-        if try_cmd(f"{ar} --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + ar
-        if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
-            env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
+
+    if env["platform_tools"]:
+        if env["use_llvm"]:
+            env["CC"] = mingw_bin_prefix + "clang"
+            env["CXX"] = mingw_bin_prefix + "clang++"
+            if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
+                env["AS"] = mingw_bin_prefix + "as"
+                env.Append(ASFLAGS=["-c"])
+            if try_cmd("ar --version", env["mingw_prefix"], env["arch"]):
+                env["AR"] = mingw_bin_prefix + "ar"
+            if try_cmd("ranlib --version", env["mingw_prefix"], env["arch"]):
+                env["RANLIB"] = mingw_bin_prefix + "ranlib"
+        else:
+            env["CC"] = mingw_bin_prefix + "gcc"
+            env["CXX"] = mingw_bin_prefix + "g++"
+            if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
+                env["AS"] = mingw_bin_prefix + "as"
+            ar = "ar" if os.name == "nt" else "gcc-ar"
+            if try_cmd(f"{ar} --version", env["mingw_prefix"], env["arch"]):
+                env["AR"] = mingw_bin_prefix + ar
+            if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
+                env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
 
     ## LTO
 
