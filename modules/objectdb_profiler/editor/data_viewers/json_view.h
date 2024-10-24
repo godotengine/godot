@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  json_view.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef JSON_VIEW_H
+#define JSON_VIEW_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "../snapshot_data.h"
+#include "editor/editor_json_visualizer.h"
+#include "snapshot_view.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+#include "scene/gui/code_edit.h"
 
-	void _inspect_shader(RID p_shader);
+class SnapshotJsonView : public SnapshotView {
+	GDCLASS(SnapshotJsonView, SnapshotView);
 
 protected:
+	static void _serialization_worker(void *p_ud);
+	void _update_text(GameStateSnapshot *p_data_ptr, GameStateSnapshot *p_diff_ptr, String p_data_str, String p_diff_data_str);
+
 	static void _bind_methods();
 
+	EditorJsonVisualizer *json_content;
+	EditorJsonVisualizer *diff_json_content;
+
+	Control *loading_panel;
+
+	void _load_theme_settings();
+	static String _snapshot_to_json(GameStateSnapshot *p_snapshot);
+
 public:
-	EditorNativeShaderSourceVisualizer();
+	SnapshotJsonView();
+	virtual void show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) override;
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#endif // JSON_VIEW_H

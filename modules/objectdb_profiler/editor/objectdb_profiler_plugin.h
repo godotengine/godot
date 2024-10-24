@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  objectdb_profiler_plugin.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef OBJECTDB_PROFILER_PLUGIN_H
+#define OBJECTDB_PROFILER_PLUGIN_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
-
-	void _inspect_shader(RID p_shader);
+// First, ObjectDBProfilerPlugin is loaded. Then it loads ObjectDBProfilerDebuggerPlugin.
+class ObjectDBProfilerPlugin : public EditorPlugin {
+	GDCLASS(ObjectDBProfilerPlugin, EditorPlugin);
 
 protected:
-	static void _bind_methods();
+	Ref<class ObjectDBProfilerDebuggerPlugin> debugger;
+	void _notification(int p_what);
 
 public:
-	EditorNativeShaderSourceVisualizer();
+	ObjectDBProfilerPlugin();
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+class ObjectDBProfilerDebuggerPlugin : public EditorDebuggerPlugin {
+	GDCLASS(ObjectDBProfilerDebuggerPlugin, EditorDebuggerPlugin);
+
+protected:
+	class ObjectDBProfilerPanel *debugger_panel;
+
+	void _request_object_snapshot(int p_request_id);
+
+public:
+	ObjectDBProfilerDebuggerPlugin() {}
+
+	virtual bool has_capture(const String &p_capture) const override;
+	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;
+	virtual void setup_session(int p_session_id) override;
+};
+
+#endif // OBJECTDB_PROFILER_PLUGIN_H

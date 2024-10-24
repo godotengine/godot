@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  objectdb_profiler_plugin.cpp                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#include "objectdb_profiler_plugin.h"
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "objectdb_profiler_panel.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
+bool ObjectDBProfilerDebuggerPlugin::has_capture(const String &p_capture) const {
+	return p_capture == "snapshot";
+}
 
-	void _inspect_shader(RID p_shader);
+bool ObjectDBProfilerDebuggerPlugin::capture(const String &p_message, const Array &p_data, int p_index) {
+	ERR_FAIL_COND_V(debugger_panel == nullptr, false);
+	return debugger_panel->handle_debug_message(p_message, p_data, p_index);
+}
 
-protected:
-	static void _bind_methods();
+void ObjectDBProfilerDebuggerPlugin::setup_session(int p_session_id) {
+	Ref<EditorDebuggerSession> session = get_session(p_session_id);
+	ERR_FAIL_COND(session.is_null());
+	debugger_panel = memnew(ObjectDBProfilerPanel);
+	session->connect(SNAME("started"), callable_mp(debugger_panel, &ObjectDBProfilerPanel::set_enabled).bind(true));
+	session->connect(SNAME("stopped"), callable_mp(debugger_panel, &ObjectDBProfilerPanel::set_enabled).bind(false));
+	session->add_session_tab(debugger_panel);
+}
 
-public:
-	EditorNativeShaderSourceVisualizer();
-};
+ObjectDBProfilerPlugin::ObjectDBProfilerPlugin() {
+	debugger.instantiate();
+}
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+void ObjectDBProfilerPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case Node::NOTIFICATION_ENTER_TREE: {
+			add_debugger_plugin(debugger);
+		} break;
+		case Node::NOTIFICATION_EXIT_TREE: {
+			remove_debugger_plugin(debugger);
+		}
+	}
+}

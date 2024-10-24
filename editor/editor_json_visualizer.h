@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_native_shader_source_visualizer.h                              */
+/*  editor_json_visualizer.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
-#define EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+#ifndef EDITOR_JSON_VISUALIZER_H
+#define EDITOR_JSON_VISUALIZER_H
 
-#include "editor_json_visualizer.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
+#include "scene/gui/code_edit.h"
+#include "scene/resources/syntax_highlighter.h"
 
-class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
-	TabContainer *versions = nullptr;
-
-	void _inspect_shader(RID p_shader);
-
-protected:
-	static void _bind_methods();
+class EditorJsonVisualizerSyntaxHighlighter : public CodeHighlighter {
+	GDCLASS(EditorJsonVisualizerSyntaxHighlighter, CodeHighlighter)
 
 public:
-	EditorNativeShaderSourceVisualizer();
+	EditorJsonVisualizerSyntaxHighlighter(const List<String> &p_keywords);
 };
 
-#endif // EDITOR_NATIVE_SHADER_SOURCE_VISUALIZER_H
+class EditorJsonVisualizer : public CodeEdit {
+	GDCLASS(EditorJsonVisualizer, CodeEdit)
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void load_theme(Ref<EditorJsonVisualizerSyntaxHighlighter> p_syntax_highlighter);
+};
+
+#endif // EDITOR_JSON_VISUALIZER_H
