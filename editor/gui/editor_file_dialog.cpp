@@ -42,9 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -1835,31 +1833,37 @@ void EditorFileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (options_container->get_child_count() > 0) {
+		Node *child = options_container->get_child(0);
+		options_container->remove_child(child);
 		child->queue_free();
 	}
 	selected_options.clear();
 
 	for (const EditorFileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
+			cb->set_text(opt.name);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			options_container->add_child(cb);
 			cb->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			HBoxContainer *hb = memnew(HBoxContainer);
+
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			hb->add_child(lbl);
+
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
+			hb->add_child(ob);
+
+			options_container->add_child(hb);
 			selected_options[opt.name] = opt.default_idx;
 		}
 	}
@@ -2128,11 +2132,11 @@ void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
 void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
 	if (p_native_dlg) {
 		pathhb->set_visible(false);
-		grid_options->set_visible(false);
+		options_container->set_visible(false);
 		list_hb->set_visible(false);
 	} else {
 		pathhb->set_visible(true);
-		grid_options->set_visible(true);
+		options_container->set_visible(true);
 		list_hb->set_visible(true);
 	}
 }
@@ -2263,10 +2267,11 @@ EditorFileDialog::EditorFileDialog() {
 	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(body_hsplit);
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	vbc->add_child(grid_options);
+	options_container = memnew(HFlowContainer);
+	options_container->set_h_size_flags(Control::SIZE_FILL);
+	options_container->set_alignment(FlowContainer::ALIGNMENT_CENTER);
+	options_container->add_theme_constant_override(SNAME("separation"), 16 * EDSCALE);
+	vbc->add_child(options_container);
 
 	list_hb = memnew(HSplitContainer);
 	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
