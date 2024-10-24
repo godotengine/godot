@@ -67,6 +67,7 @@ SOFTWARE.
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
+#include "editor/editor_settings.h"
 
 #ifdef WINDOWS_ENABLED
 #define WIN32_LEAN_AND_MEAN
@@ -318,6 +319,61 @@ bool get_dotnet_root_from_env(String &r_dotnet_root) {
 	return get_file_path_from_env(dotnet_root_env, r_dotnet_root);
 }
 
+const StringName get_dotnet_editor_settings_name() {
+	return StringName("dotnet/build/override_dotnet_executable");
+}
+
+bool get_dotnet_exe_from_settings(String &r_dotnet_exe) {
+	const EditorSettings *editor_settings = EditorSettings::get_singleton();
+	if (editor_settings == nullptr) {
+		// load editor settings.
+		EditorSettings::create();
+		editor_settings = EditorSettings::get_singleton();
+		if (editor_settings == nullptr) {
+			return false;
+		}
+	}
+
+	const StringName editor_settings_name = get_dotnet_editor_settings_name();
+	// Use EDITOR_DEF to default it to "", if not found.
+	const Variant property_val = EDITOR_DEF(editor_settings_name, "");
+	if (property_val.is_string() == false) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("The editor setting (" + editor_settings_name + ") is not referencing a valid string path.");
+		}
+		return false;
+	}
+
+	String dotnet_exe = property_val;
+	if (dotnet_exe.is_empty()) {
+		return false;
+	}
+
+	r_dotnet_exe = path::abspath(path::realpath(dotnet_exe));
+
+	return true;
+}
+
+bool get_dotnet_root_from_settings(String &r_dotnet_root) {
+	String dotnet_exe;
+
+	if (!get_dotnet_exe_from_settings(dotnet_exe)) {
+		return false;
+	}
+
+	r_dotnet_root = dotnet_exe.get_base_dir();
+
+	if (!DirAccess::exists(r_dotnet_root)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("The editor setting (" + get_dotnet_editor_settings_name() + ") is not referencing a valid string path (" + r_dotnet_root + ").");
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
 } //namespace
 
 bool godotsharp::hostfxr_resolver::try_get_path_from_dotnet_root(const String &p_dotnet_root, String &r_fxr_path) {
@@ -332,7 +388,8 @@ bool godotsharp::hostfxr_resolver::try_get_path_from_dotnet_root(const String &p
 }
 
 bool godotsharp::hostfxr_resolver::try_get_path(String &r_dotnet_root, String &r_fxr_path) {
-	if (!get_dotnet_root_from_env(r_dotnet_root) &&
+	if (!get_dotnet_root_from_settings(r_dotnet_root) &&
+			!get_dotnet_root_from_env(r_dotnet_root) &&
 			!get_dotnet_self_registered_dir(r_dotnet_root) &&
 			!get_default_installation_dir(r_dotnet_root)) {
 		return false;
