@@ -1424,6 +1424,9 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 		*r_outside = true;
 	}
 
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	Size2 size = get_size();
 	Rect2 text_rect = _get_text_rect();
 
@@ -1721,6 +1724,9 @@ void RichTextLabel::_scroll_changed(double) {
 		return;
 	}
 
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	if (scroll_follow && vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
 		scroll_following = true;
 	} else {
@@ -1848,6 +1854,9 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+			ERR_FAIL_NULL(vscroll);
+
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
 
@@ -1951,6 +1960,9 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 
 void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
 
 	Ref<InputEventMouseButton> b = p_event;
 
@@ -2090,10 +2102,13 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
 			_update_context_menu();
-			menu->set_position(get_screen_position() + b->get_position());
-			menu->reset_size();
-			menu->popup();
-			grab_focus();
+			PopupMenu *menu = Object::cast_to<PopupMenu>(ObjectDB::get_instance(menu_id));
+			if (menu) {
+				menu->set_position(get_screen_position() + b->get_position());
+				menu->reset_size();
+				menu->popup();
+				grab_focus();
+			}
 		}
 	}
 
@@ -2149,10 +2164,13 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			if (k->is_action("ui_menu", true)) {
 				if (context_menu_enabled) {
 					_update_context_menu();
-					menu->set_position(get_screen_position());
-					menu->reset_size();
-					menu->popup();
-					menu->grab_focus();
+					PopupMenu *menu = Object::cast_to<PopupMenu>(ObjectDB::get_instance(menu_id));
+					if (menu) {
+						menu->set_position(get_screen_position());
+						menu->reset_size();
+						menu->popup();
+						menu->grab_focus();
+					}
 				}
 				handled = true;
 			}
@@ -2791,7 +2809,10 @@ void RichTextLabel::_thread_function(void *p_userdata) {
 void RichTextLabel::_thread_end() {
 	set_physics_process_internal(false);
 	if (!scroll_visible) {
-		vscroll->hide();
+		VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+		if (vscroll) {
+			vscroll->hide();
+		}
 	}
 	if (is_visible_in_tree()) {
 		queue_redraw();
@@ -2851,6 +2872,9 @@ int RichTextLabel::get_progress_bar_delay() const {
 _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height) {
 	updating_scroll = true;
 
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL_V(vscroll, p_total_height);
+
 	float total_height = p_total_height;
 	bool exceeds = p_total_height > p_ctrl_height && scroll_active;
 	if (exceeds != scroll_visible) {
@@ -2890,6 +2914,8 @@ bool RichTextLabel::_validate_line_caches() {
 		return false;
 	}
 	validating.store(true);
+
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
 	if (main->first_invalid_line.load() == (int)main->lines.size()) {
 		MutexLock data_lock(data_mutex);
 		Rect2 text_rect = _get_text_rect();
@@ -2897,7 +2923,7 @@ bool RichTextLabel::_validate_line_caches() {
 		float ctrl_height = get_size().height;
 
 		// Update fonts.
-		float old_scroll = vscroll->get_value();
+		float old_scroll = vscroll ? vscroll->get_value() : 0;
 		if (main->first_invalid_font_line.load() != (int)main->lines.size()) {
 			for (int i = main->first_invalid_font_line.load(); i < (int)main->lines.size(); i++) {
 				_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
@@ -2907,9 +2933,11 @@ bool RichTextLabel::_validate_line_caches() {
 		}
 
 		if (main->first_resized_line.load() == (int)main->lines.size()) {
-			vscroll->set_value(old_scroll);
+			if (vscroll) {
+				vscroll->set_value(old_scroll);
+			}
 			validating.store(false);
-			if (!scroll_visible) {
+			if (!scroll_visible && vscroll) {
 				vscroll->hide();
 			}
 			return true;
@@ -2931,7 +2959,7 @@ bool RichTextLabel::_validate_line_caches() {
 			update_minimum_size();
 		}
 		validating.store(false);
-		if (!scroll_visible) {
+		if (!scroll_visible && vscroll) {
 			vscroll->hide();
 		}
 		return true;
@@ -2949,7 +2977,7 @@ bool RichTextLabel::_validate_line_caches() {
 		updating.store(true);
 		_process_line_caches();
 		updating.store(false);
-		if (!scroll_visible) {
+		if (!scroll_visible && vscroll) {
 			vscroll->hide();
 		}
 		queue_redraw();
@@ -2966,10 +2994,12 @@ void RichTextLabel::_process_line_caches() {
 	MutexLock data_lock(data_mutex);
 	Rect2 text_rect = _get_text_rect();
 
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+
 	float ctrl_height = get_size().height;
 	int fi = main->first_invalid_line.load();
 	int total_chars = main->lines[fi].char_offset;
-	float old_scroll = vscroll->get_value();
+	float old_scroll = vscroll ? vscroll->get_value() : 0;
 
 	float total_height = 0;
 	if (fi != 0) {
@@ -3450,7 +3480,10 @@ bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 			total_height = _calculate_line_vertical_offset(main->lines[i]);
 		}
 		updating_scroll = true;
-		vscroll->set_max(total_height);
+		VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+		if (vscroll) {
+			vscroll->set_max(total_height);
+		}
 		updating_scroll = false;
 
 		main->first_invalid_line.store(MAX(main->first_invalid_line.load() - 1, 0));
@@ -4090,10 +4123,16 @@ bool RichTextLabel::is_hint_underlined() const {
 }
 
 void RichTextLabel::set_offset(int p_pixel) {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	vscroll->set_value(p_pixel);
 }
 
 void RichTextLabel::set_scroll_active(bool p_active) {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	if (scroll_active == p_active) {
 		return;
 	}
@@ -4108,6 +4147,9 @@ bool RichTextLabel::is_scroll_active() const {
 }
 
 void RichTextLabel::set_scroll_follow(bool p_follow) {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	scroll_follow = p_follow;
 	if (!vscroll->is_visible_in_tree() || vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
 		scroll_following = true;
@@ -5283,6 +5325,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 }
 
 void RichTextLabel::scroll_to_selection() {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	if (selection.active && selection.from_frame && selection.from_line >= 0 && selection.from_line < (int)selection.from_frame->lines.size()) {
 		// Selected frame paragraph offset.
 		float line_offset = selection.from_frame->lines[selection.from_line].offset.y;
@@ -5306,7 +5351,17 @@ void RichTextLabel::scroll_to_selection() {
 	}
 }
 
+VScrollBar *RichTextLabel::get_v_scroll_bar() {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL_V(vscroll, nullptr);
+
+	return vscroll;
+}
+
 void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	_validate_line_caches();
 
 	if (p_paragraph <= 0) {
@@ -5332,6 +5387,9 @@ int RichTextLabel::get_visible_paragraph_count() const {
 }
 
 void RichTextLabel::scroll_to_line(int p_line) {
+	VScrollBar *vscroll = Object::cast_to<VScrollBar>(ObjectDB::get_instance(vscroll_id));
+	ERR_FAIL_NULL(vscroll);
+
 	if (p_line <= 0) {
 		vscroll->set_value(0);
 		return;
@@ -5696,13 +5754,21 @@ bool RichTextLabel::is_shortcut_keys_enabled() const {
 
 // Context menu.
 PopupMenu *RichTextLabel::get_menu() const {
-	if (!menu) {
+	if (menu_id.is_null()) {
 		const_cast<RichTextLabel *>(this)->_generate_context_menu();
 	}
+	PopupMenu *menu = Object::cast_to<PopupMenu>(ObjectDB::get_instance(menu_id));
+	ERR_FAIL_NULL_V(menu, nullptr);
+
 	return menu;
 }
 
 bool RichTextLabel::is_menu_visible() const {
+	if (menu_id.is_null()) {
+		return false;
+	}
+
+	PopupMenu *menu = Object::cast_to<PopupMenu>(ObjectDB::get_instance(menu_id));
 	return menu && menu->is_visible();
 }
 
@@ -6526,18 +6592,21 @@ Size2 RichTextLabel::get_minimum_size() const {
 
 // Context menu.
 void RichTextLabel::_generate_context_menu() {
-	menu = memnew(PopupMenu);
+	PopupMenu *menu = memnew(PopupMenu);
 	add_child(menu, false, INTERNAL_MODE_FRONT);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &RichTextLabel::menu_option));
 
 	menu->add_item(ETR("Copy"), MENU_COPY);
 	menu->add_item(ETR("Select All"), MENU_SELECT_ALL);
+	menu_id = menu->get_instance_id();
 }
 
 void RichTextLabel::_update_context_menu() {
-	if (!menu) {
+	if (menu_id.is_null()) {
 		_generate_context_menu();
 	}
+	PopupMenu *menu = Object::cast_to<PopupMenu>(ObjectDB::get_instance(menu_id));
+	ERR_FAIL_NULL(menu);
 
 	int idx = -1;
 
@@ -6675,7 +6744,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	main->first_invalid_font_line.store(0);
 	current_frame = main;
 
-	vscroll = memnew(VScrollBar);
+	VScrollBar *vscroll = memnew(VScrollBar);
 	add_child(vscroll, false, INTERNAL_MODE_FRONT);
 	vscroll->set_drag_node(String(".."));
 	vscroll->set_step(1);
@@ -6685,6 +6754,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &RichTextLabel::_scroll_changed));
 	vscroll->set_step(1);
 	vscroll->hide();
+	vscroll_id = vscroll->get_instance_id();
 
 	set_text(p_text);
 	updating.store(false);

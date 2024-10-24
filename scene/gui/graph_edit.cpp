@@ -733,16 +733,40 @@ void GraphEdit::_update_theme_item_cache() {
 void GraphEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			zoom_minus_button->set_icon(theme_cache.zoom_out);
-			zoom_reset_button->set_icon(theme_cache.zoom_reset);
-			zoom_plus_button->set_icon(theme_cache.zoom_in);
+			Button *zoom_minus_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_minus_button_id));
+			if (zoom_minus_button) {
+				zoom_minus_button->set_icon(theme_cache.zoom_out);
+			}
+			Button *zoom_reset_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_reset_button_id));
+			if (zoom_reset_button) {
+				zoom_reset_button->set_icon(theme_cache.zoom_reset);
+			}
+			Button *zoom_plus_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_plus_button_id));
+			if (zoom_plus_button) {
+				zoom_plus_button->set_icon(theme_cache.zoom_in);
+			}
 
-			toggle_snapping_button->set_icon(theme_cache.snapping_toggle);
-			toggle_grid_button->set_icon(theme_cache.grid_toggle);
-			minimap_button->set_icon(theme_cache.minimap_toggle);
-			arrange_button->set_icon(theme_cache.layout);
+			Button *toggle_snapping_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_snapping_button_id));
+			if (toggle_snapping_button) {
+				toggle_snapping_button->set_icon(theme_cache.snapping_toggle);
+			}
+			Button *toggle_grid_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_grid_button_id));
+			if (toggle_grid_button) {
+				toggle_grid_button->set_icon(theme_cache.grid_toggle);
+			}
+			Button *minimap_button = Object::cast_to<Button>(ObjectDB::get_instance(minimap_button_id));
+			if (minimap_button) {
+				minimap_button->set_icon(theme_cache.minimap_toggle);
+			}
+			Button *arrange_button = Object::cast_to<Button>(ObjectDB::get_instance(arrange_button_id));
+			if (arrange_button) {
+				arrange_button->set_icon(theme_cache.layout);
+			}
 
-			zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
+			Label *zoom_label = Object::cast_to<Label>(ObjectDB::get_instance(zoom_label_id));
+			if (zoom_label) {
+				zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
+			}
 
 			menu_panel->add_theme_style_override(SceneStringName(panel), theme_cache.menu_panel);
 		} break;
@@ -2156,8 +2180,14 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 
 	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 
-	zoom_minus_button->set_disabled(zoom == zoom_min);
-	zoom_plus_button->set_disabled(zoom == zoom_max);
+	Button *zoom_minus_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_minus_button_id));
+	if (zoom_minus_button) {
+		zoom_minus_button->set_disabled(zoom == zoom_min);
+	}
+	Button *zoom_plus_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_plus_button_id));
+	if (zoom_plus_button) {
+		zoom_plus_button->set_disabled(zoom == zoom_max);
+	}
 
 	_update_scroll();
 	minimap->queue_redraw();
@@ -2303,7 +2333,10 @@ void GraphEdit::_zoom_plus() {
 void GraphEdit::_update_zoom_label() {
 	int zoom_percent = static_cast<int>(Math::round(zoom * 100));
 	String zoom_text = itos(zoom_percent) + "%";
-	zoom_label->set_text(zoom_text);
+	Label *zoom_label = Object::cast_to<Label>(ObjectDB::get_instance(zoom_label_id));
+	if (zoom_label) {
+		zoom_label->set_text(zoom_text);
+	}
 }
 
 void GraphEdit::_invalidate_connection_line_cache() {
@@ -2389,7 +2422,10 @@ void GraphEdit::set_snapping_enabled(bool p_enable) {
 	}
 
 	snapping_enabled = p_enable;
-	toggle_snapping_button->set_pressed(p_enable);
+	Button *toggle_snapping_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_snapping_button_id));
+	if (toggle_snapping_button) {
+		toggle_snapping_button->set_pressed(p_enable);
+	}
 	queue_redraw();
 }
 
@@ -2401,7 +2437,10 @@ void GraphEdit::set_snapping_distance(int p_snapping_distance) {
 	ERR_FAIL_COND_MSG(p_snapping_distance < GRID_MIN_SNAPPING_DISTANCE || p_snapping_distance > GRID_MAX_SNAPPING_DISTANCE,
 			vformat("GraphEdit's snapping distance must be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE, GRID_MAX_SNAPPING_DISTANCE));
 	snapping_distance = p_snapping_distance;
-	snapping_distance_spinbox->set_value(p_snapping_distance);
+	SpinBox *snapping_distance_spinbox = Object::cast_to<SpinBox>(ObjectDB::get_instance(snapping_distance_spinbox_id));
+	if (snapping_distance_spinbox) {
+		snapping_distance_spinbox->set_value(p_snapping_distance);
+	}
 	queue_redraw();
 }
 
@@ -2415,7 +2454,10 @@ void GraphEdit::set_show_grid(bool p_show) {
 	}
 
 	show_grid = p_show;
-	toggle_grid_button->set_pressed(p_show);
+	Button *toggle_grid_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_grid_button_id));
+	if (toggle_grid_button) {
+		toggle_grid_button->set_pressed(p_show);
+	}
 	queue_redraw();
 }
 
@@ -2437,16 +2479,25 @@ GraphEdit::GridPattern GraphEdit::get_grid_pattern() const {
 }
 
 void GraphEdit::_snapping_toggled() {
-	snapping_enabled = toggle_snapping_button->is_pressed();
+	Button *toggle_snapping_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_snapping_button_id));
+	if (toggle_snapping_button) {
+		snapping_enabled = toggle_snapping_button->is_pressed();
+	}
 }
 
 void GraphEdit::_snapping_distance_changed(double) {
-	snapping_distance = snapping_distance_spinbox->get_value();
+	SpinBox *snapping_distance_spinbox = Object::cast_to<SpinBox>(ObjectDB::get_instance(snapping_distance_spinbox_id));
+	if (snapping_distance_spinbox) {
+		snapping_distance = snapping_distance_spinbox->get_value();
+	}
 	queue_redraw();
 }
 
 void GraphEdit::_show_grid_toggled() {
-	show_grid = toggle_grid_button->is_pressed();
+	Button *toggle_grid_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_grid_button_id));
+	if (toggle_grid_button) {
+		show_grid = toggle_grid_button->is_pressed();
+	}
 	queue_redraw();
 }
 
@@ -2480,6 +2531,10 @@ float GraphEdit::get_minimap_opacity() const {
 }
 
 void GraphEdit::set_minimap_enabled(bool p_enable) {
+	Button *minimap_button = Object::cast_to<Button>(ObjectDB::get_instance(minimap_button_id));
+	if (!minimap_button) {
+		return;
+	}
 	if (minimap_button->is_pressed() == p_enable) {
 		return;
 	}
@@ -2489,7 +2544,8 @@ void GraphEdit::set_minimap_enabled(bool p_enable) {
 }
 
 bool GraphEdit::is_minimap_enabled() const {
-	return minimap_button->is_pressed();
+	Button *minimap_button = Object::cast_to<Button>(ObjectDB::get_instance(minimap_button_id));
+	return minimap_button && minimap_button->is_pressed();
 }
 
 void GraphEdit::set_show_menu(bool p_hidden) {
@@ -2503,7 +2559,10 @@ bool GraphEdit::is_showing_menu() const {
 
 void GraphEdit::set_show_zoom_label(bool p_hidden) {
 	show_zoom_label = p_hidden;
-	zoom_label->set_visible(show_zoom_label);
+	Label *zoom_label = Object::cast_to<Label>(ObjectDB::get_instance(zoom_label_id));
+	if (zoom_label) {
+		zoom_label->set_visible(show_zoom_label);
+	}
 }
 
 bool GraphEdit::is_showing_zoom_label() const {
@@ -2513,9 +2572,18 @@ bool GraphEdit::is_showing_zoom_label() const {
 void GraphEdit::set_show_zoom_buttons(bool p_hidden) {
 	show_zoom_buttons = p_hidden;
 
-	zoom_minus_button->set_visible(show_zoom_buttons);
-	zoom_reset_button->set_visible(show_zoom_buttons);
-	zoom_plus_button->set_visible(show_zoom_buttons);
+	Button *zoom_minus_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_minus_button_id));
+	if (zoom_minus_button) {
+		zoom_minus_button->set_visible(show_zoom_buttons);
+	}
+	Button *zoom_reset_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_reset_button_id));
+	if (zoom_reset_button) {
+		zoom_reset_button->set_visible(show_zoom_buttons);
+	}
+	Button *zoom_plus_button = Object::cast_to<Button>(ObjectDB::get_instance(zoom_plus_button_id));
+	if (zoom_plus_button) {
+		zoom_plus_button->set_visible(show_zoom_buttons);
+	}
 }
 
 bool GraphEdit::is_showing_zoom_buttons() const {
@@ -2525,9 +2593,18 @@ bool GraphEdit::is_showing_zoom_buttons() const {
 void GraphEdit::set_show_grid_buttons(bool p_hidden) {
 	show_grid_buttons = p_hidden;
 
-	toggle_grid_button->set_visible(show_grid_buttons);
-	toggle_snapping_button->set_visible(show_grid_buttons);
-	snapping_distance_spinbox->set_visible(show_grid_buttons);
+	Button *toggle_grid_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_grid_button_id));
+	if (toggle_grid_button) {
+		toggle_grid_button->set_visible(show_grid_buttons);
+	}
+	Button *toggle_snapping_button = Object::cast_to<Button>(ObjectDB::get_instance(toggle_snapping_button_id));
+	if (toggle_snapping_button) {
+		toggle_snapping_button->set_visible(show_grid_buttons);
+	}
+	SpinBox *snapping_distance_spinbox = Object::cast_to<SpinBox>(ObjectDB::get_instance(snapping_distance_spinbox_id));
+	if (snapping_distance_spinbox) {
+		snapping_distance_spinbox->set_visible(show_grid_buttons);
+	}
 }
 
 bool GraphEdit::is_showing_grid_buttons() const {
@@ -2536,7 +2613,10 @@ bool GraphEdit::is_showing_grid_buttons() const {
 
 void GraphEdit::set_show_minimap_button(bool p_hidden) {
 	show_minimap_button = p_hidden;
-	minimap_button->set_visible(show_minimap_button);
+	Button *minimap_button = Object::cast_to<Button>(ObjectDB::get_instance(minimap_button_id));
+	if (minimap_button) {
+		minimap_button->set_visible(show_minimap_button);
+	}
 }
 
 bool GraphEdit::is_showing_minimap_button() const {
@@ -2545,7 +2625,10 @@ bool GraphEdit::is_showing_minimap_button() const {
 
 void GraphEdit::set_show_arrange_button(bool p_hidden) {
 	show_arrange_button = p_hidden;
-	arrange_button->set_visible(show_arrange_button);
+	Button *arrange_button = Object::cast_to<Button>(ObjectDB::get_instance(arrange_button_id));
+	if (arrange_button) {
+		arrange_button->set_visible(show_arrange_button);
+	}
 }
 
 bool GraphEdit::is_showing_arrange_button() const {
@@ -2619,6 +2702,9 @@ bool GraphEdit::is_connection_lines_antialiased() const {
 }
 
 HBoxContainer *GraphEdit::get_menu_hbox() {
+	HBoxContainer *menu_hbox = Object::cast_to<HBoxContainer>(ObjectDB::get_instance(menu_hbox_id));
+	ERR_FAIL_NULL_V(menu_hbox, nullptr);
+
 	return menu_hbox;
 }
 
@@ -2891,46 +2977,51 @@ GraphEdit::GraphEdit() {
 	top_layer->add_child(menu_panel);
 	menu_panel->set_position(Vector2(10, 10));
 
-	menu_hbox = memnew(HBoxContainer);
+	HBoxContainer *menu_hbox = memnew(HBoxContainer);
 	menu_panel->add_child(menu_hbox);
+	menu_hbox_id = menu_hbox->get_instance_id();
 
 	// Zoom label and controls.
 
-	zoom_label = memnew(Label);
+	Label *zoom_label = memnew(Label);
 	zoom_label->set_visible(show_zoom_label);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
 	menu_hbox->add_child(zoom_label);
+	zoom_label_id = zoom_label->get_instance_id();
 	_update_zoom_label();
 
-	zoom_minus_button = memnew(Button);
+	Button *zoom_minus_button = memnew(Button);
 	zoom_minus_button->set_theme_type_variation("FlatButton");
 	zoom_minus_button->set_visible(show_zoom_buttons);
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
 	zoom_minus_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_minus_button);
 	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
+	zoom_minus_button_id = zoom_minus_button->get_instance_id();
 
-	zoom_reset_button = memnew(Button);
+	Button *zoom_reset_button = memnew(Button);
 	zoom_reset_button->set_theme_type_variation("FlatButton");
 	zoom_reset_button->set_visible(show_zoom_buttons);
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
 	zoom_reset_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_reset_button);
 	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
+	zoom_reset_button_id = zoom_reset_button->get_instance_id();
 
-	zoom_plus_button = memnew(Button);
+	Button *zoom_plus_button = memnew(Button);
 	zoom_plus_button->set_theme_type_variation("FlatButton");
 	zoom_plus_button->set_visible(show_zoom_buttons);
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
 	zoom_plus_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_plus_button);
 	zoom_plus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_plus));
+	zoom_plus_button_id = zoom_plus_button->get_instance_id();
 
 	// Grid controls.
 
-	toggle_grid_button = memnew(Button);
+	Button *toggle_grid_button = memnew(Button);
 	toggle_grid_button->set_theme_type_variation("FlatButton");
 	toggle_grid_button->set_visible(show_grid_buttons);
 	toggle_grid_button->set_toggle_mode(true);
@@ -2939,8 +3030,9 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_grid_button);
 	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
+	toggle_grid_button_id = toggle_grid_button->get_instance_id();
 
-	toggle_snapping_button = memnew(Button);
+	Button *toggle_snapping_button = memnew(Button);
 	toggle_snapping_button->set_theme_type_variation("FlatButton");
 	toggle_snapping_button->set_visible(show_grid_buttons);
 	toggle_snapping_button->set_toggle_mode(true);
@@ -2949,8 +3041,9 @@ GraphEdit::GraphEdit() {
 	toggle_snapping_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_snapping_button);
 	toggle_snapping_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_snapping_toggled));
+	toggle_snapping_button_id = toggle_snapping_button->get_instance_id();
 
-	snapping_distance_spinbox = memnew(SpinBox);
+	SpinBox *snapping_distance_spinbox = memnew(SpinBox);
 	snapping_distance_spinbox->set_visible(show_grid_buttons);
 	snapping_distance_spinbox->set_min(GRID_MIN_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_max(GRID_MAX_SNAPPING_DISTANCE);
@@ -2959,10 +3052,11 @@ GraphEdit::GraphEdit() {
 	snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
 	menu_hbox->add_child(snapping_distance_spinbox);
 	snapping_distance_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_snapping_distance_changed));
+	snapping_distance_spinbox_id = snapping_distance_spinbox->get_instance_id();
 
 	// Extra controls.
 
-	minimap_button = memnew(Button);
+	Button *minimap_button = memnew(Button);
 	minimap_button->set_theme_type_variation("FlatButton");
 	minimap_button->set_visible(show_minimap_button);
 	minimap_button->set_toggle_mode(true);
@@ -2971,14 +3065,16 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(minimap_button);
 	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
+	minimap_button_id = minimap_button->get_instance_id();
 
-	arrange_button = memnew(Button);
+	Button *arrange_button = memnew(Button);
 	arrange_button->set_theme_type_variation("FlatButton");
 	arrange_button->set_visible(show_arrange_button);
 	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
 	arrange_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(arrange_button);
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));
+	arrange_button_id = arrange_button->get_instance_id();
 
 	// Minimap.
 

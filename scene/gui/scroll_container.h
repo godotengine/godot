@@ -48,8 +48,8 @@ public:
 	};
 
 private:
-	HScrollBar *h_scroll = nullptr;
-	VScrollBar *v_scroll = nullptr;
+	ObjectID h_scroll_id;
+	ObjectID v_scroll_id;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
