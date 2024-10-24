@@ -49,6 +49,7 @@ struct [[nodiscard]] Vector4 {
 	};
 
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
 			real_t x;
 			real_t y;
@@ -56,6 +57,7 @@ struct [[nodiscard]] Vector4 {
 			real_t w;
 		};
 		real_t coord[4] = { 0, 0, 0, 0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_axis) {
@@ -144,13 +146,10 @@ struct [[nodiscard]] Vector4 {
 	operator String() const;
 	operator Vector4i() const;
 
-	_FORCE_INLINE_ Vector4() {}
-	_FORCE_INLINE_ Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
-	}
+	constexpr Vector4() :
+			x(0), y(0), z(0), w(0) {}
+	constexpr Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
+			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };
 
 real_t Vector4::dot(const Vector4 &p_vec4) const {
