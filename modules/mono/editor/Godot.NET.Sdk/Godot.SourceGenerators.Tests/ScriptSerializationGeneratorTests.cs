@@ -12,4 +12,13 @@ public class ScriptSerializationGeneratorTests
             "ScriptBoilerplate_ScriptSerialization.generated.cs", "OuterClass.NestedClass_ScriptSerialization.generated.cs"
         );
     }
+
+    [Fact]
+    public async void Inheritance()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptSerializationGenerator>.VerifyNoCompilerDiagnostics(
+            new string[] { "Inheritance.cs" },
+            new string[] { "InheritanceBase_ScriptSerialization.generated.cs", "InheritanceChild_ScriptSerialization.generated.cs" }
+        );
+    }
 }
