@@ -330,7 +330,8 @@ public:
 	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
-	static String num_scientific(double p_num);
+	static String num_scientific(double p_num, int p_digits = 6);
+	static String num_scientific_compat_bind(double p_num); // Delete in Godot 5.0
 	static String num_real(double p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
 	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
