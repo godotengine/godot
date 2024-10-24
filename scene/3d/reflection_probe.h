@@ -51,6 +51,7 @@ public:
 private:
 	RID probe;
 	float intensity = 1.0;
+	float fade_start = 0.5;
 	float max_distance = 0.0;
 	Vector3 size = Vector3(20, 20, 20);
 	Vector3 origin_offset = Vector3(0, 0, 0);
@@ -77,6 +78,9 @@ protected:
 public:
 	void set_intensity(float p_intensity);
 	float get_intensity() const;
+
+	void set_fade_start(float p_fade_start);
+	float get_fade_start() const;
 
 	void set_ambient_mode(AmbientMode p_mode);
 	AmbientMode get_ambient_mode() const;
