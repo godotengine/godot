@@ -1857,6 +1857,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 
+		// Game view.
+		p_theme->set_type_variation("GamePanel", "Panel");
+		Ref<StyleBoxFlat> game_panel = p_theme->get_stylebox(SNAME("panel"), SNAME("Panel"))->duplicate();
+		game_panel->set_corner_radius_all(0);
+		p_theme->set_stylebox(SceneStringName(panel), "GamePanel", game_panel);
+
 		// Main menu.
 		Ref<StyleBoxFlat> menu_transparent_style = p_config.button_style->duplicate();
 		menu_transparent_style->set_bg_color(Color(1, 1, 1, 0));

@@ -30,6 +30,7 @@
 
 #include "editor_debugger_tree.h"
 
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -148,7 +149,8 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
 	const String filter = SceneTreeDock::get_singleton()->get_filter();
-	bool filter_changed = filter != last_filter;
+	bool should_scroll = scrolling_to_item || filter != last_filter;
+	scrolling_to_item = false;
 	TreeItem *scroll_item = nullptr;
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
@@ -185,8 +187,18 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		// Select previously selected node.
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (node.id == inspected_object_id) {
+				if (selection_uncollapse_all) {
+					selection_uncollapse_all = false;
+
+					// Temporarily set to `false`, to allow caching the unfolds.
+					updating_scene_tree = false;
+					item->uncollapse_tree();
+					updating_scene_tree = true;
+				}
+
 				item->select(0);
-				if (filter_changed) {
+
+				if (should_scroll) {
 					scroll_item = item;
 				}
 			}
@@ -194,7 +206,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			if (last_path == _get_path(item)) {
 				updating_scene_tree = false; // Force emission of new selection.
 				item->select(0);
-				if (filter_changed) {
+				if (should_scroll) {
 					scroll_item = item;
 				}
 				updating_scene_tree = true;
@@ -258,12 +270,28 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			}
 		}
 	}
-	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree
+
+	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
 	if (scroll_item) {
-		callable_mp((Tree *)this, &Tree::scroll_to_item).call_deferred(scroll_item, false);
+		scroll_to_item(scroll_item, false);
 	}
 	last_filter = filter;
 	updating_scene_tree = false;
+}
+
+void EditorDebuggerTree::select_node(ObjectID p_id) {
+	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	selection_uncollapse_all = true;
+	inspected_object_id = uint64_t(p_id);
+	scrolling_to_item = true;
+	emit_signal(SNAME("object_selected"), inspected_object_id, debugger_id);
+
+	if (!updating_scene_tree) {
+		// Request a tree refresh.
+		EditorDebuggerNode::get_singleton()->request_remote_tree();
+	}
+	// Set the value immediately, so no update flooding happens and causes a crash.
+	updating_scene_tree = true;
 }
 
 Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
