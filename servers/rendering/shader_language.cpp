@@ -37,7 +37,7 @@
 #include "servers/rendering_server.h"
 #include "shader_types.h"
 
-#define HAS_WARNING(flag) (warning_flags & flag)
+#define HAS_WARNING(flag) (warning_flags & (flag))
 
 int ShaderLanguage::instance_counter = 0;
 
