@@ -214,6 +214,9 @@
 		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
 			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
 		</member>
+		<member name="gi_data" type="GridMapGIData" setter="set_gi_data" getter="get_gi_data">
+			The global illumination data containing baked octant meshes of this [GridMap], stored in [GridMapGIData] to be used with [LightmapGI].
+		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
 		</member>
