@@ -18,6 +18,8 @@ namespace Godot
 
         private WeakReference<GodotObject>? _weakReferenceToSelf;
 
+        private StackTrace? _disposeStackTrace;
+
         /// <summary>
         /// Constructs a new <see cref="GodotObject"/>.
         /// </summary>
@@ -87,7 +89,19 @@ namespace Godot
             // native functions that receive the pointer, which can happen because the
             // debugger calls ToString() and tries to get the value of properties.
             if (instance._disposed || instance.NativePtr == IntPtr.Zero)
-                throw new ObjectDisposedException(instance.GetType().FullName);
+            {
+                string? objectTypeName = instance.GetType().FullName;
+                StackTrace? disposedStackTrace = instance._disposeStackTrace;
+
+                if (disposedStackTrace == null)
+                {
+                    throw new ObjectDisposedException(objectTypeName);
+                }
+                else
+                {
+                    throw new ObjectDisposedException(objectTypeName, $"This instance was disposed by the caller:\n{disposedStackTrace}.");
+                }
+            }
 
             return instance.NativePtr;
         }
@@ -115,6 +129,11 @@ namespace Godot
                 return;
 
             _disposed = true;
+
+            if (ReflectionUtils.IsDebug)
+            {
+                _disposeStackTrace = new StackTrace(true);
+            }
 
             if (NativePtr != IntPtr.Zero)
             {

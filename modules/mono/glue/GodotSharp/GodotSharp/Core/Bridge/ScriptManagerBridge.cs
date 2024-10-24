@@ -300,6 +300,8 @@ namespace Godot.Bridge
         // ReSharper disable once UnusedMember.Local
         public static void LookupScriptsInAssembly(Assembly assembly)
         {
+            ReflectionUtils.IsDebug = OS.IsDebugBuild() || OS.HasFeature("editor");
+
             static void LookupScriptForClass(Type type)
             {
                 var scriptPathAttr = type.GetCustomAttributes(inherit: false)

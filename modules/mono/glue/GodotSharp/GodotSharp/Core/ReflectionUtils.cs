@@ -13,6 +13,7 @@ internal class ReflectionUtils
     private static readonly HashSet<Type>? _tupleTypeSet;
     private static readonly Dictionary<Type, string>? _builtinTypeNameDictionary;
     private static readonly bool _isEditorHintCached;
+    internal static bool IsDebug;
 
     static ReflectionUtils()
     {
