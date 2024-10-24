@@ -48,11 +48,22 @@ class Texture2D;
 class TextureRect;
 class VBoxContainer;
 
+class FuzzySearchResult;
+
 class QuickOpenResultItem;
 
 enum class QuickOpenDisplayMode {
 	GRID,
 	LIST,
+};
+
+struct QuickOpenResultCandidate {
+	String file_path;
+	String file_name;
+	String file_directory;
+
+	Ref<Texture2D> thumbnail;
+	const FuzzySearchResult *result;
 };
 
 class QuickOpenResultContainer : public VBoxContainer {
@@ -61,7 +72,8 @@ class QuickOpenResultContainer : public VBoxContainer {
 public:
 	void init(const Vector<StringName> &p_base_types);
 	void handle_search_box_input(const Ref<InputEvent> &p_ie);
-	void update_results(const String &p_query);
+	void set_query_and_update(const String &p_query);
+	void update_results();
 
 	bool has_nothing_selected() const;
 	String get_selected() const;
@@ -70,27 +82,21 @@ public:
 	void cleanup();
 
 	QuickOpenResultContainer();
-	~QuickOpenResultContainer();
 
 protected:
 	void _notification(int p_what);
 
 private:
-	static const int TOTAL_ALLOCATED_RESULT_ITEMS = 100;
-	static const int SHOW_ALL_FILES_THRESHOLD = 30;
+	static constexpr int SHOW_ALL_FILES_THRESHOLD = 30;
+	static constexpr int MAX_HISTORY_SIZE = 20;
 
-	struct Candidate {
-		String file_name;
-		String file_directory;
-
-		Ref<Texture2D> thumbnail;
-		float score = 0;
-	};
-
+	Vector<FuzzySearchResult> search_results;
 	Vector<StringName> base_types;
-	Vector<Candidate> candidates;
+	Vector<String> filepaths;
+	OAHashMap<String, StringName> filetypes;
+	Vector<QuickOpenResultCandidate> candidates;
 
-	OAHashMap<StringName, List<Candidate>> selected_history;
+	OAHashMap<StringName, Vector<QuickOpenResultCandidate>> selected_history;
 
 	String query;
 	int selection_index = -1;
@@ -114,15 +120,21 @@ private:
 	Label *file_details_path = nullptr;
 	Button *display_mode_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
+	CheckButton *fuzzy_search_toggle = nullptr;
 
 	OAHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
 	static QuickOpenDisplayMode get_adaptive_display_mode(const Vector<StringName> &p_base_types);
 
-	void _create_initial_results(bool p_include_addons);
-	void _find_candidates_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
+	void _ensure_result_vector_capacity();
+	void _create_initial_results();
+	void _find_filepaths_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
-	int _sort_candidates(const String &p_query);
+	void _setup_candidate(QuickOpenResultCandidate &candidate, const String &filepath);
+	void _setup_candidate(QuickOpenResultCandidate &candidate, const FuzzySearchResult &result);
+	void _update_fuzzy_search_results();
+	void _use_default_candidates();
+	void _score_and_sort_candidates();
 	void _update_result_items(int p_new_visible_results_count, int p_new_selection_index);
 
 	void _move_selection_index(Key p_key);
@@ -130,9 +142,12 @@ private:
 
 	void _item_input(const Ref<InputEvent> &p_ev, int p_index);
 
+	CanvasItem *_get_result_root();
+	void _layout_result_item(QuickOpenResultItem *item);
 	void _set_display_mode(QuickOpenDisplayMode p_display_mode);
 	void _toggle_display_mode();
 	void _toggle_include_addons(bool p_pressed);
+	void _toggle_fuzzy_search(bool p_pressed);
 
 	static void _bind_methods();
 };
@@ -143,7 +158,10 @@ class QuickOpenResultGridItem : public VBoxContainer {
 public:
 	QuickOpenResultGridItem();
 
-	void set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file_name);
+	const FuzzySearchResult *result;
+
+	void set_content(const QuickOpenResultCandidate &p_candidate);
+	Vector<Rect2i> get_search_highlights();
 	void reset();
 	void highlight_item(const Color &p_color);
 	void remove_highlight();
@@ -159,7 +177,10 @@ class QuickOpenResultListItem : public HBoxContainer {
 public:
 	QuickOpenResultListItem();
 
-	void set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file_name, const String &p_file_directory);
+	const FuzzySearchResult *result;
+
+	void set_content(const QuickOpenResultCandidate &p_candidate);
+	Vector<Rect2i> get_search_highlights();
 	void reset();
 	void highlight_item(const Color &p_color);
 	void remove_highlight();
@@ -184,11 +205,13 @@ class QuickOpenResultItem : public HBoxContainer {
 public:
 	QuickOpenResultItem();
 
-	void set_content(const Ref<Texture2D> &p_thumbnail, const String &p_file_name, const String &p_file_directory);
+	bool enable_highlights = true;
+
+	void set_content(const QuickOpenResultCandidate &p_candidate);
 	void set_display_mode(QuickOpenDisplayMode p_display_mode);
 	void reset();
-
 	void highlight_item(bool p_enabled);
+	void draw_search_highlights();
 
 protected:
 	void _notification(int p_what);
@@ -203,6 +226,7 @@ private:
 
 	bool is_hovering = false;
 	bool is_selected = false;
+	bool dirty_highlights = false;
 
 	void _set_enabled(bool p_enabled);
 };

@@ -717,8 +717,20 @@
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
+		<member name="filesystem/quick_open_dialog/enable_fuzzy_matching" type="bool" setter="" getter="">
+			If [code]true[/code], fuzzy matching of search tokens is allowed.
+		</member>
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
+		</member>
+		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
+			The number of allowed missed query characters in a match, if fuzzy matching is enabled. For example, with the default value of 2, [code]foobar[/code] would match [code]foobur[/code] and [code]foob[/code] but not [code]foo[/code].
+		</member>
+		<member name="filesystem/quick_open_dialog/max_results" type="int" setter="" getter="">
+			Maximum number of matches to show in dialog.
+		</member>
+		<member name="filesystem/quick_open_dialog/show_search_highlight" type="bool" setter="" getter="">
+			If [code]true[/code], results will be highlighted with their search matches.
 		</member>
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
