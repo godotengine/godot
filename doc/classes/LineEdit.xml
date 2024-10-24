@@ -276,6 +276,9 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
+		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
+			When enabled, the button's icon will expand/shrink to fit the LineEdit's size.
+		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
@@ -321,6 +324,9 @@
 		</member>
 		<member name="right_icon" type="Texture2D" setter="set_right_icon" getter="get_right_icon">
 			Sets the icon that will appear in the right end of the [LineEdit] if there's no [member text], or always, if [member clear_button_enabled] is set to [code]false[/code].
+		</member>
+		<member name="right_icon_scale" type="float" setter="set_right_icon_scale" getter="get_right_icon_scale" default="1.0">
+			Used with the expand_icon to control the icon size.
 		</member>
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret" default="false">
 			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
