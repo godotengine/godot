@@ -647,10 +647,19 @@ Vector<uint8_t> RenderingDevice::buffer_get_data(RID p_buffer, uint32_t p_offset
 
 RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage) {
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
+	ERR_FAIL_COND_V_MSG(p_usage.has_flag(STORAGE_BUFFER_USAGE_READONLY) && p_usage.has_flag(STORAGE_BUFFER_USAGE_WRITEONLY), RID(), "Cannot set both read and write ONLY flags");
 
 	Buffer buffer;
 	buffer.size = p_size_bytes;
-	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
+	buffer.usage = RDD::BUFFER_USAGE_STORAGE_BIT;
+	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_READONLY)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+	} else if (p_usage.has_flag(STORAGE_BUFFER_USAGE_WRITEONLY)) {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_TO_BIT);
+	} else {
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
+		buffer.usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_TO_BIT);
+	}
 	if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_INDIRECT_BIT);
 	}
@@ -7054,6 +7063,8 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT32);
 
 	BIND_BITFIELD_FLAG(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+	BIND_BITFIELD_FLAG(STORAGE_BUFFER_USAGE_READONLY);
+	BIND_BITFIELD_FLAG(STORAGE_BUFFER_USAGE_WRITEONLY);
 
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER); //for sampling only (sampler GLSL type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER_WITH_TEXTURE); // for sampling only); but includes a texture); (samplerXX GLSL type)); first a sampler then a texture

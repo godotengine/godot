@@ -887,6 +887,8 @@ public:
 
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
+		STORAGE_BUFFER_USAGE_READONLY = 2,
+		STORAGE_BUFFER_USAGE_WRITEONLY = 4,
 	};
 
 	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
