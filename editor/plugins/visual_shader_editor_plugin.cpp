@@ -988,9 +988,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_input_port).bind(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_input_btn);
 
-			hb2->add_spacer();
-
 			Button *add_output_btn = memnew(Button);
+			add_output_btn->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 			add_output_btn->set_text(TTR("Add Output"));
 			add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_output_port).bind(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_output_btn);
@@ -6633,9 +6632,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	desc_hbox->add_child(desc_label);
 	desc_label->set_text(TTR("Description:"));
 
-	desc_hbox->add_spacer();
-
 	highend_label = memnew(Label);
+	highend_label->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	desc_hbox->add_child(highend_label);
 	highend_label->set_visible(false);
 	highend_label->set_text("Vulkan");

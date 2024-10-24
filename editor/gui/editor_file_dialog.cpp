@@ -2286,8 +2286,8 @@ EditorFileDialog::EditorFileDialog() {
 	l->set_theme_type_variation("HeaderSmall");
 	fav_hb->add_child(l);
 
-	fav_hb->add_spacer();
 	fav_up = memnew(Button);
+	fav_up->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	fav_up->set_theme_type_variation("FlatButton");
 	fav_hb->add_child(fav_up);
 	fav_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_up));

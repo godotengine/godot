@@ -877,8 +877,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_label = memnew(Label);
 	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
-	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
+	restart_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	restart_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsDialog::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));

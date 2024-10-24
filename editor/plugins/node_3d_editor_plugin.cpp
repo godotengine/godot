@@ -9197,10 +9197,10 @@ void fragment() {
 		sun_max_distance->set_max(4096);
 
 		sun_add_to_scene = memnew(Button);
+		sun_add_to_scene->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 		sun_add_to_scene->set_text(TTR("Add Sun to Scene"));
 		sun_add_to_scene->set_tooltip_text(TTR("Adds a DirectionalLight3D node matching the preview sun settings to the current scene.\nHold Shift while clicking to also add the preview environment to the current scene."));
 		sun_add_to_scene->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_add_sun_to_scene).bind(false));
-		sun_vb->add_spacer();
 		sun_vb->add_child(sun_add_to_scene);
 
 		sun_state = memnew(Label);
@@ -9272,10 +9272,10 @@ void fragment() {
 		environ_vb->add_margin_child(TTR("Post Process"), fx_vb);
 
 		environ_add_to_scene = memnew(Button);
+		environ_add_to_scene->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 		environ_add_to_scene->set_text(TTR("Add Environment to Scene"));
 		environ_add_to_scene->set_tooltip_text(TTR("Adds a WorldEnvironment node matching the preview environment settings to the current scene.\nHold Shift while clicking to also add the preview sun to the current scene."));
 		environ_add_to_scene->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_add_environment_to_scene).bind(false));
-		environ_vb->add_spacer();
 		environ_vb->add_child(environ_add_to_scene);
 
 		environ_state = memnew(Label);

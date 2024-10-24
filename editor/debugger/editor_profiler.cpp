@@ -675,9 +675,9 @@ EditorProfiler::EditorProfiler() {
 	display_internal_profiles->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
 	hb->add_child(display_internal_profiles);
 
-	hb->add_spacer();
-
-	hb->add_child(memnew(Label(TTR("Frame #:"))));
+	Label *frame_label = memnew(Label(TTR("Frame #:")));
+	frame_label->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
+	hb->add_child(frame_label);
 
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
