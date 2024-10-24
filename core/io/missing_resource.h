@@ -57,6 +57,8 @@ public:
 	void set_recording_properties(bool p_enable);
 	bool is_recording_properties() const;
 
+	virtual String get_save_class() const override;
+
 	MissingResource();
 };
 
