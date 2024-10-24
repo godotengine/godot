@@ -37,6 +37,12 @@ RID NavigationRegion3D::get_rid() const {
 	return region;
 }
 
+#ifndef DISABLE_DEPRECATED
+RID NavigationRegion3D::get_region_rid() const {
+	return get_rid();
+}
+#endif // DISABLE_DEPRECATED
+
 void NavigationRegion3D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
@@ -155,10 +161,6 @@ void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
 
 real_t NavigationRegion3D::get_travel_cost() const {
 	return travel_cost;
-}
-
-RID NavigationRegion3D::get_region_rid() const {
-	return get_rid();
 }
 
 void NavigationRegion3D::_notification(int p_what) {
@@ -284,6 +286,9 @@ PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
 
 void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationRegion3D::get_rid);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navigation_mesh"), &NavigationRegion3D::set_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationRegion3D::get_navigation_mesh);
@@ -302,8 +307,6 @@ void NavigationRegion3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion3D::get_navigation_layer_value);
-
-	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationRegion3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationRegion3D::get_enter_cost);
