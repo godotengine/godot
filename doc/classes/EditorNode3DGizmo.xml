@@ -207,6 +207,13 @@
 				Sets the gizmo's hidden state. If [code]true[/code], the gizmo will be hidden. If [code]false[/code], it will be shown.
 			</description>
 		</method>
+		<method name="set_hidden_subscenes">
+			<return type="void" />
+			<param index="0" name="hidden_subscenes" type="bool" />
+			<description>
+				Sets any gizmos in subscenes' states to the hidden state. If [code]true[/code], any subscene gizmos will be hidden. If [code]false[/code], they will be shown.
+			</description>
+		</method>
 		<method name="set_node_3d">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />

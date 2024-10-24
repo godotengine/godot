@@ -52,7 +52,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 		bool extra_margin = false;
 		Transform3D xform;
 
-		void create_instance(Node3D *p_base, bool p_hidden = false);
+		void create_instance(Node3D *p_base, bool p_hidden = false, bool p_hide_subscenes = false);
 	};
 
 	bool selected;
@@ -70,6 +70,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 
 	bool valid;
 	bool hidden;
+	bool hide_subscenes;
 	Vector<Instance> instances;
 	Node3D *spatial_node = nullptr;
 
@@ -140,6 +141,7 @@ public:
 
 	virtual bool is_editable() const;
 
+	void set_hidden_subscenes(bool p_subscenes);
 	void set_hidden(bool p_hidden);
 	void set_plugin(EditorNode3DGizmoPlugin *p_plugin);
 
@@ -156,6 +158,7 @@ public:
 	static const int ON_TOP = 2;
 
 protected:
+	bool hidden_subscenes;
 	int current_state;
 	HashSet<EditorNode3DGizmo *> current_gizmos;
 	HashMap<String, Vector<Ref<StandardMaterial3D>>> materials;
@@ -215,6 +218,7 @@ public:
 	virtual void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel = false);
 
 	Ref<EditorNode3DGizmo> get_gizmo(Node3D *p_spatial);
+	void set_state_subscenes(bool p_hidden_subscenes);
 	void set_state(int p_state);
 	int get_state() const;
 	void unregister_gizmo(EditorNode3DGizmo *p_gizmo);
