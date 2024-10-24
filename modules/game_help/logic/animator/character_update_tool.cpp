@@ -247,12 +247,22 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         }
         switch (animation_track->type) {
         case Animation::TYPE_POSITION_3D: {
-			if (animation_track->path.get_name(0).begins_with("hm."))
+            StringName name = animation_track->path.get_subname(0);
+			if (name.begins_with("hm."))
 			{
-				Vector3 loc;
-				Error err = a->try_position_track_interpolate(i, time, &loc);
-				temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
-				continue;
+                if(name.begins_with("hm.v.")) {
+                    temp_anim_skeleton.set_root_lookat(a,name, i, time, delta);
+                }
+                else if(name.begins_with("hm.p.")) {
+                    temp_anim_skeleton.set_root_position_add(a,name, i, time, delta);
+                }
+                else {
+                    Vector3 loc;
+                    Error err = a->try_position_track_interpolate(i, time, &loc);
+                    temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
+
+                }
+                continue;
 			}
             int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
             if (bone_idx == -1) {

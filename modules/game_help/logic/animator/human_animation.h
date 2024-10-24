@@ -46,18 +46,97 @@ namespace HumanAnim
         }
 
         void set_human_lookat(StringName p_bone,const Vector3& p_lookat) {
-            if(p_bone.str().begins_with("hm.p.")) {
-                String name = p_bone.substr(5);
-				root_position[name] = p_lookat;
+            String name = p_bone.substr(3);
+            bone_lookat[name] = p_lookat;
+        }
+        static Basis retarget_root_direction(const Vector3& p_start_direction,const Vector3& p_end_direction) {
+            Basis basis;
+            const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
+            if (axis.length_squared() != 0) {
+                real_t dot = p_start_direction.dot(p_end_direction);
+                dot = CLAMP(dot, -1.0f, 1.0f);
+                const real_t angle_rads = Math::acos(dot);
+                basis = Basis(axis, angle_rads);
             }
-            else if(p_bone.str().begins_with("hm.v.")) {
-                String name = p_bone.substr(5);
-				bone_lookat[name] = p_lookat;
+            return basis;
+            
+        }
+
+        static Basis compute_lookat_rotation_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
+				Vector3 loc,loc2;
+				Error err = p_animation->try_position_track_interpolate(track_index, time_start, &loc);
+				err = p_animation->try_position_track_interpolate(track_index, time_start, &loc2);
+				return retarget_root_direction(loc,loc2);
+            
+        }
+
+        static Vector3 compute_lookat_position_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
+				Vector3 loc,loc2;
+				Error err = p_animation->try_position_track_interpolate(track_index, time_start, &loc);
+				err = p_animation->try_position_track_interpolate(track_index, time_start, &loc2);
+				return loc2 - loc;
+            
+        }
+
+        void set_root_lookat(Ref<Animation> p_animation,StringName p_bone, int track_index ,double time,double delta) {
+            if(delta == 0) return;
+
+            Basis q;
+
+            double last_time = time - delta;
+
+            if(delta >= 0) {
+                if(last_time < 0) {
+                    q = compute_lookat_rotation_add(p_animation,track_index, 0, time) * compute_lookat_rotation_add(p_animation,track_index, p_animation->get_length() + last_time, p_animation->get_length());
+                }
+                else {
+                    q = compute_lookat_rotation_add(p_animation,track_index, last_time, time);
+                }
+            } else {
+                if(last_time > p_animation->get_length()) {
+                    q = compute_lookat_rotation_add(p_animation,track_index, time, p_animation->get_length()) * compute_lookat_rotation_add(p_animation,track_index, last_time - p_animation->get_length(), 0);
+                }
+                else {
+                    q = compute_lookat_rotation_add(p_animation,track_index, last_time , time);
+                }
+
             }
-            else if(p_bone.str().begins_with("hm.")) {
-                String name = p_bone.substr(3);
-                bone_lookat[name] = p_lookat;
-            }            
+            String name = p_bone.substr(5);
+            root_global_rotation_add[name] = q.get_rotation_quaternion();
+            Vector3 loc;
+            p_animation->try_position_track_interpolate(track_index, time, &loc);
+			bone_lookat[name] = loc;
+        }
+
+        void set_root_position_add(Ref<Animation> p_animation, StringName p_bone, int track_index ,double time,double delta) {
+            if(delta == 0) return;
+
+            Vector3 q;
+
+            double last_time = time - delta;
+
+            if(delta >= 0) {
+                if(last_time < 0) {
+                    q = compute_lookat_position_add(p_animation,track_index, 0, time) + compute_lookat_position_add(p_animation,track_index, p_animation->get_length() + last_time, p_animation->get_length());
+                }
+                else {
+                    q = compute_lookat_position_add(p_animation,track_index, last_time, time);
+                }
+            } else {
+                if(last_time > p_animation->get_length()) {
+                    q = compute_lookat_position_add(p_animation,track_index, time, p_animation->get_length()) + compute_lookat_position_add(p_animation,track_index, last_time - p_animation->get_length(), 0);
+                }
+                else {
+                    q = compute_lookat_position_add(p_animation,track_index, last_time , time);
+                }
+
+            }
+            String name = p_bone.substr(5);
+			root_global_move_add[name] = q;
+            Vector3 loc;
+            p_animation->try_position_track_interpolate(track_index, time, &loc);
+			root_position[name] = loc;
+            
         }
 
         void blend(HumanSkeleton& p_other,float p_weight) {
@@ -341,36 +420,40 @@ namespace HumanAnim
             for(auto& it : p_config.root_bone) {
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
-				Quaternion rot;
+                Transform3D local_trans;
+				local_trans.basis = trans.basis;
 
 				Transform3D child_trans = trans * p_skeleton_config.real_pose[pose.child_bones[0]];
-				Vector3 forward = child_trans.origin - trans.origin;
-				rot = Quaternion(forward, p_skeleton_config.bone_lookat[it]);
+				Vector3 forward = (child_trans.origin - trans.origin).normalized();
                 
-				p_skeleton_config.root_global_rotation[it] = rot;
+                trans.basis.rotate_to_align(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
+                p_skeleton_config.real_local_pose[it] = trans.basis.get_rotation_quaternion();
+
+
+				p_skeleton_config.root_global_rotation[it] = (local_trans.basis.inverse() * trans.basis).get_rotation_quaternion();
 
             }
             
         }
+
         // 重定向骨骼
         static void retarget(HumanConfig& p_config,HumanSkeleton& p_skeleton_config) {
             for(auto& it : p_config.root_bone) {
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
-                Quaternion rot;
+                Transform3D local_trans;
+				local_trans.basis = trans.basis;
 
 				Transform3D child_trans = trans * p_skeleton_config.real_pose[pose.child_bones[0]];
 				Vector3 forward = (child_trans.origin - trans.origin).normalized();
-                rot = Quaternion( forward, p_skeleton_config.bone_lookat[it]);
-                trans.basis = Basis(pose.rotation * rot);
-				trans.origin = pose.position + p_skeleton_config.root_position[it];
+                
+                trans.basis.rotate_to_align(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
                 p_skeleton_config.real_local_pose[it] = trans.basis.get_rotation_quaternion();
 
-				p_skeleton_config.root_global_rotation[it] = rot;
+
+				p_skeleton_config.root_global_rotation[it] = (local_trans.basis.inverse() * trans.basis).get_rotation_quaternion();
                 
 
-                Transform3D local_trans;
-				local_trans.basis = trans.basis;
                 retarget(p_config, pose, local_trans,p_skeleton_config);
 
                 
