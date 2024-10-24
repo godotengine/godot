@@ -72,6 +72,8 @@ def print_error(*values: object) -> None:
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
+    if self["gen_only"]:
+        return []
     # Convert string to list of absolute paths (including expanding wildcard)
     if isinstance(files, (str, bytes)):
         # Keep SCons project-absolute path as they are (no wildcard support)
@@ -128,6 +130,8 @@ def _find_scu_section_name(subdir):
 
 
 def add_source_files_scu(self, sources, files, allow_gen=False):
+    if self["gen_only"]:
+        return []
     if self["scu_build"] and isinstance(files, str):
         if "*." not in files:
             return False
@@ -154,6 +158,8 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
 # Either builds the folder using the SCU system,
 # or reverts to regular build.
 def add_source_files(self, sources, files, allow_gen=False):
+    if self["gen_only"]:
+        return []
     if not add_source_files_scu(self, sources, files, allow_gen):
         # Wraps the original function when scu build is not active.
         add_source_files_orig(self, sources, files, allow_gen)
@@ -713,24 +719,32 @@ def add_to_vs_project(env, sources):
 
 
 def precious_program(env, program, sources, **args):
+    if env["gen_only"]:
+        return []
     program = env.ProgramOriginal(program, sources, **args)
     env.Precious(program)
     return program
 
 
 def add_shared_library(env, name, sources, **args):
+    if env["gen_only"]:
+        return []
     library = env.SharedLibrary(name, sources, **args)
     env.NoCache(library)
     return library
 
 
 def add_library(env, name, sources, **args):
+    if env["gen_only"]:
+        return []
     library = env.Library(name, sources, **args)
     env.NoCache(library)
     return library
 
 
 def add_program(env, name, sources, **args):
+    if env["gen_only"]:
+        return []
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
