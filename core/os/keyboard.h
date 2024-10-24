@@ -38,8 +38,8 @@
 enum class Key {
 	NONE = 0,
 	// Special key: The strategy here is similar to the one used by toolkits,
-	// which consists in leaving the 21 bits unicode range for printable
-	// characters, and use the upper 11 bits for special keys and modifiers.
+	// which consists in leaving the lower 22 bits unicode range for printable
+	// characters, use bit 23 to indicate special keys, and use the upper 9 bits for modifiers.
 	// This way everything (char/keycode) can fit nicely in one 32-bit
 	// integer (the enum's underlying type is `int` by default).
 	SPECIAL = (1 << 22),
