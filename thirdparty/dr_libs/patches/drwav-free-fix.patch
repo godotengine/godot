@@ -1,0 +1,13 @@
+diff --git a/dr_wav.h b/dr_wav.h
+index a8207ab905..ccf2c251e1 100644
+--- a/dr_wav.h
++++ b/dr_wav.h
+@@ -1817,7 +1817,7 @@ DRWAV_PRIVATE void* drwav__realloc_default(void* p, size_t sz, void* pUserData)
+ DRWAV_PRIVATE void drwav__free_default(void* p, void* pUserData)
+ {
+     (void)pUserData;
+-    DRWAV_FREE(p);
++    if (p) DRWAV_FREE(p);
+ }
+ 
+ 
