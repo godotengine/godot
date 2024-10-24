@@ -3379,6 +3379,8 @@ void EditorNode::unload_editor_addons() {
 		remove_editor_plugin(E.value, false);
 		memdelete(E.value);
 	}
+
+	addon_name_to_plugin.clear();
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
