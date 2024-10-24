@@ -344,10 +344,15 @@ public:
 	double to_float() const;
 	int64_t hex_to_int() const;
 	int64_t bin_to_int() const;
+
+	// Removes any non-numeric characters and stops at the first occurrence of a decimal point.
 	int64_t to_int() const;
 
-	static int64_t to_int(const char *p_str, int p_len = -1);
-	static int64_t to_int(const wchar_t *p_str, int p_len = -1);
+	// Parsing stops at the first non-digit character. If p_len is negative,
+	// parsing continues until the end of the digit sequence. Additionally, when p_clamp is true,
+	// the integer is clamped to the range of int64_t [-9223372036854775808, +9223372036854775807].
+	static int64_t to_int(const char *p_str, int p_len = -1, bool p_clamp = false);
+	static int64_t to_int(const wchar_t *p_str, int p_len = -1, bool p_clamp = false);
 	static int64_t to_int(const char32_t *p_str, int p_len = -1, bool p_clamp = false);
 
 	static double to_float(const char *p_str);
