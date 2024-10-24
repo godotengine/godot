@@ -137,11 +137,22 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
+void FileAccessUnix::_sync() {
+	ERR_FAIL_NULL(f);
+
+	fflush(f);
+	int fd = fileno(f);
+	fsync(fd);
+}
+
 void FileAccessUnix::_close() {
 	if (!f) {
 		return;
 	}
 
+	if (!save_path.is_empty()) {
+		_sync();
+	}
 	fclose(f);
 	f = nullptr;
 
