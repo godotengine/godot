@@ -3382,6 +3382,8 @@ void EditorNode::unload_editor_addons() {
 		remove_editor_plugin(E.value, false);
 		memdelete(E.value);
 	}
+
+	addon_name_to_plugin.clear();
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
@@ -4675,6 +4677,11 @@ void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
 	ERR_FAIL_NULL_V(p_object, nullptr);
+
+	const Node *node = Object::cast_to<const Node>(p_object);
+	if (node && node->has_meta(SceneStringName(_custom_type_script))) {
+		return node->get_meta(SceneStringName(_custom_type_script));
+	}
 
 	Ref<Script> scr = p_object->get_script();
 

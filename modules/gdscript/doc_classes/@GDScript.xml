@@ -4,8 +4,8 @@
 		Built-in GDScript constants, functions, and annotations.
 	</brief_description>
 	<description>
-		A list of GDScript-specific utility functions and annotations accessible from any script.
-		For the list of the global functions and constants see [@GlobalScope].
+		A list of utility functions and annotations accessible from any script written in GDScript.
+		For the list of global functions and constants that can be accessed in any scripting language, see [@GlobalScope].
 	</description>
 	<tutorials>
 		<link title="GDScript exports">$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html</link>
