@@ -44,8 +44,7 @@ jobs:
             build-mono: false
             tests: true
             proj-test: true
-            # Generate an API dump for godot-cpp tests.
-            api-dump: true
+            godot-cpp: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
@@ -171,12 +170,6 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
-      - name: Dump Godot API
-        uses: ./.github/actions/godot-api-dump
-        if: matrix.api-dump
-        with:
-          bin: ${{ matrix.bin }}
-
       - name: Unit tests
         if: matrix.tests
         run: |
@@ -217,3 +210,10 @@ jobs:
         if: matrix.proj-conv
         with:
           bin: ${{ matrix.bin }}
+
+      - name: Test godot-cpp
+        uses: ./.github/actions/godot-cpp-test
+        if: matrix.godot-cpp
+        with:
+          bin: ${{ matrix.bin }}
+          scons-flags: target=template_debug dev_build=yes verbose=yes
