@@ -157,6 +157,11 @@ public:
 		TEXT_DIRECTION_INHERITED = TextServer::DIRECTION_INHERITED,
 	};
 
+	enum LayoutPivotMode {
+		PIVOT_MODE_PIXEL,
+		PIVOT_MODE_RATIO,
+	};
+
 private:
 	struct CComparator {
 		bool operator()(const Control *p_a, const Control *p_b) const {
@@ -196,7 +201,9 @@ private:
 
 		real_t rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
+		LayoutPivotMode pivot_mode = PIVOT_MODE_PIXEL;
 		Vector2 pivot_offset;
+		Vector2 pivot_offset_ratio;
 
 		Point2 pos_cache;
 		Size2 size_cache;
@@ -481,8 +488,12 @@ public:
 	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
 	real_t get_rotation_degrees() const;
+	void set_pivot_mode(LayoutPivotMode p_pivot_mode);
+	LayoutPivotMode get_pivot_mode() const;
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
+	void set_pivot_offset_ratio(const Vector2 &p_pivot_ratio);
+	Vector2 get_pivot_offset_ratio() const;
 
 	void update_minimum_size();
 
@@ -663,6 +674,7 @@ VARIANT_ENUM_CAST(Control::Anchor);
 VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
+VARIANT_ENUM_CAST(Control::LayoutPivotMode)
 
 // G = get_drag_data_fw, C = can_drop_data_fw, D = drop_data_fw, U = underscore
 #define SET_DRAG_FORWARDING_CD(from, to) from->set_drag_forwarding(Callable(), callable_mp(this, &to::can_drop_data_fw).bind(from), callable_mp(this, &to::drop_data_fw).bind(from));
