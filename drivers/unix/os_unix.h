@@ -53,6 +53,8 @@ protected:
 
 	virtual void finalize_core() override;
 
+	virtual StackInfo describe_function(const char *dli_fname, const void *dli_fbase, const char *dli_sname, const void *dli_saddr, const void *address) const;
+
 public:
 	OS_Unix();
 
@@ -101,6 +103,10 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
+
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+	virtual Vector<StackInfo> get_cpp_stack_info() const override;
+#endif
 };
 
 class UnixTerminalLogger : public StdLogger {

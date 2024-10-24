@@ -769,6 +769,19 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
+#ifdef DEBUG_ENABLED
+String OS_MacOS::get_debug_descriptor(const StackInfo &p_info) {
+	String pipe;
+	Error error = execute("atos", { "-o", p_info.file, "-l", String::num_uint64(reinterpret_cast<uint64_t>(p_info.load_address), 16), String::num_uint64(reinterpret_cast<uint64_t>(p_info.symbol_address), 16) }, &pipe);
+
+	if (error == OK) {
+		return pipe.strip_edges();
+	} else {
+		return String();
+	}
+}
+#endif
+
 void OS_MacOS::run() {
 	if (!main_loop) {
 		return;
