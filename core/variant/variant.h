@@ -60,6 +60,7 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/packed_array_ref.h"
 
 class Object;
 class RefCounted;
@@ -81,6 +82,18 @@ typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 typedef Vector<Vector4> PackedVector4Array;
+
+typedef PackedArrayRefRAII<uint8_t> PackedByteArrayRef;
+typedef PackedArrayRefRAII<int32_t> PackedInt32ArrayRef;
+typedef PackedArrayRefRAII<int64_t> PackedInt64ArrayRef;
+typedef PackedArrayRefRAII<float> PackedFloat32ArrayRef;
+typedef PackedArrayRefRAII<double> PackedFloat64ArrayRef;
+typedef PackedArrayRefRAII<real_t> PackedRealArrayRef;
+typedef PackedArrayRefRAII<String> PackedStringArrayRef;
+typedef PackedArrayRefRAII<Vector2> PackedVector2ArrayRef;
+typedef PackedArrayRefRAII<Vector3> PackedVector3ArrayRef;
+typedef PackedArrayRefRAII<Color> PackedColorArrayRef;
+typedef PackedArrayRefRAII<Vector4> PackedVector4ArrayRef;
 
 class Variant {
 public:
@@ -192,64 +205,6 @@ private:
 			} else {
 				unref();
 			}
-		}
-	};
-
-	/* array helpers */
-	struct PackedArrayRefBase {
-		SafeRefCount refcount;
-		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (refcount.ref()) {
-				return this;
-			} else {
-				return nullptr;
-			}
-		}
-		static _FORCE_INLINE_ PackedArrayRefBase *reference_from(PackedArrayRefBase *p_base, PackedArrayRefBase *p_from) {
-			if (p_base == p_from) {
-				return p_base; //same thing, do nothing
-			}
-
-			if (p_from->reference()) {
-				if (p_base->refcount.unref()) {
-					memdelete(p_base);
-				}
-				return p_from;
-			} else {
-				return p_base; //keep, could not reference new
-			}
-		}
-		static _FORCE_INLINE_ void destroy(PackedArrayRefBase *p_array) {
-			if (p_array->refcount.unref()) {
-				memdelete(p_array);
-			}
-		}
-		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
-	};
-
-	template <typename T>
-	struct PackedArrayRef : public PackedArrayRefBase {
-		Vector<T> array;
-		static _FORCE_INLINE_ PackedArrayRef<T> *create() {
-			return memnew(PackedArrayRef<T>);
-		}
-		static _FORCE_INLINE_ PackedArrayRef<T> *create(const Vector<T> &p_from) {
-			return memnew(PackedArrayRef<T>(p_from));
-		}
-
-		static _FORCE_INLINE_ const Vector<T> &get_array(PackedArrayRefBase *p_base) {
-			return static_cast<PackedArrayRef<T> *>(p_base)->array;
-		}
-		static _FORCE_INLINE_ Vector<T> *get_array_ptr(const PackedArrayRefBase *p_base) {
-			return &const_cast<PackedArrayRef<T> *>(static_cast<const PackedArrayRef<T> *>(p_base))->array;
-		}
-
-		_FORCE_INLINE_ PackedArrayRef(const Vector<T> &p_from) {
-			array = p_from;
-			refcount.init();
-		}
-		_FORCE_INLINE_ PackedArrayRef() {
-			refcount.init();
 		}
 	};
 
@@ -434,6 +389,17 @@ public:
 	operator PackedColorArray() const;
 	operator PackedVector4Array() const;
 
+	operator PackedByteArrayRef();
+	operator PackedInt32ArrayRef();
+	operator PackedInt64ArrayRef();
+	operator PackedFloat32ArrayRef();
+	operator PackedFloat64ArrayRef();
+	operator PackedStringArrayRef();
+	operator PackedVector2ArrayRef();
+	operator PackedVector3ArrayRef();
+	operator PackedColorArrayRef();
+	operator PackedVector4ArrayRef();
+
 	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
@@ -499,6 +465,17 @@ public:
 	Variant(const PackedVector3Array &p_vector3_array);
 	Variant(const PackedColorArray &p_color_array);
 	Variant(const PackedVector4Array &p_vector4_array);
+
+	Variant(PackedByteArrayRef &p_byte_array);
+	Variant(PackedInt32ArrayRef &p_int32_array);
+	Variant(PackedInt64ArrayRef &p_int64_array);
+	Variant(PackedFloat32ArrayRef &p_float32_array);
+	Variant(PackedFloat64ArrayRef &p_float64_array);
+	Variant(PackedStringArrayRef &p_string_array);
+	Variant(PackedVector2ArrayRef &p_vector2_array);
+	Variant(PackedVector3ArrayRef &p_vector3_array);
+	Variant(PackedColorArrayRef &p_color_array);
+	Variant(PackedVector4ArrayRef &p_vector4_array);
 
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Plane> &p_array); // helper

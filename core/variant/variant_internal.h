@@ -186,26 +186,26 @@ public:
 	_FORCE_INLINE_ static const Array *get_array(const Variant *v) { return reinterpret_cast<const Array *>(v->_data._mem); }
 
 	// Typed arrays.
-	_FORCE_INLINE_ static PackedByteArray *get_byte_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<uint8_t> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedByteArray *get_byte_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<uint8_t> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedInt32Array *get_int32_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<int32_t> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedInt32Array *get_int32_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<int32_t> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedInt64Array *get_int64_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<int64_t> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedInt64Array *get_int64_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<int64_t> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedFloat32Array *get_float32_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<float> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedFloat32Array *get_float32_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<float> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedFloat64Array *get_float64_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<double> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedFloat64Array *get_float64_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<double> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedStringArray *get_string_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<String> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedStringArray *get_string_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<String> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedVector2Array *get_vector2_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector2> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedVector2Array *get_vector2_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector2> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedVector3Array *get_vector3_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedVector3Array *get_vector3_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedColorArray *get_color_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedColorArray *get_color_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedVector4Array *get_vector4_array(Variant *v) { return &static_cast<Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedVector4Array *get_vector4_array(const Variant *v) { return &static_cast<const Variant::PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedByteArray *get_byte_array(Variant *v) { return &static_cast<PackedArrayRef<uint8_t> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedByteArray *get_byte_array(const Variant *v) { return &static_cast<const PackedArrayRef<uint8_t> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedInt32Array *get_int32_array(Variant *v) { return &static_cast<PackedArrayRef<int32_t> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedInt32Array *get_int32_array(const Variant *v) { return &static_cast<const PackedArrayRef<int32_t> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedInt64Array *get_int64_array(Variant *v) { return &static_cast<PackedArrayRef<int64_t> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedInt64Array *get_int64_array(const Variant *v) { return &static_cast<const PackedArrayRef<int64_t> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedFloat32Array *get_float32_array(Variant *v) { return &static_cast<PackedArrayRef<float> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedFloat32Array *get_float32_array(const Variant *v) { return &static_cast<const PackedArrayRef<float> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedFloat64Array *get_float64_array(Variant *v) { return &static_cast<PackedArrayRef<double> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedFloat64Array *get_float64_array(const Variant *v) { return &static_cast<const PackedArrayRef<double> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedStringArray *get_string_array(Variant *v) { return &static_cast<PackedArrayRef<String> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedStringArray *get_string_array(const Variant *v) { return &static_cast<const PackedArrayRef<String> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedVector2Array *get_vector2_array(Variant *v) { return &static_cast<PackedArrayRef<Vector2> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedVector2Array *get_vector2_array(const Variant *v) { return &static_cast<const PackedArrayRef<Vector2> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedVector3Array *get_vector3_array(Variant *v) { return &static_cast<PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedVector3Array *get_vector3_array(const Variant *v) { return &static_cast<const PackedArrayRef<Vector3> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedColorArray *get_color_array(Variant *v) { return &static_cast<PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedColorArray *get_color_array(const Variant *v) { return &static_cast<const PackedArrayRef<Color> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static PackedVector4Array *get_vector4_array(Variant *v) { return &static_cast<PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
+	_FORCE_INLINE_ static const PackedVector4Array *get_vector4_array(const Variant *v) { return &static_cast<const PackedArrayRef<Vector4> *>(v->_data.packed_array)->array; }
 
 	_FORCE_INLINE_ static Object **get_object(Variant *v) { return (Object **)&v->_get_obj().obj; }
 	_FORCE_INLINE_ static const Object **get_object(const Variant *v) { return (const Object **)&v->_get_obj().obj; }
@@ -279,43 +279,43 @@ public:
 		v->type = Variant::ARRAY;
 	}
 	_FORCE_INLINE_ static void init_byte_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<uint8_t>::create(Vector<uint8_t>());
+		v->_data.packed_array = PackedArrayRef<uint8_t>::create(Vector<uint8_t>());
 		v->type = Variant::PACKED_BYTE_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_int32_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<int32_t>::create(Vector<int32_t>());
+		v->_data.packed_array = PackedArrayRef<int32_t>::create(Vector<int32_t>());
 		v->type = Variant::PACKED_INT32_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_int64_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<int64_t>::create(Vector<int64_t>());
+		v->_data.packed_array = PackedArrayRef<int64_t>::create(Vector<int64_t>());
 		v->type = Variant::PACKED_INT64_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_float32_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<float>::create(Vector<float>());
+		v->_data.packed_array = PackedArrayRef<float>::create(Vector<float>());
 		v->type = Variant::PACKED_FLOAT32_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_float64_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<double>::create(Vector<double>());
+		v->_data.packed_array = PackedArrayRef<double>::create(Vector<double>());
 		v->type = Variant::PACKED_FLOAT64_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_string_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<String>::create(Vector<String>());
+		v->_data.packed_array = PackedArrayRef<String>::create(Vector<String>());
 		v->type = Variant::PACKED_STRING_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_vector2_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<Vector2>::create(Vector<Vector2>());
+		v->_data.packed_array = PackedArrayRef<Vector2>::create(Vector<Vector2>());
 		v->type = Variant::PACKED_VECTOR2_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_vector3_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<Vector3>::create(Vector<Vector3>());
+		v->_data.packed_array = PackedArrayRef<Vector3>::create(Vector<Vector3>());
 		v->type = Variant::PACKED_VECTOR3_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_color_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<Color>::create(Vector<Color>());
+		v->_data.packed_array = PackedArrayRef<Color>::create(Vector<Color>());
 		v->type = Variant::PACKED_COLOR_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_vector4_array(Variant *v) {
-		v->_data.packed_array = Variant::PackedArrayRef<Vector4>::create(Vector<Vector4>());
+		v->_data.packed_array = PackedArrayRef<Vector4>::create(Vector<Vector4>());
 		v->type = Variant::PACKED_VECTOR4_ARRAY;
 	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
