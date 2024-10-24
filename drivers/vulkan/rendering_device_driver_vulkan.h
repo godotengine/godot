@@ -43,11 +43,7 @@
 #endif
 #include "thirdparty/vulkan/vk_mem_alloc.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 // Design principles:
 // - Vulkan structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
@@ -370,6 +366,15 @@ public:
 	/**** FRAMEBUFFER ****/
 	/*********************/
 
+	struct Framebuffer {
+		VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
+
+		// Only filled in by a framebuffer created by a swap chain. Unused otherwise.
+		VkImage swap_chain_image = VK_NULL_HANDLE;
+		VkImageSubresourceRange swap_chain_image_subresource_range = {};
+		bool swap_chain_acquired = false;
+	};
+
 	virtual FramebufferID framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) override final;
 	virtual void framebuffer_free(FramebufferID p_framebuffer) override final;
 
@@ -672,7 +677,7 @@ private:
 			VertexFormatInfo,
 			ShaderInfo,
 			UniformSetInfo>;
-	PagedAllocator<VersatileResource> resources_allocator;
+	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/
 

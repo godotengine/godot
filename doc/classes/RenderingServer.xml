@@ -913,7 +913,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas light.
-				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilizing a shifting origin.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
@@ -3917,7 +3917,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the multisample anti-aliasing mode for 2D/Canvas on the specified [param viewport] RID. See [enum ViewportMSAA] for options.
+				Sets the multisample antialiasing mode for 2D/Canvas on the specified [param viewport] RID. See [enum ViewportMSAA] for options. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/msaa_2d] or [member Viewport.msaa_2d].
 			</description>
 		</method>
 		<method name="viewport_set_msaa_3d">
@@ -3925,7 +3925,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the multisample anti-aliasing mode for 3D on the specified [param viewport] RID. See [enum ViewportMSAA] for options.
+				Sets the multisample antialiasing mode for 3D on the specified [param viewport] RID. See [enum ViewportMSAA] for options. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] or [member Viewport.msaa_3d].
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_culling_build_quality">
@@ -4007,7 +4007,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportScreenSpaceAA" />
 			<description>
-				Sets the viewport's screen-space antialiasing mode.
+				Sets the viewport's screen-space antialiasing mode. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/screen_space_aa] or [member Viewport.screen_space_aa].
 			</description>
 		</method>
 		<method name="viewport_set_sdf_oversize_and_scale">
@@ -4074,7 +4074,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
+				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] or [member Viewport.use_debanding].
 			</description>
 		</method>
 		<method name="viewport_set_use_hdr_2d">
@@ -4099,7 +4099,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], use Temporal Anti-Aliasing. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_taa].
+				If [code]true[/code], use temporal antialiasing. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_taa] or [member Viewport.use_taa].
 			</description>
 		</method>
 		<method name="viewport_set_use_xr">
@@ -5686,6 +5686,39 @@
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
 			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS" value="6" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered by the 2D canvas renderer.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_MESH" value="7" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered by loading meshes. These compilations will show up as longer loading times the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE" value="8" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered by building the surface cache before rendering the scene. These compilations will show up as a stutter when loading an scene the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW" value="9" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered while drawing the scene. These compilations will show up as stutters during gameplay the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION" value="10" enum="RenderingInfo">
+			Number of pipeline compilations that were triggered to optimize the current scene. These compilations are done in the background and should not cause any stutters whatsoever.
+		</constant>
+		<constant name="PIPELINE_SOURCE_CANVAS" value="0" enum="PipelineSource">
+			Pipeline compilation that was triggered by the 2D canvas renderer.
+		</constant>
+		<constant name="PIPELINE_SOURCE_MESH" value="1" enum="PipelineSource">
+			Pipeline compilation that was triggered by loading a mesh.
+		</constant>
+		<constant name="PIPELINE_SOURCE_SURFACE" value="2" enum="PipelineSource">
+			Pipeline compilation that was triggered by building the surface cache before rendering the scene.
+		</constant>
+		<constant name="PIPELINE_SOURCE_DRAW" value="3" enum="PipelineSource">
+			Pipeline compilation that was triggered while drawing the scene.
+		</constant>
+		<constant name="PIPELINE_SOURCE_SPECIALIZATION" value="4" enum="PipelineSource">
+			Pipeline compilation that was triggered to optimize the current scene.
+		</constant>
+		<constant name="PIPELINE_SOURCE_MAX" value="5" enum="PipelineSource">
+			Represents the size of the [enum PipelineSource] enum.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>

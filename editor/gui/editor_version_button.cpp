@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gpu_particles_2d_editor_plugin.h                                      */
+/*  editor_version_button.cpp                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,74 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GPU_PARTICLES_2D_EDITOR_PLUGIN_H
-#define GPU_PARTICLES_2D_EDITOR_PLUGIN_H
+#include "editor_version_button.h"
 
-#include "editor/plugins/editor_plugin.h"
-#include "scene/2d/gpu_particles_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/spin_box.h"
+#include "core/os/time.h"
+#include "core/version.h"
 
-class CheckBox;
-class ConfirmationDialog;
-class EditorFileDialog;
-class MenuButton;
-class OptionButton;
+String _get_version_string(EditorVersionButton::VersionFormat p_format) {
+	String main;
+	switch (p_format) {
+		case EditorVersionButton::FORMAT_BASIC: {
+			return VERSION_FULL_CONFIG;
+		} break;
+		case EditorVersionButton::FORMAT_WITH_BUILD: {
+			main = "v" VERSION_FULL_BUILD;
+		} break;
+		case EditorVersionButton::FORMAT_WITH_NAME_AND_BUILD: {
+			main = VERSION_FULL_NAME;
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(VERSION_FULL_NAME, "Unexpected format: " + itos(p_format));
+		} break;
+	}
 
-class GPUParticles2DEditorPlugin : public EditorPlugin {
-	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
+	String hash = VERSION_HASH;
+	if (!hash.is_empty()) {
+		hash = vformat(" [%s]", hash.left(9));
+	}
+	return main + hash;
+}
 
-	enum {
-		MENU_GENERATE_VISIBILITY_RECT,
-		MENU_LOAD_EMISSION_MASK,
-		MENU_CLEAR_EMISSION_MASK,
-		MENU_OPTION_CONVERT_TO_CPU_PARTICLES,
-		MENU_RESTART
-	};
+void EditorVersionButton::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			// This can't be done in the constructor because theme cache is not ready yet.
+			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+			set_text(_get_version_string(format));
+		} break;
+	}
+}
 
-	enum EmissionMode {
-		EMISSION_MODE_SOLID,
-		EMISSION_MODE_BORDER,
-		EMISSION_MODE_BORDER_DIRECTED
-	};
+void EditorVersionButton::pressed() {
+	DisplayServer::get_singleton()->clipboard_set(_get_version_string(FORMAT_WITH_BUILD));
+}
 
-	GPUParticles2D *particles = nullptr;
-	List<GPUParticles2D *> selected_particles;
+EditorVersionButton::EditorVersionButton(VersionFormat p_format) {
+	format = p_format;
+	set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 
-	EditorFileDialog *file = nullptr;
-
-	HBoxContainer *toolbar = nullptr;
-	MenuButton *menu = nullptr;
-
-	ConfirmationDialog *generate_visibility_rect = nullptr;
-	SpinBox *generate_seconds = nullptr;
-
-	ConfirmationDialog *emission_mask = nullptr;
-	OptionButton *emission_mask_mode = nullptr;
-	CheckBox *emission_mask_centered = nullptr;
-	CheckBox *emission_colors = nullptr;
-
-	String source_emission_file;
-
-	void _file_selected(const String &p_file);
-	void _menu_callback(int p_idx);
-	void _generate_visibility_rect();
-	void _generate_emission_mask();
-	void _selection_changed();
-
-protected:
-	void _notification(int p_what);
-
-public:
-	virtual String get_name() const override { return "GPUParticles2D"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
-
-	GPUParticles2DEditorPlugin();
-	~GPUParticles2DEditorPlugin();
-};
-
-#endif // GPU_PARTICLES_2D_EDITOR_PLUGIN_H
+	String build_date;
+	if (VERSION_TIMESTAMP > 0) {
+		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC";
+	} else {
+		build_date = TTR("(unknown)");
+	}
+	set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
+}

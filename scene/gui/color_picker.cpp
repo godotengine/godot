@@ -2089,7 +2089,9 @@ void ColorPickerButton::pressed() {
 	float v_offset = show_above ? -minsize.y : get_size().y;
 	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
 	popup->popup();
-	picker->set_focus_on_line_edit();
+	if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
+		picker->set_focus_on_line_edit();
+	}
 }
 
 void ColorPickerButton::_notification(int p_what) {

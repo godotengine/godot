@@ -32,6 +32,7 @@
 #define DISPLAY_SERVER_H
 
 #include "core/input/input.h"
+#include "core/io/image.h"
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/variant/callable.h"
@@ -39,7 +40,6 @@
 #include "display/native_menu.h"
 
 class Texture2D;
-class Image;
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
@@ -381,6 +381,7 @@ public:
 		WINDOW_FLAG_POPUP,
 		WINDOW_FLAG_EXTEND_TO_TITLE,
 		WINDOW_FLAG_MOUSE_PASSTHROUGH,
+		WINDOW_FLAG_SHARP_CORNERS,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -394,6 +395,7 @@ public:
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
 		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
 		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
+		WINDOW_FLAG_SHARP_CORNERS_BIT = (1 << WINDOW_FLAG_SHARP_CORNERS),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
@@ -507,6 +509,8 @@ public:
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int virtual_keyboard_get_height() const;
 
+	virtual bool has_hardware_keyboard() const;
+
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -593,6 +597,16 @@ public:
 	static const char *get_create_function_name(int p_index);
 	static Vector<String> get_create_function_rendering_drivers(int p_index);
 	static DisplayServer *create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+
+	enum RenderingDeviceCreationStatus {
+		UNKNOWN,
+		SUCCESS,
+		FAILURE,
+	};
+
+	// Used to cache the result of `can_create_rendering_device()` when RenderingDevice isn't currently being used.
+	// This is done as creating a RenderingDevice is quite slow.
+	static inline RenderingDeviceCreationStatus created_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
 
 	static bool can_create_rendering_device();
 

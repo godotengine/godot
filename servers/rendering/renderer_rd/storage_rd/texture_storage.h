@@ -504,8 +504,6 @@ public:
 
 	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); };
 
-	virtual bool can_create_resources_async() const override;
-
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
 
@@ -521,6 +519,11 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+
+	Ref<Image> texture_2d_placeholder;
+	Vector<Ref<Image>> texture_2d_array_placeholder;
+	Vector<Ref<Image>> cubemap_placeholder;
+	Vector<Ref<Image>> texture_3d_placeholder;
 
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) override;
@@ -798,6 +801,9 @@ public:
 
 	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set);
 	void render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set);
+
+	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
+	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
 };
 
 } // namespace RendererRD

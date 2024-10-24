@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  cpu_particles_3d_editor_plugin.h                                      */
+/*  editor_expression_evaluator.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CPU_PARTICLES_3D_EDITOR_PLUGIN_H
-#define CPU_PARTICLES_3D_EDITOR_PLUGIN_H
+#ifndef EDITOR_EXPRESSION_EVALUATOR_H
+#define EDITOR_EXPRESSION_EVALUATOR_H
 
-#include "editor/plugins/gpu_particles_3d_editor_plugin.h"
-#include "scene/3d/cpu_particles_3d.h"
+#include "scene/gui/box_container.h"
 
-class CPUParticles3DEditor : public GPUParticles3DEditorBase {
-	GDCLASS(CPUParticles3DEditor, GPUParticles3DEditorBase);
+class Button;
+class CheckBox;
+class EditorDebuggerInspector;
+class LineEdit;
+class RemoteDebuggerPeer;
+class ScriptEditorDebugger;
 
-	enum Menu {
-		MENU_OPTION_GENERATE_AABB,
-		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
-		MENU_OPTION_CLEAR_EMISSION_VOLUME,
-		MENU_OPTION_RESTART,
-		MENU_OPTION_CONVERT_TO_GPU_PARTICLES,
-	};
+class EditorExpressionEvaluator : public VBoxContainer {
+	GDCLASS(EditorExpressionEvaluator, VBoxContainer)
 
-	ConfirmationDialog *generate_aabb = nullptr;
-	SpinBox *generate_seconds = nullptr;
-	CPUParticles3D *node = nullptr;
+private:
+	Ref<RemoteDebuggerPeer> peer;
 
-	void _generate_aabb();
+	LineEdit *expression_input = nullptr;
+	CheckBox *clear_on_run_checkbox = nullptr;
+	Button *evaluate_btn = nullptr;
+	Button *clear_btn = nullptr;
 
-	void _menu_option(int);
+	EditorDebuggerInspector *inspector = nullptr;
 
-	friend class CPUParticles3DEditorPlugin;
+	void _evaluate();
+	void _clear();
 
-	virtual void _generate_emission_points() override;
+	void _remote_object_selected(ObjectID p_id);
+	void _on_expression_input_changed(const String &p_expression);
+	void _on_debugger_breaked(bool p_breaked, bool p_can_debug);
+	void _on_debugger_clear_execution(Ref<Script> p_stack_script);
 
 protected:
-	void _notification(int p_notification);
-	void _node_removed(Node *p_node);
+	ScriptEditorDebugger *editor_debugger = nullptr;
+
+	void _notification(int p_what);
 
 public:
-	void edit(CPUParticles3D *p_particles);
-	CPUParticles3DEditor();
+	void on_start();
+	void set_editor_debugger(ScriptEditorDebugger *p_editor_debugger);
+	void add_value(const Array &p_array);
+
+	EditorExpressionEvaluator();
 };
 
-class CPUParticles3DEditorPlugin : public EditorPlugin {
-	GDCLASS(CPUParticles3DEditorPlugin, EditorPlugin);
-
-	CPUParticles3DEditor *particles_editor = nullptr;
-
-public:
-	virtual String get_name() const override { return "CPUParticles3D"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
-
-	CPUParticles3DEditorPlugin();
-	~CPUParticles3DEditorPlugin();
-};
-
-#endif // CPU_PARTICLES_3D_EDITOR_PLUGIN_H
+#endif // EDITOR_EXPRESSION_EVALUATOR_H

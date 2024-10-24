@@ -673,6 +673,7 @@ void Node3DEditorViewport::cancel_transform() {
 		sp->set_global_transform(se->original);
 	}
 
+	collision_reposition = false;
 	finish_transform();
 	set_message(TTR("Transform Aborted."), 3);
 }
@@ -1802,7 +1803,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (b->is_pressed()) {
 					clicked_wants_append = b->is_shift_pressed();
 
-					if (_edit.mode != TRANSFORM_NONE && _edit.instant) {
+					if (_edit.mode != TRANSFORM_NONE && (_edit.instant || collision_reposition)) {
 						commit_transform();
 						break; // just commit the edit, stop processing the event so we don't deselect the object
 					}
@@ -2398,10 +2399,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			cancel_transform();
 		}
 		if (!is_freelook_active() && !k->is_echo()) {
-			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && _edit.mode != TRANSFORM_TRANSLATE) {
+			if (ED_IS_SHORTCUT("spatial_editor/instant_translate", p_event) && (_edit.mode != TRANSFORM_TRANSLATE || collision_reposition)) {
 				if (_edit.mode == TRANSFORM_NONE) {
 					begin_transform(TRANSFORM_TRANSLATE, true);
-				} else if (_edit.instant) {
+				} else if (_edit.instant || collision_reposition) {
 					commit_transform();
 					begin_transform(TRANSFORM_TRANSLATE, true);
 				}
@@ -2409,7 +2410,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (ED_IS_SHORTCUT("spatial_editor/instant_rotate", p_event) && _edit.mode != TRANSFORM_ROTATE) {
 				if (_edit.mode == TRANSFORM_NONE) {
 					begin_transform(TRANSFORM_ROTATE, true);
-				} else if (_edit.instant) {
+				} else if (_edit.instant || collision_reposition) {
 					commit_transform();
 					begin_transform(TRANSFORM_ROTATE, true);
 				}
@@ -2417,9 +2418,21 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (ED_IS_SHORTCUT("spatial_editor/instant_scale", p_event) && _edit.mode != TRANSFORM_SCALE) {
 				if (_edit.mode == TRANSFORM_NONE) {
 					begin_transform(TRANSFORM_SCALE, true);
-				} else if (_edit.instant) {
+				} else if (_edit.instant || collision_reposition) {
 					commit_transform();
 					begin_transform(TRANSFORM_SCALE, true);
+				}
+			}
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_selected_node_list().size() == 1 && !collision_reposition) {
+				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
+					if (_edit.mode == TRANSFORM_NONE) {
+						_compute_edit(_edit.mouse_pos);
+					} else {
+						commit_transform();
+						_compute_edit(_edit.mouse_pos);
+					}
+					_edit.mode = TRANSFORM_TRANSLATE;
+					collision_reposition = true;
 				}
 			}
 		}
@@ -3072,11 +3085,24 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (collision_reposition) {
+				List<Node *> &selection = editor_selection->get_selected_node_list();
+
+				if (selection.size() == 1) {
+					Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+					double snap = EDITOR_GET("interface/inspector/default_float_step");
+					int snap_step_decimals = Math::range_step_decimals(snap);
+					set_message(TTR("Translating:") + " (" + String::num(first_selected_node->get_global_position().x, snap_step_decimals) + ", " +
+							String::num(first_selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(first_selected_node->get_global_position().z, snap_step_decimals) + ")");
+					first_selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, first_selected_node)));
+				}
+			}
+
 			if (!update_preview_node) {
 				return;
 			}
 			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos));
+				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
 				double snap = EDITOR_GET("interface/inspector/default_float_step");
 				int snap_step_decimals = Math::range_step_decimals(snap);
 				set_message(TTR("Instantiating:") + " (" + String::num(preview_node_pos.x, snap_step_decimals) + ", " +
@@ -3966,7 +3992,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible;
+	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition;
 	for (int i = 0; i < 3; i++) {
 		Transform3D axis_angle;
 		if (xform.basis.get_column(i).normalized().dot(xform.basis.get_column((i + 1) % 3).normalized()) < 1.0) {
@@ -3997,7 +4023,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	xform.orthonormalize();
 	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
@@ -4241,7 +4267,19 @@ void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, 
 	accept = p_accept;
 }
 
-Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const {
+void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
+	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(node);
+	if (co) {
+		rids.insert(co->get_rid());
+	}
+
+	for (int i = 0; i < node->get_child_count(); i++) {
+		Node *child = node->get_child(i);
+		_insert_rid_recursive(child, rids);
+	}
+}
+
+Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D *p_node) const {
 	const float MAX_DISTANCE = 50.0;
 	const float FALLBACK_DISTANCE = 5.0;
 
@@ -4250,13 +4288,51 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
 
+	HashSet<RID> rids;
+
+	if (!preview_node->is_inside_tree()) {
+		List<Node *> &selection = editor_selection->get_selected_node_list();
+
+		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+
+		Array children = first_selected_node->get_children();
+
+		if (first_selected_node) {
+			_insert_rid_recursive(first_selected_node, rids);
+		}
+	}
+
 	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	ray_params.exclude = rids;
 	ray_params.from = world_pos;
 	ray_params.to = world_pos + world_ray * camera->get_far();
 
 	PhysicsDirectSpaceState3D::RayResult result;
-	if (ss->intersect_ray(ray_params, result)) {
-		return result.position;
+	if (ss->intersect_ray(ray_params, result) && (preview_node->get_child_count() > 0 || !preview_node->is_inside_tree())) {
+		// Calculate an offset for the `p_node` such that the its bounding box is on top of and touching the contact surface's plane.
+
+		// Use the Gram-Schmidt process to get an orthonormal Basis aligned with the surface normal.
+		const Vector3 bb_basis_x = result.normal;
+		Vector3 bb_basis_y = Vector3(0, 1, 0);
+		bb_basis_y = bb_basis_y - bb_basis_y.project(bb_basis_x);
+		if (bb_basis_y.is_zero_approx()) {
+			bb_basis_y = Vector3(0, 0, 1);
+			bb_basis_y = bb_basis_y - bb_basis_y.project(bb_basis_x);
+		}
+		bb_basis_y = bb_basis_y.normalized();
+		const Vector3 bb_basis_z = bb_basis_x.cross(bb_basis_y);
+		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
+
+		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
+		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
+		const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
+		// The x-axis's alignment with the surface normal also makes it trivial to get the distance from `p_node`'s origin at (0, 0, 0) to the correct AABB face.
+		const float offset_distance = -p_node_bb.position.x;
+
+		// `result_offset` is in global space.
+		const Vector3 result_offset = result.position + result.normal * offset_distance;
+
+		return result_offset;
 	}
 
 	const bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
@@ -4284,18 +4360,21 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	return world_pos + world_ray * FALLBACK_DISTANCE;
 }
 
-AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent) {
+AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level, const Transform3D *p_bounds_orientation) {
 	AABB bounds;
 
-	if (!p_top_level_parent) {
-		p_top_level_parent = p_parent;
+	Transform3D bounds_orientation;
+	if (p_bounds_orientation) {
+		bounds_orientation = *p_bounds_orientation;
+	} else {
+		bounds_orientation = p_parent->get_global_transform();
 	}
 
 	if (!p_parent) {
 		return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
 
-	Transform3D xform_to_top_level_parent_space = p_top_level_parent->get_global_transform().affine_inverse() * p_parent->get_global_transform();
+	const Transform3D xform_to_top_level_parent_space = bounds_orientation.affine_inverse() * p_parent->get_global_transform();
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
 	if (visual_instance) {
@@ -4306,9 +4385,9 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, con
 	bounds = xform_to_top_level_parent_space.xform(bounds);
 
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
-		Node3D *child = Object::cast_to<Node3D>(p_parent->get_child(i));
-		if (child) {
-			AABB child_bounds = _calculate_spatial_bounds(child, p_top_level_parent);
+		const Node3D *child = Object::cast_to<Node3D>(p_parent->get_child(i));
+		if (child && !(p_omit_top_level && child->is_set_as_top_level())) {
+			const AABB child_bounds = _calculate_spatial_bounds(child, p_omit_top_level, &bounds_orientation);
 			bounds.merge_with(child_bounds);
 		}
 	}
@@ -4359,6 +4438,10 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 			if (instance) {
 				instance = _sanitize_preview_node(instance);
 				preview_node->add_child(instance);
+				Node3D *node_3d = Object::cast_to<Node3D>(instance);
+				if (node_3d) {
+					node_3d->set_as_top_level(false);
+				}
 			}
 			add_preview = true;
 		}
@@ -4579,8 +4662,12 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 		}
 
 		Transform3D new_tf = node3d->get_transform();
-		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
-		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+		if (node3d->is_set_as_top_level()) {
+			new_tf.origin += preview_node_pos;
+		} else {
+			new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + node3d->get_position());
+			new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+		}
 
 		undo_redo->add_do_method(instantiated_scene, "set_transform", new_tf);
 	}
@@ -4878,6 +4965,7 @@ void Node3DEditorViewport::commit_transform() {
 	}
 	undo_redo->commit_action();
 
+	collision_reposition = false;
 	finish_transform();
 	set_message("");
 }
@@ -5475,6 +5563,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ED_SHORTCUT("spatial_editor/instant_translate", TTR("Begin Translate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_rotate", TTR("Begin Rotate Transformation"));
 	ED_SHORTCUT("spatial_editor/instant_scale", TTR("Begin Scale Transformation"));
+	ED_SHORTCUT("spatial_editor/collision_reposition", TTR("Reposition Using Collisions"), KeyModifierMask::SHIFT | Key::G);
 
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTR("Preview"));
@@ -9003,8 +9092,7 @@ Node3DEditor::Node3DEditor() {
 	current_hover_gizmo_handle = -1;
 	current_hover_gizmo_handle_secondary = false;
 	{
-		//sun popup
-
+		// Sun/preview environment popup.
 		sun_environ_popup = memnew(PopupPanel);
 		add_child(sun_environ_popup);
 
@@ -9018,7 +9106,7 @@ Node3DEditor::Node3DEditor() {
 		sun_vb->hide();
 
 		sun_title = memnew(Label);
-		sun_title->set_theme_type_variation("HeaderSmall");
+		sun_title->set_theme_type_variation("HeaderMedium");
 		sun_vb->add_child(sun_title);
 		sun_title->set_text(TTR("Preview Sun"));
 		sun_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -9056,11 +9144,14 @@ void fragment() {
 		sun_direction->set_material(sun_direction_material);
 
 		HBoxContainer *sun_angle_hbox = memnew(HBoxContainer);
+		sun_angle_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		VBoxContainer *sun_angle_altitude_vbox = memnew(VBoxContainer);
+		sun_angle_altitude_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		Label *sun_angle_altitude_label = memnew(Label);
 		sun_angle_altitude_label->set_text(TTR("Angular Altitude"));
 		sun_angle_altitude_vbox->add_child(sun_angle_altitude_label);
 		sun_angle_altitude = memnew(EditorSpinSlider);
+		sun_angle_altitude->set_suffix(U"\u00B0");
 		sun_angle_altitude->set_max(90);
 		sun_angle_altitude->set_min(-90);
 		sun_angle_altitude->set_step(0.1);
@@ -9068,11 +9159,13 @@ void fragment() {
 		sun_angle_altitude_vbox->add_child(sun_angle_altitude);
 		sun_angle_hbox->add_child(sun_angle_altitude_vbox);
 		VBoxContainer *sun_angle_azimuth_vbox = memnew(VBoxContainer);
+		sun_angle_azimuth_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		sun_angle_azimuth_vbox->set_custom_minimum_size(Vector2(100, 0));
 		Label *sun_angle_azimuth_label = memnew(Label);
 		sun_angle_azimuth_label->set_text(TTR("Azimuth"));
 		sun_angle_azimuth_vbox->add_child(sun_angle_azimuth_label);
 		sun_angle_azimuth = memnew(EditorSpinSlider);
+		sun_angle_azimuth->set_suffix(U"\u00B0");
 		sun_angle_azimuth->set_max(180);
 		sun_angle_azimuth->set_min(-180);
 		sun_angle_azimuth->set_step(0.1);
@@ -9117,7 +9210,7 @@ void fragment() {
 		sun_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		VSeparator *sc = memnew(VSeparator);
-		sc->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
+		sc->set_custom_minimum_size(Size2(10 * EDSCALE, 0));
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
 		sun_environ_hb->add_child(sc);
 
@@ -9127,7 +9220,7 @@ void fragment() {
 		environ_vb->hide();
 
 		environ_title = memnew(Label);
-		environ_title->set_theme_type_variation("HeaderSmall");
+		environ_title->set_theme_type_variation("HeaderMedium");
 
 		environ_vb->add_child(environ_title);
 		environ_title->set_text(TTR("Preview Environment"));
@@ -9154,21 +9247,25 @@ void fragment() {
 
 		environ_ao_button = memnew(Button);
 		environ_ao_button->set_text(TTR("AO"));
+		environ_ao_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_ao_button->set_toggle_mode(true);
 		environ_ao_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_ao_button);
 		environ_glow_button = memnew(Button);
 		environ_glow_button->set_text(TTR("Glow"));
+		environ_glow_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_glow_button->set_toggle_mode(true);
 		environ_glow_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_glow_button);
 		environ_tonemap_button = memnew(Button);
 		environ_tonemap_button->set_text(TTR("Tonemap"));
+		environ_tonemap_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_tonemap_button->set_toggle_mode(true);
 		environ_tonemap_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_tonemap_button);
 		environ_gi_button = memnew(Button);
 		environ_gi_button->set_text(TTR("GI"));
+		environ_gi_button->set_h_size_flags(SIZE_EXPAND_FILL);
 		environ_gi_button->set_toggle_mode(true);
 		environ_gi_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_preview_settings_changed), CONNECT_DEFERRED);
 		fx_vb->add_child(environ_gi_button);

@@ -1690,6 +1690,14 @@ Variant RendererSceneCull::instance_geometry_get_shader_parameter_default_value(
 	return Variant();
 }
 
+void RendererSceneCull::mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) {
+	scene_render->mesh_generate_pipelines(p_mesh, p_background_compilation);
+}
+
+uint32_t RendererSceneCull::get_pipeline_compilations(RS::PipelineSource p_source) {
+	return scene_render->get_pipeline_compilations(p_source);
+}
+
 void RendererSceneCull::instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
@@ -1990,6 +1998,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 			pair.bvh2 = &p_instance->scenario->indexers[Scenario::INDEXER_VOLUMES];
 		}
 		pair.cull_mask = RSG::light_storage->light_get_cull_mask(p_instance->base);
+	} else if (p_instance->base_type == RS::INSTANCE_LIGHTMAP) {
+		pair.pair_mask = RS::INSTANCE_GEOMETRY_MASK;
+		pair.bvh = &p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY];
 	} else if (geometry_instance_pair_mask & (1 << RS::INSTANCE_REFLECTION_PROBE) && (p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE)) {
 		pair.pair_mask = RS::INSTANCE_GEOMETRY_MASK;
 		pair.bvh = &p_instance->scenario->indexers[Scenario::INDEXER_GEOMETRY];

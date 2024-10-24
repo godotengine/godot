@@ -104,14 +104,14 @@ struct VersatileResourceTemplate {
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
-	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
+	static T *allocate(PagedAllocator<VersatileResourceTemplate, true> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
 		memnew_placement(obj, T);
 		return obj;
 	}
 
 	template <typename T>
-	static void free(PagedAllocator<VersatileResourceTemplate> &p_allocator, T *p_object) {
+	static void free(PagedAllocator<VersatileResourceTemplate, true> &p_allocator, T *p_object) {
 		p_object->~T();
 		p_allocator.free((VersatileResourceTemplate *)p_object);
 	}
@@ -220,6 +220,7 @@ public:
 
 	enum TextureLayout {
 		TEXTURE_LAYOUT_UNDEFINED,
+		TEXTURE_LAYOUT_GENERAL,
 		TEXTURE_LAYOUT_STORAGE_OPTIMAL,
 		TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
@@ -750,6 +751,7 @@ public:
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
 		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 	};
 
 	enum ShaderChangeInvalidation {

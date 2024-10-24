@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  cpu_particles_2d_editor_plugin.h                                      */
+/*  editor_version_button.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CPU_PARTICLES_2D_EDITOR_PLUGIN_H
-#define CPU_PARTICLES_2D_EDITOR_PLUGIN_H
+#ifndef EDITOR_VERSION_BUTTON_H
+#define EDITOR_VERSION_BUTTON_H
 
-#include "editor/plugins/editor_plugin.h"
-#include "scene/2d/cpu_particles_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
-#include "scene/gui/box_container.h"
+#include "scene/gui/link_button.h"
 
-class CheckBox;
-class ConfirmationDialog;
-class SpinBox;
-class EditorFileDialog;
-class MenuButton;
-class OptionButton;
+class EditorVersionButton : public LinkButton {
+	GDCLASS(EditorVersionButton, LinkButton);
 
-class CPUParticles2DEditorPlugin : public EditorPlugin {
-	GDCLASS(CPUParticles2DEditorPlugin, EditorPlugin);
-
-	enum {
-		MENU_LOAD_EMISSION_MASK,
-		MENU_CLEAR_EMISSION_MASK,
-		MENU_RESTART,
-		MENU_CONVERT_TO_GPU_PARTICLES,
+public:
+	enum VersionFormat {
+		// 4.3.2.stable
+		FORMAT_BASIC,
+		// v4.3.2.stable.mono [HASH]
+		FORMAT_WITH_BUILD,
+		// Godot Engine v4.3.2.stable.mono.official [HASH]
+		FORMAT_WITH_NAME_AND_BUILD,
 	};
 
-	enum EmissionMode {
-		EMISSION_MODE_SOLID,
-		EMISSION_MODE_BORDER,
-		EMISSION_MODE_BORDER_DIRECTED
-	};
-
-	CPUParticles2D *particles = nullptr;
-
-	EditorFileDialog *file = nullptr;
-
-	HBoxContainer *toolbar = nullptr;
-	MenuButton *menu = nullptr;
-
-	ConfirmationDialog *emission_mask = nullptr;
-	OptionButton *emission_mask_mode = nullptr;
-	CheckBox *emission_mask_centered = nullptr;
-	CheckBox *emission_colors = nullptr;
-
-	String source_emission_file;
-
-	void _file_selected(const String &p_file);
-	void _menu_callback(int p_idx);
-	void _generate_emission_mask();
+private:
+	VersionFormat format = FORMAT_WITH_NAME_AND_BUILD;
 
 protected:
 	void _notification(int p_what);
 
-public:
-	virtual String get_name() const override { return "CPUParticles2D"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	virtual void pressed() override;
 
-	CPUParticles2DEditorPlugin();
-	~CPUParticles2DEditorPlugin();
+public:
+	EditorVersionButton(VersionFormat p_format);
 };
 
-#endif // CPU_PARTICLES_2D_EDITOR_PLUGIN_H
+#endif // EDITOR_VERSION_BUTTON_H

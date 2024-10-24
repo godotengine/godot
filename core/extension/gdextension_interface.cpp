@@ -34,6 +34,7 @@
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
+#include "core/io/image.h"
 #include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language_extension.h"
@@ -505,6 +506,14 @@ static GDExtensionBool gdextension_variant_has_key(GDExtensionConstVariantPtr p_
 	bool ret = self->has_key(*key, valid);
 	*r_valid = valid;
 	return ret;
+}
+
+static GDObjectInstanceID gdextension_variant_get_object_instance_id(GDExtensionConstVariantPtr p_self) {
+	const Variant *self = (const Variant *)p_self;
+	if (likely(self->get_type() == Variant::OBJECT)) {
+		return self->operator ObjectID();
+	}
+	return 0;
 }
 
 static void gdextension_variant_get_type_name(GDExtensionVariantType p_type, GDExtensionUninitializedVariantPtr r_ret) {
@@ -1610,6 +1619,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(variant_has_method);
 	REGISTER_INTERFACE_FUNC(variant_has_member);
 	REGISTER_INTERFACE_FUNC(variant_has_key);
+	REGISTER_INTERFACE_FUNC(variant_get_object_instance_id);
 	REGISTER_INTERFACE_FUNC(variant_get_type_name);
 	REGISTER_INTERFACE_FUNC(variant_can_convert);
 	REGISTER_INTERFACE_FUNC(variant_can_convert_strict);
