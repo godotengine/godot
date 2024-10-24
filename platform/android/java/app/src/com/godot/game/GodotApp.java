@@ -58,7 +58,8 @@ public class GodotApp extends GodotActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		SplashScreen.installSplashScreen(this);
+		SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
 		super.onCreate(savedInstanceState);
+		splashScreen.setKeepOnScreenCondition(() -> !getGodot().isGodotAppReady());
 	}
 }

@@ -3428,7 +3428,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 void Main::setup_boot_logo() {
 	MAIN_PRINT("Main: Load Boot Image");
 
-#if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
+#if !defined(TOOLS_ENABLED) && (defined(WEB_ENABLED) || defined(ANDROID_ENABLED))
 	bool show_logo = false;
 #else
 	bool show_logo = true;
