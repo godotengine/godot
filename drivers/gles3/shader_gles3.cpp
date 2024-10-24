@@ -168,6 +168,10 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 		builder.append("#version 300 es\n");
 	}
 
+	if (GLES3::Config::get_singleton()->polyfill_half2float) {
+		builder.append("#define USE_HALF2FLOAT\n");
+	}
+
 	for (int i = 0; i < specialization_count; i++) {
 		if (p_specialization & (uint64_t(1) << uint64_t(i))) {
 			builder.append("#define " + String(specializations[i].name) + "\n");
