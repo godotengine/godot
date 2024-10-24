@@ -1,4 +1,8 @@
 GDTEST_OK
+var test_static_var_untyped: Variant
+var test_static_var_weak_null: Variant
+var test_static_var_weak_int: Variant
+var test_static_var_hard_int: int
 static var test_static_var_untyped: Variant
 static var test_static_var_weak_null: Variant
 static var test_static_var_weak_int: Variant
