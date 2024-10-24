@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bresenham_line">
+			<return type="Vector2i[]" />
+			<param index="0" name="from" type="Vector2i" />
+			<param index="1" name="to" type="Vector2i" />
+			<description>
+				Returns the [url=https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm]Bresenham line[/url] between the [param from] and [param to] points.
+			</description>
+		</method>
 		<method name="clip_polygons">
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
