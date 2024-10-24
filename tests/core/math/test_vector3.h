@@ -35,7 +35,6 @@
 #include "tests/test_macros.h"
 
 #define Math_SQRT13 0.57735026918962576450914878050196
-#define Math_SQRT3 1.7320508075688772935274463415059
 
 namespace TestVector3 {
 

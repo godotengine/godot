@@ -92,23 +92,30 @@ class GridMapEditor : public VBoxContainer {
 	List<SetItem> set_items;
 
 	GridMap *node = nullptr;
+	// caching the node global transform to detect when the node has been
+	// moved/scaled/rotated.
+	Transform3D node_global_transform;
 	Ref<MeshLibrary> mesh_library = nullptr;
 
-	Transform3D grid_xform;
-	Transform3D edit_grid_xform;
-	Vector3::Axis edit_axis;
-	int edit_floor[3];
-	Vector3 grid_ofs;
+	// plane we're editing cells on; depth comes from edit_floor
+	Plane edit_plane;
 
-	RID grid[3];
+	enum EditAxis {
+		AXIS_X = 0,
+		AXIS_Y,
+		AXIS_Z,
+		AXIS_Q, // axial hex coordinates northwest/southeast
+		AXIS_R, // axial hex coordinates east/west
+		AXIS_S, // axial hex coordinates northeast/southwest
+		AXIS_MAX,
+	};
+	EditAxis edit_axis;
+	int edit_floor[AXIS_MAX];
+
+	RID active_grid_instance;
+	RID grid_mesh[3];
 	RID grid_instance[3];
 	RID cursor_instance;
-	RID selection_mesh;
-	RID selection_instance;
-	RID selection_level_mesh[3];
-	RID selection_level_instance[3];
-	RID paste_mesh;
-	RID paste_instance;
 
 	struct ClipboardItem {
 		int cell_item = 0;
@@ -122,24 +129,19 @@ class GridMapEditor : public VBoxContainer {
 	Ref<StandardMaterial3D> indicator_mat;
 	Ref<StandardMaterial3D> inner_mat;
 	Ref<StandardMaterial3D> outer_mat;
-	Ref<StandardMaterial3D> selection_floor_mat;
-
-	bool updating = false;
 
 	struct Selection {
-		Vector3 click;
-		Vector3 current;
 		Vector3 begin;
 		Vector3 end;
 		bool active = false;
 	} selection;
 	Selection last_selection;
+	RID selection_tile_mesh;
+	RID selection_multimesh;
+	RID selection_instance;
 
 	struct PasteIndicator {
-		Vector3 click;
-		Vector3 current;
-		Vector3 begin;
-		Vector3 end;
+		Vector3i current_cell;
 		int orientation = 0;
 	};
 	PasteIndicator paste_indicator;
@@ -147,7 +149,7 @@ class GridMapEditor : public VBoxContainer {
 	bool cursor_visible = false;
 	Transform3D cursor_transform;
 
-	Vector3 cursor_origin;
+	Vector3i cursor_cell;
 
 	int display_mode = DISPLAY_THUMBNAIL;
 	int selected_palette = -1;
@@ -160,6 +162,11 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_X_AXIS,
 		MENU_OPTION_Y_AXIS,
 		MENU_OPTION_Z_AXIS,
+		MENU_OPTION_Q_AXIS,
+		MENU_OPTION_R_AXIS,
+		MENU_OPTION_S_AXIS,
+		MENU_OPTION_ROTATE_AXIS_CW,
+		MENU_OPTION_ROTATE_AXIS_CCW,
 		MENU_OPTION_CURSOR_ROTATE_Y,
 		MENU_OPTION_CURSOR_ROTATE_X,
 		MENU_OPTION_CURSOR_ROTATE_Z,
@@ -187,7 +194,13 @@ class GridMapEditor : public VBoxContainer {
 	Label *info_message = nullptr;
 
 	void update_grid(); // Change which and where the grid is displayed
-	void _draw_grids(const Vector3 &cell_size);
+	void _draw_hex_grid(RID p_grid, const Vector3 &p_cell_size);
+	void _draw_hex_x_axis_grid(RID p_grid, const Vector3 &p_cell_size);
+	void _draw_plane_grid(RID p_grid, const Vector3 &p_axis_n1, const Vector3 &p_axis_n2, const Vector3 &p_cell_size);
+	void _draw_grids(const Vector3 &p_cell_size);
+	void _update_cell_shape(const GridMap::CellShape cell_shape);
+	void _update_options_menu();
+	void _build_selection_meshes();
 	void _configure();
 	void _menu_option(int);
 	void update_palette();
@@ -208,8 +221,7 @@ class GridMapEditor : public VBoxContainer {
 	void _set_clipboard_data();
 	void _update_paste_indicator();
 	void _do_paste();
-	void _update_selection_transform();
-	void _validate_selection();
+	void _update_selection();
 	void _set_selection(bool p_active, const Vector3 &p_begin = Vector3(), const Vector3 &p_end = Vector3());
 
 	void _floor_changed(float p_value);

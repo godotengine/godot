@@ -33,7 +33,10 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/multimesh.h"
+
+// SQRT(3)/2; used both in the editor and the GridMap.  Due to the division, it
+// didn't fit the pattern of other Math_SQRTN defines, so I'm putting it here.
+#define SQRT3_2 0.8660254037844386
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
@@ -43,6 +46,14 @@ class PhysicsMaterial;
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
 
+public:
+	enum CellShape {
+		CELL_SHAPE_SQUARE,
+		CELL_SHAPE_HEXAGON,
+		CELL_SHAPE_MAX,
+	};
+
+private:
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
 		MAP_DIRTY_INSTANCES = 2,
@@ -159,6 +170,7 @@ class GridMap : public Node3D {
 	Transform3D last_transform;
 
 	bool _in_tree = false;
+	CellShape cell_shape = CELL_SHAPE_SQUARE;
 	Vector3 cell_size = Vector3(2, 2, 2);
 	int octant_size = 8;
 	bool center_x = true;
@@ -261,6 +273,9 @@ public:
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
 
+	void set_cell_shape(CellShape p_shape);
+	CellShape get_cell_shape() const;
+
 	void set_cell_size(const Vector3 &p_size);
 	Vector3 get_cell_size() const;
 
@@ -280,9 +295,12 @@ public:
 	Basis get_cell_item_basis(const Vector3i &p_position) const;
 	Basis get_basis_with_orthogonal_index(int p_index) const;
 	int get_orthogonal_index_from_basis(const Basis &p_basis) const;
+	TypedArray<Vector3i> get_cell_neighbors(const Vector3i) const;
 
 	Vector3i local_to_map(const Vector3 &p_local_position) const;
 	Vector3 map_to_local(const Vector3i &p_map_position) const;
+
+	TypedArray<Vector3i> local_region_to_map(Vector3 p_a, Vector3 p_b) const;
 
 	void set_cell_scale(float p_scale);
 	float get_cell_scale() const;
@@ -303,5 +321,7 @@ public:
 	GridMap();
 	~GridMap();
 };
+
+VARIANT_ENUM_CAST(GridMap::CellShape);
 
 #endif // GRID_MAP_H

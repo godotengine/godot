@@ -69,6 +69,13 @@
 				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty.
 			</description>
 		</method>
+		<method name="get_cell_neighbors" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="cell" type="Vector3i" />
+			<description>
+				Returns an array of [Vector3i] map coordinates that neighbor the cell at coordinates [param cell], including unused cells.  Use [method get_cell_item] to check if the cell is used.
+			</description>
+		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -114,6 +121,14 @@
 			<param index="0" name="item" type="int" />
 			<description>
 				Returns an array of all cells with the given item index specified in [param item].
+			</description>
+		</method>
+		<method name="local_region_to_map" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="local_position_a" type="Vector3" />
+			<param index="1" name="local_position_b" type="Vector3" />
+			<description>
+				Returns an array containing map coordinates for all cells within the GridMap's local coordinate space that fall within the axis-aligned bounding box defined by points [param local_position_a] and [param local_position_b].  See also [method local_to_map].
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
@@ -200,8 +215,12 @@
 			The scale of the cell items.
 			This does not affect the size of the grid cells themselves, only the items in them. This can be used to make cell items overlap their neighbors.
 		</member>
+		<member name="cell_shape" type="int" setter="set_cell_shape" getter="get_cell_shape" enum="GridMap.CellShape" default="0">
+			The shape of the grid's cells.
+		</member>
 		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3(2, 2, 2)">
 			The dimensions of the grid's cells.
+			When [member cell_shape] is set to Hexagon, the [code]cell_size.x[/code] value represents the radius of the cell (from center to vertex), and the [code]cell_size.y[/code] value represents the height of the cell.  The [code]cell_size.z[/code] value is ignored for hexagonal cells.
 			This does not affect the size of the meshes. See [member cell_scale].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
@@ -222,6 +241,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="cell_shape_changed">
+			<param index="0" name="cell_shape" type="int" />
+			<description>
+			</description>
+		</signal>
 		<signal name="cell_size_changed">
 			<param index="0" name="cell_size" type="Vector3" />
 			<description>
@@ -235,6 +259,15 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="CELL_SHAPE_SQUARE" value="0" enum="CellShape">
+			Rectangular cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_HEXAGON" value="1" enum="CellShape">
+			Hexagonal cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_MAX" value="2" enum="CellShape">
+			Count of all cell shapes. Not a valid selection.
+		</constant>
 		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
 		</constant>
