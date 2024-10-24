@@ -60,7 +60,7 @@
 		<member name="inbound_buffer_size" type="int" setter="set_inbound_buffer_size" getter="get_inbound_buffer_size" default="65535">
 			The inbound buffer size for connected peers. See [member WebSocketPeer.inbound_buffer_size] for more details.
 		</member>
-		<member name="max_queued_packets" type="int" setter="set_max_queued_packets" getter="get_max_queued_packets" default="2048">
+		<member name="max_queued_packets" type="int" setter="set_max_queued_packets" getter="get_max_queued_packets" default="4096">
 			The maximum number of queued packets for connected peers. See [member WebSocketPeer.max_queued_packets] for more details.
 		</member>
 		<member name="outbound_buffer_size" type="int" setter="set_outbound_buffer_size" getter="get_outbound_buffer_size" default="65535">
