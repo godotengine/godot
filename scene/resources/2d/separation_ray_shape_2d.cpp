@@ -82,6 +82,10 @@ real_t SeparationRayShape2D::get_enclosing_radius() const {
 	return length;
 }
 
+bool SeparationRayShape2D::contains_point(const Vector2 &p_point) const {
+	return false;
+}
+
 void SeparationRayShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SeparationRayShape2D::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &SeparationRayShape2D::get_length);
