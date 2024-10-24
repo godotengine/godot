@@ -116,6 +116,8 @@ public:
 
 	_FORCE_INLINE_ static bool is_main_thread() { return caller_id == MAIN_ID; } // Gain a tiny bit of perf here because there is no need to validate caller_id here, because only main thread will be set as 1.
 
+	_FORCE_INLINE_ static void yield() { std::this_thread::yield(); }
+
 	static Error set_name(const String &p_name);
 
 	ID start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings());
@@ -175,6 +177,8 @@ public:
 	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
 
 	_FORCE_INLINE_ static bool is_main_thread() { return true; }
+
+	_FORCE_INLINE_ static void yield() {}
 
 	static Error set_name(const String &p_name) { return ERR_UNAVAILABLE; }
 

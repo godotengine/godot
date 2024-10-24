@@ -5462,7 +5462,7 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 	cd->popup_centered();
 
 	while (true) {
-		OS::get_singleton()->delay_usec(1);
+		Thread::yield();
 		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
 		if (singleton->immediate_dialog_confirmed || !cd->is_visible()) {
