@@ -107,6 +107,7 @@ public:
 	void simulate_event(Ref<InputEvent> p_event) {
 		Ref<InputEvent> event = p_event;
 		Ref<InputEventMouse> me = p_event;
+		bool parse_event = true;
 		if (me.is_valid()) {
 			Ref<InputEventMouseMotion> mm = p_event;
 			if (mm.is_valid()) {
@@ -114,8 +115,14 @@ public:
 				event = mm;
 			}
 			_set_mouse_position(me->get_position());
+			if (mm.is_valid() && !window_over) {
+				parse_event = false;
+			}
 		}
-		Input::get_singleton()->parse_input_event(event);
+
+		if (parse_event) {
+			Input::get_singleton()->parse_input_event(event);
+		}
 	}
 
 	// Returns the current cursor shape.
