@@ -303,7 +303,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 	Vector<char32_t> output;
 	output.resize(olength + safety_zone);
 
-	uint32_t flags = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH;
+	uint32_t flags = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_UNSET_EMPTY;
 	if (p_all) {
 		flags |= PCRE2_SUBSTITUTE_GLOBAL;
 	}
@@ -334,6 +334,10 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 	pcre2_match_context_free_32(mctx);
 
 	if (res < 0) {
+		PCRE2_UCHAR32 buf[256];
+		pcre2_get_error_message_32(res, buf, 256);
+		String message = "PCRE2 Error: " + String((const char32_t *)buf);
+		ERR_PRINT(message.utf8());
 		return String();
 	}
 
