@@ -1414,7 +1414,6 @@ int GLTFDocument::_get_component_type_size(const int p_component_type) {
 			ERR_FAIL_V(0);
 		}
 	}
-	return 0;
 }
 
 Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
