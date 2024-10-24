@@ -59,8 +59,6 @@ static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
 	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
 }
 
-const char CharString::_null = 0;
-const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
 const char32_t String::_replacement_char = 0xfffd;
 
@@ -92,48 +90,58 @@ bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	}
 }
 
-/*************************************************************************/
-/*  Char16String                                                         */
-/*************************************************************************/
-
-bool Char16String::operator<(const Char16String &p_right) const {
+template <typename T>
+bool CharStringT<T>::operator<(const CharStringT<T> &p_other) const {
 	if (length() == 0) {
-		return p_right.length() != 0;
+		return p_other.length() != 0;
 	}
 
-	return is_str_less(get_data(), p_right.get_data());
+	return is_str_less(get_data(), p_other.get_data());
 }
 
-Char16String &Char16String::operator+=(char16_t p_char) {
+template <typename T>
+bool CharStringT<T>::operator==(const CharStringT<T> &p_other) const {
+	if (length() != p_other.length()) {
+		return false;
+	}
+	if (length() == 0) {
+		return true;
+	}
+
+	size_t len = length();
+	const T *src = get_data();
+	const T *dst = p_other.get_data();
+
+	/* Compare char by char */
+	for (size_t i = 0; i < len; i++) {
+		if (src[i] != dst[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+template <typename T>
+CharStringT<T> &CharStringT<T>::operator+=(T p_char) {
 	const int lhs_len = length();
 	resize(lhs_len + 2);
 
-	char16_t *dst = ptrw();
+	T *dst = ptrw();
 	dst[lhs_len] = p_char;
 	dst[lhs_len + 1] = 0;
 
 	return *this;
 }
 
-void Char16String::operator=(const char16_t *p_cstr) {
-	copy_from(p_cstr);
-}
-
-const char16_t *Char16String::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return u"";
-	}
-}
-
-void Char16String::copy_from(const char16_t *p_cstr) {
+template <typename T>
+void CharStringT<T>::copy_from(const T *p_cstr) {
 	if (!p_cstr) {
 		resize(0);
 		return;
 	}
 
-	const char16_t *s = p_cstr;
+	const T *s = p_cstr;
 	for (; *s; s++) {
 	}
 	size_t len = s - p_cstr;
@@ -145,81 +153,15 @@ void Char16String::copy_from(const char16_t *p_cstr) {
 
 	Error err = resize(++len); // include terminating null char
 
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy char16_t string.");
-
-	memcpy(ptrw(), p_cstr, len * sizeof(char16_t));
-}
-
-/*************************************************************************/
-/*  CharString                                                           */
-/*************************************************************************/
-
-bool CharString::operator<(const CharString &p_right) const {
-	if (length() == 0) {
-		return p_right.length() != 0;
-	}
-
-	return is_str_less(get_data(), p_right.get_data());
-}
-
-bool CharString::operator==(const CharString &p_right) const {
-	if (length() == 0) {
-		// True if both have length 0, false if only p_right has a length
-		return p_right.length() == 0;
-	} else if (p_right.length() == 0) {
-		// False due to unequal length
-		return false;
-	}
-
-	return strcmp(ptr(), p_right.ptr()) == 0;
-}
-
-CharString &CharString::operator+=(char p_char) {
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-
-	char *dst = ptrw();
-	dst[lhs_len] = p_char;
-	dst[lhs_len + 1] = 0;
-
-	return *this;
-}
-
-void CharString::operator=(const char *p_cstr) {
-	copy_from(p_cstr);
-}
-
-const char *CharString::get_data() const {
-	if (size()) {
-		return &operator[](0);
-	} else {
-		return "";
-	}
-}
-
-void CharString::copy_from(const char *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	size_t len = strlen(p_cstr);
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
 	ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
 
-	memcpy(ptrw(), p_cstr, len);
+	memcpy(ptrw(), p_cstr, len * sizeof(T));
 }
 
-/*************************************************************************/
-/*  String                                                               */
-/*************************************************************************/
+template class CharStringT<char>;
+template class CharStringT<char16_t>;
+template class CharStringT<char32_t>;
+template class CharStringT<wchar_t>;
 
 Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const {
 	// Splits the URL into scheme, host, port, path, fragment. Strip credentials when present.
