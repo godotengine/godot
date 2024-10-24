@@ -124,6 +124,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 			}
 			r_type = "Object";
 			return;
+		case GDType::TRAIT:
 		case GDType::CLASS:
 			if (p_gdtype.is_meta_type) {
 				r_type = GDScript::get_class_static();

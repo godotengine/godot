@@ -1,0 +1,16 @@
+GDTEST_OK
+>> WARNING
+>> Line: 22
+>> UNSAFE_CAST
+>> Casting "Variant" to "Shearable" is unsafe.
+>> WARNING
+>> Line: 23
+>> UNSAFE_CAST
+>> Casting "Variant" to "Milkable" is unsafe.
+true
+true
+true
+false
+false
+false
+ok

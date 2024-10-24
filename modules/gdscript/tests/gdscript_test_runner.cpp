@@ -275,13 +275,13 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				return false;
 			}
 		} else {
-			if (next.ends_with(".notest.gd")) {
+			if (next.ends_with(".notest.gd") || next.ends_with(".notest.gdt")) {
 				next = dir->get_next();
 				continue;
-			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
+			} else if (binary_tokens && (next.ends_with(".textonly.gd") || next.ends_with(".textonly.gdt"))) {
 				next = dir->get_next();
 				continue;
-			} else if (next.get_extension().to_lower() == "gd") {
+			} else if (next.get_extension().to_lower() == "gd" || next.get_extension().to_lower() == "gdt") {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;
@@ -301,7 +301,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				String out_file = next.get_basename() + ".out";
 				ERR_FAIL_COND_V_MSG(!is_generating && !dir->file_exists(out_file), false, "Could not find output file for " + next);
 
-				if (next.ends_with(".bin.gd")) {
+				if (next.ends_with(".bin.gd") || next.ends_with(".bin.gdt")) {
 					// Test text mode first.
 					GDScriptTest text_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
 					tests.push_back(text_test);
@@ -361,7 +361,7 @@ static bool generate_class_index_recursive(const String &p_dir) {
 				return false;
 			}
 		} else {
-			if (!next.ends_with(".gd")) {
+			if (!next.ends_with(".gd") && !next.ends_with(".gdt")) {
 				next = dir->get_next();
 				continue;
 			}
@@ -629,9 +629,17 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 	// Script files matching this pattern are allowed to not contain a test() function.
-	if (source_file.match("*.notest.gd")) {
+	if (source_file.match("*.notest.gd") || source_file.match("*.notest.gdt")) {
 		enable_stdout();
 		result.passed = check_output(result.output);
+		return result;
+	} else if (source_file.match("*.gdt")) {
+		result.output = get_text_for_status(result.status) + "\n" + result.output;
+		if (!p_is_generating) {
+			result.passed = check_output(result.output);
+		}
+		enable_stdout();
+		GDScriptCache::remove_script(script->get_path());
 		return result;
 	}
 	// Test running.
