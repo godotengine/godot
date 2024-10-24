@@ -146,4 +146,15 @@
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
 	</members>
+	<signals>
+		<signal name="collision_state_changed">
+			<param index="0" name="colliding" type="bool" />
+			<param index="1" name="collider_rid" type="RID" />
+			<param index="2" name="collider" type="Node2D" />
+			<param index="3" name="collision_point" type="Vector2" />
+			<param index="4" name="collision_normal" type="Vector2" />
+			<description>
+			</description>
+		</signal>
+	</signals>
 </class>
