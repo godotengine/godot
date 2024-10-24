@@ -91,6 +91,7 @@ public:
 	virtual int get_unique_id() const = 0;
 
 	virtual ConnectionStatus get_connection_status() const = 0;
+	virtual bool is_offline_peer() const { return false; }
 
 	uint32_t generate_unique_id() const;
 
