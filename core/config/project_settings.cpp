@@ -258,18 +258,14 @@ void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
 
 String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
-		if (!resource_path.is_empty()) {
-			return p_path.replace("res:/", resource_path);
-		}
-		return p_path.replace("res://", "");
-	} else if (p_path.begins_with("user://")) {
-		String data_dir = OS::get_singleton()->get_user_data_dir();
-		if (!data_dir.is_empty()) {
-			return p_path.replace("user:/", data_dir);
-		}
-		return p_path.replace("user://", "");
+		ERR_FAIL_COND_V_MSG(resource_path.is_empty(), p_path.replace("res://", ""), "Can't globalize `res://` paths in exported project.");
+		return p_path.replace("res:/", resource_path);
 	}
-
+	if (p_path.begins_with("user://")) {
+		String data_dir = OS::get_singleton()->get_user_data_dir();
+		ERR_FAIL_COND_V(data_dir.is_empty(), p_path.replace("user://", ""));
+		return p_path.replace("user:/", data_dir);
+	}
 	return p_path;
 }
 
