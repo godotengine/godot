@@ -2205,25 +2205,33 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			}
 		}
 
-		if (suite->parent_if && suite->parent_if->condition && suite->parent_if->condition->type == GDScriptParser::Node::TYPE_TEST) {
-			// Operator `is` used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
-			// Super dirty hack, but very useful.
-			// Credit: Zylann.
-			// TODO: this could be hacked to detect ANDed conditions too...
-			const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(suite->parent_if->condition);
-			if (type_test->operand && type_test->test_type && type_test->operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->name == p_identifier->name && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->source == p_identifier->source) {
-				// Bingo.
-				GDScriptParser::CompletionContext c = p_context;
-				c.current_line = type_test->operand->start_line;
-				c.current_suite = suite;
-				if (type_test->test_datatype.is_hard_type()) {
-					id_type.type = type_test->test_datatype;
-					if (last_assign_line < c.current_line) {
-						// Override last assignment.
-						last_assign_line = c.current_line;
-						last_assigned_expression = nullptr;
+		if (suite->parent_if) {
+			List<GDScriptParser::Node *>::Element *E = suite->parent_if->conditions.front();
+			while (E) {
+				GDScriptParser::Node *condition = E->get();
+				if (condition->is_expression() && condition->type == GDScriptParser::Node::TYPE_TEST) {
+					// Operator `is` used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
+					// Super dirty hack, but very useful.
+					// Credit: Zylann.
+					// TODO: this could be hacked to detect ANDed conditions too...
+					const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(condition);
+					if (type_test->operand && type_test->test_type && type_test->operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->name == p_identifier->name && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->source == p_identifier->source) {
+						// Bingo.
+						GDScriptParser::CompletionContext c = p_context;
+						c.current_line = type_test->operand->start_line;
+						c.current_suite = suite;
+						if (type_test->test_datatype.is_hard_type()) {
+							id_type.type = type_test->test_datatype;
+							if (last_assign_line < c.current_line) {
+								// Override last assignment.
+								last_assign_line = c.current_line;
+								last_assigned_expression = nullptr;
+							}
+						}
+						break;
 					}
 				}
+				E = E->next();
 			}
 		}
 

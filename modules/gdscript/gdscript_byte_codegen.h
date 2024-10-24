@@ -532,7 +532,7 @@ public:
 	virtual void write_construct_typed_dictionary(const Address &p_target, const GDScriptDataType &p_key_type, const GDScriptDataType &p_value_type, const Vector<Address> &p_arguments) override;
 	virtual void write_await(const Address &p_target, const Address &p_operand) override;
 	virtual void write_if(const Address &p_condition) override;
-	virtual void write_else() override;
+	virtual void write_else(int count) override;
 	virtual void write_endif() override;
 	virtual void write_jump_if_shared(const Address &p_value) override;
 	virtual void write_end_jump_if_shared() override;

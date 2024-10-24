@@ -2096,7 +2096,16 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 }
 
 void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
-	reduce_expression(p_if->condition);
+	List<GDScriptParser::Node *>::Element *E = p_if->conditions.front();
+	while (E) {
+		GDScriptParser::Node *condition = E->get();
+		if (condition->is_expression()) {
+			reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(condition));
+		} else if (condition->type == GDScriptParser::Node::VARIABLE) {
+			resolve_variable(static_cast<GDScriptParser::VariableNode *>(condition), true);
+		}
+		E = E->next();
+	}
 
 	resolve_suite(p_if->true_block);
 	p_if->set_datatype(p_if->true_block->get_datatype());
