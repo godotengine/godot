@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  FileErrors.kt                                                         */
+/*  GodotEditor.kt                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.file
+package org.godotengine.editor
+
+import org.godotengine.godot.GodotLib
+import org.godotengine.godot.utils.isNativeXRDevice
 
 /**
- * Set of errors that may occur when performing data access.
+ * Primary window of the Godot Editor.
+ *
+ * This is the implementation of the editor used when running on Meta devices.
  */
-internal enum class FileErrors(val nativeValue: Int) {
-	OK(0),
-	FAILED(-1),
-	FILE_NOT_FOUND(-2),
-	FILE_CANT_OPEN(-3),
-	INVALID_PARAMETER(-4);
+open class GodotEditor : BaseGodotEditor() {
 
 	companion object {
-		fun fromNativeError(error: Int): FileErrors? {
-			for (fileError in entries) {
-				if (fileError.nativeValue == error) {
-					return fileError
+		private val TAG = GodotEditor::class.java.simpleName
+
+		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
+
+		internal const val USE_ANCHOR_API_PERMISSION = "com.oculus.permission.USE_ANCHOR_API"
+		internal const val USE_SCENE_PERMISSION = "com.oculus.permission.USE_SCENE"
+	}
+
+	override fun getExcludedPermissions(): MutableSet<String> {
+		val excludedPermissions = super.getExcludedPermissions()
+		// The USE_ANCHOR_API and USE_SCENE permissions are requested when the "xr/openxr/enabled"
+		// project setting is enabled.
+		excludedPermissions.add(USE_ANCHOR_API_PERMISSION)
+		excludedPermissions.add(USE_SCENE_PERMISSION)
+		return excludedPermissions
+	}
+
+	override fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
+		var hasEditor = false
+		var xrModeOn = false
+
+		var i = 0
+		while (i < args.size) {
+			when (args[i++]) {
+				EDITOR_ARG, EDITOR_ARG_SHORT, EDITOR_PROJECT_MANAGER_ARG, EDITOR_PROJECT_MANAGER_ARG_SHORT -> hasEditor = true
+				XR_MODE_ARG -> {
+					val argValue = args[i++]
+					xrModeOn = xrModeOn || ("on" == argValue)
 				}
 			}
-			return null
+		}
+
+		return if (hasEditor) {
+			EDITOR_MAIN_INFO
+		} else {
+			val openxrEnabled = GodotLib.getGlobal("xr/openxr/enabled").toBoolean()
+			if (openxrEnabled && isNativeXRDevice()) {
+				XR_RUN_GAME_INFO
+			} else {
+				RUN_GAME_INFO
+			}
+		}
+	}
+
+	override fun getEditorWindowInfoForInstanceId(instanceId: Int): EditorWindowInfo? {
+		return when (instanceId) {
+			XR_RUN_GAME_INFO.windowId -> XR_RUN_GAME_INFO
+			else -> super.getEditorWindowInfoForInstanceId(instanceId)
 		}
 	}
 }

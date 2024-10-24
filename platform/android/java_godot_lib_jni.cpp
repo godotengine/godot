@@ -52,6 +52,10 @@
 #include "core/input/input.h"
 #include "main/main.h"
 
+#ifndef _3D_DISABLED
+#include "servers/xr_server.h"
+#endif // _3D_DISABLED
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
@@ -270,7 +274,20 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	}
 
 	if (step.get() == STEP_SHOW_LOGO) {
-		Main::setup_boot_logo();
+		bool xr_enabled = false;
+#ifndef _3D_DISABLED
+		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
+		// so we skip this step if xr is enabled.
+		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+			xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+		} else {
+			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+		}
+#endif // _3D_DISABLED
+		if (!xr_enabled) {
+			Main::setup_boot_logo();
+		}
+
 		step.increment();
 		return true;
 	}
@@ -561,5 +578,10 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInp
 		return !input->is_agile_input_event_flushing();
 	}
 	return false;
+}
+
+JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getProjectResourceDir(JNIEnv *env, jclass clazz) {
+	const String resource_dir = OS::get_singleton()->get_resource_dir();
+	return env->NewStringUTF(resource_dir.utf8().get_data());
 }
 }

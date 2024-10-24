@@ -39,20 +39,23 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.*
 import android.util.Log
+import android.util.TypedValue
 import android.view.*
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.vending.expansion.downloader.*
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.input.GodotEditText
+import org.godotengine.godot.input.GodotInputHandler
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.GodotPluginRegistry
@@ -73,6 +76,7 @@ import java.io.InputStream
 import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -81,17 +85,21 @@ import java.util.concurrent.atomic.AtomicReference
  * Can be hosted by [Activity], [Fragment] or [Service] android components, so long as its
  * lifecycle methods are properly invoked.
  */
-class Godot(private val context: Context) : SensorEventListener {
+class Godot(private val context: Context) {
 
-	private companion object {
+	internal companion object {
 		private val TAG = Godot::class.java.simpleName
 
 		// Supported build flavors
 		const val EDITOR_FLAVOR = "editor"
 		const val TEMPLATE_FLAVOR = "template"
+
+		/**
+		 * @return true if this is an editor build, false if this is a template build
+		 */
+		fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 	}
 
-	private val windowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 	private val mSensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 	private val mClipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 	private val vibratorService: Vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -99,34 +107,33 @@ class Godot(private val context: Context) : SensorEventListener {
 	private val pluginRegistry: GodotPluginRegistry by lazy {
 		GodotPluginRegistry.getPluginRegistry()
 	}
+
+	private val accelerometerEnabled = AtomicBoolean(false)
 	private val mAccelerometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 	}
+
+	private val gravityEnabled = AtomicBoolean(false)
 	private val mGravity: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 	}
+
+	private val magnetometerEnabled = AtomicBoolean(false)
 	private val mMagnetometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 	}
+
+	private val gyroscopeEnabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 	}
-
-	private val uiChangeListener = View.OnSystemUiVisibilityChangeListener { visibility: Int ->
-		if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-			val decorView = requireActivity().window.decorView
-			decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-					View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-					View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-		}}
 
 	val tts = GodotTTS(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
 	private val commandLineFileParser = CommandLineFileParser()
+	private val godotInputHandler = GodotInputHandler(context, this)
 
 	/**
 	 * Task to run when the engine terminates.
@@ -154,13 +161,24 @@ class Godot(private val context: Context) : SensorEventListener {
 	private var renderViewInitialized = false
 	private var primaryHost: GodotHost? = null
 
+	/**
+	 * Tracks whether we're in the RESUMED lifecycle state.
+	 * See [onResume] and [onPause]
+	 */
+	private var resumed = false
+
+	/**
+	 * Tracks whether [onGodotSetupCompleted] fired.
+	 */
+	private val godotMainLoopStarted = AtomicBoolean(false)
+
 	var io: GodotIO? = null
 
 	private var commandLine : MutableList<String> = ArrayList<String>()
 	private var xrMode = XRMode.REGULAR
 	private var expansionPackPath: String = ""
 	private var useApkExpansion = false
-	private var useImmersive = false
+	private val useImmersive = AtomicBoolean(false)
 	private var useDebugOpengl = false
 	private var darkMode = false
 
@@ -229,15 +247,9 @@ class Godot(private val context: Context) : SensorEventListener {
 					xrMode = XRMode.OPENXR
 				} else if (commandLine[i] == "--debug_opengl") {
 					useDebugOpengl = true
-				} else if (commandLine[i] == "--use_immersive") {
-					useImmersive = true
-					window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or  // hide nav bar
-							View.SYSTEM_UI_FLAG_FULLSCREEN or  // hide status bar
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-					registerUiChangeListener()
+				} else if (commandLine[i] == "--fullscreen") {
+					useImmersive.set(true)
+					newArgs.add(commandLine[i])
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -309,6 +321,54 @@ class Godot(private val context: Context) : SensorEventListener {
 			endBenchmarkMeasure("Startup", "Godot::onCreate")
 		}
 	}
+
+	/**
+	 * Toggle immersive mode.
+	 * Must be called from the UI thread.
+	 */
+	private fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
+		val activity = getActivity() ?: return
+		val window = activity.window ?: return
+
+		if (!useImmersive.compareAndSet(!enabled, enabled) && !override) {
+			return
+		}
+
+		WindowCompat.setDecorFitsSystemWindows(window, !enabled)
+		val controller = WindowInsetsControllerCompat(window, window.decorView)
+		if (enabled) {
+			controller.hide(WindowInsetsCompat.Type.systemBars())
+			controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+		} else {
+			val fullScreenThemeValue = TypedValue()
+			val hasStatusBar = if (activity.theme.resolveAttribute(android.R.attr.windowFullscreen, fullScreenThemeValue, true) && fullScreenThemeValue.type == TypedValue.TYPE_INT_BOOLEAN) {
+				fullScreenThemeValue.data == 0
+			} else {
+				// Fallback to checking the editor build
+				!isEditorBuild()
+			}
+
+			val types = if (hasStatusBar) {
+				WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.statusBars()
+			} else {
+				WindowInsetsCompat.Type.navigationBars()
+			}
+			controller.show(types)
+		}
+	}
+
+	/**
+	 * Invoked from the render thread to toggle the immersive mode.
+	 */
+	@Keep
+	private fun nativeEnableImmersiveMode(enabled: Boolean) {
+		runOnUiThread {
+			enableImmersiveMode(enabled)
+		}
+	}
+
+	@Keep
+	fun isInImmersiveMode() = useImmersive.get()
 
 	/**
 	 * Initializes the native layer of the Godot engine.
@@ -416,10 +476,10 @@ class Godot(private val context: Context) : SensorEventListener {
 				if (!meetsVulkanRequirements(activity.packageManager)) {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
-				GodotVulkanRenderView(host, this)
+				GodotVulkanRenderView(host, this, godotInputHandler)
 			} else {
 				// Fallback to openGl
-				GodotGLRenderView(host, this, xrMode, useDebugOpengl)
+				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
 			}
 
 			if (host == primaryHost) {
@@ -520,45 +580,47 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	fun onResume(host: GodotHost) {
 		Log.v(TAG, "OnResume: $host")
+		resumed = true
 		if (host != primaryHost) {
 			return
 		}
 
 		renderView?.onActivityResumed()
-		if (mAccelerometer != null) {
-			mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (mGravity != null) {
-			mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (mMagnetometer != null) {
-			mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (mGyroscope != null) {
-			mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
-		}
-		if (useImmersive) {
-			val window = requireActivity().window
-			window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-					View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-					View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or  // hide nav bar
-					View.SYSTEM_UI_FLAG_FULLSCREEN or  // hide status bar
-					View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-		}
+		registerSensorsIfNeeded()
+		enableImmersiveMode(useImmersive.get(), true)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainResume()
 		}
 	}
 
+	private fun registerSensorsIfNeeded() {
+		if (!resumed || !godotMainLoopStarted.get()) {
+			return
+		}
+
+		if (accelerometerEnabled.get() && mAccelerometer != null) {
+			mSensorManager.registerListener(godotInputHandler, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (gravityEnabled.get() && mGravity != null) {
+			mSensorManager.registerListener(godotInputHandler, mGravity, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (magnetometerEnabled.get() && mMagnetometer != null) {
+			mSensorManager.registerListener(godotInputHandler, mMagnetometer, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (gyroscopeEnabled.get() && mGyroscope != null) {
+			mSensorManager.registerListener(godotInputHandler, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
+		}
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
+		resumed = false
 		if (host != primaryHost) {
 			return
 		}
 
 		renderView?.onActivityPaused()
-		mSensorManager.unregisterListener(this)
+		mSensorManager.unregisterListener(godotInputHandler)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
@@ -659,6 +721,16 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	private fun onGodotMainLoopStarted() {
 		Log.v(TAG, "OnGodotMainLoopStarted")
+		godotMainLoopStarted.set(true)
+
+		accelerometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_accelerometer")))
+		gravityEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gravity")))
+		gyroscopeEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gyroscope")))
+		magnetometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_magnetometer")))
+
+		runOnUiThread {
+			registerSensorsIfNeeded()
+		}
 
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onGodotMainLoopStarted()
@@ -677,11 +749,6 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	private fun restart() {
 		primaryHost?.onGodotRestartRequested(this)
-	}
-
-	private fun registerUiChangeListener() {
-		val decorView = requireActivity().window.decorView
-		decorView.setOnSystemUiVisibilityChangeListener(uiChangeListener)
 	}
 
 	fun alert(
@@ -794,11 +861,6 @@ class Godot(private val context: Context) : SensorEventListener {
 		return mClipboard.hasPrimaryClip()
 	}
 
-	/**
-	 * @return true if this is an editor build, false if this is a template build
-	 */
-	fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
-
 	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""
 		val text = clipData.getItemAt(0).text ?: return ""
@@ -857,77 +919,6 @@ class Godot(private val context: Context) : SensorEventListener {
 			renderView?.queueOnRenderThread { GodotLib.back() }
 		}
 	}
-
-	private fun getRotatedValues(values: FloatArray?): FloatArray? {
-		if (values == null || values.size != 3) {
-			return null
-		}
-		val rotatedValues = FloatArray(3)
-		when (windowManager.defaultDisplay.rotation) {
-			Surface.ROTATION_0 -> {
-				rotatedValues[0] = values[0]
-				rotatedValues[1] = values[1]
-				rotatedValues[2] = values[2]
-			}
-			Surface.ROTATION_90 -> {
-				rotatedValues[0] = -values[1]
-				rotatedValues[1] = values[0]
-				rotatedValues[2] = values[2]
-			}
-			Surface.ROTATION_180 -> {
-				rotatedValues[0] = -values[0]
-				rotatedValues[1] = -values[1]
-				rotatedValues[2] = values[2]
-			}
-			Surface.ROTATION_270 -> {
-				rotatedValues[0] = values[1]
-				rotatedValues[1] = -values[0]
-				rotatedValues[2] = values[2]
-			}
-		}
-		return rotatedValues
-	}
-
-	override fun onSensorChanged(event: SensorEvent) {
-		if (renderView == null) {
-			return
-		}
-
-		val rotatedValues = getRotatedValues(event.values)
-
-		when (event.sensor.type) {
-			Sensor.TYPE_ACCELEROMETER -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.accelerometer(-it[0], -it[1], -it[2])
-					}
-				}
-			}
-			Sensor.TYPE_GRAVITY -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.gravity(-it[0], -it[1], -it[2])
-					}
-				}
-			}
-			Sensor.TYPE_MAGNETIC_FIELD -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.magnetometer(-it[0], -it[1], -it[2])
-					}
-				}
-			}
-			Sensor.TYPE_GYROSCOPE -> {
-				rotatedValues?.let {
-					renderView?.queueOnRenderThread {
-						GodotLib.gyroscope(it[0], it[1], it[2])
-					}
-				}
-			}
-		}
-	}
-
-	override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
 	/**
 	 * Used by the native code (java_godot_wrapper.h) to vibrate the device.
@@ -1063,7 +1054,7 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	@Keep
 	private fun initInputDevices() {
-		renderView?.initInputDevices()
+		godotInputHandler.initInputDevices()
 	}
 
 	@Keep
@@ -1084,5 +1075,21 @@ class Godot(private val context: Context) : SensorEventListener {
 	@Keep
 	private fun nativeDumpBenchmark(benchmarkFile: String) {
 		dumpBenchmark(fileAccessHandler, benchmarkFile)
+	}
+
+	@Keep
+	private fun nativeSignApk(inputPath: String,
+							  outputPath: String,
+							  keystorePath: String,
+							  keystoreUser: String,
+							  keystorePassword: String): Int {
+		val signResult = primaryHost?.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword) ?: Error.ERR_UNAVAILABLE
+		return signResult.toNativeValue()
+	}
+
+	@Keep
+	private fun nativeVerifyApk(apkPath: String): Int {
+		val verifyResult = primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
+		return verifyResult.toNativeValue()
 	}
 }
