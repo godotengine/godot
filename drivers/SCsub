@@ -49,6 +49,9 @@ if env["metal"]:
         Exit(255)
     SConscript("metal/SCsub")
 
+# Input drivers
+SConscript("sdl/SCsub")
+
 # Core dependencies
 SConscript("png/SCsub")
 
