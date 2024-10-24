@@ -4087,6 +4087,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			}
 		}
 	}
+	// Apply Overrides when loading a scene.
+	sdata->get_state()->apply_overrides(new_scene);
 
 	if (!restoring_scenes) {
 		save_editor_layout_delayed();

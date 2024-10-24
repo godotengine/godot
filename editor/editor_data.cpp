@@ -734,6 +734,9 @@ bool EditorData::check_and_update_scene(int p_idx) {
 			}
 		}
 
+		// Apply Overrides when instanced scene gets updated.
+		pscene->get_state()->apply_overrides(new_scene);
+
 		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
 		Node *old_root = edited_scene[p_idx].root;
 		EditorNode::get_singleton()->set_edited_scene(new_scene);
