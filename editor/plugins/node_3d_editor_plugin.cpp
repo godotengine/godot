@@ -917,6 +917,38 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	r_results.sort();
 }
 
+void Node3DEditorViewport::_reposition_selected_nodes() {
+	if (collision_reposition) {
+		List<Node *> &selection = editor_selection->get_selected_node_list();
+
+		if (selection.size() == 1) {
+			Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+			double snap = EDITOR_GET("interface/inspector/default_float_step");
+			int snap_step_decimals = Math::range_step_decimals(snap);
+			set_message(TTR("Translating:") + " (" + String::num(first_selected_node->get_global_position().x, snap_step_decimals) + ", " +
+					String::num(first_selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(first_selected_node->get_global_position().z, snap_step_decimals) + ")");
+			first_selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, first_selected_node)));
+		}
+	}
+
+	if (!update_preview_node) {
+		return;
+	}
+	if (preview_node->is_inside_tree()) {
+		preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
+		double snap = EDITOR_GET("interface/inspector/default_float_step");
+		int snap_step_decimals = Math::range_step_decimals(snap);
+		set_message(TTR("Instantiating:") + " (" + String::num(preview_node_pos.x, snap_step_decimals) + ", " +
+				String::num(preview_node_pos.y, snap_step_decimals) + ", " + String::num(preview_node_pos.z, snap_step_decimals) + ")");
+		Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+		preview_node->set_global_transform(preview_gl_transform);
+		if (!preview_node->is_visible()) {
+			preview_node->show();
+		}
+	}
+	update_preview_node = false;
+}
+
 Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	Projection cm;
 	if (orthogonal) {
@@ -3082,38 +3114,16 @@ void Node3DEditorViewport::_notification(int p_what) {
 				float locked_half_width = locked_label->get_size().width / 2.0f;
 				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 			}
+
+			if (!is_editor_using_separate_physics_thread) {
+				_reposition_selected_nodes();
+			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (collision_reposition) {
-				List<Node *> &selection = editor_selection->get_selected_node_list();
-
-				if (selection.size() == 1) {
-					Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
-					double snap = EDITOR_GET("interface/inspector/default_float_step");
-					int snap_step_decimals = Math::range_step_decimals(snap);
-					set_message(TTR("Translating:") + " (" + String::num(first_selected_node->get_global_position().x, snap_step_decimals) + ", " +
-							String::num(first_selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(first_selected_node->get_global_position().z, snap_step_decimals) + ")");
-					first_selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, first_selected_node)));
-				}
+			if (is_editor_using_separate_physics_thread) {
+				_reposition_selected_nodes();
 			}
-
-			if (!update_preview_node) {
-				return;
-			}
-			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
-				double snap = EDITOR_GET("interface/inspector/default_float_step");
-				int snap_step_decimals = Math::range_step_decimals(snap);
-				set_message(TTR("Instantiating:") + " (" + String::num(preview_node_pos.x, snap_step_decimals) + ", " +
-						String::num(preview_node_pos.y, snap_step_decimals) + ", " + String::num(preview_node_pos.z, snap_step_decimals) + ")");
-				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
-				preview_node->set_global_transform(preview_gl_transform);
-				if (!preview_node->is_visible()) {
-					preview_node->show();
-				}
-			}
-			update_preview_node = false;
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -5706,6 +5716,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	freelook_active = false;
 	freelook_speed = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+
+	is_editor_using_separate_physics_thread = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);

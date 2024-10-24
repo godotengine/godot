@@ -248,6 +248,8 @@ private:
 	bool collision_reposition = false;
 	real_t gizmo_scale;
 
+	bool is_editor_using_separate_physics_thread = false;
+
 	bool freelook_active;
 	real_t freelook_speed;
 	Vector2 previous_mouse_position;
@@ -285,6 +287,7 @@ private:
 	void _select_clicked(bool p_allow_locked);
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
+	void _reposition_selected_nodes();
 
 	Transform3D _get_camera_transform() const;
 	int get_selected_count() const;
