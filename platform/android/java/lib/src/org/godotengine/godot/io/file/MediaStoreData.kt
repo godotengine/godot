@@ -46,6 +46,8 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.nio.channels.FileChannel
 
+import android.util.Log
+
 /**
  * Implementation of [DataAccess] which handles access and interactions with file and data
  * under scoped storage via the MediaStore API.
@@ -230,6 +232,75 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 			)
 			return updated > 0
 		}
+
+		fun getUriFromDirectoryPath(context: Context, directoryPath: String): Uri? {
+			if (!directoryExists(directoryPath)) {
+				return null
+			}
+			// Check if the path is under external storage
+			val externalStorageRoot = Environment.getExternalStorageDirectory().absolutePath
+			if (directoryPath.startsWith(externalStorageRoot)) {
+				val relativePath = directoryPath.replaceFirst(externalStorageRoot, "").trim('/')
+				val uri = Uri.Builder()
+					.scheme("content")
+					.authority("com.android.externalstorage.documents")
+					.appendPath("document")
+					.appendPath("primary:$relativePath")
+					.build()
+				return uri
+			}
+			return null
+		}
+
+		fun getFilePathFromUri(context: Context, uri: Uri): String? {
+			// Converts content uri to filepath
+			val id = getIdFromUri(uri) ?: return null
+
+			if (uri.authority == "com.android.externalstorage.documents") {
+				val split = id.split(":")
+				val fileName = split.last()
+				val relativePath = split.dropLast(1).joinToString("/")
+				val fullPath = File(Environment.getExternalStorageDirectory(), "$relativePath/$fileName").absolutePath
+				return fullPath
+			} else {
+				val id = id.toLongOrNull() ?: return null
+				val dataItems = queryById(context, id)
+				return if (dataItems.isNotEmpty()) {
+					val dataItem = dataItems[0]
+					File(Environment.getExternalStorageDirectory(), File(dataItem.relativePath, dataItem.displayName).toString()).absolutePath
+				} else {
+					null
+				}
+			}
+		}
+
+		private fun getIdFromUri(uri: Uri): String? {
+			return try {
+				if (uri.authority == "com.android.externalstorage.documents") {
+					val documentId = uri.lastPathSegment ?: throw NumberFormatException("Invalid URI: $uri")
+					documentId.substringAfter(":")
+				} else if (uri.authority == "com.android.providers.media.documents" || uri.authority == "com.android.providers.downloads.documents") {
+					val documentId = uri.lastPathSegment ?: throw NumberFormatException("Invalid URI: $uri")
+					documentId.substringAfter(":")
+				} else {
+					throw NumberFormatException("Unsupported URI format: $uri")
+				}
+			} catch (e: Exception) {
+				Log.d(TAG, "Failed to parse ID from URI: $uri", e)
+				null
+			}
+		}
+
+		private fun directoryExists(path: String): Boolean {
+			return try {
+				val file = File(path)
+				file.isDirectory && file.exists()
+			} catch (e: SecurityException) {
+				Log.d(TAG, "Failed to check directoryExists: $path", e)
+				false
+			}
+		}
+
 	}
 
 	private val id: Long

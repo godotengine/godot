@@ -58,6 +58,7 @@ private:
 	jmethodID _get_clipboard = nullptr;
 	jmethodID _set_clipboard = nullptr;
 	jmethodID _has_clipboard = nullptr;
+	jmethodID _show_file_picker = nullptr;
 	jmethodID _request_permission = nullptr;
 	jmethodID _request_permissions = nullptr;
 	jmethodID _get_granted_permissions = nullptr;
@@ -103,6 +104,7 @@ public:
 	void set_clipboard(const String &p_text);
 	bool has_has_clipboard();
 	bool has_clipboard();
+	Error show_file_picker(const String &p_current_directory, const String &p_filename, const int &p_mode, const Vector<String> &p_filters);
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;

@@ -129,6 +129,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_ICON:
 #ifdef DBUS_ENABLED
 		case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 #endif
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_DIALOG_INPUT:

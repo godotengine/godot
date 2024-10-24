@@ -225,6 +225,11 @@ public class GodotLib {
 	public static native void onNightModeChanged();
 
 	/**
+	 * Invoked on the file picker closed.
+	 */
+	public static native void filePickerCallback(boolean p_ok, String[] p_selected_paths, int p_filter);
+
+	/**
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
 	 */
 	public static native void setVirtualKeyboardHeight(int p_height);
