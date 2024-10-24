@@ -2438,22 +2438,31 @@ Window *Viewport::get_base_window() const {
 	return w;
 }
 
-void Viewport::_gui_remove_focus_for_window(Node *p_window) {
-	if (get_base_window() == p_window) {
-		gui_release_focus();
-	}
-}
-
 bool Viewport::_gui_control_has_focus(const Control *p_control) {
 	return gui.key_focus == p_control;
 }
 
 void Viewport::_gui_control_grab_focus(Control *p_control) {
-	if (gui.key_focus && gui.key_focus == p_control) {
+	// Release previous focus.
+	if (gui.key_focus && gui.key_focus != p_control) {
+		gui_release_focus();
+	}
+
+	// Ensure chain of SubViewportContainer focus in parent Viewport. Needs to happen, even if control has focus in this Viewport.
+	Viewport *vp = this;
+	if (Object::cast_to<SubViewport>(vp)) {
+		SubViewportContainer *p = Object::cast_to<SubViewportContainer>(get_parent());
+		if (p) {
+			p->grab_focus();
+		}
+	}
+
+	if (gui.key_focus == p_control) {
 		// No need for change.
 		return;
 	}
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
+
+	// Perform necessary adjustments for focuschange.
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		emit_signal(SNAME("gui_focus_changed"), p_control);
@@ -4616,8 +4625,6 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
-
-	ClassDB::bind_method(D_METHOD("_gui_remove_focus_for_window"), &Viewport::_gui_remove_focus_for_window);
 
 	ClassDB::bind_method(D_METHOD("set_positional_shadow_atlas_size", "size"), &Viewport::set_positional_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("get_positional_shadow_atlas_size"), &Viewport::get_positional_shadow_atlas_size);
