@@ -35,8 +35,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-#include <stdint.h> // INT32_MAX
-
 #include <functiondiscoverykeys.h>
 
 #include <wrl/client.h>
