@@ -279,7 +279,8 @@ class ScriptEditor : public PanelContainer {
 	enum ScriptSortBy {
 		SORT_BY_NAME,
 		SORT_BY_PATH,
-		SORT_BY_NONE
+		SORT_BY_NONE,
+		SORT_BY_LAST_OPENED,
 	};
 
 	enum ScriptListName {
@@ -362,7 +363,7 @@ class ScriptEditor : public PanelContainer {
 	int history_pos;
 
 	List<String> previous_scripts;
-	List<int> script_close_queue;
+	List<Control *> script_close_queue;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
