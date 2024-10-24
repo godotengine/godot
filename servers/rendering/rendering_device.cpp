@@ -3823,7 +3823,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	clear_value.color = p_clear_color;
 
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
-	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, true, false, RDD::BreadcrumbMarker::BLIT_PASS);
+	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, clear_value, RDD::BreadcrumbMarker::BLIT_PASS);
 
 	draw_graph.add_draw_list_set_viewport(viewport);
 	draw_graph.add_draw_list_set_scissor(viewport);
@@ -3876,8 +3876,6 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 	thread_local LocalVector<RDD::RenderPassClearValue> clear_values;
 	thread_local LocalVector<RDG::ResourceTracker *> resource_trackers;
 	thread_local LocalVector<RDG::ResourceUsage> resource_usages;
-	bool uses_color = false;
-	bool uses_depth = false;
 	clear_values.clear();
 	clear_values.resize(p_framebuffer->texture_ids.size());
 	resource_trackers.clear();
@@ -3907,20 +3905,18 @@ Error RenderingDevice::_draw_list_render_pass_begin(Framebuffer *p_framebuffer, 
 
 				resource_trackers.push_back(texture->draw_tracker);
 				resource_usages.push_back(RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE);
-				uses_color = true;
 			} else if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 				clear_value.depth = p_clear_depth;
 				clear_value.stencil = p_clear_stencil;
 				resource_trackers.push_back(texture->draw_tracker);
 				resource_usages.push_back(RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE);
-				uses_depth = true;
 			}
 
 			clear_values[clear_values_count++] = clear_value;
 		}
 	}
 
-	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, uses_color, uses_depth, p_breadcrumb);
+	draw_graph.add_draw_list_begin(p_render_pass, p_framebuffer_driver_id, Rect2i(p_viewport_offset, p_viewport_size), clear_values, p_breadcrumb);
 	draw_graph.add_draw_list_usages(resource_trackers, resource_usages);
 
 	// Mark textures as bound.
@@ -4095,7 +4091,7 @@ void RenderingDevice::draw_list_bind_render_pipeline(DrawListID p_list, RID p_re
 
 	dl->state.pipeline = p_render_pipeline;
 
-	draw_graph.add_draw_list_bind_pipeline(pipeline->driver_id, pipeline->stage_bits);
+	draw_graph.add_draw_list_bind_pipeline(pipeline->driver_id);
 
 	if (dl->state.pipeline_shader != pipeline->shader) {
 		// Shader changed, so descriptor sets may become incompatible.
