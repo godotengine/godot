@@ -39,6 +39,9 @@
 CameraServer::CreateFunc CameraServer::create_func = nullptr;
 
 void CameraServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("permission_granted"), &CameraServer::permission_granted);
+	ClassDB::bind_method(D_METHOD("request_permission"), &CameraServer::request_permission);
+
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
 	ClassDB::bind_method(D_METHOD("get_feed_count"), &CameraServer::get_feed_count);
 	ClassDB::bind_method(D_METHOD("feeds"), &CameraServer::get_feeds);
@@ -48,6 +51,7 @@ void CameraServer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("camera_feed_added", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("request_permission_result", PropertyInfo(Variant::BOOL, "granted")));
 
 	BIND_ENUM_CONSTANT(FEED_RGBA_IMAGE);
 	BIND_ENUM_CONSTANT(FEED_YCBCR_IMAGE);
