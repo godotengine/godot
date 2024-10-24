@@ -101,7 +101,7 @@ bool Char16String::operator<(const Char16String &p_right) const {
 		return p_right.length() != 0;
 	}
 
-	return is_str_less(get_data(), p_right.get_data());
+	return str_compare(get_data(), p_right.get_data()) < 0;
 }
 
 Char16String &Char16String::operator+=(char16_t p_char) {
@@ -159,7 +159,7 @@ bool CharString::operator<(const CharString &p_right) const {
 		return p_right.length() != 0;
 	}
 
-	return is_str_less(get_data(), p_right.get_data());
+	return str_compare(get_data(), p_right.get_data()) < 0;
 }
 
 bool CharString::operator==(const CharString &p_right) const {
@@ -804,7 +804,7 @@ bool String::operator<(const char *p_str) const {
 	if (is_empty()) {
 		return true;
 	}
-	return is_str_less(get_data(), p_str);
+	return str_compare(get_data(), p_str) < 0;
 }
 
 bool String::operator<(const wchar_t *p_str) const {
@@ -817,10 +817,10 @@ bool String::operator<(const wchar_t *p_str) const {
 
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return is_str_less(get_data(), String::utf16((const char16_t *)p_str).get_data());
+	return str_compare(get_data(), String::utf16((const char16_t *)p_str).get_data()) < 0;
 #else
 	// wchar_t is 32-bit
-	return is_str_less(get_data(), (const char32_t *)p_str);
+	return str_compare(get_data(), (const char32_t *)p_str) < 0;
 #endif
 }
 
@@ -832,7 +832,7 @@ bool String::operator<(const char32_t *p_str) const {
 		return true;
 	}
 
-	return is_str_less(get_data(), p_str);
+	return str_compare(get_data(), p_str) < 0;
 }
 
 bool String::operator<(const String &p_str) const {
