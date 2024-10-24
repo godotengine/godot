@@ -82,6 +82,24 @@ public:
 	void register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
 	void unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
 
+	void register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
+	void unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
+	uint64_t get_projection_views();
+
+	uint64_t get_render_state_z_near();
+	uint64_t get_render_state_z_far();
+
+	void set_motion_vector_texture(RID p_render_target);
+	void set_motion_vector_depth_texture(RID p_render_target);
+	void set_motion_vector_target_size(Size2i p_target_size);
+
+	uint64_t openxr_swap_chain_info_create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size);
+	void openxr_swap_chain_info_free(uint64_t p_swap_chain_info);
+	uint64_t openxr_swap_chain_info_get_swapchain(uint64_t p_swap_chain_info);
+	void openxr_swap_chain_info_acquire(uint64_t p_swap_chain_info);
+	RID openxr_swap_chain_info_get_image(uint64_t p_swap_chain_info);
+	void openxr_swap_chain_info_release(uint64_t p_swap_chain_info);
+
 	enum OpenXRAlphaBlendModeSupport {
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,

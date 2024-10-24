@@ -791,6 +791,12 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 						xr_interface->get_depth_texture(),
 						xr_interface->get_velocity_texture());
 
+				RSG::texture_storage->render_target_set_motion_vectors_target(vp->render_target,
+						xr_interface->get_motion_vectors_texture(),
+						xr_interface->get_motion_vectors_depth_texture(),
+						xr_interface->get_motion_vectors_target_size(),
+						xr_interface->get_view_count());
+
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 

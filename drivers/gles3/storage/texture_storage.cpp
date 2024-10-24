@@ -37,10 +37,6 @@
 #include "config.h"
 #include "utilities.h"
 
-#ifdef ANDROID_ENABLED
-#define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
-#endif
-
 using namespace GLES3;
 
 TextureStorage *TextureStorage::singleton = nullptr;
@@ -2340,6 +2336,16 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		return;
 	}
 
+	for (KeyValue<uint32_t, GLuint> &E : rt->motion_vector_fbo_cache) {
+		glDeleteFramebuffers(1, &E.value);
+	}
+	rt->motion_vector_fbo_cache.clear();
+	rt->motion_vector_fbo = 0;
+
+	if (rt->motion_vector_texture.is_valid()) {
+		num_render_targets_with_motion_vectors--;
+	}
+
 	// Dispose of the cached fbo's and the allocated textures
 	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.fbo_cache) {
 		glDeleteTextures(E.value.allocated_textures.size(), E.value.allocated_textures.ptr());
@@ -2567,6 +2573,119 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	}
 
 	return rt->texture;
+}
+
+void TextureStorage::render_target_set_motion_vectors_target(RID p_render_target, RID p_motion_vectors_texture, RID p_depth_texture, Size2i p_size, int p_view_count) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	if (rt->motion_vector_texture.is_valid() && p_motion_vectors_texture.is_null()) {
+		num_render_targets_with_motion_vectors--;
+	} else if (rt->motion_vector_texture.is_null() && p_motion_vectors_texture.is_valid()) {
+		num_render_targets_with_motion_vectors++;
+	}
+
+	rt->motion_vector_texture = p_motion_vectors_texture;
+	rt->motion_vector_depth_texture = p_depth_texture;
+	rt->motion_vector_target_size = p_size;
+
+	if (p_motion_vectors_texture.is_null()) {
+		for (KeyValue<uint32_t, GLuint> &E : rt->motion_vector_fbo_cache) {
+			glDeleteFramebuffers(1, &E.value);
+		}
+
+		rt->motion_vector_fbo_cache.clear();
+		rt->motion_vector_fbo = 0;
+
+		return;
+	}
+
+	uint32_t hash_key = hash_murmur3_one_64(p_motion_vectors_texture.get_id());
+	hash_key = hash_murmur3_one_64(p_depth_texture.get_id(), hash_key);
+	hash_key = hash_fmix32(hash_key);
+
+	RBMap<uint32_t, GLuint>::Element *fbo;
+	if ((fbo = rt->motion_vector_fbo_cache.find(hash_key)) != nullptr) {
+		rt->motion_vector_fbo = fbo->get();
+		return;
+	}
+
+	GLuint new_motion_vector_fbo;
+	glGenFramebuffers(1, &new_motion_vector_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, new_motion_vector_fbo);
+
+	GLuint texture_target = p_view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+
+	GLuint motion_vector_texture_id = texture_get_texid(p_motion_vectors_texture);
+	glBindTexture(texture_target, motion_vector_texture_id);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+#ifndef IOS_ENABLED
+	if (p_view_count > 1) {
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, motion_vector_texture_id, 0, 0, p_view_count);
+	} else {
+#else
+	{
+#endif
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, motion_vector_texture_id, 0);
+	}
+
+	GLuint motion_vector_depth_texture_id = texture_get_texid(p_depth_texture);
+	glBindTexture(texture_target, motion_vector_texture_id);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+#ifndef IOS_ENABLED
+	if (p_view_count > 1) {
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, motion_vector_depth_texture_id, 0, 0, p_view_count);
+	} else {
+#else
+	{
+#endif
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, motion_vector_depth_texture_id, 0);
+	}
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		glDeleteFramebuffers(1, &new_motion_vector_fbo);
+		WARN_PRINT("Could not create motion vector render target, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+	}
+
+	glBindTexture(texture_target, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	rt->motion_vector_fbo_cache.insert(hash_key, new_motion_vector_fbo);
+	rt->motion_vector_fbo = new_motion_vector_fbo;
+}
+
+RID TextureStorage::render_target_get_motion_vectors_texture(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RID());
+
+	return rt->motion_vector_texture;
+}
+
+RID TextureStorage::render_target_get_motion_vectors_depth_texture(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RID());
+
+	return rt->motion_vector_depth_texture;
+}
+
+Size2i TextureStorage::render_target_get_motion_vectors_target_size(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Size2i(0, 0));
+
+	return rt->motion_vector_target_size;
+}
+
+int TextureStorage::get_num_render_targets_with_motion_vectors() const {
+	return num_render_targets_with_motion_vectors;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {

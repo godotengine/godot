@@ -1053,6 +1053,34 @@ RID OpenXRInterface::get_depth_texture() {
 	}
 }
 
+RID OpenXRInterface::get_velocity_texture() {
+	return RID();
+}
+
+RID OpenXRInterface::get_motion_vectors_texture() {
+	if (openxr_api) {
+		return openxr_api->get_motion_vector_texture();
+	} else {
+		return RID();
+	}
+}
+
+RID OpenXRInterface::get_motion_vectors_depth_texture() {
+	if (openxr_api) {
+		return openxr_api->get_motion_vector_depth_texture();
+	} else {
+		return RID();
+	}
+}
+
+Size2i OpenXRInterface::get_motion_vectors_target_size() {
+	if (openxr_api) {
+		return openxr_api->get_motion_vector_target_size();
+	} else {
+		return Size2i();
+	}
+};
+
 void OpenXRInterface::handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand) {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {

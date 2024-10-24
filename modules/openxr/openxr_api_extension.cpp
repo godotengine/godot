@@ -61,6 +61,24 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_composition_layer_provider", "extension"), &OpenXRAPIExtension::register_composition_layer_provider);
 	ClassDB::bind_method(D_METHOD("unregister_composition_layer_provider", "extension"), &OpenXRAPIExtension::unregister_composition_layer_provider);
 
+	ClassDB::bind_method(D_METHOD("register_projection_views_extension", "extension"), &OpenXRAPIExtension::register_projection_views_extension);
+	ClassDB::bind_method(D_METHOD("unregister_projection_views_extension", "extension"), &OpenXRAPIExtension::unregister_projection_views_extension);
+	ClassDB::bind_method(D_METHOD("get_projection_views"), &OpenXRAPIExtension::get_projection_views);
+
+	ClassDB::bind_method(D_METHOD("get_render_state_z_near"), &OpenXRAPIExtension::get_render_state_z_near);
+	ClassDB::bind_method(D_METHOD("get_render_state_z_far"), &OpenXRAPIExtension::get_render_state_z_far);
+
+	ClassDB::bind_method(D_METHOD("set_motion_vector_texture", "render_target"), &OpenXRAPIExtension::set_motion_vector_texture);
+	ClassDB::bind_method(D_METHOD("set_motion_vector_depth_texture", "render_target"), &OpenXRAPIExtension::set_motion_vector_depth_texture);
+	ClassDB::bind_method(D_METHOD("set_motion_vector_target_size", "target_size"), &OpenXRAPIExtension::set_motion_vector_target_size);
+
+	ClassDB::bind_method(D_METHOD("openxr_swap_chain_info_create", "create_flags", "usage_flags", "swapchain_format", "width", "height", "sample_count", "array_size"), &OpenXRAPIExtension::openxr_swap_chain_info_create);
+	ClassDB::bind_method(D_METHOD("openxr_swap_chain_info_free", "swap_chain_info"), &OpenXRAPIExtension::openxr_swap_chain_info_free);
+	ClassDB::bind_method(D_METHOD("openxr_swap_chain_info_get_swapchain", "swap_chain_info"), &OpenXRAPIExtension::openxr_swap_chain_info_get_swapchain);
+	ClassDB::bind_method(D_METHOD("openxr_swap_chain_info_acquire", "swap_chain_info"), &OpenXRAPIExtension::openxr_swap_chain_info_acquire);
+	ClassDB::bind_method(D_METHOD("openxr_swap_chain_info_get_image", "swap_chain_info"), &OpenXRAPIExtension::openxr_swap_chain_info_get_image);
+	ClassDB::bind_method(D_METHOD("openxr_swap_chain_info_release", "swap_chain_info"), &OpenXRAPIExtension::openxr_swap_chain_info_release);
+
 	ClassDB::bind_method(D_METHOD("set_emulate_environment_blend_mode_alpha_blend", "enabled"), &OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend);
 	ClassDB::bind_method(D_METHOD("is_environment_blend_mode_alpha_supported"), &OpenXRAPIExtension::is_environment_blend_mode_alpha_blend_supported);
 
@@ -191,6 +209,94 @@ void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrap
 void OpenXRAPIExtension::unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_composition_layer_provider(p_extension);
+}
+
+void OpenXRAPIExtension::register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->register_projection_views_extension(p_extension);
+}
+
+void OpenXRAPIExtension::unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->unregister_projection_views_extension(p_extension);
+}
+
+uint64_t OpenXRAPIExtension::get_projection_views() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_projection_views();
+}
+
+uint64_t OpenXRAPIExtension::get_render_state_z_near() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	double z_near = OpenXRAPI::get_singleton()->get_render_state_z_near();
+	return *reinterpret_cast<uint64_t *>(&z_near);
+}
+
+uint64_t OpenXRAPIExtension::get_render_state_z_far() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	double z_far = OpenXRAPI::get_singleton()->get_render_state_z_far();
+	return *reinterpret_cast<uint64_t *>(&z_far);
+}
+
+void OpenXRAPIExtension::set_motion_vector_texture(RID p_render_target) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->set_motion_vector_texture(p_render_target);
+}
+
+void OpenXRAPIExtension::set_motion_vector_depth_texture(RID p_render_target) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->set_motion_vector_depth_texture(p_render_target);
+}
+
+void OpenXRAPIExtension::set_motion_vector_target_size(Size2i p_target_size) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->set_motion_vector_target_size(p_target_size);
+}
+
+uint64_t OpenXRAPIExtension::openxr_swap_chain_info_create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size) {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+
+	OpenXRAPI::OpenXRSwapChainInfo *new_swap_chan_info = memnew(OpenXRAPI::OpenXRSwapChainInfo);
+	new_swap_chan_info->create(p_create_flags, p_usage_flags, p_swapchain_format, p_width, p_height, p_sample_count, p_array_size);
+	return reinterpret_cast<uint64_t>(new_swap_chan_info);
+}
+
+void OpenXRAPIExtension::openxr_swap_chain_info_free(uint64_t p_swap_chain_info) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::OpenXRSwapChainInfo *swap_chain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swap_chain_info);
+	swap_chain_info->free();
+	memfree(swap_chain_info);
+}
+
+uint64_t OpenXRAPIExtension::openxr_swap_chain_info_get_swapchain(uint64_t p_swap_chain_info) {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+
+	OpenXRAPI::OpenXRSwapChainInfo *swap_chain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swap_chain_info);
+	XrSwapchain swapchain = swap_chain_info->get_swapchain();
+	return reinterpret_cast<uint64_t>(swapchain);
+}
+
+void OpenXRAPIExtension::openxr_swap_chain_info_acquire(uint64_t p_swap_chain_info) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::OpenXRSwapChainInfo *swap_chain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swap_chain_info);
+	bool should_render = true; // Can ignore should_render.
+	swap_chain_info->acquire(should_render);
+}
+
+RID OpenXRAPIExtension::openxr_swap_chain_info_get_image(uint64_t p_swap_chain_info) {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), RID());
+
+	OpenXRAPI::OpenXRSwapChainInfo *swap_chain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swap_chain_info);
+	return swap_chain_info->get_image();
+}
+
+void OpenXRAPIExtension::openxr_swap_chain_info_release(uint64_t p_swap_chain_info) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+
+	OpenXRAPI::OpenXRSwapChainInfo *swap_chain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swap_chain_info);
+	swap_chain_info->release();
 }
 
 void OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {
