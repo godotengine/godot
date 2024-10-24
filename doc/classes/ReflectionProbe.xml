@@ -35,7 +35,7 @@
 			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
 		</member>
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
-			Defines the reflection intensity. Intensity modulates the strength of the reflection.
+			Defines the reflection intensity. Intensity modulates the strength of the reflection. Only [code]1.0[/code] is physically accurate, but lower or greater values can be used for artistic control. If set to [code]0.0[/code], the [ReflectionProbe] will not display reflections on any materials. Instead, it will only affect ambient light through its ambient color properties.
 		</member>
 		<member name="interior" type="bool" setter="set_as_interior" getter="is_set_as_interior" default="false">
 			If [code]true[/code], reflections will ignore sky contribution.
