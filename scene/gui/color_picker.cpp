@@ -1553,23 +1553,34 @@ void ColorPicker::_pick_button_pressed_legacy() {
 
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
+		picker_texture_rect->set_default_cursor_shape(Control::CURSOR_CROSS);
 		picker_window->add_child(picker_texture_rect);
-		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
 
 		picker_preview = memnew(Panel);
-		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
 		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview->set_size(Vector2i(55, 72));
 		picker_window->add_child(picker_preview);
 
-		picker_preview_label = memnew(Label);
-		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
-		picker_preview_label->set_text(ETR("Color Picking active"));
-		picker_preview->add_child(picker_preview_label);
+		picker_preview_color = memnew(Panel);
+		picker_preview_color->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview_color->set_size(Vector2i(51, 15));
+		picker_preview_color->set_position(Vector2i(2, 55));
+		picker_preview->add_child(picker_preview_color);
+
+		picker_texture_zoom = memnew(TextureRect);
+		picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_texture_zoom->set_size(Vector2i(51, 51));
+		picker_texture_zoom->set_position(Vector2i(2, 2));
+		picker_preview->add_child(picker_texture_zoom);
 
 		picker_preview_style_box = (Ref<StyleBoxFlat>)memnew(StyleBoxFlat);
 		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
 		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
+
+		picker_preview_style_box_color = (Ref<StyleBoxFlat>)memnew(StyleBoxFlat);
+		picker_preview_style_box_color->set_bg_color(Color(1.0, 1.0, 1.0));
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
 	}
 
 	Rect2i screen_rect;
@@ -1611,7 +1622,6 @@ void ColorPicker::_pick_button_pressed_legacy() {
 	}
 
 	picker_window->set_size(screen_rect.size);
-	picker_preview->set_size(screen_rect.size / 10.0); // 10% of size in each axis.
 	picker_window->popup();
 }
 
@@ -1633,8 +1643,13 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 		if (img.is_valid() && !img->is_empty()) {
 			Vector2 ofs = mev->get_position();
 			picker_color = img->get_pixel(ofs.x, ofs.y);
-			picker_preview_style_box->set_bg_color(picker_color);
-			picker_preview_label->set_self_modulate(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_style_box_color->set_bg_color(picker_color);
+			picker_preview_style_box->set_bg_color(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+
+			Ref<Image> zoom_previw_img = img->get_region(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
+			zoom_previw_img->resize(51, 51, Image::INTERPOLATE_NEAREST);
+			picker_texture_zoom->set_texture(ImageTexture::create_from_image(zoom_previw_img));
+			picker_preview->set_position(ofs - Vector2(27, 27));
 		}
 	}
 }
