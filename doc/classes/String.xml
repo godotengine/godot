@@ -1010,6 +1010,15 @@
 				Returns the string converted to [code]lowercase[/code].
 			</description>
 		</method>
+		<method name="to_multibyte_char_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="encoding" type="int" default="0" />
+			<description>
+				Converts the string to system multibyte code page encoded [PackedByteArray].
+				[param encoding] is one of the [url=https://learn.microsoft.com/en-us/windows/win32/Intl/code-page-identifiers]Code Page Identifiers[/url], or [code]0[/code] for system default Windows ANSI code page.
+				[b]Note:[/b] This method is implemented only on Windows, on other platforms [param encoding] is ignored, and this method is equivalent to [method to_utf8_buffer].
+			</description>
+		</method>
 		<method name="to_pascal_case" qualifiers="const">
 			<return type="String" />
 			<description>

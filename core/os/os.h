@@ -253,6 +253,9 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
+	virtual String multibyte_to_string(int p_encoding, const PackedByteArray &p_array) const;
+	virtual PackedByteArray string_to_multibyte(int p_encoding, const String &p_string) const;
+
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
