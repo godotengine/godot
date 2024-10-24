@@ -606,25 +606,11 @@ class Node3DEditor : public VBoxContainer {
 public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
-	enum ToolMode {
-		TOOL_MODE_SELECT,
-		TOOL_MODE_MOVE,
-		TOOL_MODE_ROTATE,
-		TOOL_MODE_SCALE,
-		TOOL_MODE_LIST_SELECT,
-		TOOL_LOCK_SELECTED,
-		TOOL_UNLOCK_SELECTED,
-		TOOL_GROUP_SELECTED,
-		TOOL_UNGROUP_SELECTED,
-		TOOL_MAX
-	};
-
 	enum ToolOptions {
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_OVERRIDE_CAMERA,
 		TOOL_OPT_MAX
-
 	};
 
 private:
@@ -637,8 +623,6 @@ private:
 	HSplitContainer *right_panel_split = nullptr;
 
 	/////
-
-	ToolMode tool_mode;
 
 	RID origin_mesh;
 	RID origin_multimesh;
@@ -697,11 +681,6 @@ private:
 	} gizmo;
 
 	enum MenuOption {
-		MENU_TOOL_SELECT,
-		MENU_TOOL_MOVE,
-		MENU_TOOL_ROTATE,
-		MENU_TOOL_SCALE,
-		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
 		MENU_TOOL_OVERRIDE_CAMERA,
@@ -724,7 +703,20 @@ private:
 		MENU_SNAP_TO_FLOOR
 	};
 
-	Button *tool_button[TOOL_MAX];
+	void _tool_button_group_pressed(Button *p_button);
+
+	Ref<ButtonGroup> tool_button_group;
+	Button *select_tool_button;
+	Button *move_tool_button;
+	Button *rotate_tool_button;
+	Button *scale_tool_button;
+	Button *list_select_tool_button;
+
+	Button *lock_selected_button;
+	Button *unlock_selected_button;
+	Button *group_selected_button;
+	Button *ungroup_selected_button;
+
 	Button *tool_option_button[TOOL_OPT_MAX];
 
 	MenuButton *transform_menu = nullptr;
@@ -892,7 +884,6 @@ public:
 	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const;
 
-	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
@@ -913,6 +904,15 @@ public:
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
+
+	void add_tool(Button *p_button) const;
+	bool is_tool_selected(Button *p_button);
+	void remove_tool(Button *p_button);
+	bool is_list_select_tool_selected();
+	bool is_move_tool_selected();
+	bool is_rotate_tool_selected();
+	bool is_scale_tool_selected();
+	bool is_select_tool_selected();
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);

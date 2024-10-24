@@ -1274,7 +1274,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	Transform3D gt = spatial_editor->get_gizmo_transform();
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+	if (spatial_editor->is_select_tool_selected() || spatial_editor->is_move_tool_selected()) {
 		int col_axis = -1;
 		real_t col_d = 1e20;
 
@@ -1340,7 +1340,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		}
 	}
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+	if (spatial_editor->is_select_tool_selected() || spatial_editor->is_rotate_tool_selected()) {
 		int col_axis = -1;
 
 		Vector3 hit_position;
@@ -1394,7 +1394,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		}
 	}
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+	if (spatial_editor->is_scale_tool_selected()) {
 		int col_axis = -1;
 		float col_d = 1e20;
 
@@ -1565,7 +1565,7 @@ bool Node3DEditorViewport::_is_node_locked(const Node *p_node) const {
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	Vector<_RayResult> potential_selection_results;
-	_find_items_at_pos(b->get_position(), potential_selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+	_find_items_at_pos(b->get_position(), potential_selection_results, spatial_editor->is_select_tool_selected());
 
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
@@ -1596,7 +1596,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		selection_results.clear();
 
 		if (clicked.is_valid()) {
-			_select_clicked(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+			_select_clicked(spatial_editor->is_select_tool_selected());
 		}
 	} else if (!selection_results.is_empty()) {
 		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
@@ -1815,7 +1815,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_LIST_SELECT) {
+					if (spatial_editor->is_list_select_tool_selected()) {
 						_list_select(b);
 						break;
 					}
@@ -1920,17 +1920,17 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					bool node_selected = get_selected_count() > 0;
 
-					if (node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
+					if (node_selected && ((spatial_editor->is_select_tool_selected() && b->is_command_or_control_pressed()) || spatial_editor->is_rotate_tool_selected())) {
 						begin_transform(TRANSFORM_ROTATE, false);
 						break;
 					}
 
-					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+					if (node_selected && spatial_editor->is_move_tool_selected()) {
 						begin_transform(TRANSFORM_TRANSLATE, false);
 						break;
 					}
 
-					if (node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+					if (node_selected && spatial_editor->is_scale_tool_selected()) {
 						begin_transform(TRANSFORM_SCALE, false);
 						break;
 					}
@@ -3916,7 +3916,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 	clicked = selection_results_menu[p_result]->get_instance_id();
 
 	if (clicked.is_valid()) {
-		_select_clicked(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+		_select_clicked(spatial_editor->is_select_tool_selected());
 	}
 
 	selection_results_menu.clear();
@@ -4001,15 +4001,15 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->is_select_tool_selected() || spatial_editor->is_move_tool_selected()));
 		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->is_select_tool_selected() || spatial_editor->is_move_tool_selected()));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_gizmo && (spatial_editor->is_select_tool_selected() || spatial_editor->is_rotate_tool_selected()));
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->is_scale_tool_selected()));
 		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
+		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->is_scale_tool_selected()));
 		RenderingServer::get_singleton()->instance_set_transform(axis_gizmo_instance[i], xform);
 	}
 
@@ -4023,7 +4023,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	xform.orthonormalize();
 	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && (spatial_editor->is_select_tool_selected() || spatial_editor->is_rotate_tool_selected()));
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
@@ -6642,19 +6642,8 @@ void Node3DEditor::_update_camera_override_viewport(Object *p_viewport) {
 
 void Node3DEditor::_menu_item_pressed(int p_option) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	switch (p_option) {
-		case MENU_TOOL_SELECT:
-		case MENU_TOOL_MOVE:
-		case MENU_TOOL_ROTATE:
-		case MENU_TOOL_SCALE:
-		case MENU_TOOL_LIST_SELECT: {
-			for (int i = 0; i < TOOL_MAX; i++) {
-				tool_button[i]->set_pressed(i == p_option);
-			}
-			tool_mode = (ToolMode)p_option;
-			update_transform_gizmo();
 
-		} break;
+	switch (p_option) {
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
 			snap_dialog->popup_centered(Size2(200, 180));
 		} break;
@@ -7755,15 +7744,15 @@ void Node3DEditor::_refresh_menu_icons() {
 	all_locked = all_locked && has_node3d_item;
 	all_grouped = all_grouped && has_node3d_item;
 
-	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
-	tool_button[TOOL_LOCK_SELECTED]->set_disabled(!has_node3d_item);
-	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
-	tool_button[TOOL_UNLOCK_SELECTED]->set_disabled(!has_node3d_item);
+	lock_selected_button->set_visible(!all_locked);
+	lock_selected_button->set_disabled(!has_node3d_item);
+	unlock_selected_button->set_visible(all_locked);
+	unlock_selected_button->set_disabled(!has_node3d_item);
 
-	tool_button[TOOL_GROUP_SELECTED]->set_visible(!all_grouped);
-	tool_button[TOOL_GROUP_SELECTED]->set_disabled(!has_node3d_item);
-	tool_button[TOOL_UNGROUP_SELECTED]->set_visible(all_grouped);
-	tool_button[TOOL_UNGROUP_SELECTED]->set_disabled(!has_node3d_item);
+	group_selected_button->set_visible(!all_grouped);
+	group_selected_button->set_disabled(!has_node3d_item);
+	ungroup_selected_button->set_visible(all_grouped);
+	ungroup_selected_button->set_disabled(!has_node3d_item);
 }
 
 template <typename T>
@@ -8021,15 +8010,15 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 }
 
 void Node3DEditor::_update_theme() {
-	tool_button[TOOL_MODE_SELECT]->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-	tool_button[TOOL_MODE_MOVE]->set_icon(get_editor_theme_icon(SNAME("ToolMove")));
-	tool_button[TOOL_MODE_ROTATE]->set_icon(get_editor_theme_icon(SNAME("ToolRotate")));
-	tool_button[TOOL_MODE_SCALE]->set_icon(get_editor_theme_icon(SNAME("ToolScale")));
-	tool_button[TOOL_MODE_LIST_SELECT]->set_icon(get_editor_theme_icon(SNAME("ListSelect")));
-	tool_button[TOOL_LOCK_SELECTED]->set_icon(get_editor_theme_icon(SNAME("Lock")));
-	tool_button[TOOL_UNLOCK_SELECTED]->set_icon(get_editor_theme_icon(SNAME("Unlock")));
-	tool_button[TOOL_GROUP_SELECTED]->set_icon(get_editor_theme_icon(SNAME("Group")));
-	tool_button[TOOL_UNGROUP_SELECTED]->set_icon(get_editor_theme_icon(SNAME("Ungroup")));
+	select_tool_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+	move_tool_button->set_icon(get_editor_theme_icon(SNAME("ToolMove")));
+	rotate_tool_button->set_icon(get_editor_theme_icon(SNAME("ToolRotate")));
+	scale_tool_button->set_icon(get_editor_theme_icon(SNAME("ToolScale")));
+	list_select_tool_button->set_icon(get_editor_theme_icon(SNAME("ListSelect")));
+	lock_selected_button->set_icon(get_editor_theme_icon(SNAME("Lock")));
+	unlock_selected_button->set_icon(get_editor_theme_icon(SNAME("Unlock")));
+	group_selected_button->set_icon(get_editor_theme_icon(SNAME("Group")));
+	ungroup_selected_button->set_icon(get_editor_theme_icon(SNAME("Ungroup")));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_icon(get_editor_theme_icon(SNAME("Object")));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_icon(get_editor_theme_icon(SNAME("Snap")));
@@ -8682,7 +8671,6 @@ Node3DEditor::Node3DEditor() {
 
 	snap_enabled = false;
 	snap_key_enabled = false;
-	tool_mode = TOOL_MODE_SELECT;
 
 	camera_override_viewport_id = 0;
 
@@ -8704,85 +8692,84 @@ Node3DEditor::Node3DEditor() {
 
 	String sct;
 
-	tool_button[TOOL_MODE_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
-	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
-	tool_button[TOOL_MODE_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SELECT));
-	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), Key::Q));
-	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_SELECT]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_group.instantiate();
+	tool_button_group->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_tool_button_group_pressed));
 
-	tool_button[TOOL_MODE_MOVE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
-	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_MOVE]->set_theme_type_variation("FlatButton");
-
-	tool_button[TOOL_MODE_MOVE]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_MOVE));
-	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), Key::W));
-	tool_button[TOOL_MODE_MOVE]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_MOVE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-
-	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
-	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_ROTATE]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_MODE_ROTATE]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_ROTATE));
-	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), Key::E));
-	tool_button[TOOL_MODE_ROTATE]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_ROTATE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-
-	tool_button[TOOL_MODE_SCALE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
-	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_SCALE]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_MODE_SCALE]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SCALE));
-	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), Key::R));
-	tool_button[TOOL_MODE_SCALE]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_SCALE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	select_tool_button = memnew(Button);
+	main_menu_hbox->add_child(select_tool_button);
+	select_tool_button->set_toggle_mode(true);
+	select_tool_button->set_theme_type_variation("FlatButton");
+	select_tool_button->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), Key::Q));
+	select_tool_button->set_shortcut_context(this);
+	select_tool_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	select_tool_button->set_pressed(true);
+	add_tool(select_tool_button);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
-	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
-	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
-	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
+	move_tool_button = memnew(Button);
+	main_menu_hbox->add_child(move_tool_button);
+	move_tool_button->set_theme_type_variation("FlatButton");
+	move_tool_button->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), Key::W));
+	move_tool_button->set_shortcut_context(this);
+	move_tool_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	add_tool(move_tool_button);
 
-	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
-	tool_button[TOOL_LOCK_SELECTED]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_LOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
-	tool_button[TOOL_LOCK_SELECTED]->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
-	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
+	rotate_tool_button = memnew(Button);
+	main_menu_hbox->add_child(rotate_tool_button);
+	rotate_tool_button->set_theme_type_variation("FlatButton");
+	rotate_tool_button->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), Key::E));
+	rotate_tool_button->set_shortcut_context(this);
+	rotate_tool_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	add_tool(rotate_tool_button);
 
-	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
-	tool_button[TOOL_UNLOCK_SELECTED]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_UNLOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
-	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
-	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
+	scale_tool_button = memnew(Button);
+	main_menu_hbox->add_child(scale_tool_button);
+	scale_tool_button->set_theme_type_variation("FlatButton");
+	scale_tool_button->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), Key::R));
+	scale_tool_button->set_shortcut_context(this);
+	scale_tool_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	add_tool(scale_tool_button);
 
-	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
-	tool_button[TOOL_GROUP_SELECTED]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_GROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
-	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTR("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
-	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
-	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
-	tool_button[TOOL_UNGROUP_SELECTED]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_UNGROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
-	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
+	list_select_tool_button = memnew(Button);
+	main_menu_hbox->add_child(list_select_tool_button);
+	list_select_tool_button->set_theme_type_variation("FlatButton");
+	list_select_tool_button->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
+	add_tool(list_select_tool_button);
+
+	lock_selected_button = memnew(Button);
+	main_menu_hbox->add_child(lock_selected_button);
+	lock_selected_button->set_theme_type_variation("FlatButton");
+	lock_selected_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
+	lock_selected_button->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
+	lock_selected_button->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
+
+	unlock_selected_button = memnew(Button);
+	main_menu_hbox->add_child(unlock_selected_button);
+	unlock_selected_button->set_theme_type_variation("FlatButton");
+	unlock_selected_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
+	unlock_selected_button->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	unlock_selected_button->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
+
+	group_selected_button = memnew(Button);
+	main_menu_hbox->add_child(group_selected_button);
+	group_selected_button->set_theme_type_variation("FlatButton");
+	group_selected_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
+	group_selected_button->set_tooltip_text(TTR("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	group_selected_button->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
+
+	ungroup_selected_button = memnew(Button);
+	main_menu_hbox->add_child(ungroup_selected_button);
+	ungroup_selected_button->set_theme_type_variation("FlatButton");
+	ungroup_selected_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
+	ungroup_selected_button->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	ungroup_selected_button->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -9328,6 +9315,49 @@ void Node3DEditorPlugin::make_visible(bool p_visible) {
 		spatial_editor->set_process(false);
 		spatial_editor->set_physics_process(false);
 	}
+}
+
+void Node3DEditor::_tool_button_group_pressed(Button *p_button) {
+	update_transform_gizmo();
+}
+
+void Node3DEditor::add_tool(Button *p_button) const {
+	p_button->set_button_group(tool_button_group);
+	p_button->set_toggle_mode(true);
+}
+
+bool Node3DEditor::is_list_select_tool_selected() {
+	return is_tool_selected(list_select_tool_button);
+}
+
+bool Node3DEditor::is_move_tool_selected() {
+	return is_tool_selected(move_tool_button);
+}
+
+bool Node3DEditor::is_rotate_tool_selected() {
+	return is_tool_selected(rotate_tool_button);
+}
+
+bool Node3DEditor::is_scale_tool_selected() {
+	return is_tool_selected(scale_tool_button);
+}
+
+bool Node3DEditor::is_select_tool_selected() {
+	return is_tool_selected(select_tool_button);
+}
+
+bool Node3DEditor::is_tool_selected(Button *p_button) {
+	BaseButton *pressed_button = tool_button_group->get_pressed_button();
+
+	return pressed_button == p_button;
+}
+
+void Node3DEditor::remove_tool(Button *p_button) {
+	if (is_tool_selected(p_button)) {
+		select_tool_button->set_pressed(true);
+	}
+
+	p_button->set_button_group(NULL);
 }
 
 void Node3DEditorPlugin::edit(Object *p_object) {
