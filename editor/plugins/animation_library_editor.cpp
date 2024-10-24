@@ -31,6 +31,7 @@
 #include "animation_library_editor.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -670,6 +671,8 @@ void AnimationLibraryEditor::update_tree() {
 
 	TreeItem *root = tree->create_item();
 	List<StringName> libs;
+	PackedStringArray collapsed_libs = _load_lib_folding();
+
 	mixer->get_animation_library_list(&libs);
 
 	for (const StringName &K : libs) {
@@ -759,10 +762,62 @@ void AnimationLibraryEditor::update_tree() {
 					anitem->set_text(1, anim_path.get_file());
 				}
 			}
+
 			anitem->add_button(1, get_editor_theme_icon("Save"), ANIM_BUTTON_FILE, animation_library_is_foreign, TTR("Save animation to resource on disk."));
 			anitem->add_button(1, get_editor_theme_icon("Remove"), ANIM_BUTTON_DELETE, animation_library_is_foreign, TTR("Remove animation from Library."));
+
+			for (const String &M : collapsed_libs) {
+				if (M == K) {
+					libitem->set_collapsed_recursive(true);
+				}
+			}
 		}
 	}
+}
+
+void AnimationLibraryEditor::_update_lib_folding(TreeItem *p_item) {
+	Ref<ConfigFile> config;
+	config.instantiate();
+
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().path_join("lib_folding.cfg");
+	config->load(path);
+	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + mixer->get_path()).md5_text();
+
+	PackedStringArray collapsed_libs;
+
+	if (config->has_section(md)) {
+		collapsed_libs = String(config->get_value(md, "folding")).split("\n");
+	}
+
+	String lib_name = p_item->get_text(0);
+	if (p_item->is_any_collapsed()) {
+		if (!collapsed_libs.has(lib_name)) {
+			collapsed_libs.append(lib_name);
+		}
+	} else {
+		if (collapsed_libs.has(lib_name)) {
+			collapsed_libs.remove_at(collapsed_libs.find(lib_name));
+		}
+	}
+
+	config->set_value(md, "folding", String("\n").join(collapsed_libs));
+	config->save(path);
+}
+
+PackedStringArray AnimationLibraryEditor::_load_lib_folding() {
+	Ref<ConfigFile> config;
+	config.instantiate();
+
+	String path = EditorPaths::get_singleton()->get_project_settings_dir().path_join("lib_folding.cfg");
+	config->load(path);
+	String md = (mixer->get_tree()->get_edited_scene_root()->get_scene_file_path() + mixer->get_path()).md5_text();
+
+	PackedStringArray collapsed_libs;
+	if (config->has_section(md)) {
+		collapsed_libs = String(config->get_value(md, "folding")).split("\n");
+	}
+
+	return collapsed_libs;
 }
 
 void AnimationLibraryEditor::show_dialog() {
@@ -855,11 +910,12 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_column_custom_minimum_width(1, EDSCALE * 250);
 	tree->set_column_expand(1, false);
 	tree->set_hide_root(true);
-	tree->set_hide_folding(true);
+	tree->set_hide_folding(false);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
 	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
+	tree->connect("item_collapsed", callable_mp(this, &AnimationLibraryEditor::_update_lib_folding));
 
 	file_popup = memnew(PopupMenu);
 	add_child(file_popup);

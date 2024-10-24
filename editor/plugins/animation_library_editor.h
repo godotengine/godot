@@ -103,6 +103,9 @@ class AnimationLibraryEditor : public AcceptDialog {
 	void _load_file(const String &p_path);
 	void _load_files(const PackedStringArray &p_paths);
 
+	void _update_lib_folding(TreeItem *p_item);
+	PackedStringArray _load_lib_folding();
+
 	void _item_renamed();
 	void _button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
 
