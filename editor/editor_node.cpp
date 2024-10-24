@@ -3938,10 +3938,10 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			}
 		}
 
-		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import")) {
+		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import")) { // TODO: p_force_open_imported can be removed.
 			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), p_scene.get_file()));
 			open_imported->popup_centered();
-			new_inherited_button->grab_focus();
+			open_imported->get_ok_button()->grab_focus();
 			open_import_request = p_scene;
 			return OK;
 		}
@@ -6439,7 +6439,7 @@ bool EditorNode::call_build() {
 	return builds_successful;
 }
 
-void EditorNode::_inherit_imported(const String &p_action) {
+void EditorNode::_inherit_imported() {
 	open_imported->hide();
 	load_scene(open_import_request, true, true);
 }
@@ -7830,10 +7830,8 @@ EditorNode::EditorNode() {
 	set_process(true);
 
 	open_imported = memnew(ConfirmationDialog);
-	open_imported->set_ok_button_text(TTR("Open Anyway"));
-	new_inherited_button = open_imported->add_button(TTR("New Inherited"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "inherit");
-	open_imported->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_open_imported));
-	open_imported->connect("custom_action", callable_mp(this, &EditorNode::_inherit_imported));
+	open_imported->set_ok_button_text(TTR("New Inherited"));
+	open_imported->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_inherit_imported));
 	gui_base->add_child(open_imported);
 
 	quick_open_dialog = memnew(EditorQuickOpenDialog);
