@@ -41,16 +41,20 @@ class PanelContainer;
 class HBoxContainer;
 
 class EditorRunBar : public MarginContainer {
-	GDCLASS(EditorRunBar, MarginContainer);
-
-	static EditorRunBar *singleton;
-
+public:
 	enum RunMode {
 		STOPPED = 0,
 		RUN_MAIN,
 		RUN_CURRENT,
 		RUN_CUSTOM,
 	};
+
+	RunMode get_run_mode() const;
+
+private:
+	GDCLASS(EditorRunBar, MarginContainer);
+
+	static EditorRunBar *singleton;
 
 	PanelContainer *main_panel = nullptr;
 	HBoxContainer *main_hbox = nullptr;

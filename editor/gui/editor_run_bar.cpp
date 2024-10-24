@@ -356,6 +356,10 @@ HBoxContainer *EditorRunBar::get_buttons_container() {
 	return main_hbox;
 }
 
+EditorRunBar::RunMode EditorRunBar::get_run_mode() const {
+	return current_mode;
+}
+
 void EditorRunBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));

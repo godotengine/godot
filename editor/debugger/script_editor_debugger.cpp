@@ -35,6 +35,7 @@
 #include "core/debugger/remote_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/string/ustring.h"
+#include "core/variant/variant_utility.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/debugger/editor_expression_evaluator.h"
@@ -42,12 +43,14 @@
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
@@ -55,6 +58,8 @@
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/world_environment.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
@@ -1488,6 +1493,60 @@ void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 	}
 
 	camera_override = p_override;
+}
+
+void ScriptEditorDebugger::add_preview_nodes_to_current_3d_scene() {
+	Array msg;
+	const Node3DEditor *editor = Node3DEditor::get_singleton();
+	const Ref<PackedScene> current_running_scene = ResourceLoader::load(EditorRunBar::get_singleton()->get_playing_scene());
+	if (current_running_scene.is_null()) {
+		return;
+	}
+
+	const Ref<SceneState> scene_state = current_running_scene->get_state();
+
+	// Make sure we have a root node.
+	ERR_FAIL_COND(scene_state->get_node_count() < 1);
+
+	// If the root node isn't a 3D node, check if we have an inherited scene as the root node or return.
+	if (!ClassDB::is_parent_class(scene_state->get_node_type(0), "Node3D")) {
+		const Ref<SceneState> base_state = current_running_scene->get_state()->get_base_scene_state();
+
+		// If our inherited scene does not inherit a 3D node, return.
+		if (base_state.is_valid()) {
+			if (!ClassDB::is_parent_class(base_state->get_node_type(0), "Node3D")) {
+				return;
+			}
+		} else {
+			return;
+		}
+	}
+
+	// Check to see if nodes already exists in the current scene and if the preview Environment/Sun buttons are not pressed.
+	bool should_add_world_environment = true;
+	bool should_add_directional_light_3d = true;
+	bool should_add_camera_3d = true;
+	for (int i = 0; i < scene_state->get_node_count(); i++) {
+		if (scene_state->get_node_type(i) == "WorldEnvironment" || !editor->is_environ_button_pressed()) {
+			should_add_world_environment = false;
+		}
+		if (scene_state->get_node_type(i) == "DirectionalLight3D" || !editor->is_sun_button_pressed()) {
+			should_add_directional_light_3d = false;
+		}
+		if (scene_state->get_node_type(i) == "Camera3D") {
+			should_add_camera_3d = false;
+		}
+	}
+
+	msg.push_back(should_add_world_environment);
+	msg.push_back(should_add_directional_light_3d);
+	msg.push_back(should_add_camera_3d);
+
+	// Serialize WorldEnvironment, DirectionalLight3D and Camera3D nodes to bytes and send to running game.
+	msg.push_back(VariantUtilityFunctions::var_to_bytes_with_objects(editor->get_preview_environment()->duplicate()));
+	msg.push_back(VariantUtilityFunctions::var_to_bytes_with_objects(editor->get_preview_sun()->duplicate()));
+	msg.push_back(VariantUtilityFunctions::var_to_bytes_with_objects(EditorInterface::get_singleton()->get_editor_viewport_3d(0)->get_camera_3d()->duplicate()));
+	_put_msg("scene:add_preview_nodes_to_current_3d_scene", msg);
 }
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {

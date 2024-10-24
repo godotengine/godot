@@ -604,6 +604,12 @@ class Node3DEditor : public VBoxContainer {
 	GDCLASS(Node3DEditor, VBoxContainer);
 
 public:
+	WorldEnvironment *get_preview_environment() const;
+	DirectionalLight3D *get_preview_sun() const;
+
+	bool is_environ_button_pressed() const;
+	bool is_sun_button_pressed() const;
+
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
 	enum ToolMode {

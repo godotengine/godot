@@ -6039,6 +6039,29 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 	dragging_h = false;
 }
 
+WorldEnvironment *Node3DEditor::get_preview_environment() const {
+	return preview_environment;
+}
+
+DirectionalLight3D *Node3DEditor::get_preview_sun() const {
+	return preview_sun;
+}
+
+bool Node3DEditor::is_environ_button_pressed() const {
+	if (environ_button->is_disabled()) {
+		return false;
+	}
+
+	return environ_button->is_pressed();
+}
+
+bool Node3DEditor::is_sun_button_pressed() const {
+	if (sun_button->is_disabled()) {
+		return false;
+	}
+
+	return sun_button->is_pressed();
+}
 ///////////////////////////////////////////////////////////////////
 
 Node3DEditor *Node3DEditor::singleton = nullptr;

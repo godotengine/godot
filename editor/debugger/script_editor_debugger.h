@@ -300,6 +300,8 @@ public:
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
 
+	void add_preview_nodes_to_current_3d_scene();
+
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 
 	void update_live_edit_root();

@@ -30,6 +30,7 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_tree.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -396,6 +397,13 @@ void EditorDebuggerNode::_notification(int p_what) {
 				} // Will arrive too late, how does the regular run work?
 
 				debugger->update_live_edit_root();
+
+#ifndef _3D_DISABLED
+				// Adds the preview WorldEnvironment, DirectionalLight3D, Camera3D nodes from the Editor if they are not present in the current scene when using RUN_CURRENT or RUN_CUSTOM.
+				if (GLOBAL_GET("editor/run/automatically_add_preview_nodes_when_running_single_3d_scene") && (EditorRunBar::get_singleton()->get_run_mode() == EditorRunBar::RUN_CURRENT || EditorRunBar::get_singleton()->get_run_mode() == EditorRunBar::RUN_CUSTOM)) {
+					debugger->add_preview_nodes_to_current_3d_scene();
+				}
+#endif // _3D_DISABLED
 			}
 		} break;
 	}

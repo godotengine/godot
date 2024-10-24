@@ -269,6 +269,7 @@ void register_editor_types() {
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");
+	GLOBAL_DEF("editor/run/automatically_add_preview_nodes_when_running_single_3d_scene", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
 
