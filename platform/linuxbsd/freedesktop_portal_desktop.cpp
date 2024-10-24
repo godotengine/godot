@@ -38,19 +38,25 @@
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
 
-#ifdef SOWRAP_ENABLED
-#include "dbus-so_wrap.h"
-#else
-#include <dbus/dbus.h>
-#endif
-
+#include <poll.h>
+#include <strings.h>
 #include <unistd.h>
 
 #define BUS_OBJECT_NAME "org.freedesktop.portal.Desktop"
 #define BUS_OBJECT_PATH "/org/freedesktop/portal/desktop"
 
+#define BUS_INTERFACE_PROPERTIES "org.freedesktop.DBus.Properties"
+
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
+
+#define BUS_INTERFACE_STATUS_NOTIFIER_ITEM "org.freedesktop.StatusNotifierItem"
+#define BUS_STATUS_NOTIFIER_ITEM_NAME "org.freedesktop.StatusNotifierItem"
+#define BUS_STATUS_NOTIFIER_ITEM_PATH "/StatusNotifierItem"
+
+#define BUS_INTERFACE_STATUS_NOTIFIER_WATCHER "org.freedesktop.StatusNotifierWatcher"
+#define BUS_STATUS_NOTIFIER_WATCHER_NAME "org.freedesktop.StatusNotifierWatcher"
+#define BUS_STATUS_NOTIFIER_WATCHER_PATH "/StatusNotifierWatcher"
 
 bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, int p_type, void *r_value) {
 	DBusMessageIter iter[3];
@@ -507,14 +513,162 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	}
 	dbus_message_unref(reply);
 
-	MutexLock lock(file_dialog_mutex);
+	//MutexLock lock(dbus_mutex);
 	file_dialogs.push_back(fd);
 
 	return OK;
 }
 
+dbus_bool_t FreeDesktopPortalDesktop::_dbus_message_iter_append_pixmap(DBusMessageIter *p_iter, Size2i p_size, Vector<uint8_t> p_data) {
+	DBusMessageIter iter_data;
+	DBusMessageIter image_array;
+	DBusMessageIter image_struct;
+	ERR_FAIL_COND_V(!dbus_message_iter_open_container(p_iter, DBUS_TYPE_VARIANT, "a(iiay)", &iter_data), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_open_container(&iter_data, DBUS_TYPE_ARRAY, "(iiay)", &image_array), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_open_container(&image_array, DBUS_TYPE_STRUCT, nullptr, &image_struct), FALSE);
+
+	// Image size
+	ERR_FAIL_COND_V(!dbus_message_iter_append_basic(&image_struct, DBUS_TYPE_INT32, &p_size.width), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_append_basic(&image_struct, DBUS_TYPE_INT32, &p_size.height), FALSE);
+
+	DBusMessageIter image_data_array;
+	ERR_FAIL_COND_V(!dbus_message_iter_open_container(&image_struct, DBUS_TYPE_ARRAY, "y", &image_data_array), FALSE);
+
+	// Image data
+	const char *data_ptr = (const char *)p_data.ptr();
+	ERR_FAIL_COND_V(!dbus_message_iter_append_fixed_array(&image_data_array, DBUS_TYPE_BYTE, &data_ptr, p_data.size()), FALSE);
+
+	ERR_FAIL_COND_V(!dbus_message_iter_close_container(&image_struct, &image_data_array), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_close_container(&image_array, &image_struct), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_close_container(&iter_data, &image_array), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_close_container(p_iter, &iter_data), FALSE);
+
+	return TRUE;
+}
+
+dbus_bool_t FreeDesktopPortalDesktop::_dbus_messsage_iter_append_basic_variant(DBusMessageIter *p_iter, int p_type, const void *p_value) {
+	ERR_FAIL_COND_V(!dbus_type_is_basic(p_type), FALSE);
+
+	char content_signature[2] = { (char)p_type, 0 };
+
+	const void *data = p_value;
+
+	if (!dbus_type_is_fixed(p_type)) {
+		// Non-fixed types are string-like and as such are already a pointer by
+		// themselves. To avoid going insane, we'll detect that and make the passed
+		// value a pointer-to-a-pointer ourselves.
+		data = &p_value;
+	}
+
+	DBusMessageIter variant_data;
+
+	ERR_FAIL_COND_V(!dbus_message_iter_open_container(p_iter, DBUS_TYPE_VARIANT, content_signature, &variant_data), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_append_basic(&variant_data, p_type, data), FALSE);
+	ERR_FAIL_COND_V(!dbus_message_iter_close_container(p_iter, &variant_data), FALSE);
+
+	return TRUE;
+}
+
+dbus_bool_t FreeDesktopPortalDesktop::_dbus_message_iter_append_bool_variant(DBusMessageIter *p_iter, bool p_bool) {
+	dbus_bool_t value = p_bool ? TRUE : FALSE;
+	return _dbus_messsage_iter_append_basic_variant(p_iter, DBUS_TYPE_BOOLEAN, &value);
+}
+
+dbus_bool_t FreeDesktopPortalDesktop::_dbus_message_iter_append_uint32_variant(DBusMessageIter *p_iter, uint32_t p_uint32) {
+	dbus_uint32_t value = p_uint32;
+	return _dbus_messsage_iter_append_basic_variant(p_iter, DBUS_TYPE_BOOLEAN, &value);
+}
+
+DBusHandlerResult FreeDesktopPortalDesktop::_handle_message(DBusConnection *connection, DBusMessage *message, void *user_data) {
+	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)user_data;
+
+	if (dbus_message_is_signal(message, BUS_INTERFACE_STATUS_NOTIFIER_WATCHER, "StatusNotifierHostRegistered")) {
+		// Looks like a new status bar is in town. We'll re-register all indicators to let it know them.
+		for (KeyValue<DisplayServer::IndicatorID, StatusNotifierItem> &kv : portal->indicators) {
+			portal->indicator_register(kv.key);
+		}
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, "org.freedesktop.portal.Settings", "SettingChanged")) {
+		DBusMessageIter iter;
+		if (dbus_message_iter_init(message, &iter)) {
+			const char *value;
+			dbus_message_iter_get_basic(&iter, &value);
+			String name_space = String::utf8(value);
+			dbus_message_iter_next(&iter);
+			dbus_message_iter_get_basic(&iter, &value);
+			String key = String::utf8(value);
+
+			if (name_space == "org.freedesktop.appearance" && key == "color-scheme") {
+				callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+		}
+	}
+
+	if (dbus_message_is_signal(message, "org.freedesktop.portal.Request", "Response")) {
+		String path = String::utf8(dbus_message_get_path(message));
+		MutexLock lock(portal->dbus_mutex);
+		for (int i = 0; i < portal->file_dialogs.size(); i++) {
+			FreeDesktopPortalDesktop::FileDialogData &fd = portal->file_dialogs.write[i];
+			if (fd.path == path) {
+				DBusMessageIter iter;
+				if (dbus_message_iter_init(message, &iter)) {
+					bool cancel = false;
+					Vector<String> uris;
+					Dictionary options;
+					int index = 0;
+					file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index, options);
+
+					if (fd.callback.is_valid()) {
+						FileDialogCallback cb;
+						cb.callback = fd.callback;
+						cb.status = !cancel;
+						cb.files = uris;
+						cb.index = index;
+						cb.options = options;
+						cb.opt_in_cb = fd.opt_in_cb;
+						portal->pending_cbs.push_back(cb);
+					}
+
+					if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
+						callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
+					}
+				}
+
+				DBusError err;
+				dbus_error_init(&err);
+				dbus_bus_remove_match(portal->monitor_connection, fd.filter.utf8(), &err);
+				dbus_error_free(&err);
+
+				portal->file_dialogs.remove_at(i);
+				break;
+			}
+		}
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+dbus_bool_t FreeDesktopPortalDesktop::_handle_add_watch(DBusWatch *watch, void *data) {
+	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)data;
+	portal->dbus_watches.append(watch);
+
+	return TRUE;
+}
+
+void FreeDesktopPortalDesktop::_handle_remove_watch(DBusWatch *watch, void *data) {
+	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)data;
+	portal->dbus_watches.erase(watch);
+}
+
+void FreeDesktopPortalDesktop::_handle_watch_toggled(DBusWatch *watch, void *data) {
+}
+
 void FreeDesktopPortalDesktop::process_file_dialog_callbacks() {
-	MutexLock lock(file_dialog_mutex);
+	MutexLock lock(dbus_mutex);
 	while (!pending_cbs.is_empty()) {
 		FileDialogCallback cb = pending_cbs.front()->get();
 		pending_cbs.pop_front();
@@ -544,72 +698,79 @@ void FreeDesktopPortalDesktop::process_file_dialog_callbacks() {
 void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)p_ud;
 
-	while (!portal->monitor_thread_abort.is_set()) {
-		if (portal->monitor_connection) {
-			while (true) {
-				DBusMessage *msg = dbus_connection_pop_message(portal->monitor_connection);
-				if (!msg) {
-					break;
-				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Settings", "SettingChanged")) {
-					DBusMessageIter iter;
-					if (dbus_message_iter_init(msg, &iter)) {
-						const char *value;
-						dbus_message_iter_get_basic(&iter, &value);
-						String name_space = String::utf8(value);
-						dbus_message_iter_next(&iter);
-						dbus_message_iter_get_basic(&iter, &value);
-						String key = String::utf8(value);
+	while (true) {
+		LocalVector<struct pollfd> fds;
 
-						if (name_space == "org.freedesktop.appearance" && key == "color-scheme") {
-							callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
-						}
-					}
-				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
-					String path = String::utf8(dbus_message_get_path(msg));
-					MutexLock lock(portal->file_dialog_mutex);
-					for (int i = 0; i < portal->file_dialogs.size(); i++) {
-						FreeDesktopPortalDesktop::FileDialogData &fd = portal->file_dialogs.write[i];
-						if (fd.path == path) {
-							DBusMessageIter iter;
-							if (dbus_message_iter_init(msg, &iter)) {
-								bool cancel = false;
-								Vector<String> uris;
-								Dictionary options;
-								int index = 0;
-								file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index, options);
+		{
+			MutexLock mutex_lock(portal->dbus_mutex);
 
-								if (fd.callback.is_valid()) {
-									FileDialogCallback cb;
-									cb.callback = fd.callback;
-									cb.status = !cancel;
-									cb.files = uris;
-									cb.index = index;
-									cb.options = options;
-									cb.opt_in_cb = fd.opt_in_cb;
-									portal->pending_cbs.push_back(cb);
-								}
-								if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
-									callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
-								}
-							}
+			for (DBusWatch *watch : portal->dbus_watches) {
+				struct pollfd fd = {
+					dbus_watch_get_unix_fd(watch), // fd
+					POLLERR | POLLHUP, // events
+					0, // revents
+				};
 
-							DBusError err;
-							dbus_error_init(&err);
-							dbus_bus_remove_match(portal->monitor_connection, fd.filter.utf8().get_data(), &err);
-							dbus_error_free(&err);
+				DBusWatchFlags watch_flags = (DBusWatchFlags)dbus_watch_get_flags(watch);
 
-							portal->file_dialogs.remove_at(i);
-							break;
-						}
-					}
+				if (watch_flags & DBUS_WATCH_READABLE) {
+					fd.events |= POLLIN;
 				}
-				dbus_message_unref(msg);
+
+				if (watch_flags & DBUS_WATCH_WRITABLE) {
+					fd.events |= POLLOUT;
+				}
+
+				fds.push_back(fd);
 			}
-			dbus_connection_read_write(portal->monitor_connection, 0);
 		}
 
-		OS::get_singleton()->delay_usec(50'000);
+		if (fds.ptr() == nullptr || fds.size() == 0) {
+			continue;
+		}
+
+		poll(fds.ptr(), fds.size(), -1);
+
+		for (unsigned int i = 0; i < fds.size(); ++i) {
+			struct pollfd &fd = fds[i];
+			if (fd.revents) {
+				DBusWatchFlags flags = (DBusWatchFlags)0;
+
+				if (fd.events & POLLIN) {
+					flags = (DBusWatchFlags)(flags | (int)DBUS_WATCH_READABLE);
+				}
+
+				if (fd.events & POLLOUT) {
+					flags = (DBusWatchFlags)(flags | (int)DBUS_WATCH_WRITABLE);
+				}
+
+				// Sweet lord, I can't think of a better way of associating an fd with a
+				// watch.
+				dbus_watch_handle(portal->dbus_watches[i], flags);
+			}
+		}
+
+		MutexLock mutex_lock(portal->dbus_mutex);
+
+		while (dbus_connection_get_dispatch_status(portal->monitor_connection) == DBUS_DISPATCH_DATA_REMAINS) {
+			dbus_connection_dispatch(portal->monitor_connection);
+		}
+
+		if (!dbus_connection_get_is_connected(portal->monitor_connection) || portal->monitor_thread_abort.is_set()) {
+			break;
+		}
 	}
+}
+
+void FreeDesktopPortalDesktop::_dbus_connection_reply_error(DBusConnection *p_connection, DBusMessage *p_message, String p_error_message) {
+	ERR_PRINT(p_error_message);
+
+	DBusMessage *reply = dbus_message_new_error(p_message, DBUS_ERROR_UNKNOWN_PROPERTY, p_error_message.utf8());
+
+	dbus_uint32_t serial = dbus_message_get_serial(p_message);
+	dbus_connection_send(p_connection, reply, &serial);
+
+	dbus_message_unref(reply);
 }
 
 void FreeDesktopPortalDesktop::_system_theme_changed_callback() {
@@ -621,6 +782,295 @@ void FreeDesktopPortalDesktop::_system_theme_changed_callback() {
 			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
 		}
 	}
+}
+
+void FreeDesktopPortalDesktop::_status_notifier_item_unregister(DBusConnection *connection, void *user_data) {
+}
+
+DBusHandlerResult FreeDesktopPortalDesktop::_status_notifier_item_handle_message(DBusConnection *connection, DBusMessage *message, void *user_data) {
+	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)user_data;
+	ERR_FAIL_NULL_V(portal, DBUS_HANDLER_RESULT_HANDLED);
+
+	String interface = dbus_message_get_interface(message);
+	String member = dbus_message_get_member(message);
+
+	const char *destination_ptr = dbus_message_get_destination(message);
+	ERR_FAIL_NULL_V(destination_ptr, DBUS_HANDLER_RESULT_HANDLED);
+
+	String destination;
+	destination.parse_utf8(destination_ptr);
+
+	ERR_FAIL_COND_V(!portal->indicator_id_map.has(destination), DBUS_HANDLER_RESULT_HANDLED);
+	DisplayServer::IndicatorID id = portal->indicator_id_map[destination];
+
+	ERR_FAIL_COND_V(!portal->indicators.has(id), DBUS_HANDLER_RESULT_HANDLED);
+	StatusNotifierItem &item = portal->indicators[id];
+
+	if (dbus_message_is_method_call(message, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "Activate")) {
+		if (item.activate_callback.is_valid()) {
+			dbus_int32_t x = 0;
+			dbus_int32_t y = 0;
+
+			DBusError error;
+			dbus_error_init(&error);
+			dbus_message_get_args(message, &error, DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INVALID);
+			if (dbus_error_is_set(&error)) {
+				_dbus_connection_reply_error(connection, message, vformat("Invalid arguments for %s.%s at %s", interface, member, destination));
+				dbus_error_free(&error);
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+
+			item.activate_callback.call_deferred(MouseButton::LEFT, Point2i(x, y));
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_method_call(message, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "SecondaryActivate")) {
+		if (item.activate_callback.is_valid()) {
+			dbus_int32_t x = 0;
+			dbus_int32_t y = 0;
+
+			DBusError error;
+			dbus_error_init(&error);
+			dbus_message_get_args(message, &error, DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INVALID);
+			if (dbus_error_is_set(&error)) {
+				_dbus_connection_reply_error(connection, message, vformat("Invalid arguments for %s.%s at %s", interface, member, destination));
+				dbus_error_free(&error);
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+
+			item.activate_callback.call_deferred(MouseButton::MIDDLE, Point2i(x, y));
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_get_type(message) == DBUS_MESSAGE_TYPE_METHOD_CALL && interface == BUS_INTERFACE_PROPERTIES && member == "Get") {
+		const char *interface_name;
+		const char *property;
+
+		DBusError error;
+		dbus_error_init(&error);
+		dbus_message_get_args(message, &error, DBUS_TYPE_STRING, &interface_name, DBUS_TYPE_STRING, &property, DBUS_TYPE_INVALID);
+		if (dbus_error_is_set(&error)) {
+			_dbus_connection_reply_error(connection, message, vformat("Invalid arguments for %s.%s at %s", interface, member, destination));
+			dbus_error_free(&error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		if (strcmp(interface_name, BUS_STATUS_NOTIFIER_ITEM_NAME) == 0) {
+			DBusMessage *reply = dbus_message_new_method_return(message);
+
+			if (!reply) {
+				_dbus_connection_reply_error(connection, message, "Failed to build response");
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+
+			DBusMessageIter reply_iter;
+			dbus_message_iter_init_append(reply, &reply_iter);
+
+			dbus_bool_t success = FALSE;
+			if (strcmp(property, "Category") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "ApplicationStatus");
+			} else if (strcmp(property, "Id") == 0) {
+				// TODO: No idea what would be a good value.
+				// The documentation says that this is pretty much an app id.
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "org.godotengine.Godot");
+			} else if (strcmp(property, "Title") == 0) {
+				// TODO: No idea what would be a good value.
+				// Same thing as above, although it's meant to be a little bit more verbose.
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "Godot game engine");
+			} else if (strcmp(property, "Status") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "Active");
+			} else if (strcmp(property, "WindowId") == 0) {
+				success = _dbus_message_iter_append_uint32_variant(&reply_iter, 0);
+			} else if (strcmp(property, "IconName") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "");
+			} else if (strcmp(property, "IconPixmap") == 0) {
+				success = _dbus_message_iter_append_pixmap(&reply_iter, item.icon_size, item.icon_data);
+			} else if (strcmp(property, "OverlayIconName") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "");
+			} else if (strcmp(property, "OverlayIconPixmap") == 0) {
+				success = _dbus_message_iter_append_pixmap(&reply_iter, Size2i(), Vector<uint8_t>());
+			} else if (strcmp(property, "AttentionIconName") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "");
+			} else if (strcmp(property, "AttentionIconPixmap") == 0) {
+				success = _dbus_message_iter_append_pixmap(&reply_iter, Size2i(), Vector<uint8_t>());
+			} else if (strcmp(property, "AttentionMovieName") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, "");
+			} else if (strcmp(property, "ToolTip") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_STRING, item.tooltip.utf8());
+			} else if (strcmp(property, "ItemIsMenu") == 0) {
+				success = _dbus_message_iter_append_bool_variant(&reply_iter, false);
+			} else if (strcmp(property, "Menu") == 0) {
+				success = _dbus_messsage_iter_append_basic_variant(&reply_iter, DBUS_TYPE_OBJECT_PATH, "/");
+			} else {
+				_dbus_connection_reply_error(connection, message, vformat("Property %s not found.", property));
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+
+			if (!success) {
+				_dbus_connection_reply_error(connection, message, "Failed to build response");
+				return DBUS_HANDLER_RESULT_HANDLED;
+			}
+
+			dbus_uint32_t serial = dbus_message_get_serial(message);
+			dbus_connection_send(connection, reply, &serial);
+
+			dbus_message_unref(reply);
+
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+	}
+
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+bool FreeDesktopPortalDesktop::indicator_register(DisplayServer::IndicatorID p_id) {
+	MutexLock mutex_lock(dbus_mutex);
+
+	ERR_FAIL_COND_V(!indicators.has(p_id), false);
+
+	StatusNotifierItem &item = indicators[p_id];
+
+	const char *item_name = item.name.utf8();
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_STATUS_NOTIFIER_WATCHER_NAME, BUS_STATUS_NOTIFIER_WATCHER_PATH, BUS_INTERFACE_STATUS_NOTIFIER_WATCHER, "RegisterStatusNotifierItem");
+	dbus_message_append_args(message, DBUS_TYPE_STRING, &item_name, DBUS_TYPE_INVALID);
+
+	dbus_connection_send(monitor_connection, message, NULL);
+	dbus_message_unref(message);
+
+	return true;
+}
+
+bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon) {
+	MutexLock mutex_lock(dbus_mutex);
+
+	ERR_FAIL_COND_V(indicators.has(p_id), false);
+
+	if (unsupported) {
+		return false;
+	}
+
+	DBusError error;
+	dbus_error_init(&error);
+
+	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &error);
+	if (dbus_error_is_set(&error)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT(vformat("Error opening D-Bus connection: %s", error.message));
+		}
+		dbus_error_free(&error);
+		unsupported = true;
+		return false;
+	}
+
+	int pid = OS::get_singleton()->get_process_id();
+
+	String name = vformat("org.freedesktop.StatusNotifierItem-%d-%d", pid, p_id);
+	dbus_bus_request_name(bus, name.utf8(), DBUS_NAME_FLAG_DO_NOT_QUEUE, &error);
+	if (dbus_error_is_set(&error)) {
+		dbus_error_free(&error);
+		return false;
+	}
+
+	indicator_id_map[name] = p_id;
+
+	StatusNotifierItem &item = indicators[p_id];
+	item.id = p_id;
+	item.name = name;
+
+	// TODO: Error handling.
+	indicator_set_icon(p_id, p_icon);
+	indicator_register(p_id);
+
+	return true;
+}
+
+Error FreeDesktopPortalDesktop::indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon) {
+	MutexLock mutex_lock(dbus_mutex);
+
+	ERR_FAIL_COND_V(!indicators.has(p_id), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(p_icon->get_size().x == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_icon->get_size().y == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_icon.is_null(), FAILED);
+
+	// We'll have to manipulate the icon a bit.
+	Ref<Image> image = p_icon->get_image();
+
+	if (image->is_compressed()) {
+		Error err = image->decompress();
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't decompress VRAM-compressed status-icon. Switch to a lossless compression mode in the Import dock.");
+	}
+
+	// TODO: Figure out the size limits (at least swaybar errors on big pixmaps)
+	image->resize(64, 64);
+
+	// The API requires ARGB32 (or ARGB8888), which `Image` does not support.
+	// Luckily, we can convert to RGBA8 (which is actually RGBA8888), so we'll just
+	// need to reorder the bytes ourselves.
+	image->convert(Image::FORMAT_RGBA8);
+
+	Vector<uint8_t> image_data = image->get_data();
+
+	StatusNotifierItem &item = indicators[p_id];
+	item.icon_size = image->get_size();
+
+	item.icon_data.clear();
+	for (int i = 0; i < image_data.size(); i += 4) {
+		item.icon_data.append(image_data[i + 3]); // A
+		item.icon_data.append(image_data[i + 0]); // R
+		item.icon_data.append(image_data[i + 1]); // G
+		item.icon_data.append(image_data[i + 2]); // B
+	}
+
+	DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewIcon");
+	dbus_connection_send(monitor_connection, signal, NULL);
+	dbus_message_unref(signal);
+
+	return OK;
+}
+
+void FreeDesktopPortalDesktop::indicator_set_tooltip(DisplayServer::IndicatorID p_id, const String &p_tooltip) {
+	MutexLock mutex_lock(dbus_mutex);
+
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	StatusNotifierItem &item = indicators[p_id];
+
+	item.tooltip = p_tooltip;
+
+	DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewToolTip");
+	dbus_connection_send(monitor_connection, signal, NULL);
+	dbus_message_unref(signal);
+}
+
+void FreeDesktopPortalDesktop::indicator_set_callback(DisplayServer::IndicatorID p_id, const Callable &p_callback) {
+	MutexLock mutex_lock(dbus_mutex);
+
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	StatusNotifierItem &item = indicators[p_id];
+
+	item.activate_callback = p_callback;
+}
+
+void FreeDesktopPortalDesktop::indicator_destroy(DisplayServer::IndicatorID p_id) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	StatusNotifierItem &item = indicators[p_id];
+
+	DBusError error;
+	dbus_error_init(&error);
+
+	dbus_bus_release_name(monitor_connection, item.name.utf8(), &error);
+
+	dbus_error_free(&error);
+
+	indicator_id_map.erase(item.name);
+	indicators.erase(p_id);
 }
 
 FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
@@ -664,12 +1114,37 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 			dbus_connection_unref(monitor_connection);
 			monitor_connection = nullptr;
 		}
-		dbus_connection_read_write(monitor_connection, 0);
 	}
 
 	if (!unsupported) {
+		dbus_threads_init_default();
+		dbus_connection_add_filter(monitor_connection, _handle_message, this, _dbus_arg_noop);
+
+		dbus_connection_set_watch_functions(monitor_connection, _handle_add_watch, _handle_remove_watch, _handle_watch_toggled, this, _dbus_arg_noop);
+
 		monitor_thread_abort.clear();
 		monitor_thread.start(FreeDesktopPortalDesktop::_thread_monitor, this);
+
+		DBusError error;
+		dbus_error_init(&error);
+
+		dbus_connection_try_register_object_path(monitor_connection, BUS_STATUS_NOTIFIER_ITEM_PATH, &status_indicator_item_vtable, this, &error);
+		if (dbus_error_is_set(&error)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));
+			}
+		}
+		dbus_error_free(&error);
+
+		// We need this for catching status bar reloads (e.g. swaybar restarts)
+		const char *signal_match = "type='signal',interface='org.freedesktop.StatusNotifierWatcher',member='StatusNotifierHostRegistered'";
+		dbus_bus_add_match(monitor_connection, signal_match, &error);
+		if (dbus_error_is_set(&error)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));
+			}
+			dbus_error_free(&error);
+		}
 	}
 }
 
