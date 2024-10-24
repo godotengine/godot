@@ -1835,30 +1835,33 @@ void EditorFileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (vbox_options->get_child_count() > 0) {
+		Node *child = vbox_options->get_child(0);
+		vbox_options->remove_child(child);
 		child->queue_free();
 	}
 	selected_options.clear();
 
 	for (const EditorFileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			cb->set_text(opt.name);
+			vbox_options->add_child(cb);
 			cb->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
+			hbox->add_child(lbl);
+			hbox->add_child(ob);
+			vbox_options->add_child(hbox);
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
@@ -2128,11 +2131,11 @@ void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
 void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
 	if (p_native_dlg) {
 		pathhb->set_visible(false);
-		grid_options->set_visible(false);
+		vbox_options->set_visible(false);
 		list_hb->set_visible(false);
 	} else {
 		pathhb->set_visible(true);
-		grid_options->set_visible(true);
+		vbox_options->set_visible(true);
 		list_hb->set_visible(true);
 	}
 }
@@ -2263,10 +2266,9 @@ EditorFileDialog::EditorFileDialog() {
 	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(body_hsplit);
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	vbc->add_child(grid_options);
+	vbox_options = memnew(VBoxContainer);
+	vbox_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	vbc->add_child(vbox_options);
 
 	list_hb = memnew(HSplitContainer);
 	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
