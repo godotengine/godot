@@ -32,7 +32,8 @@
 #define NAVIGATION_UTILITIES_H
 
 #include "core/math/vector3.h"
-#include "core/variant/typed_array.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant.h"
 
 namespace NavigationUtilities {
 

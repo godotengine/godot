@@ -36,9 +36,6 @@
 #include "core/io/resource.h"
 #include "scene/resources/3d/skin.h"
 
-template <typename T>
-class TypedArray;
-
 class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
 	friend class GLTFDocument;

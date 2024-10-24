@@ -41,8 +41,6 @@
 #include "core/templates/safe_refcount.h"
 
 class MainLoop;
-template <typename T>
-class TypedArray;
 
 namespace core_bind {
 

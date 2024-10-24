@@ -57,6 +57,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
+#include "core/templates/simple_type.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
@@ -966,6 +967,155 @@ Array::ConstIterator &Array::ConstIterator::operator++() {
 Array::ConstIterator &Array::ConstIterator::operator--() {
 	element_ptr--;
 	return *this;
+}
+
+namespace GodotTypeInfo {
+
+// This dual-format of `_SomeInfo` and `some_info_v` is with the intent of the former
+// accepting specializations while the latter is what's called publicly. This is
+// because the latter automatically converts to a simple type (removes cvref) BEFORE
+// calling to the former, removing the need for duplicate templates.
+
+template <typename T>
+struct _VariantType {
+	static constexpr Variant::Type value() {
+		if constexpr (std::is_base_of_v<Object, std::remove_pointer_t<T>>) {
+			return Variant::OBJECT;
+		} else if constexpr (std::is_enum_v<T>) {
+			return Variant::INT;
+		} else {
+			return Variant::VARIANT_MAX;
+		}
+	}
+};
+template <typename T>
+inline constexpr Variant::Type variant_type_v = _VariantType<GetSimpleTypeT<T>>::value();
+
+} //namespace GodotTypeInfo
+
+#define GTI GodotTypeInfo
+
+#define GTI_TMPL_VARIANT_TYPE(m_template, m_type, m_var_type)         \
+	template <m_template>                                             \
+	struct GodotTypeInfo::_VariantType<m_type> {                      \
+		static constexpr Variant::Type value() { return m_var_type; } \
+	};
+#define GTI_VARIANT_TYPE(m_type, m_var_type) GTI_TMPL_VARIANT_TYPE(, m_type, m_var_type)
+
+GTI_VARIANT_TYPE(Variant, Variant::NIL)
+GTI_VARIANT_TYPE(bool, Variant::BOOL)
+GTI_VARIANT_TYPE(uint8_t, Variant::INT)
+GTI_VARIANT_TYPE(int8_t, Variant::INT)
+GTI_VARIANT_TYPE(uint16_t, Variant::INT)
+GTI_VARIANT_TYPE(int16_t, Variant::INT)
+GTI_VARIANT_TYPE(uint32_t, Variant::INT)
+GTI_VARIANT_TYPE(int32_t, Variant::INT)
+GTI_VARIANT_TYPE(uint64_t, Variant::INT)
+GTI_VARIANT_TYPE(int64_t, Variant::INT)
+GTI_VARIANT_TYPE(float, Variant::FLOAT)
+GTI_VARIANT_TYPE(double, Variant::FLOAT)
+GTI_VARIANT_TYPE(String, Variant::STRING)
+GTI_VARIANT_TYPE(Vector2, Variant::VECTOR2)
+GTI_VARIANT_TYPE(Rect2, Variant::RECT2)
+GTI_VARIANT_TYPE(Vector3, Variant::VECTOR3)
+GTI_VARIANT_TYPE(Vector2i, Variant::VECTOR2I)
+GTI_VARIANT_TYPE(Rect2i, Variant::RECT2I)
+GTI_VARIANT_TYPE(Vector3i, Variant::VECTOR3I)
+GTI_VARIANT_TYPE(Vector4, Variant::VECTOR4)
+GTI_VARIANT_TYPE(Vector4i, Variant::VECTOR4I)
+GTI_VARIANT_TYPE(Transform2D, Variant::TRANSFORM2D)
+GTI_VARIANT_TYPE(Plane, Variant::PLANE)
+GTI_VARIANT_TYPE(Quaternion, Variant::QUATERNION)
+GTI_VARIANT_TYPE(AABB, Variant::AABB)
+GTI_VARIANT_TYPE(Basis, Variant::BASIS)
+GTI_VARIANT_TYPE(Transform3D, Variant::TRANSFORM3D)
+GTI_VARIANT_TYPE(Projection, Variant::PROJECTION)
+GTI_VARIANT_TYPE(Color, Variant::COLOR)
+GTI_VARIANT_TYPE(StringName, Variant::STRING_NAME)
+GTI_VARIANT_TYPE(NodePath, Variant::NODE_PATH)
+GTI_VARIANT_TYPE(RID, Variant::RID)
+GTI_VARIANT_TYPE(Callable, Variant::CALLABLE)
+GTI_VARIANT_TYPE(Signal, Variant::SIGNAL)
+GTI_VARIANT_TYPE(Dictionary, Variant::DICTIONARY)
+GTI_TMPL_VARIANT_TYPE(typename K _COMMA typename V, TypedDictionary<K _COMMA V>, Variant::DICTIONARY)
+GTI_VARIANT_TYPE(Array, Variant::ARRAY)
+GTI_TMPL_VARIANT_TYPE(typename T, TypedArray<T>, Variant::ARRAY)
+GTI_VARIANT_TYPE(PackedByteArray, Variant::PACKED_BYTE_ARRAY)
+GTI_VARIANT_TYPE(PackedInt32Array, Variant::PACKED_INT32_ARRAY)
+GTI_VARIANT_TYPE(PackedInt64Array, Variant::PACKED_INT64_ARRAY)
+GTI_VARIANT_TYPE(PackedFloat32Array, Variant::PACKED_FLOAT32_ARRAY)
+GTI_VARIANT_TYPE(PackedFloat64Array, Variant::PACKED_FLOAT64_ARRAY)
+GTI_VARIANT_TYPE(PackedStringArray, Variant::PACKED_STRING_ARRAY)
+GTI_VARIANT_TYPE(PackedVector2Array, Variant::PACKED_VECTOR2_ARRAY)
+GTI_VARIANT_TYPE(PackedVector3Array, Variant::PACKED_VECTOR3_ARRAY)
+GTI_VARIANT_TYPE(PackedColorArray, Variant::PACKED_COLOR_ARRAY)
+GTI_VARIANT_TYPE(PackedVector4Array, Variant::PACKED_VECTOR4_ARRAY)
+GTI_VARIANT_TYPE(IPAddress, Variant::STRING)
+
+template <typename T>
+void TypedArray<T>::operator=(const Array &p_array) {
+	ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type.");
+	_ref(p_array);
+}
+
+template <typename T>
+TypedArray<T>::TypedArray(const Variant &p_variant) :
+		TypedArray(Array(p_variant)) {}
+
+template <typename T>
+TypedArray<T>::TypedArray(const Array &p_array) :
+		TypedArray() {
+	if (is_same_typed(p_array)) {
+		_ref(p_array);
+	} else {
+		assign(p_array);
+	}
+}
+
+template <typename T>
+TypedArray<T>::TypedArray() {
+	static_assert(GTI::variant_type_v<T> != Variant::VARIANT_MAX, "Type is not a Variant type, or is not yet bound.");
+	static_assert(GTI::variant_type_v<T> != Variant::NIL, "`TypedArray<Variant>` is undefined.");
+	String class_name;
+	if constexpr (GTI::variant_type_v<T> == Variant::OBJECT) {
+		class_name = T::get_class_static();
+	}
+	set_typed(GTI::variant_type_v<T>, class_name, Variant());
+}
+
+template <typename K, typename V>
+void TypedDictionary<K, V>::operator=(const Dictionary &p_dictionary) {
+	ERR_FAIL_COND_MSG(!is_same_typed(p_dictionary), "Cannot assign a dictionary with a different element type.");
+	Dictionary::operator=(p_dictionary);
+}
+
+template <typename K, typename V>
+TypedDictionary<K, V>::TypedDictionary(const Variant &p_variant) :
+		TypedDictionary(Dictionary(p_variant)) {}
+
+template <typename K, typename V>
+TypedDictionary<K, V>::TypedDictionary(const Dictionary &p_dictionary) :
+		TypedDictionary() {
+	if (is_same_typed(p_dictionary)) {
+		Dictionary::operator=(p_dictionary);
+	} else {
+		assign(p_dictionary);
+	}
+}
+
+template <typename K, typename V>
+TypedDictionary<K, V>::TypedDictionary() {
+	static_assert(GTI::variant_type_v<K> != Variant::VARIANT_MAX && GTI::variant_type_v<V> != Variant::VARIANT_MAX, "Type is not a Variant type, or is not yet bound.");
+	static_assert(GTI::variant_type_v<K> != Variant::NIL || GTI::variant_type_v<V> != Variant::NIL, "`TypedDictionary<Variant, Variant>` is undefined.");
+	String key_name;
+	if constexpr (GTI::variant_type_v<K> == Variant::OBJECT) {
+		key_name = K::get_class_static();
+	}
+	String value_name;
+	if constexpr (GTI::variant_type_v<V> == Variant::OBJECT) {
+		value_name = V::get_class_static();
+	}
+	set_typed(GTI::variant_type_v<K>, key_name, Variant(), GTI::variant_type_v<V>, value_name, Variant());
 }
 
 #endif // VARIANT_H

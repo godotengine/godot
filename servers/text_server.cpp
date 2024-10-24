@@ -31,7 +31,6 @@
 #include "servers/text_server.h"
 #include "text_server.compat.inc"
 
-#include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
 TextServerManager *TextServerManager::singleton = nullptr;

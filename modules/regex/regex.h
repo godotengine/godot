@@ -37,7 +37,6 @@
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
 
 class RegExMatch : public RefCounted {
 	GDCLASS(RegExMatch, RefCounted);

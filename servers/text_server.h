@@ -38,9 +38,6 @@
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant.h"
 
-template <typename T>
-class TypedArray;
-
 struct Glyph;
 struct CaretInfo;
 

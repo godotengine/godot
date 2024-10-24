@@ -43,8 +43,6 @@
 **/
 
 class CameraFeed;
-template <typename T>
-class TypedArray;
 
 class CameraServer : public Object {
 	GDCLASS(CameraServer, Object);

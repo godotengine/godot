@@ -31,7 +31,6 @@
 #ifndef ANIMATION_LIBRARY_H
 #define ANIMATION_LIBRARY_H
 
-#include "core/variant/typed_array.h"
 #include "scene/resources/animation.h"
 
 class AnimationLibrary : public Resource {
