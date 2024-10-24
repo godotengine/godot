@@ -31,6 +31,7 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -3572,6 +3573,31 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
+			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
+				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+				Vector<String> options;
+				Vector<String> builtin_options;
+				List<PropertyInfo> pinfo;
+				ProjectSettings::get_singleton()->get_property_list(&pinfo);
+				Vector<String> hints = p_hint_text.split(",", false);
+
+				for (const PropertyInfo &pi : pinfo) {
+					if (!pi.name.begins_with("input/")) {
+						continue;
+					}
+
+					String action_name = pi.name.substr(pi.name.find("/") + 1);
+					if (InputMap::get_singleton()->get_builtins().has(action_name)) {
+						if (hints.has("show_builtin")) {
+							builtin_options.append(action_name);
+						}
+						continue;
+					}
+					options.append(action_name);
+				}
+				options.append_array(builtin_options);
+				editor->setup(options, false, hints.has("loose_mode"));
+				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
 				return editor;
@@ -3723,6 +3749,31 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
+				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+				Vector<String> options;
+				Vector<String> builtin_options;
+				List<PropertyInfo> pinfo;
+				ProjectSettings::get_singleton()->get_property_list(&pinfo);
+				Vector<String> hints = p_hint_text.split(",", false);
+
+				for (const PropertyInfo &pi : pinfo) {
+					if (!pi.name.begins_with("input/")) {
+						continue;
+					}
+
+					String action_name = pi.name.substr(pi.name.find("/") + 1);
+					if (InputMap::get_singleton()->get_builtins().has(action_name)) {
+						if (hints.has("show_builtin")) {
+							builtin_options.append(action_name);
+						}
+						continue;
+					}
+					options.append(action_name);
+				}
+				options.append_array(builtin_options);
+				editor->setup(options, false, hints.has("loose_mode"));
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
