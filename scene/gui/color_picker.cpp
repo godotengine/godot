@@ -1553,6 +1553,7 @@ void ColorPicker::_pick_button_pressed_legacy() {
 
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
+		picker_texture_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		picker_window->add_child(picker_texture_rect);
 		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
