@@ -71,7 +71,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] variable should be constant. [param delta] is in seconds.
+				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] variable should be constant. [param delta] is in seconds and is multiplied by [member Engine.time_scale]. To get the [param delta] that isn't scaled by [member Engine.time_scale], use [method Engine.get_physics_step].
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Processing happens in order of [member process_physics_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
@@ -82,7 +82,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
+				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds and is multiplied by [member Engine.time_scale]. To get the [param delta] that isn't scaled by [member Engine.time_scale], use [method Engine.get_process_step].
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Processing happens in order of [member process_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
