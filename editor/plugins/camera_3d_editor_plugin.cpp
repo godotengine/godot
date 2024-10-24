@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "node_3d_editor_plugin.h"
+#include "scene/resources/packed_scene.h"
 
 void Camera3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -76,13 +77,48 @@ Camera3DEditor::Camera3DEditor() {
 	preview->connect(SceneStringName(pressed), callable_mp(this, &Camera3DEditor::_pressed));
 }
 
+Camera3D *Camera3DEditorPlugin::_find_instanced_child_scene_camera(Object *p_object) const {
+	Node *node = Object::cast_to<Node>(p_object);
+	if (!node) {
+		return nullptr;
+	}
+
+	bool is_external = !node->get_scene_file_path().is_empty();
+	if (!is_external) {
+		return nullptr;
+	}
+
+	bool is_top_level = node->get_owner() == nullptr;
+
+	if (is_top_level) {
+		return nullptr;
+	}
+
+	TypedArray<Node> cameras = node->find_children("*", "Camera3D");
+	if (cameras.is_empty()) {
+		return nullptr;
+	}
+	return Object::cast_to<Camera3D>(cameras[0]);
+}
+
 void Camera3DEditorPlugin::edit(Object *p_object) {
-	Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera3D>(p_object));
-	//camera_editor->edit(Object::cast_to<Node>(p_object));
+	Camera3D *camera = Object::cast_to<Camera3D>(p_object);
+	if (!camera) {
+		camera = _find_instanced_child_scene_camera(p_object);
+	}
+	Node3DEditor::get_singleton()->set_can_preview(camera);
 }
 
 bool Camera3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Camera3D");
+	if (p_object->is_class("Camera3D")) {
+		return true;
+	}
+
+	if (_find_instanced_child_scene_camera(p_object)) {
+		return true;
+	}
+
+	return false;
 }
 
 void Camera3DEditorPlugin::make_visible(bool p_visible) {
