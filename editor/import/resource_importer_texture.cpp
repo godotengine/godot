@@ -558,7 +558,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			for (int i = 0; i < width; i++) {
 				for (int j = 0; j < height; j++) {
 					const Color color = target_image->get_pixel(i, j);
-					target_image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
+					target_image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b, color.a));
 				}
 			}
 		}
