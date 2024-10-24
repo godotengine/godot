@@ -86,6 +86,8 @@ public:
 	bool exists(const String &p_path, const String &p_type_hint = "");
 	ResourceUID::ID get_resource_uid(const String &p_path);
 
+	Vector<String> list_directory(const String &p_directory);
+
 	ResourceLoader() { singleton = this; }
 };
 
