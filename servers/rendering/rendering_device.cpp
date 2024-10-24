@@ -2654,15 +2654,15 @@ RenderingDevice::VertexFormatID RenderingDevice::vertex_format_create(const Vect
 		return *idptr;
 	}
 
-	HashSet<int> used_locations;
 	for (int i = 0; i < p_vertex_descriptions.size(); i++) {
 		ERR_CONTINUE(p_vertex_descriptions[i].format >= DATA_FORMAT_MAX);
-		ERR_FAIL_COND_V(used_locations.has(p_vertex_descriptions[i].location), INVALID_ID);
 
+		// HashSet is not used because of the small number of elements.
+		for (int j = 0; j < i; j++) {
+			ERR_FAIL_COND_V(p_vertex_descriptions[j].location == p_vertex_descriptions[i].location, INVALID_ID);
+		}
 		ERR_FAIL_COND_V_MSG(get_format_vertex_size(p_vertex_descriptions[i].format) == 0, INVALID_ID,
 				"Data format for attachment (" + itos(i) + "), '" + FORMAT_NAMES[p_vertex_descriptions[i].format] + "', is not valid for a vertex array.");
-
-		used_locations.insert(p_vertex_descriptions[i].location);
 	}
 
 	RDD::VertexFormatID driver_id = driver->vertex_format_create(p_vertex_descriptions);
@@ -2678,8 +2678,10 @@ RenderingDevice::VertexFormatID RenderingDevice::vertex_format_create(const Vect
 RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
-	const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
+	VertexDescriptionCache *p = vertex_formats.getptr(p_vertex_format);
+
+	ERR_FAIL_NULL_V(p, RID());
+	const VertexDescriptionCache &vd = *p;
 
 	ERR_FAIL_COND_V(vd.vertex_formats.size() != p_src_buffers.size(), RID());
 
@@ -3456,9 +3458,12 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 	RDD::VertexFormatID driver_vertex_format;
 	if (p_vertex_format != INVALID_ID) {
 		// Uses vertices, else it does not.
-		ERR_FAIL_COND_V(!vertex_formats.has(p_vertex_format), RID());
-		const VertexDescriptionCache &vd = vertex_formats[p_vertex_format];
-		driver_vertex_format = vertex_formats[p_vertex_format].driver_id;
+		VertexDescriptionCache *p = vertex_formats.getptr(p_vertex_format);
+
+		ERR_FAIL_NULL_V(p, RID());
+		const VertexDescriptionCache &vd = *p;
+
+		driver_vertex_format = vd.driver_id;
 
 		// Validate with inputs.
 		for (uint32_t i = 0; i < 64; i++) {
@@ -6500,11 +6505,10 @@ void RenderingDevice::finalize() {
 		driver->buffer_free(staging_buffer_blocks[i].driver_id);
 	}
 
-	while (vertex_formats.size()) {
-		HashMap<VertexFormatID, VertexDescriptionCache>::Iterator temp = vertex_formats.begin();
-		driver->vertex_format_free(temp->value.driver_id);
-		vertex_formats.remove(temp);
+	for (KeyValue<VertexFormatID, VertexDescriptionCache> E : vertex_formats) {
+		driver->vertex_format_free(E.value.driver_id);
 	}
+	vertex_formats.clear();
 
 	for (KeyValue<FramebufferFormatID, FramebufferFormat> &E : framebuffer_formats) {
 		driver->render_pass_free(E.value.render_pass);
