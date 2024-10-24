@@ -31,7 +31,50 @@
 #ifndef SPIN_LOCK_H
 #define SPIN_LOCK_H
 
-#include "core/typedefs.h"
+#include "core/os/thread.h"
+
+#include <atomic>
+#include <thread>
+
+static_assert(std::atomic_bool::is_always_lock_free);
+
+class alignas(Thread::CACHE_LINE_BYTES) AcqRelSpinLock {
+	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
+
+public:
+	_ALWAYS_INLINE_ void lock() const {
+		while (true) {
+			bool expected = false;
+			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+				break;
+			}
+			do {
+				std::this_thread::yield();
+			} while (locked.load(std::memory_order_relaxed));
+		}
+	}
+
+	_ALWAYS_INLINE_ void unlock() const {
+		locked.store(false, std::memory_order_release);
+	}
+
+	_ALWAYS_INLINE_ void acquire() const {
+		(void)locked.load(std::memory_order_acquire);
+	}
+
+	_ALWAYS_INLINE_ void release() const {
+		// Do as little as possible to issue a release on the atomic
+		// without changing its value.
+		while (true) {
+			for (int i = 0; i < 2; i++) {
+				bool expected = (bool)i;
+				if (locked.compare_exchange_weak(expected, expected, std::memory_order_release, std::memory_order_relaxed)) {
+					return;
+				}
+			}
+		}
+	}
+};
 
 #if defined(__APPLE__)
 
@@ -52,21 +95,7 @@ public:
 
 #else
 
-#include <atomic>
-
-class SpinLock {
-	mutable std::atomic_flag locked = ATOMIC_FLAG_INIT;
-
-public:
-	_ALWAYS_INLINE_ void lock() const {
-		while (locked.test_and_set(std::memory_order_acquire)) {
-			// Continue.
-		}
-	}
-	_ALWAYS_INLINE_ void unlock() const {
-		locked.clear(std::memory_order_release);
-	}
-};
+using SpinLock = AcqRelSpinLock;
 
 #endif // __APPLE__
 
