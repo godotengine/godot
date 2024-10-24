@@ -69,6 +69,7 @@ namespace Godot.SourceGenerators
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
+            bool isToolClass = symbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotToolAttribute() ?? false);
 
             string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptProperties.generated";
@@ -277,6 +278,16 @@ namespace Godot.SourceGenerators
                     if (propertyInfo == null)
                         continue;
 
+                    if (propertyInfo.Value.Hint == PropertyHint.ToolButton && !isToolClass)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.OnlyToolClassesShouldUseExportToolButtonRule,
+                            member.Symbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                            member.Symbol.ToDisplayString()
+                        ));
+                        continue;
+                    }
+
                     AppendPropertyInfo(source, propertyInfo.Value);
                 }
 
@@ -418,6 +429,19 @@ namespace Godot.SourceGenerators
             var exportAttr = memberSymbol.GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.IsGodotExportAttribute() ?? false);
 
+            var exportToolButtonAttr = memberSymbol.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.IsGodotExportToolButtonAttribute() ?? false);
+
+            if (exportAttr != null && exportToolButtonAttr != null)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.ExportToolButtonShouldNotBeUsedWithExportRule,
+                    memberSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    memberSymbol.ToDisplayString()
+                ));
+                return null;
+            }
+
             var propertySymbol = memberSymbol as IPropertySymbol;
             var fieldSymbol = memberSymbol as IFieldSymbol;
 
@@ -446,19 +470,52 @@ namespace Godot.SourceGenerators
                 }
             }
 
+            if (exportToolButtonAttr != null && propertySymbol is { GetMethod: null })
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.ExportedPropertyIsWriteOnlyRule,
+                    propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    propertySymbol.ToDisplayString()
+                ));
+            }
+
             var memberType = propertySymbol?.Type ?? fieldSymbol!.Type;
 
             var memberVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(marshalType)!.Value;
             string memberName = memberSymbol.Name;
 
+            string? hintString = null;
+
+            if (exportToolButtonAttr != null)
+            {
+                if (memberVariantType != VariantType.Callable)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportToolButtonIsNotCallableRule,
+                        memberSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        memberSymbol.ToDisplayString()
+                    ));
+                    return null;
+                }
+
+                hintString = exportToolButtonAttr.ConstructorArguments[0].Value?.ToString() ?? "";
+                if (exportToolButtonAttr.ConstructorArguments.Length > 1)
+                {
+                    hintString += $",{exportToolButtonAttr.ConstructorArguments[1].Value}";
+                }
+
+                return new PropertyInfo(memberVariantType, memberName, PropertyHint.ToolButton,
+                    hintString: hintString, PropertyUsageFlags.Editor, exported: true);
+            }
+
             if (exportAttr == null)
             {
                 return new PropertyInfo(memberVariantType, memberName, PropertyHint.None,
-                    hintString: null, PropertyUsageFlags.ScriptVariable, exported: false);
+                    hintString: hintString, PropertyUsageFlags.ScriptVariable, exported: false);
             }
 
             if (!TryGetMemberExportHint(typeCache, memberType, exportAttr, memberVariantType,
-                    isTypeArgument: false, out var hint, out var hintString))
+                    isTypeArgument: false, out var hint, out hintString))
             {
                 var constructorArguments = exportAttr.ConstructorArguments;
 
