@@ -157,7 +157,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Ref<StyleBoxFlat> button_pressed = make_flat_stylebox(style_pressed_color);
 	const Ref<StyleBoxFlat> button_disabled = make_flat_stylebox(style_disabled_color);
 	Ref<StyleBoxFlat> focus = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
-	// Make the focus outline appear to be flush with the buttons it's focusing.
+	// Make the focus outline appear to be flush with the buttons it's focusing, so not draw on top of the content.
 	focus->set_expand_margin_all(Math::round(2 * scale));
 
 	theme->set_stylebox(CoreStringName(normal), "Button", button_normal);
@@ -658,6 +658,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
 	theme->set_stylebox(SceneStringName(panel), "ScrollContainer", empty);
+	theme->set_stylebox(SNAME("focus"), "ScrollContainer", empty);
 
 	// Window
 
