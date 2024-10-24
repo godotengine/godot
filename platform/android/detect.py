@@ -171,9 +171,7 @@ def configure(env: "SConsEnvironment"):
     env["AS"] = compiler_path + "/clang"
 
     env.Append(
-        CCFLAGS=(
-            "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
-        )
+        CCFLAGS=("-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden".split())
     )
 
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
