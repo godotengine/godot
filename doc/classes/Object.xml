@@ -854,7 +854,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param signal] name exists in the object.
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
@@ -898,7 +898,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable].
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">

@@ -43,7 +43,7 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<description>
-				Returns the enabled state of the given flag (see [enum ParticleFlags] for options).
+				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
 			</description>
 		</method>
 		<method name="restart">
