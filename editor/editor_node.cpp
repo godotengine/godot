@@ -7156,6 +7156,9 @@ EditorNode::EditorNode() {
 
 	file_menu = memnew(PopupMenu);
 	file_menu->set_name(TTR("Scene"));
+	if (global_menu && NativeMenu::get_singleton()->has_system_menu(NativeMenu::FILE_MENU_ID)) {
+		file_menu->set_system_menu(NativeMenu::FILE_MENU_ID);
+	}
 	main_menu->add_child(file_menu);
 	main_menu->set_menu_tooltip(0, TTR("Operations with scene files."));
 
