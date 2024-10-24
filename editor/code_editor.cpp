@@ -39,39 +39,62 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 
-void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
-	text_editor = p_edit;
+void GotoLinePopup::popup_find_line(CodeTextEditor *p_text_editor) {
+	text_editor = p_text_editor;
+
+	original_state = text_editor->get_navigation_state();
 
 	// Add 1 because text_editor->get_caret_line() starts from 0, but the editor user interface starts from 1.
-	line->set_text(itos(text_editor->get_caret_line() + 1));
-	line->select_all();
-	popup_centered(Size2(180, 80) * EDSCALE);
-	line->grab_focus();
+	TextEdit *text_edit = text_editor->get_text_editor();
+	int original_line = text_edit->get_caret_line() + 1;
+	line_input->set_text(itos(original_line));
+
+	Rect2i parent_rect = text_editor->get_global_rect();
+	Point2i centered_pos(parent_rect.get_center().x - get_contents_minimum_size().x / 2.0, parent_rect.position.y);
+	popup_on_parent(Rect2i(centered_pos, Size2()));
+	reset_size();
+	line_input->grab_focus();
+	line_input->edit();
 }
 
-int GotoLineDialog::get_line() const {
-	return line->get_text().to_int();
-}
-
-void GotoLineDialog::ok_pressed() {
-	// Subtract 1 because the editor user interface starts from 1, but text_editor->set_caret_line(n) starts from 0.
-	const int line_number = get_line() - 1;
-	if (line_number < 0 || line_number >= text_editor->get_line_count()) {
+void GotoLinePopup::_goto_line() {
+	if (line_input->get_text().is_empty()) {
 		return;
 	}
-	text_editor->remove_secondary_carets();
-	text_editor->unfold_line(line_number);
-	text_editor->set_caret_line(line_number);
-	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
+
+	PackedStringArray line_col_strings = line_input->get_text().split(":");
+	// Subtract 1 because the editor user interface starts from 1, but the TextEdit starts from 0.
+	const int line_number = line_col_strings[0].to_int() - 1;
+	if (line_number < 0 || line_number >= text_editor->get_text_editor()->get_line_count()) {
+		return;
+	}
+
+	int column_number = 0;
+	if (line_col_strings.size() >= 2) {
+		column_number = line_col_strings[1].to_int() - 1;
+	}
+	text_editor->goto_line_centered(line_number, column_number);
+}
+
+void GotoLinePopup::_submit() {
+	_goto_line();
 	hide();
 }
 
-GotoLineDialog::GotoLineDialog() {
+void GotoLinePopup::_input_from_window(const Ref<InputEvent> &p_event) {
+	if (p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		// Cancelled, go back to original state.
+		text_editor->set_edit_state(original_state);
+	}
+	PopupPanel::_input_from_window(p_event);
+}
+
+GotoLinePopup::GotoLinePopup() {
 	set_title(TTR("Go to Line"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -85,14 +108,12 @@ GotoLineDialog::GotoLineDialog() {
 	l->set_text(TTR("Line Number:"));
 	vbc->add_child(l);
 
-	line = memnew(LineEdit);
-	vbc->add_child(line);
-	register_text_enter(line);
-	text_editor = nullptr;
-
-	line_label = nullptr;
-
-	set_hide_on_ok(false);
+	line_input = memnew(LineEdit);
+	line_input->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	line_input->set_select_all_on_focus(true);
+	line_input->connect("text_changed", callable_mp(this, &GotoLinePopup::_goto_line).unbind(1));
+	line_input->connect("text_submitted", callable_mp(this, &GotoLinePopup::_submit).unbind(1));
+	vbc->add_child(line_input);
 }
 
 void FindReplaceBar::_notification(int p_what) {
