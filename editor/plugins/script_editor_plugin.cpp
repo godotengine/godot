@@ -3529,11 +3529,11 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	}
 
 	if (p_layout->has_section_key("ScriptEditor", "script_split_offset")) {
-		script_split->set_split_offset(p_layout->get_value("ScriptEditor", "script_split_offset"));
+		script_split->set_split_offsets({ p_layout->get_value("ScriptEditor", "script_split_offset") });
 	}
 
 	if (p_layout->has_section_key("ScriptEditor", "list_split_offset")) {
-		list_split->set_split_offset(p_layout->get_value("ScriptEditor", "list_split_offset"));
+		list_split->set_split_offsets({ p_layout->get_value("ScriptEditor", "list_split_offset") });
 	}
 
 	// Remove any deleted editors that have been removed between launches.
@@ -3605,8 +3605,8 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ScriptEditor", "open_scripts", scripts);
 	p_layout->set_value("ScriptEditor", "selected_script", selected_script);
 	p_layout->set_value("ScriptEditor", "open_help", helps);
-	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offset());
-	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offset());
+	p_layout->set_value("ScriptEditor", "script_split_offset", script_split->get_split_offsets()[0]);
+	p_layout->set_value("ScriptEditor", "list_split_offset", list_split->get_split_offsets()[0]);
 	p_layout->set_value("ScriptEditor", "zoom_factor", zoom_factor);
 
 	// Save the cache.
@@ -4156,7 +4156,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	scripts_vbox->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(100, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	script_split->set_split_offset(200 * EDSCALE);
+	script_split->set_split_offsets({ (int)(200 * EDSCALE) });
 	_sort_list_on_update = true;
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);

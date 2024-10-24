@@ -1889,7 +1889,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		HSplitContainer *parent_sc = memnew(HSplitContainer);
 		vbc->add_child(parent_sc);
 		parent_sc->set_v_size_flags(SIZE_EXPAND_FILL);
-		parent_sc->set_split_offset(500 * EDSCALE);
+		parent_sc->set_split_offsets({ (int)(500 * EDSCALE) });
 
 		HSplitContainer *sc = memnew(HSplitContainer);
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);

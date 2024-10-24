@@ -354,7 +354,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	add_child(sc);
 	sc->set_v_size_flags(SIZE_EXPAND_FILL);
 	sc->set_h_size_flags(SIZE_EXPAND_FILL);
-	sc->set_split_offset(100 * EDSCALE);
+	sc->set_split_offsets({ (int)(100 * EDSCALE) });
 
 	// RPC
 	counters_display = memnew(Tree);

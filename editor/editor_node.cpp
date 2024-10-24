@@ -4531,12 +4531,12 @@ void EditorNode::_instantiate_request(const Vector<String> &p_files) {
 }
 
 void EditorNode::_close_messages() {
-	old_split_ofs = center_split->get_split_offset();
-	center_split->set_split_offset(0);
+	old_split_ofs = center_split->get_split_offsets()[0];
+	center_split->set_split_offsets({ 0 });
 }
 
 void EditorNode::_show_messages() {
-	center_split->set_split_offset(old_split_ofs);
+	center_split->set_split_offsets({ old_split_ofs });
 }
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
@@ -5279,7 +5279,7 @@ void EditorNode::_load_editor_layout() {
 void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file) {
 	// Bottom panel.
 
-	int center_split_offset = center_split->get_split_offset();
+	int center_split_offset = center_split->get_split_offsets()[0];
 	p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset", center_split_offset);
 
 	bottom_panel->save_layout_to_config(p_config_file, EDITOR_NODE_CONFIG_SECTION);
@@ -5301,7 +5301,7 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 
 	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
 		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
-		center_split->set_split_offset(center_split_offset);
+		center_split->set_split_offsets({ center_split_offset });
 	}
 
 	// Debugger tab.
@@ -7540,8 +7540,8 @@ EditorNode::EditorNode() {
 	editor_dock_manager->add_dock(history_dock, TTR("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "History");
 
 	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
-	left_r_hsplit->set_split_offset(270 * EDSCALE);
-	main_hsplit->set_split_offset(-270 * EDSCALE);
+	left_r_hsplit->set_split_offsets({ (int)(270 * EDSCALE) });
+	main_hsplit->set_split_offsets({ (int)(-270 * EDSCALE) });
 
 	// Define corresponding default layout.
 

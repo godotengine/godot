@@ -249,7 +249,7 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	}
 
 	if (p_layout->has_section_key("ShaderEditor", "split_offset")) {
-		main_split->set_split_offset(p_layout->get_value("ShaderEditor", "split_offset"));
+		main_split->set_split_offsets({ p_layout->get_value("ShaderEditor", "split_offset") });
 	}
 
 	_update_shader_list();
@@ -299,7 +299,7 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 		}
 	}
 	p_layout->set_value("ShaderEditor", "open_shaders", shaders);
-	p_layout->set_value("ShaderEditor", "split_offset", main_split->get_split_offset());
+	p_layout->set_value("ShaderEditor", "split_offset", main_split->get_split_offsets()[0]);
 	p_layout->set_value("ShaderEditor", "selected_shader", selected_shader);
 	p_layout->set_value("ShaderEditor", "text_shader_zoom_factor", text_shader_zoom_factor);
 }
@@ -782,7 +782,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	window_wrapper->set_margins_enabled(true);
 
 	main_split = memnew(HSplitContainer);
-	main_split->set_split_offset(200 * EDSCALE);
+	main_split->set_split_offsets({ (int)(200 * EDSCALE) });
 	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTR("Make Floating"));
 	window_wrapper->set_wrapped_control(main_split, make_floating_shortcut);
 
