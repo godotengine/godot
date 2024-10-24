@@ -253,7 +253,7 @@
 				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
-				                |       |
+								|       |
 				+-------------+ |       |
 				|             | |       |
 				|             | |       |
@@ -1103,7 +1103,7 @@
 				Returns the screen's top-left corner position in pixels. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
-				                |       |
+								|       |
 				+-------------+ |       |
 				|             | |       |
 				|             | |       |
@@ -1123,7 +1123,7 @@
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
 				if refresh_rate &lt; 0:
-				    refresh_rate = 60.0
+					refresh_rate = 60.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1736,7 +1736,7 @@
 				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
-				                |       |
+								|       |
 				+-------------+ |       |
 				|             | |       |
 				|             | |       |

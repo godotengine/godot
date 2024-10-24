@@ -167,7 +167,6 @@ static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
-			.replace("\t", "")
 			.replace("\r", "")
 			.strip_edges();
 }
