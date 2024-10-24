@@ -187,6 +187,7 @@ public:
 	String get_environment(const String &p_var) const;
 	void set_environment(const String &p_var, const String &p_value) const;
 	void unset_environment(const String &p_var) const;
+	void load_shell_environment() const;
 
 	String get_name() const;
 	String get_distribution_name() const;
