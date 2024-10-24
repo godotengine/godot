@@ -6127,7 +6127,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											//being sampler, this either comes from a uniform
 											ShaderNode::Uniform *u = &shader->uniforms[varname];
 											ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
-
+#ifndef _XR_DISABLED
 											if (RendererCompositor::get_singleton()->is_xr_enabled() && is_custom_func) {
 												ShaderNode::Uniform::Hint hint = u->hint;
 
@@ -6136,6 +6136,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 													return nullptr;
 												}
 											}
+#endif // _XR_DISABLED
 
 											//propagate
 											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat, u->hint)) {

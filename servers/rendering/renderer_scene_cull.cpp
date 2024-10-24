@@ -2770,7 +2770,9 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, taa_frame_count, camera->visible_layers);
-	} else {
+	}
+#ifndef _XR_DISABLED
+	else {
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
 		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -2798,6 +2800,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
 		}
 	}
+#endif // _XR_DISABLED
 
 	RID environment = _render_get_environment(p_camera, p_scenario);
 	RID compositor = _render_get_compositor(p_camera, p_scenario);
