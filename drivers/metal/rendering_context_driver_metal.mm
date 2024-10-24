@@ -207,6 +207,26 @@ DisplayServer::VSyncMode RenderingContextDriverMetal::surface_get_vsync_mode(Sur
 	return surface->vsync_mode;
 }
 
+void RenderingContextDriverMetal::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_output = p_enabled;
+}
+
+bool RenderingContextDriverMetal::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_output;
+}
+
+void RenderingContextDriverMetal::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverMetal::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
 uint32_t RenderingContextDriverMetal::surface_get_width(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->width;

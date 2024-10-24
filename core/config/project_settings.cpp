@@ -1479,6 +1479,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/no_focus", false);
 	GLOBAL_DEF("display/window/size/sharp_corners", false);
 
+	GLOBAL_DEF("display/window/hdr/enabled", false);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "display/window/hdr/max_luminance", PROPERTY_HINT_RANGE, "0,1500,1,or_greater"), 1000.0f);
+
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 

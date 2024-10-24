@@ -3170,6 +3170,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 		}
 
+		// Enable HDR if requested and available.
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR)) {
+			DisplayServer::get_singleton()->window_set_hdr_output_enabled(GLOBAL_GET("display/window/hdr/enabled"));
+			DisplayServer::get_singleton()->window_set_hdr_output_max_luminance(GLOBAL_GET("display/window/hdr/max_luminance"));
+		}
+
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
