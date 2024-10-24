@@ -156,7 +156,6 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 
 void AbstractPolygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
 			button_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));

@@ -1219,7 +1219,6 @@ void EditorInspectorPlugin::_bind_methods() {
 
 void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			menu->set_item_icon(menu->get_item_index(MENU_OPEN_DOCS), get_editor_theme_icon(SNAME("Help")));
 		} break;
@@ -2344,7 +2343,6 @@ bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant
 
 void EditorInspectorArray::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
 			odd_style->set_bg_color(color.darkened(-0.08));
@@ -2540,7 +2538,6 @@ void EditorPaginator::update(int p_page, int p_max_page) {
 
 void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			first_page_button->set_icon(get_editor_theme_icon(SNAME("PageFirst")));
 			prev_page_button->set_icon(get_editor_theme_icon(SNAME("PagePrevious")));
