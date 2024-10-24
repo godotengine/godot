@@ -31,8 +31,8 @@
 			<return type="Array" />
 			<param index="0" name="get_groups" type="bool" default="false" />
 			<description>
-				Get the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
-				If argument [param get_groups] is true, parameter grouping hints will be provided.
+				Returns the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
+				If argument [param get_groups] is [code]true[/code], parameter grouping hints are also included in the list.
 			</description>
 		</method>
 		<method name="inspect_native_shader_code">

@@ -30,7 +30,7 @@
 			<param index="3" name="node" type="Node" />
 			<description>
 				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _export_post]. If this [GLTFDocumentExtension] is used for exporting images, this runs after [method _serialize_texture_json].
-				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [param node] is also provided if available. The node may be null if not available, such as when exporting glTF data not generated from a Godot scene.
+				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [Node] is also provided if available. [param node] may be [code]null[/code] if not available, such as when exporting glTF data not generated from a Godot scene.
 			</description>
 		</method>
 		<method name="_export_post" qualifiers="virtual">
@@ -75,7 +75,7 @@
 			<description>
 				Part of the import process. This method is run after [method _import_pre_generate] and before [method _import_node].
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
-				[b]Note:[/b] The [param scene_parent] parameter may be null if this is the single root node.
+				[b]Note:[/b] The [param scene_parent] parameter may be [code]null[/code] if this is the single root node.
 			</description>
 		</method>
 		<method name="_get_image_file_extension" qualifiers="virtual">
