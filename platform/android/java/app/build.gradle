@@ -179,11 +179,7 @@ android {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.debug
-            } else {
-                signingConfig null
-            }
+            signingConfig signingConfigs.debug
         }
 
         dev {
@@ -191,22 +187,14 @@ android {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.debug
-            } else {
-                signingConfig null
-            }
+            signingConfig signingConfigs.debug
         }
 
         release {
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
-            if (shouldSign()) {
-                signingConfig signingConfigs.release
-            } else {
-                signingConfig null
-            }
+            signingConfig signingConfigs.release
         }
     }
 
@@ -264,15 +252,6 @@ task copyAndRenameBinary(type: Copy) {
     from sourceFilepath
     into exportPath
     rename sourceFilename, exportFilename
-}
-
-/**
- * Used to validate the version of the Java SDK used for the Godot gradle builds.
- */
-task validateJavaVersion {
-    if (JavaVersion.current() != versions.javaVersion) {
-        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the required Java version for Godot gradle builds.")
-    }
 }
 
 /*

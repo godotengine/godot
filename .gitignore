@@ -207,7 +207,6 @@ cscope.po.out
 *.swp
 
 # Visual Studio Code
-.vscode/
 *.code-workspace
 .history/
 
@@ -378,4 +377,7 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+.vscode/c_cpp_properties.json
+.vscode/settings.json
 *.generated.props
+*.ogv

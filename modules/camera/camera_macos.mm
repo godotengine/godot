@@ -42,10 +42,6 @@
 
 @interface MyCaptureSession : AVCaptureSession <AVCaptureVideoDataOutputSampleBufferDelegate> {
 	Ref<CameraFeed> feed;
-	size_t width[2];
-	size_t height[2];
-	Vector<uint8_t> img_data[2];
-
 	AVCaptureDeviceInput *input;
 	AVCaptureVideoDataOutput *output;
 }
@@ -58,10 +54,6 @@
 	if (self = [super init]) {
 		NSError *error;
 		feed = p_feed;
-		width[0] = 0;
-		height[0] = 0;
-		width[1] = 0;
-		height[1] = 0;
 
 		[self beginConfiguration];
 
@@ -76,7 +68,11 @@
 		if (!output) {
 			print_line("Couldn't get output device for camera");
 		} else {
-			NSDictionary *settings = @{ (NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) };
+			NSDictionary *settings = @{
+				(NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+				@"Width" : @1280,
+				@"Height" : @720,
+			};
 			output.videoSettings = settings;
 
 			// discard if the data output queue is blocked (as we process the still image)
@@ -135,54 +131,42 @@
 	CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 
 	// get our buffers
-	unsigned char *dataY = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
-	unsigned char *dataCbCr = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
-	if (dataY == nullptr) {
-		print_line("Couldn't access Y pixel buffer data");
-	} else if (dataCbCr == nullptr) {
-		print_line("Couldn't access CbCr pixel buffer data");
-	} else {
-		Ref<Image> img[2];
-
-		{
-			// do Y
-			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-
-			if ((width[0] != new_width) || (height[0] != new_height)) {
-				width[0] = new_width;
-				height[0] = new_height;
-				img_data[0].resize(new_width * new_height);
-			}
-
-			uint8_t *w = img_data[0].ptrw();
-			memcpy(w, dataY, new_width * new_height);
-
-			img[0].instantiate();
-			img[0]->set_data(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
+	{
+		// do Y
+		unsigned char *dataY = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+		if (dataY == nullptr) {
+			print_line("Couldn't access Y pixel buffer data");
+			return;
 		}
 
-		{
-			// do CbCr
-			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
 
-			if ((width[1] != new_width) || (height[1] != new_height)) {
-				width[1] = new_width;
-				height[1] = new_height;
-				img_data[1].resize(2 * new_width * new_height);
-			}
+		Ref<Image> image = feed->get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE);
+		if (image.is_null() || image->get_width() != new_width || image->get_height() != new_height) {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, Image::create_empty(new_width, new_height, false, Image::FORMAT_R8));
+		} else {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_DIFFUSE, dataY, 0, new_width * new_height);
+		}
+	}
 
-			uint8_t *w = img_data[1].ptrw();
-			memcpy(w, dataCbCr, 2 * new_width * new_height);
-
-			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
-			img[1].instantiate();
-			img[1]->set_data(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
+	{
+		// do CbCr
+		unsigned char *dataCbCr = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+		if (dataCbCr == nullptr) {
+			print_line("Couldn't access CbCr pixel buffer data");
+			return;
 		}
 
-		// set our texture...
-		feed->set_ycbcr_images(img[0], img[1]);
+		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+
+		Ref<Image> image = feed->get_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL);
+		if (image.is_null() || image->get_width() != new_width || image->get_height() != new_height) {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, Image::create_empty(new_width, new_height, false, Image::FORMAT_RG8));
+		} else {
+			feed->set_image(RenderingServer::CANVAS_TEXTURE_CHANNEL_NORMAL, dataCbCr, 0, 2 * new_width * new_height);
+		}
 	}
 
 	// and unlock
@@ -343,11 +327,6 @@ void CameraMacOS::update_feeds() {
 			Ref<CameraFeedMacOS> newfeed;
 			newfeed.instantiate();
 			newfeed->set_device(device);
-
-			// assume display camera so inverse
-			Transform2D transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
-			newfeed->set_transform(transform);
-
 			add_feed(newfeed);
 		};
 	};

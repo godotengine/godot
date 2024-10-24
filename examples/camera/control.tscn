@@ -1,0 +1,77 @@
+[gd_scene load_steps=7 format=3 uid="uid://wcx5rx1sckqy"]
+
+[ext_resource type="Shader" path="res://camera_nv12.gdshader" id="2_7jche"]
+[ext_resource type="Script" path="res://capture.gd" id="3_e3a7h"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_psofl"]
+shader = ExtResource("2_7jche")
+
+[sub_resource type="CameraTexture" id="CameraTexture_nlxrt"]
+camera_feed_id = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iy0nj"]
+content_margin_left = 8.0
+content_margin_top = 16.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0, 0, 0, 0.686275)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_qfag3"]
+
+[node name="Control" type="Control"]
+clip_children = 1
+clip_contents = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_psofl")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -720.0
+offset_right = -720.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(3, 1)
+texture = SubResource("CameraTexture_nlxrt")
+expand_mode = 5
+stretch_mode = 6
+flip_h = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -521.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_iy0nj")
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Start capture" type="Button" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+toggle_mode = true
+text = "Loading..."
+flat = true
+script = ExtResource("3_e3a7h")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamMicrophone_qfag3")
+
+[connection signal="property_list_changed" from="TextureRect" to="ScrollContainer/VBoxContainer/Start capture" method="_on_texture_rect_property_list_changed"]
