@@ -1171,7 +1171,7 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	// No custom icon was found in the inheritance chain, so check the base
 	// class of the script instead.
 	String base_type;
-	p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+	_ALLOW_DISCARD_ p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
 
 	// Check if the base type is an extension-defined type.
 	Ref<Texture2D> ext_icon = extension_class_get_icon(base_type);

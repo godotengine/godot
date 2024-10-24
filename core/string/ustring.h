@@ -87,7 +87,7 @@ public:
 /*  Char16String                                                         */
 /*************************************************************************/
 
-class Char16String {
+class [[nodiscard]] Char16String {
 	CowData<char16_t> _cowdata;
 	static const char16_t _null;
 
@@ -128,7 +128,7 @@ protected:
 /*  CharString                                                           */
 /*************************************************************************/
 
-class CharString {
+class [[nodiscard]] CharString {
 	CowData<char> _cowdata;
 	static const char _null;
 
@@ -180,7 +180,7 @@ struct StrRange {
 	}
 };
 
-class String {
+class [[nodiscard]] String {
 	CowData<char32_t> _cowdata;
 	static const char32_t _null;
 	static const char32_t _replacement_char;
