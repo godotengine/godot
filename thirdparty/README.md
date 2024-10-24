@@ -403,7 +403,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 75.1 (7750081bda4b3bc1768ae03849ec70f67ea10625, 2024)
+- Version: 76.1 (8eca245c7484ac6cc179e3e5f7c1ea7680810f39, 2024)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -415,7 +415,7 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- The `icudt75l.dat` built with the provided `godot_data.json` config file (see
+- The `icudt76l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
@@ -425,7 +425,7 @@ Files generated from upstream source:
 3. Reconfigure ICU with custom data config:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
-5. Copy `source/data/out/icudt75l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt75l.dat`
+5. Copy `source/data/out/icudt76l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt76l.dat`
 
 
 ## jpeg-compressor
