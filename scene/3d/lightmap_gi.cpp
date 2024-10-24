@@ -793,7 +793,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				// For now set to basic size to avoid crash.
 				mesh_lightmap_size = Size2i(64, 64);
 			}
-			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale);
+			// Double lightmap texel density if downsampling is enabled, as the final texture size will be halved before saving lightmaps.
+			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale) * (downsample ? 2 : 1);
 			ERR_FAIL_COND_V(lightmap_size.x == 0 || lightmap_size.y == 0, BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 
 			TypedArray<RID> overrides;
@@ -1177,6 +1178,13 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			config->set_value("params", "slices/vertical", texture_slice_count);
 
 			config->save(texture_path + ".import");
+
+			if (downsample) {
+				// Texture was baked with doubled resolution on each axis, so halve the texture size on each axis to act as downsampling.
+				// The default bilinear interpolation gives good results while avoiding oversharpening
+				// (which tends to happen with Cubic or Lanczos resize modes).
+				texture_image->resize(texture_image->get_width() * 0.5, texture_image->get_height() * 0.5);
+			}
 
 			Error err = texture_image->save_exr(texture_path, false);
 			ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
@@ -1583,6 +1591,14 @@ int LightmapGI::get_max_texture_size() const {
 	return max_texture_size;
 }
 
+void LightmapGI::set_downsample(bool p_enable) {
+	downsample = p_enable;
+}
+
+bool LightmapGI::is_downsampling() const {
+	return downsample;
+}
+
 void LightmapGI::set_generate_probes(GenerateProbes p_generate_probes) {
 	gen_probes = p_generate_probes;
 }
@@ -1671,6 +1687,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &LightmapGI::set_max_texture_size);
 	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &LightmapGI::get_max_texture_size);
 
+	ClassDB::bind_method(D_METHOD("set_downsample", "downsample"), &LightmapGI::set_downsample);
+	ClassDB::bind_method(D_METHOD("is_downsampling"), &LightmapGI::is_downsampling);
+
 	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &LightmapGI::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &LightmapGI::is_using_denoiser);
 
@@ -1696,6 +1715,7 @@ void LightmapGI::_bind_methods() {
 
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "downsample"), "set_downsample", "is_downsampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,6,1,or_greater"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
