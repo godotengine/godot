@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Typed arrays are currently not supported for the rest parameter.
