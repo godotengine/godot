@@ -47,6 +47,7 @@ class MovieWriter : public Object {
 	float gpu_time = 0.0f;
 
 	String project_name;
+	String base_path;
 
 	LocalVector<int32_t> audio_mix_buffer;
 
