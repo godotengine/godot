@@ -76,7 +76,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *uv_edit_mode[4];
 	Ref<ButtonGroup> uv_edit_group;
 
-	Polygon2D *node = nullptr;
+	Polygon2D *target_polygon = nullptr;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit = nullptr;
@@ -163,8 +163,8 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int _get_polygon_count() const override;
 
 protected:
-	virtual Node2D *_get_node() const override;
-	virtual void _set_node(Node *p_polygon) override;
+	virtual Node2D *_get_target_node() const override;
+	virtual void _set_target_node(Node2D *p_node) override;
 
 	virtual Vector2 _get_offset(int p_idx) const override;
 
