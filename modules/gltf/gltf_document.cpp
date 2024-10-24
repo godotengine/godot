@@ -3502,12 +3502,11 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
 		if (p_state->base_path.is_empty()) {
-			p_state->images.push_back(Ref<Texture2D>());
-			p_state->source_images.push_back(Ref<Image>());
+			WARN_PRINT("glTF: Couldn't extract image because the base path is empty. It will be loaded directly instead, uncompressed.");
+		} else if (p_state->base_path.begins_with("res://.godot/imported")) {
+			WARN_PRINT(vformat("glTF: Image index '%d' is in the imported directory, likely converted from a Blend file. It will be loaded directly, uncompressed.", p_index));
 		} else if (p_image->get_name().is_empty()) {
-			WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. Skipping it.", p_index));
-			p_state->images.push_back(Ref<Texture2D>());
-			p_state->source_images.push_back(Ref<Image>());
+			WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. This cannot be saved to a file. It will be loaded directly instead, uncompressed.", p_index));
 		} else {
 			bool must_import = true;
 			Vector<uint8_t> img_data = p_image->get_data();
@@ -3559,14 +3558,11 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 			if (saved_image.is_valid()) {
 				p_state->images.push_back(saved_image);
 				p_state->source_images.push_back(saved_image->get_image());
+				return;
 			} else {
-				WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded with the name: %s. Skipping it.", p_index, p_image->get_name()));
-				// Placeholder to keep count.
-				p_state->images.push_back(Ref<Texture2D>());
-				p_state->source_images.push_back(Ref<Image>());
+				WARN_PRINT(vformat("glTF: Image index '%d' with the name '%s' couldn't be imported. It will be loaded directly instead, uncompressed.", p_index, p_image->get_name()));
 			}
 		}
-		return;
 	}
 #endif // TOOLS_ENABLED
 	if (handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
@@ -3649,16 +3645,19 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_decode();
 				uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
-				// ResourceLoader will rely on the file extension to use the relevant loader.
-				// The spec says that if mimeType is defined, it should take precedence (e.g.
-				// there could be a `.png` image which is actually JPEG), but there's no easy
-				// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
-				// the material), so we only do that only as fallback.
-				Ref<Texture2D> texture = ResourceLoader::load(uri);
-				if (texture.is_valid()) {
-					p_state->images.push_back(texture);
-					p_state->source_images.push_back(texture->get_image());
-					continue;
+				// If the image was converted from a Blend file, it will be in the .godot/imported directory, so we can't use ResourceLoader.
+				if (!p_base_path.begins_with("res://.godot/imported")) {
+					// ResourceLoader will rely on the file extension to use the relevant loader.
+					// The spec says that if mimeType is defined, it should take precedence (e.g.
+					// there could be a `.png` image which is actually JPEG), but there's no easy
+					// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
+					// the material), so we only do that only as fallback.
+					Ref<Texture2D> texture = ResourceLoader::load(uri, "Texture2D");
+					if (texture.is_valid()) {
+						p_state->images.push_back(texture);
+						p_state->source_images.push_back(texture->get_image());
+						continue;
+					}
 				}
 				// mimeType is optional, but if we have it in the file extension, let's use it.
 				// If the mimeType does not match with the file extension, either it should be
