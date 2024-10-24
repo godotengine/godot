@@ -246,7 +246,7 @@ void TranslationPO::add_message(const StringName &p_src_text, const StringName &
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
 	if (map_id_str.has(p_src_text)) {
-		WARN_PRINT("Double translations for \"" + String(p_src_text) + "\" under the same context \"" + String(p_context) + "\" for locale \"" + get_locale() + "\".\nThere should only be one unique translation for a given string under the same context.");
+		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale \"%s\".\nThere should only be one unique translation for a given string under the same context.", String(p_src_text), String(p_context), get_locale()));
 		map_id_str[p_src_text].set(0, p_xlated_text);
 	} else {
 		map_id_str[p_src_text].push_back(p_xlated_text);
@@ -259,7 +259,7 @@ void TranslationPO::add_plural_message(const StringName &p_src_text, const Vecto
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
 	if (map_id_str.has(p_src_text)) {
-		WARN_PRINT("Double translations for \"" + p_src_text + "\" under the same context \"" + p_context + "\" for locale " + get_locale() + ".\nThere should only be one unique translation for a given string under the same context.");
+		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale %s.\nThere should only be one unique translation for a given string under the same context.", p_src_text, p_context, get_locale()));
 		map_id_str[p_src_text].clear();
 	}
 

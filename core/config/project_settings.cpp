@@ -790,7 +790,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
 			return OK;
 		}
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing '%s' at line %d: %s File might be corrupted.", p_path, lines, error_text));
 
 		if (!assign.is_empty()) {
 			if (section.is_empty() && assign == "config_version") {
@@ -816,7 +816,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		// If the file exists but can't be loaded, we want to know it.
-		ERR_PRINT("Couldn't load file '" + p_bin_path + "', error code " + itos(err) + ".");
+		ERR_PRINT(vformat("Couldn't load file '%s', error code %d.", p_bin_path, err));
 	}
 
 	// Fallback to text-based project.godot file if binary was not found.
@@ -824,7 +824,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	if (err == OK) {
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
-		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err) + ".");
+		ERR_PRINT(vformat("Couldn't load file '%s', error code %d.", p_text_path, err));
 	}
 
 	return err;
