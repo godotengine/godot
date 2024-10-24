@@ -4028,10 +4028,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_NCPAINT: {
 			if (RenderingServer::get_singleton() && (windows[window_id].borderless || (windows[window_id].fullscreen && windows[window_id].multiwindow_fs))) {
-				Color color = RenderingServer::get_singleton()->get_default_clear_color();
 				HDC hdc = GetWindowDC(hWnd);
 				if (hdc) {
-					HPEN pen = CreatePen(PS_SOLID, 1, RGB(color.r * 255.f, color.g * 255.f, color.b * 255.f));
+					// Use solid black border color to make the border as unobtrusive as possible.
+					HPEN pen = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
 					if (pen) {
 						HGDIOBJ prev_pen = SelectObject(hdc, pen);
 						HGDIOBJ prev_brush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
