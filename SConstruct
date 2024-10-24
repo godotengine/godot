@@ -1048,10 +1048,19 @@ GLSL_BUILDERS = {
 }
 env.Append(BUILDERS=GLSL_BUILDERS)
 
-scons_cache_path = os.environ.get("SCONS_CACHE")
-if scons_cache_path is not None:
-    CacheDir(scons_cache_path)
-    print("Scons cache enabled... (path: '" + scons_cache_path + "')")
+env["SCONS_CACHE"] = os.environ.get("SCONS_CACHE", "")
+env["SCONS_CACHE_LIMIT"] = int(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
+
+if env["SCONS_CACHE"]:
+    CacheDir(env["SCONS_CACHE"])
+    print(f'Scons cache enabled... (path: "{env["SCONS_CACHE"]}")')
+    if env["verbose"]:
+        print(
+            "Current cache limit is {} (used: {})".format(
+                methods.convert_size(env["SCONS_CACHE_LIMIT"]),
+                methods.convert_size(methods.get_size(env["SCONS_CACHE"])),
+            )
+        )
 
 if env["vsproj"]:
     env.vs_incs = []
@@ -1147,4 +1156,4 @@ def purge_flaky_files():
 
 atexit.register(purge_flaky_files)
 
-methods.clean_cache(env)
+atexit.register(methods.clean_cache, env)
