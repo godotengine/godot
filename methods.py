@@ -404,10 +404,6 @@ def convert_custom_modules_path(path):
     return path
 
 
-def disable_module(self):
-    self.disabled_modules.append(self.current_module)
-
-
 def module_add_dependencies(self, module, dependencies, optional=False):
     """
     Adds dependencies for a given module.
@@ -428,19 +424,21 @@ def module_check_dependencies(self, module):
     Meant to be used in module `can_build` methods.
     Returns a boolean (True if dependencies are satisfied).
     """
-    missing_deps = []
+    missing_deps = set()
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
         opt = "module_{}_enabled".format(dep)
-        if opt not in self or not self[opt]:
-            missing_deps.append(dep)
+        if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
+            missing_deps.add(dep)
 
-    if missing_deps != []:
-        print_warning(
-            "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
-                module, ", ".join(missing_deps)
+    if missing_deps:
+        if module not in self.disabled_modules:
+            print_warning(
+                "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
+                    module, ", ".join(missing_deps)
+                )
             )
-        )
+            self.disabled_modules.add(module)
         return False
     else:
         return True
