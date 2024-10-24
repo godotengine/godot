@@ -273,6 +273,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		return;
 	}
 
+	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
+
+	if (modulate.a < 0.007) {
+		return;
+	}
+
 	if (ci->children_order_dirty) {
 		ci->child_items.sort_custom<ItemIndexSort>();
 		ci->children_order_dirty = false;
@@ -351,12 +357,6 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	} else {
 		p_material_owner = ci;
 		ci->material_owner = nullptr;
-	}
-
-	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
-
-	if (modulate.a < 0.007) {
-		return;
 	}
 
 	int child_item_count = ci->child_items.size();
