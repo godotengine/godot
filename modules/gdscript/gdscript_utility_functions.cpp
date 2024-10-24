@@ -56,6 +56,20 @@
 		return;                                                             \
 	}
 
+#define VALIDATE_MIN_MAX_ARG_COUNT(m_min_count, m_max_count)                \
+	if (p_arg_count < m_min_count) {                                        \
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;  \
+		r_error.expected = m_min_count;                                     \
+		*r_ret = Variant();                                                 \
+		return;                                                             \
+	}                                                                       \
+	if (p_arg_count > m_max_count) {                                        \
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS; \
+		r_error.expected = m_max_count;                                     \
+		*r_ret = Variant();                                                 \
+		return;                                                             \
+	}
+
 #define VALIDATE_ARG_INT(m_arg)                                           \
 	if (p_args[m_arg]->get_type() != Variant::INT) {                      \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
@@ -74,11 +88,22 @@
 		return;                                                           \
 	}
 
+#define VALIDATE_ARG_BOOL(m_arg)                                          \
+	if (p_args[m_arg]->get_type() != Variant::BOOL) {                     \
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
+		r_error.argument = m_arg;                                         \
+		r_error.expected = Variant::BOOL;                                 \
+		*r_ret = Variant();                                               \
+		return;                                                           \
+	}
+
 #else
 
 #define VALIDATE_ARG_COUNT(m_count)
+#define VALIDATE_MIN_MAX_ARG_COUNT(m_min_count, m_max_count)
 #define VALIDATE_ARG_INT(m_arg)
 #define VALIDATE_ARG_NUM(m_arg)
+#define VALIDATE_ARG_BOOL(m_arg)
 
 #endif
 
@@ -242,96 +267,108 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		VALIDATE_ARG_COUNT(1);
+	static inline Variant _inst_to_dict(const Variant *p_var, bool p_deep, int p_recursion_count, Callable::CallError &r_error) {
+		if (p_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			return Variant();
+		}
 
-		if (p_args[0]->get_type() == Variant::NIL) {
-			*r_ret = Variant();
-		} else if (p_args[0]->get_type() != Variant::OBJECT) {
+		if (p_var->get_type() == Variant::NIL) {
+			return Variant();
+		} else if (p_var->get_type() != Variant::OBJECT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::OBJECT;
-			*r_ret = Variant();
-		} else {
-			Object *obj = *p_args[0];
-			if (!obj) {
-				*r_ret = Variant();
-
-			} else if (!obj->get_script_instance() || obj->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::DICTIONARY;
-				*r_ret = RTR("Not a script with an instance");
-				return;
-			} else {
-				GDScriptInstance *ins = static_cast<GDScriptInstance *>(obj->get_script_instance());
-				Ref<GDScript> base = ins->get_script();
-				if (base.is_null()) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					r_error.argument = 0;
-					r_error.expected = Variant::DICTIONARY;
-					*r_ret = RTR("Not based on a script");
-					return;
-				}
-
-				GDScript *p = base.ptr();
-				String path = p->get_script_path();
-				Vector<StringName> sname;
-
-				while (p->_owner) {
-					sname.push_back(p->local_name);
-					p = p->_owner;
-				}
-				sname.reverse();
-
-				if (!path.is_resource_file()) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					r_error.argument = 0;
-					r_error.expected = Variant::DICTIONARY;
-					*r_ret = Variant();
-
-					*r_ret = RTR("Not based on a resource file");
-
-					return;
-				}
-
-				NodePath cp(sname, Vector<StringName>(), false);
-
-				Dictionary d;
-				d["@subpath"] = cp;
-				d["@path"] = path;
-
-				for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
-					if (!d.has(E.key)) {
-						d[E.key] = ins->members[E.value.index];
-					}
-				}
-				*r_ret = d;
-			}
+			return Variant();
 		}
-	}
 
-	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		VALIDATE_ARG_COUNT(1);
-
-		if (p_args[0]->get_type() != Variant::DICTIONARY) {
+		Object *obj = *p_var;
+		if (!obj) {
+			return Variant();
+		} else if (!obj->get_script_instance() || obj->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::DICTIONARY;
-			*r_ret = Variant();
-
-			return;
+			return RTR("Not a script with an instance");
 		}
 
-		Dictionary d = *p_args[0];
+		GDScriptInstance *ins = static_cast<GDScriptInstance *>(obj->get_script_instance());
+		Ref<GDScript> base = ins->get_script();
+		if (base.is_null()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::DICTIONARY;
+			return RTR("Not based on a script");
+		}
+
+		GDScript *p = base.ptr();
+		String path = p->get_script_path();
+		Vector<StringName> sname;
+
+		while (p->_owner) {
+			sname.push_back(p->local_name);
+			p = p->_owner;
+		}
+		sname.reverse();
+
+		if (!path.is_resource_file()) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::DICTIONARY;
+			return RTR("Not based on a resource file");
+		}
+
+		NodePath cp(sname, Vector<StringName>(), false);
+
+		Dictionary d;
+		d["@subpath"] = cp;
+		d["@path"] = path;
+
+		for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
+			if (!d.has(E.key)) {
+				Variant member = ins->members[E.value.index];
+				if (p_deep && member.get_type() == Variant::OBJECT) {
+					member = _inst_to_dict(&member, p_deep, ++p_recursion_count, r_error);
+				}
+				d[E.key] = member;
+			}
+		}
+
+		return d;
+	}
+
+	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		VALIDATE_MIN_MAX_ARG_COUNT(1, 2);
+
+		bool deep = false;
+		if (p_arg_count > 1) {
+			VALIDATE_ARG_BOOL(1);
+			deep = *p_args[1];
+		}
+
+		*r_ret = _inst_to_dict(p_args[0], deep, 1, r_error);
+	}
+
+	static inline Variant _dict_to_inst(const Variant *p_var, bool p_deep, int p_recursion_count, Callable::CallError &r_error) {
+		if (p_recursion_count > MAX_RECURSION) {
+			ERR_PRINT("Max recursion reached");
+			return Variant();
+		}
+
+		if (p_var->get_type() != Variant::DICTIONARY) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::DICTIONARY;
+			return Variant();
+		}
+
+		Dictionary d = *p_var;
 
 		if (!d.has("@path")) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::OBJECT;
-			*r_ret = RTR("Invalid instance dictionary format (missing @path)");
-
-			return;
+			return RTR("Invalid instance dictionary format (missing @path)");
 		}
 
 		Ref<Script> scr = ResourceLoader::load(d["@path"]);
@@ -339,8 +376,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::OBJECT;
-			*r_ret = RTR("Invalid instance dictionary format (can't load script at @path)");
-			return;
+			return RTR("Invalid instance dictionary format (can't load script at @path)");
 		}
 
 		Ref<GDScript> gdscr = scr;
@@ -349,9 +385,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::OBJECT;
-			*r_ret = Variant();
-			*r_ret = RTR("Invalid instance dictionary format (invalid script at @path)");
-			return;
+			return RTR("Invalid instance dictionary format (invalid script at @path)");
 		}
 
 		NodePath sub;
@@ -365,41 +399,45 @@ struct GDScriptUtilityFunctionsDefinitions {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::OBJECT;
-				*r_ret = Variant();
-				*r_ret = RTR("Invalid instance dictionary (invalid subclasses)");
-				return;
+				return RTR("Invalid instance dictionary (invalid subclasses)");
 			}
 		}
-		*r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
+		Variant ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
 
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			*r_ret = RTR("Cannot instantiate GDScript class.");
-			return;
+			return RTR("Cannot instantiate GDScript class.");
 		}
 
-		GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(*r_ret)->get_script_instance());
+		GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(ret)->get_script_instance());
 		Ref<GDScript> gd_ref = ins->get_script();
 
 		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
 			if (d.has(E.key)) {
-				ins->members.write[E.value.index] = d[E.key];
+				Variant member = d[E.key];
+				if (p_deep && member.get_type() == Variant::DICTIONARY) {
+					member = _dict_to_inst(&member, p_deep, ++p_recursion_count, r_error);
+				}
+				ins->members.write[E.value.index] = member;
 			}
 		}
+
+		return ret;
+	}
+
+	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		VALIDATE_MIN_MAX_ARG_COUNT(1, 2);
+
+		bool deep = false;
+		if (p_arg_count > 1) {
+			VALIDATE_ARG_BOOL(1);
+			deep = *p_args[1];
+		}
+
+		*r_ret = _dict_to_inst(p_args[0], deep, 1, r_error);
 	}
 
 	static inline void Color8(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 3) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.expected = 3;
-			*r_ret = Variant();
-			return;
-		}
-		if (p_arg_count > 4) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-			r_error.expected = 4;
-			*r_ret = Variant();
-			return;
-		}
+		VALIDATE_MIN_MAX_ARG_COUNT(3, 4);
 
 		VALIDATE_ARG_INT(0);
 		VALIDATE_ARG_INT(1);
@@ -717,8 +755,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
 	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
 	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
-	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
-	REGISTER_FUNC(dict_to_inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
+	REGISTER_FUNC_DEF(inst_to_dict, false, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT), ARG("deep", Variant::BOOL));
+	REGISTER_FUNC_DEF(dict_to_inst, false, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY), ARG("deep", Variant::BOOL));
 	REGISTER_FUNC_DEF(Color8, true, 255, Variant::COLOR, ARG("r8", Variant::INT), ARG("g8", Variant::INT), ARG("b8", Variant::INT), ARG("a8", Variant::INT));
 	REGISTER_VARARG_FUNC(print_debug, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);
