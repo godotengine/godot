@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
@@ -323,6 +324,33 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	return da;
 }
 
+Ref<DirAccess> DirAccess::create_tmp(const String &p_prefix, bool p_keep) {
+	Ref<DirAccess> dir_access = DirAccess::open(OS::get_singleton()->get_tmp_path());
+	String hash;
+	while (true) {
+		hash = itos(Math::rand()).sha256_text().substr(0, 10);
+		if (!DirAccess::exists(hash)) {
+			break;
+		}
+	}
+	String path = (p_prefix.is_empty()
+								  ? ""
+								  : p_prefix + "-") +
+			hash;
+	Error err = dir_access->make_dir(path);
+	if (err != OK) {
+		return Ref<DirAccess>();
+	}
+	err = dir_access->change_dir(path);
+	if (err != OK) {
+		return Ref<DirAccess>();
+	}
+	dir_access->_is_tmp = true;
+	dir_access->_tmp_keep_after_free = p_keep;
+	dir_access->_tmp_path = dir_access->get_current_dir();
+	return dir_access;
+}
+
 Error DirAccess::get_open_error() {
 	return last_dir_open_error;
 }
@@ -552,9 +580,35 @@ bool DirAccess::is_case_sensitive(const String &p_path) const {
 	return true;
 }
 
+void DirAccess::_delete_tmp() {
+	// Remove created tmp directory.
+	if (!_is_tmp || _tmp_keep_after_free) {
+		return;
+	}
+
+	if (!DirAccess::exists(_tmp_path)) {
+		return;
+	}
+
+	Error err;
+	{
+		Ref<DirAccess> dir_access = DirAccess::open(_tmp_path, &err);
+		if (err != OK) {
+			return;
+		}
+		err = dir_access->erase_contents_recursive();
+		if (err != OK) {
+			return;
+		}
+	}
+
+	DirAccess::remove_absolute(_tmp_path);
+}
+
 void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("create_tmp", "prefix", "keep"), &DirAccess::create_tmp, DEFVAL(""), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
@@ -597,4 +651,8 @@ void DirAccess::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
+}
+
+DirAccess::~DirAccess() {
+	_delete_tmp();
 }

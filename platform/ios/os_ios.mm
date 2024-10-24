@@ -336,6 +336,22 @@ String OS_IOS::get_cache_path() const {
 	return ret;
 }
 
+String OS_IOS::get_tmp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			NSString *url_path = [url absoluteString];
+			ret.parse_utf8([url_path UTF8String]);
+			if (ret.begins_with("file://")) {
+				ret = ret.replace_first("file://", "");
+			}
+		}
+	}
+	return ret;
+}
+
 String OS_IOS::get_locale() const {
 	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
 

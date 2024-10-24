@@ -54,6 +54,10 @@ String EditorPaths::get_cache_dir() const {
 	return cache_dir;
 }
 
+String EditorPaths::get_tmp_dir() const {
+	return tmp_dir;
+}
+
 String EditorPaths::get_project_data_dir() const {
 	return project_data_dir;
 }
@@ -160,6 +164,7 @@ EditorPaths::EditorPaths() {
 		config_dir = data_dir;
 		cache_path = exe_path;
 		cache_dir = data_dir.path_join("cache");
+		tmp_dir = data_dir.path_join("tmp");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
@@ -174,6 +179,7 @@ EditorPaths::EditorPaths() {
 		} else {
 			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
+		tmp_dir = OS::get_singleton()->get_tmp_path();
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());

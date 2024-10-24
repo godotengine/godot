@@ -526,6 +526,12 @@
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
+		<method name="get_tmp_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] temporary data directory according to the operating system's standards.
+			</description>
+		</method>
 		<method name="get_unique_id" qualifiers="const">
 			<return type="String" />
 			<description>
