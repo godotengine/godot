@@ -208,6 +208,7 @@ public:
 
 	virtual String get_locale() const override;
 
+	virtual int get_physical_processor_count() const override;
 	virtual String get_processor_name() const override;
 
 	virtual uint64_t get_embedded_pck_offset() const override;
