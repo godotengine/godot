@@ -104,6 +104,10 @@ public:
 		return _queued;
 	}
 
+	int space_left() const {
+		return _payload.space_left();
+	}
+
 	void clear() {
 		_payload.resize(0);
 		_packets.resize(0);
