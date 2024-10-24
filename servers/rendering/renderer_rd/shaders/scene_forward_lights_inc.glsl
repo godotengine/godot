@@ -906,12 +906,22 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			diffuse_light, specular_light);
 }
 
-void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum) {
+void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, float roughness, vec3 ambient_light, vec3 specular_light, inout vec4 ambient_accum, inout vec4 reflection_accum, inout uint curr_importance) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
 	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
 
 	if (any(greaterThan(abs(local_pos), box_extents))) { //out of the reflection box
 		return;
+	}
+
+	if (reflections.data[ref_index].priority < curr_importance) { // Less important than our current entry?
+		return; // skip!
+	} else if (reflections.data[ref_index].priority > curr_importance) { // More important than our current entry?
+		// reset!
+		reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
+		ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+
+		curr_importance = reflections.data[ref_index].priority;
 	}
 
 	vec3 inner_pos = abs(local_pos / box_extents);

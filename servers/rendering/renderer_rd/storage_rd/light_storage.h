@@ -236,6 +236,7 @@ private:
 		uint32_t reflection_mask = (1 << 20) - 1;
 		float mesh_lod_threshold = 0.01;
 		float baked_exposure = 1.0;
+		int priority = 0;
 
 		Dependency dependency;
 	};
@@ -308,6 +309,10 @@ private:
 		uint32_t ambient_mode;
 		float exposure_normalization;
 		float local_matrix[16]; // up to here for spot and omni, rest is for directional
+		uint32_t priority;
+		float res1;
+		float res2;
+		float res3;
 	};
 
 	struct ReflectionProbeInstanceSort {
@@ -832,6 +837,7 @@ public:
 	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
+	virtual void reflection_probe_set_priority(RID p_probe, int p_priority) override;
 
 	void reflection_probe_set_baked_exposure(RID p_probe, float p_exposure);
 

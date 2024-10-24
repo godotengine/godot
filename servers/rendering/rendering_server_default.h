@@ -472,6 +472,7 @@ public:
 	FUNC2(reflection_probe_set_reflection_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
+	FUNC2(reflection_probe_set_priority, RID, int)
 
 	/* LIGHTMAP */
 

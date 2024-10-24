@@ -1171,6 +1171,15 @@ void LightStorage::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void LightStorage::reflection_probe_set_priority(RID p_probe, int p_priority) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	ERR_FAIL_INDEX_MSG(p_priority, 101, "Probe priority should be a value between 0 and 100"); // should be between 0 - 100
+
+	reflection_probe->priority = p_priority;
+}
+
 void LightStorage::reflection_probe_set_baked_exposure(RID p_probe, float p_exposure) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
@@ -1775,6 +1784,8 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		Transform3D transform = rpi->transform;
 		Transform3D proj = (p_camera_inverse_transform * transform).inverse();
 		MaterialStorage::store_transform(proj, reflection_ubo.local_matrix);
+
+		reflection_ubo.priority = probe->priority;
 
 		// hook for subclass to do further processing.
 		RendererSceneRenderRD::get_singleton()->setup_added_reflection_probe(transform, extents);
