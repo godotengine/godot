@@ -70,6 +70,7 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 		for (int i = 0; i < meshes.size(); i++) {
 			BakedMesh bm;
 			bm.mesh = meshes[i];
+			bm.item = -1;
 			ERR_CONTINUE(!bm.mesh.is_valid());
 			bm.instance = RS::get_singleton()->instance_create();
 			RS::get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
@@ -83,6 +84,18 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 
 		_recreate_octant_data();
 
+	} else if (name == "baked_meshes_library_items") {
+		Array bmli = p_value;
+
+		if (bmli.size() != baked_meshes.size() || !mesh_library.is_valid()) {
+			return false;
+		}
+
+		int i = 0;
+		for (auto &bm : baked_meshes) {
+			bm.item = bmli[i++];
+			RS::get_singleton()->instance_set_layer_mask(bm.instance, mesh_library->get_item_render_layers(bm.item));
+		}
 	} else {
 		return false;
 	}
@@ -119,6 +132,17 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 		r_ret = ret;
 
+	} else if (name == "baked_meshes_library_items") {
+		Array ret;
+		ret.resize(baked_meshes.size());
+		for (int i = 0; i < baked_meshes.size(); i++) {
+			if (baked_meshes[i].item < 0) {
+				// Invalid meshlib index, so assume (and keep) old format
+				return false;
+			}
+			ret[i] = baked_meshes[i].item;
+		}
+		r_ret = ret;
 	} else {
 		return false;
 	}
@@ -129,6 +153,7 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (baked_meshes.size()) {
 		p_list->push_back(PropertyInfo(Variant::ARRAY, "baked_meshes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, "baked_meshes_library_items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	}
 
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -708,6 +733,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 			RID instance = RS::get_singleton()->instance_create();
 			RS::get_singleton()->instance_set_base(instance, mm);
+			RS::get_singleton()->instance_set_layer_mask(instance, mesh_library->get_item_render_layers(E.key));
 
 			if (is_inside_tree()) {
 				RS::get_singleton()->instance_set_scenario(instance, get_world_3d()->get_scenario());
@@ -1229,7 +1255,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 	}
 
 	//generate
-	HashMap<OctantKey, HashMap<Ref<Material>, Ref<SurfaceTool>>, OctantKey> surface_map;
+	HashMap<SurfaceMapKey, Pair<int, HashMap<Ref<Material>, Ref<SurfaceTool>>>, SurfaceMapKey> surface_map;
 
 	for (KeyValue<IndexKey, Cell> &E : cell_map) {
 		IndexKey key = E.key;
@@ -1253,16 +1279,17 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
-		OctantKey ok;
-		ok.x = key.x / octant_size;
-		ok.y = key.y / octant_size;
-		ok.z = key.z / octant_size;
+		SurfaceMapKey smk;
+		smk.octant_x = key.x / octant_size;
+		smk.octant_y = key.y / octant_size;
+		smk.octant_z = key.z / octant_size;
+		smk.render_layer = mesh_library->get_item_render_layers(item);
 
-		if (!surface_map.has(ok)) {
-			surface_map[ok] = HashMap<Ref<Material>, Ref<SurfaceTool>>();
+		if (!surface_map.has(smk)) {
+			surface_map[smk] = Pair<int, HashMap<Ref<Material>, Ref<SurfaceTool>>>(item, HashMap<Ref<Material>, Ref<SurfaceTool>>());
 		}
 
-		HashMap<Ref<Material>, Ref<SurfaceTool>> &mat_map = surface_map[ok];
+		HashMap<Ref<Material>, Ref<SurfaceTool>> &mat_map = surface_map[smk].second;
 
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
 			if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -1282,18 +1309,20 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		}
 	}
 
-	for (KeyValue<OctantKey, HashMap<Ref<Material>, Ref<SurfaceTool>>> &E : surface_map) {
+	for (KeyValue<SurfaceMapKey, Pair<int, HashMap<Ref<Material>, Ref<SurfaceTool>>>> &E : surface_map) {
 		Ref<ArrayMesh> mesh;
 		mesh.instantiate();
-		for (KeyValue<Ref<Material>, Ref<SurfaceTool>> &F : E.value) {
+		for (KeyValue<Ref<Material>, Ref<SurfaceTool>> &F : E.value.second) {
 			F.value->commit(mesh);
 		}
 
 		BakedMesh bm;
 		bm.mesh = mesh;
 		bm.instance = RS::get_singleton()->instance_create();
+		bm.item = E.value.first;
 		RS::get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 		RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
+		RS::get_singleton()->instance_set_layer_mask(bm.instance, mesh_library->get_item_render_layers(bm.item));
 		if (is_inside_tree()) {
 			RS::get_singleton()->instance_set_scenario(bm.instance, get_world_3d()->get_scenario());
 			RS::get_singleton()->instance_set_transform(bm.instance, get_global_transform());
