@@ -110,6 +110,8 @@ class EditorHelp : public VBoxContainer {
 	HashMap<String, int> annotation_line;
 	HashMap<String, int> enum_line;
 	HashMap<String, HashMap<String, int>> enum_values_line;
+	HashMap<String, int> struct_line;
+	HashMap<String, HashMap<String, int>> struct_members_line;
 	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;
