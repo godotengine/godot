@@ -156,7 +156,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	for (const SceneDebuggerTree::RemoteNode &node : p_tree->nodes) {
 		TreeItem *parent = nullptr;
 		if (parents.size()) { // Find last parent.
-			Pair<TreeItem *, int> &p = parents.front()->get();
+			Pair<TreeItem *, int> &p = parents.get_front();
 			parent = p.first;
 			if (!(--p.second)) { // If no child left, remove it.
 				parents.pop_front();
@@ -342,7 +342,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 				file_dialog->add_filter("*." + extension, extension.to_upper());
 			}
 
-			String filename = get_selected_path().get_file() + "." + extensions.front()->get().to_lower();
+			String filename = get_selected_path().get_file() + "." + extensions.get_front().to_lower();
 			file_dialog->set_current_path(filename);
 			file_dialog->popup_file_dialog();
 		} break;
