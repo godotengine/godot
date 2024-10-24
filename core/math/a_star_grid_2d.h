@@ -87,6 +87,7 @@ private:
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+		uint32_t point_layers = 1;
 
 		// Used for getting last_closest_point.
 		real_t abs_g_score = 0;
@@ -159,7 +160,7 @@ private: // Internal routines.
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
 	Point *_jump(Point *p_from, Point *p_to);
-	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
+	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path, uint32_t p_point_layers);
 	Point *_forced_successor(int32_t p_x, int32_t p_y, int32_t p_dx, int32_t p_dy, bool p_inclusive = false);
 
 protected:
@@ -174,6 +175,8 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	TypedArray<Vector2i> _get_id_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
 	Vector<Vector2> _get_point_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	TypedArray<Vector2i> _get_id_path_bind_compat_98324(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path = false);
+	Vector<Vector2> _get_point_path_bind_compat_98324(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path = false);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -214,6 +217,9 @@ public:
 	void set_point_solid(const Vector2i &p_id, bool p_solid = true);
 	bool is_point_solid(const Vector2i &p_id) const;
 
+	void set_point_layers(const Vector2i &p_id, uint32_t p_point_layers);
+	uint32_t get_point_layers(const Vector2i &p_id) const;
+
 	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
 	real_t get_point_weight_scale(const Vector2i &p_id) const;
 
@@ -224,8 +230,8 @@ public:
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
 	TypedArray<Dictionary> get_point_data_in_region(const Rect2i &p_region) const;
-	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
-	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
+	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false, uint32_t p_point_layers = 1);
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false, uint32_t p_point_layers = 1);
 };
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);

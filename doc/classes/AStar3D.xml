@@ -62,8 +62,10 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="position" type="Vector3" />
 			<param index="2" name="weight_scale" type="float" default="1.0" />
+			<param index="3" name="navigation_layers" type="int" default="1" />
 			<description>
 				Adds a new point at the given position with the given identifier. The [param id] must be 0 or larger, and the [param weight_scale] must be 0.0 or greater.
+				The [param navigation_layers] is a bitmask and can be set to specify which navigation layers the point is a part of. The default is layer 1.
 				The [param weight_scale] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [param weight_scale]s to form a path.
 				[codeblocks]
 				[gdscript]
@@ -135,8 +137,9 @@
 			<return type="int" />
 			<param index="0" name="to_position" type="Vector3" />
 			<param index="1" name="include_disabled" type="bool" default="false" />
+			<param index="2" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns the ID of the closest point to [param to_position], optionally taking disabled points into account. Returns [code]-1[/code] if there are no points in the points pool.
+				Returns the ID of the closest point to [param to_position], optionally taking disabled points into account or specific navigation layers. Returns [code]-1[/code] if there are no points in the points pool.
 				[b]Note:[/b] If several points are the closest to [param to_position], the one with the smallest ID will be returned, ensuring a deterministic result.
 			</description>
 		</method>
@@ -169,8 +172,9 @@
 			<param index="0" name="from_id" type="int" />
 			<param index="1" name="to_id" type="int" />
 			<param index="2" name="allow_partial_path" type="bool" default="false" />
+			<param index="3" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns an array with the IDs of the points that form the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the IDs of the points that form the path found by AStar3D between the given points using the given [param navigation_layers]. The array is ordered from the starting point to the ending point of the path.
 				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 				[b]Note:[/b] When [param allow_partial_path] is [code]true[/code] and [param to_id] is disabled the search may take an unusually long time to finish.
 				[codeblocks]
@@ -254,13 +258,21 @@
 				Returns an array of all point IDs.
 			</description>
 		</method>
+		<method name="get_point_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the navigation layers bitmask for the specified point.
+			</description>
+		</method>
 		<method name="get_point_path">
 			<return type="PackedVector3Array" />
 			<param index="0" name="from_id" type="int" />
 			<param index="1" name="to_id" type="int" />
 			<param index="2" name="allow_partial_path" type="bool" default="false" />
+			<param index="3" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns an array with the points that are in the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
+				Returns an array with the points that are in the path found by AStar3D between the given points using the given [param navigation_layers]. The array is ordered from the starting point to the ending point of the path.
 				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.
 				Additionally, when [param allow_partial_path] is [code]true[/code] and [param to_id] is disabled the search may take an unusually long time to finish.
@@ -314,6 +326,14 @@
 			<param index="1" name="disabled" type="bool" default="true" />
 			<description>
 				Disables or enables the specified point for pathfinding. Useful for making a temporary obstacle.
+			</description>
+		</method>
+		<method name="set_point_layers">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Sets the points navigation layers with the given [param navigation_layers] bitmask.
 			</description>
 		</method>
 		<method name="set_point_position">
