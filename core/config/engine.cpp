@@ -238,6 +238,9 @@ String Engine::get_architecture_name() const {
 	return "ppc";
 #endif
 
+#elif defined(__loongarch__)
+	return "loongarch64";
+
 #elif defined(__wasm__)
 #if defined(__wasm64__)
 	return "wasm64";
