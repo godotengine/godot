@@ -1072,7 +1072,7 @@ bool Variant::is_null() const {
 	}
 }
 
-void Variant::ObjData::ref(const ObjData &p_from) {
+void Variant::ObjData::ref(const ObjData &p_from, bool p_is_weak_ref_old, bool p_is_weak_ref) {
 	// Mirrors Ref::ref in refcounted.h
 	if (p_from.id == id) {
 		return;
@@ -1081,7 +1081,7 @@ void Variant::ObjData::ref(const ObjData &p_from) {
 	ObjData cleanup_ref = *this;
 
 	*this = p_from;
-	if (id.is_ref_counted()) {
+	if (!p_is_weak_ref && id.is_ref_counted()) {
 		RefCounted *reference = static_cast<RefCounted *>(obj);
 		// Assuming reference is not null because id.is_ref_counted() was true.
 		if (!reference->reference()) {
@@ -1089,10 +1089,10 @@ void Variant::ObjData::ref(const ObjData &p_from) {
 		}
 	}
 
-	cleanup_ref.unref();
+	cleanup_ref.unref(p_is_weak_ref_old);
 }
 
-void Variant::ObjData::ref_pointer(Object *p_object) {
+void Variant::ObjData::ref_pointer(Object *p_object, bool p_is_weak_ref_old, bool p_is_weak_ref) {
 	// Mirrors Ref::ref_pointer in refcounted.h
 	if (p_object == obj) {
 		return;
@@ -1102,7 +1102,7 @@ void Variant::ObjData::ref_pointer(Object *p_object) {
 
 	if (p_object) {
 		*this = ObjData{ p_object->get_instance_id(), p_object };
-		if (p_object->is_ref_counted()) {
+		if (!p_is_weak_ref && p_object->is_ref_counted()) {
 			RefCounted *reference = static_cast<RefCounted *>(p_object);
 			if (!reference->init_ref()) {
 				*this = ObjData();
@@ -1112,12 +1112,12 @@ void Variant::ObjData::ref_pointer(Object *p_object) {
 		*this = ObjData();
 	}
 
-	cleanup_ref.unref();
+	cleanup_ref.unref(p_is_weak_ref_old);
 }
 
-void Variant::ObjData::unref() {
+void Variant::ObjData::unref(bool p_is_weak_ref) {
 	// Mirrors Ref::unref in refcounted.h
-	if (id.is_ref_counted()) {
+	if (!p_is_weak_ref && id.is_ref_counted()) {
 		RefCounted *reference = static_cast<RefCounted *>(obj);
 		// Assuming reference is not null because id.is_ref_counted() was true.
 		if (reference->unreference()) {
@@ -1129,7 +1129,7 @@ void Variant::ObjData::unref() {
 
 void Variant::reference(const Variant &p_variant) {
 	if (type == OBJECT && p_variant.type == OBJECT) {
-		_get_obj().ref(p_variant._get_obj());
+		_get_obj().ref(p_variant._get_obj(), is_weak_ref, p_variant.is_weak_ref);
 		return;
 	}
 
@@ -1217,7 +1217,7 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case OBJECT: {
 			memnew_placement(_data._mem, ObjData);
-			_get_obj().ref(p_variant._get_obj());
+			_get_obj().ref(p_variant._get_obj(), is_weak_ref, p_variant.is_weak_ref);
 		} break;
 		case CALLABLE: {
 			memnew_placement(_data._mem, Callable(*reinterpret_cast<const Callable *>(p_variant._data._mem)));
@@ -1416,7 +1416,7 @@ void Variant::_clear_internal() {
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
 		} break;
 		case OBJECT: {
-			_get_obj().unref();
+			_get_obj().unref(is_weak_ref);
 		} break;
 		case RID: {
 			// Not much need probably.
@@ -2623,7 +2623,14 @@ Variant::Variant(const ::RID &p_rid) :
 Variant::Variant(const Object *p_object) :
 		type(OBJECT) {
 	_get_obj() = ObjData();
-	_get_obj().ref_pointer(const_cast<Object *>(p_object));
+	_get_obj().ref_pointer(const_cast<Object *>(p_object), true, false);
+}
+
+Variant::Variant(const RefCounted *p_object, bool p_is_weak_ref) :
+		type(OBJECT) {
+	_get_obj() = ObjData();
+	_get_obj().ref_pointer((Object *)p_object, true, p_is_weak_ref);
+	is_weak_ref = p_is_weak_ref;
 }
 
 Variant::Variant(const Callable &p_callable) :
@@ -2845,7 +2852,7 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<::RID *>(_data._mem) = *reinterpret_cast<const ::RID *>(p_variant._data._mem);
 		} break;
 		case OBJECT: {
-			_get_obj().ref(p_variant._get_obj());
+			_get_obj().ref(p_variant._get_obj(), is_weak_ref, p_variant.is_weak_ref);
 		} break;
 		case CALLABLE: {
 			*reinterpret_cast<Callable *>(_data._mem) = *reinterpret_cast<const Callable *>(p_variant._data._mem);
