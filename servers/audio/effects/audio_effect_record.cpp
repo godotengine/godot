@@ -224,7 +224,10 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 			int16_t v = CLAMP(current_instance->recording_data[i] * 32768, -32768, 32767);
 			encode_uint16(v, &w[i * 2]);
 		}
-	} else if (dst_format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
+	}
+#ifndef DISABLE_DEPRECATED
+	else if (dst_format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
+
 		//byte interleave
 		Vector<float> left;
 		Vector<float> right;
@@ -259,7 +262,9 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 			w[i * 2 + 0] = rl[i];
 			w[i * 2 + 1] = rr[i];
 		}
-	} else {
+	}
+#endif
+	else {
 		ERR_PRINT("Format not implemented.");
 	}
 
