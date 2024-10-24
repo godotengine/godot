@@ -6,6 +6,45 @@
 	<description>
 		CPU-based 3D particle node used to create a variety of particle systems and effects.
 		See also [GPUParticles3D], which provides the same functionality with hardware acceleration, but may not run on older devices.
+		Unlike [GPUParticles3D], the CPU is aware of particles' individual transforms. This means particle transforms can be used for any purpose in scripting, including gameplay-affecting elements. See [signal particles_updated] for more information.
+		CPUParticles3D can emit an [Array] of dictionaries with the [signal CPUParticles3D.particles_updated] signal. This can be used to make nodes (such as [Light3D]s, [AudioStreamPlayer3D]s or other [CPUParticles3D]s) follow particles individually for advanced effects. To avoid performance issues, it's recommended to only use this feature with low numbers of particles (typically a few dozen at most).
+		[b]Example of placing [OmniLight3D]s to follow particles automatically and change color over time:[/b]
+		[codeblock]
+		extends CPUParticles3D
+
+		# Used to keep track of light nodes added as children more easily.
+		var lights = []
+
+		func _ready():
+		    for i in amount:
+		        var light = OmniLight3D.new()
+		        lights.push_back(light)
+		        add_child(light)
+
+		    particles_updated.connect(_on_cpu_particles_3d_particles_updated)
+
+
+		func _on_cpu_particles_3d_particles_updated(particles):
+		    # Only update light positions if all light nodes have been added first.
+		    if lights.size() &gt;= particles.size():
+		        for particle_idx in particles.size():
+		            lights[particle_idx].visible = particles[particle_idx].active
+
+		            # Change the light's color over the particle's lifetime.
+		            lights[particle_idx].light_color.r = particles[particle_idx].phase
+		            lights[particle_idx].light_color.g = 1.0 - particles[particle_idx].phase
+		            lights[particle_idx].light_color.b = 1.0 - particles[particle_idx].phase
+		            lights[particle_idx].light_energy = 2.0 - particles[particle_idx].phase * 2.0
+
+		            # Increase the light's range over the particle's lifetime.
+		            lights[particle_idx].omni_range = particles[particle_idx].phase * 5.0
+
+		            # Move lights to follow particles.
+		            if local_coords:
+		                lights[particle_idx].position = particles[particle_idx].transform.origin
+		            else:
+		                lights[particle_idx].global_transform.origin = particles[particle_idx].transform.origin
+		[/codeblock]
 	</description>
 	<tutorials>
 		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
@@ -328,6 +367,36 @@
 		<signal name="finished">
 			<description>
 				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
+			</description>
+		</signal>
+		<signal name="particles_expired">
+			<param index="0" name="particles" type="Dictionary[]" />
+			<description>
+				Emitted when one or more particles is about to expire on the next particle update. This can be used to make nodes (such as [Light3D]s, [AudioStreamPlayer3D]s or other [CPUParticles3D]s) spawn at individual particle expiration positions.
+				Each particle has an associated dictionary in the array parameter with the following keys:
+				- [code]color[/code]: The particle's current color. This is the color defined by [member CPUParticles3D.color] or [member CPUParticles3D.color_initial_ramp], which is then multiplied by [member CPUParticles3D.color_ramp] over the particle's lifetime. [code]color[/code] does [i]not[/i] take the material albedo color or mesh's original vertex color into account. If the particle is inactive ([code]active[/code] is [code]false[/code]), [code]color[/code] is [code]Color(0, 0, 0, 1)[/code].
+				- [code]phase[/code]: The particle's lifetime ratio. This is close to [code]0.0[/code] when the particle is freshly spawned, and close to [code]1.0[/code] when the particle is about to expire. If the particle is inactive ([code]active[/code] is [code]false[/code]), [code]phase[/code] is [code]0.0[/code].
+				- [code]seed[/code]: The particle's random seed (a 32-bit [i]unsigned[/i] integer) within the particle system. This can be used to uniquely identify a given particle within the particle system during its lifetime. Since the seed is uniformly distributed, [code]seed[/code] can be used to selectively apply effects to certain particles only. This can be useful to improve performance by applying expensive effects to lower amounts of particles:
+				[codeblock]
+				# `particles` is an array of CPUParticle3D results from CPUParticles3D's `particles_updated` signal.
+				for particle in particles:
+				    # The maximum value of a 32-bit unsigned integer is (2 ^ 32) - 1, which is roughly 4.2 billion.
+				    if particle.seed &lt;= 2 &lt;&lt; 31:  # Lower than roughly 2.1 billion.
+				        # Apply an effect to roughly 50% of particles here (the exact amount is random and varies constantly).
+				        pass
+				[/codeblock]
+				When a particle respawns after expiring, it will generate and use a different seed. This means [code]seed[/code] cannot be used to identify a given particle after it respawns. If the particle is inactive ([code]active[/code] is [code]false[/code]), [code]seed[/code] is [code]0[/code].
+				- [code]transform[/code]: The particle's transform. If you're only interested in the particle's position, use [code]transform.origin[/code]. If [member CPUParticles3D.local_coords] is [code]true[/code], you'll want to set nodes' [i]local[/i] transform when moving them to match particle positions. If [member CPUParticles3D.local_coords] is [code]false[/code], you'll want to set nodes' [i]global[/i] transform when moving them to match particle positions. If the particle is inactive ([code]active[/code] is [code]false[/code]), [code]transform[/code] is an identity [code]Transform3D()[/code].
+				- [code]velocity[/code]: The particle's linear velocity (movement speed) in units per second on each axis. This doesn't take the node's movement into account if [member local_coords] is [code]true[/code]. If the particle is inactive ([code]active[/code] is [code]false[/code]), [code]velocity[/code] is [code]Vector3(0, 0, 0)[/code].
+				- [code]active[/code]: [code]true[/code] if the particle is currently alive, [code]false[/code] otherwise. Typically, all particles are active except in two scenarios: (1) The particle system has just started and its [member CPUParticles3D.explosiveness] is not equal to [code]1.0[/code]. Therefore, there are less active particles than the [member CPUParticles3D.amount] configured. (2) The particle system has just had [member CPUParticles3D.emitting] set to [code]false[/code]. After all particles have expired (plus some additional time), the signal will no longer be emitted.
+				[b]Note:[/b] Only emitted when the particle system is currently [member emitting] or when at least 1 particle is still active.
+			</description>
+		</signal>
+		<signal name="particles_updated">
+			<param index="0" name="particles" type="Dictionary[]" />
+			<description>
+				Emitted when one or more particles are updated (every [code]1.0 /[/code] [member fixed_fps] seconds, or every rendered frame if [member fixed_fps] is [code]0[/code]). This can be used to make nodes (such as [Light3D]s, [AudioStreamPlayer3D]s or other [CPUParticles3D]s) follow particles individually for advanced effects. See [signal particles_expired]'s description for information on dictionary keys contained within the array parameter.
+				[b]Note:[/b] Only emitted when the particle system is currently [member emitting] or when at least 1 particle is still active.
 			</description>
 		</signal>
 	</signals>
