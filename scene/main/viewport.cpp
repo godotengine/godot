@@ -1987,7 +1987,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				drag_preview->set_position(mpos);
+				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
+				drag_preview->set_position(pos);
 			}
 
 			gui.drag_mouse_over = section_root->gui.target_control;
