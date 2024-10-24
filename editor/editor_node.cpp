@@ -126,9 +126,11 @@
 #include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
 #include "editor/import/resource_importer_dynamic_font.h"
+#include "editor/import/resource_importer_gd_script.h"
 #include "editor/import/resource_importer_image.h"
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
+#include "editor/import/resource_importer_packed_scene.h"
 #include "editor/import/resource_importer_shader_file.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -1365,7 +1367,7 @@ void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 
 	// If the resource has been imported, ask the user to use a different path in order to save it.
 	String path = p_resource->get_path();
-	if (path.is_resource_file() && !FileAccess::exists(path + ".import")) {
+	if (path.is_resource_file() && (!FileAccess::exists(path + ".import") || !ResourceFormatImporter::get_singleton()->is_import_read_only(path))) {
 		save_resource_in_path(p_resource, p_resource->get_path());
 	} else {
 		save_resource_as(p_resource);
@@ -1384,7 +1386,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 					return;
 				}
 			}
-		} else if (FileAccess::exists(path + ".import")) {
+		} else if (FileAccess::exists(path + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(path)) {
 			show_warning(TTR("This resource can't be saved because it was imported from another file. Make it unique first."));
 			return;
 		}
@@ -2507,7 +2509,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
 			String base_path = current_res->get_path().substr(0, subr_idx);
-			if (FileAccess::exists(base_path + ".import")) {
+			if (FileAccess::exists(base_path + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(base_path)) {
 				if (!base_path.is_resource_file()) {
 					if (get_edited_scene() && get_edited_scene()->get_scene_file_path() == base_path) {
 						info_is_warning = true;
@@ -2518,7 +2520,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 				editable_info = TTR("This resource belongs to a scene that was instantiated or inherited.\nChanges to it must be made inside the original scene.");
 			}
 		} else if (current_res->get_path().is_resource_file()) {
-			if (FileAccess::exists(current_res->get_path() + ".import")) {
+			if (FileAccess::exists(current_res->get_path() + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(current_res->get_path())) {
 				editable_info = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
 			}
 		}
@@ -2543,7 +2545,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 		if (get_edited_scene() && !get_edited_scene()->get_scene_file_path().is_empty()) {
 			String source_scene = get_edited_scene()->get_scene_file_path();
-			if (FileAccess::exists(source_scene + ".import")) {
+			if (FileAccess::exists(source_scene + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(source_scene)) {
 				editable_info = TTR("This scene was imported, so changes to it won't be kept.\nInstantiating or inheriting it will allow you to make changes to it.\nPlease read the documentation relevant to importing scenes to better understand this workflow.");
 				info_is_warning = true;
 			}
@@ -3938,7 +3940,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			}
 		}
 
-		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import")) {
+		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(p_scene)) {
 			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), p_scene.get_file()));
 			open_imported->popup_centered();
 			new_inherited_button->grab_focus();
@@ -4480,18 +4482,18 @@ bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_
 				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
 					// If we have not flagged foreign resources as writable or the base scene the resource is
 					// part was imported, it can be considered read-only.
-					if (!p_foreign_resources_are_writable || FileAccess::exists(base + ".import")) {
+					if (!p_foreign_resources_are_writable || (FileAccess::exists(base + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(base))) {
 						return true;
 					}
 				}
 			} else {
 				// If a corresponding .import file exists for the base file, we assume it to be imported and should therefore treated as read-only.
-				if (FileAccess::exists(base + ".import")) {
+				if (FileAccess::exists(base + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(base)) {
 					return true;
 				}
 			}
 		}
-	} else if (FileAccess::exists(path + ".import")) {
+	} else if (FileAccess::exists(path + ".import") && ResourceFormatImporter::get_singleton()->is_import_read_only(path)) {
 		// The resource is not a subresource, but if it has an .import file, it's imported so treat it as read only.
 		return true;
 	}
@@ -6917,6 +6919,14 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterBitMap> import_bitmap;
 		import_bitmap.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_bitmap);
+
+		Ref<ResourceImporterPackedScene> import_packed_scene;
+		import_packed_scene.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_packed_scene);
+
+		Ref<ResourceImporterGDScript> import_gd_script;
+		import_gd_script.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_gd_script);
 	}
 
 	{
