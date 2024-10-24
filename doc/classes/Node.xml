@@ -236,6 +236,13 @@
 				If the node is not inside the tree, returns [code]false[/code] no matter the value of [member process_mode].
 			</description>
 		</method>
+		<method name="clear_children">
+			<return type="void" />
+			<param index="0" name="include_internal" type="bool" default="false" />
+			<description>
+				Calls [method queue_free] on all children.
+			</description>
+		</method>
 		<method name="create_tween">
 			<return type="Tween" />
 			<description>
