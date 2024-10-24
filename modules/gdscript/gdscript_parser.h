@@ -918,8 +918,7 @@ public:
 	};
 
 	struct IfNode : public Node {
-		VariableNode *variable = nullptr;
-		ExpressionNode *condition = nullptr;
+		List<Node *> conditions;
 		SuiteNode *condition_block = nullptr;
 		SuiteNode *true_block = nullptr;
 		SuiteNode *false_block = nullptr;

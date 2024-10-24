@@ -1926,23 +1926,35 @@ Error GDScriptCompiler::_parse_if(CodeGen &codegen, const GDScriptParser::IfNode
 	codegen.start_block();
 	block_locals = _add_block_locals(codegen, if_n->condition_block);
 
-	if (if_n->variable) {
-		err = _parse_variable(codegen, if_n->variable, if_n->condition_block);
-		if (err) {
-			return err;
+	int count = 0;
+	const List<GDScriptParser::Node *>::Element *E = if_n->conditions.front();
+	while (E) {
+		const GDScriptParser::Node *condition_n = E->get();
+		if (condition_n->is_expression()) {
+			const GDScriptParser::ExpressionNode *expression_n = static_cast<const GDScriptParser::ExpressionNode *>(condition_n);
+
+			GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, expression_n);
+			if (err) {
+				return err;
+			}
+			gen->write_if(condition);
+
+			if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				codegen.generator->pop_temporary();
+			}
+
+			count++;
+		} else if (condition_n->type == GDScriptParser::Node::VARIABLE) {
+			const GDScriptParser::VariableNode *variable_n = static_cast<const GDScriptParser::VariableNode *>(condition_n);
+
+			err = _parse_variable(codegen, variable_n, if_n->condition_block);
+			if (err) {
+				return err;
+			}
+
+			gen->clear_temporaries();
 		}
-
-		gen->clear_temporaries();
-	}
-
-	GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
-	if (err) {
-		return err;
-	}
-	gen->write_if(condition);
-
-	if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-		codegen.generator->pop_temporary();
+		E = E->next();
 	}
 
 	err = _parse_block(codegen, if_n->true_block);
@@ -1954,15 +1966,19 @@ Error GDScriptCompiler::_parse_if(CodeGen &codegen, const GDScriptParser::IfNode
 	codegen.end_block();
 
 	if (if_n->false_block) {
-		gen->write_else();
+		gen->write_else(count);
 
 		err = _parse_block(codegen, if_n->false_block);
 		if (err) {
 			return err;
 		}
-	}
 
-	gen->write_endif();
+		gen->write_endif();
+	} else {
+		for (int i = 0; i < count; i++) {
+			gen->write_endif();
+		}
+	}
 
 	return OK;
 }
@@ -2024,7 +2040,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				for (int j = 0; j < match->branches.size(); j++) {
 					if (j > 0) {
 						// Use `else` to not check the next branch after matching.
-						gen->write_else();
+						gen->write_else(1);
 					}
 
 					const GDScriptParser::MatchBranchNode *branch = match->branches[j];
