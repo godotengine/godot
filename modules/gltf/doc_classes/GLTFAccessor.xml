@@ -81,4 +81,8 @@
 			Accessor type "MAT4". For the glTF object model, this maps to "float4x4", represented in the glTF JSON as an array of sixteen floats.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="GLTFAccessorType">
+		</enum>
+	</enums>
 </class>

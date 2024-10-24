@@ -92,4 +92,8 @@
 			Context menu of Scene dock. [method _popup_menu] will be called with the path to the currently edited script, while option callback will receive reference to that script.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ContextMenuSlot">
+		</enum>
+	</enums>
 </class>

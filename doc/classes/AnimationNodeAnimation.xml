@@ -46,4 +46,8 @@
 			Plays animation in backward direction.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="PlayMode">
+		</enum>
+	</enums>
 </class>

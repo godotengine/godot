@@ -539,4 +539,8 @@
 			Always show.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="VisibilityMode">
+		</enum>
+	</enums>
 </class>
