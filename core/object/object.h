@@ -998,20 +998,21 @@ void postinitialize_handler(Object *p_object);
 
 class ObjectDB {
 // This needs to add up to 63, 1 bit is for reference.
-#define OBJECTDB_VALIDATOR_BITS 34
+#define OBJECTDB_VALIDATOR_BITS 32
 #define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
 #define OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS 5
-#define OBJECTDB_SLOT_MAX_COUNT_BITS 24
+#define OBJECTDB_SLOT_MAX_COUNT_BITS 26
+#define OBJECTDB_SLOT_MAX_POSITION_BITS (OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS + OBJECTDB_SLOT_MAX_COUNT_BITS)
 #define OBJECTDB_SLOT_MAX_BLOCKS_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS) - 1)
-#define OBJECTDB_SLOT_MAX_POSITION_MASK ((uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS)) - 1)
-#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS + OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
-#define OBJECTDB_MAX_BLOCKS 22
+#define OBJECTDB_SLOT_MAX_POSITION_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_POSITION_BITS) - 1)
+#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_POSITION_BITS + OBJECTDB_VALIDATOR_BITS))
+#define OBJECTDB_MAX_BLOCKS 32
 
 	union NextFree {
-		uint32_t position : 29;
+		uint32_t position : OBJECTDB_SLOT_MAX_POSITION_BITS;
 		struct {
-			uint32_t block_number : 5;
-			uint32_t block_position : 22;
+			uint32_t block_number : OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS;
+			uint32_t block_position : OBJECTDB_SLOT_MAX_COUNT_BITS;
 		};
 	};
 
@@ -1023,7 +1024,7 @@ class ObjectDB {
 	};
 
 	static ObjectSlot *blocks[OBJECTDB_MAX_BLOCKS];
-	static uint32_t blocks_max_sizes[OBJECTDB_MAX_BLOCKS];
+	static const uint32_t blocks_max_sizes[OBJECTDB_MAX_BLOCKS];
 
 	static uint32_t slot_count;
 	static uint32_t block_count;

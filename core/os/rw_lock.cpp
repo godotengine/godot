@@ -48,7 +48,12 @@ int RWLock::get_thread_pos() {
 
 void RWLock::init() const {
 	if (unlikely(threads_number == -1)) {
-		threads_number = OS::get_singleton()->get_processor_count();
+		if (OS::get_singleton() != nullptr) {
+			threads_number = OS::get_singleton()->get_processor_count();
+		} else {
+			threads_number = THREADING_NAMESPACE::thread::hardware_concurrency();
+		}
+
 		if (threads_number < 1) {
 			threads_number = 1;
 		}
@@ -60,37 +65,24 @@ void RWLock::init() const {
 }
 
 void RWLock::read_lock() const {
-	if (unlikely(OS::get_singleton() == nullptr && threads_number == -1)) {
-		mutex.lock_shared();
-		printf("Go here\n");
-		return;
-	}
-
 	if (unlikely(threads_data == nullptr)) {
-		init();
+		return;
 	}
 	threads_data[get_thread_pos()].mtx.lock();
 }
 
 void RWLock::read_unlock() const {
-	if (unlikely(threads_number == -1)) {
-		printf("Go here\n");
-		mutex.unlock_shared();
+	if (unlikely(threads_data == nullptr)) {
 		return;
 	}
 
-	CRASH_COND(threads_data == nullptr);
+	DEV_ASSERT(threads_data != nullptr);
 	threads_data[get_thread_pos()].mtx.unlock();
 }
 
 void RWLock::write_lock() {
-	if (unlikely(OS::get_singleton() == nullptr && threads_number == -1)) {
-		mutex.lock();
-		return;
-	}
-
 	if (unlikely(threads_data == nullptr)) {
-		init();
+		return;
 	}
 
 	for (int i = 0; i < threads_number; i++) {
@@ -99,14 +91,19 @@ void RWLock::write_lock() {
 }
 
 void RWLock::write_unlock() {
-	if (unlikely(threads_number == -1)) {
-		mutex.unlock();
+	if (unlikely(threads_data == nullptr)) {
 		return;
 	}
-	CRASH_COND(threads_data == nullptr);
 
+	DEV_ASSERT(threads_data != nullptr);
 	for (int i = 0; i < threads_number; i++) {
 		threads_data[i].mtx.unlock();
+	}
+}
+
+RWLock::RWLock() {
+	if (threads_data == nullptr) {
+		init();
 	}
 }
 

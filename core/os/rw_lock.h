@@ -48,7 +48,6 @@ class RWLock {
 	static int threads_number;
 
 	mutable ThreadMutex *threads_data = nullptr;
-	mutable THREADING_NAMESPACE::shared_timed_mutex mutex; // Used when OS singletom == nullptr;
 
 	static int get_thread_pos();
 
@@ -67,6 +66,7 @@ public:
 	// Unlock the RWLock, let other threads continue.
 	void write_unlock();
 
+	RWLock();
 	~RWLock();
 };
 

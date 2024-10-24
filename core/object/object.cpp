@@ -2262,37 +2262,42 @@ uint32_t ObjectDB::slot_max = 0;
 uint32_t ObjectDB::block_max = 0;
 uint64_t ObjectDB::validator_counter = 0;
 
-uint32_t ObjectDB::blocks_max_sizes[OBJECTDB_MAX_BLOCKS] = {
+const uint32_t ObjectDB::blocks_max_sizes[OBJECTDB_MAX_BLOCKS] = {
 	0,
 	128,
 	256,
 	512,
 	1024,
-	2048,
-	4096,
-	8192,
-	16384,
-	32768,
-	65536,
-	131072,
-	262144,
-	524288,
-	1048576,
-	2097152,
-	4194304,
-	8388608,
-	16777216,
-	33554432,
+	1536,
+	2304,
+	3456,
+	5184,
+	7776,
+	11664,
+	17496,
+	26244,
+	39366,
+	59049,
+	88573,
+	132859,
+	199288,
+	298932,
+	448398,
+	672597,
+	1008895,
+	1513342,
+	2270013,
+	3405019,
+	5107528,
+	7661292,
+	11491938,
+	17237907,
+	25856860,
+	38785290,
 	67108864,
-	134217728,
 };
 
-ObjectDB::ObjectSlot *ObjectDB::blocks[OBJECTDB_MAX_BLOCKS] = {
-	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-	nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-	nullptr
-};
+ObjectDB::ObjectSlot *ObjectDB::blocks[OBJECTDB_MAX_BLOCKS] = { nullptr };
 
 int ObjectDB::get_object_count() {
 	return slot_count;
@@ -2338,15 +2343,13 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	blocks[slot.block_number][slot.block_position].validator = validator_counter;
 
 	uint64_t id = validator_counter;
-	id <<= (OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS + OBJECTDB_SLOT_MAX_COUNT_BITS);
+	id <<= OBJECTDB_SLOT_MAX_POSITION_BITS;
 	id |= uint64_t(slot.position);
 
 	if (p_object->is_ref_counted()) {
 		id |= OBJECTDB_REFERENCE_BIT;
 	}
-	if (id == 0) {
-		print_line("Id is 0");
-	}
+
 	slot_count++;
 	mutex.unlock();
 	return ObjectID(id);
@@ -2366,7 +2369,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 		ERR_FAIL_COND(blocks[slot.block_number][slot.block_position].object != p_object);
 	}
 	{
-		uint64_t validator = (t >> (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS)) & OBJECTDB_VALIDATOR_MASK;
+		uint64_t validator = (t >> OBJECTDB_SLOT_MAX_POSITION_BITS) & OBJECTDB_VALIDATOR_MASK;
 		if (blocks[slot.block_number][slot.block_position].validator != validator) {
 			mutex.unlock();
 			ERR_FAIL_COND(blocks[slot.block_number][slot.block_position].validator != validator);
@@ -2446,7 +2449,7 @@ Object *ObjectDB::get_instance(ObjectID p_instance_id) {
 	if (unlikely(slot.block_number == 0)) { // Null Object.
 		return nullptr;
 	}
-	uint64_t validator = (id >> (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_SLOT_MAX_BLOCKS_COUNT_BITS)) & OBJECTDB_VALIDATOR_MASK;
+	uint64_t validator = (id >> OBJECTDB_SLOT_MAX_POSITION_BITS) & OBJECTDB_VALIDATOR_MASK;
 	if (unlikely(blocks[slot.block_number][slot.block_position].validator != validator)) {
 		return nullptr;
 	}
