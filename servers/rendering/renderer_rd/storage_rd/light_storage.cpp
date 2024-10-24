@@ -676,12 +676,13 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					angular_diameter = 0.0;
 				}
 
+				light_data.bake_mode = light->bake_mode;
+
 				if (light_data.shadow_opacity > 0.001) {
 					RS::LightDirectionalShadowMode smode = light->directional_shadow_mode;
 
 					light_data.soft_shadow_scale = light->param[RS::LIGHT_PARAM_SHADOW_BLUR];
 					light_data.softshadow_angle = angular_diameter;
-					light_data.bake_mode = light->bake_mode;
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->directional_shadow_quality_radius_get(); // Only use quality radius for PCF
