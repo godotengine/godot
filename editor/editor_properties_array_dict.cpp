@@ -94,6 +94,10 @@ Variant EditorPropertyArrayObject::get_array() {
 	return array;
 }
 
+String EditorPropertyArrayObject::get_property_name_for_index(int p_index) {
+	return "indices/" + itos(p_index);
+}
+
 EditorPropertyArrayObject::EditorPropertyArrayObject() {
 }
 
@@ -818,6 +822,16 @@ void EditorPropertyArray::_reorder_button_up() {
 		Variant value_to_move = array.get(reorder_slot.index);
 		array.call("remove_at", reorder_slot.index);
 		array.call("insert", reorder_to_index, value_to_move);
+
+		bool last_folding = object->editor_is_section_unfolded(object->get_property_name_for_index(reorder_slot.index));
+		for (int i = reorder_to_index; i != reorder_slot.index; i += (reorder_slot.index < reorder_to_index ? -1 : 1)) {
+			String property_name = object->get_property_name_for_index(i);
+
+			bool current_folding = object->editor_is_section_unfolded(property_name);
+			object->editor_set_section_unfold(property_name, last_folding);
+			last_folding = current_folding;
+		}
+		object->editor_set_section_unfold(object->get_property_name_for_index(reorder_slot.index), last_folding);
 
 		emit_changed(get_edited_property(), array);
 	}
