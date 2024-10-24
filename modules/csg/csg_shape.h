@@ -51,6 +51,7 @@ public:
 	};
 
 private:
+	Ref<Material> default_material = memnew(StandardMaterial3D);
 	Operation operation = OPERATION_UNION;
 	CSGShape3D *parent_shape = nullptr;
 
