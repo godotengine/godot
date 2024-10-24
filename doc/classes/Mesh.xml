@@ -120,6 +120,13 @@
 				If [param simplify] is [code]true[/code], the geometry can be further simplified to reduce the number of vertices. Disabled by default.
 			</description>
 		</method>
+		<method name="create_convex_shapes" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="settings" type="MeshConvexDecompositionSettings" default="null" />
+			<description>
+				Creates one or more [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. The convex decomposition operation can be controlled with parameters from the optional [param settings].
+			</description>
+		</method>
 		<method name="create_outline" qualifiers="const">
 			<return type="Mesh" />
 			<param index="0" name="margin" type="float" />
