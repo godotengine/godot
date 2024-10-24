@@ -259,6 +259,16 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 			w[i * 2 + 0] = rl[i];
 			w[i * 2 + 1] = rr[i];
 		}
+	} else if (dst_format == AudioStreamWAV::FORMAT_QOA) {
+#ifdef TOOLS_ENABLED
+		qoa_desc desc = {};
+		desc.samples = current_instance->recording_data.size() / 2;
+		desc.samplerate = AudioServer::get_singleton()->get_mix_rate();
+		desc.channels = 2;
+		ResourceImporterWAV::_compress_qoa(current_instance->recording_data, dst_data, &desc);
+#else
+		ERR_PRINT("AudioEffectRecord cannot do Quite OK Audio compression at runtime.");
+#endif
 	} else {
 		ERR_PRINT("Format not implemented.");
 	}
