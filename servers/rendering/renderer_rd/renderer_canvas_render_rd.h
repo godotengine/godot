@@ -417,10 +417,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		bool operator==(const TextureState &p_val) const {
 			return (texture == p_val.texture) && (other == p_val.other);
 		}
-
-		bool operator!=(const TextureState &p_val) const {
-			return (texture != p_val.texture) || (other != p_val.other);
-		}
+		INEQUALITY_OPERATOR(const TextureState &)
 	};
 
 	struct TextureInfo {

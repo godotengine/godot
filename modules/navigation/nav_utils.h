@@ -142,9 +142,7 @@ struct NavigationPoly {
 		return poly == p_other.poly;
 	}
 
-	bool operator!=(const NavigationPoly &p_other) const {
-		return !(*this == p_other);
-	}
+	INEQUALITY_OPERATOR(const NavigationPoly &)
 };
 
 struct NavPolyTravelCostGreaterThan {
