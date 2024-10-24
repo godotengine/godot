@@ -3036,6 +3036,10 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 						for (const Instance *E : geom->lights) {
 							InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
+							if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
+								continue;
+							}
+
 							instance_pair_buffer[idx++] = light->instance;
 							if (idx == MAX_INSTANCE_PAIRS) {
 								break;
