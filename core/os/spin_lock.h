@@ -52,19 +52,31 @@ public:
 
 #else
 
-#include <atomic>
+#include "core/os/thread.h"
 
-class SpinLock {
-	mutable std::atomic_flag locked = ATOMIC_FLAG_INIT;
+#include <atomic>
+#include <thread>
+
+static_assert(std::atomic_bool::is_always_lock_free);
+
+class alignas(Thread::CACHE_LINE_BYTES) SpinLock {
+	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
-		while (locked.test_and_set(std::memory_order_acquire)) {
-			// Continue.
+		while (true) {
+			bool expected = false;
+			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+				break;
+			}
+			do {
+				std::this_thread::yield();
+			} while (locked.load(std::memory_order_relaxed));
 		}
 	}
+
 	_ALWAYS_INLINE_ void unlock() const {
-		locked.clear(std::memory_order_release);
+		locked.store(false, std::memory_order_release);
 	}
 };
 
