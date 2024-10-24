@@ -1,6 +1,7 @@
 name: 📊 Static Checks
 on:
   workflow_call:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-static
