@@ -365,7 +365,7 @@ void NavMeshGenerator3D::generator_parse_staticbody3d_node(const Ref<NavigationM
 					if (sphere) {
 						Array arr;
 						arr.resize(RS::ARRAY_MAX);
-						SphereMesh::create_mesh_array(arr, sphere->get_radius(), sphere->get_radius() * 2.0);
+						SphereMesh::create_mesh_array(arr, SphereMesh::SPHERE, sphere->get_radius(), sphere->get_radius() * 2.0, 0, 0);
 						p_source_geometry_data->add_mesh_array(arr, transform);
 					}
 
@@ -488,7 +488,7 @@ void NavMeshGenerator3D::generator_parse_gridmap_node(const Ref<NavigationMesh> 
 						real_t radius = data;
 						Array arr;
 						arr.resize(RS::ARRAY_MAX);
-						SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
+						SphereMesh::create_mesh_array(arr, SphereMesh::SPHERE, radius, radius * 2.0, 0, 0);
 						p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 					} break;
 					case PhysicsServer3D::SHAPE_BOX: {
