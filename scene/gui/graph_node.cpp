@@ -658,7 +658,7 @@ void GraphNode::_port_pos_update() {
 	int slot_index = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::IGNORE);
+		Control *child = as_sortable_control(get_child(i, false), SortableVisbilityMode::VISIBLE_IN_TREE);
 		if (!child) {
 			continue;
 		}
