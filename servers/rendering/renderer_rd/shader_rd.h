@@ -65,8 +65,11 @@ private:
 
 	struct Version {
 		CharString uniforms;
+		CharString vertex_structs;
 		CharString vertex_globals;
+		CharString compute_structs;
 		CharString compute_globals;
+		CharString fragment_structs;
 		CharString fragment_globals;
 		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
@@ -103,8 +106,11 @@ private:
 			enum Type {
 				TYPE_VERSION_DEFINES,
 				TYPE_MATERIAL_UNIFORMS,
+				TYPE_VERTEX_STRUCTS,
 				TYPE_VERTEX_GLOBALS,
+				TYPE_FRAGMENT_STRUCTS,
 				TYPE_FRAGMENT_GLOBALS,
+				TYPE_COMPUTE_STRUCTS,
 				TYPE_COMPUTE_GLOBALS,
 				TYPE_CODE,
 				TYPE_TEXT
@@ -159,8 +165,8 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines);
-	void version_set_compute_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines);
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_structs, const String &p_vertex_globals, const String &p_fragment_structs, const String &p_fragment_globals, const Vector<String> &p_custom_defines);
+	void version_set_compute_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_compute_structs, const String &p_compute_globals, const Vector<String> &p_custom_defines);
 
 	_FORCE_INLINE_ RID version_get_shader(RID p_version, int p_variant) {
 		ERR_FAIL_INDEX_V(p_variant, variant_defines.size(), RID());

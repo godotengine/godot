@@ -276,6 +276,33 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::Scalar> &p
 	}
 }
 
+static int get_struct_member_size(const ShaderLanguage::ShaderNode::Uniform::Member &p_member) {
+	const bool is_array = p_member.array_size > 0;
+	const int array_size = MAX(1, p_member.array_size);
+
+	if (p_member.type == ShaderLanguage::TYPE_STRUCT) {
+		int struct_size = 0;
+		for (const ShaderLanguage::ShaderNode::Uniform::Member &member : p_member.members) {
+			struct_size += get_struct_member_size(member);
+		}
+		// `((struct_size + 15) & -16)` calculates a nearest (to a struct size) 16-byte aligned value.
+		struct_size += ((struct_size + 15) & -16) - struct_size; // Adds an extra offset required for structs.
+		return struct_size * array_size;
+	}
+
+	int size = ShaderLanguage::get_datatype_size(p_member.type) * array_size;
+
+	if (is_array) {
+		// The following code enforces a 16-byte alignment of struct's array members.
+		const int m = 16 * array_size;
+		if ((size % m) != 0) {
+			size += m - (size % m);
+		}
+	}
+
+	return size;
+}
+
 String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat) {
 	if (p_filter == ShaderLanguage::FILTER_DEFAULT) {
 		ERR_FAIL_COND_V(actions.default_filter == ShaderLanguage::FILTER_DEFAULT, String());
@@ -501,7 +528,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				struct_code += ";\n";
 
 				for (int j = 0; j < STAGE_MAX; j++) {
-					r_gen_code.stage_globals[j] += struct_code;
+					r_gen_code.stage_structs[j] += struct_code;
 				}
 			}
 
@@ -574,6 +601,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (is_buffer_global) {
 					//this is an integer to index the global table
 					ucode += _typestr(ShaderLanguage::TYPE_UINT);
+				} else if (uniform.type == ShaderLanguage::TYPE_STRUCT) {
+					ucode += _mkid(uniform.struct_name);
 				} else {
 					ucode += _prestr(uniform.precision, ShaderLanguage::is_float_type(uniform.type));
 					ucode += _typestr(uniform.type);
@@ -615,8 +644,17 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						uniform_sizes.write[uniform.order] = ShaderLanguage::get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
-						// The following code enforces a 16-byte alignment of uniform arrays.
-						if (uniform.array_size > 0) {
+						if (uniform.type == ShaderLanguage::TYPE_STRUCT) {
+							int size = 0;
+							for (const ShaderLanguage::ShaderNode::Uniform::Member &member : uniform.members) {
+								size += get_struct_member_size(member);
+							}
+							// `((struct_size + 15) & -16)` calculates a nearest (to a struct size) 16-byte aligned value.
+							size += ((size + 15) & -16) - size; // Adds an extra offset required for structs.
+							uniform_sizes.write[uniform.order] = size * MAX(1, uniform.array_size);
+							uniform_alignments.write[uniform.order] = 16;
+						} else if (uniform.array_size > 0) {
+							// The following code enforces a 16-byte alignment of uniform arrays.
 							int size = ShaderLanguage::get_datatype_size(uniform.type) * uniform.array_size;
 							int m = (16 * uniform.array_size);
 							if ((size % m) != 0) {
@@ -1558,6 +1596,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	r_gen_code.code.clear();
 	for (int i = 0; i < STAGE_MAX; i++) {
 		r_gen_code.stage_globals[i] = String();
+		r_gen_code.stage_structs[i] = String();
 	}
 	r_gen_code.uses_fragment_time = false;
 	r_gen_code.uses_vertex_time = false;

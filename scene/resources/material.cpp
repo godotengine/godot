@@ -332,9 +332,59 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					is_uniform_type_compatible = E->get().type == cached.get_type();
 				}
 
+				if (is_uniform_type_compatible) {
+					if (cached.get_type() == Variant::ARRAY) {
+						Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), E->get().name);
+						if (default_value.get_type() == Variant::ARRAY) {
+							const Array default_arr = (Array)default_value;
+							Array current_arr = (Array)cached;
+
+							while (current_arr.size() > default_arr.size()) {
+								current_arr.pop_back();
+							}
+
+							for (int i = 0; i < current_arr.size(); i++) {
+								if (current_arr[i].get_type() != Variant::DICTIONARY) {
+									current_arr[i] = Dictionary();
+								}
+							}
+
+							for (int i = 0; i < default_arr.size(); i++) {
+								const Dictionary default_dict = (Dictionary)default_arr[i];
+
+								if (i < current_arr.size()) {
+									Dictionary current_dict = (Dictionary)current_arr[i];
+
+									_validate_shader_struct_members(default_dict, current_dict);
+								} else {
+									Dictionary dict;
+
+									_validate_shader_struct_members(default_dict, dict);
+
+									current_arr.push_back(dict);
+								}
+							}
+						}
+					} else if (cached.get_type() == Variant::DICTIONARY) {
+						Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), E->get().name);
+						if (default_value.get_type() == Variant::DICTIONARY) {
+							const Dictionary default_value_dict = (Dictionary)default_value;
+							Dictionary cached_dict = (Dictionary)cached;
+
+							_validate_shader_struct_members(default_value_dict, cached_dict);
+						}
+					} else if (E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
+						// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
+						// Allow inheritance, Texture2D type sampler should also accept CompressedTexture2D.
+						Object *cached_obj = cached;
+						if (!cached_obj->is_class(E->get().hint_string)) {
+							is_uniform_type_compatible = false;
+						}
+					}
+				}
 #ifndef DISABLE_DEPRECATED
 				// PackedFloat32Array -> PackedVector4Array conversion.
-				if (!is_uniform_type_compatible && E->get().type == Variant::PACKED_VECTOR4_ARRAY && cached.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+				else if (E->get().type == Variant::PACKED_VECTOR4_ARRAY && cached.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
 					PackedVector4Array varray;
 					PackedFloat32Array array = (PackedFloat32Array)cached;
 
@@ -346,15 +396,6 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					is_uniform_type_compatible = true;
 				}
 #endif
-
-				if (is_uniform_type_compatible && E->get().type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
-					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
-					// Allow inheritance, Texture2D type sampler should also accept CompressedTexture2D.
-					Object *cached_obj = cached;
-					if (!cached_obj->is_class(E->get().hint_string)) {
-						is_uniform_type_compatible = false;
-					}
-				}
 			}
 
 			PropertyInfo info = E->get();
@@ -406,6 +447,183 @@ bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_p
 		}
 	}
 	return false;
+}
+
+void ShaderMaterial::_validate_shader_struct_members(const Dictionary &p_default, Dictionary &p_current) const {
+	// Removes invalid members.
+	{
+		List<Variant> current_keys;
+		p_current.get_key_list(&current_keys);
+		for (const Variant &key : current_keys) {
+			if (!p_default.has(key)) {
+				p_current.erase(key);
+			}
+		}
+	}
+
+	List<Variant> default_keys;
+	p_default.get_key_list(&default_keys);
+	for (const Variant &key : default_keys) {
+		if (!p_current.has(key) || p_current[key].get_type() != p_default[key].get_type()) {
+			p_current[key] = p_default[key];
+		} else {
+			switch (p_current[key].get_type()) {
+				case Variant::PACKED_FLOAT32_ARRAY: {
+					const PackedFloat32Array &default_array = (PackedFloat32Array)p_default[key];
+					const PackedFloat32Array &array = (PackedFloat32Array)p_current[key];
+
+					if (array.size() != default_array.size()) {
+						PackedFloat32Array new_arr;
+						new_arr.resize(default_array.size());
+
+						const float *r = array.ptr();
+						const float *d = default_array.ptr();
+
+						float *w = new_arr.ptrw();
+
+						for (int i = 0; i < default_array.size(); i++) {
+							if (i < array.size()) {
+								w[i] = r[i];
+							} else {
+								w[i] = d[i];
+							}
+						}
+						p_current[key] = new_arr;
+					}
+				} break;
+				case Variant::PACKED_INT32_ARRAY: {
+					const PackedInt32Array &default_array = (PackedInt32Array)p_default[key];
+					const PackedInt32Array &array = (PackedInt32Array)p_current[key];
+
+					if (array.size() != default_array.size()) {
+						PackedInt32Array new_arr;
+						new_arr.resize(default_array.size());
+
+						const int *r = array.ptr();
+						const int *d = default_array.ptr();
+
+						int *w = new_arr.ptrw();
+
+						for (int i = 0; i < default_array.size(); i++) {
+							if (i < array.size()) {
+								w[i] = r[i];
+							} else {
+								w[i] = d[i];
+							}
+						}
+						p_current[key] = new_arr;
+					}
+				} break;
+				case Variant::PACKED_VECTOR2_ARRAY: {
+					const PackedVector2Array &default_array = (PackedVector2Array)p_default[key];
+					const PackedVector2Array &array = (PackedVector2Array)p_current[key];
+
+					if (array.size() != default_array.size()) {
+						PackedVector2Array new_arr;
+						new_arr.resize(default_array.size());
+
+						const Vector2 *r = array.ptr();
+						const Vector2 *d = default_array.ptr();
+
+						Vector2 *w = new_arr.ptrw();
+
+						for (int i = 0; i < default_array.size(); i++) {
+							if (i < array.size()) {
+								w[i] = r[i];
+							} else {
+								w[i] = d[i];
+							}
+						}
+						p_current[key] = new_arr;
+					}
+				} break;
+				case Variant::PACKED_VECTOR3_ARRAY: {
+					const PackedVector3Array &default_array = (PackedVector3Array)p_default[key];
+					const PackedVector3Array &array = (PackedVector3Array)p_current[key];
+
+					if (array.size() != default_array.size()) {
+						PackedVector3Array new_arr;
+						new_arr.resize(default_array.size());
+
+						const Vector3 *r = array.ptr();
+						const Vector3 *d = default_array.ptr();
+
+						Vector3 *w = new_arr.ptrw();
+
+						for (int i = 0; i < default_array.size(); i++) {
+							if (i < array.size()) {
+								w[i] = r[i];
+							} else {
+								w[i] = d[i];
+							}
+						}
+						p_current[key] = new_arr;
+					}
+				} break;
+				case Variant::PACKED_VECTOR4_ARRAY: {
+					const PackedVector4Array &default_array = (PackedVector4Array)p_default[key];
+					const PackedVector4Array &array = (PackedVector4Array)p_current[key];
+
+					if (array.size() != default_array.size()) {
+						PackedVector4Array new_arr;
+						new_arr.resize(default_array.size());
+
+						const Vector4 *r = array.ptr();
+						const Vector4 *d = default_array.ptr();
+
+						Vector4 *w = new_arr.ptrw();
+
+						for (int i = 0; i < default_array.size(); i++) {
+							if (i < array.size()) {
+								w[i] = r[i];
+							} else {
+								w[i] = d[i];
+							}
+						}
+						p_current[key] = new_arr;
+					}
+				} break;
+				case Variant::DICTIONARY: {
+					Dictionary default_dict = (Dictionary)p_default[key];
+					Dictionary current_dict = (Dictionary)p_current[key];
+
+					_validate_shader_struct_members(default_dict, current_dict);
+				} break;
+				case Variant::ARRAY: {
+					const Array default_arr = (Array)p_default[key];
+					Array current_arr = (Array)p_current[key];
+
+					while (current_arr.size() > default_arr.size()) {
+						current_arr.pop_back();
+					}
+
+					for (int i = 0; i < current_arr.size(); i++) {
+						if (current_arr[i].get_type() != Variant::DICTIONARY) {
+							current_arr[i] = Dictionary();
+						}
+					}
+
+					for (int i = 0; i < default_arr.size(); i++) {
+						const Dictionary default_dict = (Dictionary)default_arr[i];
+
+						if (i < current_arr.size()) {
+							Dictionary current_dict = (Dictionary)current_arr[i];
+
+							_validate_shader_struct_members(default_dict, current_dict);
+						} else {
+							Dictionary dict;
+
+							_validate_shader_struct_members(default_dict, dict);
+
+							current_arr.push_back(dict);
+						}
+					}
+				} break;
+				default: {
+				} break;
+			}
+		}
+	}
 }
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {

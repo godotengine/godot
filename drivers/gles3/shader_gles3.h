@@ -87,7 +87,9 @@ private:
 	struct Version {
 		LocalVector<TextureUniformData> texture_uniforms;
 		CharString uniforms;
+		CharString vertex_structs;
 		CharString vertex_globals;
+		CharString fragment_structs;
 		CharString fragment_globals;
 		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
@@ -124,7 +126,9 @@ private:
 		struct Chunk {
 			enum Type {
 				TYPE_MATERIAL_UNIFORMS,
+				TYPE_VERTEX_STRUCTS,
 				TYPE_VERTEX_GLOBALS,
+				TYPE_FRAGMENT_STRUCTS,
 				TYPE_FRAGMENT_GLOBALS,
 				TYPE_CODE,
 				TYPE_TEXT
@@ -244,7 +248,7 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const LocalVector<ShaderGLES3::TextureUniformData> &p_texture_uniforms, bool p_initialize = false);
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_structs, const String &p_vertex_globals, const String &p_fragment_structs, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const LocalVector<ShaderGLES3::TextureUniformData> &p_texture_uniforms, bool p_initialize = false);
 
 	bool version_is_valid(RID p_version);
 

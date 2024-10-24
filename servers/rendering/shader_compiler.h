@@ -73,6 +73,7 @@ public:
 		Vector<uint32_t> uniform_offsets;
 		uint32_t uniform_total_size = 0;
 		String uniforms;
+		String stage_structs[STAGE_MAX];
 		String stage_globals[STAGE_MAX];
 
 		HashMap<String, String> code;
