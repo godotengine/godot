@@ -179,25 +179,49 @@ TEST_CASE("[Expression] Scientific notation") {
 	Expression expression;
 
 	CHECK_MESSAGE(
-			expression.parse("2.e5") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			double(expression.execute()) == doctest::Approx(200'000),
-			"The expression should return the expected result.");
-
-	// The middle "e" is ignored here.
-	CHECK_MESSAGE(
-			expression.parse("2e5") == OK,
+			expression.parse("2e+5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
 			double(expression.execute()) == doctest::Approx(2e5),
 			"The expression should return the expected result.");
 
 	CHECK_MESSAGE(
-			expression.parse("2e.5") == OK,
+			expression.parse("2.e5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			double(expression.execute()) == doctest::Approx(2),
+			double(expression.execute()) == doctest::Approx(2e5),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("2.e-5") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2e-5),
+			"The expression should return the expected result.");
+}
+
+TEST_CASE("[Expression] Other bases") {
+	Expression expression;
+
+	CHECK_MESSAGE(
+			expression.parse("0b101") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 5,
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("0x20") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 32,
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("0x2a") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 42,
 			"The expression should return the expected result.");
 }
 
@@ -208,11 +232,36 @@ TEST_CASE("[Expression] Underscored numeric literals") {
 			expression.parse("1_000_000") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			expression.parse("1_000.000") == OK,
+			int(expression.execute()) == 1'000'000,
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("1.000_1") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
-			expression.parse("0xff_99_00") == OK,
+			double(expression.execute()) == doctest::Approx(1.0001),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("0b1001_0110") == OK,
 			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 0b10010110,
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("0xff_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 0xff00,
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("0.01e1_0") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(0.01e10),
+			"The expression should return the expected result.");
 }
 
 TEST_CASE("[Expression] Built-in functions") {
@@ -412,6 +461,29 @@ TEST_CASE("[Expression] Invalid expressions") {
 	CHECK_MESSAGE(
 			expression.parse("123\"456") == ERR_INVALID_PARAMETER,
 			"The expression shouldn't parse successfully.");
+
+	CHECK_MESSAGE(
+			expression.parse("$1.00") == ERR_INVALID_PARAMETER,
+			"The expression shouldn't parse successfully.");
+
+	CHECK_MESSAGE(
+			expression.parse("???5") == ERR_INVALID_PARAMETER,
+			"The expression shouldn't parse successfully.");
+
+	// Ternary operator is unsupported
+	CHECK_MESSAGE(
+			expression.parse("0 if true else 1") == ERR_INVALID_PARAMETER,
+			"The expression shouldn't parse successfully.");
+
+	// Commas can't be used as a decimal point.
+	CHECK_MESSAGE(
+			expression.parse("123,456") == ERR_INVALID_PARAMETER,
+			"The expression shouldn't parse successfully.");
+
+	// Spaces can't be used as a separator for large numbers.
+	CHECK_MESSAGE(
+			expression.parse("123 456") == ERR_INVALID_PARAMETER,
+			"The expression shouldn't parse successfully.");
 }
 
 TEST_CASE("[Expression] Unusual expressions") {
@@ -421,6 +493,9 @@ TEST_CASE("[Expression] Unusual expressions") {
 	CHECK_MESSAGE(
 			expression.parse("(((((((((((((((666)))))))))))))))") == OK,
 			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			int(expression.execute()) == 666,
+			"The expression should return the expected result.");
 
 	// Using invalid identifiers doesn't cause a parse error.
 	ERR_PRINT_OFF;
@@ -431,31 +506,6 @@ TEST_CASE("[Expression] Unusual expressions") {
 			int(expression.execute()) == 0,
 			"The expression should return the expected result.");
 	ERR_PRINT_ON;
-
-	ERR_PRINT_OFF;
-	CHECK_MESSAGE(
-			expression.parse("$1.00 + ???5") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 0,
-			"The expression should return the expected result.");
-	ERR_PRINT_ON;
-
-	// Commas can't be used as a decimal parameter.
-	CHECK_MESSAGE(
-			expression.parse("123,456") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 123,
-			"The expression should return the expected result.");
-
-	// Spaces can't be used as a separator for large numbers.
-	CHECK_MESSAGE(
-			expression.parse("123 456") == OK,
-			"The expression should parse successfully.");
-	CHECK_MESSAGE(
-			int(expression.execute()) == 123,
-			"The expression should return the expected result.");
 
 	// Division by zero is accepted, even though it prints an error message normally.
 	CHECK_MESSAGE(
