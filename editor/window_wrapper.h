@@ -82,6 +82,7 @@ public:
 	void set_margins_enabled(bool p_enabled);
 
 	WindowWrapper();
+	~WindowWrapper();
 };
 
 class ScreenSelect : public Button {
