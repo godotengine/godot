@@ -2646,6 +2646,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	parsing_classes.insert(p_script);
 
+	p_script->shallow = false;
 	p_script->clearing = true;
 
 	p_script->native = Ref<GDScriptNativeClass>();
