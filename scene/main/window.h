@@ -118,7 +118,7 @@ private:
 	String title;
 	String tr_title;
 	mutable int current_screen = 0;
-	mutable Vector2i position;
+	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
