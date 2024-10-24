@@ -47,7 +47,11 @@ class HSplitContainer;
 class MenuButton;
 class PanelContainer;
 class StyleBoxTexture;
+class SubViewport;
+class SubViewportContainer;
+class TextureRect;
 class ViewPanner;
+class Viewport;
 class VScrollBar;
 class VSeparator;
 class VSplitContainer;
@@ -195,6 +199,10 @@ private:
 	Tool tool = TOOL_SELECT;
 	Control *viewport = nullptr;
 	Control *viewport_scrollable = nullptr;
+	SubViewportContainer *scene_tree = nullptr;
+	SubViewport *scene_view_display = nullptr;
+	TextureRect *scene_view = nullptr;
+	Viewport *current_viewport = nullptr;
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
@@ -336,6 +344,7 @@ private:
 	Button *ungroup_button = nullptr;
 
 	Button *override_camera_button = nullptr;
+	Button *override_viewport_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
@@ -418,6 +427,11 @@ private:
 	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
+
+	void _set_viewport_override(Viewport *p_viewport);
+	void _update_viewport_size();
+	bool _is_viewport_overriden() const;
+	Vector2 _get_screen_size() const;
 
 public:
 	enum ThemePreviewMode {
@@ -519,9 +533,11 @@ private:
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
 	void _button_override_camera(bool p_pressed);
+	void _button_override_viewport(bool p_pressed);
 	void _button_tool_select(int p_index);
 
 	void _update_override_camera_button(bool p_game_running);
+	void _update_override_viewport_button(Viewport *p_viewport);
 
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
@@ -585,6 +601,7 @@ public:
 	void set_current_tool(Tool p_tool);
 
 	void edit(CanvasItem *p_canvas_item);
+	void edit_viewport(Viewport *p_viewport);
 
 	void focus_selection();
 	void center_at(const Point2 &p_pos);
