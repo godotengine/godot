@@ -1219,9 +1219,31 @@ void DisplayServerWayland::process_events() {
 		} else {
 			try_suspend();
 		}
-	} else if (!wayland_thread.is_suspended() || wayland_thread.get_reset_frame()) {
-		// At last, a sign of life! We're no longer suspended.
-		suspended = false;
+	} else {
+		// We have to pick into the Wayland thread to figure out if suspension events
+		// are supported or if we have to use an heuristic as a fallback.
+		WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(MAIN_WINDOW_ID));
+		ERR_FAIL_NULL(ws);
+
+		struct xdg_toplevel *xdg_toplevel = ws->xdg_toplevel;
+
+#ifdef LIBDECOR_ENABLED
+		if (!xdg_toplevel) {
+			xdg_toplevel = libdecor_frame_get_xdg_toplevel(ws->libdecor_frame);
+		}
+#endif
+
+		ERR_FAIL_NULL(xdg_toplevel);
+
+		bool suspend_supported = xdg_toplevel_get_version(xdg_toplevel) >= 6;
+
+		if (suspend_supported) {
+			suspended = wayland_thread.is_suspended();
+		} else {
+			// Older compositors don't have any way of telling us that a window is
+			// suspended so we'll kick us out of the suspended state with a frame event.
+			suspended = !wayland_thread.get_reset_frame();
+		}
 	}
 
 #ifdef DBUS_ENABLED
