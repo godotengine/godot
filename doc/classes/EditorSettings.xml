@@ -915,12 +915,6 @@
 		<member name="interface/inspector/float_drag_speed" type="float" setter="" getter="">
 			Base speed for increasing/decreasing float values by dragging them in the inspector.
 		</member>
-		<member name="interface/inspector/horizontal_vector2_editing" type="bool" setter="" getter="">
-			If [code]true[/code], [Vector2] and [Vector2i] properties are shown on a single line in the inspector instead of two lines. This is overall more compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
-		</member>
-		<member name="interface/inspector/horizontal_vector_types_editing" type="bool" setter="" getter="">
-			If [code]true[/code], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Plane], and [Quaternion] properties are shown on a single line in the inspector instead of multiple lines. This is overall more compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
-		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
 		</member>
@@ -938,6 +932,18 @@
 		</member>
 		<member name="interface/inspector/show_low_level_opentype_features" type="bool" setter="" getter="">
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
+		</member>
+		<member name="interface/inspector/vector2_display_style" type="int" setter="" getter="">
+			Controls how [Vector2] and [Vector2i] properties are displayed.
+			- [b]Vertical:[/b] Properties are shown on two lines.
+			- [b]Horizontal:[/b] Properties are shown on one line below the label.
+			- [b]Compact:[/b] Properties are shown on one line next to the label. This option is the most compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
+		</member>
+		<member name="interface/inspector/vector_types_display_style" type="int" setter="" getter="">
+			Controls how [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Plane], and [Quaternion] properties are displayed.
+			- [b]Vertical:[/b] Properties are shown on their own lines.
+			- [b]Horizontal:[/b] Properties are shown on one line below the label.
+			- [b]Compact:[/b] Properties are shown on one line next to the label. This option is the most compact, but it can be harder to view and edit large values without expanding the inspector horizontally.
 		</member>
 		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
 			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, and Shader editor.
