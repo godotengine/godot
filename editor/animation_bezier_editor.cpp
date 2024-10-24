@@ -218,6 +218,9 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			}
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/animation")) {
+				_default_bezier_key_behavior = int(EDITOR_GET("editors/animation/default_bezier_key_behavior"));
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1238,6 +1241,21 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "bezier_track_insert_key", selected_track, time, new_point[0], Vector2(new_point[1], new_point[2]), Vector2(new_point[3], new_point[4]));
+			int k_idx = animation->track_find_key(selected_track, time) + 1;
+			switch (_default_bezier_key_behavior) {
+				case Animation::HANDLE_MODE_LINEAR: {
+					undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode", animation.ptr(), selected_track, k_idx, Animation::HANDLE_MODE_LINEAR, Animation::HANDLE_SET_MODE_AUTO);
+					break;
+				}
+				case Animation::HANDLE_MODE_BALANCED: {
+					undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode", animation.ptr(), selected_track, k_idx, Animation::HANDLE_MODE_BALANCED, Animation::HANDLE_SET_MODE_AUTO);
+					break;
+				}
+				case Animation::HANDLE_MODE_MIRRORED: {
+					undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode", animation.ptr(), selected_track, k_idx, Animation::HANDLE_MODE_MIRRORED, Animation::HANDLE_SET_MODE_AUTO);
+					break;
+				}
+			}
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 			undo_redo->commit_action();
 
@@ -1682,6 +1700,21 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
+				int k_idx = animation->track_find_key(selected_track, time) + 1;
+				switch (_default_bezier_key_behavior) {
+					case Animation::HANDLE_MODE_LINEAR: {
+						undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode", animation.ptr(), selected_track, k_idx, Animation::HANDLE_MODE_LINEAR, Animation::HANDLE_SET_MODE_AUTO);
+						break;
+					}
+					case Animation::HANDLE_MODE_BALANCED: {
+						undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode", animation.ptr(), selected_track, k_idx, Animation::HANDLE_MODE_BALANCED, Animation::HANDLE_SET_MODE_AUTO);
+						break;
+					}
+					case Animation::HANDLE_MODE_MIRRORED: {
+						undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode", animation.ptr(), selected_track, k_idx, Animation::HANDLE_MODE_MIRRORED, Animation::HANDLE_SET_MODE_AUTO);
+						break;
+					}
+				}
 				undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();

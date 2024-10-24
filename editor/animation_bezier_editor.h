@@ -193,6 +193,8 @@ class AnimationBezierTrackEdit : public Control {
 	float _bezier_h_to_pixel(float p_h);
 	void _zoom_vertically(real_t p_minimum_value, real_t p_maximum_value);
 
+	int _default_bezier_key_behavior;
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
