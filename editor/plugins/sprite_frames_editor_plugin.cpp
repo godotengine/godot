@@ -2130,6 +2130,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_max_columns(0);
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_max_text_lines(2);
+	frame_list->set_theme_type_variation("SideItemList");
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
 	frame_list->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
 	// HACK: The item_selected signal is emitted before the Frame Duration spinbox loses focus and applies the change.

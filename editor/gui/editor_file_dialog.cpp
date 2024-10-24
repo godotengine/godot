@@ -2300,6 +2300,7 @@ EditorFileDialog::EditorFileDialog() {
 	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	fav_vb->add_child(favorites);
 	favorites->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	favorites->set_theme_type_variation("SideItemList");
 	favorites->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_favorite_selected));
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
@@ -2309,6 +2310,7 @@ EditorFileDialog::EditorFileDialog() {
 	recent = memnew(ItemList);
 	recent->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	recent->set_allow_reselect(true);
+	recent->set_theme_type_variation("SideItemList");
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_recent_selected));
 
