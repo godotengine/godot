@@ -89,6 +89,8 @@ private:
 		real_t custom[4] = {};
 		Vector3 velocity;
 		bool active = false;
+		bool stopping = false;
+		bool stopped = false;
 		real_t angle_rand = 0.0;
 		real_t scale_rand = 0.0;
 		real_t hue_rot_rand = 0.0;
@@ -132,6 +134,7 @@ private:
 
 	bool one_shot = false;
 
+	float amount_ratio = 1;
 	double lifetime = 1.0;
 	double pre_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
@@ -207,6 +210,7 @@ public:
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
+	void set_amount_ratio(float p_amount_ratio);
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
 	void set_pre_process_time(double p_time);
@@ -219,6 +223,7 @@ public:
 
 	bool is_emitting() const;
 	int get_amount() const;
+	float get_amount_ratio() const;
 	double get_lifetime() const;
 	bool get_one_shot() const;
 	double get_pre_process_time() const;

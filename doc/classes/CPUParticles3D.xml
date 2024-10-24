@@ -95,6 +95,11 @@
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
 			Number of particles emitted in one emission cycle.
 		</member>
+		<member name="amount_ratio" type="float" setter="set_amount_ratio" getter="get_amount_ratio" default="1.0">
+			Amount Ratio multiplied by [member amount] is how many particles will be emmitted each cycle. This value is to be adjusted while emitting particles as it will not clear the existing particles.
+			When not used leave this ratio at 1 and adjust amount accordingly.
+			Setting this value to zero will clear [member emitting] flag, increasing it from zero will set emitting.
+		</member>
 		<member name="angle_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Each particle's rotation will be animated along this [Curve].
 		</member>
