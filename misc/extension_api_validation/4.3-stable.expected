@@ -95,3 +95,17 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 
 Default deadzone value was changed. No adjustments should be necessary.
 Compatibility method registered.
+
+
+GH-92175
+--------
+Validate extension JSON: Error: Field 'classes/EditorImportPlugin/methods/_import/arguments': size changed value in new API, from 5 to 3.
+Validate extension JSON: Error: Field 'classes/EditorImportPlugin/methods/_import/return_value': type changed value in new API, from "enum::Error" to "Dictionary".
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate/arguments': size changed value in new API, from 3 to 2.
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate/return_value': type changed value in new API, from "Texture2D" to "Dictionary".
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate_from_path/arguments': size changed value in new API, from 3 to 2.
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate_from_path/return_value': type changed value in new API, from "Texture2D" to "Dictionary".
+Validate extension JSON: Error: Field 'classes/EditorTranslationParserPlugin/methods/_parse_file/arguments': size changed value in new API, from 3 to 1.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorTranslationParserPlugin/methods/_parse_file': return_value
+
+Return values were passed in constant reference arguments. Changed to using a return Dictionary.
