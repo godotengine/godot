@@ -144,11 +144,15 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 							break;
 						}
 						include = include.substr(1, include.length() - 2).strip_edges();
-						String include_text = p_include_func(include, p_include_func_userdata);
-						if (!include_text.is_empty()) {
-							stage_code[stage] += "\n" + include_text + "\n";
+						if (RD::has_built_in_include_file(include)) {
+							stage_code[stage] += "\n" + RD::get_built_in_include_file(include) + "\n";
 						} else {
-							base_error = "#include failed for file '" + include + "'";
+							String include_text = p_include_func(include, p_include_func_userdata);
+							if (!include_text.is_empty()) {
+								stage_code[stage] += "\n" + include_text + "\n";
+							} else {
+								base_error = "#include failed for file '" + include + "'";
+							}
 						}
 					} else {
 						base_error = "#include used, but no include function provided.";

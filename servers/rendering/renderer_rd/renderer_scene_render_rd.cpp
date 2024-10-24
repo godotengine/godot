@@ -35,6 +35,9 @@
 #include "core/os/os.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
+#include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -1450,6 +1453,13 @@ void RendererSceneRenderRD::init() {
 
 	/* Forward ID */
 	forward_id_storage = create_forward_id_storage();
+
+	/* Register the include files we make available by default to our users */
+	{
+		RenderingDevice::register_built_in_include_file("decal_data_inc.glsl", decal_data_inc_shader_glsl);
+		RenderingDevice::register_built_in_include_file("light_data_inc.glsl", light_data_inc_shader_glsl);
+		RenderingDevice::register_built_in_include_file("scene_data_inc.glsl", scene_data_inc_shader_glsl);
+	}
 
 	/* SKY SHADER */
 
