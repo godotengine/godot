@@ -48,7 +48,15 @@ void Timer::_notification(int p_what) {
 			if (!processing || timer_process_callback == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
 			}
-			time_left -= get_process_delta_time();
+
+			switch (timer_process_type) {
+				case TIMER_PROCESS_TYPE_TIME: {
+					time_left -= get_process_delta_time();
+				}; break;
+				case TIMER_PROCESS_TYPE_FRAMES: {
+					time_left -= 1;
+				}; break;
+			}
 
 			if (time_left < 0) {
 				if (!one_shot) {
@@ -60,12 +68,19 @@ void Timer::_notification(int p_what) {
 				emit_signal(SNAME("timeout"));
 			}
 		} break;
-
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!processing || timer_process_callback == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
 			}
-			time_left -= get_physics_process_delta_time();
+
+			switch (timer_process_type) {
+				case TIMER_PROCESS_TYPE_TIME: {
+					time_left -= get_physics_process_delta_time();
+				}; break;
+				case TIMER_PROCESS_TYPE_FRAMES: {
+					time_left -= 1;
+				}; break;
+			}
 
 			if (time_left < 0) {
 				if (!one_shot) {
@@ -81,7 +96,12 @@ void Timer::_notification(int p_what) {
 
 void Timer::set_wait_time(double p_time) {
 	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
-	wait_time = p_time;
+	if (timer_process_type == TIMER_PROCESS_TYPE_FRAMES) {
+		ERR_FAIL_COND_MSG(p_time != (int)p_time, "Frame mode only accepts non-fractional values. (Frames will be rounded.)");
+		wait_time = (int)p_time;
+	} else {
+		wait_time = p_time;
+	}
 	update_configuration_warnings();
 }
 
@@ -152,13 +172,13 @@ void Timer::set_timer_process_callback(TimerProcessCallback p_callback) {
 			if (is_physics_processing_internal()) {
 				set_physics_process_internal(false);
 				set_process_internal(true);
-			}
+			};
 			break;
 		case TIMER_PROCESS_IDLE:
 			if (is_processing_internal()) {
 				set_process_internal(false);
 				set_physics_process_internal(true);
-			}
+			};
 			break;
 	}
 	timer_process_callback = p_callback;
@@ -166,6 +186,26 @@ void Timer::set_timer_process_callback(TimerProcessCallback p_callback) {
 
 Timer::TimerProcessCallback Timer::get_timer_process_callback() const {
 	return timer_process_callback;
+}
+
+void Timer::set_timer_process_type(TimerProcessType p_type) {
+	if (timer_process_type == p_type) {
+		return;
+	}
+	switch (timer_process_type) {
+		case TIMER_PROCESS_TYPE_FRAMES: {
+			wait_time = (int)wait_time;
+			time_left = (int)time_left;
+		}; break;
+		case TIMER_PROCESS_TYPE_TIME:
+			break;
+	}
+	timer_process_type = p_type;
+	notify_property_list_changed();
+}
+
+Timer::TimerProcessType Timer::get_timer_process_type() const {
+	return timer_process_type;
 }
 
 void Timer::_set_process(bool p_process, bool p_force) {
@@ -188,6 +228,14 @@ PackedStringArray Timer::get_configuration_warnings() const {
 	}
 
 	return warnings;
+}
+
+void Timer::_validate_property(PropertyInfo &p_property) const {
+	if (timer_process_type == TIMER_PROCESS_TYPE_FRAMES && p_property.name == "wait_time") {
+		p_property.type = Variant::INT;
+		p_property.hint = PROPERTY_HINT_NONE;
+		p_property.hint_string = "suffix:f";
+	}
 }
 
 void Timer::_bind_methods() {
@@ -213,9 +261,13 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_timer_process_callback", "callback"), &Timer::set_timer_process_callback);
 	ClassDB::bind_method(D_METHOD("get_timer_process_callback"), &Timer::get_timer_process_callback);
 
+	ClassDB::bind_method(D_METHOD("set_timer_process_type", "type"), &Timer::set_timer_process_type);
+	ClassDB::bind_method(D_METHOD("get_timer_process_type"), &Timer::get_timer_process_type);
+
 	ADD_SIGNAL(MethodInfo("timeout"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_timer_process_callback", "get_timer_process_callback");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_type", PROPERTY_HINT_ENUM, "Time,Frames"), "set_timer_process_type", "get_timer_process_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wait_time", PROPERTY_HINT_RANGE, "0.001,4096,0.001,or_greater,exp,suffix:s"), "set_wait_time", "get_wait_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
@@ -224,6 +276,9 @@ void Timer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
+
+	BIND_ENUM_CONSTANT(TIMER_PROCESS_TYPE_TIME);
+	BIND_ENUM_CONSTANT(TIMER_PROCESS_TYPE_FRAMES);
 }
 
 Timer::Timer() {}
