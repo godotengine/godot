@@ -217,7 +217,6 @@ namespace Godot.Bridge
             // not a global class. But if the script is not a global class it must return an empty
             // outClassName string since it should not have a name.
             string scriptPathStr = Marshaling.ConvertStringToManaged(*scriptPath);
-            Debug.Assert(!string.IsNullOrEmpty(scriptPathStr), "Script path can't be empty.");
 
             if (!_pathTypeBiMap.TryGetScriptType(scriptPathStr, out Type? scriptType))
             {
