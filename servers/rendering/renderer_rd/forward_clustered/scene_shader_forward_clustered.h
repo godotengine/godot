@@ -322,6 +322,7 @@ public:
 	RID default_shader_sdfgi_rd;
 
 	RID default_vec4_xform_buffer;
+	RID default_vec3_lightmap_buffer;
 	RID default_vec4_xform_uniform_set;
 
 	RID shadow_sampler;

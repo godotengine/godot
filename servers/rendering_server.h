@@ -462,6 +462,7 @@ public:
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
+	virtual void multimesh_instance_set_lightmap(RID p_multimesh, int p_index, int slice, const Rect2 &position) = 0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
@@ -1759,7 +1760,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	// Never actually used, should be removed when we can break compatibility.
-	enum Features {
+	enum Features{
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};

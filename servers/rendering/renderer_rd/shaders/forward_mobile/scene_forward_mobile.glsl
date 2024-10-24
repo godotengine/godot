@@ -107,6 +107,11 @@ layout(location = 8) highp out vec4 specular_light_interp;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+
+#ifdef USE_LIGHTMAP
+layout(location = 13) highp out vec3 lightmap_uv_interp;
+#endif // USE_LIGHTMAP
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
@@ -292,6 +297,14 @@ void main() {
 		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
 			instance_custom = transforms.data[offset];
 		}
+
+#ifdef USE_LIGHTMAP
+		// lightmap_uv_interp = instance_custom.xyz;
+		// if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH)) {
+		uint x = gl_InstanceIndex;
+			lightmap_uv_interp = multimesh_lightmap_buffer.data[x].xyz;
+		// }
+#endif
 
 #endif
 		//transpose
@@ -702,6 +715,9 @@ vec4 textureArray_bicubic(texture2DArray tex, vec3 uv, vec2 texture_size) {
 	return (g0(fuv.y) * (g0x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p0, uv.z)) + g1x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p1, uv.z)))) +
 			(g1(fuv.y) * (g0x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p2, uv.z)) + g1x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p3, uv.z))));
 }
+
+layout(location = 13) mediump in vec3 lightmap_uv_interp;
+
 #endif //USE_LIGHTMAP
 
 #ifdef USE_MULTIVIEW
@@ -1348,9 +1364,24 @@ void main() {
 		bool uses_sh = bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
 		uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
-		vec3 uvw;
-		uvw.xy = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
-		uvw.z = float(slice);
+		vec3 uvw = vec3(0.0);
+#ifdef USE_LIGHTMAP
+		if(bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH))
+		{
+			// For multimesh pull the lightmap position from lightmap_uv_interp.xy and 
+			// slice from lightmap_uv_interp.z.
+			uvw.xy = lightmap_uv_interp.xy;
+			uvw.z = float(lightmap_uv_interp.z);
+		}
+		else
+#endif
+		{
+			// For non-multimesh pull the lightmap position and slice from the geometry 
+			// instance data.
+			uvw.xy = instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+			uvw.z = float(instances.data[draw_call.instance_index].gi_offset >> 16);
+		}
+		uvw.xy += uv2_interp  * instances.data[draw_call.instance_index].lightmap_uv_scale.zw;		
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
@@ -1382,11 +1413,13 @@ void main() {
 			if (sc_use_lightmap_bicubic_filter()) {
 				ambient_light += textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization;
 			} else {
-				ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
+				ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb;// * lightmaps.data[ofs].exposure_normalization;
+				if(bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH))
+					ambient_light *= vec3(1.0, 0.0, 0.0);
 			}
+			
 		}
 	}
-
 	// No GI nor non low end mode...
 
 #endif // USE_LIGHTMAP

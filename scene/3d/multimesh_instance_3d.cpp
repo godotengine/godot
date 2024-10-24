@@ -88,6 +88,45 @@ Array MultiMeshInstance3D::get_meshes() const {
 	return results;
 }
 
+Array MultiMeshInstance3D::get_bake_meshes() {
+	Array results;
+	if (multimesh.is_null() || multimesh->get_mesh().is_null()) {
+		print_error(vformat("No usable mesh"));
+		return results;
+	}
+
+	if (multimesh->get_transform_format() != MultiMesh::TransformFormat::TRANSFORM_3D) {
+		print_error(vformat("Invalid transform format"));
+		return results;
+	}
+
+	int count = multimesh->get_visible_instance_count();
+	if (count == -1) {
+		count = multimesh->get_instance_count();
+	}
+
+	Ref<ArrayMesh> mesh = multimesh->get_mesh();
+	if (!mesh.is_valid()) {
+		print_error(vformat("Invalid mesh type"));
+		return results;
+	}
+
+	if (mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+		print_error(vformat("Invalid primitive format"));
+		return results;
+	}
+
+	mesh->lightmap_unwrap();
+	for (int i = 0; i < count; i++) {
+		// TODO - do I want to jut return this mesh or should I apply the scale so multimeshes
+		///       can use a bigger lightmap size?
+		results.push_back(mesh);
+		results.push_back(multimesh->get_instance_transform(i));
+	}
+
+	return results;
+}
+
 AABB MultiMeshInstance3D::get_aabb() const {
 	if (multimesh.is_null()) {
 		return AABB();

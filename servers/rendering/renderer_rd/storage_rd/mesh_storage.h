@@ -239,6 +239,8 @@ private:
 		uint32_t previous_data_cache_dirty_region_count = 0;
 
 		RID buffer; //storage buffer
+		RID lightmap; //storage buffer
+		RID lightmap_default; // default buffer - used when no lightmaps have been setup to satisfy binding.
 		RID uniform_set_3d;
 		RID uniform_set_2d;
 
@@ -642,6 +644,7 @@ public:
 	virtual void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) override;
 	virtual void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) override;
 	virtual void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override;
+	virtual void _multimesh_instance_set_lightmap(RID p_multimesh, int p_index, int slice, const Rect2 &position) override;
 
 	virtual RID _multimesh_get_mesh(RID p_multimesh) const override;
 
@@ -696,16 +699,29 @@ public:
 		if (multimesh == nullptr) {
 			return RID();
 		}
+
 		if (!multimesh->uniform_set_3d.is_valid()) {
 			if (!multimesh->buffer.is_valid()) {
 				return RID();
 			}
+
 			Vector<RD::Uniform> uniforms;
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 0;
-			u.append_id(multimesh->buffer);
-			uniforms.push_back(u);
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.append_id(multimesh->buffer);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 1;
+				u.append_id(multimesh->lightmap);
+				uniforms.push_back(u);
+			}
+
 			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
 
@@ -722,11 +738,22 @@ public:
 				return RID();
 			}
 			Vector<RD::Uniform> uniforms;
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 0;
-			u.append_id(multimesh->buffer);
-			uniforms.push_back(u);
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.append_id(multimesh->buffer);
+				uniforms.push_back(u);
+			}
+
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 1;
+				u.append_id(multimesh->lightmap);
+				uniforms.push_back(u);
+			}
+
 			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
 

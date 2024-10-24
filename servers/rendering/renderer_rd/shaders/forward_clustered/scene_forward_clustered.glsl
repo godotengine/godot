@@ -180,6 +180,11 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 	return bitfieldInsert(uint(0), uint(0xFFFFFFFF), local_min, mask_width);
 }
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
+
+#ifdef USE_LIGHTMAP
+layout(location = 14) highp out vec3 lightmap_uv_interp;
+#endif // USE_LIGHTMAP
+
 invariant gl_Position;
 
 #GLOBALS
@@ -332,6 +337,12 @@ void vertex_shader(vec3 vertex_input,
 		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
 			instance_custom = transforms.data[offset];
 		}
+
+#ifdef USE_LIGHTMAP
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH)) {
+			lightmap_uv_interp = multimesh_lightmap_buffer.data[gl_InstanceIndex].xyz;
+		} 
+#endif
 
 #endif
 		//transpose
@@ -933,6 +944,11 @@ ivec2 multiview_uv(ivec2 uv) {
 layout(location = 12) highp in vec4 diffuse_light_interp;
 layout(location = 13) highp in vec4 specular_light_interp;
 #endif
+
+#ifdef USE_LIGHTMAP
+layout(location = 14) highp in vec3 lightmap_uv_interp;
+#endif //USE_LIGHTMAP
+
 //defines to keep compatibility with vertex
 
 #ifdef USE_MULTIVIEW
@@ -1648,10 +1664,24 @@ void fragment_shader(in SceneData scene_data) {
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = instances.data[instance_index].gi_offset & 0xFFFF;
-		uint slice = instances.data[instance_index].gi_offset >> 16;
-		vec3 uvw;
-		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
-		uvw.z = float(slice);
+		vec3 uvw = vec3(1.0);
+#ifdef USE_LIGHTMAP
+		if(bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH))
+		{
+			// For multimesh pull the lightmap position from lightmap_uv_interp.xy and 
+			// slice from lightmap_uv_interp.z.
+			uvw.xy = lightmap_uv_interp.xy;
+			uvw.z = float(lightmap_uv_interp.z);
+		}
+		else
+#endif
+		{
+			// For non-multimesh pull the lightmap position and slice from the geometry 
+			// instance data.
+			uvw.xy = instances.data[instance_index].lightmap_uv_scale.xy;
+			uvw.z = float(instances.data[instance_index].gi_offset >> 16);
+		}
+		uvw.xy += uv2 * instances.data[instance_index].lightmap_uv_scale.zw;			
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data

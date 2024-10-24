@@ -207,6 +207,8 @@ struct MultiMesh {
 
 	RendererMeshStorage::MultiMeshInterpolator interpolator;
 
+	bool uses_lightmap = false;
+
 	Dependency dependency;
 };
 
@@ -506,6 +508,7 @@ public:
 	virtual void _multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) override;
 	virtual void _multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) override;
 	virtual void _multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) override;
+	virtual void _multimesh_instance_set_lightmap(RID p_multimesh, int p_index, int slice, const Rect2 &position) override;
 
 	virtual RID _multimesh_get_mesh(RID p_multimesh) const override;
 	virtual void _multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) override;
@@ -539,6 +542,11 @@ public:
 	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->uses_custom_data;
+	}
+
+	_FORCE_INLINE_ bool multimesh_uses_lightmap(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->uses_lightmap;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {

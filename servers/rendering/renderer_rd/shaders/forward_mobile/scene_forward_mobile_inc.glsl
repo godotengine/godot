@@ -308,4 +308,11 @@ layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 }
 transforms;
 
+// #ifdef USE_LIGHTMAP
+layout(set = 2, binding = 1, std430) restrict readonly buffer MultiMeshLightmapBuffer {
+	vec4 data[];
+} 
+multimesh_lightmap_buffer;
+// #endif
+
 /* Set 3 User Material */

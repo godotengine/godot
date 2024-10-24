@@ -760,13 +760,24 @@ void fragment() {
 	}
 
 	{
-		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
 		Vector<RD::Uniform> uniforms;
-		RD::Uniform u;
-		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-		u.append_id(default_vec4_xform_buffer);
-		u.binding = 0;
-		uniforms.push_back(u);
+		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.append_id(default_vec4_xform_buffer);
+			u.binding = 0;
+			uniforms.push_back(u);
+		}
+
+		default_vec3_lightmap_buffer = RD::get_singleton()->storage_buffer_create(256);
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.append_id(default_vec3_lightmap_buffer);
+			u.binding = 1;
+			uniforms.push_back(u);
+		}
 
 		default_vec4_xform_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RenderForwardMobile::TRANSFORMS_UNIFORM_SET);
 	}

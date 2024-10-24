@@ -1433,6 +1433,23 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 		multimesh->uniform_set_3d = RID(); //cleared by dependency
 	}
 
+	// TODO - revisit allocation strategy - should it just be integrated into the other buffer somehow
+	//        instead of its own buffer?
+	// TODO - ensure we aren't leaking
+	if (multimesh->lightmap != multimesh->lightmap_default) {
+		if (multimesh->lightmap.is_valid()) {
+			RD::get_singleton()->free(multimesh->lightmap);
+			multimesh->lightmap = RID();
+		}
+	} else {
+		multimesh->lightmap = RID();
+	}
+
+	if (multimesh->lightmap_default.is_valid()) {
+		RD::get_singleton()->free(multimesh->lightmap_default);
+		multimesh->lightmap_default = RID();
+	}
+
 	if (multimesh->data_cache_dirty_regions) {
 		memdelete_arr(multimesh->data_cache_dirty_regions);
 		multimesh->data_cache_dirty_regions = nullptr;
@@ -1463,6 +1480,8 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	multimesh->motion_vectors_previous_offset = 0;
 	multimesh->motion_vectors_last_change = -1;
 	multimesh->motion_vectors_enabled = false;
+	multimesh->lightmap_default = RD::get_singleton()->storage_buffer_create(256);
+	multimesh->lightmap = multimesh->lightmap_default;
 
 	if (multimesh->instances) {
 		uint32_t buffer_size = multimesh->instances * multimesh->stride_cache * sizeof(float);
@@ -1571,7 +1590,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 
 	// this means that the user wants to load/save individual elements,
 	// for this, the data must reside on CPU, so just copy it there.
-	uint32_t buffer_size = multimesh->instances * multimesh->stride_cache;
+	uint32_t buffer_size = multimesh->instances * multimesh->stride_cache + multimesh->instances * sizeof(float) * 5;
 	if (multimesh->motion_vectors_enabled) {
 		buffer_size *= 2;
 	}
@@ -1640,7 +1659,7 @@ void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool 
 	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
-	if (!multimesh->data_cache_dirty_regions[region_index]) {
+	if (multimesh->data_cache_dirty_regions && !multimesh->data_cache_dirty_regions[region_index]) {
 		multimesh->data_cache_dirty_regions[region_index] = true;
 		multimesh->data_cache_dirty_region_count++;
 	}
@@ -1832,6 +1851,32 @@ void MeshStorage::_multimesh_instance_set_custom_data(RID p_multimesh, int p_ind
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, false);
+}
+
+void MeshStorage::_multimesh_instance_set_lightmap(RID p_multimesh, int p_index, int slice, const Rect2 &position) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+	ERR_FAIL_INDEX(p_index, multimesh->instances);
+	ERR_FAIL_COND(!multimesh->lightmap.is_valid());
+
+	if ((multimesh->lightmap != multimesh->lightmap_default) && (slice == -1)) {
+		RD::get_singleton()->free(multimesh->lightmap);
+		multimesh->lightmap = multimesh->lightmap_default;
+	} else {
+		if (multimesh->lightmap == multimesh->lightmap_default) {
+			uint32_t lightmap_size = multimesh->instances * sizeof(float) * 4;
+			multimesh->lightmap = RD::get_singleton()->storage_buffer_create(lightmap_size);
+		}
+
+		const uint32_t stride = 4 * sizeof(float);
+		uint32_t offset = p_index * stride;
+		float data[4] = { position.position.x, position.position.y, (float)slice, 0 };
+		RD::get_singleton()->buffer_update(multimesh->lightmap, offset, stride, data);
+	}
+
+	// Invalidate any references to the buffer that was released and the uniform set that was pointing to it.
+	multimesh->uniform_set_3d = RID(); // Cleared by dependency.
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
 }
 
 RID MeshStorage::_multimesh_get_mesh(RID p_multimesh) const {

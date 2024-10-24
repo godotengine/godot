@@ -390,6 +390,7 @@ public:
 	FUNC3(multimesh_instance_set_transform_2d, RID, int, const Transform2D &)
 	FUNC3(multimesh_instance_set_color, RID, int, const Color &)
 	FUNC3(multimesh_instance_set_custom_data, RID, int, const Color &)
+	FUNC4(multimesh_instance_set_lightmap, RID, int, int, const Rect2 &)
 
 	FUNC2(multimesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, multimesh_get_custom_aabb, RID)

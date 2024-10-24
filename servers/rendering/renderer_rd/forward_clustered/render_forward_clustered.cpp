@@ -946,8 +946,15 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					}
 				}
 				if (lightmap_cull_index >= 0) {
-					inst->gi_offset_cache = inst->lightmap_slice_index << 16;
-					inst->gi_offset_cache |= lightmap_cull_index;
+					// TODO probably don't need this
+					if (flags & INSTANCE_DATA_FLAG_MULTIMESH) {
+						// Fule mutli-mesh only the inst parameters for the lightmap go
+						// into the instance data array.
+						inst->gi_offset_cache = lightmap_cull_index;
+					} else {
+						inst->gi_offset_cache = inst->lightmap_slice_index << 16;
+						inst->gi_offset_cache |= lightmap_cull_index;
+					}
 					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
 					if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
 						flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
