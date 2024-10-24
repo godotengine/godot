@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_playing_streams" qualifiers="const">
+			<return type="AudioStream[]" />
+			<description>
+				Returns all streams currently playing.
+			</description>
+		</method>
 		<method name="switch_to_clip">
 			<return type="void" />
 			<param index="0" name="clip_index" type="int" />
