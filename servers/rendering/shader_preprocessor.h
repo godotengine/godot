@@ -132,6 +132,9 @@ private:
 	struct Define {
 		Vector<String> arguments;
 		String body;
+		bool is_functionlike;
+		//temporary state used to avoid recursive expansion
+		bool expanded;
 	};
 
 	struct Branch {
@@ -172,7 +175,8 @@ private:
 	State *state = nullptr;
 
 private:
-	static bool is_char_word(char32_t p_char);
+	static bool is_identifier_starting_char(char32_t p_char);
+	static bool is_identifier_char(char32_t p_char);
 	static bool is_char_space(char32_t p_char);
 	static bool is_char_end(char32_t p_char);
 	static String vector_to_string(const LocalVector<char32_t> &p_v, int p_start = 0, int p_end = -1);
@@ -205,8 +209,12 @@ private:
 	Error expand_condition(const String &p_string, int p_line, String &r_result);
 	void expand_output_macros(int p_start, int p_line);
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
-	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
+	bool try_expand_macro(const String &p_line, int p_line_number, Define *p_define, int p_identifer_index, int p_identifier_length, int &r_expand_length, String &r_expanded);
+	bool find_next_identifier(const String &p_string, int p_index_start, int &r_identifier_index, int &r_identifier_length);
+	bool is_identifier_part_of_concatenation(const String &p_string, int identifier_start_index, int identifier_end_index);
 	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
+	bool parse_macro_arguments(const String &p_line, int p_line_number, int p_start_index, Vector<String> &r_args, int &r_args_end);
+	void expand_and_replace_macro_arguments(int p_line_number, Define *p_define, Vector<String> &args, String &r_replaced_body);
 	void concatenate_macro_body(String &r_body);
 
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
