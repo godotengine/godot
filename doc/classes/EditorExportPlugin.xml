@@ -27,6 +27,7 @@
 			<description>
 				Return [code]true[/code] if this plugin will customize scenes based on the platform and features used.
 				When enabled, [method _get_customization_configuration_hash] and [method _customize_scene] will be called and must be implemented.
+				[b]Note:[/b] [method _customize_scene] will only be called for scenes that have been modified since the last export.
 			</description>
 		</method>
 		<method name="_customize_resource" qualifiers="virtual">
