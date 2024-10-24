@@ -5,6 +5,8 @@ namespace Godot.SourceGenerators.Tests;
 
 public static class Constants
 {
+    public const string GlobalConfigPath = "/.globalconfig";
+
     public static Assembly GodotSharpAssembly => typeof(GodotObject).Assembly;
 
     public static string ExecutingAssemblyPath { get; }
