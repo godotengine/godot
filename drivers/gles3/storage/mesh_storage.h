@@ -518,6 +518,8 @@ public:
 	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const override;
 	virtual void _multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override;
 	virtual Vector<float> _multimesh_get_buffer(RID p_multimesh) const override;
+	virtual void _multimesh_set_buffer_raw(RID p_multimesh, const PackedByteArray &p_buffer) override;
+	virtual PackedByteArray _multimesh_get_buffer_raw(RID p_multimesh) const override;
 
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
 	virtual int _multimesh_get_visible_instances(RID p_multimesh) const override;
