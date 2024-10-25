@@ -3534,13 +3534,13 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	return OK;
 }
 
-#else
+#else // !TOOLS_ENABLED
 
 Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	return OK;
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 //////// END COMPLETION //////////
 
@@ -3782,7 +3782,19 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 			} break;
 			case GDScriptParser::DataType::ENUM: {
-				if (base_type.enum_values.has(p_symbol)) {
+				if (base_type.class_type && base_type.class_type->has_member(base_type.enum_type)) {
+					GDScriptParser::EnumNode *base_enum = base_type.class_type->get_member(base_type.enum_type).m_enum;
+					for (const GDScriptParser::EnumNode::Value &value : base_enum->values) {
+						if (value.identifier && value.identifier->name == p_symbol) {
+							r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
+							r_result.class_path = base_type.script_path;
+							r_result.location = value.line;
+							Error err = OK;
+							r_result.script = GDScriptCache::get_shallow_script(r_result.class_path, err);
+							return err;
+						}
+					}
+				} else if (base_type.enum_values.has(p_symbol)) {
 					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 					r_result.class_name = String(base_type.native_type).get_slicec('.', 0);
 					r_result.class_member = p_symbol;
@@ -4113,4 +4125,4 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	return ERR_CANT_RESOLVE;
 }
 
-#endif
+#endif // TOOLS_ENABLED

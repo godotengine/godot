@@ -245,21 +245,7 @@ void ColorPicker::finish_shaders() {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-	bool has_hardware_keyboard = true;
-#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
-	has_hardware_keyboard = DisplayServer::get_singleton()->has_hardware_keyboard();
-#endif // ANDROID_ENABLED || IOS_ENABLED
-	if (has_hardware_keyboard) {
-		callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
-	} else {
-		// A hack to avoid showing the virtual keyboard when the ColorPicker window popups and
-		// no hardware keyboard is detected on Android and IOS.
-		// This will only focus the LineEdit without editing, the virtual keyboard will only be visible when
-		// we touch the LineEdit to enter edit mode.
-		callable_mp(c_text, &LineEdit::set_editable).call_deferred(false);
-		callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
-		callable_mp(c_text, &LineEdit::set_editable).call_deferred(true);
-	}
+	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
 }
 
 void ColorPicker::_update_controls() {
@@ -1571,19 +1557,16 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
 
-		picker_preview = memnew(Panel);
-		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
-		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
-		picker_window->add_child(picker_preview);
-
 		picker_preview_label = memnew(Label);
-		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
+		picker_preview_label->set_anchors_preset(Control::PRESET_CENTER_TOP);
 		picker_preview_label->set_text(ETR("Color Picking active"));
-		picker_preview->add_child(picker_preview_label);
 
-		picker_preview_style_box = (Ref<StyleBoxFlat>)memnew(StyleBoxFlat);
+		picker_preview_style_box.instantiate();
 		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
-		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
+		picker_preview_style_box->set_content_margin_all(4.0);
+		picker_preview_label->add_theme_style_override(CoreStringName(normal), picker_preview_style_box);
+
+		picker_window->add_child(picker_preview_label);
 	}
 
 	Rect2i screen_rect;
@@ -1625,7 +1608,7 @@ void ColorPicker::_pick_button_pressed_legacy() {
 	}
 
 	picker_window->set_size(screen_rect.size);
-	picker_preview->set_size(screen_rect.size / 10.0); // 10% of size in each axis.
+	picker_preview_label->set_custom_minimum_size(screen_rect.size / 10); // 10% of size in each axis.
 	picker_window->popup();
 }
 
@@ -1648,7 +1631,7 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 			Vector2 ofs = mev->get_position();
 			picker_color = img->get_pixel(ofs.x, ofs.y);
 			picker_preview_style_box->set_bg_color(picker_color);
-			picker_preview_label->set_self_modulate(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_label->add_theme_color_override(SceneStringName(font_color), picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
 		}
 	}
 }
@@ -2103,7 +2086,9 @@ void ColorPickerButton::pressed() {
 	float v_offset = show_above ? -minsize.y : get_size().y;
 	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
 	popup->popup();
-	picker->set_focus_on_line_edit();
+	if (DisplayServer::get_singleton()->has_hardware_keyboard()) {
+		picker->set_focus_on_line_edit();
+	}
 }
 
 void ColorPickerButton::_notification(int p_what) {

@@ -427,6 +427,7 @@ public:
 	struct VariableNode : public Node {
 		DataType datatype_cache = TYPE_VOID;
 		StringName name;
+		StringName rname;
 		StringName struct_name;
 		bool is_const = false;
 		bool is_local = false;
@@ -604,6 +605,7 @@ public:
 
 		struct Function {
 			StringName name;
+			StringName rname;
 			FunctionNode *function = nullptr;
 			HashSet<StringName> uses_function;
 			bool callable;
@@ -729,6 +731,7 @@ public:
 		};
 
 		StringName name;
+		StringName rname;
 		DataType return_type = TYPE_VOID;
 		StringName return_struct_name;
 		DataPrecision return_precision = PRECISION_DEFAULT;
@@ -856,6 +859,7 @@ public:
 
 		Vector<Argument> arguments;
 		DataType return_type = TYPE_VOID;
+		String skip_function;
 	};
 
 	struct ModeInfo {
@@ -931,7 +935,7 @@ private:
 		const char *text;
 		uint32_t flags;
 		const Vector<String> excluded_shader_types;
-		const Vector<String> functions;
+		const Vector<String> excluded_functions;
 	};
 
 	static const KeyWord keyword_list[];
@@ -944,6 +948,7 @@ private:
 
 	Vector<FilePosition> include_positions;
 	HashSet<String> include_markers_handled;
+	HashMap<StringName, int> function_overload_count;
 
 	// Additional function information (eg. call hierarchy). No need to expose it to compiler.
 	struct CallInfo {
@@ -1146,6 +1151,7 @@ private:
 
 	const HashMap<StringName, FunctionInfo> *stages = nullptr;
 	bool is_supported_frag_only_funcs = false;
+	bool is_discard_supported = false;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];

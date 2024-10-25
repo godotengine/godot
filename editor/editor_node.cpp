@@ -35,6 +35,7 @@
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
@@ -3378,6 +3379,8 @@ void EditorNode::unload_editor_addons() {
 		remove_editor_plugin(E.value, false);
 		memdelete(E.value);
 	}
+
+	addon_name_to_plugin.clear();
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
@@ -4672,6 +4675,11 @@ void EditorNode::stop_child_process(OS::ProcessID p_pid) {
 Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
 	ERR_FAIL_NULL_V(p_object, nullptr);
 
+	const Node *node = Object::cast_to<const Node>(p_object);
+	if (node && node->has_meta(SceneStringName(_custom_type_script))) {
+		return node->get_meta(SceneStringName(_custom_type_script));
+	}
+
 	Ref<Script> scr = p_object->get_script();
 
 	if (scr.is_valid()) {
@@ -4771,7 +4779,13 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 			// Look for the native base type in the editor theme. This is relevant for
 			// scripts extending other scripts and for built-in classes.
 			String script_class_name = p_script->get_language()->get_global_class_name(p_script->get_path());
-			String base_type = ScriptServer::get_global_class_native_base(script_class_name);
+			String base_type;
+			if (script_class_name.is_empty()) {
+				base_type = p_script->get_instance_base_type();
+			} else {
+				base_type = ScriptServer::get_global_class_native_base(script_class_name);
+			}
+
 			if (theme.is_valid() && theme->has_icon(base_type, EditorStringName(EditorIcons))) {
 				return theme->get_icon(base_type, EditorStringName(EditorIcons));
 			}
@@ -4836,6 +4850,8 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 	Ref<Script> scr;
 	if (ScriptServer::is_global_class(p_class)) {
 		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
+	} else if (ResourceLoader::exists(p_class)) { // If the script is not a class_name we check if the script resource exists.
+		scr = ResourceLoader::load(p_class);
 	}
 
 	return _get_class_or_script_icon(p_class, scr, p_fallback, true);
@@ -6736,10 +6752,6 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L);
 	ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G);
-
-	// Used in the GPUParticles/CPUParticles 2D/3D editor plugins.
-	// The shortcut is Ctrl + R even on macOS, as Cmd + R is used to run the current scene on macOS.
-	ED_SHORTCUT("particles/restart_emission", TTR("Restart Emission"), KeyModifierMask::CTRL | Key::R);
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 

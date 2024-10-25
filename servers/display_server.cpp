@@ -1128,6 +1128,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_POPUP);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MOUSE_PASSTHROUGH);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_SHARP_CORNERS);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);
@@ -1229,6 +1230,10 @@ void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_i
 }
 
 bool DisplayServer::can_create_rendering_device() {
+	if (get_singleton()->get_name() == "headless") {
+		return false;
+	}
+
 #if defined(RD_ENABLED)
 	RenderingDevice *device = RenderingDevice::get_singleton();
 	if (device) {

@@ -483,9 +483,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         else:
             print_warning("Missing environment variable: WindowsSdkDir")
 
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+    validate_win_version(env)
 
     env.AppendUnique(
         CPPDEFINES=[
@@ -549,15 +547,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
-        # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]):
-            print_error(
-                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-                "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
-            )
-            sys.exit(255)
+        check_d3d12_installed(env)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -662,7 +652,7 @@ def get_ar_version(env):
         print_warning("Couldn't check version of `ar`.")
         return ret
 
-    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(?:\.(\d+))?", output)
+    match = re.search(r"GNU ar(?: \(GNU Binutils\)| version) (\d+)\.(\d+)(?:\.(\d+))?", output)
     if match:
         ret["major"] = int(match[1])
         ret["minor"] = int(match[2])
@@ -788,8 +778,9 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = mingw_bin_prefix + "g++"
         if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
             env["AS"] = mingw_bin_prefix + "as"
-        if try_cmd("gcc-ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "gcc-ar"
+        ar = "ar" if os.name == "nt" else "gcc-ar"
+        if try_cmd(f"{ar} --version", env["mingw_prefix"], env["arch"]):
+            env["AR"] = mingw_bin_prefix + ar
         if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
             env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
 
@@ -819,9 +810,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+    validate_win_version(env)
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
@@ -899,15 +888,7 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]):
-            print_error(
-                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-                "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
-            )
-            sys.exit(255)
+        check_d3d12_installed(env)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -983,3 +964,20 @@ def configure(env: "SConsEnvironment"):
 
     else:  # MinGW
         configure_mingw(env)
+
+
+def check_d3d12_installed(env):
+    if not os.path.exists(env["mesa_libs"]):
+        print_error(
+            "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
+            "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+            "See the documentation for more information:\n\t"
+            "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+        )
+        sys.exit(255)
+
+
+def validate_win_version(env):
+    if int(env["target_win_version"], 16) < 0x0601:
+        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)
