@@ -33,6 +33,7 @@
 
 #include "core/input/input_event.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation_server.h"
 
 #include "tests/test_macros.h"
 
@@ -106,6 +107,7 @@ TEST_CASE("[InputEventKey] Key correctly stores and checks echo") {
 }
 
 TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
+	TranslationServer::get_singleton()->set_locale("en");
 	InputEventKey none_key;
 
 	// These next three tests test the functionality of getting a key that is set to None
