@@ -58,6 +58,9 @@ void Environment::set_sky(const Ref<Sky> &p_sky) {
 	RID sb_rid;
 	if (bg_sky.is_valid()) {
 		sb_rid = bg_sky->get_rid();
+		if (GLOBAL_GET("rendering/viewport/transparent_background")) {
+			WARN_PRINT("Environment sky will not render when transparent background is active in project settings.");
+		}
 	}
 	RS::get_singleton()->environment_set_sky(environment, sb_rid);
 }
