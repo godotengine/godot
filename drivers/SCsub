@@ -13,21 +13,33 @@ SConscript("unix/SCsub")
 SConscript("windows/SCsub")
 
 # Sounds drivers
-SConscript("alsa/SCsub")
+
 SConscript("coreaudio/SCsub")
-SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
     if not env.msvc:
         SConscript("backtrace/SCsub")
-if env["xaudio2"]:
+
+if "alsa" in env and env["alsa"]:
+    if "alsa" not in supported:
+        print("Target platform '{}' does not support the ALSA audio driver. Aborting.".format(env["platform"]))
+        Exit(255)
+    SConscript("alsa/SCsub")
+    SConscript("alsamidi/SCsub")
+
+if "pulseaudio" in env and env["pulseaudio"]:
+    if "pulseaudio" not in supported:
+        print("Target platform '{}' does not support the PulseAudio audio driver. Aborting.".format(env["platform"]))
+        Exit(255)
+    SConscript("pulseaudio/SCsub")
+
+if "xaudio2" in env and  env["xaudio2"]:
     if "xaudio2" not in supported:
         print_error("Target platform '{}' does not support the XAudio2 audio driver".format(env["platform"]))
         Exit(255)
     SConscript("xaudio2/SCsub")
 
 # Midi drivers
-SConscript("alsamidi/SCsub")
 SConscript("coremidi/SCsub")
 SConscript("winmidi/SCsub")
 
