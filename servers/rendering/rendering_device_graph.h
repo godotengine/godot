@@ -209,14 +209,12 @@ private:
 		LocalVector<uint8_t> data;
 		LocalVector<ResourceTracker *> command_trackers;
 		LocalVector<ResourceUsage> command_tracker_usages;
-		BitField<RDD::PipelineStageBits> stages;
 		int32_t index = 0;
 
 		void clear() {
 			data.clear();
 			command_trackers.clear();
 			command_tracker_usages.clear();
-			stages.clear();
 		}
 	};
 
@@ -670,9 +668,9 @@ public:
 	void add_compute_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_compute_list_end();
-	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0);
+	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, uint32_t p_breadcrumb = 0);
 	void add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset);
-	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits);
+	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline);
 	void add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_draw_list_bind_vertex_buffers(VectorView<RDD::BufferID> p_vertex_buffers, VectorView<uint64_t> p_vertex_buffer_offsets);
 	void add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect);

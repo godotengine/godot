@@ -34,7 +34,10 @@
 #define FORCE_FULL_ACCESS_BITS 0
 #define PRINT_RESOURCE_TRACKER_TOTAL 0
 #define PRINT_COMMAND_RECORDING 0
+
+#if defined(DEV_ENABLED) || defined(DEBUG_ENABLED)
 #define INSERT_BREADCRUMBS 1
+#endif
 
 RenderingDeviceGraph::RenderingDeviceGraph() {
 	driver_honors_barriers = false;
@@ -1424,7 +1427,6 @@ void RenderingDeviceGraph::add_compute_list_bind_pipeline(RDD::PipelineID p_pipe
 	ComputeListBindPipelineInstruction *instruction = reinterpret_cast<ComputeListBindPipelineInstruction *>(_allocate_compute_list_instruction(sizeof(ComputeListBindPipelineInstruction)));
 	instruction->type = ComputeListInstruction::TYPE_BIND_PIPELINE;
 	instruction->pipeline = p_pipeline;
-	compute_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 }
 
 void RenderingDeviceGraph::add_compute_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -1448,7 +1450,6 @@ void RenderingDeviceGraph::add_compute_list_dispatch_indirect(RDD::BufferID p_bu
 	instruction->type = ComputeListInstruction::TYPE_DISPATCH_INDIRECT;
 	instruction->buffer = p_buffer;
 	instruction->offset = p_offset;
-	compute_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT);
 }
 
 void RenderingDeviceGraph::add_compute_list_set_push_constant(RDD::ShaderID p_shader, const void *p_data, uint32_t p_data_size) {
@@ -1500,13 +1501,13 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	uint32_t command_size = sizeof(RecordedComputeListCommand) + instruction_data_size;
 	RecordedComputeListCommand *command = static_cast<RecordedComputeListCommand *>(_allocate_command(command_size, command_index));
 	command->type = RecordedCommand::TYPE_COMPUTE_LIST;
-	command->self_stages = compute_instruction_list.stages;
+	command->self_stages = RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT | RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT;
 	command->instruction_data_size = instruction_data_size;
 	memcpy(command->instruction_data(), compute_instruction_list.data.ptr(), instruction_data_size);
 	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
 }
 
-void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb) {
+void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, uint32_t p_breadcrumb) {
 	draw_instruction_list.clear();
 	draw_instruction_list.index++;
 	draw_instruction_list.render_pass = p_render_pass;
@@ -1517,15 +1518,6 @@ void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, 
 	for (uint32_t i = 0; i < p_clear_values.size(); i++) {
 		draw_instruction_list.clear_values[i] = p_clear_values[i];
 	}
-
-	if (p_uses_color) {
-		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-	}
-
-	if (p_uses_depth) {
-		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
-		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
-	}
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset) {
@@ -1534,17 +1526,12 @@ void RenderingDeviceGraph::add_draw_list_bind_index_buffer(RDD::BufferID p_buffe
 	instruction->buffer = p_buffer;
 	instruction->format = p_format;
 	instruction->offset = p_offset;
-
-	if (instruction->buffer.id != 0) {
-		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT);
-	}
 }
 
-void RenderingDeviceGraph::add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits) {
+void RenderingDeviceGraph::add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline) {
 	DrawListBindPipelineInstruction *instruction = reinterpret_cast<DrawListBindPipelineInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListBindPipelineInstruction)));
 	instruction->type = DrawListInstruction::TYPE_BIND_PIPELINE;
 	instruction->pipeline = p_pipeline;
-	draw_instruction_list.stages = draw_instruction_list.stages | p_pipeline_stage_bits;
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -1568,10 +1555,6 @@ void RenderingDeviceGraph::add_draw_list_bind_vertex_buffers(VectorView<RDD::Buf
 	for (uint32_t i = 0; i < instruction->vertex_buffers_count; i++) {
 		vertex_buffers[i] = p_vertex_buffers[i];
 		vertex_buffer_offsets[i] = p_vertex_buffer_offsets[i];
-	}
-
-	if (instruction->vertex_buffers_count > 0) {
-		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT);
 	}
 }
 
@@ -1711,13 +1694,17 @@ void RenderingDeviceGraph::add_draw_list_end() {
 		command_buffer_type = RDD::COMMAND_BUFFER_TYPE_PRIMARY;
 	}
 
+	// The usage of PIPELINE_STAGE_ALL_GRAPHICS_BIT is intentional to cover all possible graphics operations performed by draw lists.
+	// During testing, the VLL indicated there were possible synchronization errors between frames, even when specifying manually all
+	// the bits the Vulkan specification claims are equivalent. However, using ALL_GRAPHICS has shown different behavior and solved
+	// the errors reported by the synchronization layer. There's no exact explanation as to why this happens at the moment.
 	int32_t command_index;
 	uint32_t clear_values_size = sizeof(RDD::RenderPassClearValue) * draw_instruction_list.clear_values.size();
 	uint32_t instruction_data_size = draw_instruction_list.data.size();
 	uint32_t command_size = sizeof(RecordedDrawListCommand) + clear_values_size + instruction_data_size;
 	RecordedDrawListCommand *command = static_cast<RecordedDrawListCommand *>(_allocate_command(command_size, command_index));
 	command->type = RecordedCommand::TYPE_DRAW_LIST;
-	command->self_stages = draw_instruction_list.stages;
+	command->self_stages = RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT;
 	command->instruction_data_size = instruction_data_size;
 	command->render_pass = draw_instruction_list.render_pass;
 	command->framebuffer = draw_instruction_list.framebuffer;
