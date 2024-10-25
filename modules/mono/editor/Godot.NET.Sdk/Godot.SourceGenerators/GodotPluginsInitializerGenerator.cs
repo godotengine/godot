@@ -43,6 +43,7 @@ namespace GodotPlugins.Game
                 ManagedCallbacks.Create(outManagedCallbacks);
 
                 ScriptManagerBridge.LookupScriptsInAssembly(typeof(global::GodotPlugins.Game.Main).Assembly);
+                AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
 
                 return godot_bool.True;
             }
@@ -51,6 +52,11 @@ namespace GodotPlugins.Game
                 global::System.Console.Error.WriteLine(e);
                 return false.ToGodotBool();
             }
+        }
+
+        private static void OnAssemblyLoad(object obj, AssemblyLoadEventArgs args)
+        {
+            ScriptManagerBridge.LookupScriptsInAssembly(args.LoadedAssembly);
         }
     }
 }

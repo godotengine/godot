@@ -151,7 +151,12 @@ namespace GodotPlugins
                 string loadedAssemblyPath = _projectLoadContext.AssemblyLoadedPath ?? assemblyPath;
                 *outLoadedAssemblyPath = Marshaling.ConvertStringToNative(loadedAssemblyPath);
 
-                ScriptManagerBridge.LookupScriptsInAssembly(projectAssembly);
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    ScriptManagerBridge.LookupScriptsInAssembly(assembly);
+                }
+
+                AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
 
                 return godot_bool.True;
             }
@@ -160,6 +165,11 @@ namespace GodotPlugins
                 Console.Error.WriteLine(e);
                 return godot_bool.False;
             }
+        }
+
+        private static void OnAssemblyLoad(object? obj, AssemblyLoadEventArgs args)
+        {
+            ScriptManagerBridge.LookupScriptsInAssembly(args.LoadedAssembly);
         }
 
         [UnmanagedCallersOnly]
@@ -244,6 +254,7 @@ namespace GodotPlugins
 
                 Console.WriteLine("Unloading assembly load context...");
 
+                AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
                 pluginLoadContext.Unload();
 
                 int startTimeMs = Environment.TickCount;
