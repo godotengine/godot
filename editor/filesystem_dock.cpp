@@ -3431,7 +3431,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		const bool is_directory = fpath.ends_with("/");
 
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTR("Open in Terminal") : TTR("Open Containing Folder in Terminal"));
+		p_popup->set_item_text(p_popup->get_item_index(FILE_OPEN_IN_TERMINAL), is_directory ? TTR("Open in Terminal") : TTR("Open Folder in Terminal"));
 
 		if (!is_directory) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
@@ -4060,17 +4060,17 @@ FileSystemDock::FileSystemDock() {
 
 	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
-	ED_SHORTCUT("filesystem_dock/copy_absolute_path", TTR("Copy Absolute Path"));
-	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
+	ED_SHORTCUT("filesystem_dock/copy_absolute_path", TTR("Copy Absolute Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::C);
+	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
-	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
-	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
-	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTR("Open in Terminal"));
+	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R);
+	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
+	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTR("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
 #endif
 
 	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.
