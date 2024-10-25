@@ -125,7 +125,6 @@ int Performance::_get_node_count() const {
 }
 
 String Performance::get_monitor_name(Monitor p_monitor) const {
-	(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
 		PNAME("time/fps"),
 		PNAME("time/process"),
@@ -272,8 +271,6 @@ double Performance::get_monitor(Monitor p_monitor) const {
 }
 
 Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const {
-	(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
-	// ugly
 	static const MonitorType types[MONITOR_MAX] = {
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
