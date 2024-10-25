@@ -1,7 +1,6 @@
 #include "jolt_shaped_object_impl_3d.hpp"
 
 #include "shapes/jolt_custom_double_sided_shape.hpp"
-#include "shapes/jolt_custom_empty_shape.hpp"
 #include "shapes/jolt_shape_impl_3d.hpp"
 #include "spaces/jolt_space_3d.hpp"
 
@@ -20,7 +19,7 @@ JoltShapedObjectImpl3D::~JoltShapedObjectImpl3D() {
 }
 
 Transform3D JoltShapedObjectImpl3D::get_transform_unscaled() const {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return {to_godot(jolt_settings->mRotation), to_godot(jolt_settings->mPosition)};
 	}
 
@@ -35,7 +34,7 @@ Transform3D JoltShapedObjectImpl3D::get_transform_scaled() const {
 }
 
 Basis JoltShapedObjectImpl3D::get_basis() const {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return to_godot(jolt_settings->mRotation);
 	}
 
@@ -46,7 +45,7 @@ Basis JoltShapedObjectImpl3D::get_basis() const {
 }
 
 Vector3 JoltShapedObjectImpl3D::get_position() const {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return to_godot(jolt_settings->mPosition);
 	}
 
@@ -73,6 +72,10 @@ Vector3 JoltShapedObjectImpl3D::get_center_of_mass() const {
 	return to_godot(body->GetCenterOfMassPosition());
 }
 
+Vector3 JoltShapedObjectImpl3D::get_center_of_mass_relative() const {
+	return get_center_of_mass() - get_position();
+}
+
 Vector3 JoltShapedObjectImpl3D::get_center_of_mass_local() const {
 	ERR_FAIL_NULL_D_MSG(
 		space,
@@ -88,7 +91,7 @@ Vector3 JoltShapedObjectImpl3D::get_center_of_mass_local() const {
 }
 
 Vector3 JoltShapedObjectImpl3D::get_linear_velocity() const {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return to_godot(jolt_settings->mLinearVelocity);
 	}
 
@@ -99,7 +102,7 @@ Vector3 JoltShapedObjectImpl3D::get_linear_velocity() const {
 }
 
 Vector3 JoltShapedObjectImpl3D::get_angular_velocity() const {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return to_godot(jolt_settings->mAngularVelocity);
 	}
 
@@ -107,6 +110,24 @@ Vector3 JoltShapedObjectImpl3D::get_angular_velocity() const {
 	ERR_FAIL_COND_D(body.is_invalid());
 
 	return to_godot(body->GetAngularVelocity());
+}
+
+AABB JoltShapedObjectImpl3D::get_aabb() const {
+	AABB result;
+
+	for (const Ref<JoltShapeInstance3D>& shape : shapes) {
+		if (shape->is_disabled()) {
+			continue;
+		}
+
+		if (result == AABB()) {
+			result = shape->get_aabb();
+		} else {
+			result.merge_with(shape->get_aabb());
+		}
+	}
+
+	return get_transform_scaled().xform(result);
 }
 
 JPH::ShapeRefC JoltShapedObjectImpl3D::try_build_shape() {
@@ -153,7 +174,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::try_build_shape() {
 	}
 
 	if (is_area()) {
-		result = JoltShapeImpl3D::with_double_sided(result);
+		result = JoltShapeImpl3D::with_double_sided(result, true);
 	}
 
 	return result;
@@ -164,9 +185,9 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::build_shape() {
 
 	if (new_shape == nullptr) {
 		if (has_custom_center_of_mass()) {
-			new_shape = new JoltCustomEmptyShape(to_jolt(get_center_of_mass_custom()));
+			new_shape = new JPH::EmptyShape(to_jolt(get_center_of_mass_custom()));
 		} else {
-			new_shape = new JoltCustomEmptyShape();
+			new_shape = new JPH::EmptyShape();
 		}
 	}
 
@@ -174,7 +195,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::build_shape() {
 }
 
 void JoltShapedObjectImpl3D::update_shape() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		_shapes_built();
 		return;
 	}
@@ -363,6 +384,12 @@ void JoltShapedObjectImpl3D::post_step(float p_step, JPH::Body& p_jolt_body) {
 	previous_jolt_shape = nullptr;
 }
 
+bool JoltShapedObjectImpl3D::_is_big() const {
+	// HACK(mihe): This number is completely arbitrary, and mostly just needs to capture any
+	// `WorldBoundaryShape3D`. There could be a better sweet spot to be found here.
+	return get_aabb().get_longest_axis_size() >= 1000.0f;
+}
+
 JPH::ShapeRefC JoltShapedObjectImpl3D::_try_build_single_shape() {
 	// NOLINTNEXTLINE(modernize-loop-convert)
 	for (int32_t i = 0; i < shapes.size(); ++i) {
@@ -469,6 +496,7 @@ JPH::ShapeRefC JoltShapedObjectImpl3D::_try_build_compound_shape() {
 
 void JoltShapedObjectImpl3D::_shapes_changed() {
 	update_shape();
+	_update_object_layer();
 }
 
 void JoltShapedObjectImpl3D::_space_changing() {

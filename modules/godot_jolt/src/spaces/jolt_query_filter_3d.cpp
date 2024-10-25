@@ -24,6 +24,7 @@ bool JoltQueryFilter3D::ShouldCollide(JPH::BroadPhaseLayer p_broad_phase_layer) 
 
 	switch (broad_phase_layer) {
 		case (JPH::BroadPhaseLayer::Type)JoltBroadPhaseLayer::BODY_STATIC:
+		case (JPH::BroadPhaseLayer::Type)JoltBroadPhaseLayer::BODY_STATIC_BIG:
 		case (JPH::BroadPhaseLayer::Type)JoltBroadPhaseLayer::BODY_DYNAMIC: {
 			return collide_with_bodies;
 		} break;
@@ -32,7 +33,7 @@ bool JoltQueryFilter3D::ShouldCollide(JPH::BroadPhaseLayer p_broad_phase_layer) 
 			return collide_with_areas;
 		} break;
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled broad phase layer: '%d'", broad_phase_layer));
+			ERR_FAIL_D_REPORT(vformat("Unhandled broad phase layer: '%d'.", broad_phase_layer));
 		}
 	}
 }

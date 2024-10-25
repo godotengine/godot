@@ -4,6 +4,7 @@
 #include "objects/jolt_object_impl_3d.hpp"
 #include "servers/jolt_physics_server_3d.hpp"
 #include "shapes/jolt_custom_motion_shape.hpp"
+#include "shapes/jolt_custom_ray_shape.hpp"
 #include "shapes/jolt_custom_shape_type.hpp"
 #include "shapes/jolt_shape_impl_3d.hpp"
 #include "spaces/jolt_broad_phase_layer.hpp"
@@ -20,6 +21,7 @@ bool JoltMotionFilter3D::ShouldCollide(JPH::BroadPhaseLayer p_broad_phase_layer)
 
 	switch (broad_phase_layer) {
 		case (JPH::BroadPhaseLayer::Type)JoltBroadPhaseLayer::BODY_STATIC:
+		case (JPH::BroadPhaseLayer::Type)JoltBroadPhaseLayer::BODY_STATIC_BIG:
 		case (JPH::BroadPhaseLayer::Type)JoltBroadPhaseLayer::BODY_DYNAMIC: {
 			return true;
 		} break;
@@ -28,7 +30,7 @@ bool JoltMotionFilter3D::ShouldCollide(JPH::BroadPhaseLayer p_broad_phase_layer)
 			return false;
 		} break;
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled broad phase layer: '%d'", broad_phase_layer));
+			ERR_FAIL_D_REPORT(vformat("Unhandled broad phase layer: '%d'.", broad_phase_layer));
 		}
 	}
 }
@@ -90,5 +92,10 @@ bool JoltMotionFilter3D::ShouldCollide(
 	const auto* motion_shape = static_cast<const JoltCustomMotionShape*>(p_jolt_shape_self);
 	const JPH::ConvexShape& actual_shape_self = motion_shape->get_inner_shape();
 
-	return actual_shape_self.GetSubType() != JoltCustomShapeSubType::RAY;
+	if (actual_shape_self.GetSubType() == JoltCustomShapeSubType::RAY) {
+		// When `slide_on_slope` is enabled the ray shape acts as a regular shape.
+		return static_cast<const JoltCustomRayShape&>(actual_shape_self).slide_on_slope;
+	}
+
+	return true;
 }

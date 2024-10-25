@@ -32,6 +32,10 @@ public:
 
 	static float get_kinematic_recovery_amount();
 
+	static bool use_legacy_ray_casting();
+
+	static bool enable_ray_cast_face_index();
+
 	static int32_t get_velocity_iterations();
 
 	static int32_t get_position_iterations();
@@ -51,6 +55,8 @@ public:
 	static float get_pair_cache_distance();
 
 	static float get_pair_cache_angle();
+
+	static float get_world_boundary_shape_size();
 
 	static float get_max_linear_velocity();
 

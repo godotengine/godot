@@ -1437,6 +1437,11 @@ void HeightFieldShape::DecodeSubShapeID(const SubShapeID &inSubShapeID, uint &ou
 	outY = id / mSampleCount;
 }
 
+void HeightFieldShape::GetSubShapeCoordinates(const SubShapeID &inSubShapeID, uint &outX, uint &outY, uint &outTriangleIndex) const
+{
+	DecodeSubShapeID(inSubShapeID, outX, outY, outTriangleIndex);
+}
+
 const PhysicsMaterial *HeightFieldShape::GetMaterial(const SubShapeID &inSubShapeID) const
 {
 	// Decode ID
@@ -1717,6 +1722,10 @@ public:
 		// Early out if there's no collision
 		if (mShape->mHeightSamplesSize == 0)
 			return;
+
+		// Assert that an inside-out bounding box does not collide
+		JPH_IF_ENABLE_ASSERTS(UVec4 dummy = UVec4::sReplicate(0);)
+		JPH_ASSERT(ioVisitor.VisitRangeBlock(Vec4::sReplicate(-1.0e6f), Vec4::sReplicate(1.0e6f), Vec4::sReplicate(-1.0e6f), Vec4::sReplicate(1.0e6f), Vec4::sReplicate(-1.0e6f), Vec4::sReplicate(1.0e6f), dummy, 0) == 0);
 
 		// Precalculate values relating to sample count
 		uint32 sample_count = mShape->mSampleCount;
@@ -2130,7 +2139,7 @@ void HeightFieldShape::CastRay(const RayCast &inRay, const RayCastSettings &inRa
 			mRayOrigin(inRay.mOrigin),
 			mRayDirection(inRay.mDirection),
 			mRayInvDirection(inRay.mDirection),
-			mBackFaceMode(inRayCastSettings.mBackFaceMode),
+			mBackFaceMode(inRayCastSettings.mBackFaceModeTriangles),
 			mShape(inShape),
 			mSubShapeIDCreator(inSubShapeIDCreator)
 		{
@@ -2192,7 +2201,7 @@ void HeightFieldShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &in
 	// A height field doesn't have volume, so we can't test insideness
 }
 
-void HeightFieldShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, [[maybe_unused]] float inDeltaTime, [[maybe_unused]] Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const
+void HeightFieldShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const
 {
 	JPH_PROFILE_FUNCTION();
 
@@ -2215,6 +2224,9 @@ void HeightFieldShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform,
 			// Get distance to vertex
 			Vec4 dist_sq = AABox4DistanceSqToPoint(mLocalPosition, inBoundsMinX, inBoundsMinY, inBoundsMinZ, inBoundsMaxX, inBoundsMaxY, inBoundsMaxZ);
 
+			// Clear distance for invalid bounds
+			dist_sq = Vec4::sSelect(Vec4::sReplicate(FLT_MAX), dist_sq, Vec4::sLessOrEqual(inBoundsMinY, inBoundsMaxY));
+
 			// Sort so that highest values are first (we want to first process closer hits and we process stack top to bottom)
 			return SortReverseAndStore(dist_sq, mClosestDistanceSq, ioProperties, &mDistanceStack[inStackTop]);
 		}
@@ -2229,12 +2241,12 @@ void HeightFieldShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform,
 
 	Visitor visitor(inCenterOfMassTransform, inScale);
 
-	for (SoftBodyVertex *v = ioVertices, *sbv_end = ioVertices + inNumVertices; v < sbv_end; ++v)
-		if (v->mInvMass > 0.0f)
+	for (CollideSoftBodyVertexIterator v = inVertices, sbv_end = inVertices + inNumVertices; v != sbv_end; ++v)
+		if (v.GetInvMass() > 0.0f)
 		{
-			visitor.StartVertex(*v);
+			visitor.StartVertex(v);
 			WalkHeightField(visitor);
-			visitor.FinishVertex(*v, inCollidingShapeIndex);
+			visitor.FinishVertex(v, inCollidingShapeIndex);
 		}
 }
 

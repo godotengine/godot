@@ -32,6 +32,10 @@ JoltShapeInstance3D::~JoltShapeInstance3D() {
 	}
 }
 
+AABB JoltShapeInstance3D::get_aabb() const {
+	return get_transform_scaled().xform(shape->get_aabb());
+}
+
 bool JoltShapeInstance3D::try_build() {
 	ERR_FAIL_COND_D(is_disabled());
 

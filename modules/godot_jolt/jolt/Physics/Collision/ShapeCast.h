@@ -93,11 +93,14 @@ class ShapeCastSettings : public CollideSettingsBase
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
-	/// How backfacing triangles should be treated (should we report moving out of a triangle?)
-	EBackFaceMode				mBackFaceModeTriangles				= EBackFaceMode::IgnoreBackFaces;
+	/// Set the backfacing mode for all shapes
+	void						SetBackFaceMode(EBackFaceMode inMode) { mBackFaceModeTriangles = mBackFaceModeConvex = inMode; }
+
+	/// How backfacing triangles should be treated (should we report moving from back to front for triangle based shapes, e.g. for MeshShape/HeightFieldShape?)
+	EBackFaceMode				mBackFaceModeTriangles = EBackFaceMode::IgnoreBackFaces;
 
 	/// How backfacing convex objects should be treated (should we report starting inside an object and moving out?)
-	EBackFaceMode				mBackFaceModeConvex					= EBackFaceMode::IgnoreBackFaces;
+	EBackFaceMode				mBackFaceModeConvex = EBackFaceMode::IgnoreBackFaces;
 
 	/// Indicates if we want to shrink the shape by the convex radius and then expand it again. This speeds up collision detection and gives a more accurate normal at the cost of a more 'rounded' shape.
 	bool						mUseShrunkenShapeAndConvexRadius = false;

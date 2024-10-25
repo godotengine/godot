@@ -41,6 +41,10 @@ _FORCE_INLINE_ AABB to_godot(const JPH::AABox& p_aabb) {
 	return {to_godot(p_aabb.mMin), to_godot(p_aabb.mMax - p_aabb.mMin)};
 }
 
+_FORCE_INLINE_ Plane to_godot(const JPH::Plane& p_plane) {
+	return {to_godot(p_plane.GetNormal()), (real_t)p_plane.GetConstant()};
+}
+
 _FORCE_INLINE_ JPH::Vec3 to_jolt(const Vector3& p_vec) {
 	return {(float)p_vec.x, (float)p_vec.y, (float)p_vec.z};
 }
@@ -72,6 +76,10 @@ _FORCE_INLINE_ JPH::String to_jolt(const String& p_str) {
 
 _FORCE_INLINE_ JPH::AABox to_jolt(const AABB& p_aabb) {
 	return {to_jolt(p_aabb.position), to_jolt(p_aabb.position + p_aabb.size)};
+}
+
+_FORCE_INLINE_ JPH::Plane to_jolt(const Plane& p_plane) {
+	return {to_jolt(p_plane.normal), (float)p_plane.d};
 }
 
 _FORCE_INLINE_ JPH::RVec3 to_jolt_r(const Vector3& p_vec) {

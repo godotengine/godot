@@ -29,6 +29,11 @@ void JoltCapsuleShapeImpl3D::set_data(const Variant& p_data) {
 	destroy();
 }
 
+AABB JoltCapsuleShapeImpl3D::get_aabb() const {
+	const Vector3 half_extents(radius, height / 2.0f, radius);
+	return {-half_extents, half_extents * 2.0f};
+}
+
 String JoltCapsuleShapeImpl3D::to_string() const {
 	return vformat("{height=%f radius=%f}", height, radius);
 }

@@ -31,6 +31,9 @@ constexpr char CCD_MAX_PENETRATION[] = "physics/jolt_3d/continuous_cd/max_penetr
 constexpr char RECOVERY_ITERATIONS[] = "physics/jolt_3d/kinematics/recovery_iterations";
 constexpr char RECOVERY_AMOUNT[] = "physics/jolt_3d/kinematics/recovery_amount";
 
+constexpr char LEGACY_RAY_CASTING[] = "physics/jolt_3d/queries/use_legacy_ray_casting";
+constexpr char RAY_FACE_INDEX[] = "physics/jolt_3d/queries/enable_ray_cast_face_index";
+
 constexpr char POSITION_ITERATIONS[] = "physics/jolt_3d/solver/position_iterations";
 constexpr char VELOCITY_ITERATIONS[] = "physics/jolt_3d/solver/velocity_iterations";
 constexpr char POSITION_CORRECTION[] = "physics/jolt_3d/solver/position_correction";
@@ -39,6 +42,7 @@ constexpr char BOUNCE_VELOCITY_THRESHOLD[] = "physics/jolt_3d/solver/bounce_velo
 constexpr char CONTACT_DISTANCE[] = "physics/jolt_3d/solver/contact_speculative_distance";
 constexpr char CONTACT_PENETRATION[] = "physics/jolt_3d/solver/contact_allowed_penetration";
 
+constexpr char WORLD_BOUNDARY_SIZE[] = "physics/jolt_3d/limits/world_boundary_shape_size";
 constexpr char MAX_LINEAR_VELOCITY[] = "physics/jolt_3d/limits/max_linear_velocity";
 constexpr char MAX_ANGULAR_VELOCITY[] = "physics/jolt_3d/limits/max_angular_velocity";
 constexpr char MAX_BODIES[] = "physics/jolt_3d/limits/max_bodies";
@@ -141,6 +145,8 @@ TType get_setting(const char* p_setting) {
 } // namespace
 
 void JoltProjectSettings::register_settings() {
+	// clang-format off
+
 	register_setting_plain(SLEEP_ENABLED, true);
 	register_setting_hinted(SLEEP_VELOCITY_THRESHOLD, 0.03f, U"suffix:m/s");
 	register_setting_ranged(SLEEP_TIME_THRESHOLD, 0.5f, U"0,5,0.01,or_greater,suffix:s");
@@ -160,23 +166,29 @@ void JoltProjectSettings::register_settings() {
 	register_setting_ranged(RECOVERY_ITERATIONS, 4, U"1,8,or_greater");
 	register_setting_ranged(RECOVERY_AMOUNT, 40.0f, U"0,100,0.1,suffix:%");
 
+	register_setting_plain(LEGACY_RAY_CASTING, false, true);
+	register_setting_plain(RAY_FACE_INDEX, false);
+
 	register_setting_ranged(VELOCITY_ITERATIONS, 10, U"2,16,or_greater");
 	register_setting_ranged(POSITION_ITERATIONS, 2, U"1,16,or_greater");
 	register_setting_ranged(POSITION_CORRECTION, 20.0f, U"0,100,0.1,suffix:%");
-	register_setting_ranged(ACTIVE_EDGE_THRESHOLD, Math::deg_to_rad(50.0f), U"0,90,0.01,radians");
+	register_setting_ranged(ACTIVE_EDGE_THRESHOLD, Math::deg_to_rad(50.0f), U"0,90,0.01,radians_as_degrees");
 	register_setting_hinted(BOUNCE_VELOCITY_THRESHOLD, 1.0f, U"suffix:m/s");
 	register_setting_ranged(CONTACT_DISTANCE, 0.02f, U"0,1,0.00001,or_greater,suffix:m");
 	register_setting_ranged(CONTACT_PENETRATION, 0.02f, U"0,1,0.00001,or_greater,suffix:m");
 	register_setting_plain(PAIR_CACHE_ENABLED, true);
 	register_setting_ranged(PAIR_CACHE_DISTANCE, 0.001f, U"0,0.01,0.00001,or_greater,suffix:m");
-	register_setting_ranged(PAIR_CACHE_ANGLE, Math::deg_to_rad(2.0f), U"0,180,0.01,radians");
+	register_setting_ranged(PAIR_CACHE_ANGLE, Math::deg_to_rad(2.0f), U"0,180,0.01,radians_as_degrees");
 
+	register_setting_ranged(WORLD_BOUNDARY_SIZE, 2000.0f, U"2,2000,0.1,or_greater,suffix:m");
 	register_setting_ranged(MAX_LINEAR_VELOCITY, 500.0f, U"0,500,0.01,or_greater,suffix:m/s");
 	register_setting_ranged(MAX_ANGULAR_VELOCITY, 2700.0f, U"0,2700,0.01,or_greater,suffix:°/s");
 	register_setting_ranged(MAX_BODIES, 10240, U"1,10240,or_greater", true);
 	register_setting_ranged(MAX_PAIRS, 65536, U"8,65536,or_greater");
 	register_setting_ranged(MAX_CONTACTS, 20480, U"8,20480,or_greater");
 	register_setting_ranged(MAX_TEMP_MEMORY, 32, U"1,32,or_greater,suffix:MiB");
+
+	// clang-format on
 }
 
 bool JoltProjectSettings::is_sleep_enabled() {
@@ -244,6 +256,16 @@ float JoltProjectSettings::get_kinematic_recovery_amount() {
 	return value;
 }
 
+bool JoltProjectSettings::use_legacy_ray_casting() {
+	static const auto value = get_setting<bool>(LEGACY_RAY_CASTING);
+	return value;
+}
+
+bool JoltProjectSettings::enable_ray_cast_face_index() {
+	static const auto value = get_setting<bool>(RAY_FACE_INDEX);
+	return value;
+}
+
 int32_t JoltProjectSettings::get_velocity_iterations() {
 	static const auto value = get_setting<int32_t>(VELOCITY_ITERATIONS);
 	return value;
@@ -288,12 +310,17 @@ bool JoltProjectSettings::is_pair_cache_enabled() {
 }
 
 float JoltProjectSettings::get_pair_cache_distance() {
-	static const auto value = square(get_setting<float>(PAIR_CACHE_DISTANCE));
-	return value;
+	static const auto value = (get_setting<float>(PAIR_CACHE_DISTANCE));
+	return value * value;
 }
 
 float JoltProjectSettings::get_pair_cache_angle() {
 	static const auto value = Math::cos(get_setting<float>(PAIR_CACHE_ANGLE) / 2.0f);
+	return value;
+}
+
+float JoltProjectSettings::get_world_boundary_shape_size() {
+	static const auto value = get_setting<float>(WORLD_BOUNDARY_SIZE);
 	return value;
 }
 

@@ -334,6 +334,20 @@ These settings are exposed by Godot Jolt and can be found under "Physics" - "Jol
       <td>-</td>
     </tr>
     <tr>
+      <td>Queries</td>
+      <td>Enable Ray Cast Face Index</td>
+      <td>
+        Whether to actually populate the <code>face_index</code> field in the result
+        <code>Dictionary</code> from <code>intersect_ray</code>, also known as
+        <code>get_collision_face_index()</code> in the <code>RayCast3D</code> node.
+      </td>
+      <td>
+        ⚠️ Enabling this can come at a fairly heavy memory cost if you have many (or complex)
+        <code>ConcavePolygonShape3D</code> in your scene, as this roughly adds an additional 25%
+        memory.
+      </td>
+    </tr>
+    <tr>
       <td>Solver</td>
       <td>Velocity Iterations</td>
       <td>The number of solver velocity iterations to run during a physics tick.</td>
@@ -397,6 +411,12 @@ These settings are exposed by Godot Jolt and can be found under "Physics" - "Jol
       <td>Contact Allowed Penetration</td>
       <td>How much bodies are allowed to penetrate eachother.</td>
       <td>-</td>
+    </tr>
+    <tr>
+      <td>Limits</td>
+      <td>World Boundary Shape Size</td>
+      <td>How wide/high/deep a <code>WorldBoundaryShape3D</code> will be.</td>
+      <td>Note that only half of this value will be used for its height.</td>
     </tr>
     <tr>
       <td>Limits</td>

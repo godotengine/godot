@@ -175,7 +175,6 @@ private:
 		RefConst<Shape>					mShape;										///< Shape of the body we hit
 		BodyID							mBodyID;									///< Body ID of the body we hit
 		EMotionType						mMotionType;								///< Motion type of the body we hit
-		bool							mIsSensor;									///< If the contact should be treated as a sensor vs body contact (no collision response)
 		float							mInvMass;									///< Inverse mass of the body we hit
 		float							mFriction;									///< Combined friction of the two bodies
 		float							mRestitution;								///< Combined restitution of the two bodies
@@ -188,6 +187,15 @@ private:
 		Vec3							mOriginalAngularVelocity;					///< Angular velocity of the body in local space to the soft body at start
 	};
 
+	// Collect information about the colliding sensors
+	struct CollidingSensor
+	{
+		Mat44							mCenterOfMassTransform;						///< Transform of the body relative to the soft body
+		RefConst<Shape>					mShape;										///< Shape of the body we hit
+		BodyID							mBodyID;									///< Body ID of the body we hit
+		bool							mHasContact;								///< If the sensor collided with the soft body
+	};
+
 	// Information about the state of all skinned vertices
 	struct SkinState
 	{
@@ -197,7 +205,10 @@ private:
 	};
 
 	/// Do a narrow phase check and determine the closest feature that we can collide with
-	void								DetermineCollisionPlanes(const SoftBodyUpdateContext &inContext, uint inVertexStart, uint inNumVertices);
+	void								DetermineCollisionPlanes(uint inVertexStart, uint inNumVertices);
+
+	/// Do a narrow phase check between a single sensor and the soft body
+	void								DetermineSensorCollisions(CollidingSensor &ioSensor);
 
 	/// Apply pressure force and update the vertex velocities
 	void								ApplyPressure(const SoftBodyUpdateContext &inContext);
@@ -226,11 +237,17 @@ private:
 	/// Update the state of the soft body (position, velocity, bounds)
 	void								UpdateSoftBodyState(SoftBodyUpdateContext &ioContext, const PhysicsSettings &inPhysicsSettings);
 
+	/// Start the first solver iteration
+	void								StartFirstIteration(SoftBodyUpdateContext &ioContext);
+
 	/// Executes tasks that need to run on the start of an iteration (i.e. the stuff that can't run in parallel)
 	void								StartNextIteration(const SoftBodyUpdateContext &ioContext);
 
 	/// Helper function for ParallelUpdate that works on batches of collision planes
 	EStatus								ParallelDetermineCollisionPlanes(SoftBodyUpdateContext &ioContext);
+
+	/// Helper function for ParallelUpdate that works on sensor collisions
+	EStatus								ParallelDetermineSensorCollisions(SoftBodyUpdateContext &ioContext);
 
 	/// Helper function for ParallelUpdate that works on batches of constraints
 	EStatus								ParallelApplyConstraints(SoftBodyUpdateContext &ioContext, const PhysicsSettings &inPhysicsSettings);
@@ -252,6 +269,7 @@ private:
 	RefConst<SoftBodySharedSettings>	mSettings;									///< Configuration of the particles and constraints
 	Array<Vertex>						mVertices;									///< Current state of all vertices in the simulation
 	Array<CollidingShape>				mCollidingShapes;							///< List of colliding shapes retrieved during the last update
+	Array<CollidingSensor>				mCollidingSensors;							///< List of colliding sensors retrieved during the last update
 	Array<SkinState>					mSkinState;									///< List of skinned positions (1-on-1 with mVertices but only those that are used by the skinning constraints are filled in)
 	AABox								mLocalBounds;								///< Bounding box of all vertices
 	AABox								mLocalPredictedBounds;						///< Predicted bounding box for all vertices using extrapolation of velocity by last step delta time
@@ -259,7 +277,7 @@ private:
 	float								mPressure;									///< n * R * T, amount of substance * ideal gas constant * absolute temperature, see https://en.wikipedia.org/wiki/Pressure
 	float								mSkinnedMaxDistanceMultiplier = 1.0f;		///< Multiplier applied to Skinned::mMaxDistance to allow tightening or loosening of the skin constraints
 	bool								mUpdatePosition;							///< Update the position of the body while simulating (set to false for something that is attached to the static world)
-	bool								mHasContact = false;						///< True if the soft body has collided with anything in the last update
+	bool								mNeedContactCallback = false;						///< True if the soft body has collided with anything in the last update
 	bool								mEnableSkinConstraints = true;				///< If skin constraints are enabled
 	bool								mSkinStatePreviousPositionValid = false;	///< True if the skinning was updated in the last update so that the previous position of the skin state is valid
 };

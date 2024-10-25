@@ -37,6 +37,8 @@ public:
 
 	virtual void set_margin(float p_margin) = 0;
 
+	virtual AABB get_aabb() const = 0;
+
 	float get_solver_bias() const;
 
 	void set_solver_bias(float p_bias);
@@ -67,9 +69,17 @@ public:
 
 	static JPH::ShapeRefC with_user_data(const JPH::Shape* p_shape, uint64_t p_user_data);
 
-	static JPH::ShapeRefC with_double_sided(const JPH::Shape* p_shape);
+	static JPH::ShapeRefC with_double_sided(const JPH::Shape* p_shape, bool p_back_face_collision);
 
 	static JPH::ShapeRefC without_custom_shapes(const JPH::Shape* p_shape);
+
+	static Vector3 make_scale_valid(const JPH::Shape* p_shape, const Vector3& p_scale);
+
+	static bool is_scale_valid(
+		const Vector3& p_scale,
+		const Vector3& p_valid_scale,
+		real_t p_tolerance = 0.01f
+	);
 
 protected:
 	virtual JPH::ShapeRefC _build() const = 0;
@@ -82,3 +92,32 @@ protected:
 
 	JPH::ShapeRefC jolt_ref;
 };
+
+#ifdef TOOLS_ENABLED
+
+#define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg)               \
+	if (unlikely(!JoltShapeImpl3D::is_scale_valid(m_scale, valid_scale))) {      \
+		ERR_PRINT(vformat(                                                       \
+			"%s "                                                                \
+			"A scale of %v is not supported by Godot Jolt for this shape/body. " \
+			"The scale will instead be treated as %v.",                          \
+			m_msg,                                                               \
+			m_scale,                                                             \
+			valid_scale                                                          \
+		));                                                                      \
+	} else                                                                       \
+		((void)0)
+
+#else // TOOLS_ENABLED
+
+#define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg)
+
+#endif // TOOLS_ENABLED
+
+#define ENSURE_SCALE_VALID(m_shape, m_scale, m_msg)                                      \
+	if (true) {                                                                          \
+		const Vector3 valid_scale = JoltShapeImpl3D::make_scale_valid(m_shape, m_scale); \
+		ERR_PRINT_INVALID_SCALE_MSG(m_scale, valid_scale, m_msg);                        \
+		(m_scale) = valid_scale;                                                         \
+	} else                                                                               \
+		((void)0)

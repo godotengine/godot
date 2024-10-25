@@ -149,10 +149,8 @@ public:
 	void CollideSoftBodyVertices(
 		[[maybe_unused]] JPH::Mat44Arg p_center_of_mass_transform,
 		[[maybe_unused]] JPH::Vec3Arg p_scale,
-		[[maybe_unused]] JPH::SoftBodyVertex* p_vertices,
+		[[maybe_unused]] const JPH::CollideSoftBodyVertexIterator& p_vertices,
 		[[maybe_unused]] JPH::uint p_num_vertices,
-		[[maybe_unused]] float p_delta_time,
-		[[maybe_unused]] JPH::Vec3Arg p_displacement_due_to_gravity,
 		[[maybe_unused]] int p_colliding_shape_index
 	) const override {
 		ERR_FAIL_NOT_IMPL();

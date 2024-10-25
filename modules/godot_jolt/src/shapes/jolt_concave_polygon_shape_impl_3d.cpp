@@ -5,7 +5,7 @@
 Variant JoltConcavePolygonShapeImpl3D::get_data() const {
 	Dictionary data;
 	data["faces"] = faces;
-	data["backface_collision"] = backface_collision;
+	data["backface_collision"] = back_face_collision;
 	return data;
 }
 
@@ -17,11 +17,13 @@ void JoltConcavePolygonShapeImpl3D::set_data(const Variant& p_data) {
 	const Variant maybe_faces = data.get("faces", {});
 	ERR_FAIL_COND(maybe_faces.get_type() != Variant::PACKED_VECTOR3_ARRAY);
 
-	const Variant maybe_backface_collision = data.get("backface_collision", {});
-	ERR_FAIL_COND(maybe_backface_collision.get_type() != Variant::BOOL);
+	const Variant maybe_back_face_collision = data.get("backface_collision", {});
+	ERR_FAIL_COND(maybe_back_face_collision.get_type() != Variant::BOOL);
 
 	faces = maybe_faces;
-	backface_collision = maybe_backface_collision;
+	back_face_collision = maybe_back_face_collision;
+
+	aabb = _calculate_aabb();
 
 	destroy();
 }
@@ -64,6 +66,7 @@ JPH::ShapeRefC JoltConcavePolygonShapeImpl3D::_build() const {
 
 	const Vector3* faces_begin = &faces[0];
 	const Vector3* faces_end = faces_begin + vertex_count;
+	JPH::uint32 triangle_index = 0;
 
 	for (const Vector3* vertex = faces_begin; vertex != faces_end; vertex += 3) {
 		const Vector3* v0 = vertex + 0;
@@ -73,12 +76,15 @@ JPH::ShapeRefC JoltConcavePolygonShapeImpl3D::_build() const {
 		jolt_faces.emplace_back(
 			JPH::Float3((float)v2->x, (float)v2->y, (float)v2->z),
 			JPH::Float3((float)v1->x, (float)v1->y, (float)v1->z),
-			JPH::Float3((float)v0->x, (float)v0->y, (float)v0->z)
+			JPH::Float3((float)v0->x, (float)v0->y, (float)v0->z),
+			0,
+			triangle_index++
 		);
 	}
 
 	JPH::MeshShapeSettings shape_settings(jolt_faces);
 	shape_settings.mActiveEdgeCosThresholdAngle = JoltProjectSettings::get_active_edge_threshold();
+	shape_settings.mPerTriangleUserData = JoltProjectSettings::enable_ray_cast_face_index();
 
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 
@@ -94,11 +100,21 @@ JPH::ShapeRefC JoltConcavePolygonShapeImpl3D::_build() const {
 		)
 	);
 
-	JPH::ShapeRefC shape = shape_result.Get();
+	return JoltShapeImpl3D::with_double_sided(shape_result.Get(), back_face_collision);
+}
 
-	if (backface_collision) {
-		return JoltShapeImpl3D::with_double_sided(shape);
+AABB JoltConcavePolygonShapeImpl3D::_calculate_aabb() const {
+	AABB result;
+
+	for (int i = 0; i < faces.size(); ++i) {
+		const Vector3& vertex = faces[i];
+
+		if (i == 0) {
+			result.position = vertex;
+		} else {
+			result.expand_to(vertex);
+		}
 	}
 
-	return shape;
+	return result;
 }

@@ -9,6 +9,53 @@ Breaking changes are denoted with ⚠️.
 
 ## [Unreleased]
 
+### Changed
+
+- ⚠️ Changed the `center_of_mass` property of `PhysicsDirectBodyState3D` to be a relative global
+  position rather than an absolute global position, to match Godot Physics.
+- ⚠️ Changed the ray-cast parameter `hit_back_faces` to no longer hit the back/inside of convex
+  shapes, to better match Godot Physics. This means `hit_back_faces` will only have an effect on
+  `ConcavePolygonShape3D` and `HeightMapShape3D`.
+- ⚠️ Changed the ray-cast parameter `hit_back_faces` to only hit back-faces of a
+  `ConcavePolygonShape3D` if its `backface_collision` property is set to `true`, to better match
+  Godot Physics.
+- ⚠️ Changed the `get_applied_force` and `get_applied_torque` methods of `JoltHingeJoint3D`,
+  `JoltSliderJoint3D`, `JoltConeTwistJoint3D` and `JoltGeneric6DOFJoint3D` to now also include
+  forces/torque applied by any enabled motor or spring as well.
+
+### Added
+
+- Added support for `WorldBoundaryShape3D`.
+- Added support for `face_index` in ray-cast results.
+- Added project setting "World Boundary Shape Size", to allow changing the effective size of
+  `WorldBoundaryShape3D`.
+- Added project setting "Use Legacy Ray Casting", to allow reverting back to the (now legacy)
+  behavior of the `hit_back_faces` ray-cast parameter.
+- Added project setting "Enable Ray Cast Face Index", to allow opting in to the additional memory
+  needed to support `face_index`, which is roughly an additional 25% to every
+  `ConcavePolygonShape3D`.
+- Added "Max Force"/"Max Torque" to the spring properties of `JoltGeneric6DOFJoint3D`.
+
+### Fixed
+
+- Fixed issue with `SoftBody3D` not waking up when doing things like changing its `total_mass`,
+  `damping_coefficient`, `simulation_precision`, or when moving any of its pinned points.
+- Fixed issue where bodies with multiple shapes could end up clipping through other bodies if the
+  "Use Enhanced Internal Edge Detection" setting was enabled (which it is by default).
+- Fixed crash when changing the mesh of an in-tree `SoftBody3D` that has pinned vertices.
+- Fixed issue where the joint substitute nodes (`JoltHingeJoint3D`, etc.) would not display their
+  angle properties in degrees when using a `DISABLE_DEPRECATED` build of Godot.
+- Fixed crash when a `SoftBody3D` collided with the border of a
+  `HeightMapShape3D` using non-power-of-two dimensions.
+- Fixed issue where CCD would have no effect against a `ConcavePolygonShape3D` that had
+  `backface_collision` enabled.
+- Fixed crash when using a `SeparationRayShape3D` in a `RigidBody3D` that had CCD enabled.
+- Fixed issue where the behavior of the `body_test_motion` method of `PhysicsServer3D` (which powers
+  `move_and_collide` and `move_and_slide`) may have differed from Godot Physics when dealing with a
+  `SeparationRayShape3D` that had `slide_on_slope` enabled.
+
+## [0.13.0] - 2024-08-15
+
 ### Removed
 
 - ⚠️ Removed any `JoltPhysicsServer3D.G6DOF_*` enums that were previously (i.e. before Godot 4.3)
@@ -22,8 +69,7 @@ Breaking changes are denoted with ⚠️.
 - ⚠️ Changed the inertia of shapeless bodies to be `(1, 1, 1)`, to match Godot Physics.
 - Changed `SeparationRayShape3D` to not treat other convex shapes as solid, meaning it will now only
   ever collide with the hull of other convex shapes, which better matches Godot Physics.
-- Mirrored the way in which angular limits are visualized for `JoltHingeJoint3D`,
-  `JoltConeTwistJoint3D` and `JoltGeneric6DOFJoint`.
+- Changed so that modifying joint properties now wake up any bodies connected to them.
 
 ### Added
 
@@ -73,6 +119,8 @@ Breaking changes are denoted with ⚠️.
   joint.
 - Fixed issue where re-adding previously used physics bodies to the scene tree could result in many
   "Unhandled override mode" errors in the Output log.
+- Fixed memory leak when changing the data/properties of `CapsuleShape3D`, `CylinderShape3D`,
+  `SeparationRayShape3D`, `ConcavePolygonShape3D`, and `HeightMapShape3D`.
 
 ## [0.12.0] - 2024-01-07
 
@@ -422,7 +470,8 @@ Breaking changes are denoted with ⚠️.
 
 Initial release.
 
-[Unreleased]: https://github.com/godot-jolt/godot-jolt/compare/v0.12.0-stable...HEAD
+[Unreleased]: https://github.com/godot-jolt/godot-jolt/compare/v0.13.0-stable...HEAD
+[0.13.0]: https://github.com/godot-jolt/godot-jolt/compare/v0.12.0-stable...v0.13.0-stable
 [0.12.0]: https://github.com/godot-jolt/godot-jolt/compare/v0.11.0-stable...v0.12.0-stable
 [0.11.0]: https://github.com/godot-jolt/godot-jolt/compare/v0.10.0-stable...v0.11.0-stable
 [0.10.0]: https://github.com/godot-jolt/godot-jolt/compare/v0.9.0-stable...v0.10.0-stable

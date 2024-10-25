@@ -99,6 +99,8 @@ private:
 
 	void _spring_equilibrium_changed(int32_t p_axis);
 
+	void _spring_limit_changed(int32_t p_axis);
+
 	double limit_lower[AXIS_COUNT] = {};
 
 	double limit_upper[AXIS_COUNT] = {};
@@ -118,6 +120,8 @@ private:
 	double spring_damping[AXIS_COUNT] = {};
 
 	double spring_equilibrium[AXIS_COUNT] = {};
+
+	double spring_limit[AXIS_COUNT] = {};
 
 	bool limit_enabled[AXIS_COUNT] = {};
 

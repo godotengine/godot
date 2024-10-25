@@ -16,6 +16,8 @@ public:
 
 	void set_margin([[maybe_unused]] float p_margin) override { }
 
+	AABB get_aabb() const override { return aabb; }
+
 	String to_string() const;
 
 private:
@@ -24,6 +26,10 @@ private:
 	JPH::ShapeRefC _build_height_field() const;
 
 	JPH::ShapeRefC _build_mesh() const;
+
+	AABB _calculate_aabb() const;
+
+	AABB aabb;
 
 #ifdef REAL_T_IS_DOUBLE
 	PackedFloat64Array heights;

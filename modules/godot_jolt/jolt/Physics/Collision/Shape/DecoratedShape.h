@@ -47,6 +47,9 @@ public:
 	// See Shape::GetSubShapeIDBitsRecursive
 	virtual uint					GetSubShapeIDBitsRecursive() const override				{ return mInnerShape->GetSubShapeIDBitsRecursive(); }
 
+	// See Shape::GetLeafShape
+	virtual const Shape *			GetLeafShape(const SubShapeID &inSubShapeID, SubShapeID &outRemainder) const override { return mInnerShape->GetLeafShape(inSubShapeID, outRemainder); }
+
 	// See Shape::GetMaterial
 	virtual const PhysicsMaterial *	GetMaterial(const SubShapeID &inSubShapeID) const override;
 

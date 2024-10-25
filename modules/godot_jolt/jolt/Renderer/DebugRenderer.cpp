@@ -355,6 +355,73 @@ void DebugRenderer::Create8thSphere(Array<uint32> &ioIndices, Array<Vertex> &ioV
 	Create8thSphereRecursive(ioIndices, ioVertices, inDir1, idx1, inDir2, idx2, inDir3, idx3, inUV, inGetSupport, inLevel);
 }
 
+DebugRenderer::Batch DebugRenderer::CreateCylinder(float inTop, float inBottom, float inTopRadius, float inBottomRadius, int inLevel)
+{
+	Array<Vertex> cylinder_vertices;
+	Array<uint32> cylinder_indices;
+
+	for (int q = 0; q < 4; ++q)
+	{
+		Float2 uv = (q & 1) == 0? Float2(0.25f, 0.75f) : Float2(0.25f, 0.25f);
+
+		uint32 center_start_idx = (uint32)cylinder_vertices.size();
+
+		Float3 nt(0.0f, 1.0f, 0.0f);
+		Float3 nb(0.0f, -1.0f, 0.0f);
+		cylinder_vertices.push_back({ Float3(0.0f, inTop, 0.0f), nt, uv, Color::sWhite });
+		cylinder_vertices.push_back({ Float3(0.0f, inBottom, 0.0f), nb, uv, Color::sWhite });
+
+		uint32 vtx_start_idx = (uint32)cylinder_vertices.size();
+
+		int num_parts = 1 << inLevel;
+		for (int i = 0; i <= num_parts; ++i)
+		{
+			// Calculate top and bottom vertex
+			float angle = 0.5f * JPH_PI * (float(q) + float(i) / num_parts);
+			float s = Sin(angle);
+			float c = Cos(angle);
+			Float3 vt(inTopRadius * s, inTop, inTopRadius * c);
+			Float3 vb(inBottomRadius * s, inBottom, inBottomRadius * c);
+
+			// Calculate normal
+			Vec3 edge = Vec3(vt) - Vec3(vb);
+			Float3 n;
+			edge.Cross(Vec3(s, 0, c).Cross(edge)).Normalized().StoreFloat3(&n);
+
+			cylinder_vertices.push_back({ vt, nt, uv, Color::sWhite });
+			cylinder_vertices.push_back({ vb, nb, uv, Color::sWhite });
+			cylinder_vertices.push_back({ vt, n, uv, Color::sWhite });
+			cylinder_vertices.push_back({ vb, n, uv, Color::sWhite });
+		}
+
+		for (int i = 0; i < num_parts; ++i)
+		{
+			uint32 start = vtx_start_idx + 4 * i;
+
+			// Top
+			cylinder_indices.push_back(center_start_idx);
+			cylinder_indices.push_back(start);
+			cylinder_indices.push_back(start + 4);
+
+			// Bottom
+			cylinder_indices.push_back(center_start_idx + 1);
+			cylinder_indices.push_back(start + 5);
+			cylinder_indices.push_back(start + 1);
+
+			// Side
+			cylinder_indices.push_back(start + 2);
+			cylinder_indices.push_back(start + 3);
+			cylinder_indices.push_back(start + 7);
+
+			cylinder_indices.push_back(start + 2);
+			cylinder_indices.push_back(start + 7);
+			cylinder_indices.push_back(start + 6);
+		}
+	}
+
+	return CreateTriangleBatch(cylinder_vertices, cylinder_indices);
+}
+
 void DebugRenderer::CreateQuad(Array<uint32> &ioIndices, Array<Vertex> &ioVertices, Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3, Vec3Arg inV4)
 {
 	// Make room
@@ -556,64 +623,7 @@ void DebugRenderer::Initialize()
 		}
 
 		// Cylinder
-		{
-			Array<Vertex> cylinder_vertices;
-			Array<uint32> cylinder_indices;
-			for (int q = 0; q < 4; ++q)
-			{
-				Float2 uv = (q & 1) == 0? Float2(0.25f, 0.75f) : Float2(0.25f, 0.25f);
-
-				uint32 center_start_idx = (uint32)cylinder_vertices.size();
-
-				Float3 nt(0.0f, 1.0f, 0.0f);
-				Float3 nb(0.0f, -1.0f, 0.0f);
-				cylinder_vertices.push_back({ Float3(0.0f, 1.0f, 0.0f), nt, uv, Color::sWhite });
-				cylinder_vertices.push_back({ Float3(0.0f, -1.0f, 0.0f), nb, uv, Color::sWhite });
-
-				uint32 vtx_start_idx = (uint32)cylinder_vertices.size();
-
-				int num_parts = 1 << level;
-				for (int i = 0; i <= num_parts; ++i)
-				{
-					float angle = 0.5f * JPH_PI * (float(q) + float(i) / num_parts);
-					float s = Sin(angle);
-					float c = Cos(angle);
-					Float3 vt(s, 1.0f, c);
-					Float3 vb(s, -1.0f, c);
-					Float3 n(s, 0, c);
-
-					cylinder_vertices.push_back({ vt, nt, uv, Color::sWhite });
-					cylinder_vertices.push_back({ vb, nb, uv, Color::sWhite });
-					cylinder_vertices.push_back({ vt, n, uv, Color::sWhite });
-					cylinder_vertices.push_back({ vb, n, uv, Color::sWhite });
-				}
-
-				for (int i = 0; i < num_parts; ++i)
-				{
-					uint32 start = vtx_start_idx + 4 * i;
-
-					// Top
-					cylinder_indices.push_back(center_start_idx);
-					cylinder_indices.push_back(start);
-					cylinder_indices.push_back(start + 4);
-
-					// Bottom
-					cylinder_indices.push_back(center_start_idx + 1);
-					cylinder_indices.push_back(start + 5);
-					cylinder_indices.push_back(start + 1);
-
-					// Side
-					cylinder_indices.push_back(start + 2);
-					cylinder_indices.push_back(start + 3);
-					cylinder_indices.push_back(start + 7);
-
-					cylinder_indices.push_back(start + 2);
-					cylinder_indices.push_back(start + 7);
-					cylinder_indices.push_back(start + 6);
-				}
-			}
-			mCylinder->mLODs.push_back({ CreateTriangleBatch(cylinder_vertices, cylinder_indices), distance });
-		}
+		mCylinder->mLODs.push_back({ CreateCylinder(1.0f, -1.0f, 1.0f, 1.0f, level), distance });
 	}
 }
 
@@ -1054,6 +1064,29 @@ void DebugRenderer::DrawPie(RVec3Arg inCenter, float inRadius, Vec3Arg inNormal,
 	DrawGeometry(matrix, inColor, geometry, ECullMode::Off, inCastShadow, inDrawMode);
 }
 
+void DebugRenderer::DrawTaperedCylinder(RMat44Arg inMatrix, float inTop, float inBottom, float inTopRadius, float inBottomRadius, ColorArg inColor, ECastShadow inCastShadow, EDrawMode inDrawMode)
+{
+	TaperedCylinder tapered_cylinder { inTop, inBottom, inTopRadius, inBottomRadius };
+
+	GeometryRef &geometry = mTaperedCylinders[tapered_cylinder];
+	if (geometry == nullptr)
+	{
+		TaperedCylinderBatces::iterator it = mPrevTaperedCylinders.find(tapered_cylinder);
+		if (it != mPrevTaperedCylinders.end())
+			geometry = it->second;
+	}
+	if (geometry == nullptr)
+	{
+		float max_radius = max(inTopRadius, inBottomRadius);
+		geometry = new Geometry(AABox(Vec3(-max_radius, inBottom, -max_radius), Vec3(max_radius, inTop, max_radius)));
+
+		for (int level = sMaxLevel; level >= 1; --level)
+			geometry->mLODs.push_back({ CreateCylinder(inTop, inBottom, inTopRadius, inBottomRadius, level), sLODDistanceForLevel[sMaxLevel - level] });
+	}
+
+	DrawGeometry(inMatrix, inColor, geometry, ECullMode::CullBackFace, inCastShadow, inDrawMode);
+}
+
 void DebugRenderer::NextFrame()
 {
 	mPrevSwingConeLimits.clear();
@@ -1064,6 +1097,9 @@ void DebugRenderer::NextFrame()
 
 	mPrevPieLimits.clear();
 	std::swap(mPieLimits, mPrevPieLimits);
+
+	mPrevTaperedCylinders.clear();
+	std::swap(mTaperedCylinders, mPrevTaperedCylinders);
 }
 
 JPH_NAMESPACE_END

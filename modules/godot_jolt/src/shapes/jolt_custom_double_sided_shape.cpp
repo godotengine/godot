@@ -1,5 +1,7 @@
 #include "jolt_custom_double_sided_shape.hpp"
 
+#include "servers/jolt_project_settings.hpp"
+
 namespace {
 
 JPH::Shape* construct_double_sided() {
@@ -76,6 +78,37 @@ void collide_shape_vs_double_sided(
 	);
 }
 
+void cast_shape_vs_double_sided(
+	const JPH::ShapeCast& p_shape_cast,
+	const JPH::ShapeCastSettings& p_shape_cast_settings,
+	const JPH::Shape* p_shape,
+	JPH::Vec3Arg p_scale,
+	const JPH::ShapeFilter& p_shape_filter,
+	JPH::Mat44Arg p_center_of_mass_transform2,
+	const JPH::SubShapeIDCreator& p_sub_shape_id_creator1,
+	const JPH::SubShapeIDCreator& p_sub_shape_id_creator2,
+	JPH::CastShapeCollector& p_collector
+) {
+	ERR_FAIL_COND(p_shape->GetSubType() != JoltCustomShapeSubType::DOUBLE_SIDED);
+
+	JPH::ShapeCastSettings new_shape_cast_settings = p_shape_cast_settings;
+	new_shape_cast_settings.mBackFaceModeTriangles = JPH::EBackFaceMode::CollideWithBackFaces;
+
+	const auto* shape = static_cast<const JoltCustomDoubleSidedShape*>(p_shape);
+
+	JPH::CollisionDispatch::sCastShapeVsShapeLocalSpace(
+		p_shape_cast,
+		new_shape_cast_settings,
+		shape->GetInnerShape(),
+		p_scale,
+		p_shape_filter,
+		p_center_of_mass_transform2,
+		p_sub_shape_id_creator1,
+		p_sub_shape_id_creator2,
+		p_collector
+	);
+}
+
 } // namespace
 
 JPH::ShapeSettings::ShapeResult JoltCustomDoubleSidedShapeSettings::Create() const {
@@ -107,4 +140,34 @@ void JoltCustomDoubleSidedShape::register_type() {
 			collide_shape_vs_double_sided
 		);
 	}
+
+	for (const JPH::EShapeSubType sub_type : JPH::sConvexSubShapeTypes) {
+		JPH::CollisionDispatch::sRegisterCastShape(
+			sub_type,
+			JoltCustomShapeSubType::DOUBLE_SIDED,
+			cast_shape_vs_double_sided
+		);
+	}
+}
+
+void JoltCustomDoubleSidedShape::CastRay(
+	const JPH::RayCast& p_ray,
+	const JPH::RayCastSettings& p_ray_cast_settings,
+	const JPH::SubShapeIDCreator& p_sub_shape_id_creator,
+	JPH::CastRayCollector& p_collector,
+	const JPH::ShapeFilter& p_shape_filter
+) const {
+	JPH::RayCastSettings new_ray_cast_settings = p_ray_cast_settings;
+
+	if (!back_face_collision && !JoltProjectSettings::use_legacy_ray_casting()) {
+		new_ray_cast_settings.SetBackFaceMode(JPH::EBackFaceMode::IgnoreBackFaces);
+	}
+
+	return mInnerShape->CastRay(
+		p_ray,
+		new_ray_cast_settings,
+		p_sub_shape_id_creator,
+		p_collector,
+		p_shape_filter
+	);
 }

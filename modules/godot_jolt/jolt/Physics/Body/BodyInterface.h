@@ -111,15 +111,28 @@ public:
 	/// @return Created body ID or an invalid ID when out of bodies
 	BodyID						CreateAndAddSoftBody(const SoftBodyCreationSettings &inSettings, EActivation inActivationMode);
 
-	/// Broadphase add state handle, used to keep track of a batch while adding to the broadphase.
+	/// Add state handle, used to keep track of a batch of bodies while adding them to the PhysicsSystem.
 	using AddState = void *;
 
-	///@name Batch adding interface, see Broadphase for further documentation.
-	/// Note that ioBodies array must be kept constant while the add is in progress.
+	///@name Batch adding interface
 	///@{
+
+	/// Prepare adding inNumber bodies at ioBodies to the PhysicsSystem, returns a handle that should be used in AddBodiesFinalize/Abort.
+	/// This can be done on a background thread without influencing the PhysicsSystem.
+	/// ioBodies may be shuffled around by this function and should be kept that way until AddBodiesFinalize/Abort is called.
 	AddState					AddBodiesPrepare(BodyID *ioBodies, int inNumber);
+
+	/// Finalize adding bodies to the PhysicsSystem, supply the return value of AddBodiesPrepare in inAddState.
+	/// Please ensure that the ioBodies array passed to AddBodiesPrepare is unmodified and passed again to this function.
 	void						AddBodiesFinalize(BodyID *ioBodies, int inNumber, AddState inAddState, EActivation inActivationMode);
+
+	/// Abort adding bodies to the PhysicsSystem, supply the return value of AddBodiesPrepare in inAddState.
+	/// This can be done on a background thread without influencing the PhysicsSystem.
+	/// Please ensure that the ioBodies array passed to AddBodiesPrepare is unmodified and passed again to this function.
 	void						AddBodiesAbort(BodyID *ioBodies, int inNumber, AddState inAddState);
+
+	/// Remove inNumber bodies in ioBodies from the PhysicsSystem.
+	/// ioBodies may be shuffled around by this function.
 	void						RemoveBodies(BodyID *ioBodies, int inNumber);
 	///@}
 

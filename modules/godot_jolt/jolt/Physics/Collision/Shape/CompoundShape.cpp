@@ -128,6 +128,22 @@ const PhysicsMaterial *CompoundShape::GetMaterial(const SubShapeID &inSubShapeID
 	return mSubShapes[index].mShape->GetMaterial(remainder);
 }
 
+const Shape *CompoundShape::GetLeafShape(const SubShapeID &inSubShapeID, SubShapeID &outRemainder) const
+{
+	// Decode sub shape index
+	SubShapeID remainder;
+	uint32 index = GetSubShapeIndexFromID(inSubShapeID, remainder);
+	if (index >= mSubShapes.size())
+	{
+		// No longer valid index
+		outRemainder = SubShapeID();
+		return nullptr;
+	}
+
+	// Pass call on
+	return mSubShapes[index].mShape->GetLeafShape(remainder, outRemainder);
+}
+
 uint64 CompoundShape::GetSubShapeUserData(const SubShapeID &inSubShapeID) const
 {
 	// Decode sub shape index
@@ -246,12 +262,12 @@ void CompoundShape::DrawGetSupportingFace(DebugRenderer *inRenderer, RMat44Arg i
 }
 #endif // JPH_DEBUG_RENDERER
 
-void CompoundShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, float inDeltaTime, Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const
+void CompoundShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const
 {
 	for (const SubShape &shape : mSubShapes)
 	{
 		Mat44 transform = shape.GetLocalTransformNoScale(inScale);
-		shape.mShape->CollideSoftBodyVertices(inCenterOfMassTransform * transform, shape.TransformScale(inScale), ioVertices, inNumVertices, inDeltaTime, inDisplacementDueToGravity, inCollidingShapeIndex);
+		shape.mShape->CollideSoftBodyVertices(inCenterOfMassTransform * transform, shape.TransformScale(inScale), inVertices, inNumVertices, inCollidingShapeIndex);
 	}
 }
 

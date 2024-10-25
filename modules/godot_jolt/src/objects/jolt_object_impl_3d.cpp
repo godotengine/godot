@@ -97,7 +97,7 @@ bool JoltObjectImpl3D::can_interact_with(const JoltObjectImpl3D& p_other) const 
 	} else if (const JoltSoftBodyImpl3D* other_soft_body = p_other.as_soft_body()) {
 		return can_interact_with(*other_soft_body);
 	} else {
-		ERR_FAIL_D_MSG(vformat("Unhandled object type: '%d'", p_other.get_type()));
+		ERR_FAIL_D_REPORT(vformat("Unhandled object type: '%d'.", p_other.get_type()));
 	}
 }
 
@@ -117,7 +117,7 @@ String JoltObjectImpl3D::to_string() const {
 }
 
 void JoltObjectImpl3D::_update_object_layer() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return;
 	}
 

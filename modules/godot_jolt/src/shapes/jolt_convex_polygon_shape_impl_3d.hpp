@@ -16,10 +16,16 @@ public:
 
 	void set_margin(float p_margin) override;
 
+	AABB get_aabb() const override { return aabb; }
+
 	String to_string() const;
 
 private:
 	JPH::ShapeRefC _build() const override;
+
+	AABB _calculate_aabb() const;
+
+	AABB aabb;
 
 	PackedVector3Array vertices;
 

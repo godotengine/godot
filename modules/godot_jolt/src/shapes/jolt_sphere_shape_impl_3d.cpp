@@ -15,6 +15,11 @@ void JoltSphereShapeImpl3D::set_data(const Variant& p_data) {
 	destroy();
 }
 
+AABB JoltSphereShapeImpl3D::get_aabb() const {
+	const Vector3 half_extents(radius, radius, radius);
+	return {-half_extents, half_extents * 2.0f};
+}
+
 String JoltSphereShapeImpl3D::to_string() const {
 	return vformat("{radius=%f}", radius);
 }

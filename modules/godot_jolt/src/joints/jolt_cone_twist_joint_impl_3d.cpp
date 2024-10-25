@@ -40,7 +40,7 @@ double JoltConeTwistJointImpl3D::get_param(PhysicsServer3D::ConeTwistJointParam 
 			return DEFAULT_RELAXATION;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled cone twist joint parameter: '%d'", p_param));
+			ERR_FAIL_D_REPORT(vformat("Unhandled cone twist joint parameter: '%d'.", p_param));
 		}
 	}
 }
@@ -89,7 +89,7 @@ void JoltConeTwistJointImpl3D::set_param(
 			}
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled cone twist joint parameter: '%d'", p_param));
+			ERR_FAIL_REPORT(vformat("Unhandled cone twist joint parameter: '%d'.", p_param));
 		} break;
 	}
 }
@@ -112,7 +112,7 @@ double JoltConeTwistJointImpl3D::get_jolt_param(JoltParameter p_param) const {
 			return twist_motor_max_torque;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled parameter: '%d'", p_param));
+			ERR_FAIL_D_REPORT(vformat("Unhandled parameter: '%d'.", p_param));
 		}
 	}
 }
@@ -140,7 +140,7 @@ void JoltConeTwistJointImpl3D::set_jolt_param(JoltParameter p_param, double p_va
 			_twist_motor_limit_changed();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled parameter: '%d'", p_param));
+			ERR_FAIL_REPORT(vformat("Unhandled parameter: '%d'.", p_param));
 		} break;
 	}
 }
@@ -160,7 +160,7 @@ bool JoltConeTwistJointImpl3D::get_jolt_flag(JoltFlag p_flag) const {
 			return twist_motor_enabled;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled flag: '%d'", p_flag));
+			ERR_FAIL_D_REPORT(vformat("Unhandled flag: '%d'.", p_flag));
 		}
 	}
 }
@@ -184,7 +184,7 @@ void JoltConeTwistJointImpl3D::set_jolt_flag(JoltFlag p_flag, bool p_enabled) {
 			_twist_motor_state_changed();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled flag: '%d'", p_flag));
+			ERR_FAIL_REPORT(vformat("Unhandled flag: '%d'.", p_flag));
 		} break;
 	}
 }
@@ -212,13 +212,19 @@ float JoltConeTwistJointImpl3D::get_applied_torque() const {
 	const float last_step = space->get_last_step();
 	QUIET_FAIL_COND_D(last_step == 0.0f);
 
-	const Vector3 rotation_lambda = Vector3(
+	const Vector3 swing_twist_lambda = Vector3(
 		constraint->GetTotalLambdaTwist(),
 		constraint->GetTotalLambdaSwingY(),
 		constraint->GetTotalLambdaSwingZ()
 	);
 
-	return float(rotation_lambda.length() / last_step);
+	// Note that the motor lambda is in a different space than the swing twist lambda, and since the
+	// two forces can cancel each other it is technically incorrect to just add them. The bodies
+	// themselves have moved, so we can't transform one into the space of the other anymore.
+	const float total_lambda = float(swing_twist_lambda.length()) +
+		constraint->GetTotalLambdaMotor().Length();
+
+	return total_lambda / last_step;
 }
 
 void JoltConeTwistJointImpl3D::rebuild() {

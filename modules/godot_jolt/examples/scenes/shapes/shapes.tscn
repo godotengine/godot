@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bua2ujukcadgw"]
+[gd_scene load_steps=17 format=3 uid="uid://bua2ujukcadgw"]
 
 [ext_resource type="Environment" uid="uid://cgl5t5rlv6o6v" path="res://scenes/common/environments/default.tres" id="1_3khfi"]
 [ext_resource type="Script" path="res://scenes/common/scripts/free_look_camera.gd" id="1_uh1hw"]
@@ -10,6 +10,23 @@
 [ext_resource type="PackedScene" uid="uid://cqqkfrnystsat" path="res://scenes/shapes/entities/convex_polygon/convex_polygon.tscn" id="7_objwy"]
 [ext_resource type="PackedScene" uid="uid://cco8tutfmoey8" path="res://scenes/shapes/entities/height_map/height_map.tscn" id="8_8j6mc"]
 [ext_resource type="PackedScene" uid="uid://dosgsvakfplrm" path="res://scenes/shapes/entities/concave_polygon/concave_polygon.tscn" id="9_i15bi"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_714qv"]
+plane = Plane(1, 0, 0, 0)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_gcpy5"]
+plane = Plane(-1, 0, 0, 0)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_8sn1p"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_opywq"]
+plane = Plane(0, -1, 0, 0)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_l2aow"]
+plane = Plane(0, 0, 1, 0)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_54h13"]
+plane = Plane(0, 0, -1, 0)
 
 [node name="Shapes" type="Node3D"]
 
@@ -52,3 +69,29 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
 [node name="ConcavePolygon" parent="." instance=ExtResource("9_i15bi")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="WorldBoundaries" type="StaticBody3D" parent="."]
+
+[node name="Left" type="CollisionShape3D" parent="WorldBoundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 0)
+shape = SubResource("WorldBoundaryShape3D_714qv")
+
+[node name="Right" type="CollisionShape3D" parent="WorldBoundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+shape = SubResource("WorldBoundaryShape3D_gcpy5")
+
+[node name="Bottom" type="CollisionShape3D" parent="WorldBoundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -20, 0)
+shape = SubResource("WorldBoundaryShape3D_8sn1p")
+
+[node name="Top" type="CollisionShape3D" parent="WorldBoundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
+shape = SubResource("WorldBoundaryShape3D_opywq")
+
+[node name="Front" type="CollisionShape3D" parent="WorldBoundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -20)
+shape = SubResource("WorldBoundaryShape3D_l2aow")
+
+[node name="Back" type="CollisionShape3D" parent="WorldBoundaries"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+shape = SubResource("WorldBoundaryShape3D_54h13")

@@ -20,11 +20,15 @@ public:
 
 	Vector3 get_center_of_mass() const;
 
+	Vector3 get_center_of_mass_relative() const;
+
 	Vector3 get_center_of_mass_local() const;
 
 	Vector3 get_linear_velocity() const;
 
 	Vector3 get_angular_velocity() const;
+
+	AABB get_aabb() const;
 
 	virtual bool has_custom_center_of_mass() const = 0;
 
@@ -80,6 +84,8 @@ protected:
 	friend class JoltShapeImpl3D;
 
 	virtual JPH::EMotionType _get_motion_type() const = 0;
+
+	bool _is_big() const;
 
 	JPH::ShapeRefC _try_build_single_shape();
 

@@ -84,6 +84,8 @@ public:
 
 	void set_space(JoltSpace3D* p_space);
 
+	bool in_space() const { return space != nullptr && !jolt_id.IsInvalid(); }
+
 	uint32_t get_collision_layer() const { return collision_layer; }
 
 	void set_collision_layer(uint32_t p_layer);

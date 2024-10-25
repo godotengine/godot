@@ -47,6 +47,11 @@ void JoltCylinderShapeImpl3D::set_margin(float p_margin) {
 	destroy();
 }
 
+AABB JoltCylinderShapeImpl3D::get_aabb() const {
+	const Vector3 half_extents(radius, height / 2.0f, radius);
+	return {-half_extents, half_extents * 2.0f};
+}
+
 String JoltCylinderShapeImpl3D::to_string() const {
 	return vformat("{height=%f radius=%f margin=%f}", height, radius, margin);
 }

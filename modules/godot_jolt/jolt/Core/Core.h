@@ -210,7 +210,7 @@
 #ifdef JPH_SHARED_LIBRARY
 	#ifdef JPH_BUILD_SHARED_LIBRARY
 		// While building the shared library, we must export these symbols
-		#ifdef JPH_PLATFORM_WINDOWS
+		#if defined(JPH_PLATFORM_WINDOWS) && !defined(JPH_COMPILER_MINGW)
 			#define JPH_EXPORT __declspec(dllexport)
 		#else
 			#define JPH_EXPORT __attribute__ ((visibility ("default")))
@@ -221,7 +221,7 @@
 		#endif
 	#else
 		// When linking against Jolt, we must import these symbols
-		#ifdef JPH_PLATFORM_WINDOWS
+		#if defined(JPH_PLATFORM_WINDOWS) && !defined(JPH_COMPILER_MINGW)
 			#define JPH_EXPORT __declspec(dllimport)
 		#else
 			#define JPH_EXPORT __attribute__ ((visibility ("default")))

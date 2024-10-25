@@ -64,6 +64,10 @@ begin {
 	Write-Output "Granting access to keychain..."
 
 	security set-key-partition-list -S "apple-tool:,apple:" -s -k $KeychainPassword $Keychain
+
+	Write-Output "Unlocking keychain permanently..."
+
+	security set-keychain-settings $Keychain
 }
 
 process {

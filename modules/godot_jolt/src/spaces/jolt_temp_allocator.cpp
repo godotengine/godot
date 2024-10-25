@@ -50,7 +50,7 @@ void JoltTempAllocator::Free(void* p_ptr, uint32_t p_size) {
 
 	if (top <= capacity) {
 		if (base + new_top != p_ptr) {
-			CRASH_NOW_MSG("Temporary memory was freed in the wrong order.");
+			CRASH_NOW_REPORT("Temporary memory was freed in the wrong order.");
 		}
 	} else {
 		JPH::Free(p_ptr);

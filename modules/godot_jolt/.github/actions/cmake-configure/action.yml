@@ -7,6 +7,8 @@ inputs:
     default: null
   double:
     default: false
+  strict:
+    default: true
   args:
     default: ''
 
@@ -24,8 +26,8 @@ runs:
 
         cmake `
           --log-level=VERBOSE `
-          --warn-uninitialized `
-          -Werror=dev `
+          ${{ inputs.strict == 'true' && '--warn-uninitialized' || '' }} `
+          ${{ inputs.strict == 'true' && '-Werror=dev' || '' }} `
           --preset $ConfigurePreset `
           ${{ inputs.double == 'true' && '-DGDJ_DOUBLE_PRECISION=TRUE' || '' }} `
           ${{ inputs.args }}

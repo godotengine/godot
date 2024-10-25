@@ -13,6 +13,7 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/AABBTree/AABBTreeToBuffer.h
 	${JOLT_PHYSICS_ROOT}/AABBTree/NodeCodec/NodeCodecQuadTreeHalfFloat.h
 	${JOLT_PHYSICS_ROOT}/AABBTree/TriangleCodec/TriangleCodecIndexed8BitPackSOA4Flags.h
+	${JOLT_PHYSICS_ROOT}/ConfigurationString.h
 	${JOLT_PHYSICS_ROOT}/Core/ARMNeon.h
 	${JOLT_PHYSICS_ROOT}/Core/Array.h
 	${JOLT_PHYSICS_ROOT}/Core/Atomics.h
@@ -60,15 +61,16 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Core/Semaphore.cpp
 	${JOLT_PHYSICS_ROOT}/Core/Semaphore.h
 	${JOLT_PHYSICS_ROOT}/Core/StaticArray.h
+	${JOLT_PHYSICS_ROOT}/Core/STLAlignedAllocator.h
+	${JOLT_PHYSICS_ROOT}/Core/STLAllocator.h
+	${JOLT_PHYSICS_ROOT}/Core/STLTempAllocator.h
 	${JOLT_PHYSICS_ROOT}/Core/StreamIn.h
 	${JOLT_PHYSICS_ROOT}/Core/StreamOut.h
 	${JOLT_PHYSICS_ROOT}/Core/StreamUtils.h
 	${JOLT_PHYSICS_ROOT}/Core/StreamWrapper.h
+	${JOLT_PHYSICS_ROOT}/Core/StridedPtr.h
 	${JOLT_PHYSICS_ROOT}/Core/StringTools.cpp
 	${JOLT_PHYSICS_ROOT}/Core/StringTools.h
-	${JOLT_PHYSICS_ROOT}/Core/STLAlignedAllocator.h
-	${JOLT_PHYSICS_ROOT}/Core/STLAllocator.h
-	${JOLT_PHYSICS_ROOT}/Core/STLTempAllocator.h
 	${JOLT_PHYSICS_ROOT}/Core/TempAllocator.h
 	${JOLT_PHYSICS_ROOT}/Core/TickCounter.cpp
 	${JOLT_PHYSICS_ROOT}/Core/TickCounter.h
@@ -95,12 +97,10 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Geometry/OrientedBox.h
 	${JOLT_PHYSICS_ROOT}/Geometry/Plane.h
 	${JOLT_PHYSICS_ROOT}/Geometry/RayAABox.h
-	${JOLT_PHYSICS_ROOT}/Geometry/RayAABox8.h
 	${JOLT_PHYSICS_ROOT}/Geometry/RayCapsule.h
 	${JOLT_PHYSICS_ROOT}/Geometry/RayCylinder.h
 	${JOLT_PHYSICS_ROOT}/Geometry/RaySphere.h
 	${JOLT_PHYSICS_ROOT}/Geometry/RayTriangle.h
-	${JOLT_PHYSICS_ROOT}/Geometry/RayTriangle8.h
 	${JOLT_PHYSICS_ROOT}/Geometry/Sphere.h
 	${JOLT_PHYSICS_ROOT}/Geometry/Triangle.h
 	${JOLT_PHYSICS_ROOT}/Jolt.cmake
@@ -130,15 +130,11 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Math/Trigonometry.h
 	${JOLT_PHYSICS_ROOT}/Math/UVec4.h
 	${JOLT_PHYSICS_ROOT}/Math/UVec4.inl
-	${JOLT_PHYSICS_ROOT}/Math/UVec8.h
-	${JOLT_PHYSICS_ROOT}/Math/UVec8.inl
 	${JOLT_PHYSICS_ROOT}/Math/Vec3.cpp
 	${JOLT_PHYSICS_ROOT}/Math/Vec3.h
 	${JOLT_PHYSICS_ROOT}/Math/Vec3.inl
 	${JOLT_PHYSICS_ROOT}/Math/Vec4.h
 	${JOLT_PHYSICS_ROOT}/Math/Vec4.inl
-	${JOLT_PHYSICS_ROOT}/Math/Vec8.h
-	${JOLT_PHYSICS_ROOT}/Math/Vec8.inl
 	${JOLT_PHYSICS_ROOT}/Math/Vector.h
 	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableObject.cpp
 	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableObject.h
@@ -146,7 +142,6 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/Body/Body.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Body/Body.h
 	${JOLT_PHYSICS_ROOT}/Physics/Body/Body.inl
-	${JOLT_PHYSICS_ROOT}/Physics/Body/BodyAccess.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Body/BodyAccess.h
 	${JOLT_PHYSICS_ROOT}/Physics/Body/BodyActivationListener.h
 	${JOLT_PHYSICS_ROOT}/Physics/Body/BodyCreationSettings.cpp
@@ -195,14 +190,15 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/BroadPhase/QuadTree.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CastConvexVsTriangles.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CastConvexVsTriangles.h
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/CastResult.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CastSphereVsTriangles.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CastSphereVsTriangles.h
-	${JOLT_PHYSICS_ROOT}/Physics/Collision/CastResult.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollectFacesMode.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideConvexVsTriangles.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideConvexVsTriangles.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollidePointResult.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideShape.h
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideSoftBodyVertexIterator.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideSoftBodyVerticesVsTriangles.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideSphereVsTriangles.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/CollideSphereVsTriangles.h
@@ -249,6 +245,8 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/CylinderShape.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/DecoratedShape.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/DecoratedShape.h
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/EmptyShape.cpp
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/EmptyShape.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/GetTrianglesContext.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/HeightFieldShape.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/HeightFieldShape.h
@@ -277,6 +275,8 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TaperedCapsuleShape.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TaperedCapsuleShape.gliffy
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TaperedCapsuleShape.h
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TaperedCylinderShape.cpp
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TaperedCylinderShape.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TriangleShape.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TriangleShape.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/ShapeCast.h
@@ -345,7 +345,6 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/IslandBuilder.h
 	${JOLT_PHYSICS_ROOT}/Physics/LargeIslandSplitter.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/LargeIslandSplitter.h
-	${JOLT_PHYSICS_ROOT}/Physics/PhysicsLock.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/PhysicsLock.h
 	${JOLT_PHYSICS_ROOT}/Physics/PhysicsScene.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/PhysicsScene.h
@@ -361,12 +360,13 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyCreationSettings.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyCreationSettings.h
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyManifold.h
-	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyMotionProperties.h
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyMotionProperties.cpp
+	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyMotionProperties.h
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyShape.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyShape.h
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodySharedSettings.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodySharedSettings.h
+	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyUpdateContext.h
 	${JOLT_PHYSICS_ROOT}/Physics/SoftBody/SoftBodyVertex.h
 	${JOLT_PHYSICS_ROOT}/Physics/StateRecorder.h
 	${JOLT_PHYSICS_ROOT}/Physics/StateRecorderImpl.cpp
@@ -684,6 +684,7 @@ endif()
 # On Unix flavors we need the pthread library
 if (NOT ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows") AND NOT EMSCRIPTEN)
 	target_compile_options(Jolt PUBLIC -pthread)
+	target_link_options(Jolt PUBLIC -pthread)
 endif()
 
 if (EMSCRIPTEN)

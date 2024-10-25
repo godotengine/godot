@@ -143,34 +143,41 @@ public:
 	/// Get world space linear velocity of the center of mass (unit: m/s)
 	inline Vec3				GetLinearVelocity() const										{ return !IsStatic()? mMotionProperties->GetLinearVelocity() : Vec3::sZero(); }
 
-	/// Set world space linear velocity of the center of mass (unit: m/s)
+	/// Set world space linear velocity of the center of mass (unit: m/s).
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::SetLinearVelocity instead.
 	void					SetLinearVelocity(Vec3Arg inLinearVelocity)						{ JPH_ASSERT(!IsStatic()); mMotionProperties->SetLinearVelocity(inLinearVelocity); }
 
-	/// Set world space linear velocity of the center of mass, will make sure the value is clamped against the maximum linear velocity
+	/// Set world space linear velocity of the center of mass, will make sure the value is clamped against the maximum linear velocity.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::SetLinearVelocity instead.
 	void					SetLinearVelocityClamped(Vec3Arg inLinearVelocity)				{ JPH_ASSERT(!IsStatic()); mMotionProperties->SetLinearVelocityClamped(inLinearVelocity); }
 
 	/// Get world space angular velocity of the center of mass (unit: rad/s)
 	inline Vec3				GetAngularVelocity() const										{ return !IsStatic()? mMotionProperties->GetAngularVelocity() : Vec3::sZero(); }
 
-	/// Set world space angular velocity of the center of mass (unit: rad/s)
+	/// Set world space angular velocity of the center of mass (unit: rad/s).
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::SetAngularVelocity instead.
 	void					SetAngularVelocity(Vec3Arg inAngularVelocity)					{ JPH_ASSERT(!IsStatic()); mMotionProperties->SetAngularVelocity(inAngularVelocity); }
 
-	/// Set world space angular velocity of the center of mass, will make sure the value is clamped against the maximum angular velocity
+	/// Set world space angular velocity of the center of mass, will make sure the value is clamped against the maximum angular velocity.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::SetAngularVelocity instead.
 	void					SetAngularVelocityClamped(Vec3Arg inAngularVelocity)			{ JPH_ASSERT(!IsStatic()); mMotionProperties->SetAngularVelocityClamped(inAngularVelocity); }
 
 	/// Velocity of point inPoint (in center of mass space, e.g. on the surface of the body) of the body (unit: m/s)
 	inline Vec3				GetPointVelocityCOM(Vec3Arg inPointRelativeToCOM) const			{ return !IsStatic()? mMotionProperties->GetPointVelocityCOM(inPointRelativeToCOM) : Vec3::sZero(); }
 
 	/// Velocity of point inPoint (in world space, e.g. on the surface of the body) of the body (unit: m/s)
-	inline Vec3				GetPointVelocity(RVec3Arg inPoint) const						{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return GetPointVelocityCOM(Vec3(inPoint - mPosition)); }
+	inline Vec3				GetPointVelocity(RVec3Arg inPoint) const						{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::Read)); return GetPointVelocityCOM(Vec3(inPoint - mPosition)); }
 
-	/// Add force (unit: N) at center of mass for the next time step, will be reset after the next call to PhysicsSystem::Update
+	/// Add force (unit: N) at center of mass for the next time step, will be reset after the next call to PhysicsSystem::Update.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddForce instead.
 	inline void				AddForce(Vec3Arg inForce)										{ JPH_ASSERT(IsDynamic()); (Vec3::sLoadFloat3Unsafe(mMotionProperties->mForce) + inForce).StoreFloat3(&mMotionProperties->mForce); }
 
-	/// Add force (unit: N) at inPosition for the next time step, will be reset after the next call to PhysicsSystem::Update
+	/// Add force (unit: N) at inPosition for the next time step, will be reset after the next call to PhysicsSystem::Update.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddForce instead.
 	inline void				AddForce(Vec3Arg inForce, RVec3Arg inPosition);
 
-	/// Add torque (unit: N m) for the next time step, will be reset after the next call to PhysicsSystem::Update
+	/// Add torque (unit: N m) for the next time step, will be reset after the next call to PhysicsSystem::Update.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddTorque instead.
 	inline void				AddTorque(Vec3Arg inTorque)										{ JPH_ASSERT(IsDynamic()); (Vec3::sLoadFloat3Unsafe(mMotionProperties->mTorque) + inTorque).StoreFloat3(&mMotionProperties->mTorque); }
 
 	// Get the total amount of force applied to the center of mass this time step (through AddForce calls). Note that it will reset to zero after PhysicsSystem::Update.
@@ -191,19 +198,24 @@ public:
 	/// Get inverse inertia tensor in world space
 	inline Mat44			GetInverseInertia() const;
 
-	/// Add impulse to center of mass (unit: kg m/s)
+	/// Add impulse to center of mass (unit: kg m/s).
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddImpulse instead.
 	inline void				AddImpulse(Vec3Arg inImpulse);
 
-	/// Add impulse to point in world space (unit: kg m/s)
+	/// Add impulse to point in world space (unit: kg m/s).
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddImpulse instead.
 	inline void				AddImpulse(Vec3Arg inImpulse, RVec3Arg inPosition);
 
-	/// Add angular impulse in world space (unit: N m s)
+	/// Add angular impulse in world space (unit: N m s).
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::AddAngularImpulse instead.
 	inline void				AddAngularImpulse(Vec3Arg inAngularImpulse);
 
 	/// Set velocity of body such that it will be positioned at inTargetPosition/Rotation in inDeltaTime seconds.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::MoveKinematic instead.
 	void					MoveKinematic(RVec3Arg inTargetPosition, QuatArg inTargetRotation, float inDeltaTime);
 
-	/// Applies an impulse to the body that simulates fluid buoyancy and drag
+	/// Applies an impulse to the body that simulates fluid buoyancy and drag.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::ApplyBuoyancyImpulse instead.
 	/// @param inSurfacePosition Position of the fluid surface in world space
 	/// @param inSurfaceNormal Normal of the fluid surface (should point up)
 	/// @param inBuoyancy The buoyancy factor for the body. 1 = neutral body, < 1 sinks, > 1 floats. Note that we don't use the fluid density since it is harder to configure than a simple number between [0, 2]
@@ -225,16 +237,16 @@ public:
 	inline const Shape *	GetShape() const												{ return mShape; }
 
 	/// World space position of the body
-	inline RVec3			GetPosition() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mPosition - mRotation * mShape->GetCenterOfMass(); }
+	inline RVec3			GetPosition() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::Read)); return mPosition - mRotation * mShape->GetCenterOfMass(); }
 
 	/// World space rotation of the body
-	inline Quat				GetRotation() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mRotation; }
+	inline Quat				GetRotation() const												{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::Read)); return mRotation; }
 
 	/// Calculates the transform of this body
 	inline RMat44			GetWorldTransform() const;
 
 	/// Gets the world space position of this body's center of mass
-	inline RVec3			GetCenterOfMassPosition() const									{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return mPosition; }
+	inline RVec3			GetCenterOfMassPosition() const									{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::Read)); return mPosition; }
 
 	/// Calculates the transform for this body's center of mass
 	inline RMat44			GetCenterOfMassTransform() const;
@@ -261,7 +273,7 @@ public:
 	inline Vec3				GetWorldSpaceSurfaceNormal(const SubShapeID &inSubShapeID, RVec3Arg inPosition) const;
 
 	/// Get the transformed shape of this body, which can be used to do collision detection outside of a body lock
-	inline TransformedShape	GetTransformedShape() const										{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::Read)); return TransformedShape(mPosition, mRotation, mShape, mID); }
+	inline TransformedShape	GetTransformedShape() const										{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::Read)); return TransformedShape(mPosition, mRotation, mShape, mID); }
 
 	/// Debug function to convert a body back to a body creation settings object to be able to save/recreate the body later
 	BodyCreationSettings	GetBodyCreationSettings() const;
@@ -280,10 +292,10 @@ public:
 	static inline bool		sFindCollidingPairsCanCollide(const Body &inBody1, const Body &inBody2);
 
 	/// Update position using an Euler step (used during position integrate & constraint solving)
-	inline void				AddPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime)			{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::ReadWrite)); mPosition += mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
-	inline void				SubPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime)			{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess, BodyAccess::EAccess::ReadWrite)); mPosition -= mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
+	inline void				AddPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime)			{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::ReadWrite)); mPosition += mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
+	inline void				SubPositionStep(Vec3Arg inLinearVelocityTimesDeltaTime)			{ JPH_ASSERT(IsRigidBody()); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sPositionAccess(), BodyAccess::EAccess::ReadWrite)); mPosition -= mMotionProperties->LockTranslation(inLinearVelocityTimesDeltaTime); JPH_ASSERT(!mPosition.IsNaN()); }
 
-	/// Update rotation using an Euler step (using during position integrate & constraint solving)
+	/// Update rotation using an Euler step (used during position integrate & constraint solving)
 	inline void				AddRotationStep(Vec3Arg inAngularVelocityTimesDeltaTime);
 	inline void				SubRotationStep(Vec3Arg inAngularVelocityTimesDeltaTime);
 

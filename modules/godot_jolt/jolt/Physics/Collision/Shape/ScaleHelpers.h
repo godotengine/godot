@@ -23,6 +23,9 @@ namespace ScaleHelpers
 	/// Test if a scale is uniform
 	inline bool				IsUniformScale(Vec3Arg inScale)									{ return inScale.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>().IsClose(inScale, cScaleToleranceSq); }
 
+	/// Test if a scale is uniform in XZ
+	inline bool				IsUniformScaleXZ(Vec3Arg inScale)								{ return inScale.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>().IsClose(inScale, ScaleHelpers::cScaleToleranceSq); }
+
 	/// Scale the convex radius of an object
 	inline float			ScaleConvexRadius(float inConvexRadius, Vec3Arg inScale)		{ return min(inConvexRadius * inScale.Abs().ReduceMin(), cDefaultConvexRadius); }
 
@@ -37,6 +40,9 @@ namespace ScaleHelpers
 
 	/// Get the average scale if inScale, used to make the scale uniform when a shape doesn't support non-uniform scale
 	inline Vec3				MakeUniformScale(Vec3Arg inScale)								{ return Vec3::sReplicate((inScale.GetX() + inScale.GetY() + inScale.GetZ()) / 3.0f); }
+
+	/// Average the scale in XZ, used to make the scale uniform when a shape doesn't support non-uniform scale in the XZ plane
+	inline Vec3				MakeUniformScaleXZ(Vec3Arg inScale)								{ return 0.5f * (inScale + inScale.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X>()); }
 
 	/// Checks in scale can be rotated to child shape
 	/// @param inRotation Rotation of child shape

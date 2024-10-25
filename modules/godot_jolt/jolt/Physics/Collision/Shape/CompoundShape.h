@@ -79,6 +79,9 @@ public:
 	// See Shape::GetMaterial
 	virtual const PhysicsMaterial *	GetMaterial(const SubShapeID &inSubShapeID) const override;
 
+	// See Shape::GetLeafShape
+	virtual const Shape *			GetLeafShape(const SubShapeID &inSubShapeID, SubShapeID &outRemainder) const override;
+
 	// See Shape::GetSubShapeUserData
 	virtual uint64					GetSubShapeUserData(const SubShapeID &inSubShapeID) const override;
 
@@ -106,7 +109,7 @@ public:
 #endif // JPH_DEBUG_RENDERER
 
 	// See: Shape::CollideSoftBodyVertices
-	virtual void					CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, float inDeltaTime, Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const override;
+	virtual void					CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const override;
 
 	// See Shape::TransformShape
 	virtual void					TransformShape(Mat44Arg inCenterOfMassTransform, TransformedShapeCollector &ioCollector) const override;

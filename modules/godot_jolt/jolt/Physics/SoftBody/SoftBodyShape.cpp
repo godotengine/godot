@@ -92,7 +92,7 @@ void SoftBodyShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCa
 		Vec3 x3 = vertices[f.mVertex[2]].mPosition;
 
 		// Back facing check
-		if (inRayCastSettings.mBackFaceMode == EBackFaceMode::IgnoreBackFaces && (x2 - x1).Cross(x3 - x1).Dot(inRay.mDirection) > 0.0f)
+		if (inRayCastSettings.mBackFaceModeTriangles == EBackFaceMode::IgnoreBackFaces && (x2 - x1).Cross(x3 - x1).Dot(inRay.mDirection) > 0.0f)
 			continue;
 
 		// Test ray against triangle
@@ -114,7 +114,7 @@ void SoftBodyShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSub
 	sCollidePointUsingRayCast(*this, inPoint, inSubShapeIDCreator, ioCollector, inShapeFilter);
 }
 
-void SoftBodyShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, float inDeltaTime, Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const
+void SoftBodyShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const
 {
 	/* Not implemented */
 }

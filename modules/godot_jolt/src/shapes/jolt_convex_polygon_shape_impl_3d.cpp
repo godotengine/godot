@@ -11,6 +11,8 @@ void JoltConvexPolygonShapeImpl3D::set_data(const Variant& p_data) {
 
 	vertices = p_data;
 
+	aabb = _calculate_aabb();
+
 	destroy();
 }
 
@@ -71,4 +73,20 @@ JPH::ShapeRefC JoltConvexPolygonShapeImpl3D::_build() const {
 	);
 
 	return shape_result.Get();
+}
+
+AABB JoltConvexPolygonShapeImpl3D::_calculate_aabb() const {
+	AABB result;
+
+	for (int i = 0; i < vertices.size(); ++i) {
+		const Vector3& vertex = vertices[i];
+
+		if (i == 0) {
+			result.position = vertex;
+		} else {
+			result.expand_to(vertex);
+		}
+	}
+
+	return result;
 }

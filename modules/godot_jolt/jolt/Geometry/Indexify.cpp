@@ -197,6 +197,7 @@ void Indexify(const TriangleList &inTriangles, VertexList &outVertices, IndexedT
 	{
 		IndexedTriangle it;
 		it.mMaterialIndex = inTriangles[t].mMaterialIndex;
+		it.mUserData = inTriangles[t].mUserData;
 		for (int v = 0; v < 3; ++v)
 			it.mIdx[v] = welded_vertices[t * 3 + v];
 		if (!it.IsDegenerate(outVertices))
@@ -209,9 +210,12 @@ void Deindexify(const VertexList &inVertices, const IndexedTriangleList &inTrian
 	outTriangles.resize(inTriangles.size());
 	for (size_t t = 0; t < inTriangles.size(); ++t)
 	{
-		outTriangles[t].mMaterialIndex = inTriangles[t].mMaterialIndex;
+		const IndexedTriangle &in = inTriangles[t];
+		Triangle &out = outTriangles[t];
+		out.mMaterialIndex = in.mMaterialIndex;
+		out.mUserData = in.mUserData;
 		for (int v = 0; v < 3; ++v)
-			outTriangles[t].mV[v] = inVertices[inTriangles[t].mIdx[v]];
+			out.mV[v] = inVertices[in.mIdx[v]];
 	}
 }
 

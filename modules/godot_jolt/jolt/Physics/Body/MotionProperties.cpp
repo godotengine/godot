@@ -26,7 +26,9 @@ void MotionProperties::SetMassProperties(EAllowedDOFs inAllowedDOFs, const MassP
 	}
 	else
 	{
-		JPH_ASSERT(inMassProperties.mMass > 0.0f);
+		JPH_ASSERT(inMassProperties.mMass > 0.0f, "Invalid mass. "
+			"Some shapes like MeshShape or TriangleShape cannot calculate mass automatically, "
+			"in this case you need to provide it by setting BodyCreationSettings::mOverrideMassProperties and mMassPropertiesOverride.");
 		mInvMass = 1.0f / inMassProperties.mMass;
 	}
 

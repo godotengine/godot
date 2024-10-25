@@ -37,7 +37,7 @@ public:
 	static const int TriangleHeaderSize = TriangleCodec::TriangleHeaderSize;
 
 	/// Convert AABB tree. Returns false if failed.
-	bool							Convert(const VertexList &inVertices, const AABBTreeBuilder::Node *inRoot, const char *&outError)
+	bool							Convert(const VertexList &inVertices, const AABBTreeBuilder::Node *inRoot, bool inStoreUserData, const char *&outError)
 	{
 		const typename NodeCodec::EncodingContext node_ctx;
 		typename TriangleCodec::EncodingContext tri_ctx(inVertices);
@@ -46,7 +46,7 @@ public:
 		uint tri_count = inRoot->GetTriangleCountInTree();
 		uint node_count = inRoot->GetNodeCount();
 		uint nodes_size = node_ctx.GetPessimisticMemoryEstimate(node_count);
-		uint total_size = HeaderSize + TriangleHeaderSize + nodes_size + tri_ctx.GetPessimisticMemoryEstimate(tri_count);
+		uint total_size = HeaderSize + TriangleHeaderSize + nodes_size + tri_ctx.GetPessimisticMemoryEstimate(tri_count, inStoreUserData);
 		mTree.reserve(total_size);
 
 		// Reset counters
@@ -157,7 +157,7 @@ public:
 				else
 				{
 					// Add triangles
-					node_data->mTriangleStart = tri_ctx.Pack(node_data->mNode->mTriangles, mTree, outError);
+					node_data->mTriangleStart = tri_ctx.Pack(node_data->mNode->mTriangles, inStoreUserData, mTree, outError);
 					if (node_data->mTriangleStart == uint(-1))
 						return false;
 				}

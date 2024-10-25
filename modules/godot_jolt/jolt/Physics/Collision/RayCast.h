@@ -71,8 +71,14 @@ class RayCastSettings
 public:
 	JPH_OVERRIDE_NEW_DELETE
 
-	/// How backfacing triangles should be treated
-	EBackFaceMode				mBackFaceMode				= EBackFaceMode::IgnoreBackFaces;
+	/// Set the backfacing mode for all shapes
+	void						SetBackFaceMode(EBackFaceMode inMode) { mBackFaceModeTriangles = mBackFaceModeConvex = inMode; }
+
+	/// How backfacing triangles should be treated (should we report back facing hits for triangle based shapes, e.g. MeshShape/HeightFieldShape?)
+	EBackFaceMode				mBackFaceModeTriangles		= EBackFaceMode::IgnoreBackFaces;
+
+	/// How backfacing convex objects should be treated (should we report back facing hits for convex shapes?)
+	EBackFaceMode				mBackFaceModeConvex			= EBackFaceMode::IgnoreBackFaces;
 
 	/// If convex shapes should be treated as solid. When true, a ray starting inside a convex shape will generate a hit at fraction 0.
 	bool						mTreatConvexAsSolid			= true;

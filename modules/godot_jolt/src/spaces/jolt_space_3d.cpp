@@ -212,7 +212,7 @@ double JoltSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
 			return DEFAULT_SOLVER_ITERATIONS;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled space parameter: '%d'", p_param));
+			ERR_FAIL_D_REPORT(vformat("Unhandled space parameter: '%d'.", p_param));
 		}
 	}
 }
@@ -271,7 +271,7 @@ void JoltSpace3D::set_param(
 			);
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled space parameter: '%d'", p_param));
+			ERR_FAIL_REPORT(vformat("Unhandled space parameter: '%d'.", p_param));
 		} break;
 	}
 }

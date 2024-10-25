@@ -40,19 +40,19 @@ public:
 	inline bool				GetAllowSleeping() const										{ return mAllowSleeping; }
 
 	/// Get world space linear velocity of the center of mass
-	inline Vec3				GetLinearVelocity() const										{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::Read)); return mLinearVelocity; }
+	inline Vec3				GetLinearVelocity() const										{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::Read)); return mLinearVelocity; }
 
 	/// Set world space linear velocity of the center of mass
-	void					SetLinearVelocity(Vec3Arg inLinearVelocity)						{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); JPH_ASSERT(inLinearVelocity.Length() <= mMaxLinearVelocity); mLinearVelocity = LockTranslation(inLinearVelocity); }
+	void					SetLinearVelocity(Vec3Arg inLinearVelocity)						{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite)); JPH_ASSERT(inLinearVelocity.Length() <= mMaxLinearVelocity); mLinearVelocity = LockTranslation(inLinearVelocity); }
 
 	/// Set world space linear velocity of the center of mass, will make sure the value is clamped against the maximum linear velocity
 	void					SetLinearVelocityClamped(Vec3Arg inLinearVelocity)				{ mLinearVelocity = LockTranslation(inLinearVelocity); ClampLinearVelocity(); }
 
 	/// Get world space angular velocity of the center of mass
-	inline Vec3				GetAngularVelocity() const										{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::Read)); return mAngularVelocity; }
+	inline Vec3				GetAngularVelocity() const										{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::Read)); return mAngularVelocity; }
 
 	/// Set world space angular velocity of the center of mass
-	void					SetAngularVelocity(Vec3Arg inAngularVelocity)					{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); JPH_ASSERT(inAngularVelocity.Length() <= mMaxAngularVelocity); mAngularVelocity = LockAngular(inAngularVelocity); }
+	void					SetAngularVelocity(Vec3Arg inAngularVelocity)					{ JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite)); JPH_ASSERT(inAngularVelocity.Length() <= mMaxAngularVelocity); mAngularVelocity = LockAngular(inAngularVelocity); }
 
 	/// Set world space angular velocity of the center of mass, will make sure the value is clamped against the maximum angular velocity
 	void					SetAngularVelocityClamped(Vec3Arg inAngularVelocity)			{ mAngularVelocity = LockAngular(inAngularVelocity); ClampAngularVelocity(); }
@@ -143,7 +143,7 @@ public:
 	// Reset the current velocity and accumulated force and torque.
 	JPH_INLINE void			ResetMotion()
 	{
-		JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite));
+		JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite));
 		mLinearVelocity = mAngularVelocity = Vec3::sZero();
 		mForce = mTorque = Float3(0, 0, 0);
 	}
@@ -188,10 +188,10 @@ public:
 
 	///@name Update linear and angular velocity (used during constraint solving)
 	///@{
-	inline void				AddLinearVelocityStep(Vec3Arg inLinearVelocityChange)			{ JPH_DET_LOG("AddLinearVelocityStep: " << inLinearVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mLinearVelocity = LockTranslation(mLinearVelocity + inLinearVelocityChange); JPH_ASSERT(!mLinearVelocity.IsNaN()); }
-	inline void				SubLinearVelocityStep(Vec3Arg inLinearVelocityChange)			{ JPH_DET_LOG("SubLinearVelocityStep: " << inLinearVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mLinearVelocity = LockTranslation(mLinearVelocity - inLinearVelocityChange); JPH_ASSERT(!mLinearVelocity.IsNaN()); }
-	inline void				AddAngularVelocityStep(Vec3Arg inAngularVelocityChange)			{ JPH_DET_LOG("AddAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mAngularVelocity += inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
-	inline void				SubAngularVelocityStep(Vec3Arg inAngularVelocityChange)			{ JPH_DET_LOG("SubAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess, BodyAccess::EAccess::ReadWrite)); mAngularVelocity -= inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
+	inline void				AddLinearVelocityStep(Vec3Arg inLinearVelocityChange)			{ JPH_DET_LOG("AddLinearVelocityStep: " << inLinearVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite)); mLinearVelocity = LockTranslation(mLinearVelocity + inLinearVelocityChange); JPH_ASSERT(!mLinearVelocity.IsNaN()); }
+	inline void				SubLinearVelocityStep(Vec3Arg inLinearVelocityChange)			{ JPH_DET_LOG("SubLinearVelocityStep: " << inLinearVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite)); mLinearVelocity = LockTranslation(mLinearVelocity - inLinearVelocityChange); JPH_ASSERT(!mLinearVelocity.IsNaN()); }
+	inline void				AddAngularVelocityStep(Vec3Arg inAngularVelocityChange)			{ JPH_DET_LOG("AddAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite)); mAngularVelocity += inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
+	inline void				SubAngularVelocityStep(Vec3Arg inAngularVelocityChange)			{ JPH_DET_LOG("SubAngularVelocityStep: " << inAngularVelocityChange); JPH_ASSERT(BodyAccess::sCheckRights(BodyAccess::sVelocityAccess(), BodyAccess::EAccess::ReadWrite)); mAngularVelocity -= inAngularVelocityChange; JPH_ASSERT(!mAngularVelocity.IsNaN()); }
 	///@}
 
 	/// Apply the gyroscopic force (aka Dzhanibekov effect, see https://en.wikipedia.org/wiki/Tennis_racket_theorem)

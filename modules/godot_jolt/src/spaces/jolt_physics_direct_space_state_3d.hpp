@@ -127,6 +127,7 @@ private:
 		int32_t p_max_collisions,
 		PhysicsServer3DExtensionMotionResult* p_result
 	) const;
+	int try_get_face_index(const JPH::Body& p_body, const JPH::SubShapeID& p_sub_shape_id);
 
 	void generate_manifold(
 		const JPH::CollideShapeResult& p_hit,

@@ -29,7 +29,7 @@ void JoltEditorPlugin::_enter_tree() {
 	add_node_3d_gizmo_plugin(joint_gizmo_plugin);
 
 	PopupMenu* tool_menu = memnew(PopupMenu);
-	tool_menu->connect("id_pressed", Callable(this, NAMEOF(_tool_menu_pressed)));
+	tool_menu->connect("id_pressed", callable_mp(this, &JoltEditorPlugin::_tool_menu_pressed));
 	tool_menu->add_item("Dump Debug Snapshots", MENU_OPTION_DUMP_DEBUG_SNAPSHOTS);
 
 	add_tool_submenu_item("Jolt Physics", tool_menu);
@@ -66,7 +66,7 @@ void JoltEditorPlugin::_dump_debug_snapshots() {
 		debug_snapshots_dialog->set_current_dir("res://");
 		debug_snapshots_dialog->connect(
 			"dir_selected",
-			Callable(this, NAMEOF(_snapshots_dir_selected))
+			callable_mp(this, &JoltEditorPlugin::_snapshots_dir_selected)
 		);
 
 		get_editor_interface()->get_base_control()->add_child(debug_snapshots_dialog);

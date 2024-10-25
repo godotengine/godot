@@ -36,6 +36,10 @@ String JoltBoxShapeImpl3D::to_string() const {
 	return vformat("{half_extents=%v margin=%f}", half_extents, margin);
 }
 
+AABB JoltBoxShapeImpl3D::get_aabb() const {
+	return {-half_extents, half_extents * 2.0f};
+}
+
 JPH::ShapeRefC JoltBoxShapeImpl3D::_build() const {
 	const auto min_half_extent = (float)half_extents[half_extents.min_axis_index()];
 	const float shrunk_margin = MIN(margin, min_half_extent * MARGIN_FACTOR);

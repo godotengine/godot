@@ -9,7 +9,7 @@
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaleHelpers.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
-#include <Jolt/Physics/SoftBody/SoftBodyVertex.h>
+#include <Jolt/Physics/Collision/CollideSoftBodyVertexIterator.h>
 #include <Jolt/Geometry/RayCapsule.h>
 #include <Jolt/ObjectStream/TypeDeclarations.h>
 #include <Jolt/Core/StreamIn.h>
@@ -301,7 +301,7 @@ AABox TaperedCapsuleShape::GetWorldSpaceBounds(Mat44Arg inCenterOfMassTransform,
 	return AABox(p1, p2);
 }
 
-void TaperedCapsuleShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, [[maybe_unused]] float inDeltaTime, [[maybe_unused]] Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const
+void TaperedCapsuleShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const
 {
 	JPH_ASSERT(IsValidScale(inScale));
 
@@ -317,10 +317,10 @@ void TaperedCapsuleShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransfo
 	float scaled_top_radius = scale_xz * mTopRadius;
 	float scaled_bottom_radius = scale_xz * mBottomRadius;
 
-	for (SoftBodyVertex *v = ioVertices, *sbv_end = ioVertices + inNumVertices; v < sbv_end; ++v)
-		if (v->mInvMass > 0.0f)
+	for (CollideSoftBodyVertexIterator v = inVertices, sbv_end = inVertices + inNumVertices; v != sbv_end; ++v)
+		if (v.GetInvMass() > 0.0f)
 		{
-			Vec3 local_pos = scale_y_flip * (inverse_transform * v->mPosition);
+			Vec3 local_pos = scale_y_flip * (inverse_transform * v.GetPosition());
 
 			Vec3 position, normal;
 
@@ -359,16 +359,13 @@ void TaperedCapsuleShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransfo
 
 			Plane plane = Plane::sFromPointAndNormal(position, normal);
 			float penetration = -plane.SignedDistance(local_pos);
-			if (penetration > v->mLargestPenetration)
+			if (v.UpdatePenetration(penetration))
 			{
-				v->mLargestPenetration = penetration;
-
 				// Need to flip the normal's y if capsule is flipped (this corresponds to flipping both the point and the normal around y)
 				plane.SetNormal(scale_y_flip * plane.GetNormal());
 
 				// Store collision
-				v->mCollisionPlane = plane.GetTransformed(inCenterOfMassTransform);
-				v->mCollidingShapeIndex = inCollidingShapeIndex;
+				v.SetCollision(plane.GetTransformed(inCenterOfMassTransform), inCollidingShapeIndex);
 			}
 		}
 }

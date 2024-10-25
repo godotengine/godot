@@ -174,7 +174,7 @@ public:
 	virtual void					CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter = { }) const override;
 
 	// See: Shape::CollideSoftBodyVertices
-	virtual void					CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, SoftBodyVertex *ioVertices, uint inNumVertices, float inDeltaTime, Vec3Arg inDisplacementDueToGravity, int inCollidingShapeIndex) const override;
+	virtual void					CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const override;
 
 	// See Shape::GetTrianglesStart
 	virtual void					GetTrianglesStart(GetTrianglesContext &ioContext, const AABox &inBox, Vec3Arg inPositionCOM, QuatArg inRotation, Vec3Arg inScale) const override;
@@ -193,6 +193,13 @@ public:
 	/// When there is no surface position (because of a hole or because the point is outside the heightfield) the function will return false.
 	bool							ProjectOntoSurface(Vec3Arg inLocalPosition, Vec3 &outSurfacePosition, SubShapeID &outSubShapeID) const;
 
+	/// Returns the coordinates of the triangle that a sub shape ID represents
+	/// @param inSubShapeID The sub shape ID to decode
+	/// @param outX X coordinate of the triangle (in the range [0, mSampleCount - 2])
+	/// @param outY Y coordinate of the triangle (in the range [0, mSampleCount - 2])
+	/// @param outTriangleIndex Triangle within the quad (0 = lower triangle or 1 = upper triangle)
+	void							GetSubShapeCoordinates(const SubShapeID &inSubShapeID, uint &outX, uint &outY, uint &outTriangleIndex) const;
+
 	/// Get the range of height values that this height field can encode. Can be used to determine the allowed range when setting the height values with SetHeights.
 	float							GetMinHeightValue() const					{ return mOffset.GetY(); }
 	float							GetMaxHeightValue() const					{ return mOffset.GetY() + mScale.GetY() * HeightFieldShapeConstants::cMaxHeightValue16; }
@@ -202,7 +209,7 @@ public:
 	/// @param inX Start X position, must be a multiple of mBlockSize and in the range [0, mSampleCount - 1]
 	/// @param inY Start Y position, must be a multiple of mBlockSize and in the range [0, mSampleCount - 1]
 	/// @param inSizeX Number of samples in X direction, must be a multiple of mBlockSize and in the range [0, mSampleCount - inX]
-	/// @param inSizeY Number of samples in Y direction, must be a multiple of mBlockSize and in the range [0, mSampleCount - inX]
+	/// @param inSizeY Number of samples in Y direction, must be a multiple of mBlockSize and in the range [0, mSampleCount - inY]
 	/// @param outHeights Returned height values, must be at least inSizeX * inSizeY floats. Values are returned in x-major order and can be cNoCollisionValue.
 	/// @param inHeightsStride Stride in floats between two consecutive rows of outHeights (can be negative if the data is upside down).
 	void							GetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY, float *outHeights, intptr_t inHeightsStride) const;
@@ -213,9 +220,9 @@ public:
 	/// @param inX Start X position, must be a multiple of mBlockSize and in the range [0, mSampleCount - 1]
 	/// @param inY Start Y position, must be a multiple of mBlockSize and in the range [0, mSampleCount - 1]
 	/// @param inSizeX Number of samples in X direction, must be a multiple of mBlockSize and in the range [0, mSampleCount - inX]
-	/// @param inSizeY Number of samples in Y direction, must be a multiple of mBlockSize and in the range [0, mSampleCount - inX]
+	/// @param inSizeY Number of samples in Y direction, must be a multiple of mBlockSize and in the range [0, mSampleCount - inY]
 	/// @param inHeights The new height values to set, must be an array of inSizeX * inSizeY floats, can be cNoCollisionValue. Values outside of the range [GetMinHeightValue(), GetMaxHeightValue()] will be clamped.
-	/// @param inHeightsStride Stride in floats between two consecutive rows of outHeights (can be negative if the data is upside down).
+	/// @param inHeightsStride Stride in floats between two consecutive rows of inHeights (can be negative if the data is upside down).
 	/// @param inAllocator Allocator to use for temporary memory
 	/// @param inActiveEdgeCosThresholdAngle Cosine of the threshold angle (if the angle between the two triangles is bigger than this, the edge is active, note that a concave edge is always inactive).
 	void							SetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY, const float *inHeights, intptr_t inHeightsStride, TempAllocator &inAllocator, float inActiveEdgeCosThresholdAngle = 0.996195f);

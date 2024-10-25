@@ -28,6 +28,8 @@ public:
 		PARAM_ANGULAR_SPRING_FREQUENCY = JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY,
 		PARAM_ANGULAR_SPRING_DAMPING = JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_DAMPING,
 		PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT = JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT,
+		PARAM_LINEAR_SPRING_MAX_FORCE = JoltPhysicsServer3D::G6DOF_JOINT_LINEAR_SPRING_MAX_FORCE,
+		PARAM_ANGULAR_SPRING_MAX_TORQUE = JoltPhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_MAX_TORQUE,
 	};
 
 	enum Flag {
@@ -180,6 +182,10 @@ public:
 
 	void set_linear_spring_x_equilibrium_point(double p_value) { return set_param_x(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT, p_value); }
 
+	double get_linear_spring_x_max_force() const { return get_param_x(PARAM_LINEAR_SPRING_MAX_FORCE); }
+
+	void set_linear_spring_x_max_force(double p_value) { return set_param_x(PARAM_LINEAR_SPRING_MAX_FORCE, p_value); }
+
 	double get_linear_spring_y_frequency() const { return get_param_y(PARAM_LINEAR_SPRING_FREQUENCY); }
 
 	void set_linear_spring_y_frequency(double p_value) { return set_param_y(PARAM_LINEAR_SPRING_FREQUENCY, p_value); }
@@ -192,6 +198,10 @@ public:
 
 	void set_linear_spring_y_equilibrium_point(double p_value) { return set_param_y(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT, p_value); }
 
+	double get_linear_spring_y_max_force() const { return get_param_y(PARAM_LINEAR_SPRING_MAX_FORCE); }
+
+	void set_linear_spring_y_max_force(double p_value) { return set_param_y(PARAM_LINEAR_SPRING_MAX_FORCE, p_value); }
+
 	double get_linear_spring_z_frequency() const { return get_param_z(PARAM_LINEAR_SPRING_FREQUENCY); }
 
 	void set_linear_spring_z_frequency(double p_value) { return set_param_z(PARAM_LINEAR_SPRING_FREQUENCY, p_value); }
@@ -203,6 +213,10 @@ public:
 	double get_linear_spring_z_equilibrium_point() const { return get_param_z(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT); }
 
 	void set_linear_spring_z_equilibrium_point(double p_value) { return set_param_z(PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT, p_value); }
+
+	double get_linear_spring_z_max_force() const { return get_param_z(PARAM_LINEAR_SPRING_MAX_FORCE); }
+
+	void set_linear_spring_z_max_force(double p_value) { return set_param_z(PARAM_LINEAR_SPRING_MAX_FORCE, p_value); }
 
 	bool get_linear_limit_x_enabled() const { return get_flag_x(FLAG_ENABLE_LINEAR_LIMIT); }
 
@@ -312,6 +326,10 @@ public:
 
 	void set_angular_spring_x_equilibrium_point(double p_value) { return set_param_x(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT, p_value); }
 
+	double get_angular_spring_x_max_torque() const { return get_param_x(PARAM_ANGULAR_SPRING_MAX_TORQUE); }
+
+	void set_angular_spring_x_max_torque(double p_value) { return set_param_x(PARAM_ANGULAR_SPRING_MAX_TORQUE, p_value); }
+
 	double get_angular_spring_y_frequency() const { return get_param_y(PARAM_ANGULAR_SPRING_FREQUENCY); }
 
 	void set_angular_spring_y_frequency(double p_value) { return set_param_y(PARAM_ANGULAR_SPRING_FREQUENCY, p_value); }
@@ -324,6 +342,10 @@ public:
 
 	void set_angular_spring_y_equilibrium_point(double p_value) { return set_param_y(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT, p_value); }
 
+	double get_angular_spring_y_max_torque() const { return get_param_y(PARAM_ANGULAR_SPRING_MAX_TORQUE); }
+
+	void set_angular_spring_y_max_torque(double p_value) { return set_param_y(PARAM_ANGULAR_SPRING_MAX_TORQUE, p_value); }
+
 	double get_angular_spring_z_frequency() const { return get_param_z(PARAM_ANGULAR_SPRING_FREQUENCY); }
 
 	void set_angular_spring_z_frequency(double p_value) { return set_param_z(PARAM_ANGULAR_SPRING_FREQUENCY, p_value); }
@@ -335,6 +357,10 @@ public:
 	double get_angular_spring_z_equilibrium_point() const { return get_param_z(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT); }
 
 	void set_angular_spring_z_equilibrium_point(double p_value) { return set_param_z(PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT, p_value); }
+
+	double get_angular_spring_z_max_torque() const { return get_param_z(PARAM_ANGULAR_SPRING_MAX_TORQUE); }
+
+	void set_angular_spring_z_max_torque(double p_value) { return set_param_z(PARAM_ANGULAR_SPRING_MAX_TORQUE, p_value); }
 
 	bool get_angular_limit_x_enabled() const { return get_flag_x(FLAG_ENABLE_ANGULAR_LIMIT); }
 
@@ -427,6 +453,8 @@ private:
 
 	double linear_spring_equilibrium_point[AXIS_COUNT] = {};
 
+	double linear_spring_max_force[AXIS_COUNT] = {};
+
 	double angular_limit_upper[AXIS_COUNT] = {};
 
 	double angular_limit_lower[AXIS_COUNT] = {};
@@ -440,6 +468,8 @@ private:
 	double angular_spring_damping[AXIS_COUNT] = {};
 
 	double angular_spring_equilibrium_point[AXIS_COUNT] = {};
+
+	double angular_spring_max_torque[AXIS_COUNT] = {};
 
 	bool linear_limit_enabled[AXIS_COUNT] = {};
 

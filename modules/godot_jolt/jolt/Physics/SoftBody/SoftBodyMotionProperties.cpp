@@ -8,6 +8,7 @@
 #include <Jolt/Physics/SoftBody/SoftBodyCreationSettings.h>
 #include <Jolt/Physics/SoftBody/SoftBodyContactListener.h>
 #include <Jolt/Physics/SoftBody/SoftBodyManifold.h>
+#include <Jolt/Physics/Collision/CollideSoftBodyVertexIterator.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyManager.h>
 #include <Jolt/Core/ScopeExit.h>
@@ -71,9 +72,7 @@ void SoftBodyMotionProperties::Initialize(const SoftBodyCreationSettings &inSett
 		Vertex &out_vertex = mVertices[v];
 		out_vertex.mPreviousPosition = out_vertex.mPosition = rotation * Vec3(in_vertex.mPosition);
 		out_vertex.mVelocity = rotation.Multiply3x3(Vec3(in_vertex.mVelocity));
-		out_vertex.mCollidingShapeIndex = -1;
-		out_vertex.mHasContact = false;
-		out_vertex.mLargestPenetration = -FLT_MAX;
+		out_vertex.ResetCollision();
 		out_vertex.mInvMass = in_vertex.mInvMass;
 		mLocalBounds.Encapsulate(out_vertex.mPosition);
 	}
@@ -105,15 +104,19 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 {
 	JPH_PROFILE_FUNCTION();
 
+	// Reset flag prior to collision detection
+	mNeedContactCallback = false;
+
 	struct Collector : public CollideShapeBodyCollector
 	{
-									Collector(const SoftBodyUpdateContext &inContext, const PhysicsSystem &inSystem, const BodyLockInterface &inBodyLockInterface, Array<CollidingShape> &ioHits) :
+									Collector(const SoftBodyUpdateContext &inContext, const PhysicsSystem &inSystem, const BodyLockInterface &inBodyLockInterface, Array<CollidingShape> &ioHits, Array<CollidingSensor> &ioSensors) :
 										mContext(inContext),
 										mInverseTransform(inContext.mCenterOfMassTransform.InversedRotationTranslation()),
 										mBodyLockInterface(inBodyLockInterface),
 										mCombineFriction(inSystem.GetCombineFriction()),
 										mCombineRestitution(inSystem.GetCombineRestitution()),
-										mHits(ioHits)
+										mHits(ioHits),
+										mSensors(ioSensors)
 		{
 		}
 
@@ -149,25 +152,36 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 							return;
 					}
 
-					CollidingShape cs;
-					cs.mCenterOfMassTransform = (mInverseTransform * body.GetCenterOfMassTransform()).ToMat44();
-					cs.mShape = body.GetShape();
-					cs.mBodyID = inResult;
-					cs.mMotionType = body.GetMotionType();
-					cs.mIsSensor = settings.mIsSensor;
-					cs.mUpdateVelocities = false;
-					cs.mFriction = mCombineFriction(soft_body, SubShapeID(), body, SubShapeID());
-					cs.mRestitution = mCombineRestitution(soft_body, SubShapeID(), body, SubShapeID());
-					cs.mSoftBodyInvMassScale = settings.mInvMassScale1;
-					if (cs.mMotionType == EMotionType::Dynamic)
+					Mat44 com = (mInverseTransform * body.GetCenterOfMassTransform()).ToMat44();
+					if (settings.mIsSensor)
 					{
-						const MotionProperties *mp = body.GetMotionProperties();
-						cs.mInvMass = settings.mInvMassScale2 * mp->GetInverseMass();
-						cs.mInvInertia = settings.mInvInertiaScale2 * mp->GetInverseInertiaForRotation(cs.mCenterOfMassTransform.GetRotation());
-						cs.mOriginalLinearVelocity = cs.mLinearVelocity = mInverseTransform.Multiply3x3(mp->GetLinearVelocity());
-						cs.mOriginalAngularVelocity = cs.mAngularVelocity = mInverseTransform.Multiply3x3(mp->GetAngularVelocity());
+						CollidingSensor cs;
+						cs.mCenterOfMassTransform = com;
+						cs.mShape = body.GetShape();
+						cs.mBodyID = inResult;
+						mSensors.push_back(cs);
 					}
-					mHits.push_back(cs);
+					else
+					{
+						CollidingShape cs;
+						cs.mCenterOfMassTransform = com;
+						cs.mShape = body.GetShape();
+						cs.mBodyID = inResult;
+						cs.mMotionType = body.GetMotionType();
+						cs.mUpdateVelocities = false;
+						cs.mFriction = mCombineFriction(soft_body, SubShapeID(), body, SubShapeID());
+						cs.mRestitution = mCombineRestitution(soft_body, SubShapeID(), body, SubShapeID());
+						cs.mSoftBodyInvMassScale = settings.mInvMassScale1;
+						if (cs.mMotionType == EMotionType::Dynamic)
+						{
+							const MotionProperties *mp = body.GetMotionProperties();
+							cs.mInvMass = settings.mInvMassScale2 * mp->GetInverseMass();
+							cs.mInvInertia = settings.mInvInertiaScale2 * mp->GetInverseInertiaForRotation(cs.mCenterOfMassTransform.GetRotation());
+							cs.mOriginalLinearVelocity = cs.mLinearVelocity = mInverseTransform.Multiply3x3(mp->GetLinearVelocity());
+							cs.mOriginalAngularVelocity = cs.mAngularVelocity = mInverseTransform.Multiply3x3(mp->GetAngularVelocity());
+						}
+						mHits.push_back(cs);
+					}
 				}
 			}
 		}
@@ -179,9 +193,10 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 		ContactConstraintManager::CombineFunction mCombineFriction;
 		ContactConstraintManager::CombineFunction mCombineRestitution;
 		Array<CollidingShape> &		mHits;
+		Array<CollidingSensor> &	mSensors;
 	};
 
-	Collector collector(inContext, inSystem, inBodyLockInterface, mCollidingShapes);
+	Collector collector(inContext, inSystem, inBodyLockInterface, mCollidingShapes, mCollidingSensors);
 	AABox bounds = mLocalBounds;
 	bounds.Encapsulate(mLocalPredictedBounds);
 	bounds = bounds.Transformed(inContext.mCenterOfMassTransform);
@@ -192,13 +207,36 @@ void SoftBodyMotionProperties::DetermineCollidingShapes(const SoftBodyUpdateCont
 	inSystem.GetBroadPhaseQuery().CollideAABox(bounds, collector, broadphase_layer_filter, object_layer_filter);
 }
 
-void SoftBodyMotionProperties::DetermineCollisionPlanes(const SoftBodyUpdateContext &inContext, uint inVertexStart, uint inNumVertices)
+void SoftBodyMotionProperties::DetermineCollisionPlanes(uint inVertexStart, uint inNumVertices)
 {
 	JPH_PROFILE_FUNCTION();
 
 	// Generate collision planes
 	for (const CollidingShape &cs : mCollidingShapes)
-		cs.mShape->CollideSoftBodyVertices(cs.mCenterOfMassTransform, Vec3::sReplicate(1.0f), mVertices.data() + inVertexStart, inNumVertices, inContext.mDeltaTime, inContext.mDisplacementDueToGravity, int(&cs - mCollidingShapes.data()));
+		cs.mShape->CollideSoftBodyVertices(cs.mCenterOfMassTransform, Vec3::sReplicate(1.0f), CollideSoftBodyVertexIterator(mVertices.data() + inVertexStart), inNumVertices, int(&cs - mCollidingShapes.data()));
+}
+
+void SoftBodyMotionProperties::DetermineSensorCollisions(CollidingSensor &ioSensor)
+{
+	JPH_PROFILE_FUNCTION();
+
+	Plane collision_plane;
+	float largest_penetration = -FLT_MAX;
+	int colliding_shape_idx = -1;
+
+	// Collide sensor against all vertices
+	CollideSoftBodyVertexIterator vertex_iterator(
+		StridedPtr<const Vec3>(&mVertices[0].mPosition, sizeof(SoftBodyVertex)), // The position and mass come from the soft body vertex
+		StridedPtr<const float>(&mVertices[0].mInvMass, sizeof(SoftBodyVertex)),
+		StridedPtr<Plane>(&collision_plane, 0), // We want all vertices to result in a single collision so we pass stride 0
+		StridedPtr<float>(&largest_penetration, 0),
+		StridedPtr<int>(&colliding_shape_idx, 0));
+	ioSensor.mShape->CollideSoftBodyVertices(ioSensor.mCenterOfMassTransform, Vec3::sReplicate(1.0f), vertex_iterator, uint(mVertices.size()), 0);
+	ioSensor.mHasContact = largest_penetration > 0.0f;
+
+	// We need a contact callback if one of the sensors collided
+	if (ioSensor.mHasContact)
+		mNeedContactCallback = true;
 }
 
 void SoftBodyMotionProperties::ApplyPressure(const SoftBodyUpdateContext &inContext)
@@ -548,98 +586,96 @@ void SoftBodyMotionProperties::ApplyCollisionConstraintsAndUpdateVelocities(cons
 				{
 					// Remember that there was a collision
 					v.mHasContact = true;
-					mHasContact = true;
 
-					// Sensors should not have a collision response
+					// We need a contact callback if one of the vertices collided
+					mNeedContactCallback = true;
+
+					// Note that we already calculated the velocity, so this does not affect the velocity (next iteration starts by setting previous position to current position)
 					CollidingShape &cs = mCollidingShapes[v.mCollidingShapeIndex];
-					if (!cs.mIsSensor)
+					Vec3 contact_normal = v.mCollisionPlane.GetNormal();
+					v.mPosition += contact_normal * projected_distance;
+
+					// Apply friction as described in Detailed Rigid Body Simulation with Extended Position Based Dynamics - Matthias Muller et al.
+					// See section 3.6:
+					// Inverse mass: w1 = 1 / m1, w2 = 1 / m2 + (r2 x n)^T I^-1 (r2 x n) = 0 for a static object
+					// r2 are the contact point relative to the center of mass of body 2
+					// Lagrange multiplier for contact: lambda = -c / (w1 + w2)
+					// Where c is the constraint equation (the distance to the plane, negative because penetrating)
+					// Contact normal force: fn = lambda / dt^2
+					// Delta velocity due to friction dv = -vt / |vt| * min(dt * friction * fn * (w1 + w2), |vt|) = -vt * min(-friction * c / (|vt| * dt), 1)
+					// Note that I think there is an error in the paper, I added a mass term, see: https://github.com/matthias-research/pages/issues/29
+					// Relative velocity: vr = v1 - v2 - omega2 x r2
+					// Normal velocity: vn = vr . contact_normal
+					// Tangential velocity: vt = vr - contact_normal * vn
+					// Impulse: p = dv / (w1 + w2)
+					// Changes in particle velocities:
+					// v1 = v1 + p / m1
+					// v2 = v2 - p / m2 (no change when colliding with a static body)
+					// w2 = w2 - I^-1 (r2 x p) (no change when colliding with a static body)
+					if (cs.mMotionType == EMotionType::Dynamic)
 					{
-						// Note that we already calculated the velocity, so this does not affect the velocity (next iteration starts by setting previous position to current position)
-						Vec3 contact_normal = v.mCollisionPlane.GetNormal();
-						v.mPosition += contact_normal * projected_distance;
+						// Calculate normal and tangential velocity (equation 30)
+						Vec3 r2 = v.mPosition - cs.mCenterOfMassTransform.GetTranslation();
+						Vec3 v2 = cs.GetPointVelocity(r2);
+						Vec3 relative_velocity = v.mVelocity - v2;
+						Vec3 v_normal = contact_normal * contact_normal.Dot(relative_velocity);
+						Vec3 v_tangential = relative_velocity - v_normal;
+						float v_tangential_length = v_tangential.Length();
 
-						// Apply friction as described in Detailed Rigid Body Simulation with Extended Position Based Dynamics - Matthias Muller et al.
-						// See section 3.6:
-						// Inverse mass: w1 = 1 / m1, w2 = 1 / m2 + (r2 x n)^T I^-1 (r2 x n) = 0 for a static object
-						// r2 are the contact point relative to the center of mass of body 2
-						// Lagrange multiplier for contact: lambda = -c / (w1 + w2)
-						// Where c is the constraint equation (the distance to the plane, negative because penetrating)
-						// Contact normal force: fn = lambda / dt^2
-						// Delta velocity due to friction dv = -vt / |vt| * min(dt * friction * fn * (w1 + w2), |vt|) = -vt * min(-friction * c / (|vt| * dt), 1)
-						// Note that I think there is an error in the paper, I added a mass term, see: https://github.com/matthias-research/pages/issues/29
-						// Relative velocity: vr = v1 - v2 - omega2 x r2
-						// Normal velocity: vn = vr . contact_normal
-						// Tangential velocity: vt = vr - contact_normal * vn
-						// Impulse: p = dv / (w1 + w2)
-						// Changes in particle velocities:
-						// v1 = v1 + p / m1
-						// v2 = v2 - p / m2 (no change when colliding with a static body)
-						// w2 = w2 - I^-1 (r2 x p) (no change when colliding with a static body)
-						if (cs.mMotionType == EMotionType::Dynamic)
+						// Calculate resulting inverse mass of vertex
+						float vertex_inv_mass = cs.mSoftBodyInvMassScale * v.mInvMass;
+
+						// Calculate inverse effective mass
+						Vec3 r2_cross_n = r2.Cross(contact_normal);
+						float w2 = cs.mInvMass + r2_cross_n.Dot(cs.mInvInertia * r2_cross_n);
+						float w1_plus_w2 = vertex_inv_mass + w2;
+						if (w1_plus_w2 > 0.0f)
 						{
-							// Calculate normal and tangential velocity (equation 30)
-							Vec3 r2 = v.mPosition - cs.mCenterOfMassTransform.GetTranslation();
-							Vec3 v2 = cs.GetPointVelocity(r2);
-							Vec3 relative_velocity = v.mVelocity - v2;
-							Vec3 v_normal = contact_normal * contact_normal.Dot(relative_velocity);
-							Vec3 v_tangential = relative_velocity - v_normal;
-							float v_tangential_length = v_tangential.Length();
-
-							// Calculate resulting inverse mass of vertex
-							float vertex_inv_mass = cs.mSoftBodyInvMassScale * v.mInvMass;
-
-							// Calculate inverse effective mass
-							Vec3 r2_cross_n = r2.Cross(contact_normal);
-							float w2 = cs.mInvMass + r2_cross_n.Dot(cs.mInvInertia * r2_cross_n);
-							float w1_plus_w2 = vertex_inv_mass + w2;
-							if (w1_plus_w2 > 0.0f)
-							{
-								// Calculate delta relative velocity due to friction (modified equation 31)
-								Vec3 dv;
-								if (v_tangential_length > 0.0f)
-									dv = v_tangential * min(cs.mFriction * projected_distance / (v_tangential_length * dt), 1.0f);
-								else
-									dv = Vec3::sZero();
-
-								// Calculate delta relative velocity due to restitution (equation 35)
-								dv += v_normal;
-								float prev_v_normal = (prev_v - v2).Dot(contact_normal);
-								if (prev_v_normal < restitution_treshold)
-									dv += cs.mRestitution * prev_v_normal * contact_normal;
-
-								// Calculate impulse
-								Vec3 p = dv / w1_plus_w2;
-
-								// Apply impulse to particle
-								v.mVelocity -= p * vertex_inv_mass;
-
-								// Apply impulse to rigid body
-								cs.mLinearVelocity += p * cs.mInvMass;
-								cs.mAngularVelocity += cs.mInvInertia * r2.Cross(p);
-
-								// Mark that the velocities of the body we hit need to be updated
-								cs.mUpdateVelocities = true;
-							}
-						}
-						else if (cs.mSoftBodyInvMassScale > 0.0f)
-						{
-							// Body is not movable, equations are simpler
-
-							// Calculate normal and tangential velocity (equation 30)
-							Vec3 v_normal = contact_normal * contact_normal.Dot(v.mVelocity);
-							Vec3 v_tangential = v.mVelocity - v_normal;
-							float v_tangential_length = v_tangential.Length();
-
-							// Apply friction (modified equation 31)
+							// Calculate delta relative velocity due to friction (modified equation 31)
+							Vec3 dv;
 							if (v_tangential_length > 0.0f)
-								v.mVelocity -= v_tangential * min(cs.mFriction * projected_distance / (v_tangential_length * dt), 1.0f);
+								dv = v_tangential * min(cs.mFriction * projected_distance / (v_tangential_length * dt), 1.0f);
+							else
+								dv = Vec3::sZero();
 
-							// Apply restitution (equation 35)
-							v.mVelocity -= v_normal;
-							float prev_v_normal = prev_v.Dot(contact_normal);
+							// Calculate delta relative velocity due to restitution (equation 35)
+							dv += v_normal;
+							float prev_v_normal = (prev_v - v2).Dot(contact_normal);
 							if (prev_v_normal < restitution_treshold)
-								v.mVelocity -= cs.mRestitution * prev_v_normal * contact_normal;
+								dv += cs.mRestitution * prev_v_normal * contact_normal;
+
+							// Calculate impulse
+							Vec3 p = dv / w1_plus_w2;
+
+							// Apply impulse to particle
+							v.mVelocity -= p * vertex_inv_mass;
+
+							// Apply impulse to rigid body
+							cs.mLinearVelocity += p * cs.mInvMass;
+							cs.mAngularVelocity += cs.mInvInertia * r2.Cross(p);
+
+							// Mark that the velocities of the body we hit need to be updated
+							cs.mUpdateVelocities = true;
 						}
+					}
+					else if (cs.mSoftBodyInvMassScale > 0.0f)
+					{
+						// Body is not movable, equations are simpler
+
+						// Calculate normal and tangential velocity (equation 30)
+						Vec3 v_normal = contact_normal * contact_normal.Dot(v.mVelocity);
+						Vec3 v_tangential = v.mVelocity - v_normal;
+						float v_tangential_length = v_tangential.Length();
+
+						// Apply friction (modified equation 31)
+						if (v_tangential_length > 0.0f)
+							v.mVelocity -= v_tangential * min(cs.mFriction * projected_distance / (v_tangential_length * dt), 1.0f);
+
+						// Apply restitution (equation 35)
+						v.mVelocity -= v_normal;
+						float prev_v_normal = prev_v.Dot(contact_normal);
+						if (prev_v_normal < restitution_treshold)
+							v.mVelocity -= cs.mRestitution * prev_v_normal * contact_normal;
 					}
 				}
 			}
@@ -651,8 +687,18 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 	JPH_PROFILE_FUNCTION();
 
 	// Contact callback
-	if (mHasContact && ioContext.mContactListener != nullptr)
+	if (mNeedContactCallback && ioContext.mContactListener != nullptr)
+	{
+		// Remove non-colliding sensors from the list
+		for (int i = int(mCollidingSensors.size()) - 1; i >= 0; --i)
+			if (!mCollidingSensors[i].mHasContact)
+			{			
+				mCollidingSensors[i] = std::move(mCollidingSensors.back());
+				mCollidingSensors.pop_back();
+			}
+
 		ioContext.mContactListener->OnSoftBodyContactAdded(*ioContext.mBody, SoftBodyManifold(this));
+	}
 
 	// Loop through vertices once more to update the global state
 	float dt = ioContext.mDeltaTime;
@@ -660,7 +706,6 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 	float max_v_sq = 0.0f;
 	Vec3 linear_velocity = Vec3::sZero(), angular_velocity = Vec3::sZero();
 	mLocalPredictedBounds = mLocalBounds = { };
-	mHasContact = false;
 	for (Vertex &v : mVertices)
 	{
 		// Calculate max square velocity
@@ -682,9 +727,7 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 		mLocalPredictedBounds.Encapsulate(v.mPosition + v.mVelocity * dt + ioContext.mDisplacementDueToGravity);
 
 		// Reset collision data for the next iteration
-		v.mCollidingShapeIndex = -1;
-		v.mHasContact = false;
-		v.mLargestPenetration = -FLT_MAX;
+		v.ResetCollision();
 	}
 
 	// Calculate linear/angular velocity of the body by averaging all vertices and bringing the value to world space
@@ -742,8 +785,9 @@ void SoftBodyMotionProperties::UpdateRigidBodyVelocities(const SoftBodyUpdateCon
 		if (cs.mUpdateVelocities)
 			inBodyInterface.AddLinearAndAngularVelocity(cs.mBodyID, inContext.mCenterOfMassTransform.Multiply3x3(cs.mLinearVelocity - cs.mOriginalLinearVelocity), inContext.mCenterOfMassTransform.Multiply3x3(cs.mAngularVelocity - cs.mOriginalAngularVelocity));
 
-	// Clear colliding shapes to avoid hanging on to references to shapes
+	// Clear colliding shapes/sensors to avoid hanging on to references to shapes
 	mCollidingShapes.clear();
+	mCollidingSensors.clear();
 }
 
 void SoftBodyMotionProperties::InitializeUpdateContext(float inDeltaTime, Body &inSoftBody, const PhysicsSystem &inSystem, SoftBodyUpdateContext &ioContext)
@@ -777,6 +821,15 @@ void SoftBodyMotionProperties::StartNextIteration(const SoftBodyUpdateContext &i
 	IntegratePositions(ioContext);
 }
 
+void SoftBodyMotionProperties::StartFirstIteration(SoftBodyUpdateContext &ioContext)
+{
+	// Start the first iteration
+	JPH_IF_ENABLE_ASSERTS(uint iteration =) ioContext.mNextIteration.fetch_add(1, memory_order_relaxed);
+	JPH_ASSERT(iteration == 0);
+	StartNextIteration(ioContext);
+	ioContext.mState.store(SoftBodyUpdateContext::EState::ApplyConstraints, memory_order_release);
+}
+
 SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineCollisionPlanes(SoftBodyUpdateContext &ioContext)
 {
 	// Do a relaxed read first to see if there is any work to do (this prevents us from doing expensive atomic operations and also prevents us from continuously incrementing the counter and overflowing it)
@@ -789,19 +842,44 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineCol
 		{
 			// Process collision planes
 			uint num_vertices_to_process = min(SoftBodyUpdateContext::cVertexCollisionBatch, num_vertices - next_vertex);
-			DetermineCollisionPlanes(ioContext, next_vertex, num_vertices_to_process);
+			DetermineCollisionPlanes(next_vertex, num_vertices_to_process);
 			uint vertices_processed = ioContext.mNumCollisionVerticesProcessed.fetch_add(SoftBodyUpdateContext::cVertexCollisionBatch, memory_order_release) + num_vertices_to_process;
 			if (vertices_processed >= num_vertices)
 			{
-				// Start the first iteration
-				JPH_IF_ENABLE_ASSERTS(uint iteration =) ioContext.mNextIteration.fetch_add(1, memory_order_relaxed);
-				JPH_ASSERT(iteration == 0);
-				StartNextIteration(ioContext);
-				ioContext.mState.store(SoftBodyUpdateContext::EState::ApplyConstraints, memory_order_release);
+				// Determine next state
+				if (mCollidingSensors.empty())
+					StartFirstIteration(ioContext);
+				else
+					ioContext.mState.store(SoftBodyUpdateContext::EState::DetermineSensorCollisions, memory_order_release);
 			}
 			return EStatus::DidWork;
 		}
 	}
+
+	return EStatus::NoWork;
+}
+
+SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelDetermineSensorCollisions(SoftBodyUpdateContext &ioContext)
+{
+	// Do a relaxed read to see if there are more sensors to process
+	uint num_sensors = (uint)mCollidingSensors.size();
+	if (ioContext.mNextSensorIndex.load(memory_order_relaxed) < num_sensors)
+	{
+		// Fetch next sensor to process
+		uint sensor_index = ioContext.mNextSensorIndex.fetch_add(1, memory_order_acquire);
+		if (sensor_index < num_sensors)
+		{
+			// Process this sensor
+			DetermineSensorCollisions(mCollidingSensors[sensor_index]);
+
+			// Determine next state
+			uint sensors_processed = ioContext.mNumSensorsProcessed.fetch_add(1, memory_order_release) + 1;
+			if (sensors_processed >= num_sensors)
+				StartFirstIteration(ioContext);
+			return EStatus::DidWork;
+		}
+	}
+
 	return EStatus::NoWork;
 }
 
@@ -894,6 +972,9 @@ SoftBodyMotionProperties::EStatus SoftBodyMotionProperties::ParallelUpdate(SoftB
 	{
 	case SoftBodyUpdateContext::EState::DetermineCollisionPlanes:
 		return ParallelDetermineCollisionPlanes(ioContext);
+
+	case SoftBodyUpdateContext::EState::DetermineSensorCollisions:
+		return ParallelDetermineSensorCollisions(ioContext);
 
 	case SoftBodyUpdateContext::EState::ApplyConstraints:
 		return ParallelApplyConstraints(ioContext, inPhysicsSettings);

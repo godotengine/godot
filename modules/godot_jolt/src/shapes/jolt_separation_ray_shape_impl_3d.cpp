@@ -31,6 +31,12 @@ void JoltSeparationRayShapeImpl3D::set_data(const Variant& p_data) {
 	destroy();
 }
 
+AABB JoltSeparationRayShapeImpl3D::get_aabb() const {
+	constexpr float size_xy = 0.1f;
+	constexpr float half_size_xy = size_xy / 2.0f;
+	return {Vector3(-half_size_xy, -half_size_xy, 0.0f), Vector3(size_xy, size_xy, length)};
+}
+
 String JoltSeparationRayShapeImpl3D::to_string() const {
 	return vformat("{length=%f slide_on_slope=%s}", length, slide_on_slope);
 }

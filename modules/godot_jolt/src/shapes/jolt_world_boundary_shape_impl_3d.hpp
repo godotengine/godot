@@ -16,6 +16,10 @@ public:
 
 	void set_margin([[maybe_unused]] float p_margin) override { }
 
+	AABB get_aabb() const override;
+
+	String to_string() const;
+
 private:
 	JPH::ShapeRefC _build() const override;
 

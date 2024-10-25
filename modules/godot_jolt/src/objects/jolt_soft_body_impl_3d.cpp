@@ -7,6 +7,49 @@
 #include "spaces/jolt_broad_phase_layer.hpp"
 #include "spaces/jolt_space_3d.hpp"
 
+namespace {
+
+template<typename TJoltVertex>
+void pin_vertices(
+	const JoltSoftBodyImpl3D& p_body,
+	const JHashSet<int32_t>& p_pinned_vertices,
+	const JLocalVector<int32_t>& p_mesh_to_physics,
+	JPH::Array<TJoltVertex>& p_physics_vertices
+) {
+	const int32_t mesh_vertex_count = p_mesh_to_physics.size();
+	const auto physics_vertex_count = (int32_t)p_physics_vertices.size();
+
+	for (int32_t mesh_index : p_pinned_vertices) {
+		ERR_CONTINUE_MSG(
+			mesh_index < 0 || mesh_index >= mesh_vertex_count,
+			vformat(
+				"Index %d of pinned vertex in soft body '%s' is out of bounds. "
+				"There are only %d vertices in the current mesh.",
+				mesh_index,
+				p_body.to_string(),
+				mesh_vertex_count
+			)
+		);
+
+		const int32_t physics_index = p_mesh_to_physics[mesh_index];
+
+		ERR_CONTINUE_REPORT(
+			physics_index < 0 || physics_index >= physics_vertex_count,
+			vformat(
+				"Index %d of pinned vertex in soft body '%s' is out of bounds. "
+				"There are only %d vertices in the current mesh.",
+				physics_index,
+				p_body.to_string(),
+				physics_vertex_count
+			)
+		);
+
+		p_physics_vertices[(size_t)physics_index].mInvMass = 0.0f;
+	}
+}
+
+} // anonymous namespace
+
 JoltSoftBodyImpl3D::JoltSoftBodyImpl3D()
 	: JoltObjectImpl3D(OBJECT_TYPE_SOFT_BODY) {
 	jolt_settings->mRestitution = 0.0f;
@@ -17,6 +60,10 @@ JoltSoftBodyImpl3D::JoltSoftBodyImpl3D()
 
 JoltSoftBodyImpl3D::~JoltSoftBodyImpl3D() {
 	delete_safely(jolt_settings);
+}
+
+bool JoltSoftBodyImpl3D::in_space() const {
+	return JoltObjectImpl3D::in_space() && shared != nullptr;
 }
 
 void JoltSoftBodyImpl3D::add_collision_exception(const RID& p_excepted_body) {
@@ -68,13 +115,15 @@ Vector3 JoltSoftBodyImpl3D::get_velocity_at_position([[maybe_unused]] const Vect
 void JoltSoftBodyImpl3D::set_mesh(const RID& p_mesh) {
 	QUIET_FAIL_COND(mesh == p_mesh);
 
+	_deref_shared_data();
+
 	mesh = p_mesh;
 
 	_mesh_changed();
 }
 
 bool JoltSoftBodyImpl3D::is_sleeping() const {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return false;
 	}
 
@@ -85,7 +134,7 @@ bool JoltSoftBodyImpl3D::is_sleeping() const {
 }
 
 void JoltSoftBodyImpl3D::set_is_sleeping(bool p_enabled) {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return;
 	}
 
@@ -103,7 +152,7 @@ void JoltSoftBodyImpl3D::set_simulation_precision(int32_t p_precision) {
 
 	simulation_precision = MAX(p_precision, 0);
 
-	_update_simulation_precision();
+	_simulation_precision_changed();
 }
 
 void JoltSoftBodyImpl3D::set_mass(float p_mass) {
@@ -111,7 +160,7 @@ void JoltSoftBodyImpl3D::set_mass(float p_mass) {
 
 	mass = MAX(p_mass, 0.0f);
 
-	_update_mass();
+	_mass_changed();
 }
 
 float JoltSoftBodyImpl3D::get_stiffness_coefficient() const {
@@ -135,7 +184,7 @@ void JoltSoftBodyImpl3D::set_linear_damping(float p_damping) {
 
 	linear_damping = MAX(p_damping, 0.0f);
 
-	_update_damping();
+	_damping_changed();
 }
 
 float JoltSoftBodyImpl3D::get_drag() const {
@@ -165,7 +214,7 @@ Variant JoltSoftBodyImpl3D::get_state(PhysicsServer3D::BodyState p_state) const 
 			ERR_FAIL_D_NOT_IMPL();
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled body state: '%d'", p_state));
+			ERR_FAIL_D_REPORT(vformat("Unhandled body state: '%d'.", p_state));
 		}
 	}
 }
@@ -188,7 +237,7 @@ void JoltSoftBodyImpl3D::set_state(PhysicsServer3D::BodyState p_state, const Var
 			ERR_FAIL_NOT_IMPL();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled body state: '%d'", p_state));
+			ERR_FAIL_REPORT(vformat("Unhandled body state: '%d'.", p_state));
 		} break;
 	}
 }
@@ -199,8 +248,8 @@ Transform3D JoltSoftBodyImpl3D::get_transform() const {
 }
 
 void JoltSoftBodyImpl3D::set_transform(const Transform3D& p_transform) {
-	ERR_FAIL_NULL_MSG(
-		space,
+	ERR_FAIL_COND_MSG(
+		!in_space(),
 		vformat(
 			"Failed to set transform for '%s'. "
 			"Doing so without a physics space is not supported by Godot Jolt. "
@@ -233,8 +282,8 @@ void JoltSoftBodyImpl3D::set_transform(const Transform3D& p_transform) {
 }
 
 AABB JoltSoftBodyImpl3D::get_bounds() const {
-	ERR_FAIL_NULL_D_MSG(
-		space,
+	ERR_FAIL_COND_D_MSG(
+		!in_space(),
 		vformat(
 			"Failed to retrieve world bounds of '%s'. "
 			"Doing so without a physics space is not supported by Godot Jolt. "
@@ -252,17 +301,9 @@ AABB JoltSoftBodyImpl3D::get_bounds() const {
 void JoltSoftBodyImpl3D::update_rendering_server(
 	PhysicsServer3DRenderingServerHandler* p_rendering_server_handler
 ) {
-	ERR_FAIL_NULL_MSG(
-		space,
-		vformat(
-			"Failed to update rendering server with state of '%s'. "
-			"Doing so without a physics space is not supported by Godot Jolt. "
-			"If this relates to a node, try adding the node to a scene tree first.",
-			to_string()
-		)
-	);
-
-	ERR_FAIL_NULL(shared);
+	// Ideally we would emit an actual error here, but that would spam the logs to the point where
+	// the actual cause will be drowned out.
+	QUIET_FAIL_COND(!in_space());
 
 	const JoltReadableBody3D body = space->read_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -315,8 +356,8 @@ void JoltSoftBodyImpl3D::update_rendering_server(
 }
 
 Vector3 JoltSoftBodyImpl3D::get_vertex_position(int32_t p_index) {
-	ERR_FAIL_NULL_D_MSG(
-		space,
+	ERR_FAIL_COND_D_MSG(
+		!in_space(),
 		vformat(
 			"Failed to retrieve point position for '%s'. "
 			"Doing so without a physics space is not supported by Godot Jolt. "
@@ -343,8 +384,8 @@ Vector3 JoltSoftBodyImpl3D::get_vertex_position(int32_t p_index) {
 }
 
 void JoltSoftBodyImpl3D::set_vertex_position(int32_t p_index, const Vector3& p_position) {
-	ERR_FAIL_NULL_MSG(
-		space,
+	ERR_FAIL_COND_MSG(
+		!in_space(),
 		vformat(
 			"Failed to set point position for '%s'. "
 			"Doing so without a physics space is not supported by Godot Jolt. "
@@ -376,6 +417,8 @@ void JoltSoftBodyImpl3D::set_vertex_position(int32_t p_index, const Vector3& p_p
 	const JPH::Vec3 velocity = displacement / last_step;
 
 	physics_vertex.mVelocity = velocity;
+
+	_vertices_changed();
 }
 
 void JoltSoftBodyImpl3D::pin_vertex(int32_t p_index) {
@@ -397,8 +440,8 @@ void JoltSoftBodyImpl3D::unpin_all_vertices() {
 }
 
 bool JoltSoftBodyImpl3D::is_vertex_pinned(int32_t p_index) const {
-	ERR_FAIL_NULL_D_MSG(
-		space,
+	ERR_FAIL_COND_D_MSG(
+		!in_space(),
 		vformat(
 			"Failed retrieve pin status of point for '%s'. "
 			"Doing so without a physics space is not supported by Godot Jolt. "
@@ -435,7 +478,7 @@ void JoltSoftBodyImpl3D::_space_changing() {
 	_deref_shared_data();
 
 	if (space != nullptr && !jolt_id.IsInvalid()) {
-		const JoltWritableBody3D body = space->write_body(jolt_id);
+		const JoltReadableBody3D body = space->read_body(jolt_id);
 		ERR_FAIL_COND(body.is_invalid());
 
 		jolt_settings = new JPH::SoftBodyCreationSettings(body->GetSoftBodyCreationSettings());
@@ -457,12 +500,12 @@ void JoltSoftBodyImpl3D::_add_to_space() {
 	QUIET_FAIL_NULL(space);
 	QUIET_FAIL_COND(!mesh.is_valid());
 
+	const bool has_valid_shared = _ref_shared_data();
+	ERR_FAIL_COND(!has_valid_shared);
+
 	ON_SCOPE_EXIT {
 		delete_safely(jolt_settings);
 	};
-
-	const bool has_valid_shared = _ref_shared_data();
-	ERR_FAIL_COND(!has_valid_shared);
 
 	JPH::CollisionGroup::GroupID group_id = 0;
 	JPH::CollisionGroup::SubGroupID sub_group_id = 0;
@@ -570,16 +613,10 @@ bool JoltSoftBodyImpl3D::_ref_shared_data() {
 			);
 		}
 
-		// Pin the static vertices, this is used during the Optimize call to order the constraints.
-		// Note that it is ok if the pinned vertices change later, this will reduce the
-		// effectiveness of the constraints a bit.
-		for (int32_t pin_mesh_index : pinned_vertices) {
-			ERR_FAIL_INDEX_V(pin_mesh_index, mesh_to_physics.size(), false);
-			const int32_t pin_physics_index = mesh_to_physics[pin_mesh_index];
-			ERR_FAIL_INDEX_V(pin_physics_index, (int32_t)physics_vertices.size(), false);
-
-			physics_vertices[(size_t)pin_physics_index].mInvMass = 0.0f;
-		}
+		// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call
+		// below to order the constraints. Note that it's fine if the pinned vertices change later,
+		// but that will reduce the effectiveness of the constraints a bit.
+		pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
 		// HACK(mihe): Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt
 		// uses actual stiffness for its edge constraints, we crudely map one to the other with an
@@ -615,9 +652,9 @@ void JoltSoftBodyImpl3D::_deref_shared_data() {
 }
 
 void JoltSoftBodyImpl3D::_update_mass() {
-	QUIET_FAIL_NULL(space);
-	QUIET_FAIL_COND(jolt_id.IsInvalid());
-	QUIET_FAIL_NULL(shared);
+	if (!in_space()) {
+		return;
+	}
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -634,22 +671,14 @@ void JoltSoftBodyImpl3D::_update_mass() {
 		vertex.mInvMass = inverse_vertex_mass;
 	}
 
-	for (int32_t pin_mesh_index : pinned_vertices) {
-		ERR_FAIL_INDEX(pin_mesh_index, shared->mesh_to_physics.size());
-		const int32_t pin_physics_index = shared->mesh_to_physics[pin_mesh_index];
-		ERR_FAIL_INDEX(pin_physics_index, (int32_t)physics_vertices.size());
-
-		physics_vertices[(size_t)pin_physics_index].mInvMass = 0.0f;
-	}
+	pin_vertices(*this, pinned_vertices, shared->mesh_to_physics, physics_vertices);
 }
 
 void JoltSoftBodyImpl3D::_update_pressure() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		jolt_settings->mPressure = pressure;
 		return;
 	}
-
-	QUIET_FAIL_COND(jolt_id.IsInvalid());
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -662,12 +691,10 @@ void JoltSoftBodyImpl3D::_update_pressure() {
 }
 
 void JoltSoftBodyImpl3D::_update_damping() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		jolt_settings->mLinearDamping = linear_damping;
 		return;
 	}
-
-	QUIET_FAIL_COND(jolt_id.IsInvalid());
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -680,12 +707,10 @@ void JoltSoftBodyImpl3D::_update_damping() {
 }
 
 void JoltSoftBodyImpl3D::_update_simulation_precision() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		jolt_settings->mNumIterations = (JPH::uint32)simulation_precision;
 		return;
 	}
-
-	QUIET_FAIL_COND(jolt_id.IsInvalid());
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -700,12 +725,10 @@ void JoltSoftBodyImpl3D::_update_simulation_precision() {
 void JoltSoftBodyImpl3D::_update_group_filter() {
 	JPH::GroupFilter* group_filter = !exceptions.is_empty() ? JoltGroupFilter::instance : nullptr;
 
-	if (space == nullptr) {
+	if (!in_space()) {
 		jolt_settings->mCollisionGroup.SetGroupFilter(group_filter);
 		return;
 	}
-
-	QUIET_FAIL_COND(jolt_id.IsInvalid());
 
 	const JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -715,13 +738,20 @@ void JoltSoftBodyImpl3D::_update_group_filter() {
 
 void JoltSoftBodyImpl3D::_try_rebuild() {
 	if (space != nullptr) {
-		_deref_shared_data();
 		_reset_space();
 	}
 }
 
 void JoltSoftBodyImpl3D::_mesh_changed() {
 	_try_rebuild();
+}
+
+void JoltSoftBodyImpl3D::_simulation_precision_changed() {
+	wake_up();
+}
+
+void JoltSoftBodyImpl3D::_mass_changed() {
+	wake_up();
 }
 
 void JoltSoftBodyImpl3D::_pressure_changed() {
@@ -736,6 +766,10 @@ void JoltSoftBodyImpl3D::_damping_changed() {
 
 void JoltSoftBodyImpl3D::_pins_changed() {
 	_update_mass();
+	wake_up();
+}
+
+void JoltSoftBodyImpl3D::_vertices_changed() {
 	wake_up();
 }
 

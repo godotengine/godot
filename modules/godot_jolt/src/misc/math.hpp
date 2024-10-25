@@ -12,8 +12,27 @@
 #define Mathf_NAN ((float)Math_NAN)
 
 // NOLINTEND(readability-identifier-naming)
+#ifdef TOOLS_ENABLED
 
-//#define USEC_TO_SEC(m_usec) (double(m_usec) / 1000000.0)
+#define ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)                                             \
+	if (unlikely((m_transform).basis.determinant() == 0.0f)) {                                \
+		WARN_PRINT(vformat(                                                                   \
+			"%s "                                                                             \
+			"The basis of the transform was singular, which is not supported by Godot Jolt. " \
+			"This is likely caused by one or more axes having a scale of zero. "              \
+			"The basis (and thus its scale) will be treated as identity.",                    \
+			m_msg                                                                             \
+		));                                                                                   \
+                                                                                              \
+		(m_transform).basis = Basis();                                                        \
+	} else                                                                                    \
+		((void)0)
+
+#else // GDJ_CONFIG_EDITOR
+
+#define ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)
+
+#endif // TOOLS_ENABLED
 
 //namespace godot::Math {
 

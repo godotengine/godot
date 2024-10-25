@@ -32,11 +32,9 @@ public:
 #endif // JPH_ENABLE_ASSERTS
 
 	/// Add a new constraint. This is thread safe.
-	/// Note that the inConstraints array is allowed to have nullptrs, these will be ignored.
 	void					Add(Constraint **inConstraints, int inNumber);
 
 	/// Remove a constraint. This is thread safe.
-	/// Note that the inConstraints array is allowed to have nullptrs, these will be ignored.
 	void					Remove(Constraint **inConstraint, int inNumber);
 
 	/// Get a list of all constraints

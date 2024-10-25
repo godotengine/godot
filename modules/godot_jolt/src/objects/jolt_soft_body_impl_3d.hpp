@@ -18,6 +18,8 @@ public:
 
 	~JoltSoftBodyImpl3D() override;
 
+	bool in_space() const;
+
 	void add_collision_exception(const RID& p_excepted_body);
 
 	void remove_collision_exception(const RID& p_excepted_body);
@@ -129,11 +131,17 @@ private:
 
 	void _mesh_changed();
 
+	void _simulation_precision_changed();
+
+	void _mass_changed();
+
 	void _pressure_changed();
 
 	void _damping_changed();
 
 	void _pins_changed();
+
+	void _vertices_changed();
 
 	void _exceptions_changed();
 

@@ -66,8 +66,12 @@ void collide_ray_vs_shape(
 	const JPH::RayCast ray_cast(ray_start2, ray_vector_padded2);
 
 	JPH::RayCastSettings ray_cast_settings;
-	ray_cast_settings.mBackFaceMode = p_collide_shape_settings.mBackFaceMode;
 	ray_cast_settings.mTreatConvexAsSolid = false;
+	ray_cast_settings.mBackFaceModeTriangles = p_collide_shape_settings.mBackFaceMode;
+
+	if (JoltProjectSettings::use_legacy_ray_casting()) {
+		ray_cast_settings.mBackFaceModeConvex = p_collide_shape_settings.mBackFaceMode;
+	}
 
 	JoltQueryCollectorClosest<JPH::CastRayCollector> ray_collector;
 
@@ -86,6 +90,12 @@ void collide_ray_vs_shape(
 		return;
 	}
 
+	// Since `hit.mSubShapeID2` could represent a path not only from `p_shape2` but also any
+	// compound shape that it's contained within, we need to split this path into something that
+	// `p_shape2` can actually understand.
+	JPH::SubShapeID local_sub_shape_id2;
+	hit.mSubShapeID2.PopID(p_sub_shape_id_creator2.GetNumBitsWritten(), local_sub_shape_id2);
+
 	const JPH::Vec3 hit_point2 = ray_cast.GetPointOnRay(hit.mFraction);
 
 	const JPH::Vec3 hit_point_on_1 = ray_start + ray_vector;
@@ -94,7 +104,7 @@ void collide_ray_vs_shape(
 	JPH::Vec3 hit_normal2 = JPH::Vec3::sZero();
 
 	if (shape1->slide_on_slope) {
-		hit_normal2 = p_shape2->GetSurfaceNormal(hit.mSubShapeID2, hit_point2);
+		hit_normal2 = p_shape2->GetSurfaceNormal(local_sub_shape_id2, hit_point2);
 
 		// HACK(mihe): If we got a back-face normal we need to flip it
 		if (hit_normal2.Dot(ray_direction2) > 0) {
@@ -117,14 +127,8 @@ void collide_ray_vs_shape(
 	);
 
 	if (p_collide_shape_settings.mCollectFacesMode == JPH::ECollectFacesMode::CollectFaces) {
-		// Since `hit.mSubShapeID2` could represent a path not only from `p_shape2` but also any
-		// compound shape that it's contained within, we need to split this path into something that
-		// `p_shape2` can actually understand.
-		JPH::SubShapeID sub_shape_id2;
-		hit.mSubShapeID2.PopID(p_sub_shape_id_creator2.GetNumBitsWritten(), sub_shape_id2);
-
 		p_shape2->GetSupportingFace(
-			sub_shape_id2,
+			local_sub_shape_id2,
 			ray_direction2,
 			p_scale2,
 			p_center_of_mass_transform2,
@@ -186,7 +190,9 @@ void JoltCustomRayShape::register_type() {
 		JPH::EShapeSubType::Cylinder,
 		JPH::EShapeSubType::ConvexHull,
 		JPH::EShapeSubType::Mesh,
-		JPH::EShapeSubType::HeightField};
+		JPH::EShapeSubType::HeightField,
+		JPH::EShapeSubType::Plane,
+		JPH::EShapeSubType::TaperedCylinder};
 
 	for (const JPH::EShapeSubType concrete_sub_type : concrete_sub_types) {
 		JPH::CollisionDispatch::sRegisterCollideShape(
@@ -207,15 +213,32 @@ void JoltCustomRayShape::register_type() {
 		JoltCustomShapeSubType::RAY,
 		collide_noop
 	);
-	JPH::CollisionDispatch::sRegisterCastShape(
-		JoltCustomShapeSubType::RAY,
-		JoltCustomShapeSubType::RAY,
-		cast_noop
-	);
+
+	for (const JPH::EShapeSubType sub_type : JPH::sAllSubShapeTypes) {
+		JPH::CollisionDispatch::sRegisterCastShape(
+			JoltCustomShapeSubType::RAY,
+			sub_type,
+			cast_noop
+		);
+
+		JPH::CollisionDispatch::sRegisterCastShape(
+			sub_type,
+			JoltCustomShapeSubType::RAY,
+			cast_noop
+		);
+	}
 }
 
 JPH::AABox JoltCustomRayShape::GetLocalBounds() const {
-	return {JPH::Vec3::sZero(), JPH::Vec3(0.0f, 0.0f, length)};
+	const float radius = GetInnerRadius();
+	return {JPH::Vec3(-radius, -radius, 0.0f), JPH::Vec3(radius, radius, length)};
+}
+
+float JoltCustomRayShape::GetInnerRadius() const {
+	// HACK(mihe): There is no sensible value here, since this shape is infinitely thin, so we pick
+	// something that's hopefully small enough to effectively be zero, but big enough to not cause
+	// any numerical issues.
+	return 0.0001f;
 }
 
 JPH::MassProperties JoltCustomRayShape::GetMassProperties() const {

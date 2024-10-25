@@ -108,8 +108,12 @@ uint32 FixedSizeFreeList<Object>::ConstructObject(Parameters &&... inParameters)
 template <typename Object>
 void FixedSizeFreeList<Object>::AddObjectToBatch(Batch &ioBatch, uint32 inObjectIndex)
 {
-	JPH_ASSERT(GetStorage(inObjectIndex).mNextFreeObject.load(memory_order_relaxed) == inObjectIndex, "Trying to add a object to the batch that is already in a free list");
 	JPH_ASSERT(ioBatch.mNumObjects != uint32(-1), "Trying to reuse a batch that has already been freed");
+
+	// Reset next index
+	atomic<uint32> &next_free_object = GetStorage(inObjectIndex).mNextFreeObject;
+	JPH_ASSERT(next_free_object.load(memory_order_relaxed) == inObjectIndex, "Trying to add a object to the batch that is already in a free list");
+	next_free_object.store(cInvalidObjectIndex, memory_order_release);
 
 	// Link object in batch to free
 	if (ioBatch.mFirstObjectIndex == cInvalidObjectIndex)

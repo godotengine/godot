@@ -52,7 +52,7 @@ double JoltHingeJointImpl3D::get_param(Parameter p_param) const {
 			return motor_max_torque * estimate_physics_step();
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled parameter: '%d'", p_param));
+			ERR_FAIL_D_REPORT(vformat("Unhandled parameter: '%d'.", p_param));
 		}
 	}
 }
@@ -118,7 +118,7 @@ void JoltHingeJointImpl3D::set_param(Parameter p_param, double p_value) {
 			_motor_limit_changed();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled parameter: '%d'", p_param));
+			ERR_FAIL_REPORT(vformat("Unhandled parameter: '%d'.", p_param));
 		} break;
 	}
 }
@@ -135,7 +135,7 @@ double JoltHingeJointImpl3D::get_jolt_param(JoltParameter p_param) const {
 			return motor_max_torque;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled parameter: '%d'", p_param));
+			ERR_FAIL_D_REPORT(vformat("Unhandled parameter: '%d'.", p_param));
 		}
 	}
 }
@@ -155,8 +155,8 @@ void JoltHingeJointImpl3D::set_jolt_param(JoltParameter p_param, double p_value)
 			_motor_limit_changed();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled parameter: '%d'", p_param));
-		}
+			ERR_FAIL_REPORT(vformat("Unhandled parameter: '%d'.", p_param));
+		} break;
 	}
 }
 
@@ -169,7 +169,7 @@ bool JoltHingeJointImpl3D::get_flag(Flag p_flag) const {
 			return motor_enabled;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled flag: '%d'", p_flag));
+			ERR_FAIL_D_REPORT(vformat("Unhandled flag: '%d'.", p_flag));
 		}
 	}
 }
@@ -185,7 +185,7 @@ void JoltHingeJointImpl3D::set_flag(Flag p_flag, bool p_enabled) {
 			_motor_state_changed();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled flag: '%d'", p_flag));
+			ERR_FAIL_REPORT(vformat("Unhandled flag: '%d'.", p_flag));
 		} break;
 	}
 }
@@ -197,7 +197,7 @@ bool JoltHingeJointImpl3D::get_jolt_flag(JoltFlag p_flag) const {
 			return limit_spring_enabled;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled flag: '%d'", p_flag));
+			ERR_FAIL_D_REPORT(vformat("Unhandled flag: '%d'.", p_flag));
 		}
 	}
 }
@@ -210,7 +210,7 @@ void JoltHingeJointImpl3D::set_jolt_flag(JoltFlag p_flag, bool p_enabled) {
 			_limit_spring_changed();
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled flag: '%d'", p_flag));
+			ERR_FAIL_REPORT(vformat("Unhandled flag: '%d'.", p_flag));
 		} break;
 	}
 }
@@ -247,7 +247,14 @@ float JoltHingeJointImpl3D::get_applied_torque() const {
 		return constraint->GetTotalLambdaRotation().Length() / last_step;
 	} else {
 		auto* constraint = static_cast<JPH::HingeConstraint*>(jolt_ref.GetPtr());
-		return constraint->GetTotalLambdaRotation().Length() / last_step;
+
+		const Vector3 total_lambda = Vector3(
+			constraint->GetTotalLambdaRotation()[0],
+			constraint->GetTotalLambdaRotation()[1],
+			constraint->GetTotalLambdaRotationLimits() + constraint->GetTotalLambdaMotor()
+		);
+
+		return float(total_lambda.length()) / last_step;
 	}
 }
 

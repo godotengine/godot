@@ -31,10 +31,10 @@ constexpr char PHYSICS_SERVER_NAME[] = "JoltPhysicsServer3D";
 void JoltPhysicsServer3D::_bind_methods() {
 	// clang-format off
 
-#ifdef TOOLS_ENABLED
+#ifdef GDJ_CONFIG_EDITOR
 	BIND_METHOD(JoltPhysicsServer3D, dump_debug_snapshots, "dir");
 	BIND_METHOD(JoltPhysicsServer3D, space_dump_debug_snapshot, "space", "dir");
-#endif // TOOLS_ENABLED
+#endif // GDJ_CONFIG_EDITOR
 
 	BIND_METHOD(JoltPhysicsServer3D, joint_get_enabled, "joint");
 	BIND_METHOD(JoltPhysicsServer3D, joint_set_enabled, "joint", "enabled");
@@ -115,6 +115,8 @@ void JoltPhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_LIMIT_SPRING_FREQUENCY);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_LIMIT_SPRING_DAMPING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_SPRING_MAX_FORCE);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_MAX_TORQUE);
 
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT_SPRING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING_FREQUENCY);

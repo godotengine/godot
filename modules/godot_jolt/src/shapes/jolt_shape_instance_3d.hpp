@@ -42,6 +42,8 @@ public:
 
 	void set_scale(const Vector3& p_scale) { scale = p_scale; }
 
+	AABB get_aabb() const;
+
 	bool is_built() const { return jolt_ref != nullptr; }
 
 	bool is_enabled() const { return !disabled; }

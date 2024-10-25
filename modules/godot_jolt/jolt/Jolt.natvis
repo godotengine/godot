@@ -94,4 +94,7 @@
 			</ArrayItems>
 		</Expand>
 	</Type>
+	<Type Name="JPH::StridedPtr&lt;*&gt;">
+		<DisplayString>{(value_type *)mPtr}, stride={mStride}</DisplayString>
+	</Type>
 </AutoVisualizer>

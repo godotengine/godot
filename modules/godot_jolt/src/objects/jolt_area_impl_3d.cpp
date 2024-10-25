@@ -39,7 +39,7 @@ void JoltAreaImpl3D::set_transform(const Transform3D& p_transform) {
 		_shapes_changed();
 	}
 
-	if (space == nullptr) {
+	if (!in_space()) {
 		jolt_settings->mPosition = to_jolt_r(new_transform.origin);
 		jolt_settings->mRotation = to_jolt(new_transform.basis);
 	} else {
@@ -97,7 +97,7 @@ Variant JoltAreaImpl3D::get_param(PhysicsServer3D::AreaParameter p_param) const 
 			return DEFAULT_WIND_ATTENUATION_FACTOR;
 		}
 		default: {
-			ERR_FAIL_D_MSG(vformat("Unhandled area parameter: '%d'", p_param));
+			ERR_FAIL_D_REPORT(vformat("Unhandled area parameter: '%d'.", p_param));
 		}
 	}
 }
@@ -175,7 +175,7 @@ void JoltAreaImpl3D::set_param(PhysicsServer3D::AreaParameter p_param, const Var
 			}
 		} break;
 		default: {
-			ERR_FAIL_MSG(vformat("Unhandled area parameter: '%d'", p_param));
+			ERR_FAIL_REPORT(vformat("Unhandled area parameter: '%d'.", p_param));
 		} break;
 	}
 }
@@ -613,7 +613,7 @@ void JoltAreaImpl3D::_force_areas_exited(bool p_remove) {
 }
 
 void JoltAreaImpl3D::_update_group_filter() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return;
 	}
 

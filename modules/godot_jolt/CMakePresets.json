@@ -301,7 +301,7 @@
     },
     {
       "name": "macos-ios-simulator",
-      "displayName": "iOS",
+      "displayName": "iOS Simulator",
       "inherits": ["macos-base", "ios-base", "ios-simulator-base"]
     },
     {
@@ -367,1002 +367,970 @@
   ],
   "buildPresets": [
     {
-      "name": "windows-base",
-      "hidden": true,
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
-    },
-    {
-      "name": "linux-base",
-      "hidden": true,
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      }
-    },
-    {
-      "name": "macos-base",
-      "hidden": true,
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
-    },
-    {
-      "name": "install-base",
-      "hidden": true,
+      "name": "windows-msvc-x64-debug",
+      "configurePreset": "windows-msvc-x64",
+      "configuration": "Debug",
+      "displayName": "Debug",
       "targets": ["install"]
     },
     {
-      "name": "windows-msvc-x64-debug",
-      "inherits": ["windows-base", "install-base"],
-      "configurePreset": "windows-msvc-x64",
-      "configuration": "Debug",
-      "displayName": "Debug"
-    },
-    {
       "name": "windows-msvc-x64-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x64-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x64-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x64-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x64-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x86-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x86-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x86-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x86-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x86-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-msvc-x86-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-msvc-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x64-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x64-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x64-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x64-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x64-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x64-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x86-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x86-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x86-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x86-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x86-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-clangcl-x86-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-clangcl-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x64-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x64-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x64-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x64-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x64-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x64-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x86-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x86-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x86-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x86-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x86-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-clang-x86-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-clang-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x64-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x64-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x64-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x64-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x64-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x64-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x86-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x86-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x86-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x86-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x86-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-gcc-x86-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-gcc-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-clang-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-clang",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-clang-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-clang",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-clang-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-clang",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-clang-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-clang",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-clang-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-clang",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-clang-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-clang",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-simulator-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios-simulator",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-simulator-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios-simulator",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-simulator-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios-simulator",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-simulator-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios-simulator",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-simulator-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios-simulator",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-ios-simulator-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-ios-simulator",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm64-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm64-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm64-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm64-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm64-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm64-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm32-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm32",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm32-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm32",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm32-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm32",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm32-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm32",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm32-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm32",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-arm32-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-arm32",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x64-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x64-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x64-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x64-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x64-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x64-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x86-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x86-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x86-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x86-editor-debug",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x86-editor-development",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "windows-android-x86-editor-distribution",
-      "inherits": ["windows-base", "install-base"],
       "configurePreset": "windows-android-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm64-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm64-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm64-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm64-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm64-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm64-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm32-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm32",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm32-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm32",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm32-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm32",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm32-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm32",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm32-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm32",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-arm32-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-arm32",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x64-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x64-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x64-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x64-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x64-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x64-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x86-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x86-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x86-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x86-editor-debug",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x86-editor-development",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "linux-android-x86-editor-distribution",
-      "inherits": ["linux-base", "install-base"],
       "configurePreset": "linux-android-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm64-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm64-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm64-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm64-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm64-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm64-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm32-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm32",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm32-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm32",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm32-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm32",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm32-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm32",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm32-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm32",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-arm32-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-arm32",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x64-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x64",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x64-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x64",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x64-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x64",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x64-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x64",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x64-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x64",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x64-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x64",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x86-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x86",
       "configuration": "Debug",
-      "displayName": "Debug"
+      "displayName": "Debug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x86-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x86",
       "configuration": "Development",
-      "displayName": "Development"
+      "displayName": "Development",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x86-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x86",
       "configuration": "Distribution",
-      "displayName": "Distribution"
+      "displayName": "Distribution",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x86-editor-debug",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x86",
       "configuration": "EditorDebug",
-      "displayName": "EditorDebug"
+      "displayName": "EditorDebug",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x86-editor-development",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x86",
       "configuration": "EditorDevelopment",
-      "displayName": "EditorDevelopment"
+      "displayName": "EditorDevelopment",
+      "targets": ["install"]
     },
     {
       "name": "macos-android-x86-editor-distribution",
-      "inherits": ["macos-base", "install-base"],
       "configurePreset": "macos-android-x86",
       "configuration": "EditorDistribution",
-      "displayName": "EditorDistribution"
+      "displayName": "EditorDistribution",
+      "targets": ["install"]
     }
   ]
 }
