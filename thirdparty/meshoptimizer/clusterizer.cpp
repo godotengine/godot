@@ -238,7 +238,7 @@ static bool appendMeshlet(meshopt_Meshlet& meshlet, unsigned int a, unsigned int
 
 	bool result = false;
 
-	unsigned int used_extra = (av == 0xff) + (bv == 0xff) + (cv == 0xff);
+	int used_extra = (av == 0xff) + (bv == 0xff) + (cv == 0xff);
 
 	if (meshlet.vertex_count + used_extra > max_vertices || meshlet.triangle_count >= max_triangles)
 	{
@@ -283,10 +283,10 @@ static bool appendMeshlet(meshopt_Meshlet& meshlet, unsigned int a, unsigned int
 	return result;
 }
 
-static unsigned int getNeighborTriangle(const meshopt_Meshlet& meshlet, const Cone* meshlet_cone, unsigned int* meshlet_vertices, const unsigned int* indices, const TriangleAdjacency2& adjacency, const Cone* triangles, const unsigned int* live_triangles, const unsigned char* used, float meshlet_expected_radius, float cone_weight, unsigned int* out_extra)
+static unsigned int getNeighborTriangle(const meshopt_Meshlet& meshlet, const Cone* meshlet_cone, unsigned int* meshlet_vertices, const unsigned int* indices, const TriangleAdjacency2& adjacency, const Cone* triangles, const unsigned int* live_triangles, const unsigned char* used, float meshlet_expected_radius, float cone_weight)
 {
 	unsigned int best_triangle = ~0u;
-	unsigned int best_extra = 5;
+	int best_priority = 5;
 	float best_score = FLT_MAX;
 
 	for (size_t i = 0; i < meshlet.vertex_count; ++i)
@@ -301,20 +301,26 @@ static unsigned int getNeighborTriangle(const meshopt_Meshlet& meshlet, const Co
 			unsigned int triangle = neighbors[j];
 			unsigned int a = indices[triangle * 3 + 0], b = indices[triangle * 3 + 1], c = indices[triangle * 3 + 2];
 
-			unsigned int extra = (used[a] == 0xff) + (used[b] == 0xff) + (used[c] == 0xff);
+			int extra = (used[a] == 0xff) + (used[b] == 0xff) + (used[c] == 0xff);
+			assert(extra <= 2);
+
+			int priority = -1;
 
 			// triangles that don't add new vertices to meshlets are max. priority
-			if (extra != 0)
-			{
-				// artificially increase the priority of dangling triangles as they're expensive to add to new meshlets
-				if (live_triangles[a] == 1 || live_triangles[b] == 1 || live_triangles[c] == 1)
-					extra = 0;
-
-				extra++;
-			}
+			if (extra == 0)
+				priority = 0;
+			// artificially increase the priority of dangling triangles as they're expensive to add to new meshlets
+			else if (live_triangles[a] == 1 || live_triangles[b] == 1 || live_triangles[c] == 1)
+				priority = 1;
+			// if two vertices have live count of 2, removing this triangle will make another triangle dangling which is good for overall flow
+			else if ((live_triangles[a] == 2) + (live_triangles[b] == 2) + (live_triangles[c] == 2) >= 2)
+				priority = 1 + extra;
+			// otherwise adjust priority to be after the above cases, 3 or 4 based on used[] count
+			else
+				priority = 2 + extra;
 
 			// since topology-based priority is always more important than the score, we can skip scoring in some cases
-			if (extra > best_extra)
+			if (priority > best_priority)
 				continue;
 
 			float score = 0;
@@ -341,17 +347,14 @@ static unsigned int getNeighborTriangle(const meshopt_Meshlet& meshlet, const Co
 
 			// note that topology-based priority is always more important than the score
 			// this helps maintain reasonable effectiveness of meshlet data and reduces scoring cost
-			if (extra < best_extra || score < best_score)
+			if (priority < best_priority || score < best_score)
 			{
 				best_triangle = triangle;
-				best_extra = extra;
+				best_priority = priority;
 				best_score = score;
 			}
 		}
 	}
-
-	if (out_extra)
-		*out_extra = best_extra;
 
 	return best_triangle;
 }
@@ -441,7 +444,7 @@ static size_t kdtreeBuild(size_t offset, KDNode* nodes, size_t node_count, const
 	}
 
 	// split axis is one where the variance is largest
-	unsigned int axis = vars[0] >= vars[1] && vars[0] >= vars[2] ? 0 : vars[1] >= vars[2] ? 1 : 2;
+	unsigned int axis = (vars[0] >= vars[1] && vars[0] >= vars[2]) ? 0 : (vars[1] >= vars[2] ? 1 : 2);
 
 	float split = mean[axis];
 	size_t middle = kdtreePartition(indices, count, points, stride, axis, split);
@@ -588,13 +591,13 @@ size_t meshopt_buildMeshlets(meshopt_Meshlet* meshlets, unsigned int* meshlet_ve
 	{
 		Cone meshlet_cone = getMeshletCone(meshlet_cone_acc, meshlet.triangle_count);
 
-		unsigned int best_extra = 0;
-		unsigned int best_triangle = getNeighborTriangle(meshlet, &meshlet_cone, meshlet_vertices, indices, adjacency, triangles, live_triangles, used, meshlet_expected_radius, cone_weight, &best_extra);
+		unsigned int best_triangle = getNeighborTriangle(meshlet, &meshlet_cone, meshlet_vertices, indices, adjacency, triangles, live_triangles, used, meshlet_expected_radius, cone_weight);
+		int best_extra = best_triangle == ~0u ? -1 : (used[indices[best_triangle * 3 + 0]] == 0xff) + (used[indices[best_triangle * 3 + 1]] == 0xff) + (used[indices[best_triangle * 3 + 2]] == 0xff);
 
 		// if the best triangle doesn't fit into current meshlet, the spatial scoring we've used is not very meaningful, so we re-select using topological scoring
 		if (best_triangle != ~0u && (meshlet.vertex_count + best_extra > max_vertices || meshlet.triangle_count >= max_triangles))
 		{
-			best_triangle = getNeighborTriangle(meshlet, NULL, meshlet_vertices, indices, adjacency, triangles, live_triangles, used, meshlet_expected_radius, 0.f, NULL);
+			best_triangle = getNeighborTriangle(meshlet, NULL, meshlet_vertices, indices, adjacency, triangles, live_triangles, used, meshlet_expected_radius, 0.f);
 		}
 
 		// when we run out of neighboring triangles we need to switch to spatial search; we currently just pick the closest triangle irrespective of connectivity
@@ -881,4 +884,94 @@ meshopt_Bounds meshopt_computeMeshletBounds(const unsigned int* meshlet_vertices
 	}
 
 	return meshopt_computeClusterBounds(indices, triangle_count * 3, vertex_positions, vertex_count, vertex_positions_stride);
+}
+
+void meshopt_optimizeMeshlet(unsigned int* meshlet_vertices, unsigned char* meshlet_triangles, size_t triangle_count, size_t vertex_count)
+{
+	using namespace meshopt;
+
+	assert(triangle_count <= kMeshletMaxTriangles);
+	assert(vertex_count <= kMeshletMaxVertices);
+
+	unsigned char* indices = meshlet_triangles;
+	unsigned int* vertices = meshlet_vertices;
+
+	// cache tracks vertex timestamps (corresponding to triangle index! all 3 vertices are added at the same time and never removed)
+	unsigned char cache[kMeshletMaxVertices];
+	memset(cache, 0, vertex_count);
+
+	// note that we start from a value that means all vertices aren't in cache
+	unsigned char cache_last = 128;
+	const unsigned char cache_cutoff = 3; // 3 triangles = ~5..9 vertices depending on reuse
+
+	for (size_t i = 0; i < triangle_count; ++i)
+	{
+		int next = -1;
+		int next_match = -1;
+
+		for (size_t j = i; j < triangle_count; ++j)
+		{
+			unsigned char a = indices[j * 3 + 0], b = indices[j * 3 + 1], c = indices[j * 3 + 2];
+			assert(a < vertex_count && b < vertex_count && c < vertex_count);
+
+			// score each triangle by how many vertices are in cache
+			// note: the distance is computed using unsigned 8-bit values, so cache timestamp overflow is handled gracefully
+			int aok = (unsigned char)(cache_last - cache[a]) < cache_cutoff;
+			int bok = (unsigned char)(cache_last - cache[b]) < cache_cutoff;
+			int cok = (unsigned char)(cache_last - cache[c]) < cache_cutoff;
+
+			if (aok + bok + cok > next_match)
+			{
+				next = (int)j;
+				next_match = aok + bok + cok;
+
+				// note that we could end up with all 3 vertices in the cache, but 2 is enough for ~strip traversal
+				if (next_match >= 2)
+					break;
+			}
+		}
+
+		assert(next >= 0);
+
+		unsigned char a = indices[next * 3 + 0], b = indices[next * 3 + 1], c = indices[next * 3 + 2];
+
+		// shift triangles before the next one forward so that we always keep an ordered partition
+		// note: this could have swapped triangles [i] and [next] but that distorts the order and may skew the output sequence
+		memmove(indices + (i + 1) * 3, indices + i * 3, (next - i) * 3 * sizeof(unsigned char));
+
+		indices[i * 3 + 0] = a;
+		indices[i * 3 + 1] = b;
+		indices[i * 3 + 2] = c;
+
+		// cache timestamp is the same between all vertices of each triangle to reduce overflow
+		cache_last++;
+		cache[a] = cache_last;
+		cache[b] = cache_last;
+		cache[c] = cache_last;
+	}
+
+	// reorder meshlet vertices for access locality assuming index buffer is scanned sequentially
+	unsigned int order[kMeshletMaxVertices];
+
+	unsigned char remap[kMeshletMaxVertices];
+	memset(remap, -1, vertex_count);
+
+	size_t vertex_offset = 0;
+
+	for (size_t i = 0; i < triangle_count * 3; ++i)
+	{
+		unsigned char& r = remap[indices[i]];
+
+		if (r == 0xff)
+		{
+			r = (unsigned char)(vertex_offset);
+			order[vertex_offset] = vertices[indices[i]];
+			vertex_offset++;
+		}
+
+		indices[i] = r;
+	}
+
+	assert(vertex_offset <= vertex_count);
+	memcpy(vertices, order, vertex_offset * sizeof(unsigned int));
 }
