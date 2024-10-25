@@ -113,6 +113,9 @@
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the [Button] is being hovered.
 		</theme_item>
+		<theme_item name="hover_pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Button] is being hovered and pressed.
+		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [Button].
 		</theme_item>
