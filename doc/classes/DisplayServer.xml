@@ -2170,12 +2170,12 @@
 		</constant>
 		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
 			Window view:
-			- Windows: [code]HDC[/code] for the window (only with the GL Compatibility renderer).
+			- Windows: [code]HDC[/code] for the window (only with the Compatibility renderer).
 			- macOS: [code]NSView*[/code] for the window main view.
 			- iOS: [code]UIView*[/code] for the window main view.
 		</constant>
 		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
-			OpenGL context (only with the GL Compatibility renderer):
+			OpenGL context (only with the Compatibility renderer):
 			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Linux (X11): [code]GLXContext*[/code] for the window.
 			- Linux (Wayland): [code]EGLContext[/code] for the window.

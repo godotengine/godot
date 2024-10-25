@@ -1075,7 +1075,7 @@
 			<return type="RenderingDevice" />
 			<description>
 				Creates a RenderingDevice that can be used to do draw and compute operations on a separate thread. Cannot draw to the screen nor share data with the global RenderingDevice.
-				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
+				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="debug_canvas_item_get_rect">
@@ -1578,7 +1578,7 @@
 			<return type="RenderingDevice" />
 			<description>
 				Returns the global RenderingDevice.
-				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
+				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_rendering_info">
@@ -1641,7 +1641,7 @@
 			<return type="int" enum="RenderingDevice.DeviceType" />
 			<description>
 				Returns the type of the video adapter. Since dedicated graphics cards from a given generation will [i]usually[/i] be significantly faster than integrated graphics made in the same generation, the device type can be used as a basis for automatic graphics settings adjustment. However, this is not always true, so make sure to provide users with a way to manually override graphics settings.
-				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [constant RenderingDevice.DEVICE_TYPE_OTHER].
+				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [constant RenderingDevice.DEVICE_TYPE_OTHER].
 			</description>
 		</method>
 		<method name="get_video_adapter_vendor" qualifiers="const">
@@ -4121,7 +4121,7 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
-				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+				[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">
@@ -5724,7 +5724,7 @@
 			Buffer memory used (in bytes). This includes vertex data, uniform buffers, and many miscellaneous buffer types used internally.
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
-			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
+			Video memory used (in bytes). When using the Forward+ or Mobile renderers, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the Compatibility renderer, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
 		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS" value="6" enum="RenderingInfo">
 			Number of pipeline compilations that were triggered by the 2D canvas renderer.
