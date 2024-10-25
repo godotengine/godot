@@ -5124,7 +5124,7 @@ BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> p_state
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 	Ref<GLTFNode> bone_node = p_state->nodes[p_bone_index];
 	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
-	print_verbose("glTF: Creating bone attachment for: " + gltf_node->get_name());
+	print_verbose("glTF: Creating bone attachment for: " + bone_node->get_name());
 
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
 
@@ -5606,7 +5606,7 @@ void GLTFDocument::_convert_mesh_instance_to_gltf(MeshInstance3D *p_scene_parent
 void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
-	if (gltf_node->skeleton >= 0) {
+	if (gltf_node->skeleton >= 0 && gltf_node->mesh < 0) {
 		_generate_skeleton_bone_node(p_state, p_node_index, p_scene_parent, p_scene_root);
 		return;
 	}
@@ -5621,18 +5621,21 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// skinned meshes must not be placed in a bone attachment.
 	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
 		// Bone Attachment - Parent Case
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
+		Ref<GLTFNode> bone_node = p_state->nodes[gltf_node->parent];
+		BoneAttachment3D *bone_attachment = Object::cast_to<BoneAttachment3D>(p_scene_parent->find_child(bone_node->get_name().validate_node_name(), true));
+		if (bone_attachment == nullptr) {
+			bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
-		p_scene_parent->add_child(bone_attachment, true);
+			p_scene_parent->add_child(bone_attachment, true);
 
-		// Find the correct bone_idx so we can properly serialize it.
-		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+			// Find the correct bone_idx so we can properly serialize it.
+			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
 
-		bone_attachment->set_owner(p_scene_root);
+			bone_attachment->set_owner(p_scene_root);
 
-		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(gltf_node->get_name());
-
+			// There is no gltf_node that represent this, so just directly create a unique name
+			bone_attachment->set_name(bone_node->get_name());
+		}
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
 		p_scene_parent = bone_attachment;
