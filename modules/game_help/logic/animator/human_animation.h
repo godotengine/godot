@@ -20,7 +20,6 @@ namespace HumanAnim
 
 
 
-		HashMap<StringName, Vector3> root_global_position;
 		HashMap<StringName, Quaternion> root_global_rotation;
         HashMap<StringName, Vector3> root_global_move_add;
         HashMap<StringName, Quaternion> root_global_rotation_add;
@@ -32,7 +31,15 @@ namespace HumanAnim
 				Transform3D& trans = real_pose[it.key];
 				trans.basis = Basis(it.value.rotation);
 				trans.origin = it.value.position;
-            }            
+            } 
+
+            for(auto& it : p_config.root_bone) {
+                root_position[it] = Vector3();
+                root_global_rotation[it] = Quaternion();
+                root_global_move_add[it] = Vector3();
+                root_global_rotation_add[it] = Quaternion();
+            }
+
         }
 
         void clear() { 
@@ -143,6 +150,25 @@ namespace HumanAnim
             for(auto& it : p_other.real_local_pose) {
                 if(real_local_pose.has(it.key)) {
                     Quaternion& q = real_local_pose[it.key];
+                    q = q.slerp(it.value, p_weight);
+                }
+            }
+            for(auto& it : p_other.root_position) {
+                if(root_global_move_add.has(it.key)) {
+                    Vector3& v = root_position[it.key];
+                    v = v.lerp(it.value, p_weight);
+                }
+            }
+
+            for(auto& it : p_other.root_global_move_add) {
+                if(root_global_move_add.has(it.key)) {
+                    Vector3& v = root_global_move_add[it.key];
+                    v = v.lerp(it.value, p_weight);
+                }
+            }
+            for(auto& it : p_other.root_global_rotation_add) {
+                if(root_global_rotation_add.has(it.key)) {
+                    Quaternion& q = root_global_rotation_add[it.key];
                     q = q.slerp(it.value, p_weight);
                 }
             }

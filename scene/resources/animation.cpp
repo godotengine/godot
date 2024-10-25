@@ -3995,6 +3995,18 @@ void Animation::remap_node_to_bone_name(const Vector<String> &p_bone_names)
 		}		
 	}
 }
+void Animation::get_node_names(HashSet<String>& p_bone_names) {
+	for (int i = 0; i < tracks.size(); i++) {
+		AnimationTrack* at = static_cast<AnimationTrack*>(tracks[i]);
+		if (at->type == TYPE_POSITION_3D || at->type == TYPE_ROTATION_3D || at->type == TYPE_SCALE_3D) {
+			String path_name = at->path;
+			auto sv = path_name.split("/");
+			p_bone_names.insert(String(sv[sv.size() - 1]));
+			
+		}
+	}
+
+}
 
 void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	ERR_FAIL_COND(p_to_animation.is_null());

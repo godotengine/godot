@@ -680,6 +680,7 @@ public:
 	bool get_is_human_animation() const;
 
 	void remap_node_to_bone_name(const Vector<String> &p_bone_names);
+	void get_node_names(HashSet<String>& p_bone_names);
 
 	void clear();
 

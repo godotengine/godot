@@ -865,25 +865,18 @@ void CharacterBodyMain::update_bone_visble()
 }
 
 
-static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, Dictionary& p_bone_map,int bode_parent) {
+static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_parent) {
 	int index = bode_parent;
-	if (bode_parent == -1 || p_bone_map.has(p_node->get_name())) {
-		if (p_bone_map.has(p_node->get_name())) {
-			index = p_ske->add_bone(p_bone_map[p_node->get_name()]);
-		}
-		else {
-			index = p_ske->add_bone(p_node->get_name());
-		}
-		p_ske->set_bone_parent(index, bode_parent);
-		Transform3D trans = p_node->get_transform();
-		p_ske->set_bone_pose(index, trans);
-
-	}
+	index = p_ske->add_bone(p_node->get_name());
+	p_ske->set_bone_parent(index, bode_parent);
+	Transform3D trans = p_node->get_transform();
+	p_ske->set_bone_pose(index, trans);
+	
 
 	for (int i = 0; i < p_node->get_child_count(); ++i) {
 		Node3D* node = Object::cast_to<Node3D>(p_node->get_child(i));
 		if (node != nullptr) {
-			node_to_bone_skeleton(p_ske, node, p_bone_map, index);
+			node_to_bone_skeleton(p_ske, node, index);
 
 		}
 	}
@@ -904,31 +897,8 @@ void CharacterBodyMain::editor_build_animation()
         return;
 	}
 	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
-	Ref<CharacterBoneMap> bone_map;
     Node* node = p_node->find_child("Skeleton3D");
-	Ref<HumanConfig> editor_human_config;
     Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
-	if (editor_ref_bone_map.is_valid()) {
-		editor_human_config = editor_ref_bone_map->get_human_config();
-	}
-	if (editor_human_config.is_null() && skeleton != nullptr)
-	{
-		bone_map.instantiate();
-		bone_map->set_bone_map(skeleton->get_human_bone_mapping());
-		bone_map->set_bone_names(skeleton->get_bone_names());
-	}
-	else 
-	{
-		if (editor_ref_bone_map.is_null())
-		{
-			print_error(L"CharacterBodyMain: 路径不存在骨架信息,必须要设置骨骼映射:" + editor_animation_file_path);
-			return;
-		}
-		else
-		{
-			bone_map = editor_ref_bone_map;
-		}
-	}
 
 	Node* anim_node = p_node->find_child("AnimationPlayer");
     if(anim_node == nullptr)
@@ -947,46 +917,51 @@ void CharacterBodyMain::editor_build_animation()
     List<StringName> p_animations;
     player->get_animation_list(&p_animations);
 
-	HashMap<String, int> human_bone_name_index;
 
-	if (editor_human_config.is_valid()) {
-		auto bone_names = editor_ref_bone_map->get_bone_names();
-		for (int i = 0; i < bone_names.size(); ++i) {
-			human_bone_name_index[bone_names[i]] = i;
-		}
-	}
 	bool is_node_skeleton = false;
 	Skeleton3D* bone_map_skeleton;
 
+	HashMap<String, int> human_bone_name_index;
+	Dictionary bone_map;
+	Vector<String> bone_names;
 	Ref<HumanConfig> animation_human_config;
 	if (skeleton == nullptr) {
 		is_node_skeleton = true;
+
+		HashSet<String> node_name;
+		for (const StringName& E : p_animations) {
+			Ref<Animation> animation = player->get_animation(E);
+			animation->get_node_names(node_name);
+		}
+
 		bone_map_skeleton = memnew(Skeleton3D);
-		Dictionary bp = bone_map->get_bone_map();
 
 		for (int i = 0; i < p_node->get_child_count(); ++i) {
 			Node3D* child = Object::cast_to<Node3D>(p_node->get_child(i));
 			if (child != nullptr) {
-				if (child->get_child_count() > 0) {
-					node_to_bone_skeleton(bone_map_skeleton, child, bp, -1);
+				if (node_name.has(child->get_name()) && child->get_child_count() > 0) {
+					node_to_bone_skeleton(bone_map_skeleton, child, -1);
 					break;
 				}
 			}
-		}
-		animation_human_config.instantiate();
-		HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
-		HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton,  *animation_human_config.ptr(), _bone_label);
-		
+		}		
 	}
 	else {
 		bone_map_skeleton = skeleton;
-		animation_human_config = bone_map_skeleton->get_human_config();
-		if (animation_human_config.is_null()) {
-			animation_human_config.instantiate();
-			HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
-			HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton, *animation_human_config.ptr(), _bone_label);
+	}
 
-		}
+	bone_names = bone_map_skeleton->get_bone_names();
+
+	bone_map = bone_map_skeleton->get_human_bone_mapping();
+	bone_map_skeleton->set_human_bone_mapping(bone_map);
+
+
+
+    animation_human_config.instantiate();
+    HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
+    HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton, *animation_human_config.ptr(), _bone_label);
+	for (int i = 0; i < bone_names.size(); ++i) {
+		human_bone_name_index[bone_names[i]] = i;
 	}
 
 
@@ -997,16 +972,14 @@ void CharacterBodyMain::editor_build_animation()
         {
             Ref<Animation> new_animation;
 			new_animation = animation->duplicate();
-            new_animation->set_bone_map(bone_map);
             if(skeleton == nullptr)
             {
-                new_animation->remap_node_to_bone_name(bone_map->get_bone_names());
+                new_animation->remap_node_to_bone_name(bone_names);
             }
 
 			// 如果存在人形动作配置,转换动画为人形动画
-			if (editor_human_config.is_valid()) {
-				Dictionary bp = bone_map->get_bone_map();
-				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bp);
+			if (animation_human_config.is_valid()) {
+				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map);
 			}
             new_animation->optimize();
             new_animation->compress();
@@ -1035,7 +1008,7 @@ void CharacterBodyMain::editor_build_animation()
 				new_animation->set_name(E);
 			}
             String save_path;
-            if(editor_human_config.is_valid())  {
+            if(animation_human_config.is_valid())  {
 			    save_fbx_res("human_animation", group, new_animation, save_path, true);
             }
             else {
