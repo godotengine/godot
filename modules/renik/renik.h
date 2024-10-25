@@ -45,6 +45,45 @@
 #include <memory>
 #include <vector>
 
+class RenIKTarget : public RefCounted {
+	GDCLASS(RenIKTarget, RefCounted);
+public:
+	virtual ~RenIKTarget() {}
+
+	virtual void set_global_transform(const Transform3D &p_global_transform) {
+		_global_transform = p_global_transform;
+	}
+	virtual Transform3D get_global_transform() const {
+		return _global_transform;
+	}
+
+	virtual void set_enabled(bool p_enabled) {
+		_enabled = p_enabled;
+	}
+	virtual bool is_enabled() const {
+		return _enabled;
+	}
+
+	bool is_inside_world() const {
+		return is_in_world;
+	}
+	void set_world_3d(const Ref<World3D> &p_world_3d) {
+		world_3d = p_world_3d;
+		is_in_world = !p_world_3d.is_null();
+	}
+	Ref<World3D> get_world_3d() const {
+		return world_3d;
+	}
+
+
+protected:
+
+	Transform3D _global_transform;
+	Ref<World3D> world_3d;
+	bool _enabled = true;
+	bool is_in_world = false;
+};
+
 class RenIK : public RefCounted {
 	GDCLASS(RenIK, RefCounted);
 
@@ -193,18 +232,12 @@ public:
 	String get_lower_leg_right_bone_name();
 	String get_upper_leg_right_bone_name();
 
-	void set_head_target_path(NodePath p_path);
-	void set_hand_left_target_path(NodePath p_path);
-	void set_hand_right_target_path(NodePath p_path);
-	void set_hip_target_path(NodePath p_path);
-	void set_foot_left_target_path(NodePath p_path);
-	void set_foot_right_target_path(NodePath p_path);
-	NodePath get_head_target_path();
-	NodePath get_hand_left_target_path();
-	NodePath get_hand_right_target_path();
-	NodePath get_hip_target_path();
-	NodePath get_foot_left_target_path();
-	NodePath get_foot_right_target_path();
+	void set_head_target_path(const Ref<RenIKTarget>& p_path);
+	void set_hand_left_target_path(const Ref<RenIKTarget>& p_path);
+	void set_hand_right_target_path(const Ref<RenIKTarget>& p_path);
+	void set_hip_target_path(const Ref<RenIKTarget>& p_path);
+	void set_foot_left_target_path(const Ref<RenIKTarget>& p_path);
+	void set_foot_right_target_path(const Ref<RenIKTarget>& p_path);
 
 	float get_arm_upper_twist_offset();
 	void set_arm_upper_twist_offset(float degrees);
@@ -484,23 +517,20 @@ private:
 	//NodePath skeleton_path = NodePath("..");
 	Skeleton3D *skeleton = nullptr;
 
-	// IK Targets
-	NodePath head_target_path;
-	NodePath hand_left_target_path;
-	NodePath hand_right_target_path;
-	NodePath hip_target_path;
-	NodePath foot_left_target_path;
-	NodePath foot_right_target_path;
+	// IK Targets ---------------------
+	// 头
+	Ref<RenIKTarget> head_target_spatial = nullptr;
 
+	// 手
+	Ref<RenIKTarget> hand_left_target_spatial = nullptr;
+	Ref<RenIKTarget> hand_right_target_spatial = nullptr;
 
-	Node3D *head_target_spatial = nullptr;
-	Node3D *hand_left_target_spatial = nullptr;
-	Node3D *hand_right_target_spatial = nullptr;
-	Node3D *hip_target_spatial = nullptr;
+	// 脊柱
+	Ref<RenIKTarget> hip_target_spatial;
 
 	// 脚
-	Node3D *foot_left_target_spatial = nullptr;
-	Node3D *foot_right_target_spatial = nullptr;
+	Ref<RenIKTarget> foot_left_target_spatial;
+	Ref<RenIKTarget> foot_right_target_spatial;
 
 	// IK ADJUSTMENTS --------------------
 	RenIKPlacement placement;

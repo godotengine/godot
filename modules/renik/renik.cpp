@@ -212,28 +212,16 @@ void RenIK::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_head_target_path", "p_path"),
 			&RenIK::set_head_target_path);
-	ClassDB::bind_method(D_METHOD("get_head_target_path"),
-			&RenIK::get_head_target_path);
 	ClassDB::bind_method(D_METHOD("set_hand_left_target_path", "p_path"),
 			&RenIK::set_hand_left_target_path);
-	ClassDB::bind_method(D_METHOD("get_hand_left_target_path"),
-			&RenIK::get_hand_left_target_path);
 	ClassDB::bind_method(D_METHOD("set_hand_right_target_path", "p_path"),
 			&RenIK::set_hand_right_target_path);
-	ClassDB::bind_method(D_METHOD("get_hand_right_target_path"),
-			&RenIK::get_hand_right_target_path);
 	ClassDB::bind_method(D_METHOD("set_hip_target_path", "p_path"),
 			&RenIK::set_hip_target_path);
-	ClassDB::bind_method(D_METHOD("get_hip_target_path"),
-			&RenIK::get_hip_target_path);
 	ClassDB::bind_method(D_METHOD("set_foot_left_target_path", "p_path"),
 			&RenIK::set_foot_left_target_path);
-	ClassDB::bind_method(D_METHOD("get_foot_left_target_path"),
-			&RenIK::get_foot_left_target_path);
 	ClassDB::bind_method(D_METHOD("set_foot_right_target_path", "p_path"),
 			&RenIK::set_foot_right_target_path);
-	ClassDB::bind_method(D_METHOD("get_foot_right_target_path"),
-			&RenIK::get_foot_right_target_path);
 
 	ClassDB::bind_method(D_METHOD("get_arm_upper_twist_offset"),
 			&RenIK::get_arm_upper_twist_offset);
@@ -776,501 +764,6 @@ void RenIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_setup_humanoid_bones", "set_targets"), &RenIK::set_setup_humanoid_bones);
 	ClassDB::bind_method(D_METHOD("get_setup_humanoid_bones"), &RenIK::get_setup_humanoid_bones);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "setup_humanoid_bones"), "set_setup_humanoid_bones", "get_setup_humanoid_bones");
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "live_preview"), "set_live_preview",
-			"get_live_preview");
-
-	ADD_GROUP("Armature", "armature_");
-	// ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-	// 					 RENIK_PROPERTY_STRING_SKELETON_PATH,
-	// 					 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D",
-	// 					 PROPERTY_USAGE_DEFAULT),
-	// 		"set_skeleton_path", "get_skeleton_path");
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_HEAD_BONE),
-			"set_head_bone_by_name", "get_head_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_HAND_LEFT_BONE),
-			"set_hand_left_bone_by_name", "get_hand_left_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_LEFT_LOWER_ARM_BONE),
-			"set_lower_arm_left_bone_by_name", "get_lower_arm_left_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_LEFT_UPPER_ARM_BONE),
-			"set_upper_arm_left_bone_by_name", "get_upper_arm_left_bone_name");
-
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_HAND_RIGHT_BONE),
-			"set_hand_right_bone_by_name", "get_hand_right_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_RIGHT_LOWER_ARM_BONE),
-			"set_lower_arm_right_bone_by_name", "get_lower_arm_right_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_RIGHT_UPPER_ARM_BONE),
-			"set_upper_arm_right_bone_by_name", "get_upper_arm_right_bone_name");
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_HIP_BONE),
-			"set_hip_bone_by_name", "get_hip_bone_name");
-
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_FOOT_LEFT_BONE),
-			"set_foot_left_bone_by_name", "get_foot_left_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_LEFT_LOWER_LEG_BONE),
-			"set_lower_leg_left_bone_by_name", "get_lower_leg_left_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_LEFT_UPPER_LEG_BONE),
-			"set_upper_leg_left_bone_by_name", "get_upper_leg_left_bone_name");
-
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_FOOT_RIGHT_BONE),
-			"set_foot_right_bone_by_name", "get_foot_right_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_RIGHT_LOWER_LEG_BONE),
-			"set_lower_leg_right_bone_by_name", "get_lower_leg_right_bone_name");
-	ADD_PROPERTY(
-			PropertyInfo(Variant::STRING, RENIK_PROPERTY_STRING_RIGHT_UPPER_LEG_BONE),
-			"set_upper_leg_right_bone_by_name", "get_upper_leg_right_bone_name");
-
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-						 RENIK_PROPERTY_STRING_HEAD_TARGET_PATH,
-						 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"),
-			"set_head_target_path", "get_head_target_path");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-						 RENIK_PROPERTY_STRING_HAND_LEFT_TARGET_PATH,
-						 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"),
-			"set_hand_left_target_path", "get_hand_left_target_path");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-						 RENIK_PROPERTY_STRING_HAND_RIGHT_TARGET_PATH,
-						 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"),
-			"set_hand_right_target_path", "get_hand_right_target_path");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-						 RENIK_PROPERTY_STRING_HIP_TARGET_PATH,
-						 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"),
-			"set_hip_target_path", "get_hip_target_path");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-						 RENIK_PROPERTY_STRING_FOOT_LEFT_TARGET_PATH,
-						 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"),
-			"set_foot_left_target_path", "get_foot_left_target_path");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,
-						 RENIK_PROPERTY_STRING_FOOT_RIGHT_TARGET_PATH,
-						 PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"),
-			"set_foot_right_target_path", "get_foot_right_target_path");
-
-	ADD_GROUP("Arm IK Settings", "arm_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_elbow_direction_offset",
-						 PROPERTY_HINT_RANGE, "-360,360,0.1"),
-			"set_arm_roll_offset", "get_arm_roll_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_upper_arm_twisting",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_arm_upper_limb_twist", "get_arm_upper_limb_twist");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_upper_arm_twist_offset",
-						 PROPERTY_HINT_RANGE, "-360,360,0.1"),
-			"set_arm_upper_twist_offset", "get_arm_upper_twist_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_forearm_twisting",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_arm_lower_limb_twist", "get_arm_lower_limb_twist");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_forearm_twist_offset",
-						 PROPERTY_HINT_RANGE, "-360,360,0.1"),
-			"set_arm_lower_twist_offset", "get_arm_lower_twist_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_twist_inflection_point",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_arm_twist_inflection_point_offset",
-			"get_arm_twist_inflection_point_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_twist_overflow",
-						 PROPERTY_HINT_RANGE, "0,180,0.1"),
-			"set_arm_twist_overflow", "get_arm_twist_overflow");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_shoulder_influence",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_shoulder_influence", "get_shoulder_influence");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "arm_shoulder_offset"),
-			"set_shoulder_offset", "get_shoulder_offset");
-
-	ADD_GROUP("Arm IK Settings (Advanced)", "arm_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "arm_pole_offset"),
-			"set_arm_pole_offset", "get_arm_pole_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "arm_target_position_influence"),
-			"set_arm_target_position_influence",
-			"get_arm_target_position_influence");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "arm_target_rotation_influence",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_arm_target_rotation_influence",
-			"get_arm_target_rotation_influence");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "arm_shoulder_pole_offset"),
-			"set_shoulder_pole_offset", "get_shoulder_pole_offset");
-
-	ADD_GROUP("Leg IK Settings", "leg_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_knee_direction_offset",
-						 PROPERTY_HINT_RANGE, "-360,360,0.1"),
-			"set_leg_roll_offset", "get_leg_roll_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_thigh_twisting",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_leg_upper_limb_twist", "get_leg_upper_limb_twist");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_thigh_twist_offset",
-						 PROPERTY_HINT_RANGE, "-360,360,0.1"),
-			"set_leg_upper_twist_offset", "get_leg_upper_twist_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_lower_leg_twisting",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_leg_lower_limb_twist", "get_leg_lower_limb_twist");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_lower_leg_twist_offset",
-						 PROPERTY_HINT_RANGE, "-360,360,0.1"),
-			"set_leg_lower_twist_offset", "get_leg_lower_twist_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_twist_inflection_point",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_leg_twist_inflection_point_offset",
-			"get_leg_twist_inflection_point_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_twist_overflow",
-						 PROPERTY_HINT_RANGE, "0,-180,0.1"),
-			"set_leg_twist_overflow", "get_leg_twist_overflow");
-
-	ADD_GROUP("Leg IK Settings (Advanced)", "leg_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "leg_pole_offset"),
-			"set_leg_pole_offset", "get_leg_pole_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "leg_target_position_influence"),
-			"set_leg_target_position_influence",
-			"get_leg_target_position_influence");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "leg_target_rotation_influence",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_leg_target_rotation_influence",
-			"get_leg_target_rotation_influence");
-
-	ADD_GROUP("Torso IK Settings", "torso_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "torso_spine_curve"),
-			"set_spine_curve", "get_spine_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "torso_upper_spine_stiffness",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_upper_spine_stiffness", "get_upper_spine_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "torso_lower_spine_stiffness",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_lower_spine_stiffness", "get_lower_spine_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "torso_spine_twist",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_spine_twist", "get_spine_twist");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "torso_spine_twist_start",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_spine_twist_start", "get_spine_twist_start");
-
-	ADD_GROUP("Walk Collisions (Advanced)", "walk_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "walk_collision_mask",
-						 PROPERTY_HINT_LAYERS_3D_PHYSICS),
-			"set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "walk_collide_with_areas",
-						 PROPERTY_HINT_LAYERS_3D_PHYSICS),
-			"set_collide_with_areas", "is_collide_with_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "walk_collide_with_bodies",
-						 PROPERTY_HINT_LAYERS_3D_PHYSICS),
-			"set_collide_with_bodies", "is_collide_with_bodies_enabled");
-
-	ADD_GROUP("Forward Gait (Advanced)", "forward_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_speed_scalar_min",
-						 PROPERTY_HINT_RANGE, "0,200,0.1"),
-			"set_forward_speed_scalar_min", "get_forward_speed_scalar_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_speed_scalar_max",
-						 PROPERTY_HINT_RANGE, "0,200,0.1"),
-			"set_forward_speed_scalar_max", "get_forward_speed_scalar_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_ground_time",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_ground_time", "get_forward_ground_time");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_lift_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_lift_time_base", "get_forward_lift_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_lift_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_lift_time_scalar", "get_forward_lift_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_in_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_apex_in_time_base",
-			"get_forward_apex_in_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_in_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_apex_in_time_scalar",
-			"get_forward_apex_in_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_out_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_apex_out_time_base",
-			"get_forward_apex_out_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_out_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_apex_out_time_scalar",
-			"get_forward_apex_out_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_drop_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_drop_time_base", "get_forward_drop_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_drop_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_drop_time_scalar", "get_forward_drop_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_tip_toe_distance_scalar",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_forward_tip_toe_distance_scalar",
-			"get_forward_tip_toe_distance_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_tip_toe_speed_scalar",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_forward_tip_toe_speed_scalar",
-			"get_forward_tip_toe_speed_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_tip_toe_angle_max",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_forward_tip_toe_angle_max",
-			"get_forward_tip_toe_angle_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_lift_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_lift_vertical", "get_forward_lift_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_lift_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_lift_vertical_scalar",
-			"get_forward_lift_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_lift_horizontal_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_lift_horizontal_scalar",
-			"get_forward_lift_horizontal_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_lift_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_forward_lift_angle", "get_forward_lift_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_apex_vertical", "get_forward_apex_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_apex_vertical_scalar",
-			"get_forward_apex_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_apex_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_forward_apex_angle", "get_forward_apex_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_drop_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_drop_vertical", "get_forward_drop_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_drop_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_drop_vertical_scalar",
-			"get_forward_drop_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_drop_horizontal_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_drop_horizontal_scalar",
-			"get_forward_drop_horizontal_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_drop_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_forward_drop_angle", "get_forward_drop_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_contact_point_ease",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_contact_point_ease",
-			"get_forward_contact_point_ease");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_contact_point_ease_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_contact_point_ease_scalar",
-			"get_forward_contact_point_ease_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "forward_scaling_ease",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_forward_scaling_ease", "get_forward_scaling_ease");
-
-	ADD_GROUP("Backward Gait (Advanced)", "backward_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_speed_scalar_min",
-						 PROPERTY_HINT_RANGE, "0,200,0.1"),
-			"set_backward_speed_scalar_min",
-			"get_backward_speed_scalar_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_speed_scalar_max",
-						 PROPERTY_HINT_RANGE, "0,200,0.1"),
-			"set_backward_speed_scalar_max",
-			"get_backward_speed_scalar_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_ground_time",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_ground_time", "get_backward_ground_time");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_lift_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_lift_time_base", "get_backward_lift_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_lift_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_lift_time_scalar",
-			"get_backward_lift_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_in_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_apex_in_time_base",
-			"get_backward_apex_in_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_in_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_apex_in_time_scalar",
-			"get_backward_apex_in_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_out_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_apex_out_time_base",
-			"get_backward_apex_out_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_out_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_apex_out_time_scalar",
-			"get_backward_apex_out_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_drop_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_drop_time_base", "get_backward_drop_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_drop_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_drop_time_scalar",
-			"get_backward_drop_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_tip_toe_distance_scalar",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_backward_tip_toe_distance_scalar",
-			"get_backward_tip_toe_distance_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_tip_toe_speed_scalar",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_backward_tip_toe_speed_scalar",
-			"get_backward_tip_toe_speed_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_tip_toe_angle_max",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_backward_tip_toe_angle_max",
-			"get_backward_tip_toe_angle_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_lift_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_lift_vertical", "get_backward_lift_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_lift_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_lift_vertical_scalar",
-			"get_backward_lift_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_lift_horizontal_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_lift_horizontal_scalar",
-			"get_backward_lift_horizontal_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_lift_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_backward_lift_angle", "get_backward_lift_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_apex_vertical", "get_backward_apex_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_apex_vertical_scalar",
-			"get_backward_apex_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_apex_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_backward_apex_angle", "get_backward_apex_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_drop_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_drop_vertical", "get_backward_drop_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_drop_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_drop_vertical_scalar",
-			"get_backward_drop_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_drop_horizontal_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_drop_horizontal_scalar",
-			"get_backward_drop_horizontal_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_drop_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_backward_drop_angle", "get_backward_drop_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_contact_point_ease",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_contact_point_ease",
-			"get_backward_contact_point_ease");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT,
-						 "backward_contact_point_ease_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_contact_point_ease_scalar",
-			"get_backward_contact_point_ease_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "backward_scaling_ease",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_backward_scaling_ease", "get_backward_scaling_ease");
-
-	ADD_GROUP("Sideways Gait (Advanced)", "sideways_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_speed_scalar_min",
-						 PROPERTY_HINT_RANGE, "0,200,0.1"),
-			"set_sideways_speed_scalar_min",
-			"get_sideways_speed_scalar_min");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_speed_scalar_max",
-						 PROPERTY_HINT_RANGE, "0,200,0.1"),
-			"set_sideways_speed_scalar_max",
-			"get_sideways_speed_scalar_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_ground_time",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_ground_time", "get_sideways_ground_time");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_lift_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_lift_time_base", "get_sideways_lift_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_lift_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_lift_time_scalar",
-			"get_sideways_lift_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_in_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_apex_in_time_base",
-			"get_sideways_apex_in_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_in_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_apex_in_time_scalar",
-			"get_sideways_apex_in_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_out_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_apex_out_time_base",
-			"get_sideways_apex_out_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_out_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_apex_out_time_scalar",
-			"get_sideways_apex_out_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_drop_time_base",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_drop_time_base", "get_sideways_drop_time_base");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_drop_time_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_drop_time_scalar",
-			"get_sideways_drop_time_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_tip_toe_distance_scalar",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_sideways_tip_toe_distance_scalar",
-			"get_sideways_tip_toe_distance_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_tip_toe_speed_scalar",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_sideways_tip_toe_speed_scalar",
-			"get_sideways_tip_toe_speed_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_tip_toe_angle_max",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_sideways_tip_toe_angle_max",
-			"get_sideways_tip_toe_angle_max");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_lift_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_lift_vertical", "get_sideways_lift_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_lift_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_lift_vertical_scalar",
-			"get_sideways_lift_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_lift_horizontal_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_lift_horizontal_scalar",
-			"get_sideways_lift_horizontal_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_lift_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_sideways_lift_angle", "get_sideways_lift_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_apex_vertical", "get_sideways_apex_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_apex_vertical_scalar",
-			"get_sideways_apex_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_apex_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_sideways_apex_angle", "get_sideways_apex_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_drop_vertical",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_drop_vertical", "get_sideways_drop_vertical");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_drop_vertical_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_drop_vertical_scalar",
-			"get_sideways_drop_vertical_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_drop_horizontal_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_drop_horizontal_scalar",
-			"get_sideways_drop_horizontal_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_drop_angle",
-						 PROPERTY_HINT_RANGE, "-180,180,0.1"),
-			"set_sideways_drop_angle", "get_sideways_drop_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_contact_point_ease",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_contact_point_ease",
-			"get_sideways_contact_point_ease");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT,
-						 "sideways_contact_point_ease_scalar",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_contact_point_ease_scalar",
-			"get_sideways_contact_point_ease_scalar");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sideways_scaling_ease",
-						 PROPERTY_HINT_RANGE, "0,100,0.1"),
-			"set_sideways_scaling_ease", "get_sideways_scaling_ease");
 
 	ClassDB::bind_method(D_METHOD("update_ik"), &RenIK::update_ik);
 	ClassDB::bind_method(D_METHOD("update_placement", "delta"), &RenIK::update_placement);
@@ -1392,12 +885,6 @@ void RenIK::on_post_initialize()
 void RenIK::_initialize(Skeleton3D* p_skeleton) {
 	// set the skeleton to the parent if we can
 	set_skeleton(p_skeleton);
-	set_head_target_path(get_head_target_path());
-	set_hip_target_path(get_hip_target_path());
-	set_hand_left_target_path(get_hand_left_target_path());
-	set_hand_right_target_path(get_hand_right_target_path());
-	set_foot_left_target_path(get_foot_left_target_path());
-	set_foot_right_target_path(get_foot_right_target_path());
 	on_post_initialize();
 	// if (Engine::get_singleton()->is_editor_hint()) {
 	// 	set_process_internal(true);
@@ -1425,23 +912,23 @@ void RenIK::update_ik() {
 	// interpolate the results to avoid jitter
 	placement.interpolate_transforms(
 			Engine::get_singleton()->get_physics_interpolation_fraction(),
-			!hip_target_spatial, foot_placement);
+			!hip_target_spatial.is_valid(), foot_placement);
 
 	if (skeleton) {
 		Transform3D skel_inverse = skeleton->get_global_transform().affine_inverse();
 		SpineTransforms spine_global_transforms = perform_torso_ik();
-		if (hand_left_target_spatial) {
+		if (hand_left_target_spatial.is_valid() && hand_left_target_spatial->is_enabled()) {
 			perform_hand_left_ik(spine_global_transforms.left_arm_parent_transform, skel_inverse * hand_left_target_spatial->get_global_transform());
 		}
-		if (hand_right_target_spatial) {
+		if (hand_right_target_spatial.is_valid() && hand_right_target_spatial->is_enabled()) {
 			perform_hand_right_ik(spine_global_transforms.right_arm_parent_transform, skel_inverse * hand_right_target_spatial->get_global_transform());
 		}
-		if (foot_left_target_spatial) {
+		if (foot_left_target_spatial.is_valid() && foot_left_target_spatial->is_enabled()) {
 			perform_foot_left_ik(spine_global_transforms.hip_transform, skel_inverse * foot_left_target_spatial->get_global_transform());
 		} else if (foot_placement) {
 			perform_foot_left_ik(spine_global_transforms.hip_transform, skel_inverse * placement.interpolated_left_foot);
 		}
-		if (foot_right_target_spatial) {
+		if (foot_right_target_spatial.is_valid() && foot_right_target_spatial->is_enabled()) {
 			perform_foot_right_ik(spine_global_transforms.hip_transform, skel_inverse * foot_right_target_spatial->get_global_transform());
 		} else if (foot_placement) {
 			perform_foot_right_ik(spine_global_transforms.hip_transform, skel_inverse * placement.interpolated_right_foot);
@@ -1456,12 +943,12 @@ void RenIK::update_placement(float delta) {
 
 	// Based on head position and delta time, we calc our speed and distance from
 	// the ground and place the feet accordingly
-	if (foot_placement && head_target_spatial &&
+	if (foot_placement && head_target_spatial.is_valid() &&
 			head_target_spatial->is_inside_world()) {
 		placement.foot_place(delta, head_target_spatial->get_global_transform(),
 				head_target_spatial->get_world_3d(), false);
 	}
-	if (hip_placement && head_target_spatial) {
+	if (hip_placement && head_target_spatial.is_valid()) {
 		// calc twist from hands here
 		float twist = 0;
 		if (foot_placement) {
@@ -1539,12 +1026,12 @@ Transform3D RenIK::get_global_parent_pose(BoneId child,
 }
 
 RenIK::SpineTransforms RenIK::perform_torso_ik() {
-	if (head_target_spatial && skeleton && spine_chain->is_valid()) {
+	if (head_target_spatial.is_valid() && skeleton && spine_chain->is_valid()) {
 		Transform3D skel_inverse = skeleton->get_global_transform().affine_inverse();
 		Transform3D headGlobalTransform =
 				skel_inverse * head_target_spatial->get_global_transform();
 		Transform3D hipGlobalTransform =
-				skel_inverse * (hip_target_spatial ? hip_target_spatial->get_global_transform() : placement.interpolated_hip) *
+				skel_inverse * (hip_target_spatial.is_valid() ? hip_target_spatial->get_global_transform() : placement.interpolated_hip) *
 				skeleton->get_bone_rest(hip).basis;
 		Vector3 delta = hipGlobalTransform.origin +
 				hipGlobalTransform.basis.xform(
@@ -1600,7 +1087,7 @@ RenIK::SpineTransforms RenIK::perform_torso_ik() {
 }
 
 void RenIK::perform_hand_left_ik(Transform3D global_parent, Transform3D target) {
-	if (hand_left_target_spatial && skeleton &&
+	if (hand_left_target_spatial.is_valid() && skeleton &&
 			limb_arm_left->is_valid_in_skeleton(skeleton)) {
 		Transform3D root = global_parent; //  skeleton->get_global_transform() * global_parent
 		BoneId rootBone =
@@ -1631,7 +1118,7 @@ void RenIK::perform_hand_left_ik(Transform3D global_parent, Transform3D target) 
 }
 
 void RenIK::perform_hand_right_ik(Transform3D global_parent, Transform3D target) {
-	if (hand_right_target_spatial && skeleton &&
+	if (hand_right_target_spatial.is_valid() && skeleton &&
 			limb_arm_right->is_valid_in_skeleton(skeleton)) {
 		Transform3D root = global_parent;
 		BoneId rootBone =
@@ -2542,93 +2029,37 @@ String RenIK::get_upper_leg_right_bone_name() {
 	return l_upper_right_leg_bone_name;
 }
 
-NodePath RenIK::get_head_target_path() { return head_target_path; }
-void RenIK::set_head_target_path(NodePath p_path) {
-	head_target_path = p_path;
-	if(skeleton == nullptr){
-		return;
-	}
-	//if (is_inside_tree()) {
-		Node3D *new_node = Object::cast_to<Node3D>(skeleton->get_owner()-> get_node_or_null(p_path));
-		if (new_node || p_path.is_empty()) {
-			head_target_spatial = new_node;
-		}
-	//}
+void RenIK::set_head_target_path(const Ref<RenIKTarget>& p_path) {
+	head_target_spatial = p_path;
 }
 
-NodePath RenIK::get_hand_left_target_path() { return hand_left_target_path; }
 
-void RenIK::set_hand_left_target_path(NodePath p_path) {
-	hand_left_target_path = p_path;
-	if(skeleton == nullptr){
-		return;
-	}
-	//if (is_inside_tree()) {
-		Node3D *new_node = Object::cast_to<Node3D>(skeleton->get_owner()-> get_node_or_null(p_path));
-		if (new_node || p_path.is_empty()) {
-			hand_left_target_spatial = new_node;
-		}
-	//}
+void RenIK::set_hand_left_target_path(const Ref<RenIKTarget>&  p_path) {
+	hand_left_target_spatial = p_path;
 }
 
-NodePath RenIK::get_hand_right_target_path() { return hand_right_target_path; }
 
-void RenIK::set_hand_right_target_path(NodePath p_path) {
-	hand_right_target_path = p_path;
-	if(skeleton == nullptr){
-		return;
-	}
-	//if (is_inside_tree()) {
-		Node3D *new_node = Object::cast_to<Node3D>(skeleton->get_owner()-> get_node_or_null(p_path));
-		if (new_node || p_path.is_empty()) {
-			hand_right_target_spatial = new_node;
-		}
-	//}
+void RenIK::set_hand_right_target_path(const Ref<RenIKTarget>&  p_path) {
+	hand_right_target_spatial = p_path;
+
 }
 
-NodePath RenIK::get_hip_target_path() { return hip_target_path; }
 
-void RenIK::set_hip_target_path(NodePath p_path) {
-	hip_target_path = p_path;
-	if(skeleton == nullptr){
-		return;
-	}
-	//if (is_inside_tree()) {
-		Node3D *new_node = Object::cast_to<Node3D>(skeleton->get_owner()->get_node_or_null(p_path));
-		if (new_node || p_path.is_empty()) {
-			hip_target_spatial = new_node;
-		}
-	//}
+void RenIK::set_hip_target_path(const Ref<RenIKTarget>&  p_path) {
+	hip_target_spatial = p_path;
 }
 
-NodePath RenIK::get_foot_left_target_path() { return foot_left_target_path; }
 
-void RenIK::set_foot_left_target_path(NodePath p_path) {
-	foot_left_target_path = p_path;
-	if(skeleton == nullptr){
-		return;
-	}
-	//if (is_inside_tree()) {
-		Node3D *new_node = Object::cast_to<Node3D>(skeleton->get_owner()->get_node_or_null(p_path));
-		if (new_node || p_path.is_empty()) {
-			foot_left_target_spatial = new_node;
-		}
-	//}
+void RenIK::set_foot_left_target_path(const Ref<RenIKTarget>&  p_path) {
+	foot_left_target_spatial = p_path;
 }
 
-NodePath RenIK::get_foot_right_target_path() { return foot_right_target_path; }
 
-void RenIK::set_foot_right_target_path(NodePath p_path) {
-	foot_right_target_path = p_path;
+void RenIK::set_foot_right_target_path(const Ref<RenIKTarget>&  p_path) {
+	foot_right_target_spatial = p_path;
 	if(skeleton == nullptr){
 		return;
 	}
-	//if (is_inside_tree()) {
-		Node3D *new_node = Object::cast_to<Node3D>(skeleton->get_owner()->get_node_or_null(p_path));
-		if (new_node || p_path.is_empty()) {
-			foot_right_target_spatial = new_node;
-		}
-	//}
 }
 float RenIK::get_arm_upper_twist_offset() {
 	if(limb_arm_left == nullptr) {
@@ -3683,12 +3114,6 @@ void RenIK::setup_humanoid_bones(bool set_targets) {
 			set_foot_right_bone(bone_idx);
 		}
 	}
-	set_head_target_path(bone_node_paths[HEAD]);
-	set_hand_left_target_path(bone_node_paths[LEFT_HAND]);
-	set_hand_right_target_path(bone_node_paths[RIGHT_HAND]);
-	set_hip_target_path(bone_node_paths[HIPS]);
-	set_foot_left_target_path(bone_node_paths[LEFT_FOOT]);
-	set_foot_right_target_path(bone_node_paths[RIGHT_FOOT]);
 	for (const KeyValue<String, Node3D *> &entry : ik_target_spatials) {
 		String bone_name = entry.key;
 
