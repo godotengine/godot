@@ -37,7 +37,7 @@ class RetargetAnimationPlayer : public AnimationPlayer {
 	GDCLASS(RetargetAnimationPlayer, AnimationPlayer);
 
 protected:
-	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object, int p_object_idx = -1) override;
+	virtual Variant _post_process_key_value(const Ref<Animation>& p_anim, int p_track, Variant& p_value, ObjectID p_object_id, int p_object_sub_idx = -1) override;
 };
 
 #endif // RETARGET_ANIMATION_PLAYER_H

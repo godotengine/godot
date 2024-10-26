@@ -32,7 +32,7 @@
 
 #include "retarget_utility.h"
 
-Variant RetargetAnimationTree::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object, int p_object_idx) {
+Variant RetargetAnimationTree::_post_process_key_value(const Ref<Animation>& p_anim, int p_track, Variant& p_value, ObjectID p_object_id, int p_object_sub_idx ) {
 	Animation::TrackType type = p_anim->track_get_type(p_track);
 	Variant tmp_value = p_value;
 	switch (type) {
@@ -40,8 +40,8 @@ Variant RetargetAnimationTree::_post_process_key_value(const Ref<Animation> &p_a
 		case Animation::TYPE_POSITION_3D:
 		case Animation::TYPE_ROTATION_3D:
 		case Animation::TYPE_SCALE_3D: {
-			const Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(p_object) );
-			if (!skeleton || p_object_idx < 0) {
+			const Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(p_object_id) );
+			if (!skeleton || p_object_sub_idx < 0) {
 				break; // If it is not skeleton, do nothing.
 			}
 			// Apply motion scale.
@@ -58,23 +58,6 @@ Variant RetargetAnimationTree::_post_process_key_value(const Ref<Animation> &p_a
 				break;
 			}
 			RetargetUtility::TransformType ttype = (RetargetUtility::TransformType)(int)dict.get(key, RetargetUtility::TYPE_ABSOLUTE);
-			if (ttype == RetargetUtility::TYPE_GLOBAL) {
-				if (type == Animation::TYPE_ROTATION_3D) {
-					tmp_value = RetargetUtility::global_transform_rotation_to_bone_pose(skeleton, p_object_idx, Quaternion(tmp_value));
-				} else if (type == Animation::TYPE_POSITION_3D) {
-					tmp_value = RetargetUtility::global_transform_position_to_bone_pose(skeleton, p_object_idx, Vector3(tmp_value));
-				} else {
-					tmp_value = RetargetUtility::global_transform_scale_to_bone_pose(skeleton, p_object_idx, Vector3(tmp_value));
-				}
-			} else if (ttype == RetargetUtility::TYPE_LOCAL) {
-				if (type == Animation::TYPE_ROTATION_3D) {
-					tmp_value = RetargetUtility::local_transform_rotation_to_bone_pose(skeleton, p_object_idx, Quaternion(tmp_value));
-				} else if (type == Animation::TYPE_POSITION_3D) {
-					tmp_value = RetargetUtility::local_transform_position_to_bone_pose(skeleton, p_object_idx, Vector3(tmp_value));
-				} else {
-					tmp_value = RetargetUtility::local_transform_scale_to_bone_pose(skeleton, p_object_idx, Vector3(tmp_value));
-				}
-			}
 		} break;
 #endif // _3D_DISABLED
 		default: {

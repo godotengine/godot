@@ -32,7 +32,7 @@
 
 #include "retarget_utility.h"
 
-Variant RetargetAnimationPlayer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object, int p_object_idx) {
+Variant RetargetAnimationPlayer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant& p_value, ObjectID p_object, int p_object_idx) {
 	Animation::TrackType type = p_anim->track_get_type(p_track);
 	Variant tmp_value = p_value;
 	switch (type) {
