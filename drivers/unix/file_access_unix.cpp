@@ -37,6 +37,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -142,7 +143,13 @@ void FileAccessUnix::_sync() {
 
 	fflush(f);
 	int fd = fileno(f);
-	fsync(fd);
+	ERR_FAIL_COND(fd < 0);
+
+	int fsync_error;
+	do {
+		fsync_error = fsync(fd);
+	} while (fsync_error < 0 && errno == EINTR);
+	ERR_FAIL_COND_MSG(fsync_error < 0, strerror(errno));
 }
 
 void FileAccessUnix::_close() {
