@@ -305,9 +305,6 @@
 #include "scene/resources/3d/world_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/environment.h"
-#include "scene/resources/fog_material.h"
-#include "scene/resources/importer_mesh.h"
-#include "scene/resources/mesh_library.h"
 #include <iostream>
 #endif // _3D_DISABLED
 

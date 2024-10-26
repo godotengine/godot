@@ -920,7 +920,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	MAIN_PRINT("Main: Initialize CORE");
 	/////////////////////////////////////
-	OS::get_singleton()->benchmark_begin_measure("core");
 	MAIN_PRINT("MainDEBUG: benchmark_begin_measure OK");
 
 	register_core_types();

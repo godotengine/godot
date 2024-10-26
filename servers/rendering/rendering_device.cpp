@@ -6634,12 +6634,6 @@ RenderingDevice::~RenderingDevice() {
 	}
 }
 
-RenderingDevice::~RenderingDevice() {
-	if (singleton == this) {
-		singleton = nullptr;
-	}
-}
-
 RenderingDevice::RenderingDevice() {
 	if (singleton == nullptr) {
 		singleton = this;

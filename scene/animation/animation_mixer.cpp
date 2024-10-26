@@ -1902,7 +1902,6 @@ void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_meth
 	Callable::CallError ce;
 	t_obj->callp(p_method, argptrs, argcount, ce);
 }
-}
 
 void AnimationMixer::make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info) {
 	ERR_FAIL_COND(!has_animation(p_name));
