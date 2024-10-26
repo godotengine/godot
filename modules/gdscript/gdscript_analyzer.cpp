@@ -343,7 +343,6 @@ void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::Clas
 
 #ifdef DEBUG_ENABLED
 void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const bool p_is_call) {
-
 	if (p_identifier == nullptr) {
 		return;
 	}
@@ -358,7 +357,6 @@ void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNod
 	}
 }
 #endif
-
 
 Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source) {
 	if (p_source == nullptr && parser->has_class(p_class)) {
