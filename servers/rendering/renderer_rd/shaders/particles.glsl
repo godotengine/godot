@@ -180,10 +180,11 @@ layout(push_constant, std430) uniform Params {
 	bool clear;
 	uint total_particles;
 	uint trail_size;
-	bool use_fractional_delta;
+
 	bool sub_emitter_mode;
 	bool can_emit;
 	bool trail_pass;
+	uint pad;
 }
 params;
 
@@ -406,23 +407,17 @@ void main() {
 
 			if (restart_phase >= FRAME.prev_system_phase && restart_phase < FRAME.system_phase) {
 				restart = true;
-				if (params.use_fractional_delta) {
-					local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
-				}
+				local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
 			}
 
 		} else if (FRAME.delta > 0.0) {
 			if (restart_phase >= FRAME.prev_system_phase) {
 				restart = true;
-				if (params.use_fractional_delta) {
-					local_delta = (1.0 - restart_phase + FRAME.system_phase) * params.lifetime;
-				}
+				local_delta = (1.0 - restart_phase + FRAME.system_phase) * params.lifetime;
 
 			} else if (restart_phase < FRAME.system_phase) {
 				restart = true;
-				if (params.use_fractional_delta) {
-					local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
-				}
+				local_delta = (FRAME.system_phase - restart_phase) * params.lifetime;
 			}
 		}
 

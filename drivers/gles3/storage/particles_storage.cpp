@@ -756,7 +756,6 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::LIFETIME, p_particles->lifetime, version, variant, specialization);
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::CLEAR, p_particles->clear, version, variant, specialization);
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::TOTAL_PARTICLES, uint32_t(p_particles->amount), version, variant, specialization);
-	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::USE_FRACTIONAL_DELTA, p_particles->fractional_delta, version, variant, specialization);
 
 	p_particles->clear = false;
 

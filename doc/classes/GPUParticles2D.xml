@@ -75,7 +75,7 @@
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="30">
 			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
-		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true" deprecated="Fractional delta is now always enabled and hidden in the inspector, as disabling it had no tangible effect.">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
 		<member name="interp_to_end" type="float" setter="set_interp_to_end" getter="get_interp_to_end" default="0.0">
