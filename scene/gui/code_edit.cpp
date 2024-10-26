@@ -1498,9 +1498,9 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	ofs.y += TS->shaped_text_get_ascent(text_rid);
 
 	if (rtl) {
-		ofs.x = p_region.position.x;
-	} else {
 		ofs.x = p_region.get_end().x - text_size.width;
+	} else {
+		ofs.x = p_region.position.x;
 	}
 
 	Color number_color = get_line_gutter_item_color(p_line, line_number_gutter);
