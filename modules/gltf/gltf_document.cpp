@@ -3328,6 +3328,14 @@ int GLTFDocument::get_naming_version() const {
 	return _naming_version;
 }
 
+void GLTFDocument::set_legacy_attachements_import(bool p_legacy_attachements_import) {
+	_legacy_attachements_import = p_legacy_attachements_import;
+}
+
+bool GLTFDocument::get_legacy_attachements_import() const {
+	return _legacy_attachements_import;
+}
+
 void GLTFDocument::set_image_format(const String &p_image_format) {
 	_image_format = p_image_format;
 }
@@ -5124,7 +5132,7 @@ BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> p_state
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 	Ref<GLTFNode> bone_node = p_state->nodes[p_bone_index];
 	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
-	print_verbose("glTF: Creating bone attachment for: " + bone_node->get_name());
+	print_verbose("glTF: Creating bone attachment for: " + _legacy_attachements_import ? gltf_node->get_name() : bone_node->get_name());
 
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
 
@@ -5606,7 +5614,7 @@ void GLTFDocument::_convert_mesh_instance_to_gltf(MeshInstance3D *p_scene_parent
 void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
-	if (gltf_node->skeleton >= 0 && gltf_node->mesh < 0) {
+	if (gltf_node->skeleton >= 0 && (gltf_node->mesh < 0 || _legacy_attachements_import)) {
 		_generate_skeleton_bone_node(p_state, p_node_index, p_scene_parent, p_scene_root);
 		return;
 	}
@@ -5622,7 +5630,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
 		// Bone Attachment - Parent Case
 		Ref<GLTFNode> bone_node = p_state->nodes[gltf_node->parent];
-		BoneAttachment3D *bone_attachment = Object::cast_to<BoneAttachment3D>(p_scene_parent->find_child(bone_node->get_name().validate_node_name(), true));
+		BoneAttachment3D *bone_attachment = (_legacy_attachements_import) ? nullptr : Object::cast_to<BoneAttachment3D>(p_scene_parent->find_child(bone_node->get_name().validate_node_name(), true));
 		if (bone_attachment == nullptr) {
 			bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
@@ -5634,7 +5642,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 			bone_attachment->set_owner(p_scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(bone_node->get_name());
+			bone_attachment->set_name((_legacy_attachements_import) ? gltf_node->get_name() : bone_node->get_name());
 		}
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
@@ -5755,7 +5763,8 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			p_scene_parent->add_child(bone_attachment, true);
 
 			// Find the correct bone_idx so we can properly serialize it.
-			bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+			Ref<GLTFNode> bone_node = p_state->nodes[gltf_node->parent];
+			bone_attachment->set_bone_idx(active_skeleton->find_bone(bone_node->get_name()));
 
 			bone_attachment->set_owner(p_scene_root);
 
@@ -5793,7 +5802,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 			args.append(p_scene_root);
 			current_node->propagate_call(StringName("set_owner"), args);
 		}
-		// Do not set transform here. Transform is already applied to our bone.
+		current_node->set_transform(gltf_node->transform);
 		current_node->set_name(gltf_node->get_name());
 	}
 

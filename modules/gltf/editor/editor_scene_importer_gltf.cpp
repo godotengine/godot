@@ -59,6 +59,11 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		int32_t enum_option = p_options["gltf/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);
 	}
+	if (p_options.has("nodes/legacy_attachements_import")) {
+		gltf->set_legacy_attachements_import((bool)p_options["nodes/legacy_attachements_import"]);
+	} else {
+		gltf->set_legacy_attachements_import(true);
+	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
