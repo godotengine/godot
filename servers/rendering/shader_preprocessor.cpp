@@ -816,6 +816,11 @@ void ShaderPreprocessor::process_undef(Tokenizer *p_tokenizer) {
 	}
 
 	if (state->defines.has(label)) {
+		if (state->defines[label]->is_builtin) {
+			set_error(vformat(RTR("Cannot use '%s' on built-in define."), "undef"), line);
+			return;
+		}
+
 		memdelete(state->defines[label]);
 		state->defines.erase(label);
 	}
@@ -1324,6 +1329,35 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		pp_state.current_filename = p_filename;
 		pp_state.save_regions = r_regions != nullptr;
 	}
+
+	// Built-in defines.
+	{
+		static HashMap<StringName, String> defines;
+
+		if (defines.is_empty()) {
+			const String rendering_method = OS::get_singleton()->get_current_rendering_method();
+
+			if (rendering_method == "forward_plus") {
+				defines["CURRENT_RENDERER"] = _MKSTR(2);
+			} else if (rendering_method == "mobile") {
+				defines["CURRENT_RENDERER"] = _MKSTR(1);
+			} else { // gl_compatibility
+				defines["CURRENT_RENDERER"] = _MKSTR(0);
+			}
+
+			defines["RENDERER_COMPATIBILITY"] = _MKSTR(0);
+			defines["RENDERER_MOBILE"] = _MKSTR(1);
+			defines["RENDERER_FORWARD_PLUS"] = _MKSTR(2);
+		}
+
+		for (const KeyValue<StringName, String> &E : defines) {
+			Define *define = memnew(Define);
+			define->is_builtin = true;
+			define->body = E.value;
+			pp_state.defines[E.key] = define;
+		}
+	}
+
 	Error err = preprocess(&pp_state, p_code, r_result);
 	if (err != OK) {
 		if (r_error_text) {
