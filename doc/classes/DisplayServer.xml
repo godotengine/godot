@@ -2152,12 +2152,14 @@
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
 			Display handle:
 			- Linux (X11): [code]X11::Display*[/code] for the display.
+			- Linux (Wayland): [code]wl_display[/code] for the display.
 			- Android: [code]EGLDisplay[/code] for the display.
 		</constant>
 		<constant name="WINDOW_HANDLE" value="1" enum="HandleType">
 			Window handle:
 			- Windows: [code]HWND[/code] for the window.
 			- Linux (X11): [code]X11::Window*[/code] for the window.
+			- Linux (Wayland): [code]wl_surface[/code] for the window.
 			- macOS: [code]NSWindow*[/code] for the window.
 			- iOS: [code]UIViewController*[/code] for the view controller.
 			- Android: [code]jObject[/code] for the activity.
@@ -2172,8 +2174,19 @@
 			OpenGL context (only with the GL Compatibility renderer):
 			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Linux (X11): [code]GLXContext*[/code] for the window.
+			- Linux (Wayland): [code]EGLContext[/code] for the window.
 			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Android: [code]EGLContext[/code] for the window.
+		</constant>
+		<constant name="EGL_DISPLAY" value="4" enum="HandleType">
+			- Windows: [code]EGLDisplay[/code] for the window (ANGLE).
+			- macOS: [code]EGLDisplay[/code] for the window (ANGLE).
+			- Linux (Wayland): [code]EGLDisplay[/code] for the window.
+		</constant>
+		<constant name="EGL_CONFIG" value="5" enum="HandleType">
+			- Windows: [code]EGLConfig[/code] for the window (ANGLE).
+			- macOS: [code]EGLConfig[/code] for the window (ANGLE).
+			- Linux (Wayland): [code]EGLConfig[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.

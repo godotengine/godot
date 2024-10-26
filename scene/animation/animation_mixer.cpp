@@ -591,6 +591,7 @@ void AnimationMixer::_clear_caches() {
 		memdelete(K.value);
 	}
 	track_cache.clear();
+	animation_track_num_to_track_cashe.clear();
 	cache_valid = false;
 	capture_cache.clear();
 
@@ -971,6 +972,27 @@ bool AnimationMixer::_update_caches() {
 		idx++;
 	}
 
+	for (KeyValue<Animation::TypeHash, TrackCache *> &K : track_cache) {
+		K.value->blend_idx = track_map[K.value->path];
+	}
+
+	animation_track_num_to_track_cashe.clear();
+	LocalVector<TrackCache *> track_num_to_track_cashe;
+	for (const StringName &E : sname_list) {
+		Ref<Animation> anim = get_animation(E);
+		const Vector<Animation::Track *> tracks = anim->get_tracks();
+		track_num_to_track_cashe.resize(tracks.size());
+		for (int i = 0; i < tracks.size(); i++) {
+			TrackCache **track_ptr = track_cache.getptr(tracks[i]->thash);
+			if (track_ptr == nullptr) {
+				track_num_to_track_cashe[i] = nullptr;
+			} else {
+				track_num_to_track_cashe[i] = *track_ptr;
+			}
+		}
+		animation_track_num_to_track_cashe.insert(anim, track_num_to_track_cashe);
+	}
+
 	track_count = idx;
 
 	cache_valid = true;
@@ -1006,7 +1028,7 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 	clear_animation_instances();
 }
 
-Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx) {
+Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {
 #ifndef _3D_DISABLED
 	switch (p_anim->track_get_type(p_track)) {
 		case Animation::TYPE_POSITION_3D: {
@@ -1093,7 +1115,7 @@ void AnimationMixer::_blend_init() {
 	}
 }
 
-bool AnimationMixer::_blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) {
+bool AnimationMixer::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	return true;
 }
 
@@ -1148,22 +1170,26 @@ void AnimationMixer::_blend_calc_total_weight() {
 		real_t weight = ai.playback_info.weight;
 		const real_t *track_weights_ptr = ai.playback_info.track_weights.ptr();
 		int track_weights_count = ai.playback_info.track_weights.size();
-		static LocalVector<Animation::TypeHash> processed_hashes;
+		ERR_CONTINUE_EDMSG(!animation_track_num_to_track_cashe.has(a), "No animation in cache.");
+		LocalVector<TrackCache *> &track_num_to_track_cashe = animation_track_num_to_track_cashe[a];
+		thread_local HashSet<Animation::TypeHash, HashHasher> processed_hashes;
 		processed_hashes.clear();
 		const Vector<Animation::Track *> tracks = a->get_tracks();
-		for (const Animation::Track *animation_track : tracks) {
+		Animation::Track *const *tracks_ptr = tracks.ptr();
+		int count = tracks.size();
+		for (int i = 0; i < count; i++) {
+			Animation::Track *animation_track = tracks_ptr[i];
 			if (!animation_track->enabled) {
 				continue;
 			}
 			Animation::TypeHash thash = animation_track->thash;
-			TrackCache **track_ptr = track_cache.getptr(thash);
-			if (track_ptr == nullptr || processed_hashes.has(thash)) {
+			TrackCache *track = track_num_to_track_cashe[i];
+			if (track == nullptr || processed_hashes.has(thash)) {
 				// No path, but avoid error spamming.
 				// Or, there is the case different track type with same path; These can be distinguished by hash. So don't add the weight doubly.
 				continue;
 			}
-			TrackCache *track = *track_ptr;
-			int blend_idx = track_map[track->path];
+			int blend_idx = track->blend_idx;
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend = blend_idx < track_weights_count ? track_weights_ptr[blend_idx] * weight : weight;
 
@@ -1172,7 +1198,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 				blend = 0.0;
 			}
 			track->total_weight += blend;
-			processed_hashes.push_back(thash);
+			processed_hashes.insert(thash);
 		}
 	}
 }
@@ -1199,6 +1225,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 #ifndef _3D_DISABLED
 		bool calc_root = !seeked || is_external_seeking;
 #endif // _3D_DISABLED
+		ERR_CONTINUE_EDMSG(!animation_track_num_to_track_cashe.has(a), "No animation in cache.");
+		LocalVector<TrackCache *> &track_num_to_track_cashe = animation_track_num_to_track_cashe[a];
 		const Vector<Animation::Track *> tracks = a->get_tracks();
 		Animation::Track *const *tracks_ptr = tracks.ptr();
 		real_t a_length = a->get_length();
@@ -1208,15 +1236,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 			if (!animation_track->enabled) {
 				continue;
 			}
-			Animation::TypeHash thash = animation_track->thash;
-			TrackCache **track_ptr = track_cache.getptr(thash);
-			if (track_ptr == nullptr) {
+			TrackCache *track = track_num_to_track_cashe[i];
+			if (track == nullptr) {
 				continue; // No path, but avoid error spamming.
 			}
-			TrackCache *track = *track_ptr;
-			int *blend_idx_ptr = track_map.getptr(track->path);
-			ERR_CONTINUE(blend_idx_ptr == nullptr);
-			int blend_idx = *blend_idx_ptr;
+			int blend_idx = track->blend_idx;
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend = blend_idx < track_weights_count ? track_weights_ptr[blend_idx] * weight : weight;
 			if (!deterministic) {
@@ -1634,64 +1658,69 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 
 					}
 				case Animation::TYPE_AUDIO: {
-					if(!is_thread)
-					{
-						// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
-						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
-						Object *t_obj = ObjectDB::get_instance(t->object_id);
-						Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
-						if (!t_obj || !asp) {
-							t->playing_streams.clear();
-							continue;
-						}
-						ObjectID oid = a->get_instance_id();
-						if (!t->playing_streams.has(oid)) {
-							t->playing_streams[oid] = PlayingAudioTrackInfo();
-						}
+					// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
+					TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
+					Object *t_obj = ObjectDB::get_instance(t->object_id);
+					Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
+					if (!t_obj || !asp) {
+						t->playing_streams.clear();
+						continue;
+					}
+					ObjectID oid = a->get_instance_id();
+					if (!t->playing_streams.has(oid)) {
+						t->playing_streams[oid] = PlayingAudioTrackInfo();
+					}
 
-						PlayingAudioTrackInfo &track_info = t->playing_streams[oid];
-						track_info.length = a_length;
-						track_info.time = time;
-						track_info.volume += blend;
-						track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
-						track_info.backward = backward;
-						track_info.use_blend = a->audio_track_is_use_blend(i);
-						HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+					PlayingAudioTrackInfo &track_info = t->playing_streams[oid];
+					track_info.length = a_length;
+					track_info.time = time;
+					track_info.volume += blend;
+					track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
+					track_info.backward = backward;
+					track_info.use_blend = a->audio_track_is_use_blend(i);
+					AHashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
 
-						// Main process to fire key is started from here.
-						if (p_update_only) {
-							continue;
+					// Main process to fire key is started from here.
+					if (p_update_only) {
+						continue;
+					}
+					// Find stream.
+					int idx = -1;
+					if (seeked) {
+						// Audio key may be playbacked from the middle, should use FIND_MODE_NEAREST.
+						// Then, check the current playing stream to prevent to playback doubly.
+						idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
+						// Discard previous stream when seeking.
+						if (map.has(idx)) {
+							t->audio_stream_playback->stop_stream(map[idx].index);
+							map.erase(idx);
 						}
-						// Find stream.
-						int idx = -1;
+					} else {
+						List<int> to_play;
+						a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
+						if (to_play.size()) {
+							idx = to_play.back()->get();
+						}
+					}
+					if (idx < 0) {
+						continue;
+					}
+
+					// Play stream.
+					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
+					if (stream.is_valid()) {
+						double start_ofs = a->audio_track_get_key_start_offset(i, idx);
+						double end_ofs = a->audio_track_get_key_end_offset(i, idx);
+						double len = stream->get_length();
 						if (seeked) {
-							// Audio key may be playbacked from the middle, should use FIND_MODE_NEAREST.
-							// Then, check the current playing stream to prevent to playback doubly.
-							idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
-							// Discard previous stream when seeking.
-							if (map.has(idx)) {
-								t->audio_stream_playback->stop_stream(map[idx].index);
-								map.erase(idx);
-							}
-						} else {
-							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
-							if (to_play.size()) {
-								idx = to_play.back()->get();
-							}
-						}
-						if (idx < 0) {
-							continue;
+							start_ofs += time - a->track_get_key_time(i, idx);
 						}
 
-						// Play stream.
-						Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-						if (stream.is_valid()) {
-							double start_ofs = a->audio_track_get_key_start_offset(i, idx);
-							double end_ofs = a->audio_track_get_key_end_offset(i, idx);
-							double len = stream->get_length();
-							if (seeked) {
-								start_ofs += time - a->track_get_key_time(i, idx);
+						if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
+							t_obj->call(SNAME("set_stream"), t->audio_stream);
+							t->audio_stream_playback.unref();
+							if (!playing_audio_stream_players.has(asp)) {
+								playing_audio_stream_players.push_back(asp);
 							}
 
 							if (t_obj->call(SNAME("get_stream")) != t->audio_stream) {
@@ -1928,7 +1957,7 @@ void AnimationMixer::_blend_apply() {
 					PlayingAudioTrackInfo &track_info = L.value;
 					float db = Math::linear_to_db(track_info.use_blend ? track_info.volume : 1.0);
 					LocalVector<int> erase_streams;
-					HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+					AHashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
 					for (const KeyValue<int, PlayingAudioStreamInfo> &M : map) {
 						PlayingAudioStreamInfo pasi = M.value;
 
@@ -2227,7 +2256,7 @@ void AnimationMixer::restore(const Ref<AnimatedValuesBackup> &p_backup) {
 	ERR_FAIL_COND(p_backup.is_null());
 	track_cache = p_backup->get_data();
 	_blend_apply();
-	track_cache = HashMap<Animation::TypeHash, AnimationMixer::TrackCache *>();
+	track_cache = AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher>();
 	cache_valid = false;
 }
 
@@ -2463,7 +2492,7 @@ AnimationMixer::AnimationMixer() {
 AnimationMixer::~AnimationMixer() {
 }
 
-void AnimatedValuesBackup::set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data) {
+void AnimatedValuesBackup::set_data(const AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> p_data) {
 	clear_data();
 
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : p_data) {
@@ -2476,7 +2505,7 @@ void AnimatedValuesBackup::set_data(const HashMap<Animation::TypeHash, Animation
 	}
 }
 
-HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> AnimatedValuesBackup::get_data() const {
+AHashMap<Animation::TypeHash, AnimationMixer::TrackCache *, HashHasher> AnimatedValuesBackup::get_data() const {
 	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> ret;
 	for (const KeyValue<Animation::TypeHash, AnimationMixer::TrackCache *> &E : data) {
 		AnimationMixer::TrackCache *track = get_cache_copy(E.value);
