@@ -247,7 +247,10 @@ PackedStringArray TranslationDomain::get_loaded_locales() const {
 	PackedStringArray locales;
 	for (const Ref<Translation> &E : translations) {
 		ERR_CONTINUE(E.is_null());
-		locales.push_back(E->get_locale());
+		const String &locale = E->get_locale();
+		if (!locales.has(locale)) {
+			locales.push_back(locale);
+		}
 	}
 	return locales;
 }

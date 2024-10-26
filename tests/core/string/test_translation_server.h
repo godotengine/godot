@@ -37,27 +37,37 @@
 
 namespace TestTranslationServer {
 TEST_CASE("[TranslationServer] Translation operations") {
-	Ref<Translation> t = memnew(Translation);
-	t->set_locale("uk");
-	t->add_message("Good Morning", String::utf8("Добрий ранок"));
+	Ref<Translation> t1 = memnew(Translation);
+	t1->set_locale("uk");
+	t1->add_message("Good Morning", String(U"Добрий ранок"));
+
+	Ref<Translation> t2 = memnew(Translation);
+	t2->set_locale("uk");
+	t2->add_message("Hello Godot", String(U"你好戈多"));
 
 	TranslationServer *ts = TranslationServer::get_singleton();
 
+	// Adds translation for UK locale for the first time.
 	int l_count_before = ts->get_loaded_locales().size();
-	ts->add_translation(t);
+	ts->add_translation(t1);
 	int l_count_after = ts->get_loaded_locales().size();
-	// Newly created Translation object should be added to the list, so the counter should increase, too.
 	CHECK(l_count_after > l_count_before);
 
-	Ref<Translation> trans = ts->get_translation_object("uk");
-	CHECK(trans.is_valid());
+	// Adds translation for UK locale again.
+	ts->add_translation(t2);
+	CHECK_EQ(ts->get_loaded_locales().size(), l_count_after);
+
+	// Removing that translation.
+	ts->remove_translation(t2);
+	CHECK_EQ(ts->get_loaded_locales().size(), l_count_after);
+
+	CHECK(ts->get_translation_object("uk").is_valid());
 
 	ts->set_locale("uk");
 	CHECK(ts->translate("Good Morning") == String::utf8("Добрий ранок"));
 
-	ts->remove_translation(t);
-	trans = ts->get_translation_object("uk");
-	CHECK(trans.is_null());
+	ts->remove_translation(t1);
+	CHECK(ts->get_translation_object("uk").is_null());
 	// If no suitable Translation object has been found - the original message should be returned.
 	CHECK(ts->translate("Good Morning") == "Good Morning");
 }
