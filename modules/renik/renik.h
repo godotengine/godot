@@ -63,25 +63,10 @@ public:
 	virtual bool is_enabled() const {
 		return _enabled;
 	}
-
-	bool is_inside_world() const {
-		return is_in_world;
-	}
-	void set_world_3d(const Ref<World3D> &p_world_3d) {
-		world_3d = p_world_3d;
-		is_in_world = !p_world_3d.is_null();
-	}
-	Ref<World3D> get_world_3d() const {
-		return world_3d;
-	}
-
-
 protected:
 
 	Transform3D _global_transform;
-	Ref<World3D> world_3d;
 	bool _enabled = true;
-	bool is_in_world = false;
 };
 
 class RenIK : public RefCounted {

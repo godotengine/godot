@@ -944,9 +944,9 @@ void RenIK::update_placement(float delta) {
 	// Based on head position and delta time, we calc our speed and distance from
 	// the ground and place the feet accordingly
 	if (foot_placement && head_target_spatial.is_valid() &&
-			head_target_spatial->is_inside_world()) {
+			skeleton->is_inside_world()) {
 		placement.foot_place(delta, head_target_spatial->get_global_transform(),
-				head_target_spatial->get_world_3d(), false);
+				skeleton->get_world_3d(), false);
 	}
 	if (hip_placement && head_target_spatial.is_valid()) {
 		// calc twist from hands here
