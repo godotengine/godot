@@ -140,7 +140,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const CameraRa
 
 			Vector3 dir;
 			if (p_data->camera_orthogonal) {
-				dir = -p_data->camera_dir;
+				dir = p_data->camera_dir;
 				tile.ray.org_x[j] = pixel_pos.x - dir.x * p_data->z_near;
 				tile.ray.org_y[j] = pixel_pos.y - dir.y * p_data->z_near;
 				tile.ray.org_z[j] = pixel_pos.z - dir.z * p_data->z_near;
