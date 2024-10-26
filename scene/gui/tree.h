@@ -488,6 +488,7 @@ private:
 	Vector2 range_drag_capture_pos;
 
 	bool propagate_mouse_activated = false;
+	float content_scale_factor = 0.0;
 
 	Rect2 custom_popup_rect;
 	int edited_col = -1;
