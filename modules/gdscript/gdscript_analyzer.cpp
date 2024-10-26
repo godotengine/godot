@@ -341,6 +341,23 @@ void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::Clas
 	}
 }
 
+#ifdef DEBUG_ENABLED
+void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const bool p_is_call) {
+	if (p_identifier == nullptr) {
+		return;
+	}
+	if (!String(p_identifier->name).begins_with("_")) {
+		return;
+	}
+	if (parser->current_class->get_datatype().kind != GDScriptParser::DataType::CLASS && parser->current_class->get_datatype().kind != GDScriptParser::DataType::SCRIPT) {
+		return;
+	}
+	if (!parser->current_class->has_member(p_identifier->name)) {
+		parser->push_warning(p_identifier, p_is_call ? GDScriptWarning::CALLING_UNDERLINE_PREFIXED_METHOD : GDScriptWarning::ACCESSING_UNDERLINE_PREFIXED_MEMBER, p_identifier->name);
+	}
+}
+#endif
+
 Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source) {
 	if (p_source == nullptr && parser->has_class(p_class)) {
 		p_source = p_class;
@@ -3510,10 +3527,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (p_call->callee == nullptr && current_lambda != nullptr) {
 			push_error("Cannot use `super()` inside a lambda.", p_call);
 		}
+
+		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
+		check_access_private_member(identifier);
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
 		base_type.is_meta_type = false;
 		is_self = true;
+
+		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
+		check_access_private_member(identifier);
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
 		if (subscript->base == nullptr) {
@@ -3547,6 +3570,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			base_type = subscript->base->get_datatype();
 			is_self = subscript->base->type == GDScriptParser::Node::SELF;
 		}
+
+		check_access_private_member(subscript->attribute);
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
@@ -4468,7 +4493,9 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				function_test = function_test->source_lambda->parent_function;
 			}
 		}
-
+#ifdef DEBUG_ENABLED
+		check_access_private_member(p_identifier);
+#endif
 		return;
 	}
 
@@ -4830,6 +4857,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			}
 			result_type.kind = GDScriptParser::DataType::VARIANT;
 		}
+#ifdef DEBUG_ENABLED
+		check_access_private_member(p_subscript->attribute);
+#endif
 	} else {
 		if (p_subscript->index == nullptr) {
 			return;
