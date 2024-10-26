@@ -230,8 +230,10 @@ void FileAccessWindows::_sync() {
 
 	fflush(f);
 	int fd = _fileno(f);
+	ERR_FAIL_COND(fd < 0);
 	HANDLE hf = (HANDLE)_get_osfhandle(fd);
-	FlushFileBuffers(hf);
+	ERR_FAIL_COND(hf == INVALID_HANDLE_VALUE);
+	ERR_FAIL_COND(!FlushFileBuffers(hf));
 }
 
 void FileAccessWindows::_close() {
