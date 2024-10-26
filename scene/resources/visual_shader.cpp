@@ -1921,13 +1921,13 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (const KeyValue<String, Varying> &E : varyings) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", PNAME("varyings"), E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", "varyings", E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		for (const KeyValue<String, Variant> &E : preview_params) {
-			p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", PNAME("preview_params"), E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			p_list->push_back(PropertyInfo(Variant::STRING, vformat("%s/%s", "preview_params", E.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		}
 	}
 #endif // TOOLS_ENABLED

@@ -4220,10 +4220,10 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Tile Proxies.
 	// Note: proxies need to be set after sources are set.
-	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Tile Proxies", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/source_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/coords_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/alternative_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "Tile Proxies", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/source_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/coords_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/alternative_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 	// Patterns.
 	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
