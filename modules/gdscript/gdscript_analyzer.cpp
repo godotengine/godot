@@ -343,6 +343,7 @@ void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::Clas
 
 #ifdef DEBUG_ENABLED
 void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const bool p_is_call) {
+
 	if (p_identifier == nullptr) {
 		return;
 	}
@@ -357,6 +358,7 @@ void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNod
 	}
 }
 #endif
+
 
 Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source) {
 	if (p_source == nullptr && parser->has_class(p_class)) {
@@ -3528,15 +3530,18 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			push_error("Cannot use `super()` inside a lambda.", p_call);
 		}
 
+#ifdef DEBUG_ENABLED
 		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
 		check_access_private_member(identifier);
+#endif
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
 		base_type.is_meta_type = false;
 		is_self = true;
-
+#ifdef DEBUG_ENABLED
 		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
 		check_access_private_member(identifier);
+#endif
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
 		if (subscript->base == nullptr) {
@@ -3570,8 +3575,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			base_type = subscript->base->get_datatype();
 			is_self = subscript->base->type == GDScriptParser::Node::SELF;
 		}
-
+#ifdef DEBUG_ENABLED
 		check_access_private_member(subscript->attribute);
+#endif
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
