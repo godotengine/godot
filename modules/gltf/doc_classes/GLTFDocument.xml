@@ -101,7 +101,7 @@
 			The user-friendly name of the export image format. This is used when exporting the glTF file, including writing to a file and writing to a byte array.
 			By default, Godot allows the following options: "None", "PNG", "JPEG", "Lossless WebP", and "Lossy WebP". Support for more image formats can be added in [GLTFDocumentExtension] classes.
 		</member>
-		<member name="legacy_attachements_import" type="bool" setter="set_legacy_attachements_import" getter="get_legacy_attachements_import" default="false">
+		<member name="legacy_attachments_import" type="bool" setter="set_legacy_attachments_import" getter="get_legacy_attachments_import" default="true">
 			If [code]true[/code], use the legacy import method creating a bone and a [BoneAttachment3D] for each mesh parented to a bone.
 		</member>
 		<member name="lossy_quality" type="float" setter="set_lossy_quality" getter="get_lossy_quality" default="0.75">
