@@ -2269,6 +2269,55 @@ bool Node::is_unique_name_in_owner() const {
 	return data.unique_name_in_owner;
 }
 
+bool Node::has_exposed_nodes(bool p_recursive) {
+	if (has_meta(META_CONTAINS_EXPOSED_NODES)) {
+		return true;
+	}
+	for (const KeyValue<StringName, Node *> &KV : data.children) {
+		if (!KV.value->data.owner) {
+			continue;
+		}
+		if (KV.value->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			set_meta(META_CONTAINS_EXPOSED_NODES, true);
+			return true;
+		}
+
+		if (p_recursive) {
+			if (KV.value->has_exposed_nodes()) {
+				set_meta(META_CONTAINS_EXPOSED_NODES, true);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+int Node::get_exposed_node_count(Node *p_owner, bool p_recursive) {
+	int count = 0;
+	if (this != p_owner && p_owner != get_owner()) {
+		return count;
+	}
+	if (!has_exposed_nodes()) {
+		return count;
+	}
+	for (const KeyValue<StringName, Node *> &KV : data.children) {
+		if (!KV.value->data.owner) {
+			continue;
+		}
+		if (this == p_owner && KV.value->get_import_path().is_empty() && KV.value->has_exposed_nodes()) {
+			count--;
+		}
+		if (KV.value->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			count++;
+		}
+		if (p_recursive) {
+			count += KV.value->get_exposed_node_count(p_owner);
+		}
+	}
+
+	return count;
+}
+
 void Node::set_owner(Node *p_owner) {
 	ERR_MAIN_THREAD_GUARD
 	if (data.owner) {
@@ -2765,6 +2814,16 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 bool Node::is_part_of_edited_scene() const {
 	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && data.tree->get_edited_scene_root() &&
 			data.tree->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
+}
+
+int Node::get_tree_index() const {
+	if (!data.parent || has_meta(META_EXPOSED_IN_INSTANCE)) {
+		return data.index;
+	}
+	data.parent->_update_children_cache();
+
+	int exposed_nodes = data.parent->get_exposed_node_count(data.parent);
+	return data.index + exposed_nodes;
 }
 #endif
 

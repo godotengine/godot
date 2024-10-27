@@ -216,6 +216,18 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		} else {
 			_revoke_unique_name();
 		}
+	} else if (p_id == BUTTON_EXPOSED) {
+		bool ask_before_revoking_node_exposure = EDITOR_GET("docks/scene_tree/ask_before_revoking_node_exposure");
+		revoke_node = n;
+		if (ask_before_revoking_node_exposure) {
+			String msg = vformat(TTR("Unexpose node \"%s\"?"), n->get_name());
+			ask_before_revoke_node_exposure_checkbox->set_pressed(false);
+			revoke_node_exposure_dialog_label->set_text(msg);
+			revoke_node_exposure->reset_size();
+			revoke_node_exposure->popup_centered();
+		} else {
+			_toggle_node_exposure();
+		}
 	}
 }
 
@@ -234,6 +246,39 @@ void SceneTreeEditor::_revoke_unique_name() {
 	undo_redo->create_action(TTR("Disable Scene Unique Name"));
 	undo_redo->add_do_method(revoke_node, "set_unique_name_in_owner", false);
 	undo_redo->add_undo_method(revoke_node, "set_unique_name_in_owner", true);
+	undo_redo->add_do_method(this, "_update_tree");
+	undo_redo->add_undo_method(this, "_update_tree");
+	undo_redo->commit_action();
+}
+
+void SceneTreeEditor::_update_ask_before_revoking_node_exposure() {
+	if (ask_before_revoke_node_exposure_checkbox->is_pressed()) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/ask_before_revoking_node_exposure", false);
+		ask_before_revoke_node_exposure_checkbox->set_pressed(false);
+	}
+	_toggle_node_exposure();
+}
+
+void SceneTreeEditor::_toggle_node_exposure() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	bool enabled = revoke_node->has_meta(META_MARKED_FOR_EXPOSURE);
+	undo_redo->create_action(enabled ? TTR("Unexpose Node In Scene") : TTR("Expose Node In Scene"));
+	if (revoke_node->get_owner() == get_tree()->get_edited_scene_root()) {
+		if (enabled) {
+			undo_redo->add_do_method(revoke_node, "remove_meta", META_EXPOSED_IN_OWNER);
+			undo_redo->add_undo_method(revoke_node, "set_meta", META_EXPOSED_IN_OWNER, true);
+		} else {
+			undo_redo->add_do_method(revoke_node, "set_meta", META_EXPOSED_IN_OWNER, true);
+			undo_redo->add_undo_method(revoke_node, "remove_meta", META_EXPOSED_IN_OWNER);
+		}
+	}
+	if (enabled) {
+		undo_redo->add_do_method(revoke_node, "remove_meta", META_MARKED_FOR_EXPOSURE);
+		undo_redo->add_undo_method(revoke_node, "set_meta", META_MARKED_FOR_EXPOSURE, true);
+	} else {
+		undo_redo->add_do_method(revoke_node, "set_meta", META_MARKED_FOR_EXPOSURE, true);
+		undo_redo->add_undo_method(revoke_node, "remove_meta", META_MARKED_FOR_EXPOSURE);
+	}
 	undo_redo->add_do_method(this, "_update_tree");
 	undo_redo->add_undo_method(this, "_update_tree");
 	undo_redo->commit_action();
@@ -282,9 +327,21 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 	bool part_of_subscene = false;
 
 	if (!display_foreign && p_node->get_owner() != get_scene_node() && p_node != get_scene_node()) {
-		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()))) {
+		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()) || (p_node->has_meta(META_EXPOSED_IN_INSTANCE) && p_node->has_meta(META_EXPOSED_IN_OWNER)))) {
 			part_of_subscene = true;
 			// Allow.
+		} else if (p_node->has_exposed_nodes()) {
+			HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node);
+			if (!I) {
+				node_cache.add(p_node, tree->create_item(p_parent, 0));
+			}
+			for (int i = 0; i < p_node->get_child_count(); i++) {
+				if (!get_scene_node()->is_editable_instance(p_node->get_child(i)->get_owner()) || p_node->get_child(i)->has_meta(META_EXPOSED_IN_INSTANCE)) {
+					_update_node_subtree(p_node->get_child(i), p_parent);
+				}
+			}
+			node_cache.remove(p_node, p_node->get_parent() && p_node->get_parent()->get_scene_instance_load_placeholder());
+			return;
 		} else {
 			// Stale node, remove recursively.
 			node_cache.remove(p_node, true);
@@ -310,7 +367,19 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			}
 			p_parent->add_child(item);
 			I->value.removed = false;
-			_move_node_item(p_parent, I);
+			// Fix index of exposed nodes.
+			if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+				int final_idx = 0;
+				for (int i = 0; i < p_parent->get_child_count(); i++) {
+					if (p_parent->get_child(i)->is_exposed() && p_parent->get_child(i) != I->value.item) {
+						final_idx++;
+					}
+				}
+				I->value.index = final_idx;
+				_move_node_item(p_parent, I);
+			} else {
+				_move_node_item(p_parent, I);
+			}
 		}
 
 		if (I->value.has_moved_children) {
@@ -326,7 +395,13 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 				index = 0;
 			}
 		} else {
-			index = p_node->get_index(false);
+			int scene_index = p_node->get_index(false);
+			int tree_index = p_node->get_tree_index();
+			if (p_node->get_parent() == EditorNode::get_singleton()->get_edited_scene() || tree_index < scene_index) {
+				index = scene_index;
+			} else {
+				index = tree_index;
+			}
 			item = tree->create_item(p_parent, index);
 		}
 
@@ -508,6 +583,16 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			}
 
 			p_item->add_button(0, get_editor_theme_icon(warning_icon), BUTTON_WARNING, false, TTR("Node configuration warning:") + all_warnings);
+		}
+
+		if (p_node->has_meta(META_EXPOSED_IN_OWNER) && p_node->get_owner() == EditorNode::get_singleton()->get_edited_scene()) {
+			p_item->add_button(0, get_editor_theme_icon(SNAME("SceneExposedNode")), BUTTON_EXPOSED, false, TTR("This node will be exposed in the editor when this scene is instantiated.") + "\n" + TTR("Click to disable this."));
+		} else {
+			if (p_node->has_meta(META_MARKED_FOR_EXPOSURE)) {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("SceneExposedNode")), BUTTON_EXPOSED, false, TTR("This node has been exposed in the underlying scene.") + "\n" + TTR("This node will be exposed in the editor when this scene is instantiated.") + "\n" + TTR("Click to disable this."));
+			} else if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("SceneExposedNodeInstanced")), BUTTON_EXPOSED, p_node->get_owner() != EditorNode::get_singleton()->get_edited_scene(), TTR("This node has been exposed in the underlying scene."));
+			}
 		}
 
 		if (p_node->is_unique_name_in_owner()) {
@@ -771,12 +856,35 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I) {
 	TreeItem *item = p_I->value.item;
 	Node *node = p_I->key;
-	int cc = node->get_child_count(false);
+	Vector<Node *> ordered_children;
 
+	// Find all our exposed node tree items.
+	for (int i = 0; i < item->get_child_count(); i++) {
+		TreeItem *TI = item->get_child(i);
+		HashMap<Node *, CachedNode>::Iterator CI = node_cache.find_by_item(TI);
+		Node *n = CI->key;
+		if (TI->is_exposed()) {
+			ordered_children.push_back(n);
+		}
+	}
+
+	// Find all our normal nodes.
+	int cc = node->get_child_count(false);
 	for (int i = 0; i < cc; i++) {
-		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(node->get_child(i, false));
+		Node *child = node->get_child(i, false);
+		if (child->get_owner() == EditorNode::get_singleton()->get_edited_scene() && !child->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			ordered_children.push_back(child);
+		}
+	}
+
+	// Move children in the correct order
+	for (int i = 0; i < ordered_children.size(); i++) {
+		Node *child = ordered_children[i];
+		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(child);
 		if (CI) {
-			_move_node_item(item, CI);
+			// Move the TreeItem to the correct parent and index
+			CI->value.index = i;
+			_move_node_item(item, CI); // Pass the desired index
 		}
 	}
 
@@ -787,47 +895,21 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	if (!p_parent) {
 		return;
 	}
-
 	Node *node = p_I->key;
 
-	int current_node_index = node->get_index(false);
-	int current_item_index = -1;
 	TreeItem *item = p_I->value.item;
-
-	if (item->get_parent() != p_parent) {
-		TreeItem *p = item->get_parent();
-		if (p) {
-			item->get_parent()->remove_child(item);
+	if (p_I->value.item) {
+		if (p_parent->get_child_count() - 1 > p_I->value.index) {
+			if (p_I->value.index == -1) {
+				p_I->value.index = node->get_tree_index();
+			}
+			TreeItem *neighbor_item = p_parent->get_child(CLAMP(p_I->value.index - 1, 0, p_parent->get_child_count() - 1));
+			if (p_I->value.index == 0) {
+				item->move_before(neighbor_item);
+			} else {
+				item->move_after(neighbor_item);
+			}
 		}
-		p_parent->add_child(item);
-		p_I->value.removed = false;
-		current_item_index = p_parent->get_child_count() - 1;
-		p_I->value.index = current_item_index;
-	}
-
-	if (p_I->value.index != current_node_index) {
-		// If we just re-parented we know our index.
-		if (current_item_index == -1) {
-			current_item_index = item->get_index();
-		}
-
-		// Are we already in the right place?
-		if (current_node_index == current_item_index) {
-			p_I->value.index = current_node_index;
-			return;
-		}
-
-		// Are we the first node?
-		if (current_node_index == 0) {
-			// There has to be at least 1 other node, otherwise we would not have gotten here.
-			TreeItem *neighbor_item = p_parent->get_child(0);
-			item->move_before(neighbor_item);
-		} else {
-			TreeItem *neighbor_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
-			item->move_after(neighbor_item);
-		}
-
-		p_I->value.index = current_node_index;
 	}
 }
 
@@ -955,7 +1037,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
-
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 
@@ -2201,6 +2282,18 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
+	revoke_node_exposure = memnew(ConfirmationDialog);
+	revoke_node_exposure->set_ok_button_text(TTR("Revoke"));
+	add_child(revoke_node_exposure);
+	revoke_node_exposure->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeEditor::_update_ask_before_revoking_node_exposure));
+	VBoxContainer *nevb = memnew(VBoxContainer);
+	revoke_node_exposure->add_child(nevb);
+	revoke_node_exposure_dialog_label = memnew(Label);
+	nevb->add_child(revoke_node_exposure_dialog_label);
+	ask_before_revoke_node_exposure_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
+	ask_before_revoke_node_exposure_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Node Exposure."));
+	nevb->add_child(ask_before_revoke_node_exposure_checkbox);
+
 	script_types = memnew(LocalVector<StringName>);
 	ClassDB::get_inheriters_from_class("Script", *script_types);
 }
@@ -2399,12 +2492,13 @@ SceneTreeDialog::SceneTreeDialog() {
 }
 
 /******** CACHE *********/
-
 HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::add(Node *p_node, TreeItem *p_item) {
 	if (!p_node) {
 		return HashMap<Node *, CachedNode>::Iterator();
 	}
-
+	if (p_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
+		p_item->set_exposed(true);
+	}
 	return cache.insert(p_node, CachedNode(p_node, p_item));
 }
 
@@ -2432,6 +2526,16 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	}
 
 	return I;
+}
+
+HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator
+SceneTreeEditor::NodeCache::find_by_item(TreeItem *p_item) {
+	for (auto I = cache.begin(); I; ++I) {
+		if (I->value.item == p_item) {
+			return I;
+		}
+	}
+	return HashMap<Node *, CachedNode>::Iterator();
 }
 
 bool SceneTreeEditor::NodeCache::has(Node *p_node) {
@@ -2466,7 +2570,9 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 
 		if (current_scene_node != p_node) {
 			// Do not remove from the Tree control here. See delete_pending below.
-			I->value.item->deselect(0);
+			if (I->value.item != nullptr) {
+				I->value.item->deselect(0);
+			}
 			I->value.delete_serial = delete_serial;
 			I->value.index = -1;
 			I->value.cache_iterator = I;
@@ -2548,9 +2654,7 @@ void SceneTreeEditor::NodeCache::delete_pending() {
 void SceneTreeEditor::NodeCache::clear() {
 	for (CachedNode *E : to_delete) {
 		// Only removed entries won't be automatically cleaned up by Tree::clear().
-		if (E->removed) {
-			memdelete(E->item);
-		}
+		memdelete(E->item);
 	}
 	cache.clear();
 	to_delete.clear();
