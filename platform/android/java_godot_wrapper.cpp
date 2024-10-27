@@ -67,6 +67,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
+	_show_input_dialog = p_env->GetMethodID(godot_class, "showInputDialog", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
@@ -265,6 +266,23 @@ bool GodotJavaWrapper::has_clipboard() {
 		return env->CallBooleanMethod(godot_instance, _has_clipboard);
 	} else {
 		return false;
+	}
+}
+
+Error GodotJavaWrapper::show_input_dialog(const String &p_title, const String &p_message, const String &p_existing_text) {
+	if (_show_input_dialog) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
+		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
+		jstring jStrExistingText = env->NewStringUTF(p_existing_text.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _show_input_dialog, jStrTitle, jStrMessage, jStrExistingText);
+		env->DeleteLocalRef(jStrTitle);
+		env->DeleteLocalRef(jStrMessage);
+		env->DeleteLocalRef(jStrExistingText);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
 	}
 }
 
