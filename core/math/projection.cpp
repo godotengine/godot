@@ -596,8 +596,8 @@ Projection Projection::inverse() const {
 }
 
 void Projection::invert() {
-	// Adapted from mesa's src/util/u_math.c util_invert_mat4x4
-	// on commit 0d170a81288f2427425d53965a0daa57a57b110f
+	// Adapted from Mesa's `src/util/u_math.c` `util_invert_mat4x4`.
+	// MIT licensed. Copyright 2008 VMware, Inc. Authored by Jacques Leroy.
 	Projection temp;
 	real_t *out = (real_t *)temp.columns;
 	real_t *m = (real_t *)columns;
