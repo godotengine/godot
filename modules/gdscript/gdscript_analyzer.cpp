@@ -2713,7 +2713,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					GDScriptParser::DataType array_type;
 					if (p_match_test->datatype.container_element_types.size() > 0) {
 						// match expression is an Identifier and match pattern is an Identifier
-						 array_type = p_match_test->datatype.container_element_types[0];
+						array_type = p_match_test->datatype.container_element_types[0];
 						if (p_match_pattern->get_datatype().container_element_types[0] != array_type) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::ARRAY) + "[" + p_match_pattern->get_datatype().container_element_types[0].to_string() + "]", Variant::get_type_name(Variant::Type::ARRAY) + "[" + array_type.to_string() + "]", "", "", "");
 						}
