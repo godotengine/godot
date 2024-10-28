@@ -2461,8 +2461,6 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 			break;
 	}
 
-	print_verbose("Using swap chain flags: " + itos(creation_flags) + ", sync interval: " + itos(sync_interval) + ", present flags: " + itos(present_flags));
-
 	if (swap_chain->d3d_swap_chain != nullptr && creation_flags != swap_chain->creation_flags) {
 		// The swap chain must be recreated if the creation flags are different.
 		_swap_chain_release(swap_chain);
