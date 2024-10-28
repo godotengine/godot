@@ -6238,6 +6238,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				}
 			}
 #endif
+#if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
 				memdelete(rendering_context);
@@ -6249,6 +6250,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 				failed = false;
 			}
+#endif
 			if (failed) {
 				memdelete(rendering_context);
 				rendering_context = nullptr;
