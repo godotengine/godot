@@ -128,7 +128,11 @@ protected:
     AnimationCacheContext context;
     Vector3 root_motion_position = Vector3(0, 0, 0);
     Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
-    Vector3 root_motion_scale = Vector3(0, 0, 0);
+    Vector3 root_motion_scale = Vector3(1, 1, 1);
+
+
+	Vector3 root_motion_position_add = Vector3(0, 0, 0);
+	Quaternion root_motion_rotation_add = Quaternion(0, 0, 0, 1);
 
     Vector3 root_motion_position_accumulator = Vector3(0, 0, 0);
     Quaternion root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);

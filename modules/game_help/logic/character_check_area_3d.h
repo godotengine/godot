@@ -193,11 +193,13 @@ public:
         result->character = p_area->get_instance_id();
         boundOtherCharacter.insert(p_area,result);
         is_update_coord = true;
+		print_line("on_body_enter_area:" + p_area->get_name());
     }
     void on_body_exit_area(Node3D *p_area)
     {
         boundOtherCharacter.erase(p_area);
         is_update_coord = true;
+		print_line("*on_body_exit_area:" + p_area->get_name());
     }
     void set_body_main(class CharacterBodyMain* p_mainBody);
     void update_coord();

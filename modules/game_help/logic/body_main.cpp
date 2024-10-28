@@ -50,6 +50,9 @@ void CharacterBodyMain::clear_all()
     {
         return;
     }
+    if(ik.is_valid()) {
+        ik.unref();
+    }
     if(skeleton)
     {
         remove_child(skeleton);
@@ -303,8 +306,9 @@ void CharacterBodyMain::_init_body()
 
 
 
-		if (skeleton && ik.is_valid())
+		if (skeleton)
 		{
+            ik.instantiate();
 			ik->_initialize(skeleton);
 		}
 		skeletonID = skeleton->get_instance_id();

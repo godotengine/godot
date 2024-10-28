@@ -10,19 +10,19 @@ namespace HumanAnim
  // 骨骼配置
     struct HumanSkeleton {
         
-        HashMap<StringName, Quaternion> real_local_pose; 
-        HashMap<StringName, Transform3D> real_pose; 
+        AHashMap<StringName, Quaternion> real_local_pose; 
+        AHashMap<StringName, Transform3D> real_pose; 
 
-        HashMap<StringName,Node3D*> bones;
+        AHashMap<StringName,Node3D*> bones;
 
-        HashMap<StringName, Vector3> bone_lookat;
+        AHashMap<StringName, Vector3> bone_lookat;
 		HashMap<StringName, Vector3> root_position;
 
 
 
-		HashMap<StringName, Quaternion> root_global_rotation;
+		HashMap<StringName, Basis> root_global_rotation;
         HashMap<StringName, Vector3> root_global_move_add;
-        HashMap<StringName, Quaternion> root_global_rotation_add;
+        HashMap<StringName, Basis> root_global_rotation_add;
 
         void rest(HumanConfig& p_config) {
 			clear();
@@ -109,7 +109,7 @@ namespace HumanAnim
 
             }
             String name = p_bone.substr(5);
-            root_global_rotation_add[name] = q.get_rotation_quaternion();
+			root_global_rotation_add[name] = q;
             Vector3 loc;
             p_animation->try_position_track_interpolate(track_index, time, &loc);
 			bone_lookat[name] = loc;
@@ -159,6 +159,12 @@ namespace HumanAnim
                     v = v.lerp(it.value, p_weight);
                 }
             }
+            for(auto& it : p_other.root_global_rotation) {
+                if(root_global_move_add.has(it.key)) {
+					Basis& v = root_global_rotation[it.key];
+                    v = v.lerp(it.value, p_weight);
+                }
+            }
 
             for(auto& it : p_other.root_global_move_add) {
                 if(root_global_move_add.has(it.key)) {
@@ -168,19 +174,54 @@ namespace HumanAnim
             }
             for(auto& it : p_other.root_global_rotation_add) {
                 if(root_global_rotation_add.has(it.key)) {
-                    Quaternion& q = root_global_rotation_add[it.key];
+                    Basis& q = root_global_rotation_add[it.key];
                     q = q.slerp(it.value, p_weight);
                 }
             }
             
         }
 
-        void apply(Skeleton3D *p_skeleton) {
+		void apply_root_motion(Node3D* node) {
+			
+			Transform3D curr_trans = node->get_transform();
+
+			Transform3D add_trans;
+			if (root_global_rotation_add.size() > 0) {
+				add_trans.basis = root_global_rotation_add.begin()->value;
+			}
+
+			if (root_global_move_add.size() > 0) {
+				add_trans.origin = add_trans.basis.xform(root_global_move_add.begin()->value);
+			}
+
+			node->set_transform(add_trans * curr_trans);
+		}
+
+        void apply(Skeleton3D *p_skeleton,float p_weight) {
             for(auto& it : real_local_pose) {
                 int bone_index = p_skeleton->find_bone(it.key);
 				if (bone_index >= 0) {
-					p_skeleton->set_bone_pose_rotation(bone_index, it.value);
+					p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value,p_weight));
 				}
+            }
+        }
+
+        void apply_root_motion(Vector3& p_position,Quaternion& p_rotation,Vector3& p_position_add,Quaternion & p_rotation_add,float p_weight) {
+
+            if(root_global_rotation.size() > 0) {
+                p_rotation = p_rotation.slerp(root_global_rotation.begin()->value.get_rotation_quaternion(),p_weight);
+            }
+            
+			if (root_global_rotation_add.size() > 0) {
+				p_rotation_add = p_rotation.slerp(root_global_rotation_add.begin()->value.get_rotation_quaternion(),p_weight);
+			}
+
+            if(root_position.size() > 0) {
+                p_position = p_position.lerp(root_position.begin()->value,p_weight);
+            }
+
+            if(root_global_move_add.size() > 0) {
+                p_position_add = p_position_add.lerp(root_global_move_add.begin()->value,p_weight);
             }
         }
 
@@ -278,7 +319,7 @@ namespace HumanAnim
             Vector3 loc,scale;
             Quaternion rot;
             HumanSkeleton skeleton_config;
-            Vector<HashMap<StringName, Vector3>> animation_lookat;
+            Vector<AHashMap<StringName, Vector3>> animation_lookat;
 
             //  根节点的位置
             Vector<HashMap<StringName, Vector3>> animation_root_position;

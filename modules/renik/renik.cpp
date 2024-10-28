@@ -884,6 +884,37 @@ void RenIK::on_post_initialize()
 
 void RenIK::_initialize(Skeleton3D* p_skeleton) {
 	// set the skeleton to the parent if we can
+
+	left_shoulder_offset = Vector3(Math::deg_to_rad(0.0), Math::deg_to_rad(0.0),
+	 		Math::deg_to_rad(0.0));
+	right_shoulder_offset = Vector3(Math::deg_to_rad(0.0), Math::deg_to_rad(0.0),
+	 		Math::deg_to_rad(0.0));
+	left_shoulder_pole_offset = Vector3(Math::deg_to_rad(0.0), Math::deg_to_rad(0.0),
+	 		Math::deg_to_rad(78.0));
+	right_shoulder_pole_offset = Vector3(Math::deg_to_rad(0.0), Math::deg_to_rad(0.0),
+	 		Math::deg_to_rad(-78.0));
+	spine_chain.instantiate();
+	spine_chain->init(Vector3(0, 15, -15), 0.5, 0.5, 1, 0);
+	limb_arm_left.instantiate();
+	limb_arm_left->init(0, 0, Math::deg_to_rad(80.0), 0.5, 0,
+	 		Math::deg_to_rad(-180.0), Math::deg_to_rad(45.0), 0.33,
+	 		Vector3(Math::deg_to_rad(15.0), 0, Math::deg_to_rad(60.0)),
+	 		Vector3(2.0, -1.5, -1.0));
+	limb_arm_right.instantiate();
+	limb_arm_right->init(0, 0, Math::deg_to_rad(80.0), 0.5, 0,
+	 		Math::deg_to_rad(-180.0), Math::deg_to_rad(45.0), 0.33,
+	 		Vector3(Math::deg_to_rad(15.0), 0, Math::deg_to_rad(-60.0)),
+	 		Vector3(2.0, 1.5, 1.0));
+	limb_leg_left.instantiate();
+	limb_leg_left->init(0, Math::deg_to_rad(-180.0), 0, 0.25, 0.25, 0, Math::deg_to_rad(45.0), 0.5,
+	 		Vector3(0, 0, Math_PI), Vector3());
+	limb_leg_right.instantiate();
+	limb_leg_right->init(0, Math::deg_to_rad(-180.0), 0, 0.25, 0.25, 0, Math::deg_to_rad(45.0), 0.5,
+	 		Vector3(0, 0, -Math_PI), Vector3());
+	set_leg_pole_offset(Vector3(0, 0, 180));
+	set_arm_pole_offset(Vector3(15, 0, 60));
+
+
 	set_skeleton(p_skeleton);
 	on_post_initialize();
 	// if (Engine::get_singleton()->is_editor_hint()) {
@@ -1006,12 +1037,12 @@ Transform3D RenIK::get_global_parent_pose(BoneId child,
 	while (parent_id >= 0) {
 		if (ik_map.has(parent_id)) {
 			BoneId super_parent = parent_id;
-			full_transform = skeleton->get_bone_rest(super_parent) *
+			full_transform = skeleton->get_bone_pose(super_parent) *
 					Transform3D(ik_map[super_parent]) * full_transform;
 			while (skeleton->get_bone_parent(super_parent) >= 0) {
 				super_parent = skeleton->get_bone_parent(super_parent);
 				if (ik_map.has(super_parent)) {
-					full_transform = skeleton->get_bone_rest(super_parent) *
+					full_transform = skeleton->get_bone_pose(super_parent) *
 							Transform3D(ik_map[super_parent]) * full_transform;
 				} else {
 					full_transform = map_global_parent * full_transform;
@@ -1032,7 +1063,7 @@ RenIK::SpineTransforms RenIK::perform_torso_ik() {
 				skel_inverse * head_target_spatial->get_global_transform();
 		Transform3D hipGlobalTransform =
 				skel_inverse * (hip_target_spatial.is_valid() ? hip_target_spatial->get_global_transform() : placement.interpolated_hip) *
-				skeleton->get_bone_rest(hip).basis;
+				skeleton->get_bone_pose(hip).basis;
 		Vector3 delta = hipGlobalTransform.origin +
 				hipGlobalTransform.basis.xform(
 						spine_chain->get_joints()[0].relative_prev) -
@@ -1047,7 +1078,7 @@ RenIK::SpineTransforms RenIK::perform_torso_ik() {
 
 		HashMap<BoneId, Quaternion> ik_map = solve_ik_qcp(
 				spine_chain,
-				hipGlobalTransform * skeleton->get_bone_rest(hip).basis.inverse(),
+				hipGlobalTransform * skeleton->get_bone_pose(hip).basis.inverse(),
 				headGlobalTransform);
 		//skeleton->set_bone_global_pose_override(
 		//    hip, hipGlobalTransform, 1.0f, true);
@@ -1094,7 +1125,7 @@ void RenIK::perform_hand_left_ik(Transform3D global_parent, Transform3D target) 
 				skeleton->get_bone_parent(limb_arm_left->get_upper_bone());
 		if (rootBone >= 0) {
 			if (left_shoulder_enabled) {
-				root = root * skeleton->get_bone_rest(rootBone);
+				root = root * skeleton->get_bone_pose(rootBone);
 				Vector3 targetVector = root.affine_inverse().xform(target.origin);
 				Quaternion offsetQuat = Quaternion::from_euler(left_shoulder_offset);
 				Quaternion poleOffset = Quaternion::from_euler(left_shoulder_pole_offset);
@@ -1107,7 +1138,7 @@ void RenIK::perform_hand_left_ik(Transform3D global_parent, Transform3D target) 
 								.slerp(Quaternion(), 1 - shoulder_influence);
 				Transform3D customPose =
 						Transform3D(offsetQuat * quatAlignToTarget, Vector3());
-				skeleton->set_bone_pose_rotation(rootBone, skeleton->get_bone_rest(rootBone).get_basis().get_rotation_quaternion() * offsetQuat * quatAlignToTarget);
+				skeleton->set_bone_pose_rotation(rootBone, skeleton->get_bone_pose(rootBone).get_basis().get_rotation_quaternion() * offsetQuat * quatAlignToTarget);
 				root = root * customPose;
 			}
 		}
@@ -1129,7 +1160,7 @@ void RenIK::perform_hand_right_ik(Transform3D global_parent, Transform3D target)
 				// if (shoulderParent >= 0) {
 				// 	root = root * skeleton->get_bone_global_pose(shoulderParent);
 				// }
-				root = root * skeleton->get_bone_rest(rootBone);
+				root = root * skeleton->get_bone_pose(rootBone);
 				Vector3 targetVector = root.affine_inverse().xform(target.origin);
 				Quaternion offsetQuat = Quaternion::from_euler(right_shoulder_offset);
 				Quaternion poleOffset = Quaternion::from_euler(right_shoulder_pole_offset);
@@ -1143,7 +1174,7 @@ void RenIK::perform_hand_right_ik(Transform3D global_parent, Transform3D target)
 								.slerp(Quaternion(), 1 - shoulder_influence);
 				Transform3D customPose =
 						Transform3D(offsetQuat * quatAlignToTarget, Vector3());
-				skeleton->set_bone_pose_rotation(rootBone, skeleton->get_bone_rest(rootBone).get_basis().get_rotation_quaternion() * offsetQuat * quatAlignToTarget);
+				skeleton->set_bone_pose_rotation(rootBone, skeleton->get_bone_pose(rootBone).get_basis().get_rotation_quaternion() * offsetQuat * quatAlignToTarget);
 				root = root * customPose;
 			}
 		}
@@ -1533,7 +1564,7 @@ void RenIK::reset_all_bones() {
 // 		set_skeleton(new_node);
 // 	}
 // }
-void RenIK::set_skeleton(Node *p_node) {
+void RenIK::set_skeleton(Skeleton3D *p_node) {
 	Skeleton3D *new_node = Object::cast_to<Skeleton3D>(p_node);
 	if (new_node != nullptr) {
 		//skeleton_path = get_path_to(new_node);
@@ -1674,14 +1705,14 @@ void RenIK::calculate_hip_offset() {
 	// calc rest offset of hips
 	if (skeleton && head >= 0 && head < skeleton->get_bone_count() && hip >= 0 &&
 			hip < skeleton->get_bone_count()) {
-		Transform3D delta = skeleton->get_bone_rest(head);
+		Transform3D delta = skeleton->get_bone_pose(head);
 		BoneId bone_parent = skeleton->get_bone_parent(head);
 		while (bone_parent != hip && bone_parent >= 0) {
-			delta = skeleton->get_bone_rest(bone_parent) * delta;
+			delta = skeleton->get_bone_pose(bone_parent) * delta;
 			bone_parent = skeleton->get_bone_parent(bone_parent);
 		}
 		while (bone_parent >= 0) {
-			delta = Transform3D(skeleton->get_bone_rest(bone_parent).basis) * delta;
+			delta = Transform3D(skeleton->get_bone_pose(bone_parent).basis) * delta;
 			bone_parent = skeleton->get_bone_parent(bone_parent);
 		}
 		placement.hip_offset = -delta.origin;

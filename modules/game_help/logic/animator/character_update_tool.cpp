@@ -123,7 +123,8 @@ void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerC
         //    human_config->human->app_dof_to_skeleton(t_skeleton,human_key_frame);
         //}
         if(human_config.is_valid()) {
-            human_skeleton.apply(t_skeleton);
+            human_skeleton.apply(t_skeleton,blend_weight);
+            human_skeleton.apply_root_motion(root_motion_position, root_motion_rotation,root_motion_position_add,root_motion_rotation_add,blend_weight);
         }
     }
 }
@@ -247,7 +248,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         }
         switch (animation_track->type) {
         case Animation::TYPE_POSITION_3D: {
-            StringName name = animation_track->path.get_subname(0);
+            StringName name = animation_track->path.get_name(0);
 			if (name.begins_with("hm."))
 			{
                 if(name.begins_with("hm.v.")) {
