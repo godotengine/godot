@@ -2491,17 +2491,11 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					break;
 				}
 
-				//if (p_match_test->type != GDScriptParser::Node::DICTIONARY || p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED || p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
-				//	break; // Types must be provided for both the match expression and the match pattern and the match expression type must be a dictionary
-				//}
-
 				if (p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_DICTIONARY && (p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED)) {
 					// Match Pattern is an Identifier, not a Dictionary
 					// Check dictionary keys and values match the match expression dictionary keys and values
 
 					Pair<GDScriptParser::DataType, GDScriptParser::DataType> other_type_found;
-					bool incorrect_type_present = false;
-					bool incorrect_key_present = false;
 					Pair<GDScriptParser::DataType, GDScriptParser::DataType> correct_type;
 					bool has_value = false;
 
@@ -2711,7 +2705,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_BIND || p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_REST || p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_WILDCARD) {
 					break;
 				}
-			
+
 				if (p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_ARRAY && (p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED)) {
 					if (p_match_pattern->get_datatype().container_element_types.size() == 0) {
 						break;
