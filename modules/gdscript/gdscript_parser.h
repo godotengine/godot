@@ -100,6 +100,15 @@ public:
 	struct VariableNode;
 	struct WhileNode;
 
+	enum AccessLevel {
+		PRIVATE,
+		INTERNAL,
+		READONLY,
+		PUBLIC,
+	};
+
+	static const StringName &accessLevelToString(AccessLevel accessLevel);
+
 	class DataType {
 	public:
 		Vector<DataType> container_element_types;
@@ -851,6 +860,7 @@ public:
 		TypeNode *return_type = nullptr;
 		SuiteNode *body = nullptr;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
+		AccessLevel access_level = AccessLevel::PUBLIC;
 		bool is_coroutine = false;
 		Variant rpc_config;
 		MethodInfo info;
@@ -1262,6 +1272,7 @@ public:
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
+		AccessLevel access_level = AccessLevel::PUBLIC;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1329,6 +1340,7 @@ private:
 	friend class GDScriptParserRef;
 
 	bool _is_tool = false;
+	bool _default_access_level_set = false;
 	String script_path;
 	bool for_completion = false;
 	bool parse_body = true;
@@ -1341,6 +1353,9 @@ private:
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
 	List<ParserError> errors;
+
+	AccessLevel default_access_level = AccessLevel::PUBLIC;
+	AccessLevel next_access_level = AccessLevel::PUBLIC;
 
 #ifdef DEBUG_ENABLED
 	struct PendingWarning {
@@ -1501,6 +1516,8 @@ private:
 	bool validate_annotation_arguments(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool internal_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
