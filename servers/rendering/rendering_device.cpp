@@ -1260,8 +1260,6 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			write_ptr = driver->buffer_map(transfer_worker->staging_buffer);
 			ERR_FAIL_NULL_V(write_ptr, ERR_CANT_CREATE);
 
-			write_ptr += staging_worker_offset;
-
 			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
 				// Transition the texture to the optimal layout.
 				RDD::TextureBarrier tb;
@@ -1303,11 +1301,12 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 
 				if (copy_pass) {
 					const uint8_t *read_ptr_mipmap_layer = read_ptr_mipmap + (tight_mip_size / depth) * z;
-					_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr, 0, 0, width, width, height, block_w, block_h, pitch, pixel_size, block_size);
-					write_ptr += to_allocate;
+					uint64_t staging_buffer_offset = staging_worker_offset + staging_local_offset;
+					uint8_t *write_ptr_mipmap_layer = write_ptr + staging_buffer_offset;
+					_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr_mipmap_layer, 0, 0, width, width, height, block_w, block_h, pitch, pixel_size, block_size);
 
 					RDD::BufferTextureCopyRegion copy_region;
-					copy_region.buffer_offset = staging_worker_offset + staging_local_offset;
+					copy_region.buffer_offset = staging_buffer_offset;
 					copy_region.texture_subresources.aspect = texture->read_aspect_flags;
 					copy_region.texture_subresources.mipmap = mm_i;
 					copy_region.texture_subresources.base_layer = p_layer;
