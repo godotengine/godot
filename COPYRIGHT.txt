@@ -341,7 +341,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2023, Arseny Kapoulkine
+Copyright: 2016-2024, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/mingw-std-threads/

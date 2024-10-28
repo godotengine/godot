@@ -2857,9 +2857,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	}
 
 	bool present_mode_available = present_modes.has(present_mode);
-	if (present_mode_available) {
-		print_verbose("Using present mode: " + present_mode_name);
-	} else {
+	if (!present_mode_available) {
 		// Present mode is not available, fall back to FIFO which is guaranteed to be supported.
 		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_name));
 		surface->vsync_mode = DisplayServer::VSYNC_ENABLED;
