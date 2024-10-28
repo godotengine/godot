@@ -266,6 +266,7 @@ void PathFollow3D::update_transform() {
 void PathFollow3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			progress_initialized = false;
 			Node *parent = get_parent();
 			if (parent) {
 				path = Object::cast_to<Path3D>(parent);
@@ -395,10 +396,11 @@ void PathFollow3D::_bind_methods() {
 
 void PathFollow3D::set_progress(real_t p_progress) {
 	ERR_FAIL_COND(!isfinite(p_progress));
-	if (progress == p_progress) {
+	if (progress == p_progress && progress_initialized) {
 		return;
 	}
 	progress = p_progress;
+	progress_initialized = true;
 
 	if (path) {
 		if (path->get_curve().is_valid()) {

@@ -76,6 +76,7 @@ public:
 
 private:
 	Path3D *path = nullptr;
+	bool progress_initialized = false;
 	real_t progress = 0.0;
 	real_t h_offset = 0.0;
 	real_t v_offset = 0.0;
