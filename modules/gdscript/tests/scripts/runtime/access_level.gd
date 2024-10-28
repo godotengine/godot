@@ -3,13 +3,13 @@
 class Foo:
     pub var a = 1
     readonly var b = 2
-    internal var c = 3
+    protected var c = 3
     private var d = 4
     var e = 5
 
     pub var pub = 11
     readonly var readonly = 22
-    internal var internal = 33
+    protected var protected = 33
     private var private = 44
 
     pub func foo():
@@ -30,24 +30,28 @@ class Foo:
         Foo3()
         self.Foo3()
         Foo.Foo3()
+        pub = 111
+        readonly = 222
+        protected = 333
+        private = 444
         print(pub)
         print(readonly)
-        print(internal)
+        print(protected)
         print(private)
 
-    internal func foo2():
+    protected func foo2():
         print("foo2")
 
     private func foo3():
         print("foo3")
 
-    internal func bar():
+    protected func bar():
         print("bar")
 
     pub static func Foo():
         print("Foo")
 
-    internal static func Foo2():
+    protected static func Foo2():
         print("Foo2")
 
     private static func Foo3():

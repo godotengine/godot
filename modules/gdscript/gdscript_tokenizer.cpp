@@ -112,11 +112,11 @@ static const char *token_names[] = {
 	"extends", // EXTENDS,
 	"func", // FUNC,
 	"in", // IN,
-	"internal", // INTERNAL
 	"is", // IS,
 	"namespace", // NAMESPACE
 	"preload", // PRELOAD,
 	"private", // PRIVATE
+	"protected", // PROTECTED
 	"pub", // PUB
 	"readonly", // READONLY
 	"self", // SELF,
@@ -195,7 +195,7 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 		case WHEN: // New keyword, avoid breaking existing code.
 		case PUB:
 		case READONLY:
-		case INTERNAL:
+		case PROTECTED:
 		case PRIVATE:
 		// Allow constants to be treated as regular identifiers.
 		case CONST_PI:
@@ -234,7 +234,6 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case FUNC:
 		case IF:
 		case IN:
-		case INTERNAL:
 		case IS:
 		case MATCH:
 		case NAMESPACE:
@@ -243,6 +242,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case PASS:
 		case PRELOAD:
 		case PRIVATE:
+		case PROTECTED:
 		case PUB:
 		case READONLY:
 		case RETURN:
@@ -521,7 +521,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD_GROUP('i')                       \
 	KEYWORD("if", Token::IF)                 \
 	KEYWORD("in", Token::IN)                 \
-	KEYWORD("internal", Token::INTERNAL)     \
 	KEYWORD("is", Token::IS)                 \
 	KEYWORD_GROUP('m')                       \
 	KEYWORD("match", Token::MATCH)           \
@@ -534,6 +533,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("pass", Token::PASS)             \
 	KEYWORD("preload", Token::PRELOAD)       \
 	KEYWORD("private", Token::PRIVATE)       \
+	KEYWORD("protected", Token::PROTECTED)   \
 	KEYWORD("pub", Token::PUB)               \
 	KEYWORD_GROUP('r')                       \
 	KEYWORD("readonly", Token::READONLY)     \

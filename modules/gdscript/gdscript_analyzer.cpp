@@ -5037,7 +5037,7 @@ void GDScriptAnalyzer::check_access_level(const String &p_base_type_name, GDScri
 				return;
 			}
 		} break;
-		case GDScriptParser::AccessLevel::INTERNAL: {
+		case GDScriptParser::AccessLevel::PROTECTED: {
 			bool inherited = false;
 			GDScriptParser::ClassNode *clazz = parser->current_class;
 			while (clazz) {

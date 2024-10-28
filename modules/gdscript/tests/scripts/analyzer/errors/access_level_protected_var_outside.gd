@@ -1,7 +1,7 @@
 @private
 
 class Foo:
-    internal var a = 1
+    protected var a = 1
     func foo():
         pass
 

@@ -74,8 +74,8 @@ const StringName &GDScriptParser::access_level_to_string(AccessLevel p_access_le
 	switch (p_access_level) {
 		case AccessLevel::PRIVATE:
 			return SNAME("private");
-		case AccessLevel::INTERNAL:
-			return SNAME("internal");
+		case AccessLevel::PROTECTED:
+			return SNAME("protected");
 		case AccessLevel::READONLY:
 			return SNAME("read-only");
 		case AccessLevel::PUBLIC:
@@ -110,7 +110,7 @@ GDScriptParser::GDScriptParser() {
 	if (unlikely(valid_annotations.is_empty())) {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@private"), AnnotationInfo::SCRIPT, &GDScriptParser::private_annotation);
-		register_annotation(MethodInfo("@internal"), AnnotationInfo::SCRIPT, &GDScriptParser::internal_annotation);
+		register_annotation(MethodInfo("@protected"), AnnotationInfo::SCRIPT, &GDScriptParser::protected_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 
@@ -636,7 +636,7 @@ void GDScriptParser::parse_program() {
 					annotation_stack.push_back(annotation);
 				} else if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
 					PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@private") || annotation->name == SNAME("@internal")) {
+					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@private") || annotation->name == SNAME("@protected")) {
 						// Some annotations need to be resolved in the parser.
 						annotation->apply(this, head, nullptr); // `head->outer == nullptr`.
 					} else {
@@ -1039,13 +1039,13 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				}
 			} break;
 			case GDScriptTokenizer::Token::PRIVATE:
-			case GDScriptTokenizer::Token::INTERNAL:
+			case GDScriptTokenizer::Token::PROTECTED:
 			case GDScriptTokenizer::Token::PUB: {
 				advance();
 				if (token.type == GDScriptTokenizer::Token::PRIVATE) {
 					next_access_level = AccessLevel::PRIVATE;
-				} else if (token.type == GDScriptTokenizer::Token::INTERNAL) {
-					next_access_level = AccessLevel::INTERNAL;
+				} else if (token.type == GDScriptTokenizer::Token::PROTECTED) {
+					next_access_level = AccessLevel::PROTECTED;
 				} else if (token.type == GDScriptTokenizer::Token::PUB) {
 					next_access_level = AccessLevel::PUBLIC;
 				}
@@ -4042,11 +4042,11 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // EXTENDS,
 		{ &GDScriptParser::parse_lambda,                    nullptr,                                        PREC_NONE }, // FUNC,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_CONTENT_TEST }, // IN,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // INTERNAL,
 		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST }, // IS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NAMESPACE,
 		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE }, // PRELOAD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PRIVATE,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PROTECTED,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PUB,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // READONLY,
 		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,
@@ -4192,7 +4192,7 @@ bool GDScriptParser::private_annotation(AnnotationNode *p_annotation, Node *p_ta
 	return true;
 }
 
-bool GDScriptParser::internal_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+bool GDScriptParser::protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 #ifdef DEBUG_ENABLED
 	if (_default_access_level_set) {
 		push_error(R"(Default access level annotation can only be used once.)", p_annotation);
@@ -4200,7 +4200,7 @@ bool GDScriptParser::internal_annotation(AnnotationNode *p_annotation, Node *p_t
 	}
 #endif // DEBUG_ENABLED
 	_default_access_level_set = true;
-	default_access_level = AccessLevel::INTERNAL;
+	default_access_level = AccessLevel::PROTECTED;
 	next_access_level = default_access_level;
 	return true;
 }

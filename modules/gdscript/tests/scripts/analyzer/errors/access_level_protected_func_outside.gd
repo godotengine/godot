@@ -1,7 +1,7 @@
 @private
 
 class Foo:
-    internal func foo():
+    protected func foo():
         pass
 
 func test():

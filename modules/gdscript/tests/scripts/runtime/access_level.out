@@ -1,6 +1,6 @@
 GDTEST_OK
 >> WARNING
->> Line: 103
+>> Line: 107
 >> STATIC_CALLED_ON_INSTANCE
 >> The function "Foo()" is a static function but was called from an instance. Instead, it should be directly called from the type: "Bar.Foo()".
 1
@@ -17,10 +17,10 @@ foo3
 Foo3
 Foo3
 Foo3
-11
-22
-33
-44
+111
+222
+333
+444
 100
 20
 30
