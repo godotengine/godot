@@ -796,6 +796,20 @@ public:
 			members.push_back(Member(p_annotation_node));
 		}
 
+		Vector<StringName> get_super_class_fqcns() const {
+			Vector<StringName> ret;
+
+			const ClassNode *iterated_class = base_type.class_type;
+			while (iterated_class) {
+				if (iterated_class->datatype.kind == DataType::SCRIPT || iterated_class->datatype.kind == DataType::CLASS) {
+					ret.append(iterated_class->fqcn);
+				}
+				iterated_class = iterated_class->base_type.class_type;
+			}
+
+			return ret;
+		}
+
 		ClassNode() {
 			type = CLASS;
 		}
@@ -855,7 +869,7 @@ public:
 		SuiteNode *body = nullptr;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
-		bool is_virtual = false; // Only used for warning system, which allows a user to call a virtual method whose name begins with `_` or multiple `_`s.
+		// bool is_virtual = false;
 		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
