@@ -2481,7 +2481,6 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				// - Match Expression is Dictionary, Match Pattern is Dictionary
 				// - Match Expression is Dictionary, Match Pattern is Identifier
 
-
 				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_ARRAY) {
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::ARRAY), p_match_test->get_datatype().to_string(), "", "", "");
 					break;
