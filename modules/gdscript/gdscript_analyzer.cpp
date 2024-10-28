@@ -2710,9 +2710,11 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						break;
 					}
 
+					GDScriptParser::DataType array_type;
 					if (p_match_test->datatype.container_element_types.size() > 0) {
 						// match expression is an Identifier and match pattern is an Identifier
-						if (p_match_pattern->get_datatype().container_element_types[0] != p_match_test->datatype.container_element_types[0]) {
+						 array_type = p_match_test->datatype.container_element_types[0];
+						if (p_match_pattern->get_datatype().container_element_types[0] != array_type) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::ARRAY) + "[" + p_match_pattern->get_datatype().container_element_types[0].to_string() + "]", Variant::get_type_name(Variant::Type::ARRAY) + "[" + array_type.to_string() + "]", "", "", "");
 						}
 					} else if (p_match_test->type == GDScriptParser::Node::Type::ARRAY) {
@@ -2721,7 +2723,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						if (arr_node_match->elements.size() == 0) {
 							break;
 						}
-						GDScriptParser::DataType array_type = arr_node_match->elements[0]->get_datatype();
+						array_type = arr_node_match->elements[0]->get_datatype();
 						bool array_mismatch_found = false;
 						for (int i = 1; i < arr_node_match->elements.size(); i++) {
 							if (array_type != arr_node_match->elements[i]->get_datatype()) {
