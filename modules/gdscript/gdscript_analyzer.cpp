@@ -2474,19 +2474,31 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				}
 				break;
 			case Variant::DICTIONARY:
-				if (p_match_pattern->get_datatype() != p_match_test->get_datatype()) {
-					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "", "", "");
-					break;
-				}
+
+				// There are 4 cases which are checked:
+				// - Match Expression is Identifier, Match Pattern is Dictionary
+				// - Match Expression is Identifier, Match Pattern is Identifier
+				// - Match Expression is Dictionary, Match Pattern is Dictionary
+				// - Match Expression is Dictionary, Match Pattern is Identifier
+
+
 				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::Type::PT_ARRAY) {
 					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::ARRAY), p_match_test->get_datatype().to_string(), "", "", "");
 					break;
 				}
-				if (p_match_test->type != GDScriptParser::Node::DICTIONARY && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT && p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
-					break; // Types must be provided
+				if (p_match_pattern->get_datatype() != p_match_test->get_datatype()) {
+					parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string(), "", "", "");
+					break;
 				}
 
+				//if (p_match_test->type != GDScriptParser::Node::DICTIONARY || p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED || p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_pattern->datatype.type_source != GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED) {
+				//	break; // Types must be provided for both the match expression and the match pattern and the match expression type must be a dictionary
+				//}
+
 				if (p_match_pattern->pattern_type != GDScriptParser::PatternNode::PT_DICTIONARY && (p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_EXPLICIT || p_match_test->datatype.type_source == GDScriptParser::DataType::TypeSource::ANNOTATED_INFERRED)) {
+					// Match Pattern is an Identifier, not a Dictionary
+					// Check dictionary keys and values match the match expression dictionary keys and values
+
 					Pair<GDScriptParser::DataType, GDScriptParser::DataType> other_type_found;
 					bool incorrect_type_present = false;
 					bool incorrect_key_present = false;
@@ -2497,14 +2509,17 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					GDScriptParser::DataType correct_type_value;
 
 					if (p_match_test->get_datatype().container_element_types.size() == 2) {
-						// Both dict key and value specified
+						// Match pattern is typed, both dict key and value typed in match expression
 						correct_type_key = p_match_test->get_datatype().container_element_types[0];
 						correct_type_value = p_match_test->get_datatype().container_element_types[1];
 						has_value = true;
 					} else if (p_match_test->get_datatype().container_element_types.size() == 1) {
-						// Only dict key specified
+						// Match pattern is typed, only dict key typed in match expression
 						correct_type_key = p_match_test->get_datatype().container_element_types[0];
 					} else if (p_match_test->type == GDScriptParser::Node::Type::DICTIONARY) {
+						// Match expression is a Dictionary and the match pattern is an Identifier
+						// Check that the match expression contains only one type, emit a warning if there are multiple types in the match expression
+
 						GDScriptParser::DictionaryNode *dict_node_match = dynamic_cast<GDScriptParser::DictionaryNode *>(p_match_test);
 						if (dict_node_match->elements.size() == 0) {
 							break;
@@ -2526,42 +2541,18 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						}
 					}
 
-					if (p_match_pattern->get_datatype().container_element_types.size() == 2) {
+					if (p_match_pattern->get_datatype().container_element_types.size() > 0) {
 						if (p_match_pattern->get_datatype().container_element_types[0] != correct_type_key || (has_value && correct_type_value != p_match_pattern->get_datatype().container_element_types[1])) {
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, p_match_pattern->get_datatype().to_string(), p_match_test->get_datatype().to_string() + "[" + correct_type_key.to_string() + ", " + correct_type_value.to_string() + "]", "", "", "");
 							break;
 						}
-					} else if (p_match_pattern->type != GDScriptParser::Node::DICTIONARY) {
-						for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
-							// Don't count the ".." symbol
-							if (p_match_pattern->dictionary[i].value_pattern && p_match_pattern->dictionary[i].value_pattern->pattern_type == GDScriptParser::PatternNode::PT_REST) {
-								continue;
-							}
-
-							if (p_match_pattern->dictionary[i].value_pattern) {
-								// Test key and value type, key and value given
-								if (p_match_pattern->dictionary[i].key->datatype != correct_type_key || (has_value && p_match_pattern->dictionary[i].value_pattern->datatype != correct_type_value)) {
-									incorrect_type_present = true;
-									other_type_found = Pair(p_match_pattern->dictionary[i].key->datatype, p_match_pattern->dictionary[i].value_pattern->datatype);
-									break;
-								}
-							} else {
-								// Only test key type, value is not given
-								if (p_match_pattern->dictionary[i].key->datatype != correct_type_key) {
-									incorrect_key_present = true;
-									other_type_found = Pair(p_match_pattern->dictionary[i].key->datatype, GDScriptParser::DataType());
-								}
-							}
-						}
-					}
-					if (incorrect_type_present || incorrect_key_present) {
-						parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::DICTIONARY), p_match_test->get_datatype().to_string(), "dict_typed", "[" + other_type_found.first.to_string() + (incorrect_key_present ? "" : ", " + other_type_found.second.to_string()) + "]", "");
 					}
 					break;
 				}
 
 				if (p_match_pattern->pattern_type == GDScriptParser::PatternNode::PT_DICTIONARY) {
 					if (p_match_test->type == GDScriptParser::Node::Type::IDENTIFIER) {
+						// If the match expression is an Identifier and the match pattern is a Dictionary
 						Pair<GDScriptParser::DataType, GDScriptParser::DataType> other_type_found;
 						bool incorrect_type_present = false;
 						bool incorrect_key_present = false;
@@ -2571,21 +2562,23 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 						GDScriptParser::DataType correct_type_value;
 
 						if (p_match_test->get_datatype().container_element_types.size() == 2) {
-							// Both dict key and value specified
+							// Dictionary is typed
 							correct_type_key = p_match_test->get_datatype().container_element_types[0];
 							correct_type_value = p_match_test->get_datatype().container_element_types[1];
 							has_value = true;
 						} else {
-							break; // dictionary has no type
+							break; // Dictionary has no type
 						}
 						for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
-							// Don't count the ".." symbol
+							// For each element in the dictionary check the pattern can match the match expression
+							// and there are no additionally types in the match pattern that cannot match the match expression
+
 							if (p_match_pattern->dictionary[i].value_pattern && p_match_pattern->dictionary[i].value_pattern->pattern_type == GDScriptParser::PatternNode::PT_REST) {
-								continue;
+								continue; // Don't count the ".." symbol
 							}
 
 							if (p_match_pattern->dictionary[i].value_pattern) {
-								// Test key and value type, key and value given
+								// Test key and value type, key and value are given
 								if (p_match_pattern->dictionary[i].key->datatype != correct_type_key || (has_value && p_match_pattern->dictionary[i].value_pattern->datatype != correct_type_value)) {
 									incorrect_type_present = true;
 									other_type_found = Pair(p_match_pattern->dictionary[i].key->datatype, p_match_pattern->dictionary[i].value_pattern->datatype);
@@ -2604,7 +2597,10 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 							parser->push_warning(p_match_pattern, GDScriptWarning::MISMATCHED_TYPE, Variant::get_type_name(Variant::Type::DICTIONARY), p_match_test->get_datatype().to_string(), "dict_typed", "[" + other_type_found.first.to_string() + (incorrect_key_present ? "" : ", " + other_type_found.second.to_string()) + "]", "");
 						}
 						break;
-					} else if (p_match_test->type == GDScriptParser::Node::Type::DICTIONARY) {
+					}
+					if (p_match_test->type == GDScriptParser::Node::Type::DICTIONARY) {
+						// Match expression is a Dictionary and the match pattern is a Dictionary
+						// Check the types present
 						GDScriptParser::DictionaryNode *dict_node_match = dynamic_cast<GDScriptParser::DictionaryNode *>(p_match_test);
 						bool open_ended = false;
 
