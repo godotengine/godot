@@ -1,39 +1,13 @@
 diff --git a/thirdparty/meshoptimizer/simplifier.cpp b/thirdparty/meshoptimizer/simplifier.cpp
-index 5ba8570076..6f8b0e520e 100644
+index af64cbda49..8a7072fe4e 100644
 --- a/thirdparty/meshoptimizer/simplifier.cpp
 +++ b/thirdparty/meshoptimizer/simplifier.cpp
-@@ -476,6 +476,8 @@ struct Collapse
- 		float error;
- 		unsigned int errorui;
- 	};
-+
-+	float distance_error;
- };
+@@ -2048,7 +2048,7 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
  
- static float normalize(Vector3& v)
-@@ -941,6 +943,8 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const
- 		float ei = quadricError(vertex_quadrics[remap[i0]], vertex_positions[i1]);
- 		float ej = quadricError(vertex_quadrics[remap[j0]], vertex_positions[j1]);
+ 	// result_error is quadratic; we need to remap it back to linear
+ 	if (out_result_error)
+-		*out_result_error = sqrtf(result_error) * error_scale;
++		*out_result_error = sqrtf(vertex_error) * error_scale;
  
-+		float dei = ei, dej = ej;
-+
- 		if (attribute_count)
- 		{
- 			ei += quadricError(attribute_quadrics[remap[i0]], &attribute_gradients[remap[i0] * attribute_count], attribute_count, vertex_positions[i1], &vertex_attributes[i1 * attribute_count]);
-@@ -951,6 +955,7 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const
- 		c.v0 = ei <= ej ? i0 : j0;
- 		c.v1 = ei <= ej ? i1 : j1;
- 		c.error = ei <= ej ? ei : ej;
-+		c.distance_error = ei <= ej ? dei : dej;
- 	}
+ 	return result_count;
  }
- 
-@@ -1097,7 +1102,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char*
- 		triangle_collapses += (vertex_kind[i0] == Kind_Border) ? 1 : 2;
- 		edge_collapses++;
- 
--		result_error = result_error < c.error ? c.error : result_error;
-+		result_error = result_error < c.distance_error ? c.distance_error : result_error;
- 	}
- 
- #if TRACE
