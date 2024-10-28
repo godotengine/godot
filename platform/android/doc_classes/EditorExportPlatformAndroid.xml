@@ -151,6 +151,9 @@
 		<member name="permissions/access_location_extra_commands" type="bool" setter="" getter="">
 			Allows access to the extra location provider commands. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_LOCATION_EXTRA_COMMANDS]ACCESS_LOCATION_EXTRA_COMMANDS[/url].
 		</member>
+		<member name="permissions/access_media_location" type="bool" setter="" getter="">
+			Allows an application to access any geographic locations persisted in the user's shared collection. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_MEDIA_LOCATION]ACCESS_MEDIA_LOCATION[/url].
+		</member>
 		<member name="permissions/access_mock_location" type="bool" setter="" getter="">
 			Allows an application to create mock location providers for testing.
 		</member>
@@ -411,6 +414,18 @@
 		</member>
 		<member name="permissions/read_logs" type="bool" setter="" getter="">
 			Allows an application to read the low-level system log files. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_LOGS]READ_LOGS[/url].
+		</member>
+		<member name="permissions/read_media_audio" type="bool" setter="" getter="">
+			Allows an application to read audio files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_AUDIO]READ_MEDIA_AUDIO[/url].
+		</member>
+		<member name="permissions/read_media_images" type="bool" setter="" getter="">
+			Allows an application to read image files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_IMAGES]READ_MEDIA_IMAGES[/url].
+		</member>
+		<member name="permissions/read_media_video" type="bool" setter="" getter="">
+			Allows an application to read video files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VIDEO]READ_MEDIA_VIDEO[/url].
+		</member>
+		<member name="permissions/read_media_visual_user_selected" type="bool" setter="" getter="">
+			Allows an application to read image or video files from external storage that a user has selected via the permission prompt photo picker. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VISUAL_USER_SELECTED]READ_MEDIA_VISUAL_USER_SELECTED[/url].
 		</member>
 		<member name="permissions/read_phone_state" type="bool" setter="" getter="">
 			Allows read only access to phone state. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_STATE]READ_PHONE_STATE[/url].
