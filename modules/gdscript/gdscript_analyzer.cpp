@@ -5060,7 +5060,7 @@ void GDScriptAnalyzer::check_access_level(const String &p_base_type_name, GDScri
 				if (parser->current_class == p_real_base || p_is_assignment == false) {
 					return;
 				} else if (p_is_assignment) {
-					push_error(vformat(R"(Cannot assign to %s attribute "%s" on the class %s)", GDScriptParser::accessLevelToString(p_access_level), p_identifier_name, p_base_type_name), p_source);
+					push_error(vformat(R"(Cannot assign to %s attribute "%s" on the class %s)", GDScriptParser::access_level_to_string(p_access_level), p_identifier_name, p_base_type_name), p_source);
 					return;
 				}
 			} else {
@@ -5070,9 +5070,9 @@ void GDScriptAnalyzer::check_access_level(const String &p_base_type_name, GDScri
 	}
 
 	if (p_is_attribute) {
-		push_error(vformat(R"(Cannot access %s attribute "%s" on the class %s)", GDScriptParser::accessLevelToString(p_access_level), p_identifier_name, p_base_type_name), p_source);
+		push_error(vformat(R"(Cannot access %s attribute "%s" on the class %s)", GDScriptParser::access_level_to_string(p_access_level), p_identifier_name, p_base_type_name), p_source);
 	} else {
-		push_error(vformat(R"*(Cannot call %s function "%s()" on the class %s.)*", GDScriptParser::accessLevelToString(p_access_level), p_identifier_name, p_base_type_name), p_source);
+		push_error(vformat(R"*(Cannot call %s function "%s()" on the class %s.)*", GDScriptParser::access_level_to_string(p_access_level), p_identifier_name, p_base_type_name), p_source);
 	}
 }
 

@@ -70,8 +70,8 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
-const StringName &GDScriptParser::accessLevelToString(AccessLevel accessLevel) {
-	switch (accessLevel) {
+const StringName &GDScriptParser::access_level_to_string(AccessLevel p_access_level) {
+	switch (p_access_level) {
 		case AccessLevel::PRIVATE:
 			return SNAME("private");
 		case AccessLevel::INTERNAL:
@@ -81,6 +81,7 @@ const StringName &GDScriptParser::accessLevelToString(AccessLevel accessLevel) {
 		case AccessLevel::PUBLIC:
 			return SNAME("public");
 	}
+	return SNAME("");
 }
 
 #ifdef TOOLS_ENABLED

@@ -107,7 +107,7 @@ public:
 		PUBLIC,
 	};
 
-	static const StringName &accessLevelToString(AccessLevel accessLevel);
+	static const StringName &access_level_to_string(AccessLevel p_access_level);
 
 	class DataType {
 	public:
