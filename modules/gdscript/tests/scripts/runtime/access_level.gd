@@ -1,18 +1,18 @@
 @private
 
 class Foo:
-    pub var a = 1
+    public var a = 1
     readonly var b = 2
     protected var c = 3
     private var d = 4
     var e = 5
 
-    pub var pub = 11
+    public var public = 11
     readonly var readonly = 22
     protected var protected = 33
     private var private = 44
 
-    pub func foo():
+    public func foo():
         print(a)
         print(b)
         print(c)
@@ -30,11 +30,11 @@ class Foo:
         Foo3()
         self.Foo3()
         Foo.Foo3()
-        pub = 111
+        public = 111
         readonly = 222
         protected = 333
         private = 444
-        print(pub)
+        print(public)
         print(readonly)
         print(protected)
         print(private)
@@ -48,7 +48,7 @@ class Foo:
     protected func bar():
         print("bar")
 
-    pub static func Foo():
+    public static func Foo():
         print("Foo")
 
     protected static func Foo2():
@@ -58,7 +58,7 @@ class Foo:
         print("Foo3")
 
 class Bar extends Foo:
-    pub func bar():
+    public func bar():
         a = 100
         print(a)
         print(b)
@@ -79,7 +79,7 @@ class Bar extends Foo:
         super.Foo2()
 
 class Test extends Bar:
-    pub func test():
+    public func test():
         c = 333
         print(c)
         self.c = 3333

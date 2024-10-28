@@ -2747,7 +2747,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"namespace", // Reserved for potential future use.
 		"private",
 		"protected",
-		"pub",
+		"public",
 		"readonly",
 		"signal",
 		"static",

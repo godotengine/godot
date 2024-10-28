@@ -129,7 +129,7 @@ public:
 			PRELOAD,
 			PRIVATE,
 			PROTECTED,
-			PUB,
+			PUBLIC,
 			READONLY,
 			SELF,
 			SIGNAL,

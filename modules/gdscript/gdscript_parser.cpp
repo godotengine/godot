@@ -1040,13 +1040,13 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			} break;
 			case GDScriptTokenizer::Token::PRIVATE:
 			case GDScriptTokenizer::Token::PROTECTED:
-			case GDScriptTokenizer::Token::PUB: {
+			case GDScriptTokenizer::Token::PUBLIC: {
 				advance();
 				if (token.type == GDScriptTokenizer::Token::PRIVATE) {
 					next_access_level = AccessLevel::PRIVATE;
 				} else if (token.type == GDScriptTokenizer::Token::PROTECTED) {
 					next_access_level = AccessLevel::PROTECTED;
-				} else if (token.type == GDScriptTokenizer::Token::PUB) {
+				} else if (token.type == GDScriptTokenizer::Token::PUBLIC) {
 					next_access_level = AccessLevel::PUBLIC;
 				}
 				if (!check(GDScriptTokenizer::Token::FUNC) && !check(GDScriptTokenizer::Token::VAR) && !check(GDScriptTokenizer::Token::STATIC)) {
@@ -4047,7 +4047,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE }, // PRELOAD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PRIVATE,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PROTECTED,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PUB,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PUBLIC,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // READONLY,
 		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // SIGNAL,

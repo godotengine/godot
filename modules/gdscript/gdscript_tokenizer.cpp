@@ -117,7 +117,7 @@ static const char *token_names[] = {
 	"preload", // PRELOAD,
 	"private", // PRIVATE
 	"protected", // PROTECTED
-	"pub", // PUB
+	"public", // PUBLIC
 	"readonly", // READONLY
 	"self", // SELF,
 	"signal", // SIGNAL,
@@ -193,7 +193,7 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
 		case WHEN: // New keyword, avoid breaking existing code.
-		case PUB:
+		case PUBLIC:
 		case READONLY:
 		case PROTECTED:
 		case PRIVATE:
@@ -243,7 +243,7 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case PRELOAD:
 		case PRIVATE:
 		case PROTECTED:
-		case PUB:
+		case PUBLIC:
 		case READONLY:
 		case RETURN:
 		case SELF:
@@ -534,7 +534,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD("preload", Token::PRELOAD)       \
 	KEYWORD("private", Token::PRIVATE)       \
 	KEYWORD("protected", Token::PROTECTED)   \
-	KEYWORD("pub", Token::PUB)               \
+	KEYWORD("public", Token::PUBLIC)         \
 	KEYWORD_GROUP('r')                       \
 	KEYWORD("readonly", Token::READONLY)     \
 	KEYWORD("return", Token::RETURN)         \
