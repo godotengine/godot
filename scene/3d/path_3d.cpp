@@ -395,9 +395,6 @@ void PathFollow3D::_bind_methods() {
 
 void PathFollow3D::set_progress(real_t p_progress) {
 	ERR_FAIL_COND(!isfinite(p_progress));
-	if (progress == p_progress) {
-		return;
-	}
 	progress = p_progress;
 
 	if (path) {
@@ -419,9 +416,6 @@ void PathFollow3D::set_progress(real_t p_progress) {
 }
 
 void PathFollow3D::set_h_offset(real_t p_h_offset) {
-	if (h_offset == p_h_offset) {
-		return;
-	}
 	h_offset = p_h_offset;
 	update_transform();
 }
@@ -431,9 +425,6 @@ real_t PathFollow3D::get_h_offset() const {
 }
 
 void PathFollow3D::set_v_offset(real_t p_v_offset) {
-	if (v_offset == p_v_offset) {
-		return;
-	}
 	v_offset = p_v_offset;
 	update_transform();
 }
@@ -462,9 +453,6 @@ real_t PathFollow3D::get_progress_ratio() const {
 }
 
 void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {
-	if (rotation_mode == p_rotation_mode) {
-		return;
-	}
 	rotation_mode = p_rotation_mode;
 
 	update_configuration_warnings();
@@ -476,9 +464,6 @@ PathFollow3D::RotationMode PathFollow3D::get_rotation_mode() const {
 }
 
 void PathFollow3D::set_use_model_front(bool p_use_model_front) {
-	if (use_model_front == p_use_model_front) {
-		return;
-	}
 	use_model_front = p_use_model_front;
 	update_transform();
 }
@@ -488,9 +473,6 @@ bool PathFollow3D::is_using_model_front() const {
 }
 
 void PathFollow3D::set_loop(bool p_loop) {
-	if (loop == p_loop) {
-		return;
-	}
 	loop = p_loop;
 	update_transform();
 }
@@ -500,9 +482,6 @@ bool PathFollow3D::has_loop() const {
 }
 
 void PathFollow3D::set_tilt_enabled(bool p_enabled) {
-	if (tilt_enabled == p_enabled) {
-		return;
-	}
 	tilt_enabled = p_enabled;
 	update_transform();
 }
