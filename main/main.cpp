@@ -653,7 +653,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--delta-smoothing <enable>", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].\n");
 	print_help_option("--print-fps", "Print the frames per second to the stdout.\n");
 #ifdef TOOLS_ENABLED
-	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n");
+	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 
 	print_help_title("Standalone tools");
