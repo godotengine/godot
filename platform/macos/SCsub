@@ -96,7 +96,14 @@ def generate_bundle(target, source, env):
             shutil.copy(dbg_target_bin, app_dir + "/Contents/MacOS/godot_macos_debug.universal")
 
         # ZIP .app bundle.
-        zip_dir = Dir("#bin/" + (app_prefix + env.extra_suffix + env.module_version_string).replace(".", "_")).abspath
+        zip_name = app_prefix
+        if env["target"] == "template_debug":
+            zip_name += ".template_debug"
+        elif env["target"] == "template_release":
+            zip_name += ".template_release"
+        zip_name += env.extra_suffix + env.module_version_string
+
+        zip_dir = Dir("#bin/" + zip_name.replace(".", "_")).abspath
         shutil.make_archive(zip_dir, "zip", root_dir=bin_dir, base_dir="macos_template.app")
         shutil.rmtree(app_dir)
 
