@@ -34,7 +34,9 @@
 #include "../scene_replication_config.h"
 
 #include "editor/plugins/editor_plugin.h"
+#include "modules/multiplayer/multiplayer_synchronizer.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
@@ -50,6 +52,7 @@ class ReplicationEditor : public VBoxContainer {
 
 private:
 	MultiplayerSynchronizer *current = nullptr;
+	MultiplayerSynchronizer *selected_node = nullptr;
 
 	ConfirmationDialog *delete_dialog = nullptr;
 	Button *add_pick_button = nullptr;
@@ -69,6 +72,8 @@ private:
 	Button *pin = nullptr;
 
 	Ref<Texture2D> _get_class_icon(const Node *p_node);
+
+	void _node_removed(Node *p_node);
 
 	void _add_pressed();
 	void _np_text_submitted(const String &p_newtext);
@@ -91,16 +96,33 @@ private:
 
 	void _add_sync_property(String p_path);
 
+	void _pin_pressed();
+
 protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
 
+	static ReplicationEditor *singleton;
+
 public:
 	void edit(MultiplayerSynchronizer *p_object);
 	MultiplayerSynchronizer *get_current() const { return current; }
 
+	MultiplayerSynchronizer *get_selected_node() { return selected_node; }
+	void set_selected_node(MultiplayerSynchronizer *p_selected_node) { selected_node = p_selected_node; }
+
 	Button *get_pin() { return pin; }
+	bool is_pinned() { return pin->is_pressed(); }
+	void unpin(Node *n) {
+		if (n == current) {
+			pin->set_pressed(false);
+			_pin_pressed();
+		}
+	}
+
+	static ReplicationEditor *get_singleton() { return singleton; }
+
 	ReplicationEditor();
 	~ReplicationEditor() {}
 };

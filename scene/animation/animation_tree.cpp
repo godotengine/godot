@@ -853,11 +853,11 @@ void AnimationTree::_setup_animation_player() {
 	// Using AnimationPlayer here is for compatibility. Changing to AnimationMixer needs extra work like error handling.
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
 	if (player) {
-		if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		if (player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->disconnect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player));
 		}
-		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
-			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		if (player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->disconnect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player));
 		}
 		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
@@ -873,6 +873,13 @@ void AnimationTree::_setup_animation_player() {
 			if (lib.is_valid()) {
 				add_animation_library(E, lib);
 			}
+		}
+
+		if (!player->is_connected(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("caches_cleared"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
+		}
+		if (!player->is_connected(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player))) {
+			player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationTree::_setup_animation_player), CONNECT_DEFERRED);
 		}
 	}
 

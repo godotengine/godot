@@ -118,7 +118,6 @@ MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
 	button = EditorNode::get_bottom_panel()->add_item(TTR("Replication"), repl_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTR("Toggle Replication Bottom Panel")));
 	button->hide();
-	repl_editor->get_pin()->connect(SceneStringName(pressed), callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
 	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
 }
@@ -130,16 +129,21 @@ void MultiplayerEditorPlugin::_open_request(const String &p_path) {
 void MultiplayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &MultiplayerEditorPlugin::_node_removed));
+			repl_editor->connect("multiplayer_synchronizer_removed", callable_mp(this, &MultiplayerEditorPlugin::_multiplayer_synchronizer_removed));
+			repl_editor->connect("pin_toggled", callable_mp(this, &MultiplayerEditorPlugin::_pin_toggled));
+
 			add_debugger_plugin(debugger);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			repl_editor->disconnect("multiplayer_synchronizer_removed", callable_mp(this, &MultiplayerEditorPlugin::_multiplayer_synchronizer_removed));
+			repl_editor->disconnect("pressed", callable_mp(this, &MultiplayerEditorPlugin::_pin_toggled));
+
 			remove_debugger_plugin(debugger);
 		}
 	}
 }
 
-void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
+void MultiplayerEditorPlugin::_multiplayer_synchronizer_removed(Node *p_node) {
 	if (p_node && p_node == repl_editor->get_current()) {
 		repl_editor->edit(nullptr);
 		if (repl_editor->is_visible_in_tree()) {
@@ -150,17 +154,44 @@ void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 	}
 }
 
-void MultiplayerEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
+void MultiplayerEditorPlugin::_pin_toggled() {
+	if (!repl_editor->is_pinned()) {
+		if (!repl_editor->get_selected_node()) {
+			// If we don't have another valid selected node, hide everything.
+			if (repl_editor->is_visible_in_tree()) {
+				EditorNode::get_bottom_panel()->hide_bottom_panel();
+			}
+			button->hide();
+		} else {
+			edit(repl_editor->get_selected_node());
 		}
-		button->hide();
 	}
 }
 
 void MultiplayerEditorPlugin::edit(Object *p_object) {
-	repl_editor->edit(Object::cast_to<MultiplayerSynchronizer>(p_object));
+	repl_editor->set_selected_node(Object::cast_to<MultiplayerSynchronizer>(p_object));
+
+	if (repl_editor && repl_editor->is_pinned()) {
+		MultiplayerSynchronizer *last_multiplayer_sync_instance = Object::cast_to<MultiplayerSynchronizer>(ObjectDB::get_instance(last_multiplayer_sync));
+
+		// Safety check to make sure the pinned instance is actually still valid.
+		if (last_multiplayer_sync_instance && last_multiplayer_sync_instance->is_inside_tree()) {
+			// Only raise the panel if the editor is not currently visible and the node is the one we have pinned.
+			if (!repl_editor->is_visible_in_tree() && p_object == repl_editor->get_current()) {
+				EditorNode::get_bottom_panel()->make_item_visible(repl_editor, true);
+			}
+		} else {
+			// The pinned object seems to have gone missing, so force an unpin.
+			repl_editor->get_pin()->set_pressed(false);
+		}
+	}
+
+	last_multiplayer_sync = ObjectID();
+	if (p_object) {
+		last_multiplayer_sync = p_object->get_instance_id();
+	}
+
+	repl_editor->edit(repl_editor->get_selected_node());
 }
 
 bool MultiplayerEditorPlugin::handles(Object *p_object) const {
@@ -168,13 +199,23 @@ bool MultiplayerEditorPlugin::handles(Object *p_object) const {
 }
 
 void MultiplayerEditorPlugin::make_visible(bool p_visible) {
+	repl_editor->set_selected_node(nullptr);
+
 	if (p_visible) {
 		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(repl_editor);
-	} else if (!repl_editor->get_pin()->is_pressed()) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
+
+		if (repl_editor && !repl_editor->is_pinned()) {
+			EditorNode::get_bottom_panel()->make_item_visible(repl_editor, true);
 		}
-		button->hide();
+
+		repl_editor->set_process(true);
+	} else {
+		if (!repl_editor->is_pinned()) {
+			if (repl_editor->is_visible_in_tree()) {
+				EditorNode::get_bottom_panel()->hide_bottom_panel();
+			}
+			button->hide();
+			repl_editor->set_process(false);
+		}
 	}
 }
