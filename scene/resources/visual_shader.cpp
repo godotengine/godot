@@ -1948,7 +1948,7 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void VisualShader::reset_state() {
-	// TODO: Everything needs to be cleared here.
+	// TODO: Everything needs to be cleared here. Evaluate this or implement it.
 	emit_changed();
 }
 
@@ -2085,6 +2085,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+// TODO: Refactor (simplify, rename and change comment style)
 Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<VisualShader::DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const {
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[p_node].node;
 
@@ -2425,6 +2426,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				bool err = false;
 				node_code += "	mat4 " + inputs[i] + " = " + String("mat4(vec4(%.5f, %.5f, %.5f, 0.0), vec4(%.5f, %.5f, %.5f, 0.0), vec4(%.5f, %.5f, %.5f, 0.0), vec4(%.5f, %.5f, %.5f, 1.0));\n").sprintf(values, &err);
 			} else {
+				// TODO: Cleanup
 				//will go empty, node is expected to know what it is doing at this point and handle it
 			}
 		}
@@ -2659,6 +2661,7 @@ bool VisualShader::has_func_name(RenderingServer::ShaderMode p_mode, const Strin
 	return true;
 }
 
+// TODO: Split this up and simplify.
 void VisualShader::_update_shader() const {
 	if (!dirty.is_set()) {
 		return;
@@ -3110,6 +3113,7 @@ void VisualShader::_update_shader() const {
 		global_compute_code += "}\n\n";
 	}
 
+	// TODO: Secretly?
 	//set code secretly
 	global_code += "\n\n";
 	String final_code = global_code;
@@ -4375,6 +4379,7 @@ void VisualShaderNodeParameter::set_qualifier(VisualShaderNodeParameter::Qualifi
 	if (qualifier == p_qual) {
 		return;
 	}
+
 	qualifier = p_qual;
 	emit_changed();
 }
@@ -5173,6 +5178,76 @@ VisualShaderNodeGroupBase::VisualShaderNodeGroupBase() {
 	simple_decl = false;
 }
 
+////////////// Group
+
+void VisualShaderNodeGroup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_group", "group"), &VisualShaderNodeGroup::set_group);
+	ClassDB::bind_method(D_METHOD("get_group"), &VisualShaderNodeGroup::get_group);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderGroup"), "set_group", "get_group");
+}
+
+String VisualShaderNodeGroup::get_caption() const {
+	return "Node group";
+}
+
+int VisualShaderNodeGroup::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNode::PortType VisualShaderNodeGroup::get_input_port_type(int p_port) const {
+	return PortType();
+}
+
+String VisualShaderNodeGroup::get_input_port_name(int p_port) const {
+	return String();
+}
+
+int VisualShaderNodeGroup::get_output_port_count() const {
+	return 0;
+}
+
+VisualShaderNode::PortType VisualShaderNodeGroup::get_output_port_type(int p_port) const {
+	return PortType();
+}
+
+String VisualShaderNodeGroup::get_output_port_name(int p_port) const {
+	return String();
+}
+
+bool VisualShaderNodeGroup::is_show_prop_names() const {
+	return true;
+}
+
+Vector<StringName> VisualShaderNodeGroup::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("group");
+	return props;
+}
+
+bool VisualShaderNodeGroup::is_use_prop_slots() const {
+	return true;
+}
+
+void VisualShaderNodeGroup::set_group(const Ref<VisualShaderGroup> &p_group) {
+	group = p_group;
+	emit_changed();
+}
+
+Ref<VisualShaderGroup> VisualShaderNodeGroup::get_group() const {
+	return group;
+}
+
+String VisualShaderNodeGroup::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+bool VisualShaderNodeGroup::is_output_port_expandable(int p_port) const {
+	return false;
+}
+
+VisualShaderNodeGroup::VisualShaderNodeGroup() {
+}
 ////////////// Expression
 
 String VisualShaderNodeExpression::get_caption() const {
@@ -5593,4 +5668,10 @@ String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualS
 
 VisualShaderNodeVaryingGetter::VisualShaderNodeVaryingGetter() {
 	varying_name = "[None]";
+}
+
+void VisualShaderGroup::_bind_methods() {
+}
+
+VisualShaderGroup::VisualShaderGroup() {
 }

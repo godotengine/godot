@@ -656,13 +656,16 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	bool is_resizable = resizable_node.is_valid();
 	Size2 size = Size2(0, 0);
 
-	Ref<VisualShaderNodeGroupBase> group_node = vsnode;
-	bool is_group = group_node.is_valid();
+	Ref<VisualShaderNodeGroupBase> group_base_node = vsnode;
+	bool is_group_base = group_base_node.is_valid();
 
 	Ref<VisualShaderNodeFrame> frame_node = vsnode;
 	bool is_frame = frame_node.is_valid();
 
-	Ref<VisualShaderNodeExpression> expression_node = group_node;
+	Ref<VisualShaderNodeGroup> group_node = vsnode;
+	bool is_group = group_node.is_valid();
+
+	Ref<VisualShaderNodeExpression> expression_node = group_base_node;
 	bool is_expression = expression_node.is_valid();
 	String expression = "";
 
@@ -687,6 +690,16 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		VSGraphNode *gnode = memnew(VSGraphNode);
 		gnode->set_title(vsnode->get_caption());
 		node = gnode;
+
+		// Add "Edit" button to group node titlebar.
+		if (is_group) {
+			HBoxContainer *titlebar = gnode->get_titlebar_hbox();
+			Button *edit_group_btn = memnew(Button);
+			edit_group_btn->set_text(TTR("Edit"));
+			edit_group_btn->set_icon(editor->get_theme_icon("Edit", "EditorIcons"));
+			edit_group_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_group).bind(p_id));
+			titlebar->add_child(edit_group_btn);
+		}
 	}
 	node->set_name(itos(p_id));
 
@@ -793,7 +806,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		node->add_child(content_offset);
 	}
 
-	if (is_group) {
+	if (is_group_base) {
 		port_offset += 1;
 	}
 
@@ -970,12 +983,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		}
 	}
 
-	if (is_group) {
-		if (group_node->is_editable()) {
+	if (is_expression) {
+		if (group_base_node->is_editable()) {
 			HBoxContainer *hb2 = memnew(HBoxContainer);
 
-			String input_port_name = "input" + itos(group_node->get_free_input_port_id());
-			String output_port_name = "output" + itos(group_node->get_free_output_port_id());
+			String input_port_name = "input" + itos(group_base_node->get_free_input_port_id());
+			String output_port_name = "output" + itos(group_base_node->get_free_output_port_id());
 
 			for (int i = 0; i < MAX(vsnode->get_input_port_count(), vsnode->get_output_port_count()); i++) {
 				if (i < vsnode->get_input_port_count()) {
@@ -992,14 +1005,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 			Button *add_input_btn = memnew(Button);
 			add_input_btn->set_text(TTR("Add Input"));
-			add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_input_port).bind(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
+			add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_input_port).bind(p_id, group_base_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_input_btn);
 
 			hb2->add_spacer();
 
 			Button *add_output_btn = memnew(Button);
 			add_output_btn->set_text(TTR("Add Output"));
-			add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_output_port).bind(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
+			add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_output_port).bind(p_id, group_base_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_output_btn);
 
 			node->add_child(hb2);
@@ -1120,7 +1133,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		} else {
 			if (valid_left) {
-				if (is_group) {
+				if (is_expression) {
 					OptionButton *type_box = memnew(OptionButton);
 					hb->add_child(type_box);
 					type_box->add_item(TTR("Float"));
@@ -1132,7 +1145,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
 					type_box->add_item(TTR("Sampler"));
-					type_box->select(group_node->get_input_port_type(j));
+					type_box->select(group_base_node->get_input_port_type(j));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 					type_box->connect(SceneStringName(item_selected), callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, j), CONNECT_DEFERRED);
 
@@ -1168,12 +1181,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 				}
 			}
 
-			if (!is_group && !is_first_hbox) {
+			if (!is_group_base && !is_first_hbox) {
 				hb->add_spacer();
 			}
 
 			if (valid_right) {
-				if (is_group) {
+				if (is_group_base) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
@@ -1198,7 +1211,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Vector4"));
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
-					type_box->select(group_node->get_output_port_type(i));
+					type_box->select(group_base_node->get_output_port_type(i));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 					type_box->connect(SceneStringName(item_selected), callable_mp(editor, &VisualShaderEditor::_change_output_port_type).bind(p_id, i), CONNECT_DEFERRED);
 				} else {
@@ -1239,7 +1252,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 
-		if (is_group) {
+		if (is_group_base) {
 			offset = memnew(Control);
 			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
 			node->add_child(offset);
@@ -2529,6 +2542,10 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type->select(saved_type - default_type);
 	}
 	set_current_shader_type((VisualShader::Type)saved_type);
+}
+
+void VisualShaderEditor::_edit_group(int p_idx) {
+	print_line("Edit group: " + itos(p_idx));
 }
 
 Size2 VisualShaderEditor::get_minimum_size() const {
@@ -7732,6 +7749,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// SPECIAL
 	add_options.push_back(AddOption("Frame", "Special", "VisualShaderNodeFrame", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
+	add_options.push_back(AddOption("Group", "Special", "VisualShaderNodeGroup", TTR("A node group/subgraph. Analogous to a function in textual shader languages.")));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
 	add_options.push_back(AddOption("ParameterRef", "Special", "VisualShaderNodeParameterRef", TTR("A reference to an existing parameter.")));
 	add_options.push_back(AddOption("VaryingGetter", "Special", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));

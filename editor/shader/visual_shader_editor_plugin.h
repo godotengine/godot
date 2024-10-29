@@ -175,6 +175,7 @@ public:
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
+	// TODO: Rename and maybe make private.
 	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
 
 	VisualShaderGraphPlugin();
@@ -443,6 +444,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _remove_varying(const String &p_name);
 	void _update_options_menu();
 	void _set_mode(int p_which);
+	void _edit_group(int p_idx);
 
 	void _show_preview_text();
 	void _preview_close_requested();

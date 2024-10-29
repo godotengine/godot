@@ -38,6 +38,10 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
+class ShaderGraph : public Object {
+	GDCLASS(ShaderGraph, Object);
+};
+
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
@@ -56,6 +60,7 @@ public:
 		TYPE_MAX
 	};
 
+	// TODO: Checky why is this public
 	struct Connection {
 		int from_node = 0;
 		int from_port = 0;
@@ -68,6 +73,7 @@ public:
 		List<Ref<Texture>> params;
 	};
 
+	// TODO: Move varying stuff out of here.
 	enum VaryingMode {
 		VARYING_MODE_VERTEX_TO_FRAG_LIGHT,
 		VARYING_MODE_FRAG_TO_LIGHT,
@@ -120,17 +126,24 @@ private:
 		LocalVector<int> next_connected_nodes;
 	};
 
+	// TODO: Make this a Vector and add graphs dynamically (maybe using a HM)
+	// Refactor idea: Make this Vector<ShaderGraph> with ShaderGraph containing type and graph.
+	// Keep access in constant time!
 	struct Graph {
-		RBMap<int, Node> nodes;
-		List<Connection> connections;
+		RBMap<int, Node> nodes; // TODO: Does order really matter here? Maybe for serialization?
+		List<Connection> connections; // TODO: This should be a (Local)Vector
 	} graph[TYPE_MAX];
 
 	Shader::Mode shader_mode = Shader::MODE_SPATIAL;
 	mutable String previous_code;
 
+	// TODO: Move this method.
 	TypedArray<Dictionary> _get_node_connections(Type p_type) const;
 
+	// TODO: Rename to render modes (rename group too as that is not compat breaking)
 	HashMap<String, int> modes;
+	// TODO: Maybe rename this to render_flags or render_mode_flags (since they are also render modes in textual shaders)
+	// Consistency!!
 	HashSet<StringName> flags;
 
 	bool stencil_enabled = false;
@@ -139,14 +152,16 @@ private:
 	int stencil_reference = 1;
 
 	HashMap<String, Varying> varyings;
+
 #ifdef TOOLS_ENABLED
 	HashMap<String, Variant> preview_params;
 #endif
-	List<Varying> varyings_list;
+	List<Varying> varyings_list; // TODO: Use vector?
 
 	mutable SafeFlag dirty;
 	void _queue_update();
 
+	// TODO: Move up.
 	union ConnectionKey {
 		struct {
 			uint64_t node : 32;
@@ -160,6 +175,7 @@ private:
 	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
+	// TODO: Check why we need this method. At least rename it (underscore).
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
 
 	bool _check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
@@ -174,6 +190,7 @@ protected:
 
 	virtual void reset_state() override;
 
+	// TODO: Internal methods?
 public: // internal methods
 	enum {
 		NODE_ID_INVALID = -1,
@@ -220,6 +237,7 @@ public: // internal methods
 	void remove_node(Type p_type, int p_id);
 	void replace_node(Type p_type, int p_id, const StringName &p_new_class);
 
+	// TODO: Rename this method and evaluate whether it is necessary.
 	bool is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 
 	bool is_nodes_connected_relatively(const Graph *p_graph, int p_node, int p_target) const;
@@ -235,11 +253,13 @@ public: // internal methods
 	String get_reroute_parameter_name(Type p_type, int p_reroute_node) const;
 
 	void rebuild();
+	// TODO: Use vector here too.
 	void get_node_connections(Type p_type, List<Connection> *r_connections) const;
 
 	void set_mode(Mode p_mode);
 	virtual Mode get_mode() const override;
 
+	// TODO: Move this method.
 	virtual bool is_text_shader() const override;
 
 #ifndef DISABLE_DEPRECATED
@@ -258,9 +278,16 @@ public: // internal methods
 VARIANT_ENUM_CAST(VisualShader::Type)
 VARIANT_ENUM_CAST(VisualShader::VaryingMode)
 VARIANT_ENUM_CAST(VisualShader::VaryingType)
-///
-///
-///
+
+class VisualShaderGroup : public Resource {
+	GDCLASS(VisualShaderGroup, Resource);
+
+protected:
+	static void _bind_methods();
+
+public:
+	VisualShaderGroup();
+};
 
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
@@ -862,6 +889,38 @@ public:
 	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
 
 	VisualShaderNodeGroupBase();
+};
+
+class VisualShaderNodeGroup : public VisualShaderNodeGroupBase {
+	GDCLASS(VisualShaderNodeGroup, VisualShaderNodeGroupBase);
+
+	Ref<VisualShaderGroup> group;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual bool is_show_prop_names() const override;
+	virtual Vector<StringName> get_editable_properties() const override;
+	virtual bool is_use_prop_slots() const override;
+
+	void set_group(const Ref<VisualShaderGroup> &p_group);
+	Ref<VisualShaderGroup> get_group() const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
+
+	VisualShaderNodeGroup();
 };
 
 class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
