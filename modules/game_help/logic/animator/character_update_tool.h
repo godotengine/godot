@@ -99,6 +99,50 @@ struct AnimationCacheContext {
         blend_shape_cache.clear();
     }
 };
+struct CharacterRootMotion
+{
+    Vector3 root_motion_position = Vector3(0, 0, 0);
+    Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
+    Vector3 root_motion_scale = Vector3(1, 1, 1);
+
+
+	Vector3 root_motion_position_add = Vector3(0, 0, 0);
+	Quaternion root_motion_rotation_add = Quaternion(0, 0, 0, 1);
+
+    void reset() {
+        root_motion_position = Vector3(0, 0, 0);
+        root_motion_rotation = Quaternion(0, 0, 0, 1);
+        root_motion_scale = Vector3(1, 1, 1);
+
+
+        root_motion_position_add = Vector3(0, 0, 0);
+        root_motion_rotation_add = Quaternion(0, 0, 0, 1);
+    }
+    // 获取移动速度
+    Vector3 get_velocity(const Vector3& forward, float p_detal,bool is_ground) {
+        if(p_detal == 0) {
+            return Vector3();
+        }
+        float tm = 1.0f / ABS(p_detal);
+        Vector3 velocity = root_motion_position_add * tm;
+        if(is_ground) {
+            if(forward.x + forward.z == 0)
+            {
+                return Vector3();
+            }
+            Quaternion q = Quaternion(Vector3(0,0,1), Vector3(forward.x,0,forward.z));
+            return q.xform(Vector3(velocity.x,0,velocity.z ));
+        }
+            if(forward.x + forward.y + forward.z == 0)
+            {
+                return Vector3();
+            }
+        Quaternion q = Quaternion(Vector3(0,0,1), forward);
+        return velocity;
+
+    }
+
+};
 class CharacterAnimationUpdateTool : public RefCounted
 {
 public:
@@ -106,7 +150,7 @@ public:
     void add_animation_instance(AnimationMixer::AnimationInstance& ai);
     void process_animations() ;
 
-    void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, float blend_weight);
+    void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, CharacterRootMotion& root_motion,float blend_weight);
 protected:
 
     int get_bone_index(const Dictionary& p_bone_map, const NodePath& path) ;
@@ -126,16 +170,6 @@ protected:
     Skeleton3D *skeleton = nullptr;
     Node* parent = nullptr;
     AnimationCacheContext context;
-    Vector3 root_motion_position = Vector3(0, 0, 0);
-    Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
-    Vector3 root_motion_scale = Vector3(1, 1, 1);
 
-
-	Vector3 root_motion_position_add = Vector3(0, 0, 0);
-	Quaternion root_motion_rotation_add = Quaternion(0, 0, 0, 1);
-
-    Vector3 root_motion_position_accumulator = Vector3(0, 0, 0);
-    Quaternion root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);
-    Vector3 root_motion_scale_accumulator = Vector3(1, 1, 1);
     bool is_human = false;
 };

@@ -40,19 +40,15 @@ void CharacterAnimationUpdateTool::process_animations() {
     }
 }
 
-void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, float blend_weight) {
+void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config,CharacterRootMotion& root_motion, float blend_weight) {
     Skeleton3D* t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id)); 
     for(auto it = context.bone_cache.begin(); it != context.bone_cache.end(); ++it) {
         AnimationMixer::TrackCacheTransform *t = it->value;
         switch (t->type) {
             case Animation::TYPE_POSITION_3D: {
                 if (t->root_motion) {
-                    root_motion_position = context.root_motion_cache.loc;
-                    root_motion_rotation = context.root_motion_cache.rot;
-                    root_motion_scale = context.root_motion_cache.scale - Vector3(1, 1, 1);
-                    root_motion_position_accumulator = t->loc;
-                    root_motion_rotation_accumulator = t->rot;
-                    root_motion_scale_accumulator = t->scale;
+
+                    
                 } else if ( t->bone_idx >= 0) {
                     if (!t_skeleton) {
                         return;
@@ -124,7 +120,7 @@ void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerC
         //}
         if(human_config.is_valid()) {
             human_skeleton.apply(t_skeleton,blend_weight);
-            human_skeleton.apply_root_motion(root_motion_position, root_motion_rotation,root_motion_position_add,root_motion_rotation_add,blend_weight);
+            human_skeleton.apply_root_motion(root_motion.root_motion_position, root_motion.root_motion_rotation,root_motion.root_motion_position_add,root_motion.root_motion_rotation_add,blend_weight);
         }
     }
 }

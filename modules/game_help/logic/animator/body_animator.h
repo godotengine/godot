@@ -233,7 +233,7 @@ public:
     // 处理动画
     void _process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     // 处理动画
-    void _process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
+    void _process_animation(const Ref<Blackboard> &p_playback_info,CharacterRootMotion& root_motion,double p_delta,bool is_first = true);
 
     void finish_update();
 
@@ -534,7 +534,7 @@ public:
 			layer->_process_animator(p_playback_info, p_delta, is_first);
 		}
 	}
-	void _process_animation(const Ref<Blackboard>& p_playback_info, double p_delta, bool is_first = true)
+	void _process_animation(const Ref<Blackboard>& p_playback_info,CharacterRootMotion& root_motion, double p_delta, bool is_first = true)
 	{
 		if (layer == nullptr)
 		{
@@ -543,7 +543,7 @@ public:
 
 		if (layer->is_active())
 		{
-			layer->_process_animation(p_playback_info, p_delta, is_first);
+			layer->_process_animation(p_playback_info,root_motion, p_delta, is_first);
 		}
 	}
 	void finish_update()
@@ -591,6 +591,7 @@ class CharacterAnimator : public RefCounted
     static void _bind_methods();
 
     List<Ref<CharacterAnimatorLayerConfigInstance>> m_LayerConfigInstanceList;
+    CharacterRootMotion root_motion;
 	class CharacterBodyMain* m_Body = nullptr;
     
 public:
