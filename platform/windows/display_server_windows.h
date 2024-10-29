@@ -475,7 +475,8 @@ class DisplayServerWindows : public DisplayServer {
 		bool resizable = true;
 		bool window_focused = false;
 		int activate_state = 0;
-		bool was_maximized = false;
+		bool was_maximized_pre_fs = false;
+		bool was_fullscreen_pre_min = false;
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;
