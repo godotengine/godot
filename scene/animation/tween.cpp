@@ -154,6 +154,25 @@ Ref<MethodTweener> Tween::tween_method(const Callable &p_callback, const Variant
 	return tweener;
 }
 
+Ref<SubtweenTweener> Tween::tween_subtween(const Ref<Tween> &p_subtween) {
+	CHECK_VALID();
+
+	// Ensure that the subtween being added is not null.
+	ERR_FAIL_COND_V(p_subtween.is_null(), nullptr);
+
+	Ref<SubtweenTweener> tweener;
+	tweener.instantiate(p_subtween);
+
+	// Remove the tween from its parent tree, if it has one.
+	// If the user created this tween without a parent tree attached,
+	// then this step isn't necessary.
+	if (tweener->subtween->parent_tree != nullptr) {
+		tweener->subtween->parent_tree->remove_tween(tweener->subtween);
+	}
+	append(tweener);
+	return tweener;
+}
+
 void Tween::append(Ref<Tweener> p_tweener) {
 	p_tweener->set_tween(this);
 
@@ -447,6 +466,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_interval", "time"), &Tween::tween_interval);
 	ClassDB::bind_method(D_METHOD("tween_callback", "callback"), &Tween::tween_callback);
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
+	ClassDB::bind_method(D_METHOD("tween_subtween", "subtween"), &Tween::tween_subtween);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
 	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
@@ -510,6 +530,11 @@ Tween::Tween() {
 
 Tween::Tween(bool p_valid) {
 	valid = p_valid;
+}
+
+Tween::Tween(SceneTree *p_parent_tree) {
+	parent_tree = p_parent_tree;
+	valid = true;
 }
 
 Ref<PropertyTweener> PropertyTweener::from(const Variant &p_value) {
@@ -853,4 +878,52 @@ MethodTweener::MethodTweener(const Callable &p_callback, const Variant &p_from, 
 
 MethodTweener::MethodTweener() {
 	ERR_FAIL_MSG("MethodTweener can't be created directly. Use the tween_method() method in Tween.");
+}
+
+void SubtweenTweener::start() {
+	elapsed_time = 0;
+	finished = false;
+
+	// Reset the subtween.
+	subtween->stop();
+	subtween->play();
+}
+
+bool SubtweenTweener::step(double &r_delta) {
+	if (finished) {
+		return false;
+	}
+
+	elapsed_time += r_delta;
+
+	if (elapsed_time < delay) {
+		r_delta = 0;
+		return true;
+	}
+
+	if (!subtween->step(r_delta)) {
+		r_delta = elapsed_time - delay - subtween->get_total_time();
+		_finish();
+		return false;
+	}
+
+	r_delta = 0;
+	return true;
+}
+
+Ref<SubtweenTweener> SubtweenTweener::set_delay(double p_delay) {
+	delay = p_delay;
+	return this;
+}
+
+void SubtweenTweener::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &SubtweenTweener::set_delay);
+}
+
+SubtweenTweener::SubtweenTweener(const Ref<Tween> &p_subtween) {
+	subtween = p_subtween;
+}
+
+SubtweenTweener::SubtweenTweener() {
+	ERR_FAIL_MSG("SubtweenTweener can't be created directly. Use the tween_subtween() method in Tween.");
 }
