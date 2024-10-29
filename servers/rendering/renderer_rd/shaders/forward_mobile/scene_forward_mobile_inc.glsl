@@ -22,8 +22,8 @@ layout(push_constant, std430) uniform DrawCall {
 	uint pad;
 #ifdef UBERSHADER
 	uint sc_packed_0;
-	float sc_packed_1;
-	uint sc_packed_2;
+	uint sc_packed_1;
+	float sc_packed_2;
 	uint uc_packed_0;
 #endif
 }
@@ -42,8 +42,12 @@ uint sc_packed_0() {
 	return draw_call.sc_packed_0;
 }
 
-float sc_packed_1() {
+uint sc_packed_1() {
 	return draw_call.sc_packed_1;
+}
+
+float sc_packed_2() {
+	return draw_call.sc_packed_2;
 }
 
 uint uc_cull_mode() {
@@ -54,14 +58,19 @@ uint uc_cull_mode() {
 
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
-layout(constant_id = 1) const float pso_sc_packed_1 = 2.0;
+layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
+layout(constant_id = 2) const float pso_sc_packed_2 = 2.0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
 }
 
-float sc_packed_1() {
+uint sc_packed_1() {
 	return pso_sc_packed_1;
+}
+
+float sc_packed_2() {
+	return pso_sc_packed_2;
 }
 
 #endif
@@ -123,23 +132,23 @@ bool sc_use_lightmap_bicubic_filter() {
 }
 
 uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 16) & 15U;
+	return (sc_packed_0() >> 14) & 63U;
 }
 
 uint sc_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 20) & 15U;
+	return (sc_packed_0() >> 20) & 63U;
 }
 
 uint sc_directional_soft_shadow_samples() {
-	return (sc_packed_0() >> 24) & 15U;
+	return (sc_packed_0() >> 26) & 63U;
 }
 
 uint sc_directional_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 28) & 15U;
+	return (sc_packed_1() >> 0) & 63U;
 }
 
 float sc_luminance_multiplier() {
-	return sc_packed_1();
+	return sc_packed_2();
 }
 
 /* Set 0: Base Pass (never changes) */

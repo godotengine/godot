@@ -108,10 +108,10 @@ public:
 				uint32_t projector_use_mipmaps : 1;
 				uint32_t use_depth_fog : 1;
 				uint32_t use_lightmap_bicubic_filter : 1;
-				uint32_t soft_shadow_samples : 4;
-				uint32_t penumbra_shadow_samples : 4;
-				uint32_t directional_soft_shadow_samples : 4;
-				uint32_t directional_penumbra_shadow_samples : 4;
+				uint32_t soft_shadow_samples : 6;
+				uint32_t penumbra_shadow_samples : 6;
+				uint32_t directional_soft_shadow_samples : 6;
+				uint32_t directional_penumbra_shadow_samples : 6;
 			};
 
 			uint32_t packed_0;

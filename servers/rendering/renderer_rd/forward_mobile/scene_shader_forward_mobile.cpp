@@ -322,7 +322,12 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	specialization_constants.push_back(sc);
 
 	sc.constant_id = 1;
-	sc.float_value = p_pipeline_key.shader_specialization.packed_1;
+	sc.int_value = p_pipeline_key.shader_specialization.packed_1;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+	specialization_constants.push_back(sc);
+
+	sc.constant_id = 2;
+	sc.float_value = p_pipeline_key.shader_specialization.packed_2;
 	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
 	specialization_constants.push_back(sc);
 
