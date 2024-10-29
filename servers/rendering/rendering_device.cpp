@@ -6553,6 +6553,12 @@ void RenderingDevice::finalize() {
 	ERR_FAIL_COND(reverse_dependency_map.size());
 }
 
+void RenderingDevice::_set_max_fps(int p_max_fps) {
+	for (const KeyValue<DisplayServer::WindowID, RDD::SwapChainID> &it : screen_swap_chains) {
+		driver->swap_chain_set_max_fps(it.value, p_max_fps);
+	}
+}
+
 RenderingDevice *RenderingDevice::create_local_device() {
 	RenderingDevice *rd = memnew(RenderingDevice);
 	rd->initialize(context);

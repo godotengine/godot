@@ -74,6 +74,10 @@ protected:
 		float src_rect[4];
 		float dst_rect[4];
 
+		float rotation_sin;
+		float rotation_cos;
+		float pad[2];
+
 		float eye_center[2];
 		float k1;
 		float k2;
