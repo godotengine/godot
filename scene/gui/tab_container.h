@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	TabBar *tab_bar = nullptr;
+	ObjectID tab_bar_id;
 	bool tabs_visible = true;
 	bool all_tabs_in_front = false;
 	TabPosition tabs_position = POSITION_TOP;

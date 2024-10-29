@@ -459,7 +459,7 @@ private:
 	uint64_t loading_started = 0;
 	int progress_delay = 1000;
 
-	VScrollBar *vscroll = nullptr;
+	ObjectID vscroll_id;
 
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_WORD_SMART;
 
@@ -539,7 +539,7 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	// Context menu.
-	PopupMenu *menu = nullptr;
+	ObjectID menu_id;
 	void _generate_context_menu();
 	void _update_context_menu();
 	Key _get_menu_action_accelerator(const String &p_action);
@@ -768,7 +768,7 @@ public:
 
 	void scroll_to_selection();
 
-	VScrollBar *get_v_scroll_bar() { return vscroll; }
+	VScrollBar *get_v_scroll_bar();
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual Variant get_drag_data(const Point2 &p_point) override;
