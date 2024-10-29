@@ -1,9 +1,9 @@
-# Exhaustive licensing information for files in the Godot Engine repository
+# Exhaustive licensing information for files in the Blazium Engine repository
 # =========================================================================
 #
 # This file aims at documenting the copyright and license for every source
-# file in the Godot Engine repository, and especially outline the files
-# whose license differs from the MIT/Expat license used by Godot Engine.
+# file in the Blazium Engine repository, and especially outline the files
+# whose license differs from the MIT/Expat license used by Blazium Engine.
 #
 # It is written as a machine-readable format following the debian/copyright
 # specification. Globbing patterns (e.g. "Files: *") mean that they affect
@@ -27,11 +27,11 @@
 #   License: Zlib
 # The exact copyright for each file in that library *may* differ, and some
 # files or code snippets might be distributed under other compatible licenses
-# (e.g. a public domain dedication), but as far as Godot Engine is concerned
+# (e.g. a public domain dedication), but as far as Godot Engine (and by extension Blazium Engine) is concerned
 # the library is considered as a whole under the Zlib license.
 #
 # Note: When linking dynamically against thirdparty libraries instead of
-# building them into the Godot binary, you may remove the corresponding
+# building them into the Blazium binary, you may remove the corresponding
 # license details from this file.
 
 -----------------------------------------------------------------------
@@ -54,6 +54,9 @@ Files: ./icon.png
 Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
+Comment: Blazium Engine logo
+Copyright: 2024, KenshiroTM, Nicholas Santos Shiden
+License: CC0
 
 Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h

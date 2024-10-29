@@ -1,17 +1,16 @@
 # Contributors guidelines
 
 This document summarizes the most important points for people interested in
-contributing to Godot, especially via bug reports or pull requests.
+contributing to Blazium, especially via bug reports or pull requests.
 
-The Godot documentation has a dedicated [Contributing section](https://docs.godotengine.org/en/latest/contributing/how_to_contribute.html)
-which details these points and more, and is a recommended read.
+The [Blazium Discord](https://chat.blazium.app) has additional information about contributing.
 
 ## Table of contents
 
 - [Reporting bugs](#reporting-bugs)
 - [Proposing features or improvements](#proposing-features-or-improvements)
 - [Contributing pull requests](#contributing-pull-requests)
-- [Contributing to Godot translations](#contributing-to-godot-translations)
+- [Contributing to Blazium translations](#contributing-to-blazium-translations)
 - [Communicating with developers](#communicating-with-developers)
 
 ## Reporting bugs
@@ -37,8 +36,7 @@ call a _regression_), please mention it and clarify which versions you tested
 
 **The main issue tracker is for bug reports and does not accept feature proposals.**
 
-Instead, head to the [Godot Proposals repository](https://github.com/godotengine/godot-proposals)
-and follow the instructions in the README file and issue template.
+Instead, head to the [Blazium Discord](https://chat.blazium.app) and leave a suggestion in the appropriate chat.
 
 ## Contributing pull requests
 
@@ -55,18 +53,7 @@ Similar rules can be applied when contributing bug fixes - it's always best to
 discuss the implementation in the bug report first if you are not 100% about
 what would be the best fix.
 
-You can refer to the [Pull request review process](https://docs.godotengine.org/en/latest/contributing/workflow/pr_review_guidelines.html)
-for insights into the intended lifecycle of pull requests. This should help you
-ensure that your pull request fulfills the requirements.
-
-In addition to the following tips, also take a look at the
-[Engine development guide](https://docs.godotengine.org/en/latest/contributing/development/index.html)
-for an introduction to developing on Godot.
-
-The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/how_to_contribute.html)
-also have important information on the [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
-(with a helpful guide for Git usage), and our [Code style guidelines](https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html)
-which all contributions need to follow.
+Visit the [Blazium Discord](https://chat.blazium.app) for information and guides related to contribution and pull requests.
 
 ### Be mindful of your commits
 
@@ -83,9 +70,6 @@ Also try to make commits that bring the engine from one stable state to another
 stable state, i.e. if your first commit has a bug that you fixed in the second
 commit, try to merge them together before making your pull request. This
 includes fixing build issues or typos, adding documentation, etc.
-
-See our [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
-documentation for tips on using Git, amending commits and rebasing branches.
 
 This [Git style guide](https://github.com/agis-/git-style-guide) also has some
 good practices to have in mind.
@@ -125,12 +109,12 @@ description is also manually wrapped at 80 chars for readability):
 ```text
 Prevent French fries carbonization by fixing heat regulation
 
-When using the French fries frying module, Godot would not regulate the heat
+When using the French fries frying module, Blazium would not regulate the heat
 and thus bring the oil bath to supercritical liquid conditions, thus causing
 unwanted side effects in the physics engine.
 
 By fixing the regulation system via an added binding to the internal feature,
-this commit now ensures that Godot will not go past the ebullition temperature
+this commit now ensures that Blazium will not go past the ebullition temperature
 of cooking oil under normal atmospheric conditions.
 ```
 
@@ -145,10 +129,9 @@ scripting APIs, you **must** update the class reference to document those.
 This is to ensure the documentation coverage doesn't decrease as contributions
 are merged.
 
-[Update documentation XML files](https://docs.godotengine.org/en/latest/contributing/documentation/updating_the_class_reference.html)
-using your compiled binary, then fill in the descriptions.
+[Update documentation XML files](https://docs.blazium.app/contributing/documentation/updating_the_class_reference.html)
 Follow the style guide described in the
-[Documentation writing guidelines](https://docs.godotengine.org/en/latest/contributing/documentation/docs_writing_guidelines.html).
+[Documentation writing guidelines](https://docs.blazium.app/contributing/documentation/docs_writing_guidelines.html).
 
 If your pull request modifies parts of the code in a non-obvious way, make sure
 to add comments in the code as well. This helps other people understand the
@@ -174,40 +157,30 @@ applicable.
 Feel free to contribute standalone pull requests to add new tests or improve
 existing tests as well.
 
-See [Unit testing](https://docs.godotengine.org/en/latest/contributing/development/core_and_modules/unit_testing.html)
-for information on writing tests in Godot's C++ codebase.
+See [Unit testing](https://docs.blazium.app/contributing/development/core_and_modules/unit_testing.html)
+for information on writing tests in Blazium's C++ codebase.
 
-## Contributing to Godot translations
+## Contributing to Blazium translations
 
-You can contribute to Godot translations on [Hosted Weblate](https://hosted.weblate.org/projects/godot-engine/),
-an open source and web-based translation platform.
+In the future you can contribute to Blazium translations, a link will be provide in the future for this.
 
-Please refer to our [editor and documentation localization guidelines](https://docs.godotengine.org/en/latest/contributing/documentation/editor_and_docs_localization.html)
-for an overview of the translation resources and what they correspond to.
+Please refer to Blazium's [editor and documentation localization guidelines](https://docs.blazium.app/contributing/documentation/editor_and_docs_localization.html)
 
 ## Communicating with developers
 
-The Godot Engine community has [many communication
-channels](https://godotengine.org/community), some used more for user-level
-discussions and support, others more for development discussions.
+The Blazium Engine community is largely centralized on the [Blazium Discord](https://chat.blazium.app) at this time, feel free to drop by!
 
 To communicate with developers (e.g. to discuss a feature you want to implement
 or a bug you want to fix), the following channels can be used:
 
-- [Godot Contributors Chat](https://chat.godotengine.org): You will
-  find most core developers there, so it's the go-to platform for direct chat
-  about Godot Engine development. Browse the [Directory](https://chat.godotengine.org/directory/channels)
-  for an overview of public channels focusing on various engine areas which you
-  might be interested in.
-- [Bug tracker](https://github.com/godotengine/godot/issues): If there is an
+- [Blazium Discord](https://chat.blazium.app): General community chat and development can all be found here.
+- [Bug tracker](https://github.com/Blazium-Engine/blazium-engine/issues): If there is an
   existing issue about a topic you want to discuss, you can participate directly.
   If not, you can open a new issue. Please mind the guidelines outlined above
   for bug reporting.
-- [Feature proposals](https://github.com/godotengine/godot-proposals/issues):
-  To propose a new feature, we have a dedicated issue tracker for that. Don't
-  hesitate to start by talking about your idea on the Godot Contributors Chat
-  to make sure that it makes sense in Godot's context.
+- Feature Proposals should be made on the [Blazium Discord](https://chat.blazium.app) for now.
+- [Blazium](https://github.com/blazium-engine/) on [X (Twitter)](https://x.com/BlaziumEngine)
 
 Thanks for your interest in contributing!
 
-—The Godot development team
+—The Blazium development community
