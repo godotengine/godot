@@ -1478,6 +1478,9 @@
 			If [code]true[/code], enables pseudolocalization for the project. This can be used to spot untranslatable strings or layout issues that may occur once the project is localized to languages that have longer strings than the source language.
 			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
 		</member>
+		<member name="internationalization/rendering/editor_tool_translations" type="bool" setter="" getter="" default="false">
+			Enable translations for [EditorPlugin] and [EditorScript] when running in the editor.
+		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all controls.
 		</member>

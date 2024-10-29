@@ -6726,7 +6726,7 @@ EditorNode::EditorNode() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
-	TranslationServer::get_singleton()->set_enabled(false);
+	TranslationServer::get_singleton()->set_enabled(GLOBAL_GET("internationalization/rendering/editor_tool_translations"));
 	// Load settings.
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
