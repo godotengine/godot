@@ -145,11 +145,15 @@ void FileAccessUnix::_sync() {
 	int fd = fileno(f);
 	ERR_FAIL_COND(fd < 0);
 
+#ifdef __APPLE__
+	return fcntl(fd, F_BARRIERFSYNC);
+#else
 	int fsync_error;
 	do {
 		fsync_error = fsync(fd);
 	} while (fsync_error < 0 && errno == EINTR);
 	ERR_FAIL_COND_MSG(fsync_error < 0, strerror(errno));
+#endif
 }
 
 void FileAccessUnix::_close() {
