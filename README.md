@@ -20,7 +20,7 @@ Web-based platforms and [consoles](https://docs.blazium.app/tutorials/platform/c
 
 Blazium is completely free and open source under the very permissive [MIT license](https://mit-license.org).
 No strings attached, no royalties, nothing. The users' games are theirs, down
-to the last line of engine code. Godot's development is fully independent and
+to the last line of engine code. Blazium's development is fully independent and
 community-driven, empowering users to help shape their engine to match their
 expectations.
 
@@ -29,14 +29,16 @@ Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
 [Ariel Manzur](https://github.com/punto-) for several years as an in-house engine, used to publish several work-for-hire
 titles. in October 2024, the project was forked due to community dissatisfaction with project direction and politics being expressed by official Godot accounts.
 
-![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
+Blazium was forked from Godot in [October 2024](https://github.com/blazium-engine/blazium/commit/e86a91030a60be7d37e99c7a6069d75181d5138c),
+intending to improve upon Godot in order to fulfill its potential and contribute to the shared
+codebase of both through a more genuinely community-driven model than Godot.
 
 ## Getting the engine
 
 ### Binary downloads
 
-Official binaries for the Blazium editor and the export templates can be found
-[on the Blazium website]() when available.
+Official binaries for the Blazium editor and the export templates will be found [on the Blazium website](https://blazium.app) once it's set up.
+The [GitHub page](https://github.com/blazium-engine/blazium) contains action artifacts that can be tested until then.
 
 ### Compiling from source
 
@@ -45,8 +47,7 @@ for compilation instructions for every supported platform.
 
 ## Community and contributing
 
-Blazium is not only an engine but an ever-growing community of users and engine
-developers. The main community channels are listed [on the homepage]().
+Blazium is not only an engine but an ever-growing community of users and engine developers.
 
 The best way to get in touch with the core engine developers is to join the
 [Official Discord Server](https://chat.blazium.app).
