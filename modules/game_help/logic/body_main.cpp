@@ -192,6 +192,20 @@ void CharacterBodyMain::_process_move()
     }
     else
     {
+		Vector3 velocity = Vector3();
+        if(animator.is_valid()) {
+            const CharacterRootMotion& root_motion = animator->get_root_motion();
+
+            Transform3D rot =get_transform();
+            rot.basis = root_motion.root_motion_rotation_add * rot.basis;
+            set_transform(rot);
+            Vector3 forward = rot.basis.xform(Vector3(0,0,1));
+
+            velocity = root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
+
+            set_velocity(velocity);
+        }
+
         move_and_slide();
     }
 

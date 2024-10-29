@@ -306,6 +306,7 @@ void CharacterAnimator::add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask
 }
 void CharacterAnimator::_thread_update_animator(float delta)
 {
+    time_delta = delta;
     if(m_Body == nullptr)
     {
         return;

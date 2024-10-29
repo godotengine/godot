@@ -119,7 +119,7 @@ struct CharacterRootMotion
         root_motion_rotation_add = Quaternion(0, 0, 0, 1);
     }
     // 获取移动速度
-    Vector3 get_velocity(const Vector3& forward, float p_detal,bool is_ground) {
+    Vector3 get_velocity(const Vector3& forward, float p_detal,bool is_ground)const {
         if(p_detal == 0) {
             return Vector3();
         }
@@ -133,10 +133,10 @@ struct CharacterRootMotion
             Quaternion q = Quaternion(Vector3(0,0,1), Vector3(forward.x,0,forward.z));
             return q.xform(Vector3(velocity.x,0,velocity.z ));
         }
-            if(forward.x + forward.y + forward.z == 0)
-            {
-                return Vector3();
-            }
+        if(forward.x + forward.y + forward.z == 0)
+        {
+            return Vector3();
+        }
         Quaternion q = Quaternion(Vector3(0,0,1), forward);
         return velocity;
 

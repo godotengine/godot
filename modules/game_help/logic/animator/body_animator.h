@@ -593,7 +593,7 @@ class CharacterAnimator : public RefCounted
     List<Ref<CharacterAnimatorLayerConfigInstance>> m_LayerConfigInstanceList;
     CharacterRootMotion root_motion;
 	class CharacterBodyMain* m_Body = nullptr;
-    
+    double time_delta = 0.0;
 public:
 
     void set_body(class CharacterBodyMain* p_body);
@@ -601,6 +601,10 @@ public:
     void add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask);
 
     void _thread_update_animator(float delta);
+
+    double get_time_delta() {
+        return time_delta;
+    }
 
     void _thread_update_animation(float delta);
 
@@ -628,6 +632,9 @@ public:
                 ++it;
             }
         }
+    }
+    const CharacterRootMotion& get_root_motion() {
+        return root_motion;
     }
     Ref<CharacterAnimationLibraryItem> get_animation_by_name(const StringName& p_name);
     void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays) {
