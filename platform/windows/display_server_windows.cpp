@@ -2206,15 +2206,21 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	bool was_fullscreen = wd.fullscreen;
+	wd.was_fullscreen_pre_min = false;
+
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		RECT rect;
 
 		wd.fullscreen = false;
 		wd.multiwindow_fs = false;
-		wd.maximized = wd.was_maximized;
+
+		// Restore previous maximized state.
+		wd.maximized = wd.was_maximized_pre_fs;
 
 		_update_window_style(p_window, false);
 
+		// Restore window rect after exiting fullscreen.
 		if (wd.pre_fs_valid) {
 			rect = wd.pre_fs_rect;
 		} else {
@@ -2222,7 +2228,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			rect.right = wd.width;
 			rect.top = 0;
 			rect.bottom = wd.height;
-			wd.pre_fs_valid = true;
 		}
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
@@ -2250,6 +2255,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		ShowWindow(wd.hWnd, SW_MINIMIZE);
 		wd.maximized = false;
 		wd.minimized = true;
+		wd.was_fullscreen_pre_min = was_fullscreen;
 	}
 
 	if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
@@ -2264,10 +2270,14 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		if (wd.minimized || wd.maximized) {
 			ShowWindow(wd.hWnd, SW_RESTORE);
 		}
-		wd.was_maximized = wd.maximized;
 
-		if (wd.pre_fs_valid) {
+		// Save previous maximized stare.
+		wd.was_maximized_pre_fs = wd.maximized;
+
+		if (!was_fullscreen) {
+			// Save non-fullscreen rect before entering fullscreen.
 			GetWindowRect(wd.hWnd, &wd.pre_fs_rect);
+			wd.pre_fs_valid = true;
 		}
 
 		int cs = window_get_current_screen(p_window);
@@ -5168,6 +5178,22 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
 				}
+
+				if (!window.minimized && window.was_fullscreen_pre_min) {
+					// Restore fullscreen mode if window was in fullscreen before it was minimized.
+					int cs = window_get_current_screen(window_id);
+					Point2 pos = screen_get_position(cs) + _get_screens_origin();
+					Size2 size = screen_get_size(cs);
+
+					window.was_fullscreen_pre_min = false;
+					window.fullscreen = true;
+					window.maximized = false;
+					window.minimized = false;
+
+					_update_window_style(window_id, false);
+
+					MoveWindow(window.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+				}
 			}
 
 			// Return here to prevent WM_MOVE and WM_SIZE from being sent
@@ -5675,7 +5701,19 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				wd.multiwindow_fs = true;
 			}
 		}
-		if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+
+		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+			// Save initial non-fullscreen rect.
+			Rect2i srect = screen_get_usable_rect(rq_screen);
+			Point2i wpos = p_rect.position;
+			if (srect != Rect2i()) {
+				wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
+			}
+
+			wd.pre_fs_rect.left = wpos.x + offset.x;
+			wd.pre_fs_rect.right = wpos.x + p_rect.size.x + offset.x;
+			wd.pre_fs_rect.top = wpos.y + offset.y;
+			wd.pre_fs_rect.bottom = wpos.y + p_rect.size.y + offset.y;
 			wd.pre_fs_valid = true;
 		}
 
