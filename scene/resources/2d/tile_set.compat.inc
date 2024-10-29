@@ -40,6 +40,29 @@ Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id)
 	return get_occluder_polygon(p_layer_id, 0, false, false, false);
 }
 
+void TileSet::_add_pattern_bind_compat_97345(Ref<TileMapPattern> pattern, int index) {
+	add_pattern(pattern, 0, index);
+}
+
+Ref<TileMapPattern> TileSet::_get_pattern_bind_compat_97345(int index) {
+	return get_pattern(0, index);
+}
+
+void TileSet::_remove_pattern_bind_compat_97345(int index) {
+	remove_pattern(0, index);
+}
+
+int TileSet::_get_patterns_count_bind_compat_97345() {
+	return get_patterns_count(0);
+}
+
+void TileSet::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_pattern", "pattern", "pattern_set_index", "pattern_index"), &TileSet::_add_pattern_bind_compat_97345);
+	ClassDB::bind_compatibility_method(D_METHOD("get_pattern", "pattern_set_index", "pattern_index"), &TileSet::_get_pattern_bind_compat_97345);
+	ClassDB::bind_compatibility_method(D_METHOD("remove_pattern", "pattern_set_index", "pattern_index"), &TileSet::_get_pattern_bind_compat_97345);
+	ClassDB::bind_compatibility_method(D_METHOD("get_patterns_count", "pattern_set_index"), &TileSet::_get_patterns_count_bind_compat_97345);
+}
+
 void TileData::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_polygon"), &TileData::_get_navigation_polygon_bind_compat_84660);
 	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);

@@ -95,3 +95,15 @@ Validate extension JSON: Error: Field 'classes/InputMap/methods/add_action/argum
 
 Default deadzone value was changed. No adjustments should be necessary.
 Compatibility method registered.
+
+GH-97345
+--------
+Validate extension JSON: Error: Field 'classes/TileSet/methods/add_pattern/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/TileSet/methods/get_pattern': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/TileSet/methods/get_pattern/arguments': default_value was removed.
+Validate extension JSON: Error: Field 'classes/TileSet/methods/get_pattern/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/TileSet/methods/get_patterns_count': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/TileSet/methods/remove_pattern/arguments': size changed value in new API, from 1 to 2.
+
+Added pattern_set_index parameter to add_pattern, get_pattern, remove_pattern, as well as get_patterns_count. New TileMapPatterns GUI allows storing patterns inside of different pattern sets. 
+Compatibility method registered.

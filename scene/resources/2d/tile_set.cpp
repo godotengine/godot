@@ -40,7 +40,6 @@
 #include "servers/navigation_server_2d.h"
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
-
 void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {
 	int c = p_data.size();
 	const int *r = p_data.ptr();
@@ -217,6 +216,15 @@ void TileMapPattern::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &TileMapPattern::get_size);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &TileMapPattern::set_size);
 	ClassDB::bind_method(D_METHOD("is_empty"), &TileMapPattern::is_empty);
+	ClassDB::bind_method(D_METHOD("get_pattern_set_index"), &TileMapPattern::get_pattern_set_index);
+}
+
+int TileMapPattern::get_pattern_set_index() const {
+	return pattern_set_index;
+}
+
+void TileMapPattern::set_pattern_set_index(int p_pattern_set_index) {
+	pattern_set_index = p_pattern_set_index;
 }
 
 /////////////////////////////// TileSet //////////////////////////////////////
@@ -546,8 +554,10 @@ bool TileSet::has_source(int p_source_id) const {
 }
 
 Ref<TileSetSource> TileSet::get_source(int p_source_id) const {
-	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("No TileSet atlas source with id %d.", p_source_id));
-
+	/* if (p_source_id == -1) {
+		CRASH_NOW_MSG("id is - 1, crashing now");
+	}*/
+	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("TileSet::get_source. No TileSet atlas source with id %d.", p_source_id));
 	return sources[p_source_id];
 }
 
@@ -951,6 +961,134 @@ bool TileSet::is_valid_terrain_peering_bit(int p_terrain_set, TileSet::CellNeigh
 
 	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
 	return is_valid_terrain_peering_bit_for_mode(terrain_mode, p_peering_bit);
+}
+
+// Patterns
+int TileSet::get_pattern_sets_count() const {
+	return pattern_sets.size();
+}
+Vector<Ref<TileMapPattern>> TileSet::get_pattern_set(int p_pattern_set_index) const {
+	return pattern_sets[p_pattern_set_index].pattern_set;
+}
+String TileSet::get_pattern_set_name(int p_pattern_set_index) const {
+	return pattern_sets[p_pattern_set_index].name;
+}
+
+void TileSet::set_pattern_set_name(int p_pattern_set_index, String new_name) {
+	pattern_sets.write[p_pattern_set_index].name = new_name;
+}
+
+void TileSet::set_pattern_set(int p_pattern_set_index, Vector<Ref<TileMapPattern>> p_pattern_set) {
+	pattern_sets.write[p_pattern_set_index].pattern_set = p_pattern_set;
+}
+
+void TileSet::add_pattern_set(int p_index) {
+	// Set the index we'll use for inserting the pattern set to the appropriate value, a new index at the end of the vector.
+	if (p_index < 0) {
+		p_index = pattern_sets.size();
+	}
+	ERR_FAIL_INDEX(p_index, pattern_sets.size() + 1);
+
+	// Create a pattern set, set the default display name seen by the end user (e.g. Pattern Set 1), add to pattern_sets vector.
+	PatternSet newpatternset;
+	newpatternset.name = vformat("Pattern Set %d", p_index);
+	pattern_sets.insert(p_index, newpatternset);
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void TileSet::move_pattern_set(int p_from_index, int p_to_pos) {
+	ERR_FAIL_INDEX(p_from_index, pattern_sets.size());
+	ERR_FAIL_INDEX(p_to_pos, pattern_sets.size() + 1);
+	PatternSet pattern_set_to_swap = pattern_sets[p_from_index];
+
+	// Going backwards, the user is trying to swap to a lower index.
+	if (p_to_pos < p_from_index) {
+		pattern_sets.insert(p_to_pos, pattern_set_to_swap);
+		pattern_sets.remove_at(p_from_index + 1);
+	}
+	// Going forwards, the user is trying to swap with a higher indexed pattern.
+	else if (p_to_pos > p_from_index) {
+		pattern_sets.insert(p_to_pos + 1, pattern_set_to_swap);
+		pattern_sets.remove_at(p_from_index);
+	}
+
+	notify_property_list_changed();
+	emit_changed();
+}
+
+void TileSet::remove_pattern_set(int p_index) {
+	ERR_FAIL_INDEX(p_index, pattern_sets.size());
+	pattern_sets.remove_at(p_index);
+
+	notify_property_list_changed();
+	emit_changed();
+}
+template <class T>
+Array to_array(const Vector<T> &p_inp) {
+	Array ret;
+	for (int i = 0; i < p_inp.size(); i++) {
+		ret.push_back(p_inp[i]);
+	}
+	return ret;
+}
+
+int TileSet::get_patterns_count(int p_pattern_set_index) const {
+	ERR_FAIL_INDEX_V(p_pattern_set_index, pattern_sets.size(), -1);
+	return pattern_sets[p_pattern_set_index].pattern_set.size();
+}
+
+int TileSet::add_pattern(Ref<TileMapPattern> p_pattern, int p_pattern_set_index, int p_pattern_index) {
+	// Check for valid pointer, non-empty pattern, and appropriate index.
+	ERR_FAIL_COND_V(!p_pattern.is_valid(), -1);
+	ERR_FAIL_COND_V_MSG(p_pattern->is_empty(), -1, "Cannot add an empty pattern to the TileSet.");
+	ERR_FAIL_COND_V(p_pattern_set_index > get_pattern_sets_count(), -1);
+
+	// Make a reference to the pattern set we passed in. If no pattern index was passed in, set the index to the position at the end of the pattern set array.
+	Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[p_pattern_set_index].pattern_set;
+	if (p_pattern_index < 0) {
+		p_pattern_index = patterns_list.size();
+	}
+	ERR_FAIL_COND_V(p_pattern_index > patterns_list.size(), -1);
+	p_pattern->set_pattern_set_index(p_pattern_set_index);
+	patterns_list.insert(p_pattern_index, p_pattern);
+	emit_changed();
+	return p_pattern_index;
+}
+
+Ref<TileMapPattern> TileSet::get_pattern(int p_pattern_set_index, int p_index) const {
+	const Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets[p_pattern_set_index].pattern_set;
+	ERR_FAIL_INDEX_V(p_index, (int)patterns_list.size(), Ref<TileMapPattern>());
+	patterns_list[p_index]->set_pattern_set_index(p_pattern_set_index);
+	return patterns_list[p_index];
+}
+
+void TileSet::remove_pattern(int p_pattern_set_index, int p_index) {
+	Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[p_pattern_set_index].pattern_set;
+	ERR_FAIL_INDEX(p_index, (int)patterns_list.size());
+	patterns_list.remove_at(p_index);
+	emit_changed();
+}
+
+void TileSet::_move_pattern(int p_from_index, int p_to_pos, int p_pattern_set_index) {
+	ERR_FAIL_INDEX(p_pattern_set_index, pattern_sets.size());
+	Vector<Ref<TileMapPattern>> &patterns_list = pattern_sets.write[p_pattern_set_index].pattern_set;
+
+	ERR_FAIL_INDEX(p_from_index, patterns_list.size());
+	ERR_FAIL_INDEX(p_to_pos, patterns_list.size() + 1);
+
+	// Going backwards, the user is trying to swap to a lower index.
+	if (p_to_pos < p_from_index) {
+		patterns_list.insert(p_to_pos, patterns_list[p_from_index]);
+		patterns_list.remove_at(p_from_index + 1);
+	}
+	// Going forwards, the user is trying to swap with a higher indexed pattern.
+	else if (p_to_pos > p_from_index) {
+		patterns_list.insert(p_to_pos + 1, patterns_list[p_from_index]);
+		patterns_list.remove_at(p_from_index);
+	}
+	notify_property_list_changed();
+	emit_changed();
 }
 
 // Navigation
@@ -1378,36 +1516,6 @@ void TileSet::clear_tile_proxies() {
 	alternative_level_proxies.clear();
 
 	emit_changed();
-}
-
-int TileSet::add_pattern(Ref<TileMapPattern> p_pattern, int p_index) {
-	ERR_FAIL_COND_V(!p_pattern.is_valid(), -1);
-	ERR_FAIL_COND_V_MSG(p_pattern->is_empty(), -1, "Cannot add an empty pattern to the TileSet.");
-	for (const Ref<TileMapPattern> &pattern : patterns) {
-		ERR_FAIL_COND_V_MSG(pattern == p_pattern, -1, "TileSet has already this pattern.");
-	}
-	ERR_FAIL_COND_V(p_index > (int)patterns.size(), -1);
-	if (p_index < 0) {
-		p_index = patterns.size();
-	}
-	patterns.insert(p_index, p_pattern);
-	emit_changed();
-	return p_index;
-}
-
-Ref<TileMapPattern> TileSet::get_pattern(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, (int)patterns.size(), Ref<TileMapPattern>());
-	return patterns[p_index];
-}
-
-void TileSet::remove_pattern(int p_index) {
-	ERR_FAIL_INDEX(p_index, (int)patterns.size());
-	patterns.remove_at(p_index);
-	emit_changed();
-}
-
-int TileSet::get_patterns_count() {
-	return patterns.size();
 }
 
 RBSet<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_set) {
@@ -2200,7 +2308,6 @@ TypedArray<Vector2i> TileSet::get_surrounding_cells(const Vector2i &p_coords) co
 Vector2i TileSet::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) const {
 	ERR_FAIL_COND_V(p_pattern.is_null(), Vector2i());
 	ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
-
 	Vector2i output = p_position_in_tilemap + p_coords_in_pattern;
 	if (tile_shape != TileSet::TILE_SHAPE_SQUARE) {
 		if (tile_layout == TileSet::TILE_LAYOUT_STACKED) {
@@ -4008,11 +4115,44 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 			return false;
-		} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
-			int pattern_index = components[0].trim_prefix("pattern_").to_int();
-			for (int i = patterns.size(); i <= pattern_index; i++) {
-				add_pattern(p_value);
+
+		} else if (components.size() >= 2 && components[0].begins_with("pattern_set_") && components[0].trim_prefix("pattern_set_").is_valid_int()) {
+			// Patterns
+			int pattern_set_index = components[0].trim_prefix("pattern_set_").to_int();
+			ERR_FAIL_COND_V(pattern_set_index < 0, false);
+			if (components[1] == "name") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::STRING, false);
+				while (pattern_set_index >= pattern_sets.size()) {
+					add_pattern_set(pattern_set_index);
+				}
+				set_pattern_set_name(pattern_set_index, p_value);
+				return true;
+			} else if (components[1] == "pattern_set") {
+				// ERR_FAIL_COND_V(p_value.get_type() != Variant::ARRAY, false);
+				while (pattern_set_index >= pattern_sets.size()) {
+					add_pattern_set(pattern_set_index);
+				}
+				Array array = p_value;
+
+				Vector<Ref<TileMapPattern>> reconverted_vector;
+				reconverted_vector.resize(array.size());
+				Ref<TileMapPattern> *vector_element = reconverted_vector.ptrw();
+				for (int i = 0; i < array.size(); i++) {
+					Variant element = array[i];
+					Ref<TileMapPattern> pattern = element;
+					vector_element[i] = pattern;
+				}
+				set_pattern_set(pattern_set_index, reconverted_vector);
+				return true;
 			}
+		} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
+			// Used for importing old TileMapPatterns for backwards compatibility.
+			int pattern_index = components[0].trim_prefix("pattern_").to_int();
+			if (pattern_sets.size() == 0) {
+				WARN_PRINT(vformat("Old Patterns Have Been Imported into the new Pattern Set 0, check the Tilemap Patterns tab"));
+				add_pattern_set(0);
+			}
+			add_pattern(p_value, 0, pattern_index);
 			return true;
 		}
 
@@ -4137,6 +4277,22 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			return true;
 		}
 		return false;
+	} else if (components.size() >= 2 && components[0].begins_with("pattern_set_") && components[0].trim_prefix("pattern_set_").is_valid_int()) {
+		// Patterns.
+		int pattern_set_index = components[0].trim_prefix("pattern_set_").to_int();
+		if (pattern_set_index < 0 || pattern_set_index >= pattern_sets.size()) {
+			return false;
+		}
+		if (components[1] == "name") {
+			r_ret = get_pattern_set_name(pattern_set_index);
+			return true;
+		} else if (components[1] == "pattern_set") {
+			Vector<Ref<TileMapPattern>> vector_to_convert = pattern_sets[pattern_set_index].pattern_set;
+			Array converted_array = to_array(vector_to_convert);
+
+			r_ret = converted_array;
+			return true;
+		}
 	} else if (components.size() == 1 && components[0].begins_with("pattern_") && components[0].trim_prefix("pattern_").is_valid_int()) {
 		int pattern_index = components[0].trim_prefix("pattern_").to_int();
 		if (pattern_index < 0 || pattern_index >= (int)patterns.size()) {
@@ -4145,7 +4301,6 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = patterns[pattern_index];
 		return true;
 	}
-
 	return false;
 }
 
@@ -4225,9 +4380,14 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/coords_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/alternative_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
-	// Patterns.
+	// Patterns
 	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("pattern_%d", pattern_index), PROPERTY_HINT_RESOURCE_TYPE, "TileMapPattern", PROPERTY_USAGE_NO_EDITOR));
+	}
+	//p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Patterns", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	for (int pattern_set_index = 0; pattern_set_index < pattern_sets.size(); pattern_set_index++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("pattern_set_%d/name", pattern_set_index), PROPERTY_HINT_TYPE_STRING, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, vformat("pattern_set_%d/pattern_set", pattern_set_index), PROPERTY_HINT_ARRAY_TYPE, "TileMapPattern"));
 	}
 }
 
@@ -4350,10 +4510,16 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_tile_proxies"), &TileSet::clear_tile_proxies);
 
 	// Patterns
-	ClassDB::bind_method(D_METHOD("add_pattern", "pattern", "index"), &TileSet::add_pattern, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_pattern", "index"), &TileSet::get_pattern, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("remove_pattern", "index"), &TileSet::remove_pattern);
-	ClassDB::bind_method(D_METHOD("get_patterns_count"), &TileSet::get_patterns_count);
+	ClassDB::bind_method(D_METHOD("get_pattern", "pattern_set_index", "pattern_index"), &TileSet::get_pattern);
+	ClassDB::bind_method(D_METHOD("add_pattern", "pattern", "pattern_set_index", "pattern_index"), &TileSet::add_pattern, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_pattern", "pattern_set_index", "pattern_index"), &TileSet::remove_pattern);
+
+	// Pattern Sets
+	ClassDB::bind_method(D_METHOD("get_pattern_sets_count"), &TileSet::get_pattern_sets_count);
+	ClassDB::bind_method(D_METHOD("add_pattern_set", "pattern_set_index"), &TileSet::add_pattern_set, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_pattern_set", "pattern_set_index"), &TileSet::remove_pattern_set);
+	ClassDB::bind_method(D_METHOD("move_pattern_set", "from_index", "to_index"), &TileSet::move_pattern_set);
+	ClassDB::bind_method(D_METHOD("get_patterns_count", "pattern_set_index"), &TileSet::get_patterns_count);
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
@@ -5439,7 +5605,7 @@ int TileSetAtlasSource::get_alternative_tile_id(const Vector2i p_atlas_coords, i
 TileData *TileSetAtlasSource::get_tile_data(const Vector2i p_atlas_coords, int p_alternative_tile) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), nullptr, vformat("The TileSetAtlasSource atlas has no tile at %s.", String(p_atlas_coords)));
 	p_alternative_tile = alternative_no_transform(p_alternative_tile);
-	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
+	ERR_FAIL_COND_V_MSG(!tiles[p_atlas_coords].alternatives.has(p_alternative_tile), nullptr, vformat("TileSetAtlasSource::get_tile_data has no alternative with id %d for tile coords %s.", p_alternative_tile, String(p_atlas_coords)));
 
 	return tiles[p_atlas_coords].alternatives[p_alternative_tile];
 }
