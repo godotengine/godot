@@ -74,22 +74,23 @@ public:
 				uint32_t use_depth_fog : 1;
 				uint32_t is_multimesh : 1;
 				uint32_t use_lightmap_bicubic_filter : 1;
-				uint32_t pad : 2;
-				uint32_t soft_shadow_samples : 4;
-				uint32_t penumbra_shadow_samples : 4;
-				uint32_t directional_soft_shadow_samples : 4;
-				uint32_t directional_penumbra_shadow_samples : 4;
+				uint32_t soft_shadow_samples : 6;
+				uint32_t penumbra_shadow_samples : 6;
+				uint32_t directional_soft_shadow_samples : 6;
 			};
 
 			uint32_t packed_0;
 		};
 
 		union {
-			float luminance_multiplier;
-			float packed_1;
+			uint32_t directional_penumbra_shadow_samples : 6;
+			uint32_t packed_1;
 		};
 
-		uint32_t packed_2;
+		union {
+			float luminance_multiplier;
+			float packed_2;
+		};
 	};
 
 	struct UbershaderConstants {

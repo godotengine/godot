@@ -107,19 +107,19 @@ bool sc_use_lightmap_bicubic_filter() {
 }
 
 uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 8) & 15U;
+	return (sc_packed_0() >> 8) & 63U;
 }
 
 uint sc_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 12) & 15U;
+	return (sc_packed_0() >> 14) & 63U;
 }
 
 uint sc_directional_soft_shadow_samples() {
-	return (sc_packed_0() >> 16) & 15U;
+	return (sc_packed_0() >> 20) & 63U;
 }
 
 uint sc_directional_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 20) & 15U;
+	return (sc_packed_0() >> 26) & 63U;
 }
 
 float sc_luminance_multiplier() {
