@@ -485,8 +485,8 @@ void vertex_shader(vec3 vertex_input,
 	//for dual paraboloid shadow mapping, this is the fastest but least correct way, as it curves straight edges
 
 	vec3 vtx = vertex_interp;
-	float distance = length(vtx);
-	vtx = normalize(vtx);
+	float distance = length(vtx / abs(vertex_interp.z)) * abs(vertex_interp.z); // Dividing before taking length() prevents overflow when values exceed sqrt(MAX_FLOAT)
+	vtx /= distance;
 	vtx.xy /= 1.0 - vtx.z;
 	vtx.z = (distance / scene_data.z_far);
 	vtx.z = vtx.z * 2.0 - 1.0;
@@ -515,10 +515,10 @@ void vertex_shader(vec3 vertex_input,
 	specular_light_interp = vec4(0.0);
 
 #ifdef USE_MULTIVIEW
-	vec3 view = -normalize(vertex_interp - eye_offset);
+	vec3 view = -normalize((vertex_interp - eye_offset) / abs(vertex_interp.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 	vec2 clip_pos = clamp((combined_projected.xy / combined_projected.w) * 0.5 + 0.5, 0.0, 1.0);
 #else
-	vec3 view = -normalize(vertex_interp);
+	vec3 view = -normalize(vertex_interp / abs(vertex_interp.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 	vec2 clip_pos = clamp((gl_Position.xy / gl_Position.w) * 0.5 + 0.5, 0.0, 1.0);
 #endif
 
@@ -1047,7 +1047,7 @@ vec4 fog_process(vec3 vertex) {
 	if (scene_data_block.data.fog_sun_scatter > 0.001) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
-		vec3 view = normalize(vertex);
+		vec3 view = normalize(vertex / abs(vertex.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 
 		for (uint i = 0; i < scene_data_block.data.directional_light_count; i++) {
 			vec3 light_color = directional_lights.data[i].color * directional_lights.data[i].energy;
@@ -1128,14 +1128,14 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
-	vec3 view = -normalize(vertex_interp - eye_offset);
+	vec3 view = -normalize((vertex_interp - eye_offset) / abs(vertex_interp.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 
 	// UV in our combined frustum space is used for certain screen uv processes where it's
 	// overkill to render separate left and right eye views
 	vec2 combined_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
 #else
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
-	vec3 view = -normalize(vertex_interp);
+	vec3 view = -normalize(vertex_interp / abs(vertex_interp.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 #endif
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
@@ -1257,9 +1257,9 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_VERTEX_USED
 	vertex = light_vertex;
 #ifdef USE_MULTIVIEW
-	view = -normalize(vertex - eye_offset);
+	view = -normalize((vertex - eye_offset) / abs(vertex.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 #else
-	view = -normalize(vertex);
+	view = -normalize(vertex / abs(vertex.z)); // Dividing before normalizing prevents overflow when values exceed sqrt(MAX_FLOAT)
 #endif //USE_MULTIVIEW
 #endif //LIGHT_VERTEX_USED
 
