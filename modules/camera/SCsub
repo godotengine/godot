@@ -6,14 +6,18 @@ Import("env_modules")
 
 env_camera = env_modules.Clone()
 
-if env["platform"] in ["windows", "macos", "linuxbsd"]:
-    env_camera.add_source_files(env.modules_sources, "register_types.cpp")
+env_camera.add_source_files(env.modules_sources, "register_types.cpp")
 
 if env["platform"] == "windows":
     env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
+    env.Append(LINKFLAGS=["mf.lib", "mfplat.lib", "mfreadwrite.lib"])
 
-elif env["platform"] == "macos":
+if env["platform"] == "macos" or env["platform"] == "ios":
     env_camera.add_source_files(env.modules_sources, "camera_macos.mm")
+
+if env["platform"] == "android":
+    env_camera.add_source_files(env.modules_sources, "camera_android.cpp")
+    env.Append(LIBS=["camera2ndk", "mediandk"])
 
 elif env["platform"] == "linuxbsd":
     env_camera.add_source_files(env.modules_sources, "camera_linux.cpp")

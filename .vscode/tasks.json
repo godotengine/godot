@@ -1,0 +1,218 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Clean Godot",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "--clean",
+        "dev_build=yes"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Godot",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "dev_build=yes",
+        "debug_symbols=yes",
+        "progress=no",
+        "vulkan=yes"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android debug template ARM32",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=arm32",
+        "target=template_debug",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android debug template ARM64",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=arm64",
+        "target=template_debug",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android debug template X86_32",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=x86_32",
+        "target=template_debug",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android debug template X86_64",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=x86_64",
+        "target=template_debug",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android release template ARM32",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=arm32",
+        "target=template_release",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android release template ARM64",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=arm64",
+        "target=template_release",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android release template X86_32",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=x86_32",
+        "target=template_release",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Build Android release template X86_64",
+      "group": "build",
+      "type": "shell",
+      "command": "scons",
+      "args": [
+        "platform=android",
+        "arch=x86_64",
+        "target=template_release",
+        "progress=no"
+      ],
+      "problemMatcher": {
+        "base": "$gcc",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ]
+      }
+    },
+    {
+      "label": "Install Android export templates",
+      "group": "build",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "generateGodotTemplates",
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/platform/android/java"
+      },
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build Android debug template ARM32",
+        "Build Android debug template ARM64",
+        "Build Android release template ARM32",
+        "Build Android release template ARM64",
+        //              "Build Android debug template X86_32",
+        //              "Build Android debug template X86_64",
+        //              "Build Android release template X86_32",
+        //              "Build Android release template X86_64"
+      ]
+    }
+  ]
+}
