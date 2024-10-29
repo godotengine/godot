@@ -13,12 +13,14 @@
 			<return type="void" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
 			<description>
+				Adds [param format] as a valid format for the corresponding [RDTextureView]'s [member RDTextureView.format_override] property. If any format is added as shareable, then the main [member format] must also be added.
 			</description>
 		</method>
 		<method name="remove_shareable_format">
 			<return type="void" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
 			<description>
+				Removes [param format] from the list of valid formats that the corresponding [RDTextureView]'s [member RDTextureView.format_override] property can be set to.
 			</description>
 		</method>
 	</methods>
