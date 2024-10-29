@@ -35,6 +35,16 @@
 #include "thirdparty/misc/smolv.h"
 #include "vulkan_hooks.h"
 
+#if defined(ANDROID_ENABLED)
+#include "platform/android/java_godot_wrapper.h"
+#include "platform/android/os_android.h"
+#include "platform/android/thread_jandroid.h"
+#endif
+
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+#include "thirdparty/swappy-frame-pacing/swappyVk.h"
+#endif
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define PRINT_NATIVE_COMMANDS 0
@@ -537,6 +547,37 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	device_extensions.resize(device_extension_count);
 	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptr());
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+	if (swappy_frame_pacer_enable) {
+		char **swappy_required_extensions;
+		uint32_t swappy_required_extensions_count = 0;
+		// Determine number of extensions required by Swappy frame pacer.
+		SwappyVk_determineDeviceExtensions(physical_device, device_extension_count, device_extensions.ptr(), &swappy_required_extensions_count, nullptr);
+
+		if (swappy_required_extensions_count < device_extension_count) {
+			// Determine the actual extensions.
+			swappy_required_extensions = (char **)malloc(swappy_required_extensions_count * sizeof(char *));
+			char *pRequiredExtensionsData = (char *)malloc(swappy_required_extensions_count * (VK_MAX_EXTENSION_NAME_SIZE + 1));
+			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
+				swappy_required_extensions[i] = &pRequiredExtensionsData[i * (VK_MAX_EXTENSION_NAME_SIZE + 1)];
+			}
+			SwappyVk_determineDeviceExtensions(physical_device, device_extension_count,
+					device_extensions.ptr(), &swappy_required_extensions_count, swappy_required_extensions);
+
+			// Enable extensions requested by Swappy.
+			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
+				CharString extension_name(swappy_required_extensions[i]);
+				if (requested_device_extensions.has(extension_name)) {
+					enabled_device_extension_names.insert(extension_name);
+				}
+			}
+
+			free(pRequiredExtensionsData);
+			free(swappy_required_extensions);
+		}
+	}
+#endif
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < device_extension_count; i++) {
@@ -1377,6 +1418,18 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
+#endif
+
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+	swappy_frame_pacer_enable = GLOBAL_GET("display/window/frame_pacing/android/enable_frame_pacing");
+	swappy_mode = GLOBAL_GET("display/window/frame_pacing/android/swappy_mode");
+
+	if (VulkanHooks::get_singleton() != nullptr) {
+		// Hooks control device creation & possibly presentation
+		// (e.g. OpenXR) thus it's too risky to use Swappy.
+		swappy_frame_pacer_enable = false;
+		OS::get_singleton()->print("VulkanHooks detected (e.g. OpenXR): Force-disabling Swappy Frame Pacing.\n");
+	}
 #endif
 
 	return OK;
@@ -2364,6 +2417,14 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 
 	ERR_FAIL_COND_V_MSG(picked_queue_index >= queue_family.size(), CommandQueueID(), "A queue in the picked family could not be found.");
 
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+	if (swappy_frame_pacer_enable) {
+		VkQueue selected_queue;
+		vkGetDeviceQueue(vk_device, family_index, picked_queue_index, &selected_queue);
+		SwappyVk_setQueueFamilyIndex(vk_device, selected_queue, family_index);
+	}
+#endif
+
 	// Create the virtual queue.
 	CommandQueue *command_queue = memnew(CommandQueue);
 	command_queue->queue_family = family_index;
@@ -2509,7 +2570,16 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		present_info.pResults = results.ptr();
 
 		device_queue.submit_mutex.lock();
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+		if (swappy_frame_pacer_enable) {
+			err = SwappyVk_queuePresent(device_queue.queue, &present_info);
+		} else {
+			err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
+		}
+#else
 		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
+#endif
+
 		device_queue.submit_mutex.unlock();
 
 		// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
@@ -2691,6 +2761,14 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 	swap_chain->framebuffers.clear();
 
 	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+		if (swappy_frame_pacer_enable) {
+			// Swappy has a bug where the ANativeWindow will be leaked if we call
+			// SwappyVk_destroySwapchain, so we must release it by hand.
+			SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, nullptr);
+			SwappyVk_destroySwapchain(vk_device, swap_chain->vk_swapchain);
+		}
+#endif
 		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 		swap_chain->vk_swapchain = VK_NULL_HANDLE;
 	}
@@ -2807,6 +2885,20 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	VkResult err = functions.GetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface->vk_surface, &surface_capabilities);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
+	// No swapchain yet, this is the first time we're creating it.
+	if (!swap_chain->vk_swapchain) {
+		uint32_t width = surface_capabilities.currentExtent.width;
+		uint32_t height = surface_capabilities.currentExtent.height;
+		if (surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+				surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+			// Swap to get identity width and height.
+			surface_capabilities.currentExtent.height = width;
+			surface_capabilities.currentExtent.width = height;
+		}
+
+		native_display_size = surface_capabilities.currentExtent;
+	}
+
 	VkExtent2D extent;
 	if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
 		// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
@@ -2871,15 +2963,8 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		desired_swapchain_images = MIN(desired_swapchain_images, surface_capabilities.maxImageCount);
 	}
 
-	// Prefer identity transform if it's supported, use the current transform otherwise.
-	// This behavior is intended as Godot does not supported native rotation in platforms that use these bits.
 	// Refer to the comment in command_queue_present() for more details.
-	VkSurfaceTransformFlagBitsKHR surface_transform_bits;
-	if (surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
-		surface_transform_bits = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-	} else {
-		surface_transform_bits = surface_capabilities.currentTransform;
-	}
+	VkSurfaceTransformFlagBitsKHR surface_transform_bits = surface_capabilities.currentTransform;
 
 	VkCompositeAlphaFlagBitsKHR composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	if (OS::get_singleton()->is_layered_allowed() || !(surface_capabilities.supportedCompositeAlpha & composite_alpha)) {
@@ -2906,7 +2991,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.minImageCount = desired_swapchain_images;
 	swap_create_info.imageFormat = swap_chain->format;
 	swap_create_info.imageColorSpace = swap_chain->color_space;
-	swap_create_info.imageExtent = extent;
+	swap_create_info.imageExtent = native_display_size;
 	swap_create_info.imageArrayLayers = 1;
 	swap_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swap_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -2916,6 +3001,39 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.clipped = true;
 	err = device_functions.CreateSwapchainKHR(vk_device, &swap_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR), &swap_chain->vk_swapchain);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
+
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+	if (swappy_frame_pacer_enable) {
+		const double max_fps = Engine::get_singleton()->get_max_fps();
+		const uint64_t max_time = max_fps > 0 ? uint64_t((1000.0 * 1000.0 * 1000.0) / max_fps) : 0;
+
+		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), physical_device,
+				vk_device, swap_chain->vk_swapchain, &swap_chain->refresh_duration);
+		SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
+		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, MAX(swap_chain->refresh_duration, max_time));
+
+		enum SwappyModes {
+			PIPELINE_FORCED_ON,
+			AUTO_FPS_PIPELINE_FORCED_ON,
+			AUTO_FPS_AUTO_PIPELINE,
+		};
+
+		switch (swappy_mode) {
+			case PIPELINE_FORCED_ON:
+				SwappyVk_setAutoSwapInterval(true);
+				SwappyVk_setAutoPipelineMode(true);
+				break;
+			case AUTO_FPS_PIPELINE_FORCED_ON:
+				SwappyVk_setAutoSwapInterval(true);
+				SwappyVk_setAutoPipelineMode(false);
+				break;
+			case AUTO_FPS_AUTO_PIPELINE:
+				SwappyVk_setAutoSwapInterval(false);
+				SwappyVk_setAutoPipelineMode(false);
+				break;
+		}
+	}
+#endif
 
 	uint32_t image_count = 0;
 	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);
@@ -3062,6 +3180,22 @@ RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p
 			DEV_ASSERT(false && "Unknown swap chain format.");
 			return DATA_FORMAT_MAX;
 	}
+}
+
+void RenderingDeviceDriverVulkan::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+#ifdef SWAPPY_FRAME_PACING_ENABLED
+	if (!swappy_frame_pacer_enable) {
+		return;
+	}
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	if (swap_chain->vk_swapchain != VK_NULL_HANDLE) {
+		const uint64_t max_time = p_max_fps > 0 ? uint64_t((1000.0 * 1000.0 * 1000.0) / p_max_fps) : 0;
+		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, MAX(swap_chain->refresh_duration, max_time));
+	}
+#endif
 }
 
 void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
