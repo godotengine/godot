@@ -146,7 +146,7 @@ void FileAccessUnix::_sync() {
 	ERR_FAIL_COND(fd < 0);
 
 #ifdef __APPLE__
-	return fcntl(fd, F_BARRIERFSYNC);
+	fcntl(fd, F_BARRIERFSYNC);
 #else
 	int fsync_error;
 	do {
