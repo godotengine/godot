@@ -79,6 +79,9 @@ private:
 	// Pending local spawn information (handles spawning nested nodes during ready).
 	HashSet<ObjectID> spawn_queue;
 
+	// Determines if MultiplayerSpawner clears spawned nodes when its multiplayer authority disconnects.
+	bool delete_spawned_nodes_on_peer_exit = true;
+
 	// Pending remote spawn information.
 	ObjectID pending_spawn;
 	int pending_spawn_remote = 0;
@@ -145,6 +148,10 @@ public:
 
 	void set_max_delta_packet_size(int p_size);
 	int get_max_delta_packet_size() const;
+
+	// New getter and setter for the delete_spawned_nodes_on_peer_exit property
+ 	virtual void set_delete_spawned_nodes_on_peer_exit(bool value);
+ 	virtual bool get_delete_spawned_nodes_on_peer_exit() const;
 
 	SceneReplicationInterface(SceneMultiplayer *p_multiplayer, SceneCacheInterface *p_cache) {
 		multiplayer = p_multiplayer;

@@ -60,6 +60,7 @@ public:
 	virtual void close() override {}
 	virtual int get_unique_id() const override { return TARGET_PEER_SERVER; }
 	virtual ConnectionStatus get_connection_status() const override { return CONNECTION_CONNECTED; };
+
 };
 
 class SceneMultiplayer : public MultiplayerAPI {
@@ -101,6 +102,9 @@ public:
 		CMD_MASK = 7, // 0x7 -> 0b00000111
 	};
 
+	void set_delete_spawned_nodes_on_peer_exit(bool p_value);
+	bool get_delete_spawned_nodes_on_peer_exit() const;
+
 private:
 	struct PendingPeer {
 		bool local = false;
@@ -125,7 +129,10 @@ private:
 	Ref<StreamPeerBuffer> relay_buffer;
 
 	Ref<SceneCacheInterface> cache;
+
+
 	Ref<SceneReplicationInterface> replicator;
+
 	Ref<SceneRPCInterface> rpc;
 
 #ifdef DEBUG_ENABLED
