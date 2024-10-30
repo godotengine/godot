@@ -2376,8 +2376,16 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		if (!is_scanning()) {
 			_process_update_pending();
 		}
-		call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later
+		if (!filesystem_changed_queued) {
+			filesystem_changed_queued = true;
+			callable_mp(this, &EditorFileSystem::_notify_filesystem_changed).call_deferred();
+		}
 	}
+}
+
+void EditorFileSystem::_notify_filesystem_changed() {
+	emit_signal("filesystem_changed");
+	filesystem_changed_queued = false;
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
