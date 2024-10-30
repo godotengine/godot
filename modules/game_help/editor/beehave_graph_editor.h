@@ -484,11 +484,11 @@ public:
 		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
 		if(horizontal_layout)
 		{
-			layout_button->set_icon(p_control->get_editor_theme_icon("horizontal_layout"));
+			layout_button->set_button_icon(p_control->get_editor_theme_icon("horizontal_layout"));
 		}
 		else
 		{
-			layout_button->set_icon(p_control->get_editor_theme_icon("vertical_layout"));
+			layout_button->set_button_icon(p_control->get_editor_theme_icon("vertical_layout"));
 		}
 
 	}
@@ -561,7 +561,7 @@ public:
 		HBoxContainer *hbox = memnew(HBoxContainer);
 
 		Button *reorder_button = memnew(Button);
-		reorder_button->set_icon(p_control->get_editor_theme_icon(SNAME("TripleBar")));
+		reorder_button->set_button_icon(p_control->get_editor_theme_icon(SNAME("TripleBar")));
 		reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 		reorder_button->set_disabled(is_read_only());
 		reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &BeehaveNodeChildChildEditor::on_reorder_button_gui_input));
@@ -578,13 +578,13 @@ public:
 
 		if (is_untyped_array) {
 			Button *edit_btn = memnew(Button);
-			edit_btn->set_icon(p_control->get_editor_theme_icon(SNAME("Edit")));
+			edit_btn->set_button_icon(p_control->get_editor_theme_icon(SNAME("Edit")));
 			edit_btn->set_disabled(is_read_only());
 			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &BeehaveNodeChildChildEditor::on_change_type).bind(edit_btn, idx));
 			hbox->add_child(edit_btn);
 		} else {
 			Button *remove_btn = memnew(Button);
-			remove_btn->set_icon(p_control->get_editor_theme_icon(SNAME("Remove")));
+			remove_btn->set_button_icon(p_control->get_editor_theme_icon(SNAME("Remove")));
 			remove_btn->set_disabled(is_read_only());
 			remove_btn->connect(SceneStringName(pressed), callable_mp(this, &BeehaveNodeChildChildEditor::on_remove_pressed).bind(idx));
 			hbox->add_child(remove_btn);
@@ -845,7 +845,7 @@ protected:
 	#ifdef TOOLS_ENABLED
 		beehave_tree->editor_set_section_unfold("Beehave Tree Condition", !p_collapsed);
 	#endif
-		section_button->set_icon(p_collapsed ? frames->arrow_right_icon : frames->arrow_down_icon);
+		section_button->set_button_icon(p_collapsed ? frames->arrow_right_icon : frames->arrow_down_icon);
 	}
 	bool is_collapsed() const {
 		return !beehave_editor->is_visible();
@@ -938,7 +938,7 @@ void BeehaveGraphNodes::on_beehave_node_change()
 void BeehaveGraphNodes::_on_debug_break()
 {
 	beehave_node->set_debug_enabled(! beehave_node->get_debug_enabled());
-	debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+	debug_break->set_button_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
 	debug_break->set_modulate(beehave_node->get_debug_enabled() ? Color(0.5, 0.5, 0.5, 1) :Color(1, 1, 1, 1) );
 	if(!beehave_node->get_debug_enabled())
 	{

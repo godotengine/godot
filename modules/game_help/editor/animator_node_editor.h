@@ -22,12 +22,12 @@ public:
 		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
 
         move_up_button = memnew(Button);
-        move_up_button->set_icon(p_control->get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+        move_up_button->set_button_icon(p_control->get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
         move_up_button->connect(SceneStringName(pressed), callable_mp(this, &AnimatorNodeItemEditor::_on_move_up_button_pressed));
         add_child(move_up_button);
 
         move_down_button = memnew(Button);
-        move_down_button->set_icon(p_control->get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+        move_down_button->set_button_icon(p_control->get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
         move_down_button->connect(SceneStringName(pressed), callable_mp(this, &AnimatorNodeItemEditor::_on_move_down_button_pressed));
         add_child(move_down_button);
 
@@ -70,7 +70,7 @@ public:
         add_child(y_velue_editor);
 
         delete_button = memnew(Button);
-        delete_button->set_icon(p_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+        delete_button->set_button_icon(p_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
         delete_button->connect(SceneStringName(pressed), callable_mp(this, &AnimatorNodeItemEditor::_on_delete_button_pressed));
         add_child(delete_button);
 

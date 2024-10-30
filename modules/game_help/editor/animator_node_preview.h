@@ -168,8 +168,8 @@ protected:
 		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
         theme_cache.light_1_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
         theme_cache.light_2_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
-		light_1_switch->set_icon(theme_cache.light_1_icon);
-		light_2_switch->set_icon(theme_cache.light_2_icon);
+		light_1_switch->set_button_icon(theme_cache.light_1_icon);
+		light_2_switch->set_button_icon(theme_cache.light_2_icon);
     }
 	void _notification(int p_what) {
         switch (p_what) {

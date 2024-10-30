@@ -96,7 +96,7 @@ void EditorResourcePicker::_update_resource() {
 						name = nm;
 					}
 				}				
-				assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
+				assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 				assign_button->set_text(name);
 				assign_button->set_tooltip_text(TTR("Type:") + " " + class_name);
 

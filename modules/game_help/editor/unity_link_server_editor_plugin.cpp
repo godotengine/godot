@@ -182,7 +182,7 @@ public:
 		HBoxContainer *hbox = memnew(HBoxContainer);
 
 		Button *reorder_button = memnew(Button);
-		reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
+		reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
 		reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 		reorder_button->set_disabled(is_read_only());
 		reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &AnimationLogicRootNodeProperty::on_reorder_button_gui_input));
@@ -216,13 +216,13 @@ public:
 
 		if (is_untyped_array) {
 			Button *edit_btn = memnew(Button);
-			edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			edit_btn->set_disabled(is_read_only());
 			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &AnimationLogicRootNodeProperty::on_change_type).bind(edit_btn, idx));
 			hbox->add_child(edit_btn);
 		} else {
 			Button *remove_btn = memnew(Button);
-			remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			remove_btn->set_disabled(is_read_only());
 			remove_btn->connect(SceneStringName(pressed), callable_mp(this, &AnimationLogicRootNodeProperty::on_remove_pressed).bind(idx));
 			hbox->add_child(remove_btn);

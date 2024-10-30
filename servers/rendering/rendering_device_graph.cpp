@@ -1213,16 +1213,6 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				print_line("\tEXECUTE COMMANDS");
 				instruction_data_cursor += sizeof(DrawListExecuteCommandsInstruction);
 			} break;
-			case DrawListInstruction::TYPE_DRAW_INDIRECT: {
-				const DrawListDrawInstructionIndirect *draw_instruction = reinterpret_cast<const DrawListDrawInstructionIndirect *>(instruction);
-				print_line("\tDRAW Draw Indirect");
-				instruction_data_cursor += sizeof(DrawListDrawInstructionIndirect);
-			} break;
-			case DrawListInstruction::TYPE_DRAW_INDEXED_INDIRECT: {
-				const DrawListDrawIndexedInstruction *draw_indexed_instruction = reinterpret_cast<const DrawListDrawIndexedInstruction *>(instruction);
-				print_line("\tDRAW Indexed Instruction");
-				instruction_data_cursor += sizeof(DrawListDrawIndexedInstruction);
-			} break;
 			case DrawListInstruction::TYPE_NEXT_SUBPASS: {
 				print_line("\tNEXT SUBPASS");
 				instruction_data_cursor += sizeof(DrawListNextSubpassInstruction);

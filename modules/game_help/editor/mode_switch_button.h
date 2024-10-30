@@ -34,7 +34,7 @@ private:
 
 	_FORCE_INLINE_ void _set_mode_by_index(int p_index) {
 		current_mode_index = p_index;
-		this->set_icon(modes[current_mode_index].icon);
+		this->set_button_icon(modes[current_mode_index].icon);
 		if (!modes[current_mode_index].tooltip.is_empty()) {
 			set_tooltip_text(modes[current_mode_index].tooltip);
 		}

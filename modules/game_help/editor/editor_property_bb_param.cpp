@@ -285,14 +285,14 @@ void EditorPropertyBBParam::update_property() {
 		variable_editor->update_property();
 		variable_editor->show();
 		bottom_container->hide();
-		type_choice->set_icon(get_editor_theme_icon(SNAME("LimboExtraVariable")));
+		type_choice->set_button_icon(get_editor_theme_icon(SNAME("LimboExtraVariable")));
 	} else {
 		_create_value_editor(param->get_type());
 		variable_editor->hide();
 		value_editor->show();
 		value_editor->set_object_and_property(param.ptr(), SNAME("saved_value"));
 		value_editor->update_property();
-		type_choice->set_icon(get_editor_theme_icon(Variant::get_type_name(param->get_type())));
+		type_choice->set_button_icon(get_editor_theme_icon(Variant::get_type_name(param->get_type())));
 	}
 }
 
@@ -314,7 +314,7 @@ void EditorPropertyBBParam::_notification(int p_what) {
 
 			{
 				String type = Variant::get_type_name(_get_edited_param()->get_type());
-				type_choice->set_icon(get_editor_theme_icon(type));
+				type_choice->set_button_icon(get_editor_theme_icon(type));
 			}
 
 			// Initialize type choice.

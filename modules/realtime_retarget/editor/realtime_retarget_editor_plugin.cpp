@@ -71,7 +71,7 @@ void RetargetAnimationPlayerEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			warning->set_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+			warning->set_button_icon(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
 			warning->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {

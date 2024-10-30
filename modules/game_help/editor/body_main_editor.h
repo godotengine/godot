@@ -233,7 +233,7 @@ void LogicSectionBase::add_condition(Control* p_task_button) {
 
 void LogicSectionBase::set_collapsed(bool p_collapsed) {
 	object->editor_set_section_unfold(get_section_unfolded(), !p_collapsed);
-	section_header->set_icon(p_collapsed ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
+	section_header->set_button_icon(p_collapsed ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
     tasks_container->set_visible(!p_collapsed);
     
     on_collapsed_change.call(this, p_collapsed);
@@ -255,7 +255,7 @@ void LogicSectionBase::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_do_update_theme_item_cache();
-			section_header->set_icon(is_collapsed() ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
+			section_header->set_button_icon(is_collapsed() ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
 			section_header->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		} break;
 	}
@@ -600,19 +600,19 @@ public:
 
         upmove_button = memnew(Button);
         upmove_button->set_flat(true);
-        upmove_button->set_icon(p_control->get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
+        upmove_button->set_button_icon(p_control->get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
         upmove_button->connect(SceneStringName(pressed), callable_mp(this, &CharacterInductorCheckSection::_on_upmove_button_pressed));
         hb->add_child(upmove_button);
 
         downmove_button = memnew(Button);
         downmove_button->set_flat(true);
-        downmove_button->set_icon(p_control->get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+        downmove_button->set_button_icon(p_control->get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
         downmove_button->connect(SceneStringName(pressed), callable_mp(this, &CharacterInductorCheckSection::_on_downmove_button_pressed));
         hb->add_child(downmove_button);
 
         delete_button = memnew(Button);
         delete_button->set_flat(true);
-        delete_button->set_icon(p_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+        delete_button->set_button_icon(p_control->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
         delete_button->connect(SceneStringName(pressed), callable_mp(this, &CharacterInductorCheckSection::_on_delete_button_pressed));
         hb->add_child(delete_button);
 

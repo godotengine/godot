@@ -62,7 +62,7 @@ public:
 		type_lable->set_layout_mode(LayoutMode::LAYOUT_MODE_CONTAINER);
 		type_lable->set_custom_minimum_size(Size2(60, 10));
 		type_lable->set_v_size_flags(SIZE_FILL);		
-		type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::INT)));
+		type_lable->set_button_icon(get_type_icon(Variant::get_type_name(Variant::INT)));
 		type_lable->set_disabled(true);
 		type_lable->set_focus_mode(FOCUS_NONE);
 		type_lable->set_text("Int");
@@ -201,22 +201,22 @@ public:
 			Ref<AnimatorBlackboardSetItemString> string_blackboard_set_item = blackboard_set_item;
 			if(int_blackboard_set_item.is_valid())
 			{
-				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::INT)));
+				type_lable->set_button_icon(get_type_icon(Variant::get_type_name(Variant::INT)));
 				type_lable->set_text("Int");
 			}
 			else if(float_blackboard_set_item.is_valid())
 			{
-				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::FLOAT)));
+				type_lable->set_button_icon(get_type_icon(Variant::get_type_name(Variant::FLOAT)));
 				type_lable->set_text("Float");
 			}
 			else if(bool_blackboard_set_item.is_valid())
 			{
-				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::BOOL)));
+				type_lable->set_button_icon(get_type_icon(Variant::get_type_name(Variant::BOOL)));
 				type_lable->set_text("Bool");
 			}
 			else if(string_blackboard_set_item.is_valid())
 			{
-				type_lable->set_icon(get_type_icon(Variant::get_type_name(Variant::STRING)));
+				type_lable->set_button_icon(get_type_icon(Variant::get_type_name(Variant::STRING)));
 				type_lable->set_text("String");
 			}
 
@@ -478,7 +478,7 @@ void BlackbordSetSection::set_collapsed(bool p_collapsed) {
 #ifdef TOOLS_ENABLED
 		object->editor_set_section_unfold("Change List", !p_collapsed);
 #endif
-	section_header->set_icon(p_collapsed ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
+	section_header->set_button_icon(p_collapsed ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
 }
 
 bool BlackbordSetSection::is_collapsed() const {
@@ -497,7 +497,7 @@ void BlackbordSetSection::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_do_update_theme_item_cache();
-			section_header->set_icon(is_collapsed() ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
+			section_header->set_button_icon(is_collapsed() ? theme_cache.arrow_right_icon : theme_cache.arrow_down_icon);
 			section_header->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 		} break;
 	}

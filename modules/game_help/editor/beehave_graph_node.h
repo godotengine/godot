@@ -440,7 +440,7 @@ public:
 		titlebar_hbox->get_child(0)->queue_free();
 
 		debug_break = memnew(Button);
-		debug_break->set_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
+		debug_break->set_button_icon(beehave_node->get_debug_enabled() ? frames->debug_enable_icon : frames->debug_disable_icon);
 		debug_break->set_modulate(beehave_node->get_debug_enabled() ? Color(0.5, 0.5, 0.5, 1) :Color(1, 1, 1, 1) );
 		titlebar_hbox->add_child(debug_break);
 		debug_break->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_debug_break));
@@ -478,15 +478,15 @@ public:
 				
 				if(horizontal)
 				{
-					move_up->set_icon(frames->move_up_icon);
+					move_up->set_button_icon(frames->move_up_icon);
 					move_down->set_tooltip_text(L"上移");
-					move_down->set_icon(frames->move_down_icon);
+					move_down->set_button_icon(frames->move_down_icon);
 					move_down->set_tooltip_text(L"下移");
 				}else
 				{
-					move_up->set_icon(frames->move_left_icon);
+					move_up->set_button_icon(frames->move_left_icon);
 					move_up->set_tooltip_text(L"左移");
-					move_down->set_icon(frames->move_right_icon);
+					move_down->set_button_icon(frames->move_right_icon);
 					move_up->set_tooltip_text(L"右移");
 				}
 				move_up->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_move_up));
@@ -519,7 +519,7 @@ public:
 			{
 				create_child_node = memnew(Button);
 				hbox->add_child(create_child_node);
-				create_child_node->set_icon(frames->add_node_icon);
+				create_child_node->set_button_icon(frames->add_node_icon);
 				create_child_node->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_create_child_node));
 				if(beehave_node->get_editor_collapsed_children())
 				{
@@ -541,7 +541,7 @@ public:
 
 				delete_node = memnew(Button);
 				hbox->add_child(delete_node);
-				delete_node->set_icon(frames->remove_node_icon);
+				delete_node->set_button_icon(frames->remove_node_icon);
 				delete_node->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_delete_node));
 				delete_node->set_tooltip_text(L"删除本节点");
 			}
@@ -579,7 +579,7 @@ public:
 			add_child(child_collapsed);
 			child_collapsed->set_text(L"(收起/展开)子节点");
 			child_collapsed->connect("pressed", callable_mp(this, &BeehaveGraphNodes::_on_child_collapsed));
-			child_collapsed->set_icon(beehave_node->get_editor_collapsed_children() ? frames->arrow_right_icon : frames->arrow_down_icon);
+			child_collapsed->set_button_icon(beehave_node->get_editor_collapsed_children() ? frames->arrow_right_icon : frames->arrow_down_icon);
 		}
 		else{
 			separator = memnew(Separator);

@@ -197,6 +197,8 @@ void CharacterBodyMain::_process_move()
             const CharacterRootMotion& root_motion = animator->get_root_motion();
 
             Transform3D rot =get_transform();
+
+            
             rot.basis = root_motion.root_motion_rotation_add * rot.basis;
             set_transform(rot);
             Vector3 forward = rot.basis.xform(Vector3(0,0,1));
