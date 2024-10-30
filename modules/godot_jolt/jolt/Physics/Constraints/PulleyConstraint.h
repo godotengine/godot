@@ -17,9 +17,9 @@ JPH_NAMESPACE_BEGIN
 /// MinDistance <= Length1 + Ratio * Length2 <= MaxDistance
 class JPH_EXPORT PulleyConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PulleyConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

@@ -24,9 +24,9 @@ enum class EMotorState
 /// See the main page of the API documentation for more information on how to configure a motor.
 class JPH_EXPORT MotorSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, MotorSettings)
 
+public:
 	/// Constructor
 							MotorSettings() = default;
 							MotorSettings(const MotorSettings &) = default;

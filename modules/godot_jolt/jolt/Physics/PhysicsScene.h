@@ -16,9 +16,9 @@ class PhysicsSystem;
 /// Contains the creation settings of a set of bodies
 class JPH_EXPORT PhysicsScene : public RefTarget<PhysicsScene>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, PhysicsScene)
 
+public:
 	/// Add a body to the scene
 	void									AddBody(const BodyCreationSettings &inBody);
 
@@ -44,9 +44,9 @@ public:
 	/// A constraint and how it is connected to the bodies in the scene
 	class ConnectedConstraint
 	{
-	public:
 		JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, ConnectedConstraint)
 
+	public:
 											ConnectedConstraint() = default;
 											ConnectedConstraint(const TwoBodyConstraintSettings *inSettings, uint inBody1, uint inBody2) : mSettings(inSettings), mBody1(inBody1), mBody2(inBody2) { }
 

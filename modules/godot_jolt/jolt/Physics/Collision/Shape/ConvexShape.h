@@ -16,9 +16,9 @@ class CollideShapeSettings;
 /// Class that constructs a ConvexShape (abstract)
 class JPH_EXPORT ConvexShapeSettings : public ShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_ABSTRACT(JPH_EXPORT, ConvexShapeSettings)
 
+public:
 	/// Constructor
 									ConvexShapeSettings() = default;
 	explicit						ConvexShapeSettings(const PhysicsMaterial *inMaterial)		: mMaterial(inMaterial) { }

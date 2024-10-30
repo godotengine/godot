@@ -12,9 +12,9 @@ JPH_NAMESPACE_BEGIN
 /// Point constraint settings, used to create a point constraint
 class JPH_EXPORT PointConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PointConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

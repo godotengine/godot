@@ -136,8 +136,13 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Math/Vec4.h
 	${JOLT_PHYSICS_ROOT}/Math/Vec4.inl
 	${JOLT_PHYSICS_ROOT}/Math/Vector.h
+	${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStream.h
+	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableAttribute.h
+	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableAttributeEnum.h
+	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableAttributeTyped.h
 	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableObject.cpp
 	${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableObject.h
+	${JOLT_PHYSICS_ROOT}/ObjectStream/TypeDeclarations.h
 	${JOLT_PHYSICS_ROOT}/Physics/Body/AllowedDOFs.h
 	${JOLT_PHYSICS_ROOT}/Physics/Body/Body.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Body/Body.h
@@ -437,7 +442,6 @@ if (ENABLE_OBJECT_STREAM)
 		${JOLT_PHYSICS_SRC_FILES}
 		${JOLT_PHYSICS_ROOT}/ObjectStream/GetPrimitiveTypeOfType.h
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStream.cpp
-		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStream.h
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStreamBinaryIn.cpp
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStreamBinaryIn.h
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStreamBinaryOut.cpp
@@ -451,11 +455,7 @@ if (ENABLE_OBJECT_STREAM)
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStreamTextOut.cpp
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStreamTextOut.h
 		${JOLT_PHYSICS_ROOT}/ObjectStream/ObjectStreamTypes.h
-		${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableAttribute.h
-		${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableAttributeEnum.h
-		${JOLT_PHYSICS_ROOT}/ObjectStream/SerializableAttributeTyped.h
 		${JOLT_PHYSICS_ROOT}/ObjectStream/TypeDeclarations.cpp
-		${JOLT_PHYSICS_ROOT}/ObjectStream/TypeDeclarations.h
 	)
 endif()
 
@@ -487,6 +487,7 @@ if (BUILD_SHARED_LIBS)
 	# Set linker flags for other build types to be the same as release
 	set(CMAKE_SHARED_LINKER_FLAGS_RELEASEASAN "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 	set(CMAKE_SHARED_LINKER_FLAGS_RELEASEUBSAN "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
+	set(CMAKE_SHARED_LINKER_FLAGS_RELEASETSAN "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 	set(CMAKE_SHARED_LINKER_FLAGS_RELEASECOVERAGE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 	set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
@@ -518,10 +519,10 @@ endif()
 
 # Set the debug/non-debug build flags
 target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")
-target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseCoverage>:NDEBUG>")
+target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Release,Distribution,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN,ReleaseCoverage>:NDEBUG>")
 
-# ASAN should use the default allocators
-target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:ReleaseASAN>:JPH_DISABLE_TEMP_ALLOCATOR;JPH_DISABLE_CUSTOM_ALLOCATOR>")
+# ASAN and TSAN should use the default allocators
+target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:ReleaseASAN,ReleaseTSAN>:JPH_DISABLE_TEMP_ALLOCATOR;JPH_DISABLE_CUSTOM_ALLOCATOR>")
 
 # Setting floating point exceptions
 if (FLOATING_POINT_EXCEPTIONS_ENABLED AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -571,14 +572,14 @@ endif()
 if (DEBUG_RENDERER_IN_DISTRIBUTION)
 	target_compile_definitions(Jolt PUBLIC "JPH_DEBUG_RENDERER")
 elseif (DEBUG_RENDERER_IN_DEBUG_AND_RELEASE)
-	target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug,Release,ReleaseASAN,ReleaseUBSAN>:JPH_DEBUG_RENDERER>")
+	target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug,Release,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN>:JPH_DEBUG_RENDERER>")
 endif()
 
 # Enable the profiler
 if (PROFILER_IN_DISTRIBUTION)
 	target_compile_definitions(Jolt PUBLIC "JPH_PROFILE_ENABLED")
 elseif (PROFILER_IN_DEBUG_AND_RELEASE)
-	target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug,Release,ReleaseASAN,ReleaseUBSAN>:JPH_PROFILE_ENABLED>")
+	target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug,Release,ReleaseASAN,ReleaseUBSAN,ReleaseTSAN>:JPH_PROFILE_ENABLED>")
 endif()
 
 # Compile the ObjectStream class and RTTI attribute information

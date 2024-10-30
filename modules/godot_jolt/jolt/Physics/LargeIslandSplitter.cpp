@@ -19,16 +19,19 @@ JPH_NAMESPACE_BEGIN
 LargeIslandSplitter::EStatus LargeIslandSplitter::Splits::FetchNextBatch(uint32 &outConstraintsBegin, uint32 &outConstraintsEnd, uint32 &outContactsBegin, uint32 &outContactsEnd, bool &outFirstIteration)
 {
 	{
-		// First check if we can get a new batch (doing a relaxed read to avoid hammering an atomic with an atomic subtract)
+		// First check if we can get a new batch (doing a read to avoid hammering an atomic with an atomic subtract)
 		// Note this also avoids overflowing the status counter if we're done but there's still one thread processing items
-		uint64 status = mStatus.load(memory_order_relaxed);
-		if (sGetIteration(status) >= mNumIterations)
-			return EStatus::AllBatchesDone;
+		uint64 status = mStatus.load(memory_order_acquire);
 
 		// Check for special value that indicates that the splits are still being built
 		// (note we do not check for this condition again below as we reset all splits before kicking off jobs that fetch batches of work)
 		if (status == StatusItemMask)
 			return EStatus::WaitingForBatch;
+
+		// Next check if all items have been processed. Note that we do this after checking if the job can be started
+		// as mNumIterations is not initialized until the split is started.
+		if (sGetIteration(status) >= mNumIterations)
+			return EStatus::AllBatchesDone;
 
 		uint item = sGetItem(status);
 		uint split_index = sGetSplit(status);

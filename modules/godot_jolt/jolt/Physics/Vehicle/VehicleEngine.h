@@ -19,9 +19,9 @@ JPH_NAMESPACE_BEGIN
 /// Generic properties for a vehicle engine
 class JPH_EXPORT VehicleEngineSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, VehicleEngineSettings)
 
+public:
 	/// Constructor
 							VehicleEngineSettings();
 

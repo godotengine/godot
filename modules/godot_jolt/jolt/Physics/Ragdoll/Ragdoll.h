@@ -20,9 +20,9 @@ class PhysicsSystem;
 /// Contains the structure of a ragdoll
 class JPH_EXPORT RagdollSettings : public RefTarget<RagdollSettings>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, RagdollSettings)
 
+public:
 	/// Stabilize the constraints of the ragdoll
 	/// @return True on success, false on failure.
 	bool								Stabilize();
@@ -84,9 +84,9 @@ public:
 	/// A single rigid body sub part of the ragdoll
 	class Part : public BodyCreationSettings
 	{
-	public:
 		JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, Part)
 
+	public:
 		Ref<TwoBodyConstraintSettings>	mToParent;
 	};
 
@@ -96,9 +96,9 @@ public:
 	/// A constraint that connects two bodies in a ragdoll (for non parent child related constraints)
 	class AdditionalConstraint
 	{
-	public:
 		JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, AdditionalConstraint)
 
+	public:
 		/// Constructors
 										AdditionalConstraint() = default;
 										AdditionalConstraint(int inBodyIdx1, int inBodyIdx2, TwoBodyConstraintSettings *inConstraint) : mBodyIdx { inBodyIdx1, inBodyIdx2 }, mConstraint(inConstraint) { }

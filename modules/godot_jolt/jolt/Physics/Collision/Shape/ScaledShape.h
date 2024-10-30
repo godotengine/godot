@@ -17,6 +17,7 @@ class JPH_EXPORT ScaledShapeSettings final : public DecoratedShapeSettings
 {
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, ScaledShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 									ScaledShapeSettings() = default;
 

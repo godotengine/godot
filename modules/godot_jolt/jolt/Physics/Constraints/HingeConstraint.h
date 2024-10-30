@@ -15,9 +15,9 @@ JPH_NAMESPACE_BEGIN
 /// Hinge constraint settings, used to create a hinge constraint
 class JPH_EXPORT HingeConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, HingeConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

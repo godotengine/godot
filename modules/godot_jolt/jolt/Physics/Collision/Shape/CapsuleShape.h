@@ -13,6 +13,7 @@ class JPH_EXPORT CapsuleShapeSettings final : public ConvexShapeSettings
 {
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, CapsuleShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							CapsuleShapeSettings() = default;
 

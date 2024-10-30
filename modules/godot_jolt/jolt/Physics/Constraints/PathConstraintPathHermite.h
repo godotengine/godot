@@ -11,9 +11,9 @@ JPH_NAMESPACE_BEGIN
 /// A path that follows a Hermite spline
 class JPH_EXPORT PathConstraintPathHermite final : public PathConstraintPath
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PathConstraintPathHermite)
 
+public:
 	// See PathConstraintPath::GetPathMaxFraction
 	virtual float		GetPathMaxFraction() const override									{ return float(IsLooping()? mPoints.size() : mPoints.size() - 1); }
 

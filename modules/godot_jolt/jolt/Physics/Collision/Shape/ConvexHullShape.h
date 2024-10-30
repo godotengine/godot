@@ -16,9 +16,9 @@ JPH_NAMESPACE_BEGIN
 /// Class that constructs a ConvexHullShape
 class JPH_EXPORT ConvexHullShapeSettings final : public ConvexShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, ConvexHullShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							ConvexHullShapeSettings() = default;
 

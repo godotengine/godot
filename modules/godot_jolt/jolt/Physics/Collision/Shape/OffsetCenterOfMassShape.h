@@ -13,9 +13,9 @@ class CollideShapeSettings;
 /// Class that constructs an OffsetCenterOfMassShape
 class JPH_EXPORT OffsetCenterOfMassShapeSettings final : public DecoratedShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, OffsetCenterOfMassShapeSettings)
 
+public:
 	/// Constructor
 									OffsetCenterOfMassShapeSettings() = default;
 

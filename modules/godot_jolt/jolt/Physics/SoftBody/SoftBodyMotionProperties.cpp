@@ -692,7 +692,7 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 		// Remove non-colliding sensors from the list
 		for (int i = int(mCollidingSensors.size()) - 1; i >= 0; --i)
 			if (!mCollidingSensors[i].mHasContact)
-			{			
+			{
 				mCollidingSensors[i] = std::move(mCollidingSensors.back());
 				mCollidingSensors.pop_back();
 			}

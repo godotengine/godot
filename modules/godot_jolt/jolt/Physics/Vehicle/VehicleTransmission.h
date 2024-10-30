@@ -21,9 +21,9 @@ enum class ETransmissionMode : uint8
 /// Configuration for the transmission of a vehicle (gear box)
 class JPH_EXPORT VehicleTransmissionSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, VehicleTransmissionSettings)
 
+public:
 	/// Saves the contents in binary form to inStream.
 	void					SaveBinaryState(StreamOut &inStream) const;
 

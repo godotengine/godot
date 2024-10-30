@@ -10,7 +10,7 @@
 #include <Jolt/Physics/SoftBody/SoftBodyMotionProperties.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/StateRecorder.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/EmptyShape.h>
 #include <Jolt/Core/StringTools.h>
 #include <Jolt/Core/Profiler.h>
 #ifdef JPH_DEBUG_RENDERER
@@ -19,7 +19,7 @@
 
 JPH_NAMESPACE_BEGIN
 
-static const SphereShape sFixedToWorldShape(FLT_EPSILON);
+static const EmptyShape sFixedToWorldShape;
 Body Body::sFixedToWorld(false);
 
 Body::Body(bool) :

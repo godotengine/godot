@@ -18,9 +18,9 @@ class PhysicsSystem;
 /// WheelSettings object specifically for WheeledVehicleController
 class JPH_EXPORT WheelSettingsWV : public WheelSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, WheelSettingsWV)
 
+public:
 	/// Constructor
 								WheelSettingsWV();
 
@@ -71,9 +71,9 @@ public:
 /// See: https://www.asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
 class JPH_EXPORT WheeledVehicleControllerSettings : public VehicleControllerSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, WheeledVehicleControllerSettings)
 
+public:
 	// See: VehicleControllerSettings
 	virtual VehicleController *	ConstructController(VehicleConstraint &inConstraint) const override;
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;

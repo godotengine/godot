@@ -38,9 +38,9 @@ namespace HeightFieldShapeConstants
 /// Class that constructs a HeightFieldShape
 class JPH_EXPORT HeightFieldShapeSettings final : public ShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, HeightFieldShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 									HeightFieldShapeSettings() = default;
 

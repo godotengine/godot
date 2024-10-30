@@ -23,9 +23,9 @@ class StateRecorder;
 /// Basic settings object for interface that controls acceleration / deceleration of the vehicle
 class JPH_EXPORT VehicleControllerSettings : public SerializableObject, public RefTarget<VehicleControllerSettings>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_ABSTRACT(JPH_EXPORT, VehicleControllerSettings)
 
+public:
 	/// Saves the contents of the controller settings in binary form to inStream.
 	virtual void				SaveBinaryState(StreamOut &inStream) const = 0;
 

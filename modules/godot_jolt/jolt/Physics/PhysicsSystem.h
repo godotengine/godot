@@ -123,7 +123,7 @@ public:
 	void						SaveState(StateRecorder &inStream, EStateRecorderState inState = EStateRecorderState::All, const StateRecorderFilter *inFilter = nullptr) const;
 
 	/// Restoring state for replay. Returns false if failed.
-	bool						RestoreState(StateRecorder &inStream);
+	bool						RestoreState(StateRecorder &inStream, const StateRecorderFilter *inFilter = nullptr);
 
 	/// Saving state of a single body.
 	void						SaveBodyState(const Body &inBody, StateRecorder &inStream) const;

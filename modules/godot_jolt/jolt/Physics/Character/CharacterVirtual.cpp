@@ -11,6 +11,7 @@
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/InternalEdgeRemovingCollector.h>
 #include <Jolt/Core/QuickSort.h>
 #include <Jolt/Geometry/ConvexSupport.h>
@@ -524,14 +525,14 @@ void CharacterVirtual::ContactAdded(const Contact &inContact, CharacterContactSe
 }
 
 template <class T>
-inline static bool sCorrectFractionForCharacterPadding(const Shape *inShape, Mat44Arg inStart, Vec3Arg inDisplacement, const T &inPolygon, float &ioFraction)
+inline static bool sCorrectFractionForCharacterPadding(const Shape *inShape, Mat44Arg inStart, Vec3Arg inDisplacement, Vec3Arg inScale, const T &inPolygon, float &ioFraction)
 {
 	if (inShape->GetType() == EShapeType::Convex)
 	{
 		// Get the support function for the shape we're casting
 		const ConvexShape *convex_shape = static_cast<const ConvexShape *>(inShape);
 		ConvexShape::SupportBuffer buffer;
-		const ConvexShape::Support *support = convex_shape->GetSupportFunction(ConvexShape::ESupportMode::IncludeConvexRadius, buffer, Vec3::sReplicate(1.0f));
+		const ConvexShape::Support *support = convex_shape->GetSupportFunction(ConvexShape::ESupportMode::IncludeConvexRadius, buffer, inScale);
 
 		// Cast the shape against the polygon
 		GJKClosestPoint gjk;
@@ -540,7 +541,12 @@ inline static bool sCorrectFractionForCharacterPadding(const Shape *inShape, Mat
 	else if (inShape->GetSubType() == EShapeSubType::RotatedTranslated)
 	{
 		const RotatedTranslatedShape *rt_shape = static_cast<const RotatedTranslatedShape *>(inShape);
-		return sCorrectFractionForCharacterPadding(rt_shape->GetInnerShape(), inStart * Mat44::sRotation(rt_shape->GetRotation()), inDisplacement, inPolygon, ioFraction);
+		return sCorrectFractionForCharacterPadding(rt_shape->GetInnerShape(), inStart * Mat44::sRotation(rt_shape->GetRotation()), inDisplacement, rt_shape->TransformScale(inScale), inPolygon, ioFraction);
+	}
+	else if (inShape->GetSubType() == EShapeSubType::Scaled)
+	{
+		const ScaledShape *scaled_shape = static_cast<const ScaledShape *>(inShape);
+		return sCorrectFractionForCharacterPadding(scaled_shape->GetInnerShape(), inStart, inDisplacement, inScale * scaled_shape->GetScale(), inPolygon, ioFraction);
 	}
 	else
 	{
@@ -624,7 +630,7 @@ bool CharacterVirtual::GetFirstContactForSweep(RVec3Arg inPosition, Vec3Arg inDi
 		AddConvexRadius add_cvx(polygon, character_padding);
 
 		// Correct fraction to hit this inflated face instead of the inner shape
-		corrected = sCorrectFractionForCharacterPadding(mShape, start.GetRotation(), inDisplacement, add_cvx, outContact.mFraction);
+		corrected = sCorrectFractionForCharacterPadding(mShape, start.GetRotation(), inDisplacement, Vec3::sReplicate(1.0f), add_cvx, outContact.mFraction);
 	}
 	if (!corrected)
 	{

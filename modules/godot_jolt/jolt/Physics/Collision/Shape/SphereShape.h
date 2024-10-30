@@ -11,9 +11,9 @@ JPH_NAMESPACE_BEGIN
 /// Class that constructs a SphereShape
 class JPH_EXPORT SphereShapeSettings final : public ConvexShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, SphereShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							SphereShapeSettings() = default;
 

@@ -11,9 +11,9 @@ JPH_NAMESPACE_BEGIN
 /// Class that constructs a TriangleShape
 class JPH_EXPORT TriangleShapeSettings final : public ConvexShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, TriangleShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							TriangleShapeSettings() = default;
 

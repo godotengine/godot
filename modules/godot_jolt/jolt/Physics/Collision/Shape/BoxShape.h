@@ -12,9 +12,9 @@ JPH_NAMESPACE_BEGIN
 /// Class that constructs a BoxShape
 class JPH_EXPORT BoxShapeSettings final : public ConvexShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, BoxShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							BoxShapeSettings() = default;
 

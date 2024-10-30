@@ -12,9 +12,9 @@ JPH_NAMESPACE_BEGIN
 /// Class that constructs a CylinderShape
 class JPH_EXPORT CylinderShapeSettings final : public ConvexShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, CylinderShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							CylinderShapeSettings() = default;
 

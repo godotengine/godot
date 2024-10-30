@@ -12,9 +12,9 @@ JPH_NAMESPACE_BEGIN
 /// Gear constraint settings
 class JPH_EXPORT GearConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, GearConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

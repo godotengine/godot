@@ -13,9 +13,9 @@ JPH_NAMESPACE_BEGIN
 /// Cone constraint settings, used to create a cone constraint
 class JPH_EXPORT ConeConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, ConeConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

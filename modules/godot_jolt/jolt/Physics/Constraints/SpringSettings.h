@@ -21,9 +21,9 @@ enum class ESpringMode : uint8
 /// Settings for a linear or angular spring
 class JPH_EXPORT SpringSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, SpringSettings)
 
+public:
 	/// Constructor
 								SpringSettings() = default;
 								SpringSettings(const SpringSettings &) = default;

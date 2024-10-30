@@ -16,9 +16,9 @@ JPH_NAMESPACE_BEGIN
 /// Note: Soft bodies are still in development and come with several caveats. Read the Architecture and API documentation for more information!
 class JPH_EXPORT SoftBodyCreationSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, SoftBodyCreationSettings)
 
+public:
 	/// Constructor
 						SoftBodyCreationSettings() = default;
 						SoftBodyCreationSettings(const SoftBodySharedSettings *inSettings, RVec3Arg inPosition, QuatArg inRotation, ObjectLayer inObjectLayer) : mSettings(inSettings), mPosition(inPosition), mRotation(inRotation), mObjectLayer(inObjectLayer) { }

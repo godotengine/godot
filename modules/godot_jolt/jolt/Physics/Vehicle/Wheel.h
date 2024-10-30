@@ -17,9 +17,9 @@ class VehicleConstraint;
 /// Base class for wheel settings, each VehicleController can implement a derived class of this
 class JPH_EXPORT WheelSettings : public SerializableObject, public RefTarget<WheelSettings>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, WheelSettings)
 
+public:
 	/// Saves the contents in binary form to inStream.
 	virtual void			SaveBinaryState(StreamOut &inStream) const;
 

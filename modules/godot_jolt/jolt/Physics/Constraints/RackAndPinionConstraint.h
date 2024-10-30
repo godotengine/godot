@@ -12,9 +12,9 @@ JPH_NAMESPACE_BEGIN
 /// Rack and pinion constraint (slider & gear) settings
 class JPH_EXPORT RackAndPinionConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, RackAndPinionConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

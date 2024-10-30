@@ -13,9 +13,9 @@ JPH_NAMESPACE_BEGIN
 /// Fixed constraint settings, used to create a fixed constraint
 class JPH_EXPORT FixedConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, FixedConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

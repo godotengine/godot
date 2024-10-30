@@ -33,7 +33,7 @@ public:
 	void				Acquire(uint inNumber = 1);
 
 	/// Get the current value of the semaphore
-	inline int			GetValue() const								{ return mCount; }
+	inline int			GetValue() const								{ return mCount.load(std::memory_order_relaxed); }
 
 private:
 #ifdef JPH_PLATFORM_WINDOWS
@@ -44,7 +44,7 @@ private:
 	// Other platforms: Emulate a semaphore using a mutex, condition variable and count
 	mutex				mLock;
 	condition_variable	mWaitVariable;
-	int					mCount = 0;
+	atomic<int>			mCount { 0 };
 #endif
 };
 

@@ -51,7 +51,7 @@ void Semaphore::Release(uint inNumber)
 	}
 #else
 	std::lock_guard lock(mLock);
-	mCount += (int)inNumber;
+	mCount.fetch_add(inNumber, std::memory_order_relaxed);
 	if (inNumber > 1)
 		mWaitVariable.notify_all();
 	else
@@ -74,7 +74,7 @@ void Semaphore::Acquire(uint inNumber)
 	}
 #else
 	std::unique_lock lock(mLock);
-	mCount -= (int)inNumber;
+	mCount.fetch_sub(inNumber, std::memory_order_relaxed);
 	mWaitVariable.wait(lock, [this]() { return mCount >= 0; });
 #endif
 }

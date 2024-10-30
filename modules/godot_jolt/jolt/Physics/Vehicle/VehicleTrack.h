@@ -23,9 +23,9 @@ enum class ETrackSide : uint
 /// Generic properties for tank tracks
 class JPH_EXPORT VehicleTrackSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, VehicleTrackSettings)
 
+public:
 	/// Saves the contents in binary form to inStream.
 	void					SaveBinaryState(StreamOut &inStream) const;
 

@@ -105,6 +105,9 @@ void BodyManager::Init(uint inMaxBodies, uint inNumBodyMutexes, const BroadPhase
 
 	// Num body mutexes must be a power of two and not bigger than our MutexMask
 	uint num_body_mutexes = Clamp<uint>(GetNextPowerOf2(inNumBodyMutexes == 0? 2 * thread::hardware_concurrency() : inNumBodyMutexes), 1, sizeof(MutexMask) * 8);
+#ifdef JPH_TSAN_ENABLED
+	num_body_mutexes = min(num_body_mutexes, 32U); // TSAN errors out when locking too many mutexes on the same thread, see: https://github.com/google/sanitizers/issues/950
+#endif
 
 	// Allocate the body mutexes
 	mBodyMutexes.Init(num_body_mutexes);
@@ -495,10 +498,11 @@ void BodyManager::AddBodyToActiveBodies(Body &ioBody)
 	BodyID *active_bodies = mActiveBodies[type];
 
 	MotionProperties *mp = ioBody.mMotionProperties;
-	mp->mIndexInActiveBodies = num_active_bodies;
-	JPH_ASSERT(num_active_bodies < GetMaxBodies());
-	active_bodies[num_active_bodies] = ioBody.GetID();
-	num_active_bodies++; // Increment atomic after setting the body ID so that PhysicsSystem::JobFindCollisions (which doesn't lock the mActiveBodiesMutex) will only read valid IDs
+	uint32 num_active_bodies_val = num_active_bodies.load(memory_order_relaxed);
+	mp->mIndexInActiveBodies = num_active_bodies_val;
+	JPH_ASSERT(num_active_bodies_val < GetMaxBodies());
+	active_bodies[num_active_bodies_val] = ioBody.GetID();
+	num_active_bodies.fetch_add(1, memory_order_release); // Increment atomic after setting the body ID so that PhysicsSystem::JobFindCollisions (which doesn't lock the mActiveBodiesMutex) will only read valid IDs
 
 	// Count CCD bodies
 	if (mp->GetMotionQuality() == EMotionQuality::LinearCast)
@@ -512,7 +516,7 @@ void BodyManager::RemoveBodyFromActiveBodies(Body &ioBody)
 	atomic<uint32> &num_active_bodies = mNumActiveBodies[type];
 	BodyID *active_bodies = mActiveBodies[type];
 
-	uint32 last_body_index = num_active_bodies - 1;
+	uint32 last_body_index = num_active_bodies.load(memory_order_relaxed) - 1;
 	MotionProperties *mp = ioBody.mMotionProperties;
 	if (mp->mIndexInActiveBodies != last_body_index)
 	{
@@ -530,7 +534,7 @@ void BodyManager::RemoveBodyFromActiveBodies(Body &ioBody)
 	mp->mIndexInActiveBodies = Body::cInactiveIndex;
 
 	// Remove unused element from active bodies list
-	--num_active_bodies;
+	num_active_bodies.fetch_sub(1, memory_order_release);
 
 	// Count CCD bodies
 	if (mp->GetMotionQuality() == EMotionQuality::LinearCast)
@@ -640,7 +644,7 @@ void BodyManager::GetActiveBodies(EBodyType inType, BodyIDVector &outBodyIDs) co
 	UniqueLock lock(mActiveBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::ActiveBodiesList));
 
 	const BodyID *active_bodies = mActiveBodies[(int)inType];
-	outBodyIDs.assign(active_bodies, active_bodies + mNumActiveBodies[(int)inType]);
+	outBodyIDs.assign(active_bodies, active_bodies + mNumActiveBodies[(int)inType].load(memory_order_relaxed));
 }
 
 void BodyManager::GetBodyIDs(BodyIDVector &outBodies) const
@@ -1139,7 +1143,7 @@ void BodyManager::ValidateActiveBodyBounds()
 	UniqueLock lock(mActiveBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::ActiveBodiesList));
 
 	for (uint type = 0; type < cBodyTypeCount; ++type)
-		for (BodyID *id = mActiveBodies[type], *id_end = mActiveBodies[type] + mNumActiveBodies[type]; id < id_end; ++id)
+		for (BodyID *id = mActiveBodies[type], *id_end = mActiveBodies[type] + mNumActiveBodies[type].load(memory_order_relaxed); id < id_end; ++id)
 		{
 			const Body *body = mBodies[id->GetIndex()];
 			AABox cached = body->GetWorldSpaceBounds();

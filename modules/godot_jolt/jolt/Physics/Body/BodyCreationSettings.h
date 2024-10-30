@@ -29,9 +29,9 @@ enum class EOverrideMassProperties : uint8
 /// Settings for constructing a rigid body
 class JPH_EXPORT BodyCreationSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, BodyCreationSettings)
 
+public:
 	/// Constructor
 							BodyCreationSettings() = default;
 							BodyCreationSettings(const ShapeSettings *inShape, RVec3Arg inPosition, QuatArg inRotation, EMotionType inMotionType, ObjectLayer inObjectLayer) : mPosition(inPosition), mRotation(inRotation), mObjectLayer(inObjectLayer), mMotionType(inMotionType), mShape(inShape) { }

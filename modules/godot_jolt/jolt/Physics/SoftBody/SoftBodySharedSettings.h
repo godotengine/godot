@@ -14,9 +14,9 @@ JPH_NAMESPACE_BEGIN
 /// It is used during the simulation and can be shared between multiple soft bodies.
 class JPH_EXPORT SoftBodySharedSettings : public RefTarget<SoftBodySharedSettings>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, SoftBodySharedSettings)
 
+public:
 	/// Which type of bend constraint should be created
 	enum class EBendType
 	{

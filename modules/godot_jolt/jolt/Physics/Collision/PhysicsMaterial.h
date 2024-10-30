@@ -21,9 +21,9 @@ class StreamOut;
 /// If you inherit from this material, don't forget to create a suitable default material in sDefault
 class JPH_EXPORT PhysicsMaterial : public SerializableObject, public RefTarget<PhysicsMaterial>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PhysicsMaterial)
 
+public:
 	/// Virtual destructor
 	virtual									~PhysicsMaterial() override = default;
 

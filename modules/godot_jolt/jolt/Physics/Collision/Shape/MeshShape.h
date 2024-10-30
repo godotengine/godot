@@ -21,9 +21,9 @@ class CollideShapeSettings;
 /// Class that constructs a MeshShape
 class JPH_EXPORT MeshShapeSettings final : public ShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, MeshShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 									MeshShapeSettings() = default;
 

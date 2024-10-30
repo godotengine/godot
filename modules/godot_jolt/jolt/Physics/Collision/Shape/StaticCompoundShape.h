@@ -16,9 +16,9 @@ class TempAllocator;
 /// Class that constructs a StaticCompoundShape. Note that if you only want a compound of 1 shape, use a RotatedTranslatedShape instead.
 class JPH_EXPORT StaticCompoundShapeSettings final : public CompoundShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, StaticCompoundShapeSettings)
 
+public:
 	// See: ShapeSettings
 	virtual ShapeResult				Create() const override;
 

@@ -14,9 +14,9 @@ class TwoBodyConstraint;
 /// Base class for settings for all constraints that involve 2 bodies
 class JPH_EXPORT TwoBodyConstraintSettings : public ConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_ABSTRACT(JPH_EXPORT, TwoBodyConstraintSettings)
 
+public:
 	/// Create an instance of this constraint
 	/// You can use Body::sFixedToWorld for inBody1 if you want to attach inBody2 to the world
 	virtual TwoBodyConstraint *	Create(Body &inBody1, Body &inBody2) const = 0;

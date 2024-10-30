@@ -145,9 +145,9 @@ static_assert(size(sSubShapeTypeNames) == NumSubShapeTypes);
 /// data.
 class JPH_EXPORT ShapeSettings : public SerializableObject, public RefTarget<ShapeSettings>
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_ABSTRACT(JPH_EXPORT, ShapeSettings)
 
+public:
 	using ShapeResult = Result<Ref<Shape>>;
 
 	/// Create a shape according to the settings specified by this object.

@@ -15,9 +15,9 @@ class CollideShapeSettings;
 /// Class that constructs a PlaneShape
 class JPH_EXPORT PlaneShapeSettings final : public ShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PlaneShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 									PlaneShapeSettings() = default;
 

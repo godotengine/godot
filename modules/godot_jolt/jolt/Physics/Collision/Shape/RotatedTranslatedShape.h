@@ -14,9 +14,9 @@ class CollideShapeSettings;
 /// Class that constructs a RotatedTranslatedShape
 class JPH_EXPORT RotatedTranslatedShapeSettings final : public DecoratedShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, RotatedTranslatedShapeSettings)
 
+public:
 	/// Constructor
 									RotatedTranslatedShapeSettings() = default;
 
@@ -127,6 +127,16 @@ public:
 	// See Shape::MakeScaleValid
 	virtual Vec3					MakeScaleValid(Vec3Arg inScale) const override;
 
+	/// Transform the scale to the local space of the child shape
+	inline Vec3						TransformScale(Vec3Arg inScale) const
+	{
+		// We don't need to transform uniform scale or if the rotation is identity
+		if (mIsRotationIdentity || ScaleHelpers::IsUniformScale(inScale))
+			return inScale;
+
+		return ScaleHelpers::RotateScale(mRotation, inScale);
+	}
+
 	// Register shape functions with the registry
 	static void						sRegister();
 
@@ -142,16 +152,6 @@ private:
 	static void						sCastRotatedTranslatedVsShape(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
 	static void						sCastShapeVsRotatedTranslated(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
 	static void						sCastRotatedTranslatedVsRotatedTranslated(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector);
-
-	/// Transform the scale to the local space of the child shape
-	inline Vec3						TransformScale(Vec3Arg inScale) const
-	{
-		// We don't need to transform uniform scale or if the rotation is identity
-		if (mIsRotationIdentity || ScaleHelpers::IsUniformScale(inScale))
-			return inScale;
-
-		return ScaleHelpers::RotateScale(mRotation, inScale);
-	}
 
 	bool							mIsRotationIdentity;									///< If mRotation is close to identity (put here because it falls in padding bytes)
 	Vec3							mCenterOfMass;											///< Position of the center of mass

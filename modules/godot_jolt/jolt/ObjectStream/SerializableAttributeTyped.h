@@ -4,11 +4,11 @@
 
 #pragma once
 
+#ifdef JPH_OBJECT_STREAM
+
 #include <Jolt/ObjectStream/SerializableAttribute.h>
 #include <Jolt/ObjectStream/GetPrimitiveTypeOfType.h>
 #include <Jolt/ObjectStream/ObjectStream.h>
-
-#ifdef JPH_OBJECT_STREAM
 
 JPH_NAMESPACE_BEGIN
 

@@ -11,9 +11,9 @@ JPH_NAMESPACE_BEGIN
 /// Sample implementation of PhysicsMaterial that just holds the needed properties directly
 class JPH_EXPORT PhysicsMaterialSimple : public PhysicsMaterial
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PhysicsMaterialSimple)
 
+public:
 	/// Constructor
 											PhysicsMaterialSimple() = default;
 											PhysicsMaterialSimple(const string_view &inName, ColorArg inColor) : mDebugName(inName), mDebugColor(inColor) { }

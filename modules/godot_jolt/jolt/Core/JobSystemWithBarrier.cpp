@@ -146,8 +146,11 @@ void JobSystemWithBarrier::BarrierImpl::Wait()
 			} while (has_executed);
 		}
 
-		// Wait for another thread to wake us when either there is more work to do or when all jobs have completed
-		int num_to_acquire = max(1, mSemaphore.GetValue()); // When there have been multiple releases, we acquire them all at the same time to avoid needlessly spinning on executing jobs
+		// Wait for another thread to wake us when either there is more work to do or when all jobs have completed.
+		// When there have been multiple releases, we acquire them all at the same time to avoid needlessly spinning on executing jobs.
+		// Note that using GetValue is inherently unsafe since we can read a stale value, but this is not an issue here as this is the only
+		// place where we acquire the semaphore. Other threads only release it, so we can only read a value that is lower or equal to the actual value.
+		int num_to_acquire = max(1, mSemaphore.GetValue());
 		mSemaphore.Acquire(num_to_acquire);
 		mNumToAcquire -= num_to_acquire;
 	}

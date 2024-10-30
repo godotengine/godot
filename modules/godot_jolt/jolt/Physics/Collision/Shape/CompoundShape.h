@@ -16,9 +16,9 @@ class OrientedBox;
 /// Base class settings to construct a compound shape
 class JPH_EXPORT CompoundShapeSettings : public ShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_ABSTRACT(JPH_EXPORT, CompoundShapeSettings)
 
+public:
 	/// Constructor. Use AddShape to add the parts.
 									CompoundShapeSettings() = default;
 

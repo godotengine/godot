@@ -14,6 +14,7 @@ class JPH_EXPORT TaperedCylinderShapeSettings final : public ConvexShapeSettings
 {
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, TaperedCylinderShapeSettings)
 
+public:
 	/// Default constructor for deserialization
 							TaperedCylinderShapeSettings() = default;
 

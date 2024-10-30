@@ -22,9 +22,9 @@ class PhysicsSystem;
 /// See: https://www.asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html
 class JPH_EXPORT VehicleConstraintSettings : public ConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, VehicleConstraintSettings)
 
+public:
 	/// Saves the contents of the constraint settings in binary form to inStream.
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 
@@ -88,7 +88,7 @@ public:
 	const CombineFunction &		GetCombineFriction() const					{ return mCombineFriction; }
 
 	/// Callback function to notify of current stage in PhysicsStepListener::OnStep.
-	using StepCallback = function<void(VehicleConstraint &inVehicle, float inDeltaTime, PhysicsSystem &inPhysicsSystem)>;
+	using StepCallback = function<void(VehicleConstraint &inVehicle, const PhysicsStepListenerContext &inContext)>;
 
 	/// Callback function to notify that PhysicsStepListener::OnStep has started for this vehicle. Default is to do nothing.
 	/// Can be used to allow higher-level code to e.g. control steering. This is the last moment that the position/orientation of the vehicle can be changed.
@@ -196,7 +196,7 @@ public:
 
 private:
 	// See: PhysicsStepListener
-	virtual void				OnStep(float inDeltaTime, PhysicsSystem &inPhysicsSystem) override;
+	virtual void				OnStep(const PhysicsStepListenerContext &inContext) override;
 
 	// Calculate the position where the suspension and traction forces should be applied in world space, relative to the center of mass of both bodies
 	void						CalculateSuspensionForcePoint(const Wheel &inWheel, Vec3 &outR1PlusU, Vec3 &outR2) const;

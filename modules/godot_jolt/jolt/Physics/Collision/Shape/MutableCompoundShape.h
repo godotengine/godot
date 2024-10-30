@@ -13,9 +13,9 @@ class CollideShapeSettings;
 /// Class that constructs a MutableCompoundShape.
 class JPH_EXPORT MutableCompoundShapeSettings final : public CompoundShapeSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, MutableCompoundShapeSettings)
 
+public:
 	// See: ShapeSettings
 	virtual ShapeResult				Create() const override;
 };

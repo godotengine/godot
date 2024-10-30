@@ -626,7 +626,12 @@ void PhysicsSystem::JobStepListeners(PhysicsUpdateContext::Step *ioStep)
 	BodyManager::GrantActiveBodiesAccess grant_active(true, false);
 #endif
 
-	float step_time = ioStep->mContext->mStepDeltaTime;
+	PhysicsStepListenerContext context;
+	context.mDeltaTime = ioStep->mContext->mStepDeltaTime;
+	context.mIsFirstStep = ioStep->mIsFirst;
+	context.mIsLastStep = ioStep->mIsLast;
+	context.mPhysicsSystem = this;
+
 	uint32 batch_size = mPhysicsSettings.mStepListenersBatchSize;
 	for (;;)
 	{
@@ -637,7 +642,7 @@ void PhysicsSystem::JobStepListeners(PhysicsUpdateContext::Step *ioStep)
 
 		// Call the listeners
 		for (uint32 i = batch, i_end = min((uint32)mStepListeners.size(), batch + batch_size); i < i_end; ++i)
-			mStepListeners[i]->OnStep(step_time, *this);
+			mStepListeners[i]->OnStep(context);
 	}
 }
 
@@ -825,6 +830,9 @@ static void sFinalizeContactAllocator(PhysicsUpdateContext::Step &ioStep, const 
 	ioStep.mContext->mErrors.fetch_or((uint32)inAllocator.mErrors, memory_order_relaxed);
 }
 
+// Disable TSAN for this function. It detects a false positive race condition on mBodyPairs.
+// We have written mBodyPairs before doing mWriteIdx++ and we check mWriteIdx before reading mBodyPairs, so this should be safe.
+JPH_TSAN_NO_SANITIZE
 void PhysicsSystem::JobFindCollisions(PhysicsUpdateContext::Step *ioStep, int inJobIndex)
 {
 #ifdef JPH_ENABLE_ASSERTS
@@ -2649,7 +2657,7 @@ void PhysicsSystem::SaveState(StateRecorder &inStream, EStateRecorderState inSta
 		mConstraintManager.SaveState(inStream, inFilter);
 }
 
-bool PhysicsSystem::RestoreState(StateRecorder &inStream)
+bool PhysicsSystem::RestoreState(StateRecorder &inStream, const StateRecorderFilter *inFilter)
 {
 	JPH_PROFILE_FUNCTION();
 
@@ -2668,17 +2676,20 @@ bool PhysicsSystem::RestoreState(StateRecorder &inStream)
 			return false;
 
 		// Update bounding boxes for all bodies in the broadphase
-		Array<BodyID> bodies;
-		for (const Body *b : mBodyManager.GetBodies())
-			if (BodyManager::sIsValidBodyPointer(b) && b->IsInBroadPhase())
-				bodies.push_back(b->GetID());
-		if (!bodies.empty())
-			mBroadPhase->NotifyBodiesAABBChanged(&bodies[0], (int)bodies.size());
+		if (inStream.IsLastPart())
+		{
+			Array<BodyID> bodies;
+			for (const Body *b : mBodyManager.GetBodies())
+				if (BodyManager::sIsValidBodyPointer(b) && b->IsInBroadPhase())
+					bodies.push_back(b->GetID());
+			if (!bodies.empty())
+				mBroadPhase->NotifyBodiesAABBChanged(&bodies[0], (int)bodies.size());
+		}
 	}
 
 	if (uint8(state) & uint8(EStateRecorderState::Contacts))
 	{
-		if (!mContactManager.RestoreState(inStream))
+		if (!mContactManager.RestoreState(inStream, inFilter))
 			return false;
 	}
 

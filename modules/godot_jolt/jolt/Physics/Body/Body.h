@@ -48,6 +48,8 @@ public:
 	/// Check if this body is a soft body
 	inline bool				IsSoftBody() const												{ return mBodyType == EBodyType::SoftBody; }
 
+	// See comment at GetIndexInActiveBodiesInternal for reasoning why TSAN is disabled here
+	JPH_TSAN_NO_SANITIZE
 	/// If this body is currently actively simulating (true) or sleeping (false)
 	inline bool				IsActive() const												{ return mMotionProperties != nullptr && mMotionProperties->mIndexInActiveBodies != cInactiveIndex; }
 
@@ -324,6 +326,11 @@ public:
 	/// @param inUpdateMassProperties When true, the mass and inertia tensor is recalculated
 	void					SetShapeInternal(const Shape *inShape, bool inUpdateMassProperties);
 
+	// TSAN detects a race between BodyManager::AddBodyToActiveBodies coming from PhysicsSystem::ProcessBodyPair and Body::GetIndexInActiveBodiesInternal coming from PhysicsSystem::ProcessBodyPair.
+	// When PhysicsSystem::ProcessBodyPair activates a body, it updates mIndexInActiveBodies and then updates BodyManager::mNumActiveBodies with release semantics. PhysicsSystem::ProcessBodyPair will
+	// then finish its loop of active bodies and at the end of the loop it will read BodyManager::mNumActiveBodies with acquire semantics to see if any bodies were activated during the loop.
+	// This means that changes to mIndexInActiveBodies must be visible to the thread, so TSANs report must be a false positive. We suppress the warning here.
+	JPH_TSAN_NO_SANITIZE
 	/// Access to the index in the BodyManager::mActiveBodies list
 	uint32					GetIndexInActiveBodiesInternal() const							{ return mMotionProperties != nullptr? mMotionProperties->mIndexInActiveBodies : cInactiveIndex; }
 

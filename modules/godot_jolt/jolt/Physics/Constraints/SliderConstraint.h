@@ -15,9 +15,9 @@ JPH_NAMESPACE_BEGIN
 /// Slider constraint settings, used to create a slider constraint
 class JPH_EXPORT SliderConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, SliderConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

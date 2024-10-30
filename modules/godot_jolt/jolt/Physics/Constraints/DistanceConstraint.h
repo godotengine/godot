@@ -12,9 +12,9 @@ JPH_NAMESPACE_BEGIN
 /// Distance constraint settings, used to create a distance constraint
 class JPH_EXPORT DistanceConstraintSettings final : public TwoBodyConstraintSettings
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, DistanceConstraintSettings)
 
+public:
 	// See: ConstraintSettings::SaveBinaryState
 	virtual void				SaveBinaryState(StreamOut &inStream) const override;
 

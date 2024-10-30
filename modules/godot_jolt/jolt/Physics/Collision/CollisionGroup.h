@@ -18,9 +18,9 @@ class StreamOut;
 /// - Or if there's no filter for the first object, the second group filter says the objects can collide
 class JPH_EXPORT CollisionGroup
 {
-public:
 	JPH_DECLARE_SERIALIZABLE_NON_VIRTUAL(JPH_EXPORT, CollisionGroup)
 
+public:
 	using GroupID			= uint32;
 	using SubGroupID		= uint32;
 
