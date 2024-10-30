@@ -42,7 +42,7 @@ The [GitHub page](https://github.com/blazium-engine/blazium) contains action art
 
 ### Compiling from source
 
-[See the official docs](https://docs.blazium.app/contributing/development/compiling)
+[See the official docs](https://docs.blazium.app/contributing/development/compiling/)
 for compilation instructions for every supported platform.
 
 ## Community and contributing
