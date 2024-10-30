@@ -33,6 +33,7 @@
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -170,17 +171,6 @@ void EditorHelpSearch::_update_results() {
 	}
 }
 
-void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
-	// Redirect navigational key events to the tree.
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid()) {
-		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
-			results_tree->gui_input(key);
-			search_box->accept_event();
-		}
-	}
-}
-
 void EditorHelpSearch::_search_box_text_changed(const String &p_text) {
 	_update_results();
 }
@@ -241,9 +231,6 @@ void EditorHelpSearch::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			results_tree->add_theme_constant_override("icon_max_width", icon_width);
-
-			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			search_box->add_theme_icon_override("right_icon", get_editor_theme_icon(SNAME("Search")));
 
 			case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
 			hierarchy_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
@@ -329,12 +316,10 @@ EditorHelpSearch::EditorHelpSearch() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	vbox->add_child(hbox);
 
-	search_box = memnew(LineEdit);
+	search_box = memnew(FilterLineEdit);
 	search_box->set_accessibility_name(TTRC("Search"));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_clear_button_enabled(true);
-	search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelpSearch::_search_box_gui_input));
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorHelpSearch::_search_box_text_changed));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
@@ -381,6 +366,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
+	search_box->set_forward_control(results_tree);
 	results_tree->set_accessibility_name(TTRC("Search Results"));
 	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	results_tree->set_columns(2);
