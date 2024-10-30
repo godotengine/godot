@@ -1464,10 +1464,12 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
 
 				// Remove not movable nodes
-				for (CanvasItem *E : selection) {
-					if (!_is_node_movable(E, true)) {
+				for (List<CanvasItem *>::Element *E = selection.front(); E;) {
+					List<CanvasItem *>::Element *N = E->next();
+					if (!_is_node_movable(E->get(), true)) {
 						selection.erase(E);
 					}
+					E = N;
 				}
 
 				drag_selection = selection;
