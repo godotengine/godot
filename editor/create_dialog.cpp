@@ -89,7 +89,7 @@ void CreateDialog::_fill_type_list() {
 		if (!_should_hide_type(type)) {
 			type_list.push_back(type);
 			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(type);
-			String description = DTR(class_doc ? class_doc->value.brief_description : ""); // 获取节点描述
+			String description = DTR(class_doc ? class_doc->value.brief_description : "");
 			type_descriptions[type] = description;
 
 			if (!ed.get_custom_types().has(type)) {

@@ -67,7 +67,7 @@ class CreateDialog : public ConfirmationDialog {
 	HashMap<String, String> custom_type_parents;
 	HashMap<String, int> custom_type_indices;
 	List<StringName> type_list;
-	bool is_match_typedescription; // desc match bool
+	bool is_match_typedescription;
 	HashMap<StringName, String> type_descriptions;
 	HashSet<StringName> type_blacklist;
 
