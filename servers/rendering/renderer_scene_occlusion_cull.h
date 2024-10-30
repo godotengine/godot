@@ -84,7 +84,7 @@ public:
 				Vector3 view = p_cam_inv_transform.xform(corner);
 
 				if (p_cam_projection.is_orthogonal()) {
-					min_depth = MIN(min_depth, view.z);
+					min_depth = MIN(min_depth, -view.z);
 				}
 
 				Plane vp = Plane(view, 1.0);
