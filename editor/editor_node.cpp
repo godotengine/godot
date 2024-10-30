@@ -4062,6 +4062,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	int prev = editor_data.get_edited_scene();
 	int idx = prev;
+	bool replacing_empty_scene = false;
 
 	if (prev == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(prev).is_empty()) {
 		idx = editor_data.add_edited_scene(-1);
@@ -4073,6 +4074,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	} else {
 		EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_current_edited_scene_history_id());
+		replacing_empty_scene = true;
 	}
 
 	dependency_errors.clear();
@@ -4204,6 +4206,11 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	_update_title();
 	scene_tabs->update_scene_tabs();
 	_add_to_recent_scenes(lpath);
+
+	if (replacing_empty_scene && !restoring_scenes) {
+		editor_data.notify_edited_scene_changed();
+		emit_signal(SNAME("scene_changed"));
+	}
 
 	return OK;
 }
