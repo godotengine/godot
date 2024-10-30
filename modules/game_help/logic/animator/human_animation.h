@@ -72,7 +72,7 @@ namespace HumanAnim
         static Basis compute_lookat_rotation_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
 				Vector3 loc,loc2;
 				Error err = p_animation->try_position_track_interpolate(track_index, time_start, &loc);
-				err = p_animation->try_position_track_interpolate(track_index, time_start, &loc2);
+				err = p_animation->try_position_track_interpolate(track_index, time_end, &loc2);
 				return retarget_root_direction(loc,loc2);
             
         }
@@ -80,7 +80,7 @@ namespace HumanAnim
         static Vector3 compute_lookat_position_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
 				Vector3 loc,loc2;
 				Error err = p_animation->try_position_track_interpolate(track_index, time_start, &loc);
-				err = p_animation->try_position_track_interpolate(track_index, time_start, &loc2);
+				err = p_animation->try_position_track_interpolate(track_index, time_end, &loc2);
 				return loc2 - loc;
             
         }
@@ -196,12 +196,26 @@ namespace HumanAnim
 
 			node->set_transform(add_trans * curr_trans);
 		}
+        static const HashMap<String, float>& get_bone_blend_weight() {
+            static HashMap<String, float> label_map = {
 
-        void apply(Skeleton3D *p_skeleton,float p_weight) {
+                {"LeftShoulder",0.3f},
+                {"RightShoulder",0.3f}
+
+            };
+            return label_map;
+        }
+
+
+        void apply(Skeleton3D *p_skeleton,const HashMap<String, float>& bone_blend_weight,float p_weight) {
             for(auto& it : real_local_pose) {
                 int bone_index = p_skeleton->find_bone(it.key);
 				if (bone_index >= 0) {
-					p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value,p_weight));
+                    float weight = 1.0f;
+                    if(bone_blend_weight.has(it.key)) {
+                        weight = bone_blend_weight[it.key];
+                    }
+					p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value,p_weight * weight));
 				}
             }
         }

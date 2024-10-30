@@ -166,14 +166,14 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
 
 }
 // 处理动画
-void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,CharacterRootMotion& root_motion,double p_delta,bool is_first)
+void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight, double p_delta,bool is_first)
 {
 	Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
 	if (skeleton == nullptr) {
 		return;
 	}
 	update_tool->process_animations();
-    update_tool->layer_blend_apply(config, root_motion,blend_weight);
+    update_tool->layer_blend_apply(config, root_motion, bone_blend_weight,blend_weight);
 
 
 	Node* parent = get_node_or_null(root_node);
@@ -332,7 +332,7 @@ void CharacterAnimator::_thread_update_animation(float delta) {
     root_motion.reset();
     while(it!= m_LayerConfigInstanceList.end()) {
 		Ref< CharacterAnimatorLayerConfigInstance> layer = *it;
-        layer->_process_animation(m_Body->get_blackboard(),root_motion,delta,is_first);
+        layer->_process_animation(m_Body->get_blackboard(),root_motion,bone_blend_weight,delta,is_first);
         is_first = false;
         ++it;
     }

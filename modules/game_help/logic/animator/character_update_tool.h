@@ -123,6 +123,9 @@ struct CharacterRootMotion
         if(p_detal == 0) {
             return Vector3();
         }
+		if (root_motion_position_add.x + root_motion_position_add.y + root_motion_position_add.z == 0) {
+			return Vector3();
+		}
         float tm = 1.0f / ABS(p_detal);
         Vector3 velocity = root_motion_position_add * tm;
         if(is_ground) {
@@ -138,7 +141,7 @@ struct CharacterRootMotion
             return Vector3();
         }
         Quaternion q = Quaternion(Vector3(0,0,1), forward);
-        return velocity;
+        return q.xform(velocity);
 
     }
 
@@ -150,7 +153,7 @@ public:
     void add_animation_instance(AnimationMixer::AnimationInstance& ai);
     void process_animations() ;
 
-    void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, CharacterRootMotion& root_motion,float blend_weight);
+    void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight,float blend_weight);
 protected:
 
     int get_bone_index(const Dictionary& p_bone_map, const NodePath& path) ;
