@@ -479,12 +479,17 @@ class Godot(private val context: Context) {
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
 			renderView = if (usesVulkan()) {
-				if (!meetsVulkanRequirements(activity.packageManager)) {
+				if (meetsVulkanRequirements(activity.packageManager)) {
+					GodotVulkanRenderView(host, this, godotInputHandler)
+				} else if (canFallbackToOpenGL()) {
+					// Fallback to OpenGl.
+					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+				} else {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
-				GodotVulkanRenderView(host, this, godotInputHandler)
+
 			} else {
-				// Fallback to openGl
+				// Fallback to OpenGl.
 				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
 			}
 
@@ -816,6 +821,13 @@ class Godot(private val context: Context) {
 		val renderer = GodotLib.getGlobal("rendering/renderer/rendering_method")
 		val renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver")
 		return ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+	}
+
+	/**
+	 * Returns true if can fallback to OpenGL.
+	 */
+	private fun canFallbackToOpenGL(): Boolean {
+		return java.lang.Boolean.parseBoolean(GodotLib.getGlobal("rendering/rendering_device/fallback_to_opengl3"))
 	}
 
 	/**
