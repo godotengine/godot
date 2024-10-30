@@ -14,7 +14,8 @@ SConscript("windows/SCsub")
 
 # Sounds drivers
 SConscript("alsa/SCsub")
-SConscript("coreaudio/SCsub")
+if env["platform"] == "ios" or env["platform"] == "macos":
+    SConscript("coreaudio/SCsub")
 SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")

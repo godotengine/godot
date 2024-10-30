@@ -1440,8 +1440,8 @@ void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			add_track->set_icon(get_editor_theme_icon(SNAME("Add")));
-			loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
+			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			time_icon->set_texture(get_editor_theme_icon(SNAME("Time")));
 
 			add_track->get_popup()->clear();
@@ -1818,15 +1818,15 @@ void AnimationTimelineEdit::update_values() {
 
 	switch (animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
-			loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
+			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			loop->set_pressed(false);
 		} break;
 		case Animation::LOOP_LINEAR: {
-			loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
+			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
 			loop->set_pressed(true);
 		} break;
 		case Animation::LOOP_PINGPONG: {
-			loop->set_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
+			loop->set_button_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
 			loop->set_pressed(true);
 		} break;
 		default:
@@ -3313,7 +3313,7 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
 	tb->set_text(path_cache);
-	tb->set_icon(icon_cache);
+	tb->set_button_icon(icon_cache);
 	tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tb->add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
 	set_drag_preview(tb);
@@ -5112,18 +5112,18 @@ void AnimationTrackEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
-			bezier_edit_icon->set_icon(get_editor_theme_icon(SNAME("EditBezier")));
-			snap_timeline->set_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
-			snap_keys->set_icon(get_editor_theme_icon(SNAME("SnapKeys")));
-			view_group->set_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
-			selected_filter->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
-			imported_anim_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-			dummy_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-			inactive_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			bezier_edit_icon->set_button_icon(get_editor_theme_icon(SNAME("EditBezier")));
+			snap_timeline->set_button_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
+			snap_keys->set_button_icon(get_editor_theme_icon(SNAME("SnapKeys")));
+			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
+			selected_filter->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
+			imported_anim_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			inactive_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
-			auto_fit->set_icon(get_editor_theme_icon(SNAME("AnimationAutoFit")));
-			auto_fit_bezier->set_icon(get_editor_theme_icon(SNAME("AnimationAutoFitBezier")));
+			auto_fit->set_button_icon(get_editor_theme_icon(SNAME("AnimationAutoFit")));
+			auto_fit_bezier->set_button_icon(get_editor_theme_icon(SNAME("AnimationAutoFitBezier")));
 
 			const int timeline_separation = get_theme_constant(SNAME("timeline_v_separation"), SNAME("AnimationTrackEditor"));
 			timeline_vbox->add_theme_constant_override("separation", timeline_separation);
@@ -7279,7 +7279,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 
 void AnimationTrackEditor::_view_group_toggle() {
 	_update_tracks();
-	view_group->set_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
+	view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 	bezier_edit->set_filtered(selected_filter->is_pressed());
 }
 

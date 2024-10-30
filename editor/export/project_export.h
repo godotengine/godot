@@ -216,7 +216,7 @@ public:
 
 	Ref<EditorExportPreset> get_current_preset() const;
 
-	bool is_exporting() const { return exporting; };
+	bool is_exporting() const { return exporting; }
 
 	ProjectExportDialog();
 	~ProjectExportDialog();

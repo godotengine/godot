@@ -71,7 +71,7 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		case FEATURE_MOUSE:
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_NATIVE_DIALOG_INPUT:
+		case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_DIALOG_FILE:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
@@ -176,6 +176,19 @@ bool DisplayServerAndroid::clipboard_has() const {
 	}
 }
 
+Error DisplayServerAndroid::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, FAILED);
+	input_dialog_callback = p_callback;
+	return godot_java->show_input_dialog(p_title, p_description, p_partial);
+}
+
+void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
+	if (input_dialog_callback.is_valid()) {
+		input_dialog_callback.call_deferred(p_text);
+	}
+}
+
 TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
@@ -214,6 +227,14 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	const int orientation = godot_io_java->get_screen_orientation();
 	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
 	return (ScreenOrientation)orientation;
+}
+
+int DisplayServerAndroid::screen_get_internal_current_rotation(int p_screen) const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	const int rotation = godot_io_java->get_internal_current_screen_rotation();
+	return rotation;
 }
 
 int DisplayServerAndroid::get_screen_count() const {
@@ -604,12 +625,6 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	native_menu = memnew(NativeMenu);
 
-#if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
-		RasterizerGLES3::make_current(false);
-	}
-#endif
-
 #if defined(RD_ENABLED)
 	rendering_context = nullptr;
 	rendering_device = nullptr;
@@ -624,19 +639,24 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		if (rendering_context->initialize() != OK) {
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+#if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your device seem not to support Vulkan, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else {
+			} else
+#endif
+			{
 				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 				r_error = ERR_UNAVAILABLE;
 				return;
 			}
 		}
+	}
 
+	if (rendering_context) {
 		union {
 #ifdef VULKAN_ENABLED
 			RenderingContextDriverVulkanAndroid::WindowPlatformData vulkan;
@@ -673,6 +693,12 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
+	}
+#endif
+
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		RasterizerGLES3::make_current(false);
 	}
 #endif
 

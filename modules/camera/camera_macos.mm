@@ -212,12 +212,12 @@ public:
 
 AVCaptureDevice *CameraFeedMacOS::get_device() const {
 	return device;
-};
+}
 
 CameraFeedMacOS::CameraFeedMacOS() {
 	device = nullptr;
 	capture_session = nullptr;
-};
+}
 
 void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
@@ -231,7 +231,7 @@ void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 	} else if ([p_device position] == AVCaptureDevicePositionFront) {
 		position = CameraFeed::FEED_FRONT;
 	};
-};
+}
 
 bool CameraFeedMacOS::activate_feed() {
 	if (capture_session) {
@@ -257,7 +257,7 @@ bool CameraFeedMacOS::activate_feed() {
 	};
 
 	return true;
-};
+}
 
 void CameraFeedMacOS::deactivate_feed() {
 	// end camera capture if we have one
@@ -265,7 +265,7 @@ void CameraFeedMacOS::deactivate_feed() {
 		[capture_session cleanup];
 		capture_session = nullptr;
 	};
-};
+}
 
 //////////////////////////////////////////////////////////////////////////
 // MyDeviceNotifications - This is a little helper class gets notifications
@@ -351,7 +351,7 @@ void CameraMacOS::update_feeds() {
 			add_feed(newfeed);
 		};
 	};
-};
+}
 
 CameraMacOS::CameraMacOS() {
 	// Find available cameras we have at this time
@@ -359,4 +359,4 @@ CameraMacOS::CameraMacOS() {
 
 	// should only have one of these....
 	device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
-};
+}
