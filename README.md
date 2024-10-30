@@ -40,7 +40,7 @@ Official binaries for the Blazium editor and the export templates can be found
 
 ### Compiling from source
 
-[See the official docs](https://docs.blazium.app/contributing/development/compiling)
+[See the official docs](https://docs.blazium.app/contributing/development/compiling/)
 for compilation instructions for every supported platform.
 
 ## Community and contributing
