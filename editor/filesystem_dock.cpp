@@ -2716,7 +2716,7 @@ void FileSystemDock::focus_on_filter() {
 }
 
 void FileSystemDock::create_directory(const String &p_path, const String &p_base_dir) {
-	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(p_path, p_base_dir);
+	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(p_path.trim_prefix(p_base_dir), p_base_dir);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create folder: %s"), error_names[err]));
 	}
