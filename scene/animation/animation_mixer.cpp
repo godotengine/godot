@@ -1897,7 +1897,7 @@ void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_meth
 	Object *t_obj = ObjectDB::get_instance(p_object_id);
 	if (!t_obj) {
 	}
-	std::cout << "AnimationMixer::_call_object" << std::endl;
+	//std::cout << "AnimationMixer::_call_object" << std::endl;
 	Callable(t_obj, p_method).call_deferredp(argptrs, argcount);
 	Callable::CallError ce;
 	t_obj->callp(p_method, argptrs, argcount, ce);

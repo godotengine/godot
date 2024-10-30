@@ -202,7 +202,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationServer3D::get_debug_enabled);
 
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
-	std::cout << "TOTO NAVIGATION SEREVR 3D map_changed" << std::endl;
+	//std::cout << "TOTO NAVIGATION SEREVR 3D map_changed" << std::endl;
 
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 	ADD_SIGNAL(MethodInfo("avoidance_debug_changed"));
@@ -228,7 +228,7 @@ NavigationServer3D *NavigationServer3D::get_singleton() {
 NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-	std::cout << "TOTO NAVIGATION SEREVR 3D SET SINGLETON => " << &singleton << std::endl;
+	//std::cout << "TOTO NAVIGATION SEREVR 3D SET SINGLETON => " << &singleton << std::endl;
 	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
 	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1.0);
 	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4.0);

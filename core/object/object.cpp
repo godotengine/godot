@@ -1060,7 +1060,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 }
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
-	std::cout << "add_user_signal => " << p_signal.name.utf8().get_data() << std::endl;
+	//std::cout << "add_user_signal => " << p_signal.name.utf8().get_data() << std::endl;
 
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
@@ -1071,7 +1071,7 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
-	std::cout << "_has_user_signal => " << std::endl;
+	//std::cout << "_has_user_signal => " << std::endl;
 
 	if (!signal_map.has(p_name)) {
 		return false;
