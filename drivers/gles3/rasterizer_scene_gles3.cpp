@@ -1741,9 +1741,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					continue;
 				}
 
-				Vector3 camera_to_light = li->transform.origin - p_render_data->cam_transform.origin;
-				real_t sum_abs_cam_to_light = 1.0 + abs(camera_to_light.x) + abs(camera_to_light.y) + abs(camera_to_light.z); // Used to avoid overflows with length() when camera_to_light components exceed sqrt(MAX_REAL_T_VALUE)
-				const real_t distance = (camera_to_light / sum_abs_cam_to_light).length() * sum_abs_cam_to_light;
+				const real_t distance = p_render_data->cam_transform.origin.distance_to(li->transform.origin);
 
 				if (light_storage->light_is_distance_fade_enabled(li->light)) {
 					const float fade_begin = light_storage->light_get_distance_fade_begin(li->light);
@@ -1766,9 +1764,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					continue;
 				}
 
-				Vector3 camera_to_light = li->transform.origin - p_render_data->cam_transform.origin;
-				real_t sum_abs_cam_to_light = abs(camera_to_light.x) + abs(camera_to_light.y) + abs(camera_to_light.z);
-				const real_t distance = (camera_to_light / sum_abs_cam_to_light).length() * sum_abs_cam_to_light;
+				const real_t distance = p_render_data->cam_transform.origin.distance_to(li->transform.origin);
 
 				if (light_storage->light_is_distance_fade_enabled(li->light)) {
 					const float fade_begin = light_storage->light_get_distance_fade_begin(li->light);

@@ -386,12 +386,11 @@ float get_omni_spot_attenuation(float distance, float inv_range, float decay) {
 void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness,
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = omni_lights[idx].position - vertex;
-	float sum_abs_rel_vec = 1.0 + abs(light_rel_vec.x) + abs(light_rel_vec.y) + abs(light_rel_vec.z); // Used to avoid overflows with length() when light_rel_vec components exceed sqrt(MAX_FLOAT_VALUE)
-	float light_length = length(light_rel_vec / sum_abs_rel_vec) * sum_abs_rel_vec;
+	float light_length = length(light_rel_vec);
 	float omni_attenuation = get_omni_spot_attenuation(light_length, omni_lights[idx].inv_radius, omni_lights[idx].attenuation);
 	vec3 color = omni_lights[idx].color * omni_attenuation; // No light shaders here, so combine.
 
-	light_compute(normal, light_rel_vec / light_length, eye_vec, color, false, roughness,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, color, false, roughness,
 			diffuse_light,
 			specular_light);
 }
@@ -402,11 +401,10 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
 	vec3 light_rel_vec = spot_lights[idx].position - vertex;
-	float sum_abs_rel_vec = 1.0 + abs(light_rel_vec.x) + abs(light_rel_vec.y) + abs(light_rel_vec.z); // Used to avoid overflows with length() when light_rel_vec components exceed sqrt(MAX_FLOAT_VALUE)
-	float light_length = length(light_rel_vec / sum_abs_rel_vec) * sum_abs_rel_vec;
+	float light_length = length(light_rel_vec);
 	float spot_attenuation = get_omni_spot_attenuation(light_length, spot_lights[idx].inv_radius, spot_lights[idx].attenuation);
 	vec3 spot_dir = spot_lights[idx].direction;
-	float scos = max(dot(-light_rel_vec / light_length, spot_dir), spot_lights[idx].cone_angle);
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights[idx].cone_angle);
 	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights[idx].cone_angle));
 
 	mediump float cone_attenuation = spot_lights[idx].cone_attenuation;
@@ -414,7 +412,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 
 	vec3 color = spot_lights[idx].color * spot_attenuation;
 
-	light_compute(normal, light_rel_vec / light_length, eye_vec, color, false, roughness,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, color, false, roughness,
 			diffuse_light, specular_light);
 }
 #endif // !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
@@ -666,9 +664,8 @@ void main() {
 #if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
 	// Apply normal bias at draw time to avoid issues with scaling non-fused geometry.
 	vec3 light_rel_vec = positional_shadows[positional_shadow_index].light_position - vertex_interp;
-	float sum_abs_rel_vec = 1.0 + abs(light_rel_vec.x) + abs(light_rel_vec.y) + abs(light_rel_vec.z); // Used to avoid overflows with length() when light_rel_vec components exceed sqrt(MAX_FLOAT_VALUE)
-	float light_length = length(light_rel_vec / sum_abs_rel_vec) * sum_abs_rel_vec;
-	float aNdotL = abs(dot(normalize(normal_interp), light_rel_vec / light_length));
+	float light_length = length(light_rel_vec);
+	float aNdotL = abs(dot(normalize(normal_interp), normalize(light_rel_vec)));
 	vec3 normal_offset = (1.0 - aNdotL) * positional_shadows[positional_shadow_index].shadow_normal_bias * light_length * normal_interp;
 
 #ifdef ADDITIVE_SPOT
@@ -1461,8 +1458,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = omni_lights[idx].position - vertex;
-	float sum_abs_rel_vec = 1.0 + abs(light_rel_vec.x) + abs(light_rel_vec.y) + abs(light_rel_vec.z); // Used to avoid overflows with length() when light_rel_vec components exceed sqrt(MAX_FLOAT_VALUE)
-	float light_length = length(light_rel_vec / sum_abs_rel_vec) * sum_abs_rel_vec;
+	float light_length = length(light_rel_vec);
 	float omni_attenuation = get_omni_spot_attenuation(light_length, omni_lights[idx].inv_radius, omni_lights[idx].attenuation);
 	vec3 color = omni_lights[idx].color;
 	float size_A = 0.0;
@@ -1474,7 +1470,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	omni_attenuation *= shadow;
 
-	light_compute(normal, light_rel_vec / light_length, eye_vec, size_A, color, false, omni_attenuation, f0, roughness, metallic, omni_lights[idx].specular_amount, albedo, alpha, screen_uv,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, omni_attenuation, f0, roughness, metallic, omni_lights[idx].specular_amount, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -1510,11 +1506,10 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		inout vec3 specular_light) {
 
 	vec3 light_rel_vec = spot_lights[idx].position - vertex;
-	float sum_abs_rel_vec = 1.0 + abs(light_rel_vec.x) + abs(light_rel_vec.y) + abs(light_rel_vec.z); // Used to avoid overflows with length() when light_rel_vec components exceed sqrt(MAX_FLOAT_VALUE)
-	float light_length = length(light_rel_vec / sum_abs_rel_vec) * sum_abs_rel_vec;
+	float light_length = length(light_rel_vec);
 	float spot_attenuation = get_omni_spot_attenuation(light_length, spot_lights[idx].inv_radius, spot_lights[idx].attenuation);
 	vec3 spot_dir = spot_lights[idx].direction;
-	float scos = max(dot(-light_rel_vec / light_length, spot_dir), spot_lights[idx].cone_angle);
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights[idx].cone_angle);
 	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights[idx].cone_angle));
 
 	mediump float cone_attenuation = spot_lights[idx].cone_attenuation;
@@ -1531,7 +1526,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	spot_attenuation *= shadow;
 
-	light_compute(normal, light_rel_vec / light_length, eye_vec, size_A, color, false, spot_attenuation, f0, roughness, metallic, spot_lights[idx].specular_amount, albedo, alpha, screen_uv,
+	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, spot_attenuation, f0, roughness, metallic, spot_lights[idx].specular_amount, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
