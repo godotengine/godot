@@ -233,9 +233,9 @@ public:
 	bool is_edit_mode() const { return edit_mode; }
 
 	void update_bone_original();
-	Vector3 get_bone_original_position() const { return bone_original_position; };
-	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
-	Vector3 get_bone_original_scale() const { return bone_original_scale; };
+	Vector3 get_bone_original_position() const { return bone_original_position; }
+	Quaternion get_bone_original_rotation() const { return bone_original_rotation; }
+	Vector3 get_bone_original_scale() const { return bone_original_scale; }
 
 	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *skeleton);
 	~Skeleton3DEditor();

@@ -818,6 +818,17 @@
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
+		<member name="display/window/frame_pacing/android/enable_frame_pacing" type="bool" setter="" getter="" default="true">
+			Enable Swappy for stable frame pacing on Android. Highly recommended.
+			[b]Note:[/b] This option will be forced off when using OpenXR.
+		</member>
+		<member name="display/window/frame_pacing/android/swappy_mode" type="int" setter="" getter="" default="2">
+			Swappy mode to use. The options are:
+			- pipeline_forced_on: Try to honor [member Engine.max_fps]. Pipelining is always on. This is the same behavior as Desktop PC.
+			- auto_fps_pipeline_forced_on: Autocalculate max fps. Actual max_fps will be between 0 and [member Engine.max_fps]. While this sounds convenient, beware that Swappy will often downgrade max fps until it finds something that can be met and sustained. That means if your game runs between 40fps and 60fps on a 60hz screen, after some time Swappy will downgrade max fps so that the game renders at perfect 30fps.
+			- auto_fps_auto_pipeline: Same as auto_fps_pipeline_forced_on, but if Swappy detects that rendering is very fast (e.g. it takes &lt; 8ms to render on a 60hz screen) Swappy will disable pipelining to minimize input latency. This is the default.
+			[b]Note:[/b] If [member Engine.max_fps] is 0, actual max_fps will considered as to be the screen's refresh rate (often 60hz, 90hz or 120hz depending on device model and OS settings).
+		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
 			[b]Note:[/b] When set to a portrait orientation, this project setting does not flip the project resolution's width and height automatically. Instead, you have to set [member display/window/size/viewport_width] and [member display/window/size/viewport_height] accordingly.
@@ -2355,6 +2366,10 @@
 		</member>
 		<member name="rendering/2d/batching/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas item commands that can be batched into a single draw call.
+		</member>
+		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="256">
+			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
+			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.

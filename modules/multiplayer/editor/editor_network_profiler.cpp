@@ -45,11 +45,11 @@ void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (activate->is_pressed()) {
-				activate->set_icon(theme_cache.stop_icon);
+				activate->set_button_icon(theme_cache.stop_icon);
 			} else {
-				activate->set_icon(theme_cache.play_icon);
+				activate->set_button_icon(theme_cache.play_icon);
 			}
-			clear_button->set_icon(theme_cache.clear_icon);
+			clear_button->set_button_icon(theme_cache.clear_icon);
 
 			incoming_bandwidth_text->set_right_icon(theme_cache.incoming_bandwidth_icon);
 			outgoing_bandwidth_text->set_right_icon(theme_cache.outgoing_bandwidth_icon);
@@ -184,10 +184,10 @@ void EditorNetworkProfiler::_activate_pressed() {
 
 void EditorNetworkProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
-		activate->set_icon(theme_cache.stop_icon);
+		activate->set_button_icon(theme_cache.stop_icon);
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(theme_cache.play_icon);
+		activate->set_button_icon(theme_cache.play_icon);
 		activate->set_text(TTR("Start"));
 	}
 }

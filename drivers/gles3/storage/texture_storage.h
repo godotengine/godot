@@ -478,8 +478,8 @@ public:
 
 	/* Canvas Texture API */
 
-	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); };
-	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
+	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); }
+	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); }
 
 	virtual RID canvas_texture_allocate() override;
 	virtual void canvas_texture_initialize(RID p_rid) override;
@@ -499,8 +499,8 @@ public:
 			return texture_owner.get_or_null(texture->proxy_to);
 		}
 		return texture;
-	};
-	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
+	}
+	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); }
 
 	void texture_2d_initialize_from_texture(RID p_texture, Texture &p_tex) {
 		texture_owner.initialize_rid(p_texture, p_tex);
@@ -618,8 +618,8 @@ public:
 
 	static GLuint system_fbo;
 
-	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
-	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); }
+	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); }
 
 	void check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 

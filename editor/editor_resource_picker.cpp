@@ -63,12 +63,12 @@ void EditorResourcePicker::_update_resource() {
 		assign_button->set_custom_minimum_size(assign_button_min_size);
 
 		if (edited_resource.is_null()) {
-			assign_button->set_icon(Ref<Texture2D>());
+			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(String("(") + base_type + "):" + TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 			assign_button->set_modulate(Color(1, 0.5, 0.5));
 		} else {
-			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
+			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 			if(resource.is_valid()) {
 				if (!resource->get_name().is_empty()) {
 					assign_button->set_text(resource->get_name());
@@ -122,7 +122,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		}
 
 		if (p_preview.is_valid()) {
-			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_button_icon()->get_width() + assign_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
 			// Resource-specific stretching.
 			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
@@ -875,7 +875,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
-			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
+			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_DRAW: {

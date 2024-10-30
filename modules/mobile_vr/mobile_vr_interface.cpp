@@ -37,11 +37,11 @@
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
-};
+}
 
 uint32_t MobileVRInterface::get_capabilities() const {
 	return XRInterface::XR_STEREO;
-};
+}
 
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	// Our magnetometer doesn't give us nice clean data.
@@ -98,7 +98,7 @@ Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	};
 
 	return mag_scaled;
-};
+}
 
 Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p_magneto) {
 	// yup, stock standard cross product solution...
@@ -117,7 +117,7 @@ Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p
 	acc_mag_m3.rows[2] = magneto;
 
 	return acc_mag_m3;
-};
+}
 
 void MobileVRInterface::set_position_from_sensors() {
 	_THREAD_SAFE_METHOD_
@@ -215,7 +215,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	head_transform.basis = orientation.orthonormalized();
 
 	last_ticks = ticks;
-};
+}
 
 void MobileVRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_eye_height", "eye_height"), &MobileVRInterface::set_eye_height);
@@ -280,51 +280,51 @@ Rect2 MobileVRInterface::get_offset_rect() const {
 
 void MobileVRInterface::set_iod(const double p_iod) {
 	intraocular_dist = p_iod;
-};
+}
 
 double MobileVRInterface::get_iod() const {
 	return intraocular_dist;
-};
+}
 
 void MobileVRInterface::set_display_width(const double p_display_width) {
 	display_width = p_display_width;
-};
+}
 
 double MobileVRInterface::get_display_width() const {
 	return display_width;
-};
+}
 
 void MobileVRInterface::set_display_to_lens(const double p_display_to_lens) {
 	display_to_lens = p_display_to_lens;
-};
+}
 
 double MobileVRInterface::get_display_to_lens() const {
 	return display_to_lens;
-};
+}
 
 void MobileVRInterface::set_oversample(const double p_oversample) {
 	oversample = p_oversample;
-};
+}
 
 double MobileVRInterface::get_oversample() const {
 	return oversample;
-};
+}
 
 void MobileVRInterface::set_k1(const double p_k1) {
 	k1 = p_k1;
-};
+}
 
 double MobileVRInterface::get_k1() const {
 	return k1;
-};
+}
 
 void MobileVRInterface::set_k2(const double p_k2) {
 	k2 = p_k2;
-};
+}
 
 double MobileVRInterface::get_k2() const {
 	return k2;
-};
+}
 
 float MobileVRInterface::get_vrs_min_radius() const {
 	return xr_vrs.get_vrs_min_radius();
@@ -345,7 +345,7 @@ void MobileVRInterface::set_vrs_strength(float p_vrs_strength) {
 uint32_t MobileVRInterface::get_view_count() {
 	// needs stereo...
 	return 2;
-};
+}
 
 XRInterface::TrackingStatus MobileVRInterface::get_tracking_status() const {
 	return tracking_state;
@@ -353,7 +353,7 @@ XRInterface::TrackingStatus MobileVRInterface::get_tracking_status() const {
 
 bool MobileVRInterface::is_initialized() const {
 	return (initialized);
-};
+}
 
 bool MobileVRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -387,7 +387,7 @@ bool MobileVRInterface::initialize() {
 	};
 
 	return true;
-};
+}
 
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
@@ -408,7 +408,7 @@ void MobileVRInterface::uninitialize() {
 
 		initialized = false;
 	};
-};
+}
 
 Dictionary MobileVRInterface::get_system_info() {
 	Dictionary dict;
@@ -442,7 +442,7 @@ Size2 MobileVRInterface::get_render_target_size() {
 	target_size.y *= oversample;
 
 	return target_size;
-};
+}
 
 Transform3D MobileVRInterface::get_camera_transform() {
 	_THREAD_SAFE_METHOD_
@@ -463,7 +463,7 @@ Transform3D MobileVRInterface::get_camera_transform() {
 	}
 
 	return transform_for_eye;
-};
+}
 
 Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
@@ -497,7 +497,7 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	};
 
 	return transform_for_eye;
-};
+}
 
 Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
@@ -508,7 +508,7 @@ Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_
 	eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
 
 	return eye;
-};
+}
 
 Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
@@ -571,7 +571,7 @@ void MobileVRInterface::process() {
 			head->set_pose("default", head_transform, Vector3(), Vector3(), tracking_confidence);
 		}
 	};
-};
+}
 
 RID MobileVRInterface::get_vrs_texture() {
 	PackedVector2Array eye_foci;
@@ -597,4 +597,4 @@ MobileVRInterface::~MobileVRInterface() {
 	if (is_initialized()) {
 		uninitialize();
 	};
-};
+}

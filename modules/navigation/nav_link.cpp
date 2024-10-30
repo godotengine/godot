@@ -57,7 +57,7 @@ void NavLink::set_enabled(bool p_enabled) {
 
 	// TODO: This should not require a full rebuild as the link has not really changed.
 	link_dirty = true;
-};
+}
 
 void NavLink::set_bidirectional(bool p_bidirectional) {
 	if (bidirectional == p_bidirectional) {
