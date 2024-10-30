@@ -197,18 +197,18 @@ void FileDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			dir_up->set_icon(theme_cache.parent_folder);
+			dir_up->set_button_icon(theme_cache.parent_folder);
 			if (vbox->is_layout_rtl()) {
-				dir_prev->set_icon(theme_cache.forward_folder);
-				dir_next->set_icon(theme_cache.back_folder);
+				dir_prev->set_button_icon(theme_cache.forward_folder);
+				dir_next->set_button_icon(theme_cache.back_folder);
 			} else {
-				dir_prev->set_icon(theme_cache.back_folder);
-				dir_next->set_icon(theme_cache.forward_folder);
+				dir_prev->set_button_icon(theme_cache.back_folder);
+				dir_next->set_button_icon(theme_cache.forward_folder);
 			}
-			refresh->set_icon(theme_cache.reload);
-			show_hidden->set_icon(theme_cache.toggle_hidden);
-			makedir->set_icon(theme_cache.create_folder);
-			show_filename_filter_button->set_icon(theme_cache.toggle_filename_filter);
+			refresh->set_button_icon(theme_cache.reload);
+			show_hidden->set_button_icon(theme_cache.toggle_hidden);
+			makedir->set_button_icon(theme_cache.create_folder);
+			show_filename_filter_button->set_button_icon(theme_cache.toggle_filename_filter);
 
 			dir_up->begin_bulk_theme_override();
 			dir_up->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);

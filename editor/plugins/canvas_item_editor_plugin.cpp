@@ -3966,39 +3966,39 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 }
 
 void CanvasItemEditor::_update_editor_settings() {
-	button_center_view->set_icon(get_editor_theme_icon(SNAME("CenterView")));
-	select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+	button_center_view->set_button_icon(get_editor_theme_icon(SNAME("CenterView")));
+	select_button->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 	select_sb->set_texture(get_editor_theme_icon(SNAME("EditorRect2D")));
-	list_select_button->set_icon(get_editor_theme_icon(SNAME("ListSelect")));
-	move_button->set_icon(get_editor_theme_icon(SNAME("ToolMove")));
-	scale_button->set_icon(get_editor_theme_icon(SNAME("ToolScale")));
-	rotate_button->set_icon(get_editor_theme_icon(SNAME("ToolRotate")));
-	smart_snap_button->set_icon(get_editor_theme_icon(SNAME("Snap")));
-	grid_snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
-	snap_config_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-	skeleton_menu->set_icon(get_editor_theme_icon(SNAME("Bone")));
-	override_camera_button->set_icon(get_editor_theme_icon(SNAME("Camera2D")));
-	pan_button->set_icon(get_editor_theme_icon(SNAME("ToolPan")));
-	ruler_button->set_icon(get_editor_theme_icon(SNAME("Ruler")));
-	pivot_button->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
+	list_select_button->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
+	move_button->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
+	scale_button->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
+	rotate_button->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
+	smart_snap_button->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
+	grid_snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+	snap_config_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+	skeleton_menu->set_button_icon(get_editor_theme_icon(SNAME("Bone")));
+	override_camera_button->set_button_icon(get_editor_theme_icon(SNAME("Camera2D")));
+	pan_button->set_button_icon(get_editor_theme_icon(SNAME("ToolPan")));
+	ruler_button->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
+	pivot_button->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 	select_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 	anchor_handle = get_editor_theme_icon(SNAME("EditorControlAnchor"));
-	lock_button->set_icon(get_editor_theme_icon(SNAME("Lock")));
-	unlock_button->set_icon(get_editor_theme_icon(SNAME("Unlock")));
-	group_button->set_icon(get_editor_theme_icon(SNAME("Group")));
-	ungroup_button->set_icon(get_editor_theme_icon(SNAME("Ungroup")));
-	key_loc_button->set_icon(get_editor_theme_icon(SNAME("KeyPosition")));
-	key_rot_button->set_icon(get_editor_theme_icon(SNAME("KeyRotation")));
-	key_scale_button->set_icon(get_editor_theme_icon(SNAME("KeyScale")));
-	key_insert_button->set_icon(get_editor_theme_icon(SNAME("Key")));
-	key_auto_insert_button->set_icon(get_editor_theme_icon(SNAME("AutoKey")));
+	lock_button->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
+	unlock_button->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
+	group_button->set_button_icon(get_editor_theme_icon(SNAME("Group")));
+	ungroup_button->set_button_icon(get_editor_theme_icon(SNAME("Ungroup")));
+	key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
+	key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
+	key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
+	key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("Key")));
+	key_auto_insert_button->set_button_icon(get_editor_theme_icon(SNAME("AutoKey")));
 	// Use a different color for the active autokey icon to make them easier
 	// to distinguish from the other key icons at the top. On a light theme,
 	// the icon will be dark, so we need to lighten it before blending it
 	// with the red color.
 	const Color key_auto_color = EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
-	animation_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
@@ -6266,7 +6266,7 @@ void CanvasItemEditorViewport::_update_theme() {
 
 	for (BaseButton *btn : btn_list) {
 		CheckBox *check = Object::cast_to<CheckBox>(btn);
-		check->set_icon(get_editor_theme_icon(check->get_text()));
+		check->set_button_icon(get_editor_theme_icon(check->get_text()));
 	}
 
 	label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));

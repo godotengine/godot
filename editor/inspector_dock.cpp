@@ -427,11 +427,11 @@ void InspectorDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			resource_new_button->set_icon(get_editor_theme_icon(SNAME("New")));
-			resource_load_button->set_icon(get_editor_theme_icon(SNAME("Load")));
-			resource_save_button->set_icon(get_editor_theme_icon(SNAME("Save")));
-			resource_extra_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-			open_docs_button->set_icon(get_editor_theme_icon(SNAME("HelpSearch")));
+			resource_new_button->set_button_icon(get_editor_theme_icon(SNAME("New")));
+			resource_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+			resource_save_button->set_button_icon(get_editor_theme_icon(SNAME("Save")));
+			resource_extra_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			open_docs_button->set_button_icon(get_editor_theme_icon(SNAME("HelpSearch")));
 
 			PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
 			resource_extra_popup->set_item_icon(resource_extra_popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), get_editor_theme_icon(SNAME("ActionPaste")));
@@ -439,24 +439,24 @@ void InspectorDock::_notification(int p_what) {
 			resource_extra_popup->set_item_icon(resource_extra_popup->get_item_index(RESOURCE_SHOW_IN_FILESYSTEM), get_editor_theme_icon(SNAME("ShowInFileSystem")));
 
 			if (is_layout_rtl()) {
-				backward_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
-				forward_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				backward_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+				forward_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			} else {
-				backward_button->set_icon(get_editor_theme_icon(SNAME("Back")));
-				forward_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				backward_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+				forward_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
 
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			history_menu->get_popup()->add_theme_constant_override("icon_max_width", icon_width);
 
-			history_menu->set_icon(get_editor_theme_icon(SNAME("History")));
-			object_menu->set_icon(get_editor_theme_icon(SNAME("Tools")));
+			history_menu->set_button_icon(get_editor_theme_icon(SNAME("History")));
+			object_menu->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (info_is_warning) {
-				info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+				info->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
-				info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
+				info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
@@ -483,10 +483,10 @@ void InspectorDock::set_info(const String &p_button_text, const String &p_messag
 	info_is_warning = p_is_warning;
 
 	if (info_is_warning) {
-		info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+		info->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	} else {
-		info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
+		info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 
