@@ -39,6 +39,7 @@ env_ktx.Prepend(CPPPATH=[thirdparty_dir + "lib"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
 
 env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
+env_ktx.Prepend(CPPPATH=["#thirdparty/zstd"])
 if env.editor_build:
     # We already build miniz in the basis_universal module (editor only).
     env_ktx.Append(CPPDEFINES=["MINIZ_HEADER_FILE_ONLY"])
