@@ -44,6 +44,7 @@ import android.os.*
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
+import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -80,6 +81,7 @@ import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+
 
 /**
  * Core component used to interface with the native layer of the engine.
@@ -772,7 +774,7 @@ class Godot(private val context: Context) {
 			val builder = AlertDialog.Builder(activity)
 			builder.setMessage(message).setTitle(title)
 			builder.setPositiveButton(
-				"OK"
+				R.string.dialog_ok
 			) { dialog: DialogInterface, id: Int ->
 				okCallback?.run()
 				dialog.cancel()
@@ -875,6 +877,31 @@ class Godot(private val context: Context) {
 		val clip = ClipData.newPlainText("myLabel", text)
 		mClipboard.setPrimaryClip(clip)
 	}
+
+	/**
+	 * Popup a dialog to input text.
+	 */
+	@Keep
+	private fun showInputDialog(title: String, message: String, existingText: String) {
+		val activity: Activity = getActivity() ?: return
+		val inputField = EditText(activity)
+		val paddingHorizontal = activity.resources.getDimensionPixelSize(R.dimen.input_dialog_padding_horizontal)
+		val paddingVertical = activity.resources.getDimensionPixelSize(R.dimen.input_dialog_padding_vertical)
+		inputField.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical)
+		inputField.setText(existingText)
+		runOnUiThread {
+			val builder = AlertDialog.Builder(activity)
+			builder.setMessage(message).setTitle(title).setView(inputField)
+			builder.setPositiveButton(R.string.dialog_ok) {
+				dialog: DialogInterface, id: Int ->
+				GodotLib.inputDialogCallback(inputField.text.toString())
+				dialog.dismiss()
+			}
+			val dialog = builder.create()
+			dialog.show()
+		}
+	}
+
 
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.
