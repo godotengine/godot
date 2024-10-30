@@ -76,7 +76,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 			ssh_args = p_ssh_arg;
 			cmd_args = p_cmd_args;
 			wait = p_wait;
-		};
+		}
 	};
 
 	Ref<ImageTexture> run_icon;

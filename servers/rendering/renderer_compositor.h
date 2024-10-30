@@ -106,7 +106,7 @@ public:
 	virtual double get_total_time() const = 0;
 	virtual bool can_create_resources_async() const = 0;
 
-	static bool is_low_end() { return low_end; };
+	static bool is_low_end() { return low_end; }
 	virtual bool is_xr_enabled() const;
 
 	static RendererCompositor *get_singleton() { return singleton; }

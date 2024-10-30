@@ -496,13 +496,13 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 
 float TileAtlasView::get_zoom() const {
 	return zoom_widget->get_zoom();
-};
+}
 
 void TileAtlasView::set_transform(float p_zoom, Vector2i p_panning) {
 	zoom_widget->set_zoom(p_zoom);
 	panning = p_panning;
 	_update_zoom_and_panning();
-};
+}
 
 void TileAtlasView::set_padding(Side p_side, int p_padding) {
 	ERR_FAIL_COND(p_padding < 0);

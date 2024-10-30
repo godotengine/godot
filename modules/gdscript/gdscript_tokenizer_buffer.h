@@ -79,7 +79,7 @@ public:
 	virtual bool is_past_cursor() const override;
 	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
 	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
-	virtual bool is_text() override { return false; };
+	virtual bool is_text() override { return false; }
 
 #ifdef TOOLS_ENABLED
 	virtual const HashMap<int, CommentData> &get_comments() const override {

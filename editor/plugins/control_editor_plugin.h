@@ -241,7 +241,7 @@ protected:
 	static ControlEditorToolbar *singleton;
 
 public:
-	bool is_anchors_mode_enabled() { return anchors_mode; };
+	bool is_anchors_mode_enabled() { return anchors_mode; }
 
 	static ControlEditorToolbar *get_singleton() { return singleton; }
 

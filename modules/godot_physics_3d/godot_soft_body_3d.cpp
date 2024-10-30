@@ -1121,7 +1121,7 @@ struct AABBQueryResult {
 
 	_FORCE_INLINE_ bool operator()(void *p_data) {
 		return result_callback(soft_body->get_node_index(p_data), userdata);
-	};
+	}
 };
 
 void GodotSoftBody3D::query_aabb(const AABB &p_aabb, GodotSoftBody3D::QueryResultCallback p_result_callback, void *p_userdata) {
@@ -1140,7 +1140,7 @@ struct RayQueryResult {
 
 	_FORCE_INLINE_ bool operator()(void *p_data) {
 		return result_callback(soft_body->get_face_index(p_data), userdata);
-	};
+	}
 };
 
 void GodotSoftBody3D::query_ray(const Vector3 &p_from, const Vector3 &p_to, GodotSoftBody3D::QueryResultCallback p_result_callback, void *p_userdata) {
