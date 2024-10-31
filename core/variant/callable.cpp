@@ -206,25 +206,31 @@ int Callable::get_bound_arguments_count() const {
 	}
 }
 
-void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const {
+void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments) const {
 	if (!is_null() && is_custom()) {
-		custom->get_bound_arguments(r_arguments, r_argcount);
+		custom->get_bound_arguments(r_arguments);
 	} else {
 		r_arguments.clear();
-		r_argcount = 0;
 	}
 }
 
 Array Callable::get_bound_arguments() const {
 	Vector<Variant> arr;
-	int ac;
-	get_bound_arguments_ref(arr, ac);
+	get_bound_arguments_ref(arr);
 	Array ret;
 	ret.resize(arr.size());
 	for (int i = 0; i < arr.size(); i++) {
 		ret[i] = arr[i];
 	}
 	return ret;
+}
+
+int Callable::get_unbound_arguments_count() const {
+	if (!is_null() && is_custom()) {
+		return custom->get_unbound_arguments_count();
+	} else {
+		return 0;
+	}
 }
 
 CallableCustom *Callable::get_custom() const {
@@ -464,9 +470,12 @@ int CallableCustom::get_bound_arguments_count() const {
 	return 0;
 }
 
-void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
-	r_arguments = Vector<Variant>();
-	r_argcount = 0;
+void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments) const {
+	r_arguments.clear();
+}
+
+int CallableCustom::get_unbound_arguments_count() const {
+	return 0;
 }
 
 CallableCustom::CallableCustom() {

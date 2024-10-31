@@ -155,13 +155,21 @@
 		<method name="get_bound_arguments" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Return the bound arguments (as long as [method get_bound_arguments_count] is greater than zero), or empty (if [method get_bound_arguments_count] is less than or equal to zero).
+				Returns the array of arguments bound via successive [method bind] or [method unbind] calls. These arguments will be added [i]after[/i] the arguments passed to the call, from which [method get_unbound_arguments_count] arguments on the right have been previously excluded.
+				[codeblock]
+				func get_effective_arguments(callable, call_args):
+				    assert(call_args.size() - callable.get_unbound_arguments_count() &gt;= 0)
+				    var result = call_args.slice(0, call_args.size() - callable.get_unbound_arguments_count())
+				    result.append_array(callable.get_bound_arguments())
+				    return result
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_bound_arguments_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the total amount of arguments bound (or unbound) via successive [method bind] or [method unbind] calls. If the amount of arguments unbound is greater than the ones bound, this function returns a value less than zero.
+				Returns the total amount of arguments bound via successive [method bind] or [method unbind] calls. This is the same as the size of the array returned by [method get_bound_arguments]. See [method get_bound_arguments] for details.
+				[b]Note:[/b] The [method get_bound_arguments_count] and [method get_unbound_arguments_count] methods can both return positive values.
 			</description>
 		</method>
 		<method name="get_method" qualifiers="const">
@@ -180,6 +188,13 @@
 			<return type="int" />
 			<description>
 				Returns the ID of this [Callable]'s object (see [method Object.get_instance_id]).
+			</description>
+		</method>
+		<method name="get_unbound_arguments_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of arguments unbound via successive [method bind] or [method unbind] calls. See [method get_bound_arguments] for details.
+				[b]Note:[/b] The [method get_bound_arguments_count] and [method get_unbound_arguments_count] methods can both return positive values.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
