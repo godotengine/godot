@@ -368,6 +368,9 @@ public:
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
 	}
+	_FORCE_INLINE_ bool is_struct() const {
+		return Array(*this).is_struct(); // TODO: not sure if this is the best way to do this.
+	}
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;

@@ -1,0 +1,2 @@
+GDTEST_OK
+[number: 25, string: "hello", arr: [6], dict: { "hi": "ho" }]

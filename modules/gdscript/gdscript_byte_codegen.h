@@ -395,6 +395,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_name_map_pos(p_name));
 	}
 
+	void append(const StructInfo &p_struct) {
+		opcodes.push_back(get_name_map_pos(p_struct.name));
+	}
+
 	void append(const Variant::ValidatedOperatorEvaluator p_operation) {
 		opcodes.push_back(get_operation_pos(p_operation));
 	}
@@ -528,6 +532,7 @@ public:
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) override;
+	virtual void write_construct_struct(const Address &p_target, const GDScriptDataType &p_struct_type, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_typed_dictionary(const Address &p_target, const GDScriptDataType &p_key_type, const GDScriptDataType &p_value_type, const Vector<Address> &p_arguments) override;
 	virtual void write_await(const Address &p_target, const Address &p_operand) override;

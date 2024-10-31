@@ -857,6 +857,8 @@ if env.msvc and not methods.using_clang(env):  # MSVC
             ]
         )
 
+        env.Append(CCFLAGS=["/permissive-"])
+
     if env["werror"]:
         env.Append(CCFLAGS=["/WX"])
         env.Append(LINKFLAGS=["/WX"])

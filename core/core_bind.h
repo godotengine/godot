@@ -469,9 +469,12 @@ public:
 	APIType class_get_api_type(const StringName &p_class) const;
 	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
 	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
+	//Struct<MethodInfo> class_get_signal_as_struct(const StringName &p_class, const StringName &p_signal) const;
 	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	//TypedArray<Struct<MethodInfo>> class_get_signal_list_as_structs(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	//TypedArray<Struct<PropertyInfo>> class_get_property_list_as_structs(const StringName &p_class, bool p_no_inheritance = false) const;
 	StringName class_get_property_getter(const StringName &p_class, const StringName &p_property);
 	StringName class_get_property_setter(const StringName &p_class, const StringName &p_property);
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
@@ -484,6 +487,7 @@ public:
 	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	//TypedArray<Struct<MethodInfo>> class_get_method_list_as_structs(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant class_call_static_method(const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error);
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
@@ -498,6 +502,10 @@ public:
 	bool is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(const StringName &p_class) const;
+
+	bool class_has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_struct_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_struct_members(const StringName &p_class, const StringName &p_struct) const;
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;

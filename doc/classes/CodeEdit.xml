@@ -647,6 +647,8 @@
 		<constant name="KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
 			Marks the option as unclassified or plain text.
 		</constant>
+		<constant name="KIND_STRUCT" value="10" enum="CodeCompletionKind">
+		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>

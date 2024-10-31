@@ -116,38 +116,45 @@ void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_
 #endif // DEBUG_ENABLED
 
 Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataType &p_data_type) {
-	if (p_data_type.kind == GDScriptDataType::BUILTIN) {
-		if (p_data_type.builtin_type == Variant::ARRAY) {
-			Array array;
-			// Typed array.
-			if (p_data_type.has_container_element_type(0)) {
-				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
-				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+	switch (p_data_type.kind) {
+		case GDScriptDataType::BUILTIN: {
+			switch (p_data_type.builtin_type) {
+				case Variant::ARRAY: {
+					if (const StructInfo *info = p_data_type.get_struct_info()) {
+						return Array(*info);
+					}
+					Array array;
+					// Typed array.
+					if (p_data_type.has_container_element_type(0)) {
+						const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
+						array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+					}
+					return array;
+				}
+				case Variant::DICTIONARY: {
+					Dictionary dict;
+					// Typed dictionary.
+					if (p_data_type.has_container_element_types()) {
+						const GDScriptDataType &key_type = p_data_type.get_container_element_type_or_variant(0);
+						const GDScriptDataType &value_type = p_data_type.get_container_element_type_or_variant(1);
+						dict.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
+					}
+
+					return dict;
+				}
+				default:
+					Callable::CallError ce;
+					Variant variant;
+					Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
+
+					ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
+
+					return variant;
 			}
-
-			return array;
-		} else if (p_data_type.builtin_type == Variant::DICTIONARY) {
-			Dictionary dict;
-			// Typed dictionary.
-			if (p_data_type.has_container_element_types()) {
-				const GDScriptDataType &key_type = p_data_type.get_container_element_type_or_variant(0);
-				const GDScriptDataType &value_type = p_data_type.get_container_element_type_or_variant(1);
-				dict.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
-			}
-
-			return dict;
-		} else {
-			Callable::CallError ce;
-			Variant variant;
-			Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
-
-			ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
-
-			return variant;
 		}
+		default:
+			return Variant();
 	}
-
-	return Variant();
 }
 
 String GDScriptFunction::_get_call_error(const String &p_where, const Variant **p_argptrs, const Variant &p_ret, const Callable::CallError &p_err) const {
@@ -267,6 +274,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_VALIDATED,                    \
 		&&OPCODE_CONSTRUCT_ARRAY,                        \
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                  \
+		&&OPCODE_CONSTRUCT_STRUCT,                       \
 		&&OPCODE_CONSTRUCT_DICTIONARY,                   \
 		&&OPCODE_CONSTRUCT_TYPED_DICTIONARY,             \
 		&&OPCODE_CALL,                                   \
@@ -1792,6 +1800,45 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CONSTRUCT_STRUCT) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(3 + instr_arg_count);
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				int struct_name_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(struct_name_idx < 0 || struct_name_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[struct_name_idx];
+
+				// TODO: this ordering will prefer native structs to user structs, which I'm not sure is right
+				// TODO: move this logic to the compiler and/or bytecode generator
+				const StructInfo *struct_info;
+				if (const StructInfo *native_struct_info = ClassDB::get_struct_info(native_type)) {
+					struct_info = native_struct_info;
+				} else {
+					GET_INSTRUCTION_ARG(script_type, argc + 1);
+					const GDScript *gd_script = Object::cast_to<GDScript>(script_type->operator Object *());
+					GD_ERR_BREAK(!gd_script);
+					struct_info = gd_script->get_script_struct_info(native_type);
+				}
+
+				GD_ERR_BREAK(!struct_info);
+				GD_ERR_BREAK(struct_info->count < argc);
+				// TODO: avoid reassigning non-default values
+				Array array = Array(*struct_info);
+				for (int i = 0; i < argc; i++) {
+					array[i] = *(instruction_args[i]);
+				}
+
+				GET_INSTRUCTION_ARG(dst, argc);
+				*dst = Variant(); // Clear potential previous struct.
+
+				*dst = Array(array, *struct_info);
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CONSTRUCT_DICTIONARY) {
 				LOAD_INSTRUCTION_ARGS
 				CHECK_SPACE(2 + instr_arg_count);
@@ -1812,7 +1859,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = Variant(); // Clear potential previous typed dictionary.
 
 				*dst = dict;
-
 				ip += 2;
 			}
 			DISPATCH_OPCODE;
