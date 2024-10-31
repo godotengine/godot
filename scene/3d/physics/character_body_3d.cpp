@@ -33,9 +33,9 @@
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-bool CharacterBody3D::move_and_slide() {
+bool CharacterBody3D::move_and_slide(float delta) {
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+	//double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
 	for (int i = 0; i < 3; i++) {
 		if (locked_axis & (1 << i)) {
@@ -107,11 +107,11 @@ bool CharacterBody3D::move_and_slide() {
 			_set_collision_direction(floor_result, result_state);
 		}
 	}
-
+	Vector3 motion = velocity * delta;
 	if (motion_mode == MOTION_MODE_GROUNDED) {
-		_move_and_slide_grounded(delta, was_on_floor);
+		_move_and_slide_grounded(motion, was_on_floor);
 	} else {
-		_move_and_slide_floating(delta);
+		_move_and_slide_floating(motion);
 	}
 
 	// Compute real velocity.
@@ -130,8 +130,8 @@ bool CharacterBody3D::move_and_slide() {
 	return motion_results.size() > 0;
 }
 
-void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_floor) {
-	Vector3 motion = velocity * p_delta;
+void CharacterBody3D::_move_and_slide_grounded(const Vector3& p_motion, bool p_was_on_floor) {
+	Vector3 motion = p_motion;
 	Vector3 motion_slide_up = motion.slide(up_direction);
 	Vector3 prev_floor_normal = floor_normal;
 
@@ -392,8 +392,8 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	}
 }
 
-void CharacterBody3D::_move_and_slide_floating(double p_delta) {
-	Vector3 motion = velocity * p_delta;
+void CharacterBody3D::_move_and_slide_floating(const Vector3& p_motion) {
+	Vector3 motion = p_motion;
 
 	platform_rid = RID();
 	platform_object_id = ObjectID();

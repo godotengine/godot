@@ -47,7 +47,7 @@ public:
 		PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY,
 		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
-	bool move_and_slide();
+	bool move_and_slide(float delta);
 	void apply_floor_snap();
 
 	const Vector3 &get_velocity() const;
@@ -170,8 +170,8 @@ private:
 	Vector<PhysicsServer3D::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision3D>> slide_colliders;
 
-	void _move_and_slide_floating(double p_delta);
-	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
+	void _move_and_slide_floating(const Vector3& motion);
+	void _move_and_slide_grounded(const Vector3& motion, bool p_was_on_floor);
 
 	Ref<KinematicCollision3D> _get_slide_collision(int p_bounce);
 	Ref<KinematicCollision3D> _get_last_slide_collision();

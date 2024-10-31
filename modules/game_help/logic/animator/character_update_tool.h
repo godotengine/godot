@@ -127,7 +127,7 @@ struct CharacterRootMotion
 			return Vector3();
 		}
         float tm = 1.0f / ABS(p_detal);
-        Vector3 velocity = root_motion_position_add * tm;
+        Vector3 velocity = root_motion_position_add;
         if(is_ground) {
             if(forward.x + forward.z == 0)
             {

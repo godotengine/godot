@@ -696,7 +696,7 @@ namespace HumanAnim
 					bone_foreard = child_trans.origin - trans.origin;
 				}
 				p_skeleton_config.bone_lookat[it] = bone_foreard.normalized();
-				p_skeleton_config.root_position[it] = trans.origin - pose.position;
+				p_skeleton_config.root_position[it] = (trans.origin - pose.position);
 				build_skeleton_global_lookat(p_config, pose,local_trans, p_skeleton_config);
 			}
 		}
