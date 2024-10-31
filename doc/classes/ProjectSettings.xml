@@ -2367,6 +2367,10 @@
 		<member name="rendering/2d/batching/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas item commands that can be batched into a single draw call.
 		</member>
+		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="256">
+			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
+			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
+		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
 			The percentage specified is added on each axis and on both sides. For example, with the default setting of 120%, the signed distance field will cover 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).

@@ -604,8 +604,8 @@ void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 void GradientEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			reverse_button->set_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
-			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			reverse_button->set_button_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
+			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Gradient> gradient = gradient_editor_rect->get_gradient();

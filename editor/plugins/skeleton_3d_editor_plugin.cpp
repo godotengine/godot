@@ -123,7 +123,7 @@ void BonePropertiesEditor::_notification(int p_what) {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
-			add_metadata_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_metadata_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }
@@ -351,12 +351,12 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 	} else {
 		animation_hb->hide();
 	}
-};
+}
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
-};
+}
 
 void Skeleton3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_all"), &Skeleton3DEditor::update_all);
@@ -1136,13 +1136,13 @@ void Skeleton3DEditor::_notification(int p_what) {
 			add_theme_constant_override("separation", 0);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			skeleton_options->set_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
-			edit_mode_button->set_icon(get_editor_theme_icon(SNAME("ToolBoneSelect")));
-			key_loc_button->set_icon(get_editor_theme_icon(SNAME("KeyPosition")));
-			key_rot_button->set_icon(get_editor_theme_icon(SNAME("KeyRotation")));
-			key_scale_button->set_icon(get_editor_theme_icon(SNAME("KeyScale")));
-			key_insert_button->set_icon(get_editor_theme_icon(SNAME("Key")));
-			key_insert_all_button->set_icon(get_editor_theme_icon(SNAME("NewKey")));
+			skeleton_options->set_button_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
+			edit_mode_button->set_button_icon(get_editor_theme_icon(SNAME("ToolBoneSelect")));
+			key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
+			key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
+			key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
+			key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("Key")));
+			key_insert_all_button->set_button_icon(get_editor_theme_icon(SNAME("NewKey")));
 			bones_section->set_bg_color(get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 			update_joint_tree();

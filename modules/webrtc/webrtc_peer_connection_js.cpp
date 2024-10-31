@@ -150,5 +150,5 @@ WebRTCPeerConnectionJS::~WebRTCPeerConnectionJS() {
 		godot_js_rtc_pc_destroy(_js_id);
 		_js_id = 0;
 	}
-};
+}
 #endif

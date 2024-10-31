@@ -119,7 +119,7 @@ private:
 		SmoothGroupVertex(const Vertex &p_vertex) {
 			vertex = p_vertex.vertex;
 			smooth_group = p_vertex.smooth_group;
-		};
+		}
 	};
 
 	struct SmoothGroupVertexHasher {

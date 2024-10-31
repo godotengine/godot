@@ -107,7 +107,7 @@ protected:
 	static RendererCompositorRD *singleton;
 
 public:
-	RendererUtilities *get_utilities() { return utilities; };
+	RendererUtilities *get_utilities() { return utilities; }
 	RendererLightStorage *get_light_storage() { return light_storage; }
 	RendererMaterialStorage *get_material_storage() { return material_storage; }
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }

@@ -225,6 +225,11 @@ public class GodotLib {
 	public static native void onNightModeChanged();
 
 	/**
+	 * Invoked on the input dialog submitted.
+	 */
+	public static native void inputDialogCallback(String p_text);
+
+	/**
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
 	 */
 	public static native void setVirtualKeyboardHeight(int p_height);

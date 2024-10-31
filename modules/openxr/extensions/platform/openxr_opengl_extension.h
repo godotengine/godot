@@ -68,7 +68,7 @@ private:
 #ifdef X11_ENABLED
 	static XrGraphicsBindingOpenGLXlibKHR graphics_binding_gl;
 #endif
-#ifdef EGL_ENABLED
+#if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
 	static XrGraphicsBindingEGLMNDX graphics_binding_egl;
 
 	bool egl_extension_enabled = false;
