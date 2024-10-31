@@ -1502,6 +1502,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
+			new_node->notification(NOTIFICATION_EDITOR_CREATED);
 			add_root_node(new_node);
 
 			EditorNode::get_singleton()->edit_node(new_node);
@@ -2855,6 +2856,7 @@ Node *SceneTreeDock::_do_create(Node *p_parent) {
 		new_name = adjust_name_casing(new_name);
 	}
 	child->set_name(new_name);
+	child->notification(NOTIFICATION_EDITOR_CREATED);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action_for_history(TTR("Create Node"), editor_data->get_current_edited_scene_history_id());
@@ -3567,6 +3569,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 		}
 		new_node->set_name(Node::adjust_name_casing(p_file.get_file().get_basename()));
 		new_node->set_script(scr);
+		new_node->notification(NOTIFICATION_EDITOR_CREATED);
 
 		undo_redo->create_action(TTR("Instantiate Script"));
 		undo_redo->add_do_method(n, "add_child", new_node, true);

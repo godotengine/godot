@@ -439,6 +439,7 @@ public:
 		// Editor specific node notifications
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
 		NOTIFICATION_EDITOR_POST_SAVE = 9002,
+		NOTIFICATION_EDITOR_CREATED = 9003,
 	};
 
 	/* NODE/TREE */
