@@ -218,8 +218,14 @@
 			<return type="Tween" />
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
-				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant EASE_IN_OUT].
+				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default ease type is [constant EASE_IN_OUT].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses EASE_IN_OUT.
+				tween.set_ease(Tween.EASE_IN)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses EASE_IN.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_loops">
@@ -271,8 +277,14 @@
 			<return type="Tween" />
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
-				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant TRANS_LINEAR].
+				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default transition type is [constant TRANS_LINEAR].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses TRANS_LINEAR.
+				tween.set_trans(Tween.TRANS_SINE)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses TRANS_SINE.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="stop">
