@@ -4996,11 +4996,11 @@ String EditorNode::_get_system_info() const {
 	}
 	const String distribution_version = OS::get_singleton()->get_version();
 
-	String godot_version = "Godot v" + String(VERSION_FULL_CONFIG);
+	String engine_version = "Blazium v" + String(VERSION_FULL_CONFIG);
 	if (String(VERSION_BUILD) != "official") {
 		String hash = String(VERSION_HASH);
 		hash = hash.is_empty() ? String("unknown") : vformat("(%s)", hash.left(9));
-		godot_version += " " + hash;
+		engine_version += " " + hash;
 	}
 
 #ifdef LINUXBSD_ENABLED
@@ -5053,7 +5053,7 @@ String EditorNode::_get_system_info() const {
 
 	// Join info.
 	Vector<String> info;
-	info.push_back(godot_version);
+	info.push_back(engine_version);
 	if (!distribution_version.is_empty()) {
 		info.push_back(distribution_name + " " + distribution_version);
 	} else {
