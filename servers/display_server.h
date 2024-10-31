@@ -360,13 +360,6 @@ public:
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW);
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
-	// Note: The "internal" current orientation is not necessarily the current orientation and will often be 0 for most platforms.
-	//
-	// Some Android GPUs come with a HW-based rotator which means the screen gets rotated for free to
-	// whatever orientation the device is currently facing. But many Android GPUs emulate it via SW instead,
-	// which costs performance and power. This value is an optimization that tells Godot's compositor how to
-	// rotate the render texture before presenting to screen so that Android's compositor doesn't have to.
-	virtual int screen_get_internal_current_rotation(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return 0; }
 
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;
