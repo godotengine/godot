@@ -398,9 +398,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (p_replace_previous) {
 		// Force sync last line update (skip if number of unprocessed log messages is too large to avoid editor lag).
 		if (log->get_pending_paragraphs() < 100) {
-			while (!log->is_finished()) {
-				::OS::get_singleton()->delay_usec(1);
-			}
+			log->wait_until_finished();
 		}
 	}
 
