@@ -292,12 +292,18 @@ GridMap::CellShape GridMap::get_cell_shape() const {
 
 void GridMap::set_cell_size(const Vector3 &p_size) {
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
+	const bool x_changed = cell_size.x != p_size.x;
+	const bool z_changed = cell_size.z != p_size.z;
 	cell_size = p_size;
 	// hex cells have a radius stored in x, and height stored in y.  To make
 	// it clear that irregular hexagons are not supported, the z value of hex
 	// cells will always be updated to be the same as x.
 	if (cell_shape == CELL_SHAPE_HEXAGON) {
-		cell_size.z = cell_size.x;
+		if (x_changed) {
+			cell_size.z = cell_size.x;
+		} else if (z_changed) {
+			cell_size.x = cell_size.z;
+		}
 	}
 	_recreate_octant_data();
 	emit_signal(SNAME("cell_size_changed"), cell_size);
