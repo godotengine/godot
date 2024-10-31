@@ -203,6 +203,12 @@ void DisplayServerAndroid::emit_file_picker_callback(bool p_ok, const Vector<Str
 	}
 }
 
+Color DisplayServerAndroid::get_accent_color() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
+	return godot_java->get_accent_color();
+}
+
 TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
