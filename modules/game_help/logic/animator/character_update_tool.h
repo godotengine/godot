@@ -126,8 +126,7 @@ struct CharacterRootMotion
 		if (root_motion_position_add.x + root_motion_position_add.y + root_motion_position_add.z == 0) {
 			return Vector3();
 		}
-        float tm = 1.0f / ABS(p_detal);
-        Vector3 velocity = root_motion_position_add;
+        Vector3 velocity = root_motion_position_add / ABS(p_detal);
         if(is_ground) {
             if(forward.x + forward.z == 0)
             {

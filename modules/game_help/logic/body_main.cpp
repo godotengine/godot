@@ -203,7 +203,7 @@ void CharacterBodyMain::_process_move()
             set_transform(rot);
             Vector3 forward = rot.basis.xform(Vector3(0,0,1));
 
-            rot.origin += root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
+			velocity = root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
 
             set_velocity(velocity);
         }
