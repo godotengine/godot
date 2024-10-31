@@ -41,6 +41,451 @@ String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name)
 	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
 }
 
+bool ShaderGraph::_check_reroute_subgraph(int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes) const {
+	// BFS to check whether connecting to the given subgraph (rooted at p_reroute_node) is valid.
+	List<int> queue;
+	queue.push_back(p_reroute_node);
+	if (r_visited_reroute_nodes != nullptr) {
+		r_visited_reroute_nodes->push_back(p_reroute_node);
+	}
+	while (!queue.is_empty()) {
+		int current_node_id = queue.front()->get();
+		ShaderGraph::Node current_node = nodes[current_node_id];
+		queue.pop_front();
+		for (const int &next_node_id : current_node.next_connected_nodes) {
+			Ref<VisualShaderNodeReroute> next_vsnode = nodes[next_node_id].node;
+			if (next_vsnode.is_valid()) {
+				queue.push_back(next_node_id);
+				if (r_visited_reroute_nodes != nullptr) {
+					r_visited_reroute_nodes->push_back(next_node_id);
+				}
+				continue;
+			}
+			// Check whether all ports connected with the reroute node are compatible.
+			for (const ShaderGraph::Connection &c : connections) {
+				VisualShaderNode::PortType to_port_type = nodes[next_node_id].node->get_input_port_type(c.to_port);
+				if (c.from_node == current_node_id &&
+						c.to_node == next_node_id &&
+						!is_port_types_compatible(p_target_port_type, to_port_type)) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+void ShaderGraph::add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
+	ERR_FAIL_COND(p_node.is_null());
+	ERR_FAIL_COND(p_id < 2); // Reserved for the output node.
+	ERR_FAIL_COND(nodes.has(p_id));
+
+	ShaderGraph::Node n;
+	n.node = p_node;
+	n.position = p_position;
+
+	Ref<VisualShaderNodeParameter> parameter = n.node;
+	if (parameter.is_valid()) {
+		String valid_name = validate_parameter_name(parameter->get_parameter_name(), parameter);
+		parameter->set_parameter_name(valid_name);
+	}
+
+	Ref<VisualShaderNodeCustom> custom = n.node;
+	if (custom.is_valid()) {
+		custom->update_ports();
+	}
+
+	nodes[p_id] = n;
+}
+
+void ShaderGraph::set_node_position(int p_id, const Vector2 &p_position) {
+	ERR_FAIL_COND(!nodes.has(p_id));
+	nodes[p_id].position = p_position;
+}
+
+Vector2 ShaderGraph::get_node_position(int p_id) const {
+	ERR_FAIL_COND_V(!nodes.has(p_id), Vector2());
+	return nodes[p_id].position;
+}
+
+Ref<VisualShaderNode> ShaderGraph::get_node(int p_id) const {
+	if (!nodes.has(p_id)) {
+		return Ref<VisualShaderNode>();
+	}
+	ERR_FAIL_COND_V(!nodes.has(p_id), Ref<VisualShaderNode>());
+	return nodes[p_id].node;
+}
+
+Vector<int> ShaderGraph::get_node_ids() const {
+	Vector<int> ret;
+	for (const KeyValue<int, ShaderGraph::Node> &E : nodes) {
+		ret.push_back(E.key);
+	}
+
+	return ret;
+}
+
+int ShaderGraph::get_valid_node_id() const {
+	return nodes.size() ? MAX(2, nodes.back()->key() + 1) : 2;
+}
+
+int ShaderGraph::find_node_id(const Ref<VisualShaderNode> &p_node) const {
+	for (const KeyValue<int, ShaderGraph::Node> &E : nodes) {
+		if (E.value.node == p_node) {
+			return E.key;
+		}
+	}
+
+	return NODE_ID_INVALID;
+}
+
+void ShaderGraph::remove_node(int p_id) {
+	ERR_FAIL_COND(!nodes.has(p_id));
+
+	nodes.erase(p_id);
+
+	for (List<ShaderGraph::Connection>::Element *E = connections.front(); E;) {
+		List<ShaderGraph::Connection>::Element *N = E->next();
+		const ShaderGraph::Connection &connection = E->get();
+		if (connection.from_node == p_id || connection.to_node == p_id) {
+			if (connection.from_node == p_id) {
+				nodes[connection.to_node].prev_connected_nodes.erase(p_id);
+				nodes[connection.to_node].node->set_input_port_connected(connection.to_port, false);
+			} else if (connection.to_node == p_id) {
+				nodes[connection.from_node].next_connected_nodes.erase(p_id);
+				nodes[connection.from_node].node->set_output_port_connected(connection.from_port, false);
+			}
+			connections.erase(E);
+		}
+		E = N;
+	}
+}
+
+void ShaderGraph::replace_node(int p_id, const StringName &p_new_class) {
+	ERR_FAIL_COND(!nodes.has(p_id));
+
+	if (nodes[p_id].node->get_class_name() == p_new_class) {
+		return;
+	}
+	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(p_new_class));
+	VisualShaderNode *prev_vsn = nodes[p_id].node.ptr();
+
+	// Update connection data.
+	for (int i = 0; i < vsn->get_output_port_count(); i++) {
+		if (i < prev_vsn->get_output_port_count()) {
+			if (prev_vsn->is_output_port_connected(i)) {
+				vsn->set_output_port_connected(i, true);
+			}
+
+			if (prev_vsn->is_output_port_expandable(i) && prev_vsn->_is_output_port_expanded(i) && vsn->is_output_port_expandable(i)) {
+				vsn->_set_output_port_expanded(i, true);
+
+				int component_count = 0;
+				switch (prev_vsn->get_output_port_type(i)) {
+					case VisualShaderNode::PORT_TYPE_VECTOR_2D:
+						component_count = 2;
+						break;
+					case VisualShaderNode::PORT_TYPE_VECTOR_3D:
+						component_count = 3;
+						break;
+					case VisualShaderNode::PORT_TYPE_VECTOR_4D:
+						component_count = 4;
+						break;
+					default:
+						break;
+				}
+
+				for (int j = 0; j < component_count; j++) {
+					int sub_port = i + 1 + j;
+
+					if (prev_vsn->is_output_port_connected(sub_port)) {
+						vsn->set_output_port_connected(sub_port, true);
+					}
+				}
+
+				i += component_count;
+			}
+		} else {
+			break;
+		}
+	}
+
+	nodes[p_id].node = Ref<VisualShaderNode>(vsn);
+}
+
+bool ShaderGraph::are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
+	for (const ShaderGraph::Connection &E : connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ShaderGraph::is_nodes_connected_relatively(int p_node, int p_target) const {
+	bool result = false;
+
+	const ShaderGraph::Node &node = nodes[p_node];
+
+	for (const int &E : node.prev_connected_nodes) {
+		if (E == p_target) {
+			return true;
+		}
+
+		result = is_nodes_connected_relatively(E, p_target);
+		if (result) {
+			break;
+		}
+	}
+	return result;
+}
+
+bool ShaderGraph::can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
+	if (!nodes.has(p_from_node)) {
+		return false;
+	}
+
+	if (p_from_node == p_to_node) {
+		return false;
+	}
+
+	if (p_from_port < 0 || p_from_port >= nodes[p_from_node].node->get_expanded_output_port_count()) {
+		return false;
+	}
+
+	if (!nodes.has(p_to_node)) {
+		return false;
+	}
+
+	if (p_to_port < 0 || p_to_port >= nodes[p_to_node].node->get_input_port_count()) {
+		return false;
+	}
+
+	VisualShaderNode::PortType from_port_type = nodes[p_from_node].node->get_output_port_type(p_from_port);
+	VisualShaderNode::PortType to_port_type = nodes[p_to_node].node->get_input_port_type(p_to_port);
+
+	Ref<VisualShaderNodeReroute> to_node_reroute = nodes[p_to_node].node;
+	if (to_node_reroute.is_valid()) {
+		if (!_check_reroute_subgraph(from_port_type, p_to_node)) {
+			return false;
+		}
+	} else if (!is_port_types_compatible(from_port_type, to_port_type)) {
+		return false;
+	}
+
+	for (const ShaderGraph::Connection &E : connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
+			return false;
+		}
+	}
+
+	if (is_nodes_connected_relatively(p_from_node, p_to_node)) {
+		return false;
+	}
+	return true;
+}
+
+Error ShaderGraph::connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
+	ERR_FAIL_COND_V(!nodes.has(p_from_node), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_from_port, nodes[p_from_node].node->get_expanded_output_port_count(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!nodes.has(p_to_node), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_to_port, nodes[p_to_node].node->get_input_port_count(), ERR_INVALID_PARAMETER);
+
+	Ref<VisualShaderNodeReroute> from_node_reroute = nodes[p_from_node].node;
+	Ref<VisualShaderNodeReroute> to_node_reroute = nodes[p_to_node].node;
+
+	// Allow connection with incompatible port types only if the reroute node isn't connected to anything.
+	VisualShaderNode::PortType from_port_type = nodes[p_from_node].node->get_output_port_type(p_from_port);
+	VisualShaderNode::PortType to_port_type = nodes[p_to_node].node->get_input_port_type(p_to_port);
+	bool port_types_are_compatible = is_port_types_compatible(from_port_type, to_port_type);
+
+	if (to_node_reroute.is_valid()) {
+		List<int> visited_reroute_nodes;
+		port_types_are_compatible = _check_reroute_subgraph(from_port_type, p_to_node, &visited_reroute_nodes);
+		if (port_types_are_compatible) {
+			// Set the port type of all reroute nodes.
+			for (const int &E : visited_reroute_nodes) {
+				Ref<VisualShaderNodeReroute> reroute_node = nodes[E].node;
+				reroute_node->_set_port_type(from_port_type);
+			}
+		}
+	} else if (from_node_reroute.is_valid() && !from_node_reroute->is_input_port_connected(0)) {
+		from_node_reroute->_set_port_type(to_port_type);
+		port_types_are_compatible = true;
+	}
+
+	ERR_FAIL_COND_V_MSG(!port_types_are_compatible, ERR_INVALID_PARAMETER, "Incompatible port types.");
+
+	for (const ShaderGraph::Connection &E : connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
+			ERR_FAIL_V(ERR_ALREADY_EXISTS);
+		}
+	}
+
+	ShaderGraph::Connection c;
+	c.from_node = p_from_node;
+	c.from_port = p_from_port;
+	c.to_node = p_to_node;
+	c.to_port = p_to_port;
+	connections.push_back(c);
+	nodes[p_from_node].next_connected_nodes.push_back(p_to_node);
+	nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
+	nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
+	nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
+
+	return OK;
+}
+
+void ShaderGraph::disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
+	for (List<ShaderGraph::Connection>::Element *E = connections.front(); E; E = E->next()) {
+		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
+			connections.erase(E);
+			nodes[p_from_node].next_connected_nodes.erase(p_to_node);
+			nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
+			nodes[p_from_node].node->set_output_port_connected(p_from_port, false);
+			nodes[p_to_node].node->set_input_port_connected(p_to_port, false);
+			return;
+		}
+	}
+}
+
+void ShaderGraph::connect_nodes_forced(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
+	ERR_FAIL_COND(!nodes.has(p_from_node));
+	ERR_FAIL_INDEX(p_from_port, nodes[p_from_node].node->get_expanded_output_port_count());
+	ERR_FAIL_COND(!nodes.has(p_to_node));
+	ERR_FAIL_INDEX(p_to_port, nodes[p_to_node].node->get_input_port_count());
+
+	for (const ShaderGraph::Connection &E : connections) {
+		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
+			return;
+		}
+	}
+
+	ShaderGraph::Connection c;
+	c.from_node = p_from_node;
+	c.from_port = p_from_port;
+	c.to_node = p_to_node;
+	c.to_port = p_to_port;
+	connections.push_back(c);
+	nodes[p_from_node].next_connected_nodes.push_back(p_to_node);
+	nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
+	nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
+	nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
+}
+
+bool ShaderGraph::is_port_types_compatible(int p_a, int p_b) const {
+	return MAX(0, p_a - (int)VisualShaderNode::PORT_TYPE_BOOLEAN) == (MAX(0, p_b - (int)VisualShaderNode::PORT_TYPE_BOOLEAN));
+}
+
+void ShaderGraph::attach_node_to_frame(int p_node, int p_frame) {
+	ERR_FAIL_COND(!nodes.has(p_node));
+
+	nodes[p_node].node->set_frame(p_frame);
+
+	Ref<VisualShaderNodeFrame> vsnode_frame = nodes[p_frame].node;
+	if (vsnode_frame.is_valid()) {
+		vsnode_frame->add_attached_node(p_node);
+	}
+}
+
+void ShaderGraph::detach_node_from_frame(int p_node) {
+	ERR_FAIL_COND(!nodes.has(p_node));
+
+	int parent_frame_id = nodes[p_node].node->get_frame();
+	Ref<VisualShaderNodeFrame> vsnode_frame = nodes[parent_frame_id].node;
+	if (vsnode_frame.is_valid()) {
+		vsnode_frame->remove_attached_node(p_node);
+	}
+
+	nodes[p_node].node->set_frame(-1);
+}
+
+String ShaderGraph::get_reroute_parameter_name(int p_reroute_node) const {
+	ERR_FAIL_COND_V(!nodes.has(p_reroute_node), "");
+
+	const ShaderGraph::Node *node = &nodes[p_reroute_node];
+	while (node->prev_connected_nodes.size() > 0) {
+		int connected_node_id = node->prev_connected_nodes[0];
+		node = &nodes[connected_node_id];
+		Ref<VisualShaderNodeParameter> parameter_node = node->node;
+		if (parameter_node.is_valid() && parameter_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
+			return parameter_node->get_parameter_name();
+		}
+		Ref<VisualShaderNodeInput> input_node = node->node;
+		if (input_node.is_valid() && input_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
+			return input_node->get_input_real_name();
+		}
+	}
+	return "";
+}
+
+void ShaderGraph::get_node_connections(List<ShaderGraph::Connection> *r_connections) const {
+	for (const ShaderGraph::Connection &conn : connections) {
+		r_connections->push_back(conn);
+	}
+}
+
+String ShaderGraph::generate_preview_shader(int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const {
+	// TODO: Implement?
+	return String();
+}
+
+String ShaderGraph::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
+	String port_name = p_port_name;
+
+	if (port_name.is_empty()) {
+		return String();
+	}
+
+	while (port_name.length() && !is_ascii_alphabet_char(port_name[0])) {
+		port_name = port_name.substr(1);
+	}
+
+	if (!port_name.is_empty()) {
+		String valid_name;
+
+		for (int i = 0; i < port_name.length(); i++) {
+			if (is_ascii_identifier_char(port_name[i])) {
+				valid_name += String::chr(port_name[i]);
+			} else if (port_name[i] == ' ') {
+				valid_name += "_";
+			}
+		}
+
+		port_name = valid_name;
+	} else {
+		return String();
+	}
+
+	List<String> input_names;
+	List<String> output_names;
+
+	for (int i = 0; i < p_node->get_input_port_count(); i++) {
+		if (!p_output && i == p_port_id) {
+			continue;
+		}
+		if (port_name == p_node->get_input_port_name(i)) {
+			return String();
+		}
+	}
+	for (int i = 0; i < p_node->get_output_port_count(); i++) {
+		if (p_output && i == p_port_id) {
+			continue;
+		}
+		if (port_name == p_node->get_output_port_name(i)) {
+			return String();
+		}
+	}
+
+	return port_name;
+}
+
+String ShaderGraph::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
+	// TODO: Implement?
+	return String();
+}
+
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
 }
@@ -363,8 +808,8 @@ int VisualShaderNode::get_frame() const {
 	return linked_parent_graph_frame;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	return Vector<VisualShader::DefaultTextureParam>();
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	return Vector<ShaderGraph::DefaultTextureParam>();
 }
 
 String VisualShaderNode::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
@@ -926,52 +1371,34 @@ bool VisualShader::_has_preview_shader_parameter(const String &p_name) const {
 	return false;
 }
 
-void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
-	ERR_FAIL_COND(p_node.is_null());
-	ERR_FAIL_COND(p_id < 2);
+void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_vsnode, const Vector2 &p_position, int p_id) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	Graph *g = &graph[p_type];
-	ERR_FAIL_COND(g->nodes.has(p_id));
-	Node n;
-	n.node = p_node;
-	n.position = p_position;
+	ShaderGraph *g = &graph[p_type];
+	g->add_node(p_vsnode, p_position, p_id);
 
-	Ref<VisualShaderNodeParameter> parameter = n.node;
-	if (parameter.is_valid()) {
-		String valid_name = validate_parameter_name(parameter->get_parameter_name(), parameter);
-		parameter->set_parameter_name(valid_name);
-	}
-
-	Ref<VisualShaderNodeInput> input = n.node;
+	ShaderGraph::Node node = g->nodes[p_id];
+	Ref<VisualShaderNodeInput> input = node.node;
 	if (input.is_valid()) {
 		input->shader_mode = shader_mode;
 		input->shader_type = p_type;
 	}
 
-	n.node->connect_changed(callable_mp(this, &VisualShader::_queue_update));
-
-	Ref<VisualShaderNodeCustom> custom = n.node;
-	if (custom.is_valid()) {
-		custom->update_ports();
-	}
-
-	g->nodes[p_id] = n;
+	node.node->connect_changed(callable_mp(this, &VisualShader::_queue_update));
 
 	_queue_update();
 }
 
 void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_position) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	Graph *g = &graph[p_type];
-	ERR_FAIL_COND(!g->nodes.has(p_id));
-	g->nodes[p_id].position = p_position;
+	ShaderGraph *g = &graph[p_type];
+	g->set_node_position(p_id, p_position);
 }
 
 // Returns 0 if no embeds, 1 if external embeds, 2 if builtin embeds
 int VisualShader::has_node_embeds() const {
 	bool external_embeds = false;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
 			List<PropertyInfo> props;
 			E.value.node->get_property_list(&props);
 			// For classes that inherit from VisualShaderNode, the class properties start at the 12th, and the last value is always 'script'
@@ -1000,414 +1427,121 @@ int VisualShader::has_node_embeds() const {
 
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Vector2());
-	const Graph *g = &graph[p_type];
-	ERR_FAIL_COND_V(!g->nodes.has(p_id), Vector2());
-	return g->nodes[p_id].position;
+	const ShaderGraph *g = &graph[p_type];
+	return g->get_node_position(p_id);
 }
 
 Ref<VisualShaderNode> VisualShader::get_node(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Ref<VisualShaderNode>());
-	const Graph *g = &graph[p_type];
-	if (!g->nodes.has(p_id)) {
-		return Ref<VisualShaderNode>();
-	}
-	ERR_FAIL_COND_V(!g->nodes.has(p_id), Ref<VisualShaderNode>());
-	return g->nodes[p_id].node;
+	const ShaderGraph *g = &graph[p_type];
+	return g->get_node(p_id);
 }
 
 Vector<int> VisualShader::get_node_list(Type p_type) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Vector<int>());
-	const Graph *g = &graph[p_type];
-
-	Vector<int> ret;
-	for (const KeyValue<int, Node> &E : g->nodes) {
-		ret.push_back(E.key);
-	}
-
-	return ret;
+	const ShaderGraph *g = &graph[p_type];
+	return g->get_node_ids();
 }
 
 int VisualShader::get_valid_node_id(Type p_type) const {
-	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, NODE_ID_INVALID);
-	const Graph *g = &graph[p_type];
-	return g->nodes.size() ? MAX(2, g->nodes.back()->key() + 1) : 2;
+	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, ShaderGraph::NODE_ID_INVALID);
+	const ShaderGraph *g = &graph[p_type];
+	return g->get_valid_node_id();
 }
 
 int VisualShader::find_node_id(Type p_type, const Ref<VisualShaderNode> &p_node) const {
-	for (const KeyValue<int, Node> &E : graph[p_type].nodes) {
-		if (E.value.node == p_node) {
-			return E.key;
-		}
-	}
-
-	return NODE_ID_INVALID;
+	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, ShaderGraph::NODE_ID_INVALID);
+	const ShaderGraph *g = &graph[p_type];
+	return g->find_node_id(p_node);
 }
 
 void VisualShader::remove_node(Type p_type, int p_id) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	ERR_FAIL_COND(p_id < 2);
-	Graph *g = &graph[p_type];
+	ShaderGraph *g = &graph[p_type];
 	ERR_FAIL_COND(!g->nodes.has(p_id));
-
 	g->nodes[p_id].node->disconnect_changed(callable_mp(this, &VisualShader::_queue_update));
-
-	g->nodes.erase(p_id);
-
-	for (List<Connection>::Element *E = g->connections.front(); E;) {
-		List<Connection>::Element *N = E->next();
-		const VisualShader::Connection &connection = E->get();
-		if (connection.from_node == p_id || connection.to_node == p_id) {
-			if (connection.from_node == p_id) {
-				g->nodes[connection.to_node].prev_connected_nodes.erase(p_id);
-				g->nodes[connection.to_node].node->set_input_port_connected(connection.to_port, false);
-			} else if (connection.to_node == p_id) {
-				g->nodes[connection.from_node].next_connected_nodes.erase(p_id);
-				g->nodes[connection.from_node].node->set_output_port_connected(connection.from_port, false);
-			}
-			g->connections.erase(E);
-		}
-		E = N;
-	}
-
+	g->remove_node(p_id);
 	_queue_update();
 }
 
 void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_class) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	ERR_FAIL_COND(p_id < 2);
-	Graph *g = &graph[p_type];
-	ERR_FAIL_COND(!g->nodes.has(p_id));
-
-	if (g->nodes[p_id].node->get_class_name() == p_new_class) {
-		return;
-	}
-	VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(p_new_class));
-	VisualShaderNode *prev_vsn = g->nodes[p_id].node.ptr();
-
-	// Update connection data.
-	for (int i = 0; i < vsn->get_output_port_count(); i++) {
-		if (i < prev_vsn->get_output_port_count()) {
-			if (prev_vsn->is_output_port_connected(i)) {
-				vsn->set_output_port_connected(i, true);
-			}
-
-			if (prev_vsn->is_output_port_expandable(i) && prev_vsn->_is_output_port_expanded(i) && vsn->is_output_port_expandable(i)) {
-				vsn->_set_output_port_expanded(i, true);
-
-				int component_count = 0;
-				switch (prev_vsn->get_output_port_type(i)) {
-					case VisualShaderNode::PORT_TYPE_VECTOR_2D:
-						component_count = 2;
-						break;
-					case VisualShaderNode::PORT_TYPE_VECTOR_3D:
-						component_count = 3;
-						break;
-					case VisualShaderNode::PORT_TYPE_VECTOR_4D:
-						component_count = 4;
-						break;
-					default:
-						break;
-				}
-
-				for (int j = 0; j < component_count; j++) {
-					int sub_port = i + 1 + j;
-
-					if (prev_vsn->is_output_port_connected(sub_port)) {
-						vsn->set_output_port_connected(sub_port, true);
-					}
-				}
-
-				i += component_count;
-			}
-		} else {
-			break;
-		}
-	}
-
-	vsn->connect_changed(callable_mp(this, &VisualShader::_queue_update));
-	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
-
+	ShaderGraph *g = &graph[p_type];
+	g->replace_node(p_id, p_new_class);
+	g->nodes[p_id].node->connect_changed(callable_mp(this, &VisualShader::_queue_update));
 	_queue_update();
 }
 
 bool VisualShader::is_node_connection(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, false);
-	const Graph *g = &graph[p_type];
-
-	for (const Connection &E : g->connections) {
-		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
-			return true;
-		}
-	}
-
-	return false;
+	const ShaderGraph *g = &graph[p_type];
+	return g->are_nodes_connected(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
-bool VisualShader::is_nodes_connected_relatively(const Graph *p_graph, int p_node, int p_target) const {
-	bool result = false;
-
-	const VisualShader::Node &node = p_graph->nodes[p_node];
-
-	for (const int &E : node.prev_connected_nodes) {
-		if (E == p_target) {
-			return true;
-		}
-
-		result = is_nodes_connected_relatively(p_graph, E, p_target);
-		if (result) {
-			break;
-		}
-	}
-	return result;
-}
-
-bool VisualShader::_check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes) const {
-	const Graph *g = &graph[p_type];
-
-	// BFS to check whether connecting to the given subgraph (rooted at p_reroute_node) is valid.
-	List<int> queue;
-	queue.push_back(p_reroute_node);
-	if (r_visited_reroute_nodes != nullptr) {
-		r_visited_reroute_nodes->push_back(p_reroute_node);
-	}
-	while (!queue.is_empty()) {
-		int current_node_id = queue.front()->get();
-		VisualShader::Node current_node = g->nodes[current_node_id];
-		queue.pop_front();
-		for (const int &next_node_id : current_node.next_connected_nodes) {
-			Ref<VisualShaderNodeReroute> next_vsnode = g->nodes[next_node_id].node;
-			if (next_vsnode.is_valid()) {
-				queue.push_back(next_node_id);
-				if (r_visited_reroute_nodes != nullptr) {
-					r_visited_reroute_nodes->push_back(next_node_id);
-				}
-				continue;
-			}
-			// Check whether all ports connected with the reroute node are compatible.
-			for (const Connection &c : g->connections) {
-				VisualShaderNode::PortType to_port_type = g->nodes[next_node_id].node->get_input_port_type(c.to_port);
-				if (c.from_node == current_node_id &&
-						c.to_node == next_node_id &&
-						!is_port_types_compatible(p_target_port_type, to_port_type)) {
-					return false;
-				}
-			}
-		}
-	}
-	return true;
+bool VisualShader::is_nodes_connected_relatively(const ShaderGraph *p_graph, int p_node, int p_target) const {
+	return p_graph->is_nodes_connected_relatively(p_node, p_target);
 }
 
 bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, false);
-	const Graph *g = &graph[p_type];
-
-	if (!g->nodes.has(p_from_node)) {
-		return false;
-	}
-
-	if (p_from_node == p_to_node) {
-		return false;
-	}
-
-	if (p_from_port < 0 || p_from_port >= g->nodes[p_from_node].node->get_expanded_output_port_count()) {
-		return false;
-	}
-
-	if (!g->nodes.has(p_to_node)) {
-		return false;
-	}
-
-	if (p_to_port < 0 || p_to_port >= g->nodes[p_to_node].node->get_input_port_count()) {
-		return false;
-	}
-
-	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
-	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
-
-	Ref<VisualShaderNodeReroute> to_node_reroute = g->nodes[p_to_node].node;
-	if (to_node_reroute.is_valid()) {
-		if (!_check_reroute_subgraph(p_type, from_port_type, p_to_node)) {
-			return false;
-		}
-	} else if (!is_port_types_compatible(from_port_type, to_port_type)) {
-		return false;
-	}
-
-	for (const Connection &E : g->connections) {
-		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
-			return false;
-		}
-	}
-
-	if (is_nodes_connected_relatively(g, p_from_node, p_to_node)) {
-		return false;
-	}
-	return true;
+	const ShaderGraph *g = &graph[p_type];
+	return g->can_connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
 bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {
-	return MAX(0, p_a - (int)VisualShaderNode::PORT_TYPE_BOOLEAN) == (MAX(0, p_b - (int)VisualShaderNode::PORT_TYPE_BOOLEAN));
+	const ShaderGraph *g = &graph[0]; // Currently, this is independent of the type so we can use an arbitrary graph.
+	return g->is_port_types_compatible(p_a, p_b);
 }
 
 void VisualShader::attach_node_to_frame(Type p_type, int p_node, int p_frame) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	ERR_FAIL_COND(p_frame < 0);
-	Graph *g = &graph[p_type];
-
-	ERR_FAIL_COND(!g->nodes.has(p_node));
-
-	g->nodes[p_node].node->set_frame(p_frame);
-
-	Ref<VisualShaderNodeFrame> vsnode_frame = g->nodes[p_frame].node;
-	if (vsnode_frame.is_valid()) {
-		vsnode_frame->add_attached_node(p_node);
-	}
+	ShaderGraph *g = &graph[p_type];
+	g->attach_node_to_frame(p_node, p_frame);
 }
 
 void VisualShader::detach_node_from_frame(Type p_type, int p_node) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	Graph *g = &graph[p_type];
-
-	ERR_FAIL_COND(!g->nodes.has(p_node));
-
-	int parent_frame_id = g->nodes[p_node].node->get_frame();
-	Ref<VisualShaderNodeFrame> vsnode_frame = g->nodes[parent_frame_id].node;
-	if (vsnode_frame.is_valid()) {
-		vsnode_frame->remove_attached_node(p_node);
-	}
-
-	g->nodes[p_node].node->set_frame(-1);
+	ShaderGraph *g = &graph[p_type];
+	g->detach_node_from_frame(p_node);
 }
 
 String VisualShader::get_reroute_parameter_name(Type p_type, int p_reroute_node) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, "");
-	const Graph *g = &graph[p_type];
-
-	ERR_FAIL_COND_V(!g->nodes.has(p_reroute_node), "");
-
-	const VisualShader::Node *node = &g->nodes[p_reroute_node];
-	while (node->prev_connected_nodes.size() > 0) {
-		int connected_node_id = node->prev_connected_nodes[0];
-		node = &g->nodes[connected_node_id];
-		Ref<VisualShaderNodeParameter> parameter_node = node->node;
-		if (parameter_node.is_valid() && parameter_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
-			return parameter_node->get_parameter_name();
-		}
-		Ref<VisualShaderNodeInput> input_node = node->node;
-		if (input_node.is_valid() && input_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
-			return input_node->get_input_real_name();
-		}
-	}
-	return "";
+	const ShaderGraph *g = &graph[p_type];
+	return g->get_reroute_parameter_name(p_reroute_node);
 }
 
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	Graph *g = &graph[p_type];
-
-	ERR_FAIL_COND(!g->nodes.has(p_from_node));
-	ERR_FAIL_INDEX(p_from_port, g->nodes[p_from_node].node->get_expanded_output_port_count());
-	ERR_FAIL_COND(!g->nodes.has(p_to_node));
-	ERR_FAIL_INDEX(p_to_port, g->nodes[p_to_node].node->get_input_port_count());
-
-	for (const Connection &E : g->connections) {
-		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
-			return;
-		}
-	}
-
-	Connection c;
-	c.from_node = p_from_node;
-	c.from_port = p_from_port;
-	c.to_node = p_to_node;
-	c.to_port = p_to_port;
-	g->connections.push_back(c);
-	g->nodes[p_from_node].next_connected_nodes.push_back(p_to_node);
-	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
-	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
-	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
-
+	ShaderGraph *g = &graph[p_type];
+	g->connect_nodes_forced(p_from_node, p_from_port, p_to_node, p_to_port);
 	_queue_update();
 }
 
 Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, ERR_CANT_CONNECT);
-	Graph *g = &graph[p_type];
-
-	ERR_FAIL_COND_V(!g->nodes.has(p_from_node), ERR_INVALID_PARAMETER);
-	ERR_FAIL_INDEX_V(p_from_port, g->nodes[p_from_node].node->get_expanded_output_port_count(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!g->nodes.has(p_to_node), ERR_INVALID_PARAMETER);
-	ERR_FAIL_INDEX_V(p_to_port, g->nodes[p_to_node].node->get_input_port_count(), ERR_INVALID_PARAMETER);
-
-	Ref<VisualShaderNodeReroute> from_node_reroute = g->nodes[p_from_node].node;
-	Ref<VisualShaderNodeReroute> to_node_reroute = g->nodes[p_to_node].node;
-
-	// Allow connection with incompatible port types only if the reroute node isn't connected to anything.
-	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
-	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
-	bool port_types_are_compatible = is_port_types_compatible(from_port_type, to_port_type);
-
-	if (to_node_reroute.is_valid()) {
-		List<int> visited_reroute_nodes;
-		port_types_are_compatible = _check_reroute_subgraph(p_type, from_port_type, p_to_node, &visited_reroute_nodes);
-		if (port_types_are_compatible) {
-			// Set the port type of all reroute nodes.
-			for (const int &E : visited_reroute_nodes) {
-				Ref<VisualShaderNodeReroute> reroute_node = g->nodes[E].node;
-				reroute_node->_set_port_type(from_port_type);
-			}
-		}
-	} else if (from_node_reroute.is_valid() && !from_node_reroute->is_input_port_connected(0)) {
-		from_node_reroute->_set_port_type(to_port_type);
-		port_types_are_compatible = true;
-	}
-
-	ERR_FAIL_COND_V_MSG(!port_types_are_compatible, ERR_INVALID_PARAMETER, "Incompatible port types.");
-
-	for (const Connection &E : g->connections) {
-		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
-			ERR_FAIL_V(ERR_ALREADY_EXISTS);
-		}
-	}
-
-	Connection c;
-	c.from_node = p_from_node;
-	c.from_port = p_from_port;
-	c.to_node = p_to_node;
-	c.to_port = p_to_port;
-	g->connections.push_back(c);
-	g->nodes[p_from_node].next_connected_nodes.push_back(p_to_node);
-	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
-	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
-	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
-
+	ShaderGraph *g = &graph[p_type];
+	const Error error = g->connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
 	_queue_update();
-	return OK;
+	return error;
 }
 
 void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	Graph *g = &graph[p_type];
-
-	for (List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
-		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
-			g->connections.erase(E);
-			g->nodes[p_from_node].next_connected_nodes.erase(p_to_node);
-			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
-			g->nodes[p_from_node].node->set_output_port_connected(p_from_port, false);
-			g->nodes[p_to_node].node->set_input_port_connected(p_to_port, false);
-			_queue_update();
-			return;
-		}
-	}
+	ShaderGraph *g = &graph[p_type];
+	g->disconnect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+	_queue_update();
 }
 
 TypedArray<Dictionary> VisualShader::_get_node_connections(Type p_type) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Array());
-	const Graph *g = &graph[p_type];
+	const ShaderGraph *g = &graph[p_type];
 
 	TypedArray<Dictionary> ret;
-	for (const Connection &E : g->connections) {
+	for (const ShaderGraph::Connection &E : g->connections) {
 		Dictionary d;
 		d["from_node"] = E.from_node;
 		d["from_port"] = E.from_port;
@@ -1419,13 +1553,10 @@ TypedArray<Dictionary> VisualShader::_get_node_connections(Type p_type) const {
 	return ret;
 }
 
-void VisualShader::get_node_connections(Type p_type, List<Connection> *r_connections) const {
+void VisualShader::get_node_connections(Type p_type, List<ShaderGraph::Connection> *r_connections) const {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	const Graph *g = &graph[p_type];
-
-	for (const Connection &E : g->connections) {
-		r_connections->push_back(E);
-	}
+	const ShaderGraph *g = &graph[p_type];
+	g->get_node_connections(r_connections);
 }
 
 void VisualShader::set_mode(Mode p_mode) {
@@ -1440,7 +1571,7 @@ void VisualShader::set_mode(Mode p_mode) {
 	flags.clear();
 	shader_mode = p_mode;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		for (KeyValue<int, Node> &E : graph[i].nodes) {
+		for (KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
 			Ref<VisualShaderNodeInput> input = E.value.node;
 			if (input.is_valid()) {
 				input->shader_mode = shader_mode;
@@ -1448,14 +1579,14 @@ void VisualShader::set_mode(Mode p_mode) {
 			}
 		}
 
-		Ref<VisualShaderNodeOutput> output = graph[i].nodes[NODE_ID_OUTPUT].node;
+		Ref<VisualShaderNodeOutput> output = graph[i].nodes[ShaderGraph::NODE_ID_OUTPUT].node;
 		output->shader_mode = shader_mode;
 
 		// clear connections since they are no longer valid
-		for (List<Connection>::Element *E = graph[i].connections.front(); E;) {
+		for (List<ShaderGraph::Connection>::Element *E = graph[i].connections.front(); E;) {
 			bool keep = true;
 
-			List<Connection>::Element *N = E->next();
+			List<ShaderGraph::Connection>::Element *N = E->next();
 
 			int from = E->get().from_node;
 			int to = E->get().to_node;
@@ -1508,7 +1639,7 @@ Vector2 VisualShader::get_graph_offset() const {
 }
 #endif
 
-String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &default_tex_params) const {
+String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &default_tex_params) const {
 	Ref<VisualShaderNode> node = get_node(p_type, p_node);
 	ERR_FAIL_COND_V(node.is_null(), String());
 	ERR_FAIL_COND_V(p_port < 0 || p_port >= node->get_expanded_output_port_count(), String());
@@ -1524,7 +1655,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 	String global_expressions;
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
-		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
 			Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
 			if (global_expression.is_valid()) {
 				String expr = "";
@@ -1541,9 +1672,16 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	global_code += global_expressions;
 
 	//make it faster to go around through shader
-	HashMap<ConnectionKey, const List<Connection>::Element *> input_connections;
+	HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
+	HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
 
-	for (const List<Connection>::Element *E = graph[p_type].connections.front(); E; E = E->next()) {
+	for (const List<ShaderGraph::Connection>::Element *E = graph[p_type].connections.front(); E; E = E->next()) {
+		ConnectionKey from_key;
+		from_key.node = E->get().from_node;
+		from_key.port = E->get().from_port;
+
+		output_connections.insert(from_key, E);
+
 		ConnectionKey to_key;
 		to_key.node = E->get().to_node;
 		to_key.port = E->get().to_port;
@@ -1554,7 +1692,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	shader_code += "\nvoid fragment() {\n";
 
 	HashSet<int> processed;
-	Error err = _write_node(p_type, &global_code, &global_code_per_node, &global_code_per_func, shader_code, default_tex_params, input_connections, p_node, processed, true, classes);
+	Error err = _write_node(p_type, &global_code, &global_code_per_node, &global_code_per_func, shader_code, default_tex_params, input_connections, output_connections, p_node, processed, true, classes);
 	ERR_FAIL_COND_V(err != OK, String());
 
 	switch (node->get_output_port_type(p_port)) {
@@ -1595,53 +1733,8 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 }
 
 String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
-	String port_name = p_port_name;
-
-	if (port_name.is_empty()) {
-		return String();
-	}
-
-	while (port_name.length() && !is_ascii_alphabet_char(port_name[0])) {
-		port_name = port_name.substr(1);
-	}
-
-	if (!port_name.is_empty()) {
-		String valid_name;
-
-		for (int i = 0; i < port_name.length(); i++) {
-			if (is_ascii_identifier_char(port_name[i])) {
-				valid_name += String::chr(port_name[i]);
-			} else if (port_name[i] == ' ') {
-				valid_name += "_";
-			}
-		}
-
-		port_name = valid_name;
-	} else {
-		return String();
-	}
-
-	List<String> input_names;
-	List<String> output_names;
-
-	for (int i = 0; i < p_node->get_input_port_count(); i++) {
-		if (!p_output && i == p_port_id) {
-			continue;
-		}
-		if (port_name == p_node->get_input_port_name(i)) {
-			return String();
-		}
-	}
-	for (int i = 0; i < p_node->get_output_port_count(); i++) {
-		if (p_output && i == p_port_id) {
-			continue;
-		}
-		if (port_name == p_node->get_output_port_name(i)) {
-			return String();
-		}
-	}
-
-	return port_name;
+	const ShaderGraph *g = &graph[0];
+	return g->validate_port_name(p_port_name, p_node, p_port_id, p_output);
 }
 
 String VisualShader::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
@@ -1672,7 +1765,7 @@ String VisualShader::validate_parameter_name(const String &p_name, const Ref<Vis
 	while (true) {
 		bool exists = false;
 		for (int i = 0; i < TYPE_MAX; i++) {
-			for (const KeyValue<int, Node> &E : graph[i].nodes) {
+			for (const KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
 				Ref<VisualShaderNodeParameter> node = E.value.node;
 				if (node == p_parameter) { //do not test on self
 					continue;
@@ -1910,7 +2003,7 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 		String index = prop_name.get_slicec('/', 2);
 		if (index == "connections") {
 			Vector<int> conns;
-			for (const Connection &E : graph[type].connections) {
+			for (const ShaderGraph::Connection &E : graph[type].connections) {
 				conns.push_back(E.from_node);
 				conns.push_back(E.from_port);
 				conns.push_back(E.to_node);
@@ -2062,12 +2155,12 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 #endif // TOOLS_ENABLED
 
 	for (int i = 0; i < TYPE_MAX; i++) {
-		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
 			String prop_name = "nodes/";
 			prop_name += type_string[i];
 			prop_name += "/" + itos(E.key);
 
-			if (E.key != NODE_ID_OUTPUT) {
+			if (E.key != ShaderGraph::NODE_ID_OUTPUT) {
 				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 			}
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
@@ -2086,7 +2179,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 // TODO: Refactor (simplify, rename and change comment style)
-Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<VisualShader::DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const {
+Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<ShaderGraph::DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_input_connections, const HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const {
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[p_node].node;
 
 	if (vsnode->is_disabled()) {
@@ -2108,7 +2201,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				continue;
 			}
 
-			Error err = _write_node(type, p_global_code, p_global_code_per_node, p_global_code_per_func, r_code, r_def_tex_params, p_input_connections, from_node, r_processed, p_for_preview, r_classes);
+			Error err = _write_node(type, p_global_code, p_global_code_per_node, p_global_code_per_func, r_code, r_def_tex_params, p_input_connections, p_output_connections, from_node, r_processed, p_for_preview, r_classes);
 			if (err) {
 				return err;
 			}
@@ -2117,7 +2210,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 
 	// then this node
 
-	Vector<VisualShader::DefaultTextureParam> params = vsnode->get_default_texture_parameters(type, p_node);
+	Vector<ShaderGraph::DefaultTextureParam> params = vsnode->get_default_texture_parameters(type, p_node);
 	for (int i = 0; i < params.size(); i++) {
 		r_def_tex_params.push_back(params[i]);
 	}
@@ -2673,7 +2766,7 @@ void VisualShader::_update_shader() const {
 	StringBuilder global_code_per_node;
 	HashMap<Type, StringBuilder> global_code_per_func;
 	StringBuilder shader_code;
-	Vector<VisualShader::DefaultTextureParam> default_tex_params;
+	Vector<ShaderGraph::DefaultTextureParam> default_tex_params;
 	HashSet<StringName> classes;
 	HashMap<int, int> insertion_pos;
 	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
@@ -2792,7 +2885,7 @@ void VisualShader::_update_shader() const {
 			continue;
 		}
 
-		for (const KeyValue<int, Node> &E : graph[i].nodes) {
+		for (const KeyValue<int, ShaderGraph::Node> &E : graph[i].nodes) {
 			Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
 			if (global_expression.is_valid()) {
 				String expr = "";
@@ -2892,7 +2985,8 @@ void VisualShader::_update_shader() const {
 		}
 
 		//make it faster to go around through shader
-		HashMap<ConnectionKey, const List<Connection>::Element *> input_connections;
+		HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
+		HashMap<ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
 
 		StringBuilder func_code;
 		HashSet<int> processed;
@@ -2952,14 +3046,20 @@ void VisualShader::_update_shader() const {
 			}
 		}
 
-		for (const List<Connection>::Element *E = graph[i].connections.front(); E; E = E->next()) {
+		for (const List<ShaderGraph::Connection>::Element *E = graph[i].connections.front(); E; E = E->next()) {
+			ConnectionKey from_key;
+			from_key.node = E->get().from_node;
+			from_key.port = E->get().from_port;
+
+			output_connections.insert(from_key, E);
+
 			ConnectionKey to_key;
 			to_key.node = E->get().to_node;
 			to_key.port = E->get().to_port;
 
 			input_connections.insert(to_key, E);
 
-			if (is_empty_func && to_key.node == NODE_ID_OUTPUT) {
+			if (is_empty_func && to_key.node == ShaderGraph::NODE_ID_OUTPUT) {
 				is_empty_func = false;
 			}
 		}
@@ -2974,19 +3074,19 @@ void VisualShader::_update_shader() const {
 		}
 		insertion_pos.insert(i, shader_code.get_string_length() + func_code.get_string_length());
 
-		Error err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, NODE_ID_OUTPUT, processed, false, classes);
+		Error err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, output_connections, ShaderGraph::NODE_ID_OUTPUT, processed, false, classes);
 		ERR_FAIL_COND(err != OK);
 
 		if (varying_setters.has(i)) {
 			for (int &E : varying_setters[i]) {
-				err = _write_node(Type(i), &global_code, &global_code_per_node, nullptr, func_code, default_tex_params, input_connections, E, processed, false, classes);
+				err = _write_node(Type(i), &global_code, &global_code_per_node, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}
 
 		if (emitters.has(i)) {
 			for (int &E : emitters[i]) {
-				err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, E, processed, false, classes);
+				err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}
@@ -3231,8 +3331,8 @@ void VisualShader::_bind_methods() {
 	BIND_ENUM_CONSTANT(VARYING_TYPE_TRANSFORM);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_MAX);
 
-	BIND_CONSTANT(NODE_ID_INVALID);
-	BIND_CONSTANT(NODE_ID_OUTPUT);
+	BIND_CONSTANT(ShaderGraph::NODE_ID_INVALID);
+	BIND_CONSTANT(ShaderGraph::NODE_ID_OUTPUT);
 }
 
 VisualShader::VisualShader() {
@@ -3243,16 +3343,16 @@ VisualShader::VisualShader() {
 			output.instantiate();
 			output->shader_type = Type(i);
 			output->shader_mode = shader_mode;
-			graph[i].nodes[NODE_ID_OUTPUT].node = output;
+			graph[i].nodes[ShaderGraph::NODE_ID_OUTPUT].node = output;
 		} else {
 			Ref<VisualShaderNodeOutput> output;
 			output.instantiate();
 			output->shader_type = Type(i);
 			output->shader_mode = shader_mode;
-			graph[i].nodes[NODE_ID_OUTPUT].node = output;
+			graph[i].nodes[ShaderGraph::NODE_ID_OUTPUT].node = output;
 		}
 
-		graph[i].nodes[NODE_ID_OUTPUT].position = Vector2(400, 150);
+		graph[i].nodes[ShaderGraph::NODE_ID_OUTPUT].position = Vector2(400, 150);
 	}
 }
 
@@ -5671,6 +5771,86 @@ VisualShaderNodeVaryingGetter::VisualShaderNodeVaryingGetter() {
 }
 
 void VisualShaderGroup::_bind_methods() {
+}
+
+void VisualShaderGroup::add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
+	graph.add_node(p_node, p_position, p_id);
+}
+
+void VisualShaderGroup::set_node_position(int p_id, const Vector2 &p_position) {
+	graph.set_node_position(p_id, p_position);
+}
+
+Vector2 VisualShaderGroup::get_node_position(int p_id) const {
+	return graph.get_node_position(p_id);
+}
+
+Ref<VisualShaderNode> VisualShaderGroup::get_node(int p_id) const {
+	return graph.get_node(p_id);
+}
+
+Vector<int> VisualShaderGroup::get_node_ids() const {
+	return graph.get_node_ids();
+}
+
+int VisualShaderGroup::get_valid_node_id() const {
+	return graph.get_valid_node_id();
+}
+
+int VisualShaderGroup::find_node_id(const Ref<VisualShaderNode> &p_node) const {
+	return graph.find_node_id(p_node);
+}
+
+void VisualShaderGroup::remove_node(int p_id) {
+	graph.remove_node(p_id);
+}
+
+void VisualShaderGroup::replace_node(int p_id, const StringName &p_new_class) {
+	graph.replace_node(p_id, p_new_class);
+}
+
+bool VisualShaderGroup::are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
+	return graph.are_nodes_connected(p_from_node, p_from_port, p_to_node, p_to_port);
+}
+
+bool VisualShaderGroup::is_nodes_connected_relatively(int p_node, int p_target) const {
+	return graph.is_nodes_connected_relatively(p_node, p_target);
+}
+
+bool VisualShaderGroup::can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
+	return graph.can_connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+}
+
+Error VisualShaderGroup::connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
+	return graph.connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+}
+
+void VisualShaderGroup::disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
+	graph.disconnect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+}
+
+void VisualShaderGroup::connect_nodes_forced(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
+	graph.connect_nodes_forced(p_from_node, p_from_port, p_to_node, p_to_port);
+}
+
+bool VisualShaderGroup::is_port_types_compatible(int p_a, int p_b) const {
+	return graph.is_port_types_compatible(p_a, p_b);
+}
+
+void VisualShaderGroup::attach_node_to_frame(int p_node, int p_frame) {
+	graph.attach_node_to_frame(p_node, p_frame);
+}
+
+void VisualShaderGroup::detach_node_from_frame(int p_node) {
+	graph.detach_node_from_frame(p_node);
+}
+
+String VisualShaderGroup::get_reroute_parameter_name(int p_reroute_node) const {
+	return graph.get_reroute_parameter_name(p_reroute_node);
+}
+
+void VisualShaderGroup::get_node_connections(List<ShaderGraph::Connection> *r_connections) const {
+	graph.get_node_connections(r_connections);
 }
 
 VisualShaderGroup::VisualShaderGroup() {

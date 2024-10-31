@@ -125,9 +125,10 @@ private:
 		CurveEditor *curve_editors[3] = { nullptr, nullptr, nullptr };
 	};
 
+	// TODO: Maybe use ShaderGraph here?
 	Ref<VisualShader> visual_shader;
 	HashMap<int, Link> links;
-	List<VisualShader::Connection> connections;
+	List<ShaderGraph::Connection> connections;
 
 	Color vector_expanded_color[4];
 
@@ -140,7 +141,7 @@ protected:
 public:
 	void set_editor(VisualShaderEditor *p_editor);
 	void register_shader(VisualShader *p_visual_shader);
-	void set_connections(const List<VisualShader::Connection> &p_connections);
+	void set_connections(const List<ShaderGraph::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphElement *p_graph_element);
 	void register_output_port(int p_id, int p_port, VisualShaderNode::PortType p_port_type, TextureButton *p_button);
 	void register_parameter_name(int p_id, LineEdit *p_parameter_name);
@@ -175,7 +176,7 @@ public:
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
-	// TODO: Rename and maybe make private.
+	// TODO: Rename and move to VisualShader/ShaderGraph.
 	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
 
 	VisualShaderGraphPlugin();
@@ -552,14 +553,14 @@ class VisualShaderEditor : public ShaderEditor {
 		bool disabled = false;
 	};
 
-	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<VisualShader::Connection> &r_connections);
-	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<VisualShader::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
+	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<ShaderGraph::Connection> &r_connections);
+	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
 
 	void _duplicate_nodes();
 
 	static Vector2 selection_center;
 	static List<CopyItem> copy_items_buffer;
-	static List<VisualShader::Connection> copy_connections_buffer;
+	static List<ShaderGraph::Connection> copy_connections_buffer;
 
 	void _clear_copy_buffer();
 	void _copy_nodes(bool p_cut);
