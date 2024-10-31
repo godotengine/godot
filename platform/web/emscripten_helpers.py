@@ -45,7 +45,7 @@ def create_engine_file(env, target, source, externs, threads_enabled):
 
 
 def create_template_zip(env, js, wasm, worker, side):
-    binary_name = "godot.editor" if env.editor_build else "godot"
+    binary_name = "blazium.editor" if env.editor_build else "blazium"
     zip_dir = env.Dir(env.GetTemplateZipPath())
     in_files = [
         js,
@@ -72,20 +72,20 @@ def create_template_zip(env, js, wasm, worker, side):
         # HTML
         html = "#misc/dist/html/editor.html"
         cache = [
-            "godot.editor.html",
+            "blazium.editor.html",
             "offline.html",
-            "godot.editor.js",
-            "godot.editor.audio.worklet.js",
-            "godot.editor.audio.position.worklet.js",
+            "blazium.editor.js",
+            "blazium.editor.audio.worklet.js",
+            "blazium.editor.audio.position.worklet.js",
             "logo.svg",
             "favicon.png",
         ]
         if env["threads"]:
-            cache.append("godot.editor.worker.js")
-        opt_cache = ["godot.editor.wasm"]
+            cache.append("blazium.editor.worker.js")
+        opt_cache = ["blazium.editor.wasm"]
         subst_dict = {
             "___GODOT_VERSION___": get_build_version(),
-            "___GODOT_NAME___": "GodotEngine",
+            "___GODOT_NAME___": "BlaziumEngine",
             "___GODOT_CACHE___": json.dumps(cache),
             "___GODOT_OPT_CACHE___": json.dumps(opt_cache),
             "___GODOT_OFFLINE_PAGE___": "offline.html",
@@ -118,7 +118,7 @@ def create_template_zip(env, js, wasm, worker, side):
         in_files.append(service_worker)
         out_files.append(zip_dir.File(binary_name + ".service.worker.js"))
         in_files.append("#misc/dist/html/offline-export.html")
-        out_files.append(zip_dir.File("godot.offline.html"))
+        out_files.append(zip_dir.File("blazium.offline.html"))
 
     zip_files = env.InstallAs(out_files, in_files)
     env.Zip(
