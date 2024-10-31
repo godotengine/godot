@@ -4996,7 +4996,7 @@ String EditorNode::_get_system_info() const {
 	}
 	const String distribution_version = OS::get_singleton()->get_version();
 
-	String godot_version = "Godot v" + String(VERSION_FULL_CONFIG);
+	String godot_version = "Blazium v" + String(VERSION_FULL_CONFIG);
 	if (String(VERSION_BUILD) != "official") {
 		String hash = String(VERSION_HASH);
 		hash = hash.is_empty() ? String("unknown") : vformat("(%s)", hash.left(9));
