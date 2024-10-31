@@ -147,7 +147,6 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		Transform2D transform = p_args[0];
 		scene_tree->get_root()->set_canvas_transform_override(transform);
-
 		runtime_node_select->_queue_selection_update();
 
 #ifndef _3D_DISABLED
@@ -164,15 +163,18 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 			scene_tree->get_root()->set_camera_3d_override_orthogonal(size_or_fov, depth_near, depth_far);
 		}
 		scene_tree->get_root()->set_camera_3d_override_transform(transform);
-
 		runtime_node_select->_queue_selection_update();
 #endif // _3D_DISABLED
 
 	} else if (p_msg == "set_object_property") {
 		ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 		_set_object_property(p_args[0], p_args[1], p_args[2]);
-
 		runtime_node_select->_queue_selection_update();
+
+	} else if (p_msg == "reload_cached_files") {
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+		PackedStringArray files = p_args[0];
+		reload_cached_files(files);
 
 	} else if (p_msg.begins_with("live_")) { /// Live Edit
 		if (p_msg == "live_set_root") {
@@ -410,6 +412,15 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 			memdelete(G.value);
 		}
 		remove_list.remove(F);
+	}
+}
+
+void SceneDebugger::reload_cached_files(const PackedStringArray &p_files) {
+	for (const String &file : p_files) {
+		Ref<Resource> res = ResourceCache::get_ref(file);
+		if (res.is_valid()) {
+			res->reload_from_file();
+		}
 	}
 }
 

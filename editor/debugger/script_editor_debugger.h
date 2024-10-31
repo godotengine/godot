@@ -198,6 +198,8 @@ private:
 	void _video_mem_request();
 	void _video_mem_export();
 
+	void _resources_reimported(const PackedStringArray &p_resources);
+
 	int _get_node_path_cache(const NodePath &p_path);
 
 	int _get_res_path_cache(const String &p_path);

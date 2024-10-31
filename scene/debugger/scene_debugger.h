@@ -67,6 +67,7 @@ public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
+	static void reload_cached_files(const PackedStringArray &p_files);
 #endif
 };
 
