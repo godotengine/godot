@@ -10,7 +10,7 @@ from io import StringIO, TextIOWrapper
 from pathlib import Path
 from typing import Generator, Optional
 
-# Get the "Godot" folder name ahead of time
+# Get the "Blazium" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 # Listing all the folders we have converted
@@ -348,7 +348,7 @@ def detect_modules(search_path, recursive=False):
         version_path = os.path.join(path, "version.py")
         if os.path.exists(version_path):
             with open(version_path, "r", encoding="utf-8") as f:
-                if 'short_name = "godot"' in f.read():
+                if 'short_name = "blazium"' in f.read():
                     return True
         return False
 
@@ -1071,7 +1071,7 @@ def dump(env):
 #
 # To generate AND build from the command line:
 #   scons vsproj=yes vsproj_gen_only=no
-def generate_vs_project(env, original_args, project_name="godot"):
+def generate_vs_project(env, original_args, project_name="blazium"):
     # Augmented glob_recursive that also fills the dirs argument with traversed directories that have content.
     def glob_recursive_2(pattern, dirs, node="."):
         from SCons import Node
@@ -1366,7 +1366,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             properties.append(
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
-        output = f'bin\\godot{env["PROGSUFFIX"]}'
+        output = f'bin\\blazium{env["PROGSUFFIX"]}'
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
