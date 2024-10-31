@@ -172,6 +172,20 @@ void CharacterBodyMain::_process_move()
 {
     // 处理角色移动
     bool is_walk = get_blackboard()->get_var("move/using_navigation_target",false);
+    Vector3 velocity = Vector3();
+    if(animator.is_valid()) {
+        const CharacterRootMotion& root_motion = animator->get_root_motion();
+
+        Transform3D rot =get_transform();
+
+
+        rot.basis = root_motion.root_motion_rotation_add * rot.basis;
+        set_transform(rot);
+        Vector3 forward = rot.basis.xform(Vector3(0,0,1));
+
+        velocity = root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
+
+    }
     if(is_walk )
     {
         // 处理导航行走
@@ -181,7 +195,7 @@ void CharacterBodyMain::_process_move()
             {
                 Vector3 target_pos = get_blackboard()->get_var("move/navigation_target_pos",Vector3());
                 // 设置角色移动速度
-                character_agent->set_velocity(get_velocity());
+                character_agent->set_velocity(velocity * editor_animation_speed);
                 character_agent->set_target_position(target_pos);
             }
             else
@@ -192,21 +206,7 @@ void CharacterBodyMain::_process_move()
     }
     else
     {
-		Vector3 velocity = Vector3();
-        if(animator.is_valid()) {
-            const CharacterRootMotion& root_motion = animator->get_root_motion();
-
-            Transform3D rot =get_transform();
-
-
-            rot.basis = root_motion.root_motion_rotation_add * rot.basis;
-            set_transform(rot);
-            Vector3 forward = rot.basis.xform(Vector3(0,0,1));
-
-			velocity = root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
-
-            set_velocity(velocity);
-        }
+        set_velocity(velocity);
 
         move_and_slide(animator->get_time_delta());
     }

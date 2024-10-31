@@ -4336,6 +4336,7 @@ bool Main::is_iterating() {
 static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
+static double navigation_last_time = 0;
 
 // Return false means iterating further, returning true means `OS::run`
 // will terminate the program. In case of failure, the OS exit code needs
@@ -4385,6 +4386,9 @@ bool Main::iteration() {
 
 	NavigationServer2D::get_singleton()->sync();
 	NavigationServer3D::get_singleton()->sync();
+	double curr_time = OS::get_singleton()->get_unix_time();
+	double time_delta = MIN(0.1, curr_time - navigation_last_time) * time_scale;
+	navigation_last_time = curr_time;
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
@@ -4422,7 +4426,7 @@ bool Main::iteration() {
 
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
-		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+		NavigationServer3D::get_singleton()->process(time_delta);
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
 		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
@@ -4431,11 +4435,11 @@ bool Main::iteration() {
 
 #ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
-		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+		PhysicsServer3D::get_singleton()->step(navigation_last_time);
 #endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->end_sync();
-		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+		PhysicsServer2D::get_singleton()->step(navigation_last_time);
 
 		message_queue->flush();
 
