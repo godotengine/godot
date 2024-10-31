@@ -37,12 +37,26 @@
 
 #include <os/lock.h>
 
+#if defined(__aarch64__) && defined(MACOS_ENABLED)
+static constexpr uint32_t OS_UNFAIR_LOCK_DATA_SYNCHRONIZATION = 0x00010000;
+static constexpr uint32_t OS_UNFAIR_LOCK_ADAPTIVE_SPIN = 0x00040000;
+
+extern "C" {
+typedef uint32_t os_unfair_lock_options_t;
+OS_UNFAIR_LOCK_AVAILABILITY OS_EXPORT OS_NOTHROW OS_NONNULL_ALL void os_unfair_lock_lock_with_options(os_unfair_lock_t lock, os_unfair_lock_options_t options);
+}
+#endif
+
 class SpinLock {
 	mutable os_unfair_lock _lock = OS_UNFAIR_LOCK_INIT;
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
+#if defined(__aarch64__) && defined(MACOS_ENABLED)
+		os_unfair_lock_lock_with_options(&_lock, OS_UNFAIR_LOCK_DATA_SYNCHRONIZATION | OS_UNFAIR_LOCK_ADAPTIVE_SPIN);
+#else
 		os_unfair_lock_lock(&_lock);
+#endif
 	}
 
 	_ALWAYS_INLINE_ void unlock() const {
