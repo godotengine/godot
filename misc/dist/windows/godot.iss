@@ -1,7 +1,7 @@
 #define MyAppName "Blazium Engine"
 #define MyAppVersion "4.3"
 #define MyAppPublisher "Blazium Engine contributors"
-#define MyAppURL "https://blaziumengine.app/"
+#define MyAppURL "https://blazium.app/"
 #define MyAppExeName "blazium.exe"
 
 [Setup]
