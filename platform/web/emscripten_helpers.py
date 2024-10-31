@@ -3,6 +3,8 @@ import os
 
 from SCons.Util import WhereIs
 
+from platform_methods import get_build_version
+
 
 def run_closure_compiler(target, source, env, for_signature):
     closure_bin = os.path.join(
@@ -19,22 +21,6 @@ def run_closure_compiler(target, source, env, for_signature):
         cmd.extend(["--js", f.get_abspath()])
     cmd.extend(["--js_output_file", target[0].get_abspath()])
     return " ".join(cmd)
-
-
-def get_build_version():
-    import version
-
-    name = "custom_build"
-    if os.getenv("BUILD_NAME") is not None:
-        name = os.getenv("BUILD_NAME")
-    v = "%d.%d" % (version.major, version.minor)
-    if version.patch > 0:
-        v += ".%d" % version.patch
-    status = version.status
-    if os.getenv("GODOT_VERSION_STATUS") is not None:
-        status = str(os.getenv("GODOT_VERSION_STATUS"))
-    v += ".%s.%s" % (status, name)
-    return v
 
 
 def create_engine_file(env, target, source, externs, threads_enabled):
@@ -84,7 +70,7 @@ def create_template_zip(env, js, wasm, worker, side):
             cache.append("godot.editor.worker.js")
         opt_cache = ["godot.editor.wasm"]
         subst_dict = {
-            "___GODOT_VERSION___": get_build_version(),
+            "___GODOT_VERSION___": get_build_version(False),
             "___GODOT_NAME___": "GodotEngine",
             "___GODOT_CACHE___": json.dumps(cache),
             "___GODOT_OPT_CACHE___": json.dumps(opt_cache),
