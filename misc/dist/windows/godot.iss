@@ -1,8 +1,8 @@
-#define MyAppName "Godot Engine"
+#define MyAppName "Blazium Engine"
 #define MyAppVersion "4.3"
-#define MyAppPublisher "Godot Engine contributors"
-#define MyAppURL "https://godotengine.org/"
-#define MyAppExeName "godot.exe"
+#define MyAppPublisher "Blazium Engine contributors"
+#define MyAppURL "https://blazium.app/"
+#define MyAppExeName "blazium.exe"
 
 [Setup]
 AppId={{60D07AAA-400E-40F5-B073-A796C34D9D78}

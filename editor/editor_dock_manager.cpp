@@ -238,7 +238,7 @@ void EditorDockManager::_open_dock_in_window(Control *p_dock, bool p_show_window
 	Point2 dock_screen_pos = p_dock->get_screen_position();
 
 	WindowWrapper *wrapper = memnew(WindowWrapper);
-	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), all_docks[p_dock].title));
+	wrapper->set_window_title(vformat(TTR("%s - Blazium Engine"), all_docks[p_dock].title));
 	wrapper->set_margins_enabled(true);
 
 	EditorNode::get_singleton()->get_gui_base()->add_child(wrapper);
