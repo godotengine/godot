@@ -555,6 +555,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
 			Objects are displayed as wireframe models.
+			[b]Note:[/b] [method RenderingServer.set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 			Objects are displayed without lighting information and their textures replaced by normal mapping.
