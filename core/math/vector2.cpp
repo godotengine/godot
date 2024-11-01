@@ -203,7 +203,7 @@ bool Vector2::is_finite() const {
 }
 
 Vector2::operator String() const {
-	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
+	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ")";
 }
 
 Vector2::operator Vector2i() const {
