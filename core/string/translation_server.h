@@ -64,6 +64,24 @@ class TranslationServer : public Object {
 	};
 	static Vector<LocaleScriptInfo> locale_script_info;
 
+	struct Locale {
+		String language;
+		String script;
+		String country;
+		String variant;
+
+		bool operator==(const Locale &p_locale) const {
+			return (p_locale.language == language) &&
+					(p_locale.script == script) &&
+					(p_locale.country == country) &&
+					(p_locale.variant == variant);
+		}
+
+		operator String() const;
+
+		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
+	};
+
 	static HashMap<String, String> language_map;
 	static HashMap<String, String> script_map;
 	static HashMap<String, String> locale_rename_map;
