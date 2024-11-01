@@ -1017,6 +1017,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
 						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
+						d2["is_required"] = (F.flags & METHOD_FLAG_VIRTUAL_REQUIRED) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
 						// virtual functions have no hash since no MethodBind is involved
@@ -1362,7 +1363,7 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		return true; // May just not have this array and its still good. Probably added recently.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, "New API lacks base array: " + p_base_array);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, vformat("New API lacks base array: %s", p_base_array));
 	Array new_api = p_new_api[p_base_array];
 	HashMap<String, Dictionary> new_api_assoc;
 
@@ -1370,6 +1371,9 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		Dictionary elem = var;
 		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", base_array, p_name_field));
 		String name = elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && elem.has("right_type")) {
 			name += " " + String(elem["right_type"]);
 		}
@@ -1385,6 +1389,9 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 			continue;
 		}
 		String name = old_elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && old_elem.has("right_type")) {
 			name += " " + String(old_elem["right_type"]);
 		}
@@ -1514,7 +1521,7 @@ static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered
 		return true; // May just not have this array and its still good. Probably added recently or optional.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, "New API lacks base array: " + p_outer);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, vformat("New API lacks base array: %s", p_outer));
 	Array new_api = p_new_api[p_outer];
 	HashMap<String, Dictionary> new_api_assoc;
 

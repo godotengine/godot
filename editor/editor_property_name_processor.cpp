@@ -148,6 +148,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
 	capitalize_string_remaps["2d"] = "2D";
 	capitalize_string_remaps["3d"] = "3D";
+	capitalize_string_remaps["4d"] = "4D";
 	capitalize_string_remaps["aa"] = "AA";
 	capitalize_string_remaps["aabb"] = "AABB";
 	capitalize_string_remaps["adb"] = "ADB";
@@ -197,6 +198,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["gi"] = "GI";
 	capitalize_string_remaps["gl"] = "GL";
 	capitalize_string_remaps["glb"] = "GLB";
+	capitalize_string_remaps["gles"] = "GLES";
 	capitalize_string_remaps["gles2"] = "GLES2";
 	capitalize_string_remaps["gles3"] = "GLES3";
 	capitalize_string_remaps["gltf"] = "glTF";
@@ -230,6 +232,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["kb"] = "(KB)"; // Unit.
 	capitalize_string_remaps["lcd"] = "LCD";
 	capitalize_string_remaps["ldr"] = "LDR";
+	capitalize_string_remaps["linuxbsd"] = "Linux/*BSD";
 	capitalize_string_remaps["lod"] = "LOD";
 	capitalize_string_remaps["lods"] = "LODs";
 	capitalize_string_remaps["lowpass"] = "Low-pass";
@@ -247,6 +250,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["oidn"] = "OIDN";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
+	capitalize_string_remaps["opengl3"] = "OpenGL 3";
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["osslsigncode"] = "osslsigncode";

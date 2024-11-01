@@ -59,10 +59,12 @@ public:
 	Variant get_valid(const Variant &p_key) const;
 	Variant get(const Variant &p_key, const Variant &p_default) const;
 	Variant get_or_add(const Variant &p_key, const Variant &p_default);
+	bool set(const Variant &p_key, const Variant &p_value);
 
 	int size() const;
 	bool is_empty() const;
 	void clear();
+	void sort();
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 	Dictionary merged(const Dictionary &p_dictionary, bool p_overwrite = false) const;
 

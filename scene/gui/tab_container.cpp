@@ -190,7 +190,7 @@ void TabContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible() || setup_current_tab > -2) {
+			if (!is_visible()) {
 				return;
 			}
 
@@ -200,7 +200,7 @@ void TabContainer::_notification(int p_what) {
 			// beat it to the punch and make sure that the correct node is the only one visible first.
 			// Otherwise, it can prevent a tab change done right before this container was made visible.
 			Vector<Control *> controls = _get_tab_controls();
-			int current = get_current_tab();
+			int current = setup_current_tab > -2 ? setup_current_tab : get_current_tab();
 			for (int i = 0; i < controls.size(); i++) {
 				controls[i]->set_visible(i == current);
 			}
@@ -267,10 +267,14 @@ void TabContainer::_repaint() {
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
+	// Move the TabBar to the top or bottom.
+	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
 	if (tabs_position == POSITION_BOTTOM) {
-		tab_bar->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 1.0, 0.0);
+		tab_bar->set_anchor_and_offset(SIDE_TOP, 1.0, -_get_tab_height());
 	} else {
-		tab_bar->set_anchors_and_offsets_preset(PRESET_TOP_WIDE);
+		tab_bar->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height());
+		tab_bar->set_anchor_and_offset(SIDE_TOP, 0.0, 0.0);
 	}
 
 	updating_visibility = true;
@@ -299,7 +303,6 @@ void TabContainer::_repaint() {
 	}
 	updating_visibility = false;
 
-	_update_margins();
 	update_minimum_size();
 }
 
@@ -909,7 +912,7 @@ Size2 TabContainer::get_minimum_size() const {
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
-		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size) {
+		if (!c->is_visible() && !use_hidden_tabs_for_min_size) {
 			continue;
 		}
 

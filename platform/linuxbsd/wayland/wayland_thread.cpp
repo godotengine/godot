@@ -265,8 +265,6 @@ bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
 	if (wl_cursor_theme) {
 		wl_cursor_theme_destroy(wl_cursor_theme);
 		wl_cursor_theme = nullptr;
-
-		current_wl_cursor = nullptr;
 	}
 
 	if (cursor_theme_name.is_empty()) {
@@ -357,7 +355,12 @@ void WaylandThread::_update_scale(int p_scale) {
 	int cursor_size = unscaled_cursor_size * p_scale;
 
 	if (_load_cursor_theme(cursor_size)) {
-		cursor_set_shape(last_cursor_shape);
+		for (struct wl_seat *wl_seat : registry.wl_seats) {
+			SeatState *ss = wl_seat_get_seat_state(wl_seat);
+			ERR_FAIL_NULL(ss);
+
+			seat_state_update_cursor(ss);
+		}
 	}
 }
 
@@ -3074,19 +3077,25 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 
 void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
+
+	WaylandThread *thread = p_ss->wayland_thread;
 	ERR_FAIL_NULL(p_ss->wayland_thread);
 
-	if (p_ss->wl_pointer && p_ss->cursor_surface) {
-		// NOTE: Those values are valid by default and will hide the cursor when
-		// unchanged, which happens when both the current custom cursor and the
-		// current wl_cursor are `nullptr`.
-		struct wl_buffer *cursor_buffer = nullptr;
-		uint32_t hotspot_x = 0;
-		uint32_t hotspot_y = 0;
-		int scale = 1;
+	if (!p_ss->wl_pointer || !p_ss->cursor_surface) {
+		return;
+	}
 
-		CustomCursor *custom_cursor = p_ss->wayland_thread->current_custom_cursor;
-		struct wl_cursor *wl_cursor = p_ss->wayland_thread->current_wl_cursor;
+	// NOTE: Those values are valid by default and will hide the cursor when
+	// unchanged.
+	struct wl_buffer *cursor_buffer = nullptr;
+	uint32_t hotspot_x = 0;
+	uint32_t hotspot_y = 0;
+	int scale = 1;
+
+	if (thread->cursor_visible) {
+		DisplayServer::CursorShape shape = thread->cursor_shape;
+
+		struct CustomCursor *custom_cursor = thread->custom_cursors.getptr(shape);
 
 		if (custom_cursor) {
 			cursor_buffer = custom_cursor->wl_buffer;
@@ -3096,7 +3105,13 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 			// We can't really reasonably scale custom cursors, so we'll let the
 			// compositor do it for us (badly).
 			scale = 1;
-		} else if (wl_cursor) {
+		} else {
+			struct wl_cursor *wl_cursor = thread->wl_cursors[shape];
+
+			if (!wl_cursor) {
+				return;
+			}
+
 			int frame_idx = 0;
 
 			if (wl_cursor->image_count > 1) {
@@ -3112,24 +3127,24 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 
 			struct wl_cursor_image *wl_cursor_image = wl_cursor->images[frame_idx];
 
-			scale = p_ss->wayland_thread->cursor_scale;
+			scale = thread->cursor_scale;
 
 			cursor_buffer = wl_cursor_image_get_buffer(wl_cursor_image);
 
 			// As the surface's buffer is scaled (thus the surface is smaller) and the
 			// hotspot must be expressed in surface-local coordinates, we need to scale
-			// them down accordingly.
+			// it down accordingly.
 			hotspot_x = wl_cursor_image->hotspot_x / scale;
 			hotspot_y = wl_cursor_image->hotspot_y / scale;
 		}
-
-		wl_pointer_set_cursor(p_ss->wl_pointer, p_ss->pointer_enter_serial, p_ss->cursor_surface, hotspot_x, hotspot_y);
-		wl_surface_set_buffer_scale(p_ss->cursor_surface, scale);
-		wl_surface_attach(p_ss->cursor_surface, cursor_buffer, 0, 0);
-		wl_surface_damage_buffer(p_ss->cursor_surface, 0, 0, INT_MAX, INT_MAX);
-
-		wl_surface_commit(p_ss->cursor_surface);
 	}
+
+	wl_pointer_set_cursor(p_ss->wl_pointer, p_ss->pointer_enter_serial, p_ss->cursor_surface, hotspot_x, hotspot_y);
+	wl_surface_set_buffer_scale(p_ss->cursor_surface, scale);
+	wl_surface_attach(p_ss->cursor_surface, cursor_buffer, 0, 0);
+	wl_surface_damage_buffer(p_ss->cursor_surface, 0, 0, INT_MAX, INT_MAX);
+
+	wl_surface_commit(p_ss->cursor_surface);
 }
 
 void WaylandThread::seat_state_echo_keys(SeatState *p_ss) {
@@ -3770,25 +3785,19 @@ Error WaylandThread::init() {
 	return OK;
 }
 
-void WaylandThread::cursor_hide() {
-	current_wl_cursor = nullptr;
-	current_custom_cursor = nullptr;
+void WaylandThread::cursor_set_visible(bool p_visible) {
+	cursor_visible = p_visible;
 
-	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
-	ERR_FAIL_NULL(ss);
-	seat_state_update_cursor(ss);
+	for (struct wl_seat *wl_seat : registry.wl_seats) {
+		SeatState *ss = wl_seat_get_seat_state(wl_seat);
+		ERR_FAIL_NULL(ss);
+
+		seat_state_update_cursor(ss);
+	}
 }
 
 void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) {
-	if (!wl_cursors[p_cursor_shape]) {
-		return;
-	}
-
-	// The point of this method is make the current cursor a "plain" shape and, as
-	// the custom cursor overrides what gets set, we have to clear it too.
-	current_custom_cursor = nullptr;
-
-	current_wl_cursor = wl_cursors[p_cursor_shape];
+	cursor_shape = p_cursor_shape;
 
 	for (struct wl_seat *wl_seat : registry.wl_seats) {
 		SeatState *ss = wl_seat_get_seat_state(wl_seat);
@@ -3796,23 +3805,6 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 
 		seat_state_update_cursor(ss);
 	}
-
-	last_cursor_shape = p_cursor_shape;
-}
-
-void WaylandThread::cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape) {
-	ERR_FAIL_COND(!custom_cursors.has(p_cursor_shape));
-
-	current_custom_cursor = &custom_cursors[p_cursor_shape];
-
-	for (struct wl_seat *wl_seat : registry.wl_seats) {
-		SeatState *ss = wl_seat_get_seat_state(wl_seat);
-		ERR_FAIL_NULL(ss);
-
-		seat_state_update_cursor(ss);
-	}
-
-	last_cursor_shape = p_cursor_shape;
 }
 
 void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot) {
@@ -3832,23 +3824,21 @@ void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_c
 	CustomCursor &cursor = custom_cursors[p_cursor_shape];
 	cursor.hotspot = p_hotspot;
 
-	if (cursor.buffer_data) {
-		// Clean up the old buffer data.
-		munmap(cursor.buffer_data, cursor.buffer_data_size);
-	}
-
-	// NOTE: From `wl_keyboard`s of version 7 or later, the spec requires the mmap
-	// operation to be done with MAP_PRIVATE, as "MAP_SHARED may fail". We'll do it
-	// regardless of global version.
-	cursor.buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-
 	if (cursor.wl_buffer) {
 		// Clean up the old Wayland buffer.
 		wl_buffer_destroy(cursor.wl_buffer);
 	}
 
+	if (cursor.buffer_data) {
+		// Clean up the old buffer data.
+		munmap(cursor.buffer_data, cursor.buffer_data_size);
+	}
+
+	cursor.buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	cursor.buffer_data_size = data_size;
+
 	// Create the Wayland buffer.
-	struct wl_shm_pool *wl_shm_pool = wl_shm_create_pool(registry.wl_shm, fd, image_size.height * data_size);
+	struct wl_shm_pool *wl_shm_pool = wl_shm_create_pool(registry.wl_shm, fd, data_size);
 	// TODO: Make sure that WL_SHM_FORMAT_ARGB8888 format is supported. It
 	// technically isn't garaunteed to be supported, but I think that'd be a
 	// pretty unlikely thing to stumble upon.
@@ -3875,8 +3865,6 @@ void WaylandThread::cursor_shape_clear_custom_image(DisplayServer::CursorShape p
 	if (custom_cursors.has(p_cursor_shape)) {
 		CustomCursor cursor = custom_cursors[p_cursor_shape];
 		custom_cursors.erase(p_cursor_shape);
-
-		current_custom_cursor = nullptr;
 
 		if (cursor.wl_buffer) {
 			wl_buffer_destroy(cursor.wl_buffer);

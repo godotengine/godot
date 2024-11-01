@@ -81,7 +81,6 @@ class EditorLog;
 class EditorMainScreen;
 class EditorNativeShaderSourceVisualizer;
 class EditorPluginList;
-class EditorQuickOpen;
 class EditorResourcePreview;
 class EditorResourceConversionPlugin;
 class EditorRunBar;
@@ -90,6 +89,7 @@ class EditorSelectionHistory;
 class EditorSettingsDialog;
 class EditorTitleBar;
 class ExportTemplateManager;
+class EditorQuickOpenDialog;
 class FBXImporterManager;
 class FileSystemDock;
 class HistoryDock;
@@ -246,6 +246,8 @@ private:
 		bool debug = false;
 		bool pack_only = false;
 		bool android_build_template = false;
+		bool patch = false;
+		Vector<String> patches;
 	} export_defer;
 
 	static EditorNode *singleton;
@@ -255,13 +257,13 @@ private:
 	EditorSelectionHistory editor_history;
 
 	EditorCommandPalette *command_palette = nullptr;
+	EditorQuickOpenDialog *quick_open_dialog = nullptr;
 	EditorExport *editor_export = nullptr;
 	EditorLog *log = nullptr;
 	EditorNativeShaderSourceVisualizer *native_shader_source_visualizer = nullptr;
 	EditorPluginList *editor_plugins_force_input_forwarding = nullptr;
 	EditorPluginList *editor_plugins_force_over = nullptr;
 	EditorPluginList *editor_plugins_over = nullptr;
-	EditorQuickOpen *quick_open = nullptr;
 	EditorResourcePreview *resource_preview = nullptr;
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
@@ -570,7 +572,7 @@ private:
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
-	void _quick_opened();
+	void _quick_opened(const String &p_file_path);
 	void _open_command_palette();
 
 	void _project_run_started();
@@ -660,6 +662,7 @@ private:
 	void _remove_all_not_owned_children(Node *p_node, Node *p_owner);
 
 	void _progress_dialog_visibility_changed();
+	void _load_error_dialog_visibility_changed();
 
 protected:
 	friend class FileSystemDock;
@@ -754,6 +757,13 @@ public:
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
+	void replace_resources_in_object(
+			Object *p_object,
+			const Vector<Ref<Resource>> &p_source_resources,
+			const Vector<Ref<Resource>> &p_target_resource);
+	void replace_resources_in_scenes(
+			const Vector<Ref<Resource>> &p_source_resources,
+			const Vector<Ref<Resource>> &p_target_resource);
 	void open_request(const String &p_path);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
@@ -771,7 +781,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
-	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_silent_change_tab = false);
+	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_force_open_imported = false, bool p_silent_change_tab = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
 	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
@@ -872,7 +882,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
@@ -903,6 +913,8 @@ public:
 	Dictionary drag_resource(const Ref<Resource> &p_res, Control *p_from);
 	Dictionary drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
+	EditorQuickOpenDialog *get_quick_open_dialog() { return quick_open_dialog; }
+
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
@@ -914,13 +926,13 @@ public:
 	void save_scene_list(const HashSet<String> &p_scene_paths);
 	void save_before_run();
 	void try_autosave();
-	void restart_editor();
+	void restart_editor(bool p_goto_project_manager = false);
 	void unload_editor_addons();
 
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
-	void edit_current() { _edit_current(); };
+	void edit_current() { _edit_current(); }
 
 	bool has_scenes_in_session();
 
@@ -934,7 +946,8 @@ public:
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
-	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
+	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_resource(const Ref<Resource> &p_for_resource);
+	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin_for_type_name(const String &p_type);
 
 	bool ensure_main_scene(bool p_from_native);
 };

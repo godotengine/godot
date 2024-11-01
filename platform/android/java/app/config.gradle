@@ -224,6 +224,14 @@ ext.getExportFilename = {
     return exportFilename
 }
 
+ext.getExportEdition = {
+    String exportEdition = project.hasProperty("export_edition") ? project.property("export_edition") : ""
+    if (exportEdition == null || exportEdition.isEmpty()) {
+        exportEdition = "standard"
+    }
+    return exportEdition
+}
+
 ext.getExportBuildType = {
     String exportBuildType = project.hasProperty("export_build_type") ? project.property("export_build_type") : ""
     if (exportBuildType == null || exportBuildType.isEmpty()) {
@@ -399,4 +407,9 @@ ext.shouldUseLegacyPackaging = { ->
 
     // Default behavior for minSdk >= 23
     return false
+}
+
+ext.getAddonsDirectory = { ->
+    String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
+    return addonsDirectory
 }

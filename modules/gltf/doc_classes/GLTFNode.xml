@@ -12,6 +12,13 @@
 		<link title="glTF scene and node spec">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_004_ScenesNodes.md"</link>
 	</tutorials>
 	<methods>
+		<method name="append_child_index">
+			<return type="void" />
+			<param index="0" name="child_index" type="int" />
+			<description>
+				Appends the given child node index to the [member children] array.
+			</description>
+		</method>
 		<method name="get_additional_data">
 			<return type="Variant" />
 			<param index="0" name="extension_name" type="StringName" />

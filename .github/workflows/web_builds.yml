@@ -8,15 +8,15 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no use_closure_compiler=yes strict_checks=yes
   EM_VERSION: 3.1.64
-  EM_CACHE_FOLDER: "emsdk-cache"
+  EM_CACHE_FOLDER: emsdk-cache
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-web
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-web
   cancel-in-progress: true
 
 jobs:
   web-template:
-    runs-on: "ubuntu-22.04"
+    runs-on: ubuntu-22.04
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -37,16 +37,17 @@ jobs:
             artifact: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Set up Emscripten latest
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: ${{env.EM_VERSION}}
-          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
-          cache-key: emsdk-${{ matrix.cache-name }}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          version: ${{ env.EM_VERSION }}
+          actions-cache-folder: ${{ env.EM_CACHE_FOLDER }}
+          cache-key: emsdk-${{ matrix.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
 
       - name: Verify Emscripten setup
         run: |
@@ -77,6 +78,6 @@ jobs:
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
-        if: ${{ matrix.artifact }}
+        if: matrix.artifact
         with:
           name: ${{ matrix.cache-name }}

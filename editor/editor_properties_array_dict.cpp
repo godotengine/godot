@@ -283,7 +283,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 
 	Button *reorder_button = memnew(Button);
-	reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
+	reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
 	reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
@@ -298,13 +298,13 @@ void EditorPropertyArray::_create_new_property_slot() {
 
 	if (is_untyped_array) {
 		Button *edit_btn = memnew(Button);
-		edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
 		hbox->add_child(edit_btn);
 	} else {
 		Button *remove_btn = memnew(Button);
-		remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
 		hbox->add_child(remove_btn);
@@ -395,7 +395,7 @@ void EditorPropertyArray::update_property() {
 			vbox->add_child(property_vbox);
 
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
-			button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
 			button_add_item->set_disabled(is_read_only());
 			vbox->add_child(button_add_item);
@@ -657,7 +657,7 @@ void EditorPropertyArray::_notification(int p_what) {
 			}
 
 			if (button_add_item) {
-				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 		} break;
 
@@ -939,13 +939,13 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 
 	if (is_untyped_dict) {
 		Button *edit_btn = memnew(Button);
-		edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
 		hbox->add_child(edit_btn);
 	} else if (p_idx >= 0) {
 		Button *remove_btn = memnew(Button);
-		remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
 		hbox->add_child(remove_btn);
@@ -1122,7 +1122,7 @@ void EditorPropertyDictionary::update_property() {
 			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_VALUE_INDEX);
 
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
-			button_add_item->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+			button_add_item->set_button_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			button_add_item->set_disabled(is_read_only());
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 			add_vbox->add_child(button_add_item);
@@ -1227,7 +1227,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 			}
 
 			if (button_add_item) {
-				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			}
 		} break;
@@ -1424,7 +1424,7 @@ void EditorPropertyLocalizableString::update_property() {
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *edit_btn = memnew(Button);
-			edit_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			hbox->add_child(edit_btn);
 			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
@@ -1433,7 +1433,7 @@ void EditorPropertyLocalizableString::update_property() {
 
 		if (page_index == max_page) {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Translation"));
-			button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
 			property_vbox->add_child(button_add_item);
 		}
@@ -1459,7 +1459,7 @@ void EditorPropertyLocalizableString::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (button_add_item) {
-				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 		} break;
 	}

@@ -284,7 +284,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	const Variant get_rpc_config() const override;
+	Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override {

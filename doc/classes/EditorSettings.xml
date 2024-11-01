@@ -186,6 +186,7 @@
 		</member>
 		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
 			If [code]true[/code], automatically switches to the [b]Remote[/b] scene tree when running the project from the editor. If [code]false[/code], stays on the [b]Local[/b] scene tree when running the project from the editor.
+			[b]Warning:[/b] Enabling this setting can cause stuttering when running a project with a large amount of nodes (typically a few thousands of nodes or more), even if the editor window isn't focused. This is due to the remote scene tree being updated every second regardless of whether the editor is focused.
 		</member>
 		<member name="debugger/profile_native_calls" type="bool" setter="" getter="">
 			If [code]true[/code], enables collection of profiling data from non-GDScript Godot functions, such as engine class methods. Enabling this slows execution while profiling further.
@@ -713,6 +714,12 @@
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
 			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
 		</member>
+		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
+			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
+		</member>
+		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
+			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
+		</member>
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
 			To enable this feature for your specific project, use [member ProjectSettings.rendering/lightmapping/denoising/denoiser].
@@ -771,7 +778,7 @@
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
-			The preferred monitor to display the editor.
+			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across restarts.
 		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
@@ -824,9 +831,6 @@
 		</member>
 		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
-		</member>
-		<member name="interface/editor/remember_window_size_and_position" type="bool" setter="" getter="">
-			If [code]true[/code], the editor window will remember its size, position, and which screen it was displayed on across restarts.
 		</member>
 		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
 			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
@@ -903,7 +907,7 @@
 		</member>
 		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
 			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
-			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored
+			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored.
 		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
@@ -1075,9 +1079,11 @@
 		</member>
 		<member name="run/bottom_panel/action_on_play" type="int" setter="" getter="">
 			The action to execute on the bottom panel when running the project.
+			[b]Note:[/b] This option won't do anything if the bottom panel switching is locked using the button in the bottom-right corner of the bottom panel.
 		</member>
 		<member name="run/bottom_panel/action_on_stop" type="int" setter="" getter="">
 			The action to execute on the bottom panel when stopping the project.
+			[b]Note:[/b] This option won't do anything if the bottom panel switching is locked using the button in the bottom-right corner of the bottom panel.
 		</member>
 		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will clear the Output panel when running the project.
@@ -1198,6 +1204,9 @@
 		</member>
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
+		</member>
+		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
+			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
 		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.

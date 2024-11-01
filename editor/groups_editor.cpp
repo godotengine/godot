@@ -373,7 +373,7 @@ void GroupsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon("Search"));
-			add->set_icon(get_editor_theme_icon("Add"));
+			add->set_button_icon(get_editor_theme_icon("Add"));
 			_update_tree();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -840,7 +840,7 @@ GroupsEditor::GroupsEditor() {
 	add_child(hbc);
 
 	add = memnew(Button);
-	add->set_flat(true);
+	add->set_theme_type_variation("FlatMenuButton");
 	add->set_tooltip_text(TTR("Add a new group."));
 	add->connect(SceneStringName(pressed), callable_mp(this, &GroupsEditor::_show_add_group_dialog));
 	hbc->add_child(add);

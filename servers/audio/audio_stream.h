@@ -83,13 +83,14 @@ class AudioStreamPlayback : public RefCounted {
 
 protected:
 	static void _bind_methods();
+	PackedVector2Array _mix_audio_bind(float p_rate_scale, int p_frames);
 	GDVIRTUAL1(_start, double)
 	GDVIRTUAL0(_stop)
 	GDVIRTUAL0RC(bool, _is_playing)
 	GDVIRTUAL0RC(int, _get_loop_count)
 	GDVIRTUAL0RC(double, _get_playback_position)
 	GDVIRTUAL1(_seek, double)
-	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
+	GDVIRTUAL3R_REQUIRED(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
 	GDVIRTUAL2(_set_parameter, const StringName &, const Variant &)
 	GDVIRTUAL1RC(Variant, _get_parameter, const StringName &)
@@ -118,6 +119,11 @@ public:
 
 	AudioStreamPlayback();
 	~AudioStreamPlayback();
+
+	Vector<AudioFrame> mix_audio(float p_rate_scale, int p_frames);
+	void start_playback(double p_from_pos = 0.0);
+	void stop_playback();
+	void seek_playback(double p_time);
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
@@ -141,8 +147,8 @@ protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
 	virtual float get_stream_sampling_rate();
 
-	GDVIRTUAL2R(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
-	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
+	GDVIRTUAL2R_REQUIRED(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
+	GDVIRTUAL0RC_REQUIRED(float, _get_stream_sampling_rate)
 
 	static void _bind_methods();
 

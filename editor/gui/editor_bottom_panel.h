@@ -37,7 +37,6 @@ class Button;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
-class LinkButton;
 class VBoxContainer;
 
 class EditorBottomPanel : public PanelContainer {
@@ -50,19 +49,20 @@ class EditorBottomPanel : public PanelContainer {
 	};
 
 	Vector<BottomPanelItem> items;
+	bool lock_panel_switching = false;
 
 	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
 	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
-	LinkButton *version_btn = nullptr;
+	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 	Control *last_opened_control = nullptr;
 
-	void _switch_by_control(bool p_visible, Control *p_control);
-	void _switch_to_item(bool p_visible, int p_idx);
+	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
+	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
+	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
-	void _version_button_pressed();
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 

@@ -47,6 +47,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
+import android.view.Surface;
 import android.view.WindowInsets;
 
 import androidx.core.content.FileProvider;
@@ -216,6 +217,14 @@ public class GodotIO {
 		return result;
 	}
 
+	public boolean hasHardwareKeyboard() {
+		if (edit != null) {
+			return edit.hasHardwareKeyboard();
+		} else {
+			return false;
+		}
+	}
+
 	public void showKeyboard(String p_existing_text, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 		if (edit != null) {
 			edit.showKeyboard(p_existing_text, GodotEditText.VirtualKeyboardType.values()[p_type], p_max_input_length, p_cursor_start, p_cursor_end);
@@ -284,6 +293,28 @@ public class GodotIO {
 			case ActivityInfo.SCREEN_ORIENTATION_LOCKED:
 			default:
 				return -1;
+		}
+	}
+
+	/**
+	 This function is used by DisplayServer::screen_get_internal_current_rotation (C++)
+		and is used to implement a performance optimization in devices that do not offer
+		a HW rotator.
+	 @return
+		Rotation in degrees, in multiples of 90°
+	*/
+	public int getInternalCurrentScreenRotation() {
+		int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+
+		switch (rotation) {
+			case Surface.ROTATION_90:
+				return 90;
+			case Surface.ROTATION_180:
+				return 180;
+			case Surface.ROTATION_270:
+				return 270;
+			default:
+				return 0;
 		}
 	}
 

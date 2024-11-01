@@ -96,6 +96,22 @@ _FORCE_INLINE_ ShaderStageUsage &operator|=(ShaderStageUsage &p_a, int p_b) {
 	return p_a;
 }
 
+enum StageResourceUsage : uint32_t {
+	VertexRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_VERTEX * 2),
+	VertexWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_VERTEX * 2),
+	FragmentRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_FRAGMENT * 2),
+	FragmentWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_FRAGMENT * 2),
+	TesselationControlRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
+	TesselationControlWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
+	TesselationEvaluationRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
+	TesselationEvaluationWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
+	ComputeRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_COMPUTE * 2),
+	ComputeWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_COMPUTE * 2),
+};
+
+typedef LocalVector<__unsafe_unretained id<MTLResource>> ResourceVector;
+typedef HashMap<StageResourceUsage, ResourceVector> ResourceUsageMap;
+
 enum class MDCommandBufferStateType {
 	None,
 	Render,
@@ -230,6 +246,7 @@ public:
 		uint32_t index_offset = 0;
 		LocalVector<id<MTLBuffer> __unsafe_unretained> vertex_buffers;
 		LocalVector<NSUInteger> vertex_offsets;
+		ResourceUsageMap resource_usage;
 		// clang-format off
 		enum DirtyFlag: uint8_t {
 			DIRTY_NONE     = 0b0000'0000,
@@ -271,7 +288,13 @@ public:
 			blend_constants.reset();
 			vertex_buffers.clear();
 			vertex_offsets.clear();
+			// Keep the keys, as they are likely to be used again.
+			for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
+				kv.value.clear();
+			}
 		}
+
+		void end_encoding();
 
 		_FORCE_INLINE_ void mark_viewport_dirty() {
 			if (viewports.is_empty()) {
@@ -318,6 +341,13 @@ public:
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
 		}
 
+		_FORCE_INLINE_ void mark_blend_dirty() {
+			if (!blend_constants.has_value()) {
+				return;
+			}
+			dirty.set_flag(DirtyFlag::DIRTY_BLEND);
+		}
+
 		MTLScissorRect clip_to_render_area(MTLScissorRect p_rect) const {
 			uint32_t raLeft = render_area.position.x;
 			uint32_t raRight = raLeft + render_area.size.width;
@@ -349,13 +379,20 @@ public:
 	} render;
 
 	// State specific for a compute pass.
-	struct {
+	struct ComputeState {
 		MDComputePipeline *pipeline = nullptr;
 		id<MTLComputeCommandEncoder> encoder = nil;
+		ResourceUsageMap resource_usage;
 		_FORCE_INLINE_ void reset() {
 			pipeline = nil;
 			encoder = nil;
+			// Keep the keys, as they are likely to be used again.
+			for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
+				kv.value.clear();
+			}
 		}
+
+		void end_encoding();
 	} compute;
 
 	// State specific to a blit pass.
@@ -625,19 +662,6 @@ public:
 	MDRenderShader(CharString p_name, Vector<UniformSet> p_sets, MDLibrary *p_vert, MDLibrary *p_frag);
 };
 
-enum StageResourceUsage : uint32_t {
-	VertexRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_VERTEX * 2),
-	VertexWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_VERTEX * 2),
-	FragmentRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_FRAGMENT * 2),
-	FragmentWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_FRAGMENT * 2),
-	TesselationControlRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
-	TesselationControlWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
-	TesselationEvaluationRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
-	TesselationEvaluationWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
-	ComputeRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_COMPUTE * 2),
-	ComputeWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_COMPUTE * 2),
-};
-
 _FORCE_INLINE_ StageResourceUsage &operator|=(StageResourceUsage &p_a, uint32_t p_b) {
 	p_a = StageResourceUsage(uint32_t(p_a) | p_b);
 	return p_a;
@@ -660,7 +684,13 @@ struct HashMapComparatorDefault<RDD::ShaderID> {
 
 struct BoundUniformSet {
 	id<MTLBuffer> buffer;
-	HashMap<id<MTLResource>, StageResourceUsage> bound_resources;
+	ResourceUsageMap usage_to_resources;
+
+	/// Perform a 2-way merge each key of `ResourceVector` resources from this set into the
+	/// destination set.
+	///
+	/// Assumes the vectors of resources are sorted.
+	void merge_into(ResourceUsageMap &p_dst) const;
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDUniformSet {
@@ -811,7 +841,7 @@ public:
 				if (!enabled)
 					return;
 				[p_enc setStencilFrontReferenceValue:front_reference backReferenceValue:back_reference];
-			};
+			}
 		} stencil;
 
 		struct {
@@ -825,7 +855,7 @@ public:
 				//if (!enabled)
 				//	return;
 				[p_enc setBlendColorRed:r green:g blue:b alpha:a];
-			};
+			}
 		} blend;
 
 		_FORCE_INLINE_ void apply(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc) const {

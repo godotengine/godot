@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import methods
 from methods import print_error, print_warning
-from platform_methods import detect_arch
+from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -390,8 +390,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
-    env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
-
     if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp
 
@@ -485,9 +483,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         else:
             print_warning("Missing environment variable: WindowsSdkDir")
 
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+    validate_win_version(env)
 
     env.AppendUnique(
         CPPDEFINES=[
@@ -551,15 +547,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
-        # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]):
-            print_error(
-                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-                "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
-            )
-            sys.exit(255)
+        check_d3d12_installed(env)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -620,18 +608,16 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
                 sys.exit(255)
 
-            env.Append(CCFLAGS=["-flto=thin"])
-            env.Append(LINKFLAGS=["-flto=thin"])
+            env.AppendUnique(CCFLAGS=["-flto=thin"])
         elif env["use_llvm"]:
-            env.Append(CCFLAGS=["-flto"])
-            env.Append(LINKFLAGS=["-flto"])
+            env.AppendUnique(CCFLAGS=["-flto"])
         else:
             env.AppendUnique(CCFLAGS=["/GL"])
-            env.AppendUnique(ARFLAGS=["/LTCG"])
-            if env["progress"]:
-                env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
-            else:
-                env.AppendUnique(LINKFLAGS=["/LTCG"])
+        if env["progress"]:
+            env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+        else:
+            env.AppendUnique(LINKFLAGS=["/LTCG"])
+        env.AppendUnique(ARFLAGS=["/LTCG"])
 
     if vcvars_msvc_config:
         env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
@@ -666,7 +652,7 @@ def get_ar_version(env):
         print_warning("Couldn't check version of `ar`.")
         return ret
 
-    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(?:\.(\d+))?", output)
+    match = re.search(r"GNU ar(?: \(GNU Binutils\)| version) (\d+)\.(\d+)(?:\.(\d+))?", output)
     if match:
         ret["major"] = int(match[1])
         ret["minor"] = int(match[2])
@@ -704,10 +690,28 @@ def get_is_ar_thin_supported(env):
     return False
 
 
+WINPATHSEP_RE = re.compile(r"\\([^\"'\\]|$)")
+
+
+def tempfile_arg_esc_func(arg):
+    from SCons.Subst import quote_spaces
+
+    arg = quote_spaces(arg)
+    # GCC requires double Windows slashes, let's use UNIX separator
+    return WINPATHSEP_RE.sub(r"/\1", arg)
+
+
 def configure_mingw(env: "SConsEnvironment"):
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
+
+    # In case the command line to AR is too long, use a response file.
+    env["ARCOM_ORIG"] = env["ARCOM"]
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
+    env["TEMPFILESUFFIX"] = ".rsp"
+    if os.name == "nt":
+        env["TEMPFILEARGESCFUNC"] = tempfile_arg_esc_func
 
     ## Build type
 
@@ -774,8 +778,9 @@ def configure_mingw(env: "SConsEnvironment"):
         env["CXX"] = mingw_bin_prefix + "g++"
         if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
             env["AS"] = mingw_bin_prefix + "as"
-        if try_cmd("gcc-ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "gcc-ar"
+        ar = "ar" if os.name == "nt" else "gcc-ar"
+        if try_cmd(f"{ar} --version", env["mingw_prefix"], env["arch"]):
+            env["AR"] = mingw_bin_prefix + ar
         if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
             env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
 
@@ -805,9 +810,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+    validate_win_version(env)
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
@@ -885,15 +888,7 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]):
-            print_error(
-                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-                "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
-            )
-            sys.exit(255)
+        check_d3d12_installed(env)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -936,12 +931,7 @@ def configure_mingw(env: "SConsEnvironment"):
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
-    if env["arch"] not in supported_arches:
-        print_error(
-            'Unsupported CPU architecture "%s" for Windows. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit(255)
+    validate_arch(env["arch"], get_name(), supported_arches)
 
     # At this point the env has been set up with basic tools/compilers.
     env.Prepend(CPPPATH=["#platform/windows"])
@@ -969,3 +959,20 @@ def configure(env: "SConsEnvironment"):
 
     else:  # MinGW
         configure_mingw(env)
+
+
+def check_d3d12_installed(env):
+    if not os.path.exists(env["mesa_libs"]):
+        print_error(
+            "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
+            "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+            "See the documentation for more information:\n\t"
+            "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+        )
+        sys.exit(255)
+
+
+def validate_win_version(env):
+    if int(env["target_win_version"], 16) < 0x0601:
+        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)

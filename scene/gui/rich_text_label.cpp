@@ -2067,16 +2067,27 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		bool scroll_value_modified = false;
+		double prev_scroll = vscroll->get_value();
+
 		if (b->get_button_index() == MouseButton::WHEEL_UP) {
 			if (scroll_active) {
 				vscroll->scroll(-vscroll->get_page() * b->get_factor() * 0.5 / 8);
+				scroll_value_modified = true;
 			}
 		}
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (scroll_active) {
 				vscroll->scroll(vscroll->get_page() * b->get_factor() * 0.5 / 8);
+				scroll_value_modified = true;
 			}
 		}
+
+		if (scroll_value_modified && vscroll->get_value() != prev_scroll) {
+			accept_event();
+			return;
+		}
+
 		if (b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
 			_update_context_menu();
 			menu->set_position(get_screen_position() + b->get_position());
@@ -5431,6 +5442,7 @@ Variant RichTextLabel::get_drag_data(const Point2 &p_point) {
 		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Text is already translated.
 		set_drag_preview(l);
 		return t;
 	}

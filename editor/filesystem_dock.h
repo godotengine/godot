@@ -33,6 +33,7 @@
 
 #include "editor/dependency_editor.h"
 #include "editor/editor_file_system.h"
+#include "editor/file_info.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
@@ -93,16 +94,6 @@ public:
 		DISPLAY_MODE_HSPLIT,
 	};
 
-	enum FileSortOption {
-		FILE_SORT_NAME = 0,
-		FILE_SORT_NAME_REVERSE,
-		FILE_SORT_TYPE,
-		FILE_SORT_TYPE_REVERSE,
-		FILE_SORT_MODIFIED_TIME,
-		FILE_SORT_MODIFIED_TIME_REVERSE,
-		FILE_SORT_MAX,
-	};
-
 	enum Overwrite {
 		OVERWRITE_UNDECIDED,
 		OVERWRITE_REPLACE,
@@ -125,7 +116,6 @@ private:
 		FILE_REMOVE,
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
-		FILE_INFO,
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
@@ -140,12 +130,13 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
+		CONVERT_BASE_ID = 1000,
 	};
 
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
-	FileSortOption file_sort = FILE_SORT_NAME;
+	FileSortOption file_sort = FileSortOption::FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
@@ -191,8 +182,6 @@ private:
 	DependencyRemoveDialog *remove_dialog = nullptr;
 
 	EditorDirDialog *move_dialog = nullptr;
-	ConfirmationDialog *duplicate_dialog = nullptr;
-	LineEdit *duplicate_dialog_text = nullptr;
 	DirectoryCreateDialog *make_dir_dialog = nullptr;
 
 	ConfirmationDialog *overwrite_dialog = nullptr;
@@ -200,6 +189,8 @@ private:
 	Label *overwrite_dialog_header = nullptr;
 	Label *overwrite_dialog_footer = nullptr;
 	Label *overwrite_dialog_file_list = nullptr;
+
+	ConfirmationDialog *conversion_dialog = nullptr;
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
@@ -226,6 +217,9 @@ private:
 	String to_move_path;
 	bool to_move_or_copy = false;
 
+	Vector<String> to_convert;
+	int selected_conversion_id = 0;
+
 	Vector<String> history;
 	int history_pos;
 	int history_max_size;
@@ -245,6 +239,8 @@ private:
 
 	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
+	HashSet<String> cached_valid_conversion_targets;
+
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
@@ -255,6 +251,8 @@ private:
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
+
+	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
 
 	void _update_file_list(bool p_keep_selection);
 	void _toggle_file_display();
@@ -290,13 +288,15 @@ private:
 	void _resource_created();
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
-	void _duplicate_operation_confirm();
+	void _duplicate_operation_confirm(const String &p_path);
 	void _overwrite_dialog_action(bool p_overwrite);
+	void _convert_dialog_action();
 	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);
+	void _generic_rmb_option_selected(int p_option);
 	void _file_option(int p_option, const Vector<String> &p_selected);
 
 	void _fw_history();
@@ -323,25 +323,6 @@ private:
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
-
-	struct FileInfo {
-		String name;
-		String path;
-		String icon_path;
-		StringName type;
-		Vector<String> sources;
-		bool import_broken = false;
-		uint64_t modified_time = 0;
-
-		bool operator<(const FileInfo &fi) const {
-			return FileNoCaseComparator()(name, fi.name);
-		}
-	};
-
-	struct FileInfoTypeComparator;
-	struct FileInfoModifiedTimeComparator;
-
-	void _sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
@@ -400,10 +381,12 @@ public:
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
 	void focus_on_filter();
+	void create_directory(const String &p_path, const String &p_base_dir);
 
 	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
+	void update_all();
 
 	int get_h_split_offset() const { return split_box_offset_h; }
 	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }
@@ -418,7 +401,7 @@ public:
 	FileSortOption get_file_sort() const { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
 

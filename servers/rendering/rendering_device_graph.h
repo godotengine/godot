@@ -69,6 +69,8 @@ public:
 			TYPE_CLEAR_ATTACHMENTS,
 			TYPE_DRAW,
 			TYPE_DRAW_INDEXED,
+			TYPE_DRAW_INDIRECT,
+			TYPE_DRAW_INDEXED_INDIRECT,
 			TYPE_EXECUTE_COMMANDS,
 			TYPE_NEXT_SUBPASS,
 			TYPE_SET_BLEND_CONSTANTS,
@@ -151,6 +153,8 @@ public:
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
+		BitField<RDD::PipelineStageBits> previous_frame_stages;
+		BitField<RDD::PipelineStageBits> current_frame_stages;
 		int32_t read_full_command_list_index = -1;
 		int32_t read_slice_command_list_index = -1;
 		int32_t write_command_or_list_index = -1;
@@ -174,8 +178,9 @@ public:
 
 		_FORCE_INLINE_ void reset_if_outdated(int64_t new_command_frame) {
 			if (new_command_frame != command_frame) {
-				usage_access.clear();
 				command_frame = new_command_frame;
+				previous_frame_stages = current_frame_stages;
+				current_frame_stages.clear();
 				read_full_command_list_index = -1;
 				read_slice_command_list_index = -1;
 				write_command_or_list_index = -1;
@@ -218,14 +223,18 @@ private:
 	};
 
 	struct ComputeInstructionList : InstructionList {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		uint32_t breadcrumb;
+#endif
 	};
 
 	struct DrawInstructionList : InstructionList {
 		RDD::RenderPassID render_pass;
 		RDD::FramebufferID framebuffer;
 		Rect2i region;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		uint32_t breadcrumb;
+#endif
 		LocalVector<RDD::RenderPassClearValue> clear_values;
 	};
 
@@ -314,7 +323,9 @@ private:
 		RDD::FramebufferID framebuffer;
 		RDD::CommandBufferType command_buffer_type;
 		Rect2i region;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		uint32_t breadcrumb = 0;
+#endif
 		uint32_t clear_values_count = 0;
 
 		_FORCE_INLINE_ RDD::RenderPassClearValue *clear_values() {
@@ -461,6 +472,20 @@ private:
 		uint32_t index_count = 0;
 		uint32_t instance_count = 0;
 		uint32_t first_index = 0;
+	};
+
+	struct DrawListDrawIndirectInstruction : DrawListInstruction {
+		RDD::BufferID buffer;
+		uint32_t offset = 0;
+		uint32_t draw_count = 0;
+		uint32_t stride = 0;
+	};
+
+	struct DrawListDrawIndexedIndirectInstruction : DrawListInstruction {
+		RDD::BufferID buffer;
+		uint32_t offset = 0;
+		uint32_t draw_count = 0;
+		uint32_t stride = 0;
 	};
 
 	struct DrawListEndRenderPassInstruction : DrawListInstruction {
@@ -675,6 +700,8 @@ public:
 	void add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect);
 	void add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count);
 	void add_draw_list_draw_indexed(uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index);
+	void add_draw_list_draw_indirect(RDD::BufferID p_buffer, uint32_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
+	void add_draw_list_draw_indexed_indirect(RDD::BufferID p_buffer, uint32_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
 	void add_draw_list_execute_commands(RDD::CommandBufferID p_command_buffer);
 	void add_draw_list_next_subpass(RDD::CommandBufferType p_command_buffer_type);
 	void add_draw_list_set_blend_constants(const Color &p_color);

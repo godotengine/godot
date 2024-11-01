@@ -48,10 +48,10 @@
 void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			select_node_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
-			node_type_2d->set_icon(get_editor_theme_icon(SNAME("Node2D")));
-			node_type_3d->set_icon(get_editor_theme_icon(SNAME("Node3D")));
-			node_type_gui->set_icon(get_editor_theme_icon(SNAME("Control")));
+			select_node_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
+			node_type_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
+			node_type_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
+			node_type_gui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Node")));
 		} break;
 
@@ -121,9 +121,9 @@ void SceneCreateDialog::update_dialog() {
 
 	const StringName root_type_name = StringName(other_type_display->get_text());
 	if (has_theme_icon(root_type_name, EditorStringName(EditorIcons))) {
-		node_type_other->set_icon(get_editor_theme_icon(root_type_name));
+		node_type_other->set_button_icon(get_editor_theme_icon(root_type_name));
 	} else {
-		node_type_other->set_icon(nullptr);
+		node_type_other->set_button_icon(nullptr);
 	}
 
 	root_name = root_name_edit->get_text().strip_edges();

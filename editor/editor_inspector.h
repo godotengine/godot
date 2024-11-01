@@ -31,6 +31,7 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include "editor/add_metadata_dialog.h"
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
@@ -485,6 +486,7 @@ class EditorInspector : public ScrollContainer {
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
 	static int inspector_plugin_count;
 
+	EditorInspector *root_inspector = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 
 	// Map used to cache the instantiated editors.
@@ -513,7 +515,6 @@ class EditorInspector : public ScrollContainer {
 	bool update_all_pending = false;
 	bool read_only = false;
 	bool keying = false;
-	bool sub_inspector = false;
 	bool wide_editors = false;
 	bool deletable_properties = false;
 
@@ -575,14 +576,13 @@ class EditorInspector : public ScrollContainer {
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
-	ConfirmationDialog *add_meta_dialog = nullptr;
+	AddMetadataDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
-	void _check_meta_name();
 
 protected:
 	static void _bind_methods();
@@ -644,8 +644,9 @@ public:
 	String get_object_class() const;
 
 	void set_use_wide_editors(bool p_enable);
-	void set_sub_inspector(bool p_enable);
-	bool is_sub_inspector() const { return sub_inspector; }
+	void set_root_inspector(EditorInspector *p_root_inspector);
+	EditorInspector *get_root_inspector() { return is_sub_inspector() ? root_inspector : this; }
+	bool is_sub_inspector() const { return root_inspector != nullptr; }
 
 	void set_use_deletable_properties(bool p_enabled);
 

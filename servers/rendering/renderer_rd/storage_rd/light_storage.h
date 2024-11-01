@@ -72,6 +72,7 @@ private:
 		RS::LightBakeMode bake_mode = RS::LIGHT_BAKE_DYNAMIC;
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
+		uint32_t shadow_caster_mask = 0xFFFFFFFF;
 		bool distance_fade = false;
 		real_t distance_fade_begin = 40.0;
 		real_t distance_fade_shadow = 50.0;
@@ -434,6 +435,11 @@ private:
 	HashMap<int, ShadowCubemap> shadow_cubemaps;
 	ShadowCubemap *_get_shadow_cubemap(int p_size);
 
+	/* PIPELINE HINTS */
+
+	bool shadow_cubemaps_used = false;
+	bool shadow_dual_paraboloid_used = false;
+
 public:
 	static LightStorage *get_singleton();
 
@@ -475,6 +481,8 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) override;
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override;
+	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override;
+	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
 
@@ -582,7 +590,7 @@ public:
 
 	/* LIGHT INSTANCE API */
 
-	bool owns_light_instance(RID p_rid) { return light_instance_owner.owns(p_rid); };
+	bool owns_light_instance(RID p_rid) { return light_instance_owner.owns(p_rid); }
 
 	virtual RID light_instance_create(RID p_light) override;
 	virtual void light_instance_free(RID p_light) override;
@@ -803,7 +811,7 @@ public:
 
 	/* REFLECTION PROBE */
 
-	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); };
+	bool owns_reflection_probe(RID p_rid) { return reflection_probe_owner.owns(p_rid); }
 
 	virtual RID reflection_probe_allocate() override;
 	virtual void reflection_probe_initialize(RID p_reflection_probe) override;
@@ -938,10 +946,14 @@ public:
 	void set_max_reflection_probes(const uint32_t p_max_reflection_probes);
 	RID get_reflection_probe_buffer() { return reflection_buffer; }
 	void update_reflection_probe_buffer(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
+	static RD::DataFormat get_reflection_probe_color_format();
+	static uint32_t get_reflection_probe_color_usage_bits();
+	static RD::DataFormat get_reflection_probe_depth_format();
+	static uint32_t get_reflection_probe_depth_usage_bits();
 
 	/* LIGHTMAP */
 
-	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); };
+	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); }
 
 	virtual RID lightmap_allocate() override;
 	virtual void lightmap_initialize(RID p_lightmap) override;
@@ -1007,7 +1019,7 @@ public:
 
 	/* LIGHTMAP INSTANCE */
 
-	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); };
+	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
 
 	virtual RID lightmap_instance_create(RID p_lightmap) override;
 	virtual void lightmap_instance_free(RID p_lightmap) override;
@@ -1027,7 +1039,7 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); };
+	bool owns_shadow_atlas(RID p_rid) { return shadow_atlas_owner.owns(p_rid); }
 
 	virtual RID shadow_atlas_create() override;
 	virtual void shadow_atlas_free(RID p_atlas) override;
@@ -1079,6 +1091,8 @@ public:
 	}
 
 	virtual void shadow_atlas_update(RID p_atlas) override;
+	static RD::DataFormat get_shadow_atlas_depth_format(bool p_16_bits);
+	static uint32_t get_shadow_atlas_depth_usage_bits();
 
 	/* DIRECTIONAL SHADOW */
 
@@ -1109,6 +1123,13 @@ public:
 
 	RID get_cubemap(int p_size);
 	RID get_cubemap_fb(int p_size, int p_pass);
+	static RD::DataFormat get_cubemap_depth_format();
+	static uint32_t get_cubemap_depth_usage_bits();
+
+	/* PIPELINE HINTS */
+
+	bool get_shadow_cubemaps_used() const;
+	bool get_shadow_dual_paraboloid_used() const;
 };
 
 } // namespace RendererRD

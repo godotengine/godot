@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<dimen name="text_edit_height">48dp</dimen>
+	<dimen name="input_dialog_padding_horizontal">10dp</dimen>
+	<dimen name="input_dialog_padding_vertical">5dp</dimen>
 </resources>

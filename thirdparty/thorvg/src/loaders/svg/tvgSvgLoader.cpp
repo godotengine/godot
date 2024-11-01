@@ -2183,6 +2183,7 @@ static SvgNode* _createTextNode(SvgLoaderData* loader, SvgNode* parent, const ch
     //TODO: support the def font and size as used in a system?
     loader->svgParse->node->node.text.fontSize = 10.0f;
     loader->svgParse->node->node.text.fontFamily = nullptr;
+    loader->svgParse->node->node.text.text = nullptr;
 
     func(buf, bufLength, _attrParseTextNode, loader);
 
@@ -3400,8 +3401,7 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
 static void _svgLoaderParserText(SvgLoaderData* loader, const char* content, unsigned int length)
 {
     auto text = &loader->svgParse->node->node.text;
-    if (text->text) free(text->text);
-    text->text = strDuplicate(content, length);
+    text->text = strAppend(text->text, content, length);
 }
 
 

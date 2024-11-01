@@ -140,7 +140,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const CameraRa
 
 			Vector3 dir;
 			if (p_data->camera_orthogonal) {
-				dir = -p_data->camera_dir;
+				dir = p_data->camera_dir;
 				tile.ray.org_x[j] = pixel_pos.x - dir.x * p_data->z_near;
 				tile.ray.org_y[j] = pixel_pos.y - dir.y * p_data->z_near;
 				tile.ray.org_z[j] = pixel_pos.z - dir.z * p_data->z_near;
@@ -181,17 +181,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::sort_rays(const Vector3 &p_camera_di
 					}
 					int k = tile_i * TILE_SIZE + tile_j;
 					int tile_index = i * tile_grid_size.x + j;
-					float d = camera_rays[tile_index].ray.tfar[k];
-
-					if (!p_orthogonal) {
-						const float &dir_x = camera_rays[tile_index].ray.dir_x[k];
-						const float &dir_y = camera_rays[tile_index].ray.dir_y[k];
-						const float &dir_z = camera_rays[tile_index].ray.dir_z[k];
-						float cos_theta = p_camera_dir.x * dir_x + p_camera_dir.y * dir_y + p_camera_dir.z * dir_z;
-						d *= cos_theta;
-					}
-
-					mips[0][y * buffer_size.x + x] = d;
+					mips[0][y * buffer_size.x + x] = camera_rays[tile_index].ray.tfar[k];
 				}
 			}
 		}

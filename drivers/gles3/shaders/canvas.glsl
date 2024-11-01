@@ -262,14 +262,14 @@ void main() {
 
 	color_interp = color;
 
+	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
+
 	if (use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid
 		uv += 1e-5;
 	}
-
-	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
 	vertex_interp = vertex;
 	uv_interp = uv;
@@ -579,7 +579,8 @@ void main() {
 
 #endif
 	if (bool(read_draw_data_flags & FLAGS_CLIP_RECT_UV)) {
-		uv = clamp(uv, read_draw_data_src_rect.xy, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw));
+		vec2 half_texpixel = read_draw_data_color_texture_pixel_size * 0.5;
+		uv = clamp(uv, read_draw_data_src_rect.xy + half_texpixel, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) - half_texpixel);
 	}
 
 #endif

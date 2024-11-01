@@ -8,4 +8,34 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeRemap.OpType" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
+			A floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D" value="1" enum="OpType">
+			A 2D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D_SCALAR" value="2" enum="OpType">
+			The [code]value[/code] port uses a 2D vector type, while the [code]input min[/code], [code]input max[/code], [code]output min[/code], and [code]output max[/code] ports use a floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D" value="3" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D_SCALAR" value="4" enum="OpType">
+			The [code]value[/code] port uses a 3D vector type, while the [code]input min[/code], [code]input max[/code], [code]output min[/code], and [code]output max[/code] ports use a floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D" value="5" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D_SCALAR" value="6" enum="OpType">
+			The [code]value[/code] port uses a 4D vector type, while the [code]input min[/code], [code]input max[/code], [code]output min[/code], and [code]output max[/code] ports use a floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="7" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+	</constants>
 </class>

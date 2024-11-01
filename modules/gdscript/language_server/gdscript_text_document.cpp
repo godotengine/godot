@@ -229,19 +229,6 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 			arr[i] = item.to_json();
 			i++;
 		}
-	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		arr = native_member_completions.duplicate();
-
-		for (KeyValue<String, ExtendGDScriptParser *> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts) {
-			ExtendGDScriptParser *scr = E.value;
-			const Array &items = scr->get_member_completions();
-
-			const int start_size = arr.size();
-			arr.resize(start_size + items.size());
-			for (int i = start_size; i < arr.size(); i++) {
-				arr[i] = items[i - start_size];
-			}
-		}
 	}
 	return arr;
 }
@@ -485,8 +472,6 @@ GDScriptTextDocument::GDScriptTextDocument() {
 void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
-
-	EditorFileSystem::get_singleton()->update_file(path);
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {

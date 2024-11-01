@@ -628,7 +628,7 @@ class EditorPropertyNodePath : public EditorProperty {
 	bool editing_node = false;
 
 	Vector<StringName> valid_types;
-	void _node_selected(const NodePath &p_path);
+	void _node_selected(const NodePath &p_path, bool p_absolute = true);
 	void _node_assign();
 	Node *get_base_node();
 	void _update_menu();
@@ -683,10 +683,12 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _open_editor_pressed();
 	void _update_preferred_shader();
+	bool _should_stop_editing() const;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	virtual void update_property() override;

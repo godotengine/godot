@@ -245,6 +245,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 
 	if (!p_test_only) {
 		AnimationMixer::PlaybackInfo pi = p_playback_info;
+		pi.start = 0.0;
+		pi.end = cur_len;
 		if (play_mode == PLAY_MODE_FORWARD) {
 			pi.time = cur_playback_time;
 			pi.delta = cur_delta;
@@ -1139,7 +1141,11 @@ void AnimationNodeTransition::remove_input(int p_index) {
 
 bool AnimationNodeTransition::set_input_name(int p_input, const String &p_name) {
 	pending_update = true;
-	return AnimationNode::set_input_name(p_input, p_name);
+	if (!AnimationNode::set_input_name(p_input, p_name)) {
+		return false;
+	}
+	emit_signal(SNAME("tree_changed")); // For updating enum options.
+	return true;
 }
 
 void AnimationNodeTransition::set_input_as_auto_advance(int p_input, bool p_enable) {

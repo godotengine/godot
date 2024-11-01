@@ -75,7 +75,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINT("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT(vformat("ResourceFormatImporter::load - %s.import:%d error: %s.", p_path, lines, error_text));
 			return err;
 		}
 
@@ -335,7 +335,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 		if (err == ERR_FILE_EOF) {
 			return;
 		} else if (err != OK) {
-			ERR_PRINT("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT(vformat("ResourceFormatImporter::get_internal_resource_path_list - %s.import:%d error: %s.", p_path, lines, error_text));
 			return;
 		}
 
@@ -507,7 +507,7 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 
 	for (int i = 0; i < importers.size(); i++) {
 		if (importers[i]->get_importer_name() == pat.importer) {
-			if (!importers[i]->are_import_settings_valid(p_path)) { //importer thinks this is not valid
+			if (!importers[i]->are_import_settings_valid(p_path, pat.metadata)) { //importer thinks this is not valid
 				return false;
 			}
 		}

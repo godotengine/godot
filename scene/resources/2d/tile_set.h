@@ -278,7 +278,7 @@ public:
 		bool operator==(const TerrainsPattern &p_terrains_pattern) const;
 		bool operator!=(const TerrainsPattern &p_terrains_pattern) const {
 			return !operator==(p_terrains_pattern);
-		};
+		}
 
 		void set_terrain(int p_terrain);
 		int get_terrain() const;
@@ -571,25 +571,25 @@ public:
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set);
 	TileSet *get_tile_set() const;
-	virtual void notify_tile_data_properties_should_change(){};
-	virtual void add_occlusion_layer(int p_index){};
-	virtual void move_occlusion_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_occlusion_layer(int p_index){};
-	virtual void add_physics_layer(int p_index){};
-	virtual void move_physics_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_physics_layer(int p_index){};
-	virtual void add_terrain_set(int p_index){};
-	virtual void move_terrain_set(int p_from_index, int p_to_pos){};
-	virtual void remove_terrain_set(int p_index){};
-	virtual void add_terrain(int p_terrain_set, int p_index){};
-	virtual void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos){};
-	virtual void remove_terrain(int p_terrain_set, int p_index){};
-	virtual void add_navigation_layer(int p_index){};
-	virtual void move_navigation_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_navigation_layer(int p_index){};
-	virtual void add_custom_data_layer(int p_index){};
-	virtual void move_custom_data_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_custom_data_layer(int p_index){};
+	virtual void notify_tile_data_properties_should_change() {}
+	virtual void add_occlusion_layer(int p_index) {}
+	virtual void move_occlusion_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_occlusion_layer(int p_index) {}
+	virtual void add_physics_layer(int p_index) {}
+	virtual void move_physics_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_physics_layer(int p_index) {}
+	virtual void add_terrain_set(int p_index) {}
+	virtual void move_terrain_set(int p_from_index, int p_to_pos) {}
+	virtual void remove_terrain_set(int p_index) {}
+	virtual void add_terrain(int p_terrain_set, int p_index) {}
+	virtual void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {}
+	virtual void remove_terrain(int p_terrain_set, int p_index) {}
+	virtual void add_navigation_layer(int p_index) {}
+	virtual void move_navigation_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_navigation_layer(int p_index) {}
+	virtual void add_custom_data_layer(int p_index) {}
+	virtual void move_custom_data_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_custom_data_layer(int p_index) {}
 	virtual void reset_state() override;
 
 	// Tiles.
@@ -812,8 +812,8 @@ public:
 
 	// Scenes accessors. Lot are similar to "Alternative tiles".
 	int get_scene_tiles_count() { return get_alternative_tiles_count(Vector2i()); }
-	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); };
-	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); };
+	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); }
+	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); }
 	int create_scene_tile(Ref<PackedScene> p_packed_scene = Ref<PackedScene>(), int p_id_override = -1);
 	void set_scene_tile_id(int p_id, int p_new_id);
 	void set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene);

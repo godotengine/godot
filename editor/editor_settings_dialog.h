@@ -34,6 +34,7 @@
 #include "editor/action_map_editor.h"
 #include "scene/gui/dialogs.h"
 
+class CheckButton;
 class PanelContainer;
 class SectionedInspector;
 class TabContainer;
@@ -51,6 +52,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Control *tab_shortcuts = nullptr;
 
 	LineEdit *search_box = nullptr;
+	CheckButton *advanced_switch = nullptr;
 	LineEdit *shortcut_search_box = nullptr;
 	EventListenerLineEdit *shortcut_search_by_event = nullptr;
 	SectionedInspector *inspector = nullptr;
@@ -99,6 +101,8 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
+
+	void _advanced_toggled(bool p_button_pressed);
 
 	void _update_dynamic_property_hints();
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);

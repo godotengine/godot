@@ -58,6 +58,10 @@ private:
 	double time_total = 0.0;
 	bool flip_xy_workaround = false;
 
+#ifdef WINDOWS_ENABLED
+	static bool screen_flipped_y;
+#endif
+
 	static bool gles_over_gl;
 
 protected:
@@ -118,9 +122,16 @@ public:
 		low_end = true;
 	}
 
+#ifdef WINDOWS_ENABLED
+	static void set_screen_flipped_y(bool p_flipped) {
+		screen_flipped_y = p_flipped;
+	}
+#endif
+
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time_total; }
+	_ALWAYS_INLINE_ bool can_create_resources_async() const { return false; }
 
 	static RasterizerGLES3 *get_singleton() { return singleton; }
 	RasterizerGLES3();

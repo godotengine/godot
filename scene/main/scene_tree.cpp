@@ -302,11 +302,15 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 				continue;
 			}
 
+			Node *node = gr_nodes[i];
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
-				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
+				node->callp(p_function, p_args, p_argcount, ce);
+				if (unlikely(ce.error != Callable::CallError::CALL_OK && ce.error != Callable::CallError::CALL_ERROR_INVALID_METHOD)) {
+					ERR_PRINT(vformat("Error calling group method on node \"%s\": %s.", node->get_name(), Variant::get_callable_error_text(Callable(node, p_function), p_args, p_argcount, ce)));
+				}
 			} else {
-				MessageQueue::get_singleton()->push_callp(gr_nodes[i], p_function, p_args, p_argcount);
+				MessageQueue::get_singleton()->push_callp(node, p_function, p_args, p_argcount);
 			}
 		}
 
@@ -316,11 +320,15 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 				continue;
 			}
 
+			Node *node = gr_nodes[i];
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
-				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
+				node->callp(p_function, p_args, p_argcount, ce);
+				if (unlikely(ce.error != Callable::CallError::CALL_OK && ce.error != Callable::CallError::CALL_ERROR_INVALID_METHOD)) {
+					ERR_PRINT(vformat("Error calling group method on node \"%s\": %s.", node->get_name(), Variant::get_callable_error_text(Callable(node, p_function), p_args, p_argcount, ce)));
+				}
 			} else {
-				MessageQueue::get_singleton()->push_callp(gr_nodes[i], p_function, p_args, p_argcount);
+				MessageQueue::get_singleton()->push_callp(node, p_function, p_args, p_argcount);
 			}
 		}
 	}
@@ -946,11 +954,14 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 
 void SceneTree::set_pause(bool p_enabled) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Pause can only be set from the main thread.");
+	ERR_FAIL_COND_MSG(suspended, "Pause state cannot be modified while suspended.");
 
 	if (p_enabled == paused) {
 		return;
 	}
+
 	paused = p_enabled;
+
 #ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 #endif // _3D_DISABLED
@@ -962,6 +973,30 @@ void SceneTree::set_pause(bool p_enabled) {
 
 bool SceneTree::is_paused() const {
 	return paused;
+}
+
+void SceneTree::set_suspend(bool p_enabled) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Suspend can only be set from the main thread.");
+
+	if (p_enabled == suspended) {
+		return;
+	}
+
+	suspended = p_enabled;
+
+	Engine::get_singleton()->set_freeze_time_scale(p_enabled);
+
+#ifndef _3D_DISABLED
+	PhysicsServer3D::get_singleton()->set_active(!p_enabled && !paused);
+#endif // _3D_DISABLED
+	PhysicsServer2D::get_singleton()->set_active(!p_enabled && !paused);
+	if (get_root()) {
+		get_root()->_propagate_suspend_notification(p_enabled);
+	}
+}
+
+bool SceneTree::is_suspended() const {
+	return suspended;
 }
 
 void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
