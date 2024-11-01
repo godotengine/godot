@@ -1371,6 +1371,11 @@ bool VisualShader::_has_preview_shader_parameter(const String &p_name) const {
 	return false;
 }
 
+ShaderGraph *VisualShader::get_graph(int p_type) {
+	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, nullptr);
+	return &graph[p_type];
+}
+
 void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_vsnode, const Vector2 &p_position, int p_id) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	ShaderGraph *g = &graph[p_type];
@@ -5773,84 +5778,88 @@ VisualShaderNodeVaryingGetter::VisualShaderNodeVaryingGetter() {
 void VisualShaderGroup::_bind_methods() {
 }
 
+Ref<ShaderGraph> VisualShaderGroup::get_graph() const {
+	return graph;
+}
+
 void VisualShaderGroup::add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
-	graph.add_node(p_node, p_position, p_id);
+	graph->add_node(p_node, p_position, p_id);
 }
 
 void VisualShaderGroup::set_node_position(int p_id, const Vector2 &p_position) {
-	graph.set_node_position(p_id, p_position);
+	graph->set_node_position(p_id, p_position);
 }
 
 Vector2 VisualShaderGroup::get_node_position(int p_id) const {
-	return graph.get_node_position(p_id);
+	return graph->get_node_position(p_id);
 }
 
 Ref<VisualShaderNode> VisualShaderGroup::get_node(int p_id) const {
-	return graph.get_node(p_id);
+	return graph->get_node(p_id);
 }
 
 Vector<int> VisualShaderGroup::get_node_ids() const {
-	return graph.get_node_ids();
+	return graph->get_node_ids();
 }
 
 int VisualShaderGroup::get_valid_node_id() const {
-	return graph.get_valid_node_id();
+	return graph->get_valid_node_id();
 }
 
 int VisualShaderGroup::find_node_id(const Ref<VisualShaderNode> &p_node) const {
-	return graph.find_node_id(p_node);
+	return graph->find_node_id(p_node);
 }
 
 void VisualShaderGroup::remove_node(int p_id) {
-	graph.remove_node(p_id);
+	graph->remove_node(p_id);
 }
 
 void VisualShaderGroup::replace_node(int p_id, const StringName &p_new_class) {
-	graph.replace_node(p_id, p_new_class);
+	graph->replace_node(p_id, p_new_class);
 }
 
 bool VisualShaderGroup::are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
-	return graph.are_nodes_connected(p_from_node, p_from_port, p_to_node, p_to_port);
+	return graph->are_nodes_connected(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
 bool VisualShaderGroup::is_nodes_connected_relatively(int p_node, int p_target) const {
-	return graph.is_nodes_connected_relatively(p_node, p_target);
+	return graph->is_nodes_connected_relatively(p_node, p_target);
 }
 
 bool VisualShaderGroup::can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
-	return graph.can_connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+	return graph->can_connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
 Error VisualShaderGroup::connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
-	return graph.connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+	return graph->connect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
 void VisualShaderGroup::disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
-	graph.disconnect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
+	graph->disconnect_nodes(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
 void VisualShaderGroup::connect_nodes_forced(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
-	graph.connect_nodes_forced(p_from_node, p_from_port, p_to_node, p_to_port);
+	graph->connect_nodes_forced(p_from_node, p_from_port, p_to_node, p_to_port);
 }
 
 bool VisualShaderGroup::is_port_types_compatible(int p_a, int p_b) const {
-	return graph.is_port_types_compatible(p_a, p_b);
+	return graph->is_port_types_compatible(p_a, p_b);
 }
 
 void VisualShaderGroup::attach_node_to_frame(int p_node, int p_frame) {
-	graph.attach_node_to_frame(p_node, p_frame);
+	graph->attach_node_to_frame(p_node, p_frame);
 }
 
 void VisualShaderGroup::detach_node_from_frame(int p_node) {
-	graph.detach_node_from_frame(p_node);
+	graph->detach_node_from_frame(p_node);
 }
 
 String VisualShaderGroup::get_reroute_parameter_name(int p_reroute_node) const {
-	return graph.get_reroute_parameter_name(p_reroute_node);
+	return graph->get_reroute_parameter_name(p_reroute_node);
 }
 
 void VisualShaderGroup::get_node_connections(List<ShaderGraph::Connection> *r_connections) const {
-	graph.get_node_connections(r_connections);
+	graph->get_node_connections(r_connections);
 }
 
 VisualShaderGroup::VisualShaderGroup() {

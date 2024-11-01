@@ -512,7 +512,8 @@ void VisualShaderGraphPlugin::update_frames(VisualShader::Type p_type, int p_nod
 		return;
 	}
 
-	Ref<VisualShaderNode> vsnode = visual_shader->get_node(p_type, p_node);
+	ShaderGraph *sgraph = editor->get_shader_graph();
+	Ref<VisualShaderNode> vsnode = sgraph->get_node(p_node);
 	if (vsnode.is_null()) {
 		WARN_PRINT("Update linked frames: Node not found.");
 		return;
@@ -523,7 +524,7 @@ void VisualShaderGraphPlugin::update_frames(VisualShader::Type p_type, int p_nod
 		return;
 	}
 
-	Ref<VisualShaderNodeFrame> frame_node = visual_shader->get_node(p_type, frame_vsnode_id);
+	Ref<VisualShaderNodeFrame> frame_node = sgraph->get_node(frame_vsnode_id);
 	if (frame_node.is_null() || !links.has(frame_vsnode_id)) {
 		return;
 	}
@@ -607,6 +608,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (visual_shader.is_null() || p_type != editor->get_current_shader_type()) {
 		return;
 	}
+	// TODO: Rename to ge/ graph_edit
 	GraphEdit *graph = editor->graph;
 	if (!graph) {
 		return;
@@ -649,7 +651,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	static const String vector_expanded_name[4] = { "red", "green", "blue", "alpha" };
 
-	Ref<VisualShaderNode> vsnode = visual_shader->get_node(p_type, p_id);
+	ShaderGraph *sgraph = editor->get_shader_graph();
+	Ref<VisualShaderNode> vsnode = sgraph->get_node(p_id);
 	ERR_FAIL_COND(vsnode.is_null());
 
 	Ref<VisualShaderNodeResizableBase> resizable_node = vsnode;
@@ -749,7 +752,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression = expression_node->get_expression();
 	}
 
-	node->set_position_offset(visual_shader->get_node_position(p_type, p_id));
+	node->set_position_offset(sgraph->get_node_position(p_id));
 
 	node->connect("dragged", callable_mp(editor, &VisualShaderEditor::_node_dragged).bind(p_id));
 
@@ -857,6 +860,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	for (int i = 0; i < editor->plugins.size(); i++) {
 		vsnode->set_meta("id", p_id);
 		vsnode->set_meta("shader_type", (int)p_type);
+		// TODO: Find out what to do here.
 		custom_editor = editor->plugins.write[i]->create_editor(visual_shader, vsnode);
 		vsnode->remove_meta("id");
 		vsnode->remove_meta("shader_type");
@@ -1472,10 +1476,12 @@ void VisualShaderGraphPlugin::connect_nodes(VisualShader::Type p_type, int p_fro
 		return;
 	}
 
+	ShaderGraph *sgraph = editor->get_shader_graph();
+
 	if (visual_shader.is_valid() && editor->get_current_shader_type() == p_type) {
 		// Update reroute nodes since their port type might have changed.
-		Ref<VisualShaderNodeReroute> reroute_to = visual_shader->get_node(p_type, p_to_node);
-		Ref<VisualShaderNodeReroute> reroute_from = visual_shader->get_node(p_type, p_from_node);
+		Ref<VisualShaderNodeReroute> reroute_to = sgraph->get_node(p_to_node);
+		Ref<VisualShaderNodeReroute> reroute_from = sgraph->get_node(p_from_node);
 		if (reroute_to.is_valid() || reroute_from.is_valid()) {
 			update_reroute_nodes();
 		}
@@ -1547,6 +1553,8 @@ void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 			}
 		}
 		visual_shader = p_shader;
+		editing_shader_graph = visual_shader->get_graph(current_type);
+
 		graph_plugin->register_shader(visual_shader.ptr());
 
 		visual_shader->connect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
@@ -1612,6 +1620,7 @@ void VisualShaderEditor::save_editor_layout() {
 
 void VisualShaderEditor::set_current_shader_type(VisualShader::Type p_type) {
 	current_type = p_type;
+	editing_shader_graph = visual_shader->get_graph(p_type);
 
 	const String id_string = _get_cache_id_string();
 

@@ -38,8 +38,8 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
-class ShaderGraph : public Object {
-	GDCLASS(ShaderGraph, Object);
+class ShaderGraph : public RefCounted {
+	GDCLASS(ShaderGraph, RefCounted);
 
 public:
 	struct Node {
@@ -247,6 +247,8 @@ protected:
 
 	// TODO: Internal methods?
 public: // internal methods
+	ShaderGraph *get_graph(int p_type);
+
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_vsnode, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
 	int has_node_embeds() const;
@@ -327,19 +329,21 @@ public: // internal methods
 };
 
 // TODO: Uncomment before push (this is a temporary intellisense fix)
-// VARIANT_ENUM_CAST(VisualShader::Type)
-// VARIANT_ENUM_CAST(VisualShader::VaryingMode)
-// VARIANT_ENUM_CAST(VisualShader::VaryingType)
+VARIANT_ENUM_CAST(VisualShader::Type)
+VARIANT_ENUM_CAST(VisualShader::VaryingMode)
+VARIANT_ENUM_CAST(VisualShader::VaryingType)
 
 class VisualShaderGroup : public Resource {
 	GDCLASS(VisualShaderGroup, Resource);
 
-	ShaderGraph graph;
+	Ref<ShaderGraph> graph;
 
 protected:
 	static void _bind_methods();
 
 public:
+	Ref<ShaderGraph> get_graph() const;
+
 	void add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(int p_id, const Vector2 &p_position);
 	Vector2 get_node_position(int p_id) const;
@@ -368,8 +372,8 @@ public:
 	String get_reroute_parameter_name(int p_reroute_node) const;
 
 	// TODO: Maybe change this method to use a return type.
-	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
 
+	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
 	// TODO: Implement?
 	String generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
 
