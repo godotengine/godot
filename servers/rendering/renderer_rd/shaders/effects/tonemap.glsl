@@ -423,7 +423,7 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	}
 
 	return glow;
-	
+
 }
 
 #define GLOW_MODE_ADD 0
