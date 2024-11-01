@@ -356,7 +356,7 @@ void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNod
 		parser->push_warning(p_identifier, p_is_call ? GDScriptWarning::CALLING_UNDERLINE_PREFIXED_METHOD : GDScriptWarning::ACCESSING_UNDERLINE_PREFIXED_MEMBER, p_identifier->name);
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source) {
 	if (p_source == nullptr && parser->has_class(p_class)) {
