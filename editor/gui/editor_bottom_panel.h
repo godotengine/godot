@@ -49,16 +49,19 @@ class EditorBottomPanel : public PanelContainer {
 	};
 
 	Vector<BottomPanelItem> items;
+	bool lock_panel_switching = false;
 
 	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
 	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
+	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 	Control *last_opened_control = nullptr;
 
-	void _switch_by_control(bool p_visible, Control *p_control);
-	void _switch_to_item(bool p_visible, int p_idx);
+	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
+	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
+	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
