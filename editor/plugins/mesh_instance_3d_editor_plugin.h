@@ -36,6 +36,7 @@
 #include "scene/gui/option_button.h"
 
 class AcceptDialog;
+class AspectRatioContainer;
 class ConfirmationDialog;
 class MenuButton;
 class SpinBox;
@@ -79,6 +80,7 @@ class MeshInstance3DEditor : public Control {
 	AcceptDialog *err_dialog = nullptr;
 
 	AcceptDialog *debug_uv_dialog = nullptr;
+	AspectRatioContainer *debug_uv_arc = nullptr;
 	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 
