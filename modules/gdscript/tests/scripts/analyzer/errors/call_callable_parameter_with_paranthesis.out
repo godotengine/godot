@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Callable "param" can only be invoked using ".call()".
