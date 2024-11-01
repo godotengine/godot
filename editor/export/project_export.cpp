@@ -705,6 +705,12 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_exclude_filter(current->get_exclude_filter());
 	preset->set_patches(current->get_patches());
 	preset->set_custom_features(current->get_custom_features());
+	preset->set_enc_in_filter(current->get_enc_in_filter());
+	preset->set_enc_ex_filter(current->get_enc_ex_filter());
+	preset->set_enc_pck(current->get_enc_pck());
+	preset->set_enc_directory(current->get_enc_directory());
+	preset->set_script_encryption_key(current->get_script_encryption_key());
+	preset->set_script_export_mode(current->get_script_export_mode());
 
 	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
 		preset->set(E.key, E.value);
