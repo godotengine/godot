@@ -396,6 +396,7 @@ class VisualShaderEditor : public ShaderEditor {
 	String _get_cache_id_string() const;
 	String _get_cache_key(const String &p_prop_name) const;
 
+	// TODO: This needs a big refactor, but probably later.
 	struct AddOption {
 		String name;
 		String category;
@@ -457,6 +458,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _preview_size_changed();
 	void _update_preview();
 	void _update_next_previews(int p_node_id);
+	// TODO: Move to ShaderGraph!
 	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
 
