@@ -1934,22 +1934,30 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
+// These two functions serialize floats or doubles using num_scientific to ensure
+// it can be read back in the same way (except collapsing -0 to 0, and NaN values).
+static String rtos_fix(float p_value, bool p_compat) {
+	if (p_value == 0.0f) {
+		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+	} else if (p_compat) {
+		// Write old inf_neg for compatibility.
+		if (std::isinf(p_value) && p_value < 0.0f) {
+			return "inf_neg";
+		}
+	}
+	return String::num_scientific(p_value);
+}
+
 static String rtos_fix(double p_value, bool p_compat) {
 	if (p_value == 0.0) {
-		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
-	} else if (std::isnan(p_value)) {
-		return "nan";
-	} else if (std::isinf(p_value)) {
-		if (p_value > 0) {
-			return "inf";
-		} else if (p_compat) {
+		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+	} else if (p_compat) {
+		// Write old inf_neg for compatibility.
+		if (std::isinf(p_value) && p_value < 0.0) {
 			return "inf_neg";
-		} else {
-			return "-inf";
 		}
-	} else {
-		return rtoss(p_value);
 	}
+	return String::num_scientific(p_value);
 }
 
 Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count, bool p_compat) {
@@ -1964,11 +1972,17 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::FLOAT: {
-			String s = rtos_fix(p_variant.operator double(), p_compat);
-			if (s != "inf" && s != "-inf" && s != "nan") {
-				if (!s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
-					s += ".0";
-				}
+			const double value = p_variant.operator double();
+			String s;
+			// Hack to avoid garbage digits when the underlying float is 32-bit.
+			if ((double)(float)value == value) {
+				s = rtos_fix((float)value, p_compat);
+			} else {
+				s = rtos_fix(value, p_compat);
+			}
+			// Append ".0" to floats to ensure they are float literals.
+			if (s != "inf" && s != "-inf" && s != "nan" && !s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
+				s += ".0";
 			}
 			p_store_string_func(p_store_string_ud, s);
 		} break;
