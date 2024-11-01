@@ -376,9 +376,9 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 		return tonemap_filmic(max(vec3(0.0f), color), white);
 	} else if (params.tonemapper == TONEMAPPER_ACES) {
 		return tonemap_aces(max(vec3(0.0f), color), white);
-  } else if (params.tonemapper == TONEMAPPER_AGX) {
+	} else if (params.tonemapper == TONEMAPPER_AGX) {
 		return tonemap_agx(max(vec3(0.0f), color), false);
-	} else { // TONEMAPPER_AGX_PUNCHY
+	} else if (params.tonemapper == TONEMAPPER_AGX_PUNCHY) {
 		return tonemap_agx(max(vec3(0.0f), color), true);
 	} else if (params.tonemapper == TONEMAPPER_TONY_MC_MAPFACE) {
 		return tonemap_tony_mc_mapface(max(vec3(0.0f), color));
