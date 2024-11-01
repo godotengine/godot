@@ -194,13 +194,13 @@ vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR
 	} else if (tonemapper == TONEMAPPER_AGX_PUNCHY) {
 		return tonemap_agx(max(vec3(0.0f), color), true);
 	} else if (tonemapper == TONEMAPPER_TONY_MC_MAPFACE) {
-		#ifdef SKY_SHADER
-			// Sampling the Tony McMapface LUT in the sky shader leads to pitch black shadows if the "Sky" background
-			// mode is enabled for the environment. Avoid this by returning the color as is.
-			return color;
-		#else
-			return tonemap_tony_mc_mapface(max(vec3(0.0f), color));
-		#endif
+#ifdef SKY_SHADER
+	// Sampling the Tony McMapface LUT in the sky shader leads to pitch black shadows if the "Sky" background
+	// mode is enabled for the environment. Avoid this by returning the color as is.
+	return color;
+#else
+	return tonemap_tony_mc_mapface(max(vec3(0.0f), color));
+#endif
 	} else {
 		return color;
 	}
