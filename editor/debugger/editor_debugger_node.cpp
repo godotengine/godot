@@ -105,6 +105,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
 	node->connect("clear_execution", callable_mp(this, &EditorDebuggerNode::_clear_execution));
 	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked).bind(id));
+	node->connect("remote_tree_select_requested", callable_mp(this, &EditorDebuggerNode::_remote_tree_select_requested).bind(id));
 	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated).bind(id));
 	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated).bind(id));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated).bind(id));
@@ -635,6 +636,13 @@ String EditorDebuggerNode::get_var_value(const String &p_var) const {
 // LiveEdit/Inspector
 void EditorDebuggerNode::request_remote_tree() {
 	get_current_debugger()->request_remote_tree();
+}
+
+void EditorDebuggerNode::_remote_tree_select_requested(ObjectID p_id, int p_debugger) {
+	if (p_debugger != tabs->get_current_tab()) {
+		return;
+	}
+	remote_scene_tree->select_node(p_id);
 }
 
 void EditorDebuggerNode::_remote_tree_updated(int p_debugger) {
