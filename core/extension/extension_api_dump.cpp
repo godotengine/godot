@@ -1363,7 +1363,7 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		return true; // May just not have this array and its still good. Probably added recently.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, "New API lacks base array: " + p_base_array);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, vformat("New API lacks base array: %s", p_base_array));
 	Array new_api = p_new_api[p_base_array];
 	HashMap<String, Dictionary> new_api_assoc;
 
@@ -1515,7 +1515,7 @@ static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered
 		return true; // May just not have this array and its still good. Probably added recently or optional.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, "New API lacks base array: " + p_outer);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, vformat("New API lacks base array: %s", p_outer));
 	Array new_api = p_new_api[p_outer];
 	HashMap<String, Dictionary> new_api_assoc;
 

@@ -459,7 +459,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	}
 
 	Error err = data.resize(p_length);
-	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
+	ERR_FAIL_COND_V_MSG(err != OK, data, vformat("Can't resize data to %d elements.", p_length));
 
 	uint8_t *w = data.ptrw();
 	int64_t len = get_buffer(w, p_length);
@@ -540,7 +540,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	uint64_t mt = fa->_get_modified_time(p_file);
 	return mt;
@@ -552,7 +552,7 @@ BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_unix_permissions(p_file);
 }
@@ -563,7 +563,7 @@ Error FileAccess::set_unix_permissions(const String &p_file, BitField<FileAccess
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
 	return err;
@@ -575,7 +575,7 @@ bool FileAccess::get_hidden_attribute(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_hidden_attribute(p_file);
 }
@@ -586,7 +586,7 @@ Error FileAccess::set_hidden_attribute(const String &p_file, bool p_hidden) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_hidden_attribute(p_file, p_hidden);
 	return err;
@@ -598,7 +598,7 @@ bool FileAccess::get_read_only_attribute(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_read_only_attribute(p_file);
 }
@@ -609,7 +609,7 @@ Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_read_only_attribute(p_file, p_ro);
 	return err;
@@ -697,7 +697,7 @@ Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_err
 		if (r_error) { // if error requested, do not throw error
 			return Vector<uint8_t>();
 		}
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("Can't open file from path '%s'.", String(p_path)));
 	}
 	Vector<uint8_t> data;
 	data.resize(f->get_length());
@@ -715,7 +715,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 		if (r_error) {
 			return String();
 		}
-		ERR_FAIL_V_MSG(String(), "Can't get file as string from path '" + String(p_path) + "'.");
+		ERR_FAIL_V_MSG(String(), vformat("Can't get file as string from path '%s'.", String(p_path)));
 	}
 
 	String ret;

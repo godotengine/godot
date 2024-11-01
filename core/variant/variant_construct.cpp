@@ -43,7 +43,7 @@ static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
 
 template <typename T>
 static void add_constructor(const Vector<String> &arg_names) {
-	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), "Argument names size mismatch for " + Variant::get_type_name(T::get_base_type()) + ".");
+	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), vformat("Argument names size mismatch for '%s'.", Variant::get_type_name(T::get_base_type())));
 
 	VariantConstructData cd;
 	cd.construct = T::construct;
