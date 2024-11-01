@@ -2472,9 +2472,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_dir_dialog->popup_centered();
 		} break;
 
-		case FILE_INFO: {
-		} break;
-
 		case FILE_REIMPORT: {
 			ImportDock::get_singleton()->reimport_resources(p_selected);
 		} break;
