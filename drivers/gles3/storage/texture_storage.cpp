@@ -681,7 +681,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			}
 		} break;
 		default: {
-			ERR_FAIL_V_MSG(Ref<Image>(), "The image format " + itos(p_format) + " is not supported by the GL Compatibility rendering backend.");
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", p_format));
 		}
 	}
 
@@ -841,7 +841,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	ERR_FAIL_COND(p_layers.is_empty());
 
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
-	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the GL Compatibility backend.");
+	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the Compatibility renderer.");
 
 	const Ref<Image> &image = p_layers[0];
 	{
@@ -1633,7 +1633,7 @@ void TextureStorage::_texture_set_3d_data(RID p_texture, const Vector<Ref<Image>
 	Ref<Image> img = _get_gl_image_and_format(p_data[0], p_data[0]->get_format(), real_format, format, internal_format, type, compressed, texture->resize_to_po2);
 	ERR_FAIL_COND(img.is_null());
 
-	ERR_FAIL_COND_MSG(compressed, "Compressed 3D textures are not supported in the GL Compatibility backend.");
+	ERR_FAIL_COND_MSG(compressed, "Compressed 3D textures are not supported in the Compatibility renderer.");
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);

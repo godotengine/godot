@@ -9659,7 +9659,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									--texture_uniforms;
 									--texture_binding;
 									if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-										_set_error(RTR("'hint_normal_roughness_texture' is only available when using the Forward+ backend."));
+										_set_error(RTR("'hint_normal_roughness_texture' is only available when using the Forward+ renderer."));
 										return ERR_PARSE_ERROR;
 									}
 									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {

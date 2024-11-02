@@ -373,7 +373,7 @@ public:
 
 	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override {
 		if (p_enabled) {
-			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the GL Compatibility backend.");
+			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the Compatibility renderer.");
 		}
 	}
 
