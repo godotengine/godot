@@ -173,10 +173,10 @@ namespace Godot
                 case 7:
                     return new Vector3(_position.X + _size.X, _position.Y + _size.Y, _position.Z + _size.Z);
                 default:
-                {
-                    throw new ArgumentOutOfRangeException(nameof(idx),
-                        $"Index is {idx}, but a value from 0 to 7 is expected.");
-                }
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(idx),
+                            $"Index is {idx}, but a value from 0 to 7 is expected.");
+                    }
             }
         }
 
@@ -522,8 +522,8 @@ namespace Godot
         {
             if (HasPoint(from)) return true;
 
-            real_t tmin = -1e20f;
-            real_t tmax = 1e20f;
+            real_t tmin = real_t.MinValue;
+            real_t tmax = real_t.MaxValue;
 
             Vector3 end = _position + _size;
 
@@ -537,7 +537,8 @@ namespace Godot
                     }
                 }
                 else
-                { // ray not parallel to planes in this direction
+                {
+                    // Ray is not parallel to planes in this direction.
                     real_t t1 = (_position[i] - from[i]) / dir[i];
                     real_t t2 = (end[i] - from[i]) / dir[i];
 
