@@ -321,8 +321,8 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_base_color = Color(0.24, 0.25, 0.28);
 				preset_contrast = 0.4;
 			} else if (config.preset == "Merlin") {
-				preset_accent_color = Color(0.388235, 0.478431, 0.996078);
-				preset_base_color = Color(0.0823529, 0.0901961, 0.101961);
+				preset_accent_color = Color(0.867, 0.318, 0.522);
+				preset_base_color = Color(0.118, 0.118, 0.18);
 				preset_contrast = 0.2;
 			} else if (config.preset == "Catppuccin - Macchiato") {
 				preset_accent_color = Color(0.09, 0.573, 0.6);
@@ -336,9 +336,13 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_accent_color = Color(0.255, 0.251, 0.243);
 				preset_base_color = Color(0.169, 0.176, 0.208);
 				preset_contrast = 0.3;
-			} else { // Default
+			} else if (config.preset == "Godot-Dash") {
 				preset_accent_color = Color(0.388235, 0.478431, 0.996078);
 				preset_base_color = Color(0.0823529, 0.0901961, 0.101961);
+				preset_contrast = 0.2;
+			} else { // Default
+				preset_accent_color = Color(0.867, 0.318, 0.522);
+				preset_base_color = Color(0.118, 0.118, 0.18);
 				preset_contrast = 0.2;
 			}
 

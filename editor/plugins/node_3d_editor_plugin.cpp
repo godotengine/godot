@@ -8891,7 +8891,7 @@ Node3DEditor::Node3DEditor() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
 
-	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
+	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), false);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
