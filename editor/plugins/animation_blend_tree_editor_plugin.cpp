@@ -162,7 +162,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		node->set_name(E);
 
 		int base = 0;
-		if (String(E) != "output") {
+		if (E != SceneStringName(output)) {
 			LineEdit *name = memnew(LineEdit);
 			name->set_text(E);
 			name->set_editable(!read_only);
@@ -170,7 +170,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->set_custom_minimum_size(Vector2(100, 0) * EDSCALE);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
-			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
+			name->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;

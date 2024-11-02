@@ -504,7 +504,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal(SNAME("output"), output_strings[i], msg_type);
+			emit_signal(SceneStringName(output), output_strings[i], msg_type);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
