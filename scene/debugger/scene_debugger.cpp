@@ -289,8 +289,10 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		} else if (p_msg == "runtime_node_select_reset_camera_2d") {
 			runtime_node_select->_reset_camera_2d();
 
+#ifndef _3D_DISABLED
 		} else if (p_msg == "runtime_node_select_reset_camera_3d") {
 			runtime_node_select->_reset_camera_3d();
+#endif // _3D_DISABLED
 
 		} else {
 			return ERR_SKIP;
