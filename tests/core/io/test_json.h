@@ -127,11 +127,11 @@ TEST_CASE("[JSON] Parsing arrays") {
 TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 	JSON json;
 
-	json.parse(R"({"name": "Godot Engine", "is_free": true, "bugs": null, "apples": {"red": 500, "green": 0, "blue": -20}, "empty_object": {}})");
+	json.parse(R"({"name": "Merlin Engine", "is_free": true, "bugs": null, "apples": {"red": 500, "green": 0, "blue": -20}, "empty_object": {}})");
 
 	const Dictionary dictionary = json.get_data();
 	CHECK_MESSAGE(
-			dictionary["name"] == "Godot Engine",
+			dictionary["name"] == "Merlin Engine",
 			"The parsed JSON should contain the expected values.");
 	CHECK_MESSAGE(
 			dictionary["is_free"],

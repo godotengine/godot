@@ -427,10 +427,11 @@
 		</constant>
 		<constant name="TONE_MAPPER_TONY_MC_MAPFACE" value="4" enum="ToneMapper">
 			Tony McMapface is an artist-friendly tonemapper designed to stay close to the input color in order to achieve a neutral look that does not increase contrast or saturation. It can prevent hue shift issues common with other tonemappers. It samples its own custom lookup table (LUT) to determine the output color.
-		<constant name="TONE_MAPPER_AGX" value="4" enum="ToneMapper">
+		</constant>
+		<constant name="TONE_MAPPER_AGX" value="5" enum="ToneMapper">
 			Use the AgX tonemapper. AgX is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. AgX is less likely to darken parts of the scene compared to [constant TONE_MAPPER_ACES] and can match the overall scene brightness of [constant TONE_MAPPER_FILMIC] more closely. Since AgX does not provide whitepoint adjustments, the whitepoint is forced to [code]16.016004[/code] when using AgX.
 		</constant>
-		<constant name="TONE_MAPPER_AGX_PUNCHY" value="5" enum="ToneMapper">
+		<constant name="TONE_MAPPER_AGX_PUNCHY" value="6" enum="ToneMapper">
 			Use the AgX tonemapper with the "punchy" look. AgX is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. The punchy look increases contrast and saturation, bringing its visuals closer to [constant TONE_MAPPER_ACES]. Since AgX does not provide whitepoint adjustments, the whitepoint is forced to [code]16.016004[/code] when using AgX Punchy.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">

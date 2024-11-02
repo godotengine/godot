@@ -191,7 +191,7 @@ vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR
 		return tonemap_aces(max(vec3(0.0f), color), p_white);
 	} else if (tonemapper == TONEMAPPER_AGX) {
 		return tonemap_agx(max(vec3(0.0f), color), false);
-	} else { // TONEMAPPER_AGX_PUNCHY
+	} else if (tonemapper == TONEMAPPER_AGX_PUNCHY) {
 		return tonemap_agx(max(vec3(0.0f), color), true);
 	} else if (tonemapper == TONEMAPPER_TONY_MC_MAPFACE) {
 #ifdef SKY_SHADER
@@ -203,6 +203,7 @@ vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR
 #endif
 	} else {
 		return color;
+	}
 }
 
 #endif // APPLY_TONEMAPPING

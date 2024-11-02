@@ -29,7 +29,7 @@ jobs:
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
-            bin: ./bin/godot.windows.editor.x86_64.exe
+            bin: ./bin/merlin.windows.editor.x86_64.exe
             compiler: msvc
 
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
@@ -37,7 +37,7 @@ jobs:
             target: editor
             tests: true
             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
-            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
+            bin: ./bin/merlin.windows.editor.x86_64.llvm.exe
             compiler: clang
 
           - name: Template (target=template_release, tests=yes)
@@ -45,7 +45,7 @@ jobs:
             target: template_release
             tests: true
             sconsflags: debug_symbols=no
-            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            bin: ./bin/merlin.windows.template_release.x86_64.console.exe
             compiler: msvc
 
           - name: Template w/ GCC (target=template_release, tests=yes, use_mingw=yes)
@@ -54,7 +54,7 @@ jobs:
             target: template_release
             tests: true
             sconsflags: debug_symbols=no use_mingw=yes
-            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            bin: ./bin/merlin.windows.template_release.x86_64.console.exe
             compiler: gcc
 
     steps:
