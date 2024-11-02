@@ -1948,7 +1948,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
 	name_edit->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	name_edit->connect("text_submitted", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
+	name_edit->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 
 	open_file = memnew(EditorFileDialog);
