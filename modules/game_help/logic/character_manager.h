@@ -22,6 +22,8 @@ public:
 
     void post_tick(float delta) override;
 public:
+    void set_main_player(class CharacterBodyMain* character);
+    class CharacterBodyMain* get_main_player();
 
     void register_character(class CharacterBodyMain* character);
     void unregister_character(class CharacterBodyMain* character);
@@ -64,6 +66,7 @@ public:
     void update_finish();
 protected:
     HashSet<class CharacterBodyMain*> characters;
+    ObjectID main_player_id;
     Ref<TaskJobHandle> task_handle;
     String mesh_root_path = "res://Assets/public/meshs";
     String skeleton_root_path = "res://Assets/public/skeleton";

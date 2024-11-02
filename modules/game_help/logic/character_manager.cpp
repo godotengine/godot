@@ -2,12 +2,27 @@
 #include "character_manager.h"
 CharacterManager* CharacterManager::singleton = nullptr;
 static float time_delta = 0.0f;
+
+void CharacterManager::set_main_player(class CharacterBodyMain* character) {
+    main_player_id = ObjectID();
+    if(character != nullptr) {
+        main_player_id = character->get_instance_id();
+    }
+
+}
+class CharacterBodyMain* CharacterManager::get_main_player() {
+    return Object::cast_to<CharacterBodyMain>(ObjectDB::get_instance(main_player_id));    
+}
+
 void CharacterManager::register_character(class CharacterBodyMain* character)
 {
     characters.insert(character);
 }
 void CharacterManager::unregister_character(class CharacterBodyMain* character)
 {
+    if(main_player_id == character->get_instance_id()) {
+        main_player_id = ObjectID();
+    }
     update_finish();
     characters.erase(character);
 }

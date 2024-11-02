@@ -24,6 +24,7 @@
 #include "core/object/worker_thread_pool.h"
 
 #include "./blackboard/blackboard_plan.h"
+#include "auto_delete.h"
 
 class CharacterAI;
 // 身体的插槽信息
@@ -497,6 +498,16 @@ protected:
             }
         }
     }
+
+    bool re_enable_remove_item(StringName p_name) {
+        for(auto& it : auto_deletes) {
+            if(it->name == p_name) {
+                it->re_enable();
+                return true;
+            }
+        }
+        return false;
+    }
 public:
     void set_editor_form_mesh_file_path(const String& p_file_path)
     {
@@ -615,33 +626,11 @@ public:
     String editor_retarget_save_animation_name;
     // 重定向的来源骨骼
     String editor_retarget_source_seketon_path;
-	DECL_MEMBER_BUTTON(editor_to_human_animation);
+
+    
+	DECL_MEMBER_BUTTON(editor_install_mkhm);
 
     void update_bone_visble();
-    struct SkeletonHumanBoneTanRot {
-        Quaternion tan_rot;
-        Quaternion inv_tan_rot;
-		// 转换到人形空间
-		void to_human_space(Quaternion& p_bone_pose) {
-			p_bone_pose *= tan_rot;
-		}
-		// 转换到骨骼空间
-		void to_bone_space(Quaternion& p_human_pose) {
-			p_human_pose *= inv_tan_rot;
-		}
-    };
-    struct HumanBoneInfo {
-        String name;
-        Vector3 orgin_dir;
-        Vector3 updir;        
-        SkeletonHumanBoneTanRot get_bone_tan_rot(const Quaternion& p_bone_rest) {
-            Vector3 new_dir = p_bone_rest.xform(orgin_dir);
-            SkeletonHumanBoneTanRot rot;
-            rot.tan_rot = Quaternion(new_dir, orgin_dir);
-            rot.inv_tan_rot = rot.tan_rot.inverse();
-            return rot;
-        }
-    };
 
 public:
     static ObjectID& get_curr_editor_player();
@@ -671,6 +660,10 @@ protected:
 
     Ref<CharacterAIContext> ai_context;
     Ref<CharacterAI> character_ai;
+    HashSet<Ref<BufferItemBase>> buffer_item;
+    HashSet<Ref<BufferItemBase>> buffer_item_remove;
+
+    List<Ref<AutoDelete>> auto_deletes;
 
 
     

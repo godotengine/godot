@@ -172,7 +172,7 @@ void CharacterBodyMain::_process_move()
 {
     // 处理角色移动
     bool is_walk = get_blackboard()->get_var("move/using_navigation_target",false);
-    Vector3 velocity = Vector3();
+    Vector3 _velocity = Vector3();
     if(animator.is_valid()) {
         const CharacterRootMotion& root_motion = animator->get_root_motion();
 
@@ -183,7 +183,7 @@ void CharacterBodyMain::_process_move()
         set_transform(rot);
         Vector3 forward = rot.basis.xform(Vector3(0,0,1));
 
-        velocity = root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
+		_velocity = root_motion.get_velocity(forward,animator->get_time_delta(),is_on_floor());
 
     }
     if(is_walk )
@@ -195,7 +195,7 @@ void CharacterBodyMain::_process_move()
             {
                 Vector3 target_pos = get_blackboard()->get_var("move/navigation_target_pos",Vector3());
                 // 设置角色移动速度
-                character_agent->set_velocity(velocity * editor_animation_speed);
+                character_agent->set_velocity(_velocity * editor_animation_speed);
                 character_agent->set_target_position(target_pos);
             }
             else
@@ -206,7 +206,7 @@ void CharacterBodyMain::_process_move()
     }
     else
     {
-        set_velocity(velocity);
+        set_velocity(_velocity);
 
         move_and_slide(animator->get_time_delta());
     }
@@ -455,6 +455,7 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animayion_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
+    ADD_MEMBER_BUTTON(editor_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
 
     ClassDB::bind_method(D_METHOD("set_track_target", "track_target"), &CharacterBodyMain::set_track_target);
@@ -859,9 +860,6 @@ void CharacterBodyMain::editor_play_select_animation() {
     }
     animator->editor_play_animation(play_animation);
 }
-void CharacterBodyMain::editor_to_human_animation() {
-
-}
 void CharacterBodyMain::update_bone_visble()
 {
     if(bone_label != nullptr) {
@@ -1042,6 +1040,202 @@ void CharacterBodyMain::editor_build_animation()
 		bone_map_skeleton = nullptr;
 	}
     p_node->queue_free();
+}
+
+#include "modules/zip/zip_reader.h"
+
+
+static void make_res_path(const String& p_path) {
+    if(!p_path.begins_with("res://")) {
+        return ;
+    }
+    String path = p_path.replace("res://", "");
+    path = path.replace("\\", "/");
+    Vector<String> paths = path.split("/");
+
+    String curr_path = "res://";
+    for(int i = 0; i < paths.size(); i++) {
+        curr_path += paths[i];
+        if(!DirAccess::exists(curr_path)) {
+            DirAccess::make_dir_absolute(curr_path);
+        }
+        curr_path += "/";
+    }
+
+}
+
+static void make_res_path_form_filepath(const String& p_path) {
+    if(!p_path.begins_with("res://")) {
+        return ;
+    }
+    String path = p_path.replace("res://", "");
+    path = path.replace("\\", "/");
+    Vector<String> paths = path.split("/");
+
+    String curr_path = "res://";
+    for(int i = 0; i < paths.size() - 1; i++) {
+        curr_path += paths[i];
+        if(!DirAccess::exists(curr_path)) {
+            DirAccess::make_dir_absolute(curr_path);
+        }
+        curr_path += "/";
+    }
+
+}
+
+
+
+
+static bool install_mkhm_zip(const String& p_zip_file, const String& p_save_path) {
+    Ref<ZIPReader> zip_reader = memnew(ZIPReader);
+    Error err = zip_reader->open(p_zip_file);
+    if(err == OK) {
+        Vector<String> files = zip_reader->get_files();
+        HashMap<String,String> body_part_set = {        
+            {"body","Body"},
+            {"righteye","RightEye"},
+            {"lefteye","LeftEye"},
+            {"righteyebrow","RightEyebrow"},
+            {"leftryebrow","LeftEyebrow"},
+            {"righteyelash","RightEyelash"},
+            {"lefteyelash","LeftEyelash"},
+            {"hair","Hair"},
+            {"tongue","Tongue"},
+            {"teeth","Teeth"}
+        };
+        HashMap<String,Vector<String>> body_part_file;
+
+        Vector<String> clothing ;
+        Vector<String> targets ;
+
+        for(int i = 0; i < files.size(); i++) {
+            String file = files[i];
+            file = file.replace("\\","/");
+            Vector<String> path = file.split("/");
+            if(path.size() > 0) {
+                String name = path[0].to_lower();
+                if(body_part_set.has(name)) {
+                    body_part_file[body_part_set[name]].push_back(file);
+                    continue;
+                }
+                if(name == "clothes") {
+                    clothing.push_back(file);
+                    continue;
+                }
+                if(name == "targets") {
+                    targets.push_back(file);
+                    continue;
+                }
+
+            }
+        }
+
+        String save_path = "res://Assets/public/mkhm/";
+        make_res_path(save_path);
+
+        String pack_name = p_zip_file.get_file();
+        pack_name = pack_name.get_basename();
+
+        save_path = save_path.path_join(pack_name);
+        if (!DirAccess::exists(save_path))
+        {
+            DirAccess::make_dir_absolute(save_path);
+        }
+        String body_parts_save_path = save_path.path_join("body_parts");
+        if (!DirAccess::exists(body_parts_save_path))
+        {
+            DirAccess::make_dir_absolute(body_parts_save_path);
+        }
+        bool result = false;
+        // 保存身体部位
+        for(auto& it : body_part_file) {
+            Vector<String>& save_file_list = it.value;
+            for(int i = 0; i < save_file_list.size(); i++) {
+                String file = save_file_list[i];
+                file = file.replace("\\","/");
+                Vector<String> path_list = file.split("/");
+                if(path_list.size() > 1) {
+                    String path = body_parts_save_path.path_join(it.key);
+                    for(int j = 1; j < path_list.size(); j++) {
+                        path = path.path_join(path_list[j]);
+                    }
+                    auto buffer =  zip_reader->read_file(save_file_list[i],false);
+
+                    if(buffer.size() > 0) {
+                        make_res_path_form_filepath(path);
+                        Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+                        f->store_buffer(buffer);
+                        f->close();
+                        result = true;
+                    }
+                }
+            }
+
+        }
+
+        // 保存衣服
+        for(int i = 0; i < clothing.size(); i++) {
+            String file = clothing[i];
+            String path = save_path.path_join(file);
+            auto buffer =  zip_reader->read_file(clothing[i],false);
+            if(buffer.size() > 0) {
+                make_res_path_form_filepath(path);
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+                f->store_buffer(buffer);
+                f->close();
+                    result = true;
+            }
+        }
+
+        // 保存目标
+        for(int i = 0; i < targets.size(); i++) {
+            String file = targets[i];
+			String path = save_path.path_join(file);
+            auto buffer =  zip_reader->read_file(targets[i],false);
+            if(buffer.size() > 0) {
+                make_res_path_form_filepath(path);
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+                f->store_buffer(buffer);
+                f->close();
+                result = true;
+            }
+        }
+        return result;
+
+
+    }
+    return false;
+}
+// 初始化所有的mkhm的包
+static void init_all_mkhm_pack() {
+    String root_path = "res://Assets/mkhm_pack/";
+    if (!DirAccess::exists(root_path)){
+        return;
+    }
+
+    Ref<JSON> json = memnew(JSON);
+    Vector<String> files = DirAccess::get_files_at(root_path);
+    for(int i = 0; i < files.size(); i++) {
+        String file = files[i];
+        if(file.get_extension() == "zip") {
+            if(install_mkhm_zip(root_path.path_join(file),root_path))
+            {
+                String pack_name = file.get_file();
+                pack_name = pack_name.get_basename();
+                String path_path = "res://Assets/public/mkhm/" + pack_name;
+                json->set(pack_name, path_path);
+                print_line("初始化mkhm包:" + pack_name + "路径:" + path_path);
+            }
+        }
+    }
+    // 保存配置文件
+    String config_path = root_path.path_join("config.json");
+    Ref<FileAccess> f = FileAccess::open(config_path, FileAccess::WRITE);
+    f->store_string(json->get_parsed_text());
+    f->close();
+}
+void CharacterBodyMain::editor_install_mkhm() {
+    init_all_mkhm_pack();
 }
 
 
