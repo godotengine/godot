@@ -358,15 +358,15 @@ void sky() {
 
 ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	_set_material(RS::get_singleton()->material_create());
-	set_sky_top_color(Color(0.385, 0.454, 0.55));
-	set_sky_horizon_color(Color(0.6463, 0.6558, 0.6708));
-	set_sky_curve(0.15);
+	set_sky_top_color(Color(0.415, 0.527, 0.753));
+	set_sky_horizon_color(Color(0.925, 0.933, 0.737));
+	set_sky_curve(0.05);
 	set_sky_energy_multiplier(1.0);
 	set_sky_cover_modulate(Color(1, 1, 1));
 
-	set_ground_bottom_color(Color(0.2, 0.169, 0.133));
-	set_ground_horizon_color(Color(0.6463, 0.6558, 0.6708));
-	set_ground_curve(0.02);
+	set_ground_bottom_color(Color(0.314, 0.314, 0.314));
+	set_ground_horizon_color(Color(0.925, 0.933, 0.737));
+	set_ground_curve(0.007);
 	set_ground_energy_multiplier(1.0);
 
 	set_sun_angle_max(30.0);

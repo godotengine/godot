@@ -316,10 +316,30 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				// The contrast rate value is irrelevant on a fully black theme.
 				preset_contrast = 0.0;
 				preset_draw_extra_borders = true;
+			} else if (config.preset == "Indigo") {
+				preset_accent_color = Color(0.37, 0.54, 0.91);
+				preset_base_color = Color(0.24, 0.25, 0.28);
+				preset_contrast = 0.4;
+			} else if (config.preset == "Merlin") {
+				preset_accent_color = Color(0.388235, 0.478431, 0.996078);
+				preset_base_color = Color(0.0823529, 0.0901961, 0.101961);
+				preset_contrast = 0.2;
+			} else if (config.preset == "Catppuccin - Macchiato") {
+				preset_accent_color = Color(0.09, 0.573, 0.6);
+				preset_base_color = Color(0.141, 0.153, 0.227);
+				preset_contrast = 0.2;
+			} else if (config.preset == "Catppuccin - Mocha") {
+				preset_accent_color = Color(0.447, 0.529, 0.992);
+				preset_base_color = Color(0.118, 0.118, 0.18);
+				preset_contrast = 0.3;
+			} else if (config.preset == "eppz!") {
+				preset_accent_color = Color(0.255, 0.251, 0.243);
+				preset_base_color = Color(0.169, 0.176, 0.208);
+				preset_contrast = 0.3;
 			} else { // Default
-				preset_accent_color = Color(0.44, 0.73, 0.98);
-				preset_base_color = Color(0.21, 0.24, 0.29);
-				preset_contrast = config.default_contrast;
+				preset_accent_color = Color(0.388235, 0.478431, 0.996078);
+				preset_base_color = Color(0.0823529, 0.0901961, 0.101961);
+				preset_contrast = 0.2;
 			}
 
 			config.accent_color = preset_accent_color;

@@ -1283,7 +1283,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
 
 #ifdef TONY_MC_MAPFACE_DISABLED
-	const char *tonemap_modes = "Linear,Reinhard,Filmic,ACES";
+	const char *tonemap_modes = "Linear,Reinhard,Filmic,ACES,AgX,AgX Punchy";
 #else
 	const char *tonemap_modes = "Linear,Reinhard,Filmic,ACES,AgX,AgX Punchy,Tony McMapface";
 #endif
