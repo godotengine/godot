@@ -43,6 +43,7 @@ jobs:
             proj-conv: true
             api-compat: true
             artifact: true
+            compiler: msvc
 
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
             cache-name: windows-editor-clang
@@ -130,6 +131,7 @@ jobs:
 
       - name: Prepare artifact
         if: matrix.compiler == 'msvc'
+        shell: pwsh
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
@@ -138,6 +140,7 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}
+          path: bin/**
 
       - name: Unit tests
         if: matrix.tests
