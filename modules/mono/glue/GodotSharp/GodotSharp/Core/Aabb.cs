@@ -535,7 +535,8 @@ namespace Godot
                     }
                 }
                 else
-                { // ray not parallel to planes in this direction
+                {
+                // Ray is not parallel to planes in this direction.
                     real_t t1 = (Position[i] - from[i]) / dir[i];
                     real_t t2 = (End[i] - from[i]) / dir[i];
 
