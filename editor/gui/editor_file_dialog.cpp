@@ -2511,10 +2511,10 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected).bind());
 	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
-	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
+	dir->connect(SceneStringName(text_submitted), callable_mp(this, &EditorFileDialog::_dir_submitted));
 	filter_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileDialog::_filter_changed));
 	filter_box->connect(SceneStringName(text_submitted), callable_mp(this, &EditorFileDialog::_search_filter_selected).unbind(1));
-	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
+	file->connect(SceneStringName(text_submitted), callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);

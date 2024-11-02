@@ -180,7 +180,7 @@ FileSystemList::FileSystemList() {
 	line_editor = memnew(LineEdit);
 	line_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	popup_editor_vb->add_child(line_editor);
-	line_editor->connect("text_submitted", callable_mp(this, &FileSystemList::_line_editor_submit));
+	line_editor->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemList::_line_editor_submit));
 	popup_editor->connect("popup_hide", callable_mp(this, &FileSystemList::_text_editor_popup_modal_close));
 }
 
@@ -512,7 +512,7 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_prev->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_bw_history));
 			file_list_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_tree_rmb_option));
-			current_path_line_edit->connect("text_submitted", callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
+			current_path_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileSystemDock::_navigate_to_path).bind(false));
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 
@@ -3281,7 +3281,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 				if (cached_valid_conversion_targets.size() > CONVERSION_SUBMENU_THRESHOLD) {
 					container_menu = memnew(PopupMenu);
-					container_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
+					container_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
 
 					p_popup->add_submenu_node_item(TTR("Convert to..."), container_menu, FILE_NEW);
 					conversion_string_template = "%s";

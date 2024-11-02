@@ -3124,7 +3124,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			path = memnew(LineEdit);
 			path_popup->add_child(path);
 			path->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-			path->connect("text_submitted", callable_mp(this, &AnimationTrackEdit::_path_submitted));
+			path->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
 		path->set_text(animation->track_get_path(track));

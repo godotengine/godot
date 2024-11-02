@@ -1957,7 +1957,7 @@ ColorPicker::ColorPicker() {
 	c_text->set_select_all_on_focus(true);
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
-	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
+	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 

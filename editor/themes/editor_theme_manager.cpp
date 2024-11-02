@@ -1866,7 +1866,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// Game view.
 		p_theme->set_type_variation("GamePanel", "Panel");
-		Ref<StyleBoxFlat> game_panel = p_theme->get_stylebox(SNAME("panel"), SNAME("Panel"))->duplicate();
+		Ref<StyleBoxFlat> game_panel = p_theme->get_stylebox(SceneStringName(panel), SNAME("Panel"))->duplicate();
 		game_panel->set_corner_radius_all(0);
 		p_theme->set_stylebox(SceneStringName(panel), "GamePanel", game_panel);
 
