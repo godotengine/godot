@@ -525,19 +525,21 @@ namespace Godot
             real_t tmin = -1e20f;
             real_t tmax = 1e20f;
 
+            Vector3 end = _position + _size;
+
             for (int i = 0; i < 3; i++)
             {
                 if (dir[i] == 0)
                 {
-                    if ((from[i] < Position[i]) || (from[i] > End[i]))
+                    if ((from[i] < _position[i]) || (from[i] > end[i]))
                     {
                         return false;
                     }
                 }
                 else
                 { // ray not parallel to planes in this direction
-                    real_t t1 = (Position[i] - from[i]) / dir[i];
-                    real_t t2 = (End[i] - from[i]) / dir[i];
+                    real_t t1 = (_position[i] - from[i]) / dir[i];
+                    real_t t2 = (end[i] - from[i]) / dir[i];
 
                     if (t1 > t2)
                     {
