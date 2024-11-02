@@ -339,13 +339,36 @@ VARIANT_ENUM_CAST(VisualShader::VaryingType)
 class VisualShaderGroup : public Resource {
 	GDCLASS(VisualShaderGroup, Resource);
 
+public:
+	struct Port {
+		VisualShaderNode::PortType type = VisualShaderNode::PortType::PORT_TYPE_MAX;
+		String name;
+	};
+
+private:
+	HashMap<int, Port> input_ports;
+	HashMap<int, Port> output_ports;
+
 	Ref<ShaderGraph> graph;
+
+	inline static int NODE_ID_GROUP_INPUT = 0;
+	inline static int NODE_ID_GROUP_OUTPUT = 1;
 
 protected:
 	static void _bind_methods();
 
 public:
 	Ref<ShaderGraph> get_graph() const;
+
+	void add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
+	Port get_input_port(int p_id) const;
+	Vector<Port> get_input_ports() const;
+	void remove_input_port(int p_id);
+
+	void add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
+	Port get_output_port(int p_id) const;
+	Vector<Port> get_output_ports() const;
+	void remove_output_port(int p_id);
 
 	void add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(int p_id, const Vector2 &p_position);
@@ -1157,6 +1180,99 @@ public:
 	virtual Category get_category() const override { return CATEGORY_INPUT; }
 
 	VisualShaderNodeVaryingGetter();
+};
+
+class VisualShaderNodeGroupInput : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeGroupInput, VisualShaderNode);
+
+	// TODO: Possibly dangerous, but it is necessary for now since we don't have a proper weak reference.
+	VisualShaderGroup *group;
+
+	// struct Port {
+	// 	PortType type = PortType::PORT_TYPE_MAX;
+	// 	const char *name;
+	// 	const char *string;
+	// };
+
+	// static const Port ports[];
+	// static const Port preview_ports[];
+
+	// String input_name = "[None]";
+
+protected:
+	// static void _bind_methods();
+	// void _validate_property(PropertyInfo &p_property) const;
+
+public:
+	void set_group(VisualShaderGroup *p_group);
+	VisualShaderGroup *get_group() const;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
+
+	virtual String get_caption() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	void set_input_name(String p_name);
+	String get_input_name() const;
+	String get_input_real_name() const;
+
+	int get_input_index_count() const;
+	PortType get_input_index_type(int p_index) const;
+	String get_input_index_name(int p_index) const;
+
+	PortType get_input_type_by_name(String p_name) const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
+
+	VisualShaderNodeGroupInput();
+};
+
+class VisualShaderNodeGroupOutput : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeGroupOutput, VisualShaderNode);
+
+	// TODO: Possibly dangerous, but it is necessary for now since we don't have a proper weak reference.
+	VisualShaderGroup *group;
+
+	// struct Port {
+	// 	PortType type = PortType::PORT_TYPE_MAX;
+	// 	const char *name;
+	// 	const char *string;
+	// };
+
+	// static const Port ports[];
+
+public:
+	void set_group(VisualShaderGroup *p_group);
+	VisualShaderGroup *get_group() const;
+
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+	Variant get_input_port_default_value(int p_port) const;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+	virtual String get_output_port_name(int p_port) const override;
+
+	virtual bool is_port_separator(int p_index) const override;
+
+	virtual String get_caption() const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
+
+	VisualShaderNodeGroupOutput();
 };
 
 extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);

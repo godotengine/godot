@@ -5831,6 +5831,46 @@ Ref<ShaderGraph> VisualShaderGroup::get_graph() const {
 	return graph;
 }
 
+void VisualShaderGroup::add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name) {
+	input_ports[p_id] = Port{ p_type, p_name };
+}
+
+VisualShaderGroup::Port VisualShaderGroup::get_input_port(int p_id) const {
+	return Port();
+}
+
+Vector<VisualShaderGroup::Port> VisualShaderGroup::get_input_ports() const {
+	Vector<Port> ports;
+	for (const KeyValue<int, Port> &E : input_ports) {
+		ports.push_back(E.value);
+	}
+	return ports;
+}
+
+void VisualShaderGroup::remove_input_port(int p_id) {
+	input_ports.erase(p_id);
+}
+
+void VisualShaderGroup::add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name) {
+	output_ports[p_id] = Port{ p_type, p_name };
+}
+
+VisualShaderGroup::Port VisualShaderGroup::get_output_port(int p_id) const {
+	return output_ports[p_id];
+}
+
+Vector<VisualShaderGroup::Port> VisualShaderGroup::get_output_ports() const {
+	Vector<Port> ports;
+	for (const KeyValue<int, Port> &E : output_ports) {
+		ports.push_back(E.value);
+	}
+	return ports;
+}
+
+void VisualShaderGroup::remove_output_port(int p_id) {
+	output_ports.erase(p_id);
+}
+
 void VisualShaderGroup::add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
 	graph->add_node(p_node, p_position, p_id);
 }
@@ -5912,5 +5952,127 @@ void VisualShaderGroup::get_node_connections(List<ShaderGraph::Connection> *r_co
 }
 
 VisualShaderGroup::VisualShaderGroup() {
-	// TODO: Add group input and output nodes
+	graph.instantiate();
+
+	Ref<VisualShaderNodeGroupInput> input_node;
+	input_node.instantiate();
+	input_node->set_group(this);
+	graph->nodes[NODE_ID_GROUP_INPUT].node = input_node;
+	graph->nodes[NODE_ID_GROUP_INPUT].position = Vector2(0, 150);
+
+	Ref<VisualShaderNodeGroupOutput> output_node;
+	output_node.instantiate();
+	output_node->set_group(this);
+	graph->nodes[NODE_ID_GROUP_OUTPUT].node = output_node;
+	graph->nodes[NODE_ID_GROUP_OUTPUT].position = Vector2(400, 150);
+}
+
+// void VisualShaderNodeGroupInput::_bind_methods() {
+// 	// TODO: Implement?
+// }
+
+// void VisualShaderNodeGroupInput::_validate_property(PropertyInfo &p_property) const {
+// 	// TODO: Implement?
+// }
+
+void VisualShaderNodeGroupInput::set_group(VisualShaderGroup *p_group) {
+	group = p_group;
+}
+
+VisualShaderGroup *VisualShaderNodeGroupInput::get_group() const {
+	return group;
+}
+
+int VisualShaderNodeGroupInput::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNode::PortType VisualShaderNodeGroupInput::get_input_port_type(int p_port) const {
+	return PortType();
+}
+
+String VisualShaderNodeGroupInput::get_input_port_name(int p_port) const {
+	return String();
+}
+
+int VisualShaderNodeGroupInput::get_output_port_count() const {
+	return 0;
+}
+
+VisualShaderNode::PortType VisualShaderNodeGroupInput::get_output_port_type(int p_port) const {
+	return PortType();
+}
+
+String VisualShaderNodeGroupInput::get_output_port_name(int p_port) const {
+	return String();
+}
+
+bool VisualShaderNodeGroupInput::is_output_port_expandable(int p_port) const {
+	return false;
+}
+
+String VisualShaderNodeGroupInput::get_caption() const {
+	return String();
+}
+
+String VisualShaderNodeGroupInput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+Vector<StringName> VisualShaderNodeGroupInput::get_editable_properties() const {
+	return Vector<StringName>();
+}
+
+VisualShaderNodeGroupInput::VisualShaderNodeGroupInput() {
+}
+
+void VisualShaderNodeGroupOutput::set_group(VisualShaderGroup *p_group) {
+	group = p_group;
+}
+
+VisualShaderGroup *VisualShaderNodeGroupOutput::get_group() const {
+	return group;
+}
+
+int VisualShaderNodeGroupOutput::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNode::PortType VisualShaderNodeGroupOutput::get_input_port_type(int p_port) const {
+	return PortType();
+}
+
+String VisualShaderNodeGroupOutput::get_input_port_name(int p_port) const {
+	return String();
+}
+
+Variant VisualShaderNodeGroupOutput::get_input_port_default_value(int p_port) const {
+	return Variant();
+}
+
+int VisualShaderNodeGroupOutput::get_output_port_count() const {
+	return 0;
+}
+
+VisualShaderNode::PortType VisualShaderNodeGroupOutput::get_output_port_type(int p_port) const {
+	return PortType();
+}
+
+String VisualShaderNodeGroupOutput::get_output_port_name(int p_port) const {
+	return String();
+}
+
+bool VisualShaderNodeGroupOutput::is_port_separator(int p_index) const {
+	return false;
+}
+
+String VisualShaderNodeGroupOutput::get_caption() const {
+	return String();
+}
+
+String VisualShaderNodeGroupOutput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+VisualShaderNodeGroupOutput::VisualShaderNodeGroupOutput() {
 }
