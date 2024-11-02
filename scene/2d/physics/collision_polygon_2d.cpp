@@ -217,7 +217,7 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 	return build_mode;
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 CollisionPolygon2D::_edit_get_rect() const {
 	return aabb;
 }
