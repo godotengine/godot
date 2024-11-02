@@ -1420,7 +1420,7 @@ void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
 	}
 
 	if (p_enable) {
-		const String reason = "Godot Engine running with display/window/energy_saving/keep_screen_on = true";
+		const String reason = "Merlin Engine running with display/window/energy_saving/keep_screen_on = true";
 		Char16String reason_utf16 = reason.utf16();
 
 		REASON_CONTEXT context;
