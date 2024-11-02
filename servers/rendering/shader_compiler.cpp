@@ -489,7 +489,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						struct_code += _typestr(m->datatype);
 					}
 					struct_code += " ";
-					struct_code += m->name;
+					struct_code += _mkid(m->name);
 					if (m->array_size > 0) {
 						struct_code += "[";
 						struct_code += itos(m->array_size);
@@ -1448,7 +1448,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 		} break;
 		case SL::Node::NODE_TYPE_MEMBER: {
 			SL::MemberNode *mnode = (SL::MemberNode *)p_node;
-			code = _dump_node_code(mnode->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + "." + mnode->name;
+			String name;
+			if (mnode->basetype == SL::TYPE_STRUCT) {
+				name = _mkid(mnode->name);
+			} else {
+				name = mnode->name;
+			}
+			code = _dump_node_code(mnode->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + "." + name;
 			if (mnode->index_expression != nullptr) {
 				code += "[";
 				code += _dump_node_code(mnode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
