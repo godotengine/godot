@@ -1901,6 +1901,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox(SceneStringName(pressed), "BottomPanelButton", menu_transparent_style);
 		p_theme->set_stylebox("hover_pressed", "BottomPanelButton", main_screen_button_hover);
 		p_theme->set_stylebox("hover", "BottomPanelButton", main_screen_button_hover);
+		// Don't tint the icon even when in "pressed" state.
+		p_theme->set_color("icon_pressed_color", "BottomPanelButton", Color(1, 1, 1, 1));
+		Color icon_hover_color = p_config.icon_normal_color * (p_config.dark_theme ? 1.15 : 1.0);
+		icon_hover_color.a = 1.0;
+		p_theme->set_color("icon_hover_color", "BottomPanelButton", icon_hover_color);
+		p_theme->set_color("icon_hover_pressed_color", "BottomPanelButton", icon_hover_color);
 	}
 
 	// Editor GUI widgets.
@@ -1998,6 +2004,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			Color icon_hover_color = p_config.icon_normal_color * (p_config.dark_theme ? 1.15 : 1.0);
 			icon_hover_color.a = 1.0;
 			p_theme->set_color("icon_hover_color", "EditorLogFilterButton", icon_hover_color);
+			p_theme->set_color("icon_hover_pressed_color", "EditorLogFilterButton", icon_hover_color);
 
 			// When pressed, add a small bottom border to the buttons to better show their active state,
 			// similar to active tabs.
