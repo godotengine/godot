@@ -139,6 +139,9 @@
 			If [code]true[/code], clearcoat rendering is enabled. Adds a secondary transparent pass to the lighting calculation resulting in an added specular blob. This makes materials appear as if they have a clear layer on them that can be either glossy or rough.
 			[b]Note:[/b] Clearcoat rendering is not visible if the material's [member shading_mode] is [constant SHADING_MODE_UNSHADED].
 		</member>
+		<member name="clearcoat_normal_map" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], clearcoat rendering obeys the normal map defined in [member normal_texture] (similar to standard specular reflections). This can be useful when using low-poly meshes where geometric detail isn't sufficient to obtain a convincing clearcoat effect. If [code]false[/code], only the geometric normal is taken into account for clearcoat rendering.
+		</member>
 		<member name="clearcoat_roughness" type="float" setter="set_clearcoat_roughness" getter="get_clearcoat_roughness" default="0.5">
 			Sets the roughness of the clearcoat pass. A higher value results in a rougher clearcoat while a lower value results in a smoother clearcoat.
 		</member>
@@ -707,7 +710,7 @@
 		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
 			Disables receiving depth-based or volumetric fog.
 		</constant>
-		<constant name="FLAG_MAX" value="22" enum="Flags">
+		<constant name="FLAG_MAX" value="23" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">

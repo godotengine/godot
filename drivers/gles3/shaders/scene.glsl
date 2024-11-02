@@ -1267,7 +1267,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
+		float clearcoat, float clearcoat_roughness, vec3 clearcoat_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
@@ -1387,10 +1387,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #endif
 
 #if defined(LIGHT_CLEARCOAT_USED)
-		// Clearcoat ignores normal_map, use vertex normal instead
-		float ccNdotL = max(min(A + dot(vertex_normal, L), 1.0), 0.0);
-		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
-		float ccNdotV = max(dot(vertex_normal, V), 1e-4);
+
+		vec3 n = clearcoat_normal;
+		float ccNdotL = max(min(A + dot(n, L), 1.0), 0.0);
+		float ccNdotH = clamp(A + dot(n, H), 0.0, 1.0);
+		float ccNdotV = max(dot(n, V), 1e-4);
 
 #if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
@@ -1431,7 +1432,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
+		float clearcoat, float clearcoat_roughness, vec3 clearcoat_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 binormal, vec3 tangent, float anisotropy,
@@ -1458,7 +1459,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 			rim * omni_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_roughness, vertex_normal,
+			clearcoat, clearcoat_roughness, clearcoat_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
@@ -1477,7 +1478,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		float rim, float rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
+		float clearcoat, float clearcoat_roughness, vec3 clearcoat_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 binormal, vec3 tangent, float anisotropy,
@@ -1514,7 +1515,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 			rim * spot_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_roughness, vertex_normal,
+			clearcoat, clearcoat_roughness, clearcoat_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
@@ -2122,7 +2123,11 @@ void main() {
 				rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+				clearcoat, clearcoat_roughness, normal,
+#else
 				clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal,
@@ -2152,7 +2157,11 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+				clearcoat, clearcoat_roughness, normal,
+#else
 				clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
@@ -2180,7 +2189,11 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+				clearcoat, clearcoat_roughness, normal,
+#else
 				clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 				tangent,
@@ -2397,7 +2410,11 @@ void main() {
 			rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+			clearcoat, clearcoat_roughness, normal,
+#else
 			clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal,
@@ -2430,7 +2447,11 @@ void main() {
 			rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+			clearcoat, clearcoat_roughness, normal,
+#else
 			clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
@@ -2460,7 +2481,11 @@ void main() {
 			rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
+#ifdef CLEARCOAT_NORMAL_MAP
+			clearcoat, clearcoat_roughness, normal,
+#else
 			clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif // CLEARCOAT_NORMAL_MAP
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			tangent,
