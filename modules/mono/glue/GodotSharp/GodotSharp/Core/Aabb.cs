@@ -522,8 +522,8 @@ namespace Godot
         {
             if (HasPoint(from)) return true;
 
-            real_t tmin = -1e20f;
-            real_t tmax = 1e20f;
+            real_t tmin = real_t.MinValue;
+            real_t tmax = real_t.MaxValue;
 
             for (int i = 0; i < 3; i++)
             {
