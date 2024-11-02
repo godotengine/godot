@@ -76,7 +76,7 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		}
 
 		// Skip service worker and offline page if not exporting pwa.
-		if (!pwa && (file == "godot.service.worker.js" || file == "godot.offline.html")) {
+		if (!pwa && (file == "blazium.service.worker.js" || file == "blazium.offline.html")) {
 			continue;
 		}
 		Vector<uint8_t> data;
@@ -88,7 +88,7 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzCloseCurrentFile(pkg);
 
 		//write
-		String dst = p_dir.path_join(file.replace("godot", p_name));
+		String dst = p_dir.path_join(file.replace("blazium", p_name));
 		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
 		if (f.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));

@@ -11,13 +11,13 @@ const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 /** @type {string} */
 const OFFLINE_URL = '___GODOT_OFFLINE_PAGE___';
 /** @type {boolean} */
-const ENSURE_CROSSORIGIN_ISOLATION_HEADERS = ___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___;
+const ENSURE_CROSSORIGIN_ISOLATION_HEADERS = typeof ___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___ === 'undefined' ? false : ___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___;
 // Files that will be cached on load.
 /** @type {string[]} */
-const CACHED_FILES = ___GODOT_CACHE___;
+const CACHED_FILES = typeof ___GODOT_CACHE___ === 'undefined' ? [] : ___GODOT_CACHE___;
 // Files that we might not want the user to preload, and will only be cached on first load.
 /** @type {string[]} */
-const CACHABLE_FILES = ___GODOT_OPT_CACHE___;
+const CACHABLE_FILES = typeof ___GODOT_OPT_CACHE___ === 'undefined' ? [] : ___GODOT_OPT_CACHE___;
 const FULL_CACHE = CACHED_FILES.concat(CACHABLE_FILES);
 
 self.addEventListener('install', (event) => {
@@ -81,7 +81,7 @@ async function fetchAndCache(event, cache, isCacheable) {
 
 	if (isCacheable) {
 		// And update the cache
-		cache.put(event.request, response.clone());
+		await cache.put(event.request, response.clone());
 	}
 
 	return response;
