@@ -32,6 +32,18 @@ jobs:
             bin: ./bin/godot.windows.editor.x86_64.exe
             compiler: msvc
 
+          - name: Editor w/ Mono (target=editor)
+            cache-name: windows-editor-mono
+            target: editor
+            sconsflags: module_mono_enabled=yes
+            bin: ./bin/merlin.windows.editor.x86_64.mono.exe
+            build-mono: true
+            tests: false # Disabled due freeze caused by mix Mono build and CI
+            doc-test: true
+            proj-conv: true
+            api-compat: true
+            artifact: true
+
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
             cache-name: windows-editor-clang
             target: editor
@@ -101,6 +113,14 @@ jobs:
           platform: windows
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+
+      - name: Generate Glue Code
+        if: ${{ matrix.cache-name == 'windows-editor-mono' }}
+        run: ./bin/merlin.windows.editor.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
+
+      - name: Build GodotSharp
+        if: ${{ matrix.cache-name == 'windows-editor-mono' }}
+        run: python modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
