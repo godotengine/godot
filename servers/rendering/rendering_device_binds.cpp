@@ -36,7 +36,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	ERR_FAIL_NULL_V_MSG(
 			RenderingDevice::get_singleton(),
 			ERR_UNAVAILABLE,
-			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility backend.");
+			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility renderer.");
 
 	Vector<String> lines = p_text.split("\n");
 

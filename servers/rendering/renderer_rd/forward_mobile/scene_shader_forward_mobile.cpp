@@ -169,11 +169,11 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 	if (uses_sss) {
-		WARN_PRINT_ONCE_ED("Sub-surface scattering is only available when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Subsurface scattering is only available when using the Forward+ renderer.");
 	}
 
 	if (uses_transmittance) {
-		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
 	}
 #endif
 
