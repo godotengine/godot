@@ -326,13 +326,13 @@
 			<return type="bool" />
 			<param index="0" name="aabb" type="AABB" />
 			<description>
-				Returns [code]true[/code] if this bounding box and [param aabb] are approximately equal, by calling [method Vector2.is_equal_approx] on the [member position] and the [member size].
+				Returns [code]true[/code] if this bounding box and [param aabb] are approximately equal, by calling [method Vector3.is_equal_approx] on the [member position] and the [member size].
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this bounding box's values are finite, by calling [method Vector2.is_finite] on the [member position] and the [member size].
+				Returns [code]true[/code] if this bounding box's values are finite, by calling [method Vector3.is_finite] on the [member position] and the [member size].
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
