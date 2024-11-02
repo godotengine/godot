@@ -3024,7 +3024,9 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 		for (int node_i = 0; node_i < children.size(); node_i++) {
 			Control *c = Object::cast_to<Control>(children[node_i]);
-			ur->add_undo_method(c, "_edit_set_state", c->_edit_get_state());
+			if (c) {
+				ur->add_undo_method(c, "_edit_set_state", c->_edit_get_state());
+			}
 		}
 	}
 
