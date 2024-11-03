@@ -2545,6 +2545,13 @@
 				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
+		<method name="multimesh_get_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the [MultiMesh], which can be used as any other buffer on the Rendering Device.
+			</description>
+		</method>
 		<method name="multimesh_get_custom_aabb" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="multimesh" type="RID" />
