@@ -108,7 +108,6 @@ void EditorToaster::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
 				main_button->set_button_icon(get_editor_theme_icon(SNAME("Notification")));
@@ -134,9 +133,6 @@ void EditorToaster::_notification(int p_what) {
 
 			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), EditorStringName(Editor)).lightened(0.03));
 			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-
-			main_button->queue_redraw();
-			disable_notifications_button->queue_redraw();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -243,6 +239,7 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 		main_button->set_tooltip_text(TTR("No notifications."));
 		main_button->set_modulate(Color(0.5, 0.5, 0.5));
 		main_button->set_disabled(true);
+		set_process_internal(false);
 	} else {
 		main_button->set_tooltip_text(TTR("Show notifications."));
 		main_button->set_modulate(Color(1, 1, 1));
@@ -361,6 +358,9 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	}
 	panel->set_modulate(Color(1, 1, 1, 0));
 	panel->connect(SceneStringName(draw), callable_mp(this, &EditorToaster::_draw_progress).bind(panel));
+	panel->connect(SceneStringName(theme_changed), callable_mp(this, &EditorToaster::_toast_theme_changed).bind(panel));
+
+	Toast &toast = toasts[panel];
 
 	// Horizontal container.
 	HBoxContainer *hbox_container = memnew(HBoxContainer);
@@ -375,20 +375,20 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	if (p_time > 0.0) {
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
-		close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::close).bind(panel));
-		close_button->connect(SceneStringName(theme_changed), callable_mp(this, &EditorToaster::_close_button_theme_changed).bind(close_button));
 		hbox_container->add_child(close_button);
+
+		toast.close_button = close_button;
 	}
 
-	toasts[panel].severity = p_severity;
+	toast.severity = p_severity;
 	if (p_time > 0.0) {
-		toasts[panel].duration = p_time;
-		toasts[panel].remaining_time = p_time;
+		toast.duration = p_time;
+		toast.remaining_time = p_time;
 	} else {
-		toasts[panel].duration = -1.0;
+		toast.duration = -1.0;
 	}
-	toasts[panel].popped = true;
+	toast.popped = true;
 	vbox_container->add_child(panel);
 	_auto_hide_or_free_toasts();
 	_update_vbox_position();
@@ -406,7 +406,7 @@ void EditorToaster::popup_str(const String &p_message, Severity p_severity, cons
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &EditorToaster::_popup_str).bind(p_message, p_severity, p_tooltip));
+	callable_mp(this, &EditorToaster::_popup_str).call_deferred(p_message, p_severity, p_tooltip);
 	is_processing_error = false;
 }
 
@@ -433,19 +433,22 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 		hb->add_child(count_label);
 
 		control = popup(hb, p_severity, default_message_duration, p_tooltip);
-		toasts[control].message = p_message;
-		toasts[control].tooltip = p_tooltip;
-		toasts[control].count = 1;
-		toasts[control].message_label = label;
-		toasts[control].message_count_label = count_label;
+
+		Toast &toast = toasts[control];
+		toast.message = p_message;
+		toast.tooltip = p_tooltip;
+		toast.count = 1;
+		toast.message_label = label;
+		toast.message_count_label = count_label;
 	} else {
-		if (toasts[control].popped) {
-			toasts[control].count += 1;
+		Toast &toast = toasts[control];
+		if (toast.popped) {
+			toast.count += 1;
 		} else {
-			toasts[control].count = 1;
+			toast.count = 1;
 		}
-		toasts[control].remaining_time = toasts[control].duration;
-		toasts[control].popped = true;
+		toast.remaining_time = toast.duration;
+		toast.popped = true;
 		control->show();
 		vbox_container->move_child(control, vbox_container->get_child_count());
 		_auto_hide_or_free_toasts();
@@ -480,6 +483,16 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 	vbox_container->reset_size();
 
 	is_processing_error = false;
+	set_process_internal(true);
+}
+
+void EditorToaster::_toast_theme_changed(Control *p_control) {
+	ERR_FAIL_COND(!toasts.has(p_control));
+
+	Toast &toast = toasts[p_control];
+	if (toast.close_button) {
+		toast.close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+	}
 }
 
 void EditorToaster::close(Control *p_control) {
@@ -488,20 +501,12 @@ void EditorToaster::close(Control *p_control) {
 	toasts[p_control].popped = false;
 }
 
-void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
-	Button *close_button = Object::cast_to<Button>(p_close_button);
-	if (close_button) {
-		close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
-	}
-}
-
 EditorToaster *EditorToaster::get_singleton() {
 	return singleton;
 }
 
 EditorToaster::EditorToaster() {
 	set_notify_transform(true);
-	set_process_internal(true);
 
 	// VBox.
 	vbox_container = memnew(VBoxContainer);
