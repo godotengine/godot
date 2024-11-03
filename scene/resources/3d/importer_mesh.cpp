@@ -168,8 +168,54 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
-void ImporterMesh::optimize_indices_for_cache() {
+template <typename T>
+static Vector<T> _remap_array(Vector<T> p_array, const Vector<uint32_t> &p_remap, uint32_t p_vertex_count) {
+	ERR_FAIL_COND_V(p_array.size() % p_remap.size() != 0, p_array);
+	int num_elements = p_array.size() / p_remap.size();
+	T *data = p_array.ptrw();
+	SurfaceTool::remap_vertex_func(data, data, p_remap.size(), sizeof(T) * num_elements, p_remap.ptr());
+	p_array.resize(p_vertex_count * num_elements);
+	return p_array;
+}
+
+static void _remap_arrays(Array &r_arrays, const Vector<uint32_t> &p_remap, uint32_t p_vertex_count) {
+	for (int i = 0; i < r_arrays.size(); i++) {
+		if (i == RS::ARRAY_INDEX) {
+			continue;
+		}
+
+		switch (r_arrays[i].get_type()) {
+			case Variant::NIL:
+				break;
+			case Variant::PACKED_VECTOR3_ARRAY:
+				r_arrays[i] = _remap_array<Vector3>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_VECTOR2_ARRAY:
+				r_arrays[i] = _remap_array<Vector2>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_FLOAT32_ARRAY:
+				r_arrays[i] = _remap_array<float>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_INT32_ARRAY:
+				r_arrays[i] = _remap_array<int32_t>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_BYTE_ARRAY:
+				r_arrays[i] = _remap_array<uint8_t>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_COLOR_ARRAY:
+				r_arrays[i] = _remap_array<Color>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			default:
+				ERR_FAIL_MSG("Unhandled array type.");
+		}
+	}
+}
+
+void ImporterMesh::optimize_indices() {
 	if (!SurfaceTool::optimize_vertex_cache_func) {
+		return;
+	}
+	if (!SurfaceTool::optimize_vertex_fetch_remap_func || !SurfaceTool::remap_vertex_func || !SurfaceTool::remap_index_func) {
 		return;
 	}
 
@@ -188,10 +234,48 @@ void ImporterMesh::optimize_indices_for_cache() {
 			continue;
 		}
 
+		// Optimize indices for vertex cache to establish final triangle order.
 		int *indices_ptr = indices.ptrw();
 		SurfaceTool::optimize_vertex_cache_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, vertex_count);
-
 		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+
+		for (int j = 0; j < surfaces[i].lods.size(); ++j) {
+			Surface::LOD &lod = surfaces.write[i].lods.write[j];
+			int *lod_indices_ptr = lod.indices.ptrw();
+			SurfaceTool::optimize_vertex_cache_func((unsigned int *)lod_indices_ptr, (const unsigned int *)lod_indices_ptr, lod.indices.size(), vertex_count);
+		}
+
+		// Concatenate indices for all LODs in the order of coarse->fine; this establishes the effective order of vertices,
+		// and is important to optimize for vertex fetch (all GPUs) and shading (Mali GPUs)
+		PackedInt32Array merged_indices;
+		for (int j = surfaces[i].lods.size() - 1; j >= 0; --j) {
+			merged_indices.append_array(surfaces[i].lods[j].indices);
+		}
+		merged_indices.append_array(indices);
+
+		// Generate remap array that establishes optimal vertex order according to the order of indices above.
+		Vector<uint32_t> remap;
+		remap.resize(vertex_count);
+		unsigned int new_vertex_count = SurfaceTool::optimize_vertex_fetch_remap_func(remap.ptrw(), (const unsigned int *)merged_indices.ptr(), merged_indices.size(), vertex_count);
+
+		// We need to remap all vertex and index arrays in lockstep according to the remap.
+		SurfaceTool::remap_index_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, remap.ptr());
+		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+
+		for (int j = 0; j < surfaces[i].lods.size(); ++j) {
+			Surface::LOD &lod = surfaces.write[i].lods.write[j];
+			int *lod_indices_ptr = lod.indices.ptrw();
+			SurfaceTool::remap_index_func((unsigned int *)lod_indices_ptr, (const unsigned int *)lod_indices_ptr, lod.indices.size(), remap.ptr());
+		}
+
+		_remap_arrays(surfaces.write[i].arrays, remap, new_vertex_count);
+		for (int j = 0; j < surfaces[i].blend_shape_data.size(); j++) {
+			_remap_arrays(surfaces.write[i].blend_shape_data.write[j].arrays, remap, new_vertex_count);
+		}
+	}
+
+	if (shadow_mesh.is_valid()) {
+		shadow_mesh->optimize_indices();
 	}
 }
 
@@ -213,9 +297,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		return;
 	}
 	if (!SurfaceTool::simplify_with_attrib_func) {
-		return;
-	}
-	if (!SurfaceTool::optimize_vertex_cache_func) {
 		return;
 	}
 
@@ -431,12 +512,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		}
 
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
-
-		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
-			Surface::LOD &lod = surfaces.write[i].lods.write[j];
-			unsigned int *lod_indices_ptr = (unsigned int *)lod.indices.ptrw();
-			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), vertex_count);
-		}
 	}
 }
 
@@ -574,10 +649,6 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
-			if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
-				SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
-			}
-
 			new_surface[RS::ARRAY_INDEX] = new_indices;
 
 			// Make sure the same LODs as the full version are used.
@@ -594,10 +665,6 @@ void ImporterMesh::create_shadow_mesh() {
 					int index = index_rptr[k];
 					ERR_FAIL_INDEX(index, vertex_count);
 					index_wptr[k] = vertex_remap[index];
-				}
-
-				if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
-					SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 				}
 
 				lods[surfaces[i].lods[j].distance] = new_indices;
