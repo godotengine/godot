@@ -35,7 +35,7 @@
 
 #define LINE_GRAB_WIDTH 8
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 OccluderPolygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		if (closed) {
@@ -83,7 +83,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		return false;
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void OccluderPolygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
@@ -156,7 +156,7 @@ OccluderPolygon2D::~OccluderPolygon2D() {
 void LightOccluder2D::_poly_changed() {
 #ifdef DEBUG_ENABLED
 	queue_redraw();
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void LightOccluder2D::_physics_interpolated_changed() {
@@ -218,7 +218,7 @@ void LightOccluder2D::_notification(int p_what) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 LightOccluder2D::_edit_get_rect() const {
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_get_rect() : Rect2();
 }
@@ -226,14 +226,14 @@ Rect2 LightOccluder2D::_edit_get_rect() const {
 bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return occluder_polygon.is_valid() ? occluder_polygon->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
 		occluder_polygon->disconnect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
-#endif
+#endif // DEBUG_ENABLED
 	occluder_polygon = p_polygon;
 
 	if (occluder_polygon.is_valid()) {
@@ -247,7 +247,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 		occluder_polygon->connect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
 	queue_redraw();
-#endif
+#endif // DEBUG_ENABLED
 }
 
 Ref<OccluderPolygon2D> LightOccluder2D::get_occluder_polygon() const {
