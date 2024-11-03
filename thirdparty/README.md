@@ -260,10 +260,6 @@ Files extracted from upstream source:
   * Upstream: https://fonts.google.com/specimen/Ubuntu
   * Version: 1.0 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
   * License: UFL 1.0
-- `NotoSans*.woff2`:
-  * Upstream: https://github.com/notofonts/latin-greek-cyrillic
-  * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
-  * License: OFL-1.1
 - `NotoSansBengali*.woff2`:
   * Upstream: https://github.com/notofonts/bengali
   * Version: 2.003 (020a5701f6fc6a363d5eccbae45e37714c0ad686, 2022)
