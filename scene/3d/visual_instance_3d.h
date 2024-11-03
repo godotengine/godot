@@ -114,7 +114,7 @@ public:
 		VISIBILITY_RANGE_FADE_DEPENDENCIES = RS::VISIBILITY_RANGE_FADE_DEPENDENCIES,
 	};
 
-private:
+public:
 	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
 	Ref<Material> material_overlay;
