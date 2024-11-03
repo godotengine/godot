@@ -6846,7 +6846,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 void Node3DEditor::_init_indicators() {
 	{
-		origin_enabled = false;
+		origin_enabled = true;
 		grid_enabled = true;
 
 		Ref<Shader> origin_shader = memnew(Shader);
@@ -7463,7 +7463,7 @@ void Node3DEditor::_init_grid() {
 		return; // Camera3D is invalid, don't draw the grid.
 	}
 
-	bool orthogonal = false; //camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
+	bool orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
 
 	static LocalVector<Color> grid_colors[3];
 	static LocalVector<Vector3> grid_points[3];
@@ -8475,7 +8475,7 @@ void Node3DEditor::clear() {
 		RenderingServer::get_singleton()->instance_set_visible(origin_instance, false);
 	}
 
-	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), false);
+	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for (int i = 0; i < 3; ++i) {
 		if (grid_enable[i]) {
 			grid_visible[i] = true;
@@ -8891,7 +8891,7 @@ Node3DEditor::Node3DEditor() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings...")), MENU_VIEW_CAMERA_SETTINGS);
 
-	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), false);
+	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));

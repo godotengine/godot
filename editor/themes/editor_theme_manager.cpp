@@ -550,17 +550,18 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		p_theme->set_color("box_selection_fill_color", EditorStringName(Editor), p_config.accent_color * Color(1, 1, 1, 0.3));
 		p_theme->set_color("box_selection_stroke_color", EditorStringName(Editor), p_config.accent_color * Color(1, 1, 1, 0.8));
 
-		p_theme->set_color("axis_x_color", EditorStringName(Editor), Color(0.96, 0.20, 0.32));
-		p_theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.53, 0.84, 0.01));
-		p_theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.16, 0.55, 0.96));
+		p_theme->set_color("axis_x_color", EditorStringName(Editor), Color(0.792, 0.165, 0.004));
+		p_theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.404, 0.655, 0.004));
+		p_theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.188, 0.49, 0.925));
 		p_theme->set_color("axis_w_color", EditorStringName(Editor), Color(0.55, 0.55, 0.55));
 
-		const float prop_color_saturation = p_config.accent_color.get_s() * 0.75;
+		//Unused
+		const float prop_color_saturation = p_config.accent_color.get_s() * 1.5;
 		const float prop_color_value = p_config.accent_color.get_v();
 
-		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.033, 0.99, 0.79));
+		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(0.231, 0.99, 0.65));
+		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(0.597, 0.79, 0.92));
 		p_theme->set_color("property_color_w", EditorStringName(Editor), Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 
 		// Special colors for rendering methods.
