@@ -134,7 +134,7 @@ public:
 		frame_buffers.resize(p_desired_framebuffer_count);
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
 			// Reserve space for the drawable texture.
-			frame_buffers[i].textures.resize(1);
+			frame_buffers[i].set_texture_count(1);
 		}
 
 		return OK;
@@ -154,7 +154,7 @@ public:
 		id<CAMetalDrawable> drawable = layer.nextDrawable;
 		ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
 		drawables[rear] = drawable;
-		frame_buffer.textures.write[0] = drawable.texture;
+		frame_buffer.set_texture(0, drawable.texture);
 
 		return RDD::FramebufferID(&frame_buffer);
 	}
@@ -165,7 +165,7 @@ public:
 		}
 
 		// Release texture and drawable.
-		frame_buffers[front].textures.write[0] = nil;
+		frame_buffers[front].unset_texture(0);
 		id<MTLDrawable> drawable = drawables[front];
 		drawables[front] = nil;
 
