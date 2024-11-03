@@ -37,7 +37,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/texture_button.h"
 
-const String EditorPropertyVectorN::COMPONENT_LABELS[4] = { "x", "y", "z", "w" };
+const String EditorPropertyVectorN::COMPONENT_LABELS[4] = { "X", "Y", "Z", "W" };
 
 void EditorPropertyVectorN::_set_read_only(bool p_read_only) {
 	for (EditorSpinSlider *spin : spin_sliders) {
