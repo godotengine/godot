@@ -669,19 +669,20 @@ void SceneImportSettingsDialog::_update_camera() {
 	Vector3 center = camera_aabb.get_center();
 	float camera_size = camera_aabb.get_longest_axis_size();
 
-	const int view = GLOBAL_GET("editor/import/camera_view");
-
+	current_camera_view = GLOBAL_GET("editor/import/camera_view");
 	Transform3D xf;
-	if (view == 0) {
+	if (current_camera_view == 0) {
+		WARN_PRINT("Camera set to orthogonal");
 		camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
 		xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
 		xf.origin = center;
 		xf.translate_local(0, 0, camera_size);
 	} else {
+		WARN_PRINT("Camera set to perspective");
 		camera->set_perspective(camera_size * 2, 0.0001, camera_size * zoom * 12);
 		xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
 		xf.origin = center;
-		xf.translate_local(0, 0, camera_size * zoom * 10);
+		xf.translate_local(0, 0, camera_size * zoom * 5);
 	}
 
 	camera->set_transform(xf);

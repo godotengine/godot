@@ -220,6 +220,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	int current_action = 0;
 
+	int current_camera_view = 0;
+
 	Vector<TreeItem *> save_path_items;
 
 	TreeItem *save_path_item = nullptr;
