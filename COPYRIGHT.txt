@@ -230,6 +230,11 @@ Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
+Files: ./thirdparty/fonts/Inter*.woff2
+Comment: Inter font
+Copyright: 2016, The Inter Project Authors
+License: OFL-1.1
+
 Files: ./thirdparty/fonts/JetBrainsMono_Regular.woff2
 Comment: JetBrains Mono font
 Copyright: 2020, JetBrains s.r.o.
