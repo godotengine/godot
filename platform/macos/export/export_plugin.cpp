@@ -65,6 +65,11 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 	} else {
 		ERR_PRINT("Invalid architecture");
 	}
+
+	if (architecture == "universal") {
+		r_features->push_back("x86_64");
+		r_features->push_back("arm64");
+	}
 }
 
 String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
