@@ -49,7 +49,8 @@
 			<param index="2" name="bone_transform_array" type="Array" />
 			<description>
 				Generates all lods for this ImporterMesh.
-				[param normal_merge_angle] and [param normal_split_angle] are in degrees and used in the same way as the importer settings in [code]lods[/code]. As a good default, use 25 and 60 respectively.
+				[param normal_merge_angle] is in degrees and used in the same way as the importer settings in [code]lods[/code].
+				[param normal_split_angle] is not used and only remains for compatibility with older versions of the API.
 				The number of generated lods can be accessed using [method get_surface_lod_count], and each LOD is available in [method get_surface_lod_size] and [method get_surface_lod_indices].
 				[param bone_transform_array] is an [Array] which can be either empty or contain [Transform3D]s which, for each of the mesh's bone IDs, will apply mesh skinning when generating the LOD mesh variations. This is usually used to account for discrepancies in scale between the mesh itself and its skinning data.
 			</description>
