@@ -241,6 +241,8 @@ private:
 
 	Ref<Shortcut> debugger_stop_shortcut;
 
+	void _stop_shortcut_callback(const String &p_setting, const Variant &p_value);
+
 	static int root_layout_direction;
 
 protected:

@@ -2057,3 +2057,47 @@ EditorSettings::EditorSettings() {
 	_load_defaults();
 	callable_mp(this, &EditorSettings::_set_initialized).call_deferred();
 }
+
+bool EditorSettingsDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
+	Ref<EditorDebuggerSession> session = get_session(p_session);
+	ERR_FAIL_COND_V(session.is_null(), false);
+
+	ERR_FAIL_COND_V(p_data.is_empty(), false);
+	const String setting = p_data[0];
+
+	Array data;
+	data.append(setting);
+
+	if (p_message.ends_with("request_setting")) {
+		data.append(EDITOR_GET(setting));
+		session->send_message("scene:editor_setting_value", data);
+	} else if (p_message.ends_with("request_shortcut")) {
+		String shortcut_string;
+		// Can't send objects, so serialize it to String.
+		VariantWriter::write_to_string(ED_GET_SHORTCUT(setting), shortcut_string);
+		data.append(shortcut_string);
+		session->send_message("scene:editor_setting_shortcut", data);
+	} else {
+		return false;
+	}
+	return true;
+}
+
+bool EditorSettingsDebugger::has_capture(const String &p_capture) const {
+	return p_capture == "editor_settings";
+}
+
+void EditorSettingsDebuggerPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			add_debugger_plugin(debugger);
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			remove_debugger_plugin(debugger);
+		} break;
+	}
+}
+
+EditorSettingsDebuggerPlugin::EditorSettingsDebuggerPlugin() {
+	debugger.instantiate();
+}

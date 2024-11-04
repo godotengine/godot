@@ -32,16 +32,13 @@
 #define SCENE_DEBUGGER_H
 
 #include "core/input/shortcut.h"
-#include "core/object/ref_counted.h"
-#include "core/string/ustring.h"
-#include "core/templates/pair.h"
-#include "core/variant/array.h"
 #include "scene/gui/view_panner.h"
-#include "scene/resources/mesh.h"
 
+class ArrayMesh;
+class InputEventWithModifiers;
+class Node;
 class PopupMenu;
 class Script;
-class Node;
 
 class SceneDebugger {
 private:
@@ -67,6 +64,15 @@ public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
+#endif
+
+#ifdef TOOLS_ENABLED
+private:
+	HashMap<Pair<String, ObjectID>, Callable, PairHash<String, ObjectID>> editor_settings_requests;
+
+public:
+	static void request_editor_setting(const String &p_setting, const Object *p_requester, const Callable &p_callback);
+	static void request_editor_shortcut(const String &p_shortcut, const Object *p_requester, const Callable &p_callback);
 #endif
 };
 
@@ -210,6 +216,7 @@ private:
 	Ref<ViewPanner> panner;
 	Vector2 view_2d_offset;
 	real_t view_2d_zoom = 1.0;
+	bool warped_panning = true;
 
 	RID sbox_2d_canvas;
 	RID sbox_2d_ci;
@@ -270,7 +277,10 @@ private:
 	NodeType node_select_type = NODE_TYPE_2D;
 	SelectMode node_select_mode = SELECT_MODE_SINGLE;
 
+	HashMap<String, Variant> received_settings;
+
 	void _setup();
+	void _receive_setting(const String &p_setting, const Variant &p_value);
 
 	void _node_set_type(NodeType p_type);
 	void _select_set_mode(SelectMode p_mode);

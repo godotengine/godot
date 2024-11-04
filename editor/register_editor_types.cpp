@@ -214,6 +214,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<CPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<CurveEditorPlugin>();
 	EditorPlugins::add_by_type<DebugAdapterServer>();
+	EditorPlugins::add_by_type<EditorSettingsDebuggerPlugin>();
 	EditorPlugins::add_by_type<FontEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();

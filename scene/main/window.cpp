@@ -34,7 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/input/shortcut.h"
 #include "core/string/translation_server.h"
-#include "core/variant/variant_parser.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
@@ -1287,6 +1287,12 @@ void Window::_notification(int p_what) {
 
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
+
+#ifdef TOOLS_ENABLED
+			if (EngineDebugger::is_active()) {
+				SceneDebugger::request_editor_shortcut("editor/stop_running_project", this, callable_mp(this, &Window::_stop_shortcut_callback));
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_PARENTED: {
@@ -1631,30 +1637,7 @@ bool Window::_can_consume_input_events() const {
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	ERR_MAIN_THREAD_GUARD;
-	if (EngineDebugger::is_active()) {
-		// Quit from game window using the stop shortcut (F8 by default).
-		// The custom shortcut is provided via environment variable when running from the editor.
-		if (debugger_stop_shortcut.is_null()) {
-			String shortcut_str = OS::get_singleton()->get_environment("__GODOT_EDITOR_STOP_SHORTCUT__");
-			if (!shortcut_str.is_empty()) {
-				Variant shortcut_var;
-
-				VariantParser::StreamString ss;
-				ss.s = shortcut_str;
-
-				String errs;
-				int line;
-				VariantParser::parse(&ss, shortcut_var, errs, line);
-				debugger_stop_shortcut = shortcut_var;
-			}
-
-			if (debugger_stop_shortcut.is_null()) {
-				// Define a default shortcut if it wasn't provided or is invalid.
-				debugger_stop_shortcut.instantiate();
-				debugger_stop_shortcut->set_events({ (Variant)InputEventKey::create_reference(Key::F8) });
-			}
-		}
-
+	if (EngineDebugger::is_active() && debugger_stop_shortcut.is_valid()) {
 		Ref<InputEventKey> k = p_ev;
 		if (k.is_valid() && k->is_pressed() && !k->is_echo() && debugger_stop_shortcut->matches_event(k)) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
@@ -2808,6 +2791,10 @@ void Window::_mouse_leave_viewport() {
 		mouse_in_window = false;
 		_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 	}
+}
+
+void Window::_stop_shortcut_callback(const String &p_setting, const Variant &p_value) {
+	debugger_stop_shortcut = p_value;
 }
 
 void Window::_bind_methods() {

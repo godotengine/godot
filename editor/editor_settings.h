@@ -36,6 +36,8 @@
 #include "core/io/resource.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/rb_set.h"
+#include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorPlugin;
 
@@ -207,6 +209,26 @@ public:
 #endif
 
 	EditorSettings();
+};
+
+class EditorSettingsDebugger : public EditorDebuggerPlugin {
+	GDCLASS(EditorSettingsDebugger, EditorDebuggerPlugin);
+
+public:
+	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;
+	virtual bool has_capture(const String &p_capture) const override;
+};
+
+class EditorSettingsDebuggerPlugin : public EditorPlugin {
+	GDCLASS(EditorSettingsDebuggerPlugin, EditorPlugin);
+
+	Ref<EditorSettingsDebugger> debugger;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	EditorSettingsDebuggerPlugin();
 };
 
 //not a macro any longer

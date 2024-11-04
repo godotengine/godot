@@ -34,6 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/variant_parser.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
@@ -49,6 +50,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
@@ -296,6 +298,37 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 			return ERR_SKIP;
 		}
 
+#ifdef TOOLS_ENABLED
+	} else if (p_msg.begins_with("editor_setting_")) {
+		ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+
+		const String setting = p_args[0];
+		Variant value;
+
+		if (p_msg == "editor_setting_value") {
+			value = p_args[1];
+		} else if (p_msg == "editor_setting_shortcut") {
+			VariantParser::StreamString ss;
+			ss.s = p_args[1];
+
+			String errs;
+			int line;
+			VariantParser::parse(&ss, value, errs, line);
+		}
+
+		LocalVector<Pair<String, ObjectID>> to_delete;
+		for (KeyValue<Pair<String, ObjectID>, Callable> KV : singleton->editor_settings_requests) {
+			if (KV.key.first == setting) {
+				to_delete.push_back(KV.key);
+				KV.value.call(setting, value);
+			}
+		}
+
+		for (const Pair<String, ObjectID> &key : to_delete) {
+			singleton->editor_settings_requests.erase(key);
+		}
+#endif
+
 	} else {
 		r_captured = false;
 	}
@@ -412,6 +445,28 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 		remove_list.remove(F);
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void SceneDebugger::request_editor_setting(const String &p_setting, const Object *p_requester, const Callable &p_callback) {
+	Pair<String, ObjectID> key(p_setting, p_requester->get_instance_id());
+	ERR_FAIL_COND_MSG(singleton->editor_settings_requests.has(key), vformat("Editor setting request for \"%s\" from this object is still pending.", p_setting));
+	singleton->editor_settings_requests[key] = p_callback;
+
+	Array data;
+	data.append(p_setting);
+	EngineDebugger::get_singleton()->send_message("editor_settings:request_setting", data);
+}
+
+void SceneDebugger::request_editor_shortcut(const String &p_shortcut, const Object *p_requester, const Callable &p_callback) {
+	Pair<String, ObjectID> key(p_shortcut, p_requester->get_instance_id());
+	ERR_FAIL_COND_MSG(singleton->editor_settings_requests.has(key), vformat("Editor shortcut request for \"%s\" from this object is still pending.", p_shortcut));
+	singleton->editor_settings_requests[key] = p_callback;
+
+	Array data;
+	data.append(p_shortcut);
+	EngineDebugger::get_singleton()->send_message("editor_settings:request_shortcut", data);
+}
+#endif
 
 /// SceneDebuggerObject
 SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
@@ -1227,6 +1282,15 @@ void RuntimeNodeSelect::_setup() {
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &RuntimeNodeSelect::_pan_callback), callable_mp(this, &RuntimeNodeSelect::_zoom_callback));
 
+#ifdef TOOLS_ENABLED
+	const Callable setting_callable = callable_mp(this, &RuntimeNodeSelect::_receive_setting);
+	SceneDebugger::request_editor_setting("editors/panning/2d_editor_panning_scheme", this, setting_callable);
+	SceneDebugger::request_editor_shortcut("canvas_item_editor/pan_view", this, setting_callable);
+	SceneDebugger::request_editor_setting("editors/panning/simple_panning", this, setting_callable);
+	SceneDebugger::request_editor_setting("editors/panning/2d_editor_pan_speed", this, setting_callable);
+	SceneDebugger::request_editor_setting("editors/panning/warped_mouse_panning", this, setting_callable);
+#endif
+
 	/// 2D Selection Box Generation
 
 	sbox_2d_canvas = RS::get_singleton()->canvas_create();
@@ -1290,6 +1354,18 @@ void RuntimeNodeSelect::_setup() {
 	root->connect(SceneStringName(tree_entered), callable_mp(this, &RuntimeNodeSelect::_update_input_state), Object::CONNECT_ONE_SHOT);
 }
 
+void RuntimeNodeSelect::_receive_setting(const String &p_setting, const Variant &p_value) {
+	received_settings[p_setting] = p_value;
+
+	if (received_settings.size() == 5) { // All settings received.
+		panner->setup((ViewPanner::ControlScheme)received_settings["editors/panning/2d_editor_panning_scheme"].operator int(), received_settings["canvas_item_editor/pan_view"], received_settings["editors/panning/simple_panning"]);
+		panner->set_scroll_speed(received_settings["editors/panning/2d_editor_pan_speed"]);
+		warped_panning = received_settings["editors/panning/warped_mouse_panning"];
+		// Not needed anymore.
+		received_settings.clear();
+	}
+}
+
 void RuntimeNodeSelect::_node_set_type(NodeType p_type) {
 	node_select_type = p_type;
 	_update_input_state();
@@ -1336,7 +1412,7 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 
 	if (camera_override) {
 		if (node_select_type == NODE_TYPE_2D) {
-			if (panner->gui_input(p_event, Rect2(Vector2(), root->get_size()))) {
+			if (panner->gui_input(p_event, warped_panning ? Rect2(Vector2(), root->get_size()) : Rect2())) {
 				return;
 			}
 		} else if (node_select_type == NODE_TYPE_3D) {
