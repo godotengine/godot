@@ -43,7 +43,7 @@ void NavigationMeshSourceGeometryData2D::clear() {
 bool NavigationMeshSourceGeometryData2D::has_data() {
 	RWLockRead read_lock(geometry_rwlock);
 	return traversable_outlines.size();
-};
+}
 
 void NavigationMeshSourceGeometryData2D::clear_projected_obstructions() {
 	RWLockWrite write_lock(geometry_rwlock);

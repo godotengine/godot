@@ -87,6 +87,9 @@ class DisplayServerAndroid : public DisplayServer {
 
 	Callable system_theme_changed;
 
+	Callable input_dialog_callback;
+	Callable file_picker_callback;
+
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
@@ -116,6 +119,12 @@ public:
 	virtual String clipboard_get() const override;
 	virtual bool clipboard_has() const override;
 
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+	void emit_input_dialog_callback(String p_text);
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, const FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+	void emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths);
+
 	virtual TypedArray<Rect2> get_display_cutouts() const override;
 	virtual Rect2i get_display_safe_area() const override;
 
@@ -124,6 +133,7 @@ public:
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual int screen_get_internal_current_rotation(int p_screen) const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

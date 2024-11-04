@@ -156,11 +156,11 @@ bool TextServerFallback::_has(const RID &p_rid) {
 
 String TextServerFallback::_get_support_data_filename() const {
 	return "";
-};
+}
 
 String TextServerFallback::_get_support_data_info() const {
 	return "Not supported";
-};
+}
 
 bool TextServerFallback::_load_support_data(const String &p_filename) {
 	return false; // No extra data used.
@@ -4728,7 +4728,7 @@ void TextServerFallback::_update_settings() {
 TextServerFallback::TextServerFallback() {
 	_insert_feature_sets();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerFallback::_update_settings));
-};
+}
 
 void TextServerFallback::_cleanup() {
 	for (const KeyValue<SystemFontKey, SystemFontCache> &E : system_fonts) {
@@ -4747,4 +4747,4 @@ TextServerFallback::~TextServerFallback() {
 		FT_Done_FreeType(ft_library);
 	}
 #endif
-};
+}

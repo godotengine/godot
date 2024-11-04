@@ -33,7 +33,7 @@ static int rotateTriangle(unsigned int a, unsigned int b, unsigned int c, unsign
 {
 	(void)a;
 
-	return (b == next) ? 1 : (c == next) ? 2 : 0;
+	return (b == next) ? 1 : (c == next ? 2 : 0);
 }
 
 static int getEdgeFifo(EdgeFifo fifo, unsigned int a, unsigned int b, unsigned int c, size_t offset)
@@ -217,7 +217,7 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 			int fe = fer >> 2;
 			int fc = getVertexFifo(vertexfifo, c, vertexfifooffset);
 
-			int fec = (fc >= 1 && fc < fecmax) ? fc : (c == next) ? (next++, 0) : 15;
+			int fec = (fc >= 1 && fc < fecmax) ? fc : (c == next ? (next++, 0) : 15);
 
 			if (fec == 15 && version >= 1)
 			{
@@ -267,8 +267,8 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 
 			// after rotation, a is almost always equal to next, so we don't waste bits on FIFO encoding for a
 			int fea = (a == next) ? (next++, 0) : 15;
-			int feb = (fb >= 0 && fb < 14) ? (fb + 1) : (b == next) ? (next++, 0) : 15;
-			int fec = (fc >= 0 && fc < 14) ? (fc + 1) : (c == next) ? (next++, 0) : 15;
+			int feb = (fb >= 0 && fb < 14) ? fb + 1 : (b == next ? (next++, 0) : 15);
+			int fec = (fc >= 0 && fc < 14) ? fc + 1 : (c == next ? (next++, 0) : 15);
 
 			// we encode feb & fec in 4 bits using a table if possible, and as a full byte otherwise
 			unsigned char codeaux = (unsigned char)((feb << 4) | fec);

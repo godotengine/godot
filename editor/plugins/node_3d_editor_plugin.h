@@ -622,7 +622,6 @@ public:
 	enum ToolOptions {
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
-		TOOL_OPT_OVERRIDE_CAMERA,
 		TOOL_OPT_MAX
 
 	};
@@ -632,6 +631,8 @@ private:
 
 	Node3DEditorViewportContainer *viewport_base = nullptr;
 	Node3DEditorViewport *viewports[VIEWPORTS_COUNT];
+	int last_used_viewport = 0;
+
 	VSplitContainer *shader_split = nullptr;
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
@@ -704,7 +705,6 @@ private:
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
-		MENU_TOOL_OVERRIDE_CAMERA,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -759,8 +759,6 @@ private:
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
 	void _menu_gizmo_toggled(int p_option);
-	void _update_camera_override_button(bool p_game_running);
-	void _update_camera_override_viewport(Object *p_viewport);
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_toolbar_panel = nullptr;
@@ -771,8 +769,6 @@ private:
 
 	void _generate_selection_boxes();
 
-	int camera_override_viewport_id;
-
 	void _init_indicators();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
@@ -781,6 +777,7 @@ private:
 	void _finish_grid();
 
 	void _toggle_maximize_view(Object *p_viewport);
+	void _viewport_clicked(int p_viewport_idx);
 
 	Node *custom_camera = nullptr;
 
@@ -967,6 +964,7 @@ public:
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
 		return viewports[p_idx];
 	}
+	Node3DEditorViewport *get_last_used_viewport();
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);

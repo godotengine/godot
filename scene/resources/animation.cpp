@@ -1048,7 +1048,7 @@ int Animation::find_track(const NodePath &p_path, const TrackType p_type) const 
 		}
 	};
 	return -1;
-};
+}
 
 Animation::TrackType Animation::get_cache_type(TrackType p_type) {
 	if (p_type == Animation::TYPE_BEZIER) {

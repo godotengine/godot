@@ -540,6 +540,30 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JN
 	}
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_inputDialogCallback(JNIEnv *env, jclass clazz, jstring p_text) {
+	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
+	if (ds) {
+		String text = jstring_to_string(p_text, env);
+		ds->emit_input_dialog_callback(text);
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_filePickerCallback(JNIEnv *env, jclass clazz, jboolean p_ok, jobjectArray p_selected_paths) {
+	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
+	if (ds) {
+		Vector<String> selected_paths;
+
+		jint length = env->GetArrayLength(p_selected_paths);
+		for (jint i = 0; i < length; ++i) {
+			jstring java_string = (jstring)env->GetObjectArrayElement(p_selected_paths, i);
+			String path = jstring_to_string(java_string, env);
+			selected_paths.push_back(path);
+			env->DeleteLocalRef(java_string);
+		}
+		ds->emit_file_picker_callback(p_ok, selected_paths);
+	}
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jclass clazz, jstring p_permission, jboolean p_result) {
 	String permission = jstring_to_string(p_permission, env);
 	if (permission == "android.permission.RECORD_AUDIO" && p_result) {

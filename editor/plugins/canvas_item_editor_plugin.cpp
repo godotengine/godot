@@ -1464,10 +1464,12 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
 
 				// Remove not movable nodes
-				for (CanvasItem *E : selection) {
-					if (!_is_node_movable(E, true)) {
+				for (List<CanvasItem *>::Element *E = selection.front(); E;) {
+					List<CanvasItem *>::Element *N = E->next();
+					if (!_is_node_movable(E->get(), true)) {
 						selection.erase(E);
 					}
+					E = N;
 				}
 
 				drag_selection = selection;
@@ -3964,39 +3966,38 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 }
 
 void CanvasItemEditor::_update_editor_settings() {
-	button_center_view->set_icon(get_editor_theme_icon(SNAME("CenterView")));
-	select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+	button_center_view->set_button_icon(get_editor_theme_icon(SNAME("CenterView")));
+	select_button->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 	select_sb->set_texture(get_editor_theme_icon(SNAME("EditorRect2D")));
-	list_select_button->set_icon(get_editor_theme_icon(SNAME("ListSelect")));
-	move_button->set_icon(get_editor_theme_icon(SNAME("ToolMove")));
-	scale_button->set_icon(get_editor_theme_icon(SNAME("ToolScale")));
-	rotate_button->set_icon(get_editor_theme_icon(SNAME("ToolRotate")));
-	smart_snap_button->set_icon(get_editor_theme_icon(SNAME("Snap")));
-	grid_snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
-	snap_config_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-	skeleton_menu->set_icon(get_editor_theme_icon(SNAME("Bone")));
-	override_camera_button->set_icon(get_editor_theme_icon(SNAME("Camera2D")));
-	pan_button->set_icon(get_editor_theme_icon(SNAME("ToolPan")));
-	ruler_button->set_icon(get_editor_theme_icon(SNAME("Ruler")));
-	pivot_button->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
+	list_select_button->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
+	move_button->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
+	scale_button->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
+	rotate_button->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
+	smart_snap_button->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
+	grid_snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+	snap_config_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+	skeleton_menu->set_button_icon(get_editor_theme_icon(SNAME("Bone")));
+	pan_button->set_button_icon(get_editor_theme_icon(SNAME("ToolPan")));
+	ruler_button->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
+	pivot_button->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 	select_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 	anchor_handle = get_editor_theme_icon(SNAME("EditorControlAnchor"));
-	lock_button->set_icon(get_editor_theme_icon(SNAME("Lock")));
-	unlock_button->set_icon(get_editor_theme_icon(SNAME("Unlock")));
-	group_button->set_icon(get_editor_theme_icon(SNAME("Group")));
-	ungroup_button->set_icon(get_editor_theme_icon(SNAME("Ungroup")));
-	key_loc_button->set_icon(get_editor_theme_icon(SNAME("KeyPosition")));
-	key_rot_button->set_icon(get_editor_theme_icon(SNAME("KeyRotation")));
-	key_scale_button->set_icon(get_editor_theme_icon(SNAME("KeyScale")));
-	key_insert_button->set_icon(get_editor_theme_icon(SNAME("Key")));
-	key_auto_insert_button->set_icon(get_editor_theme_icon(SNAME("AutoKey")));
+	lock_button->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
+	unlock_button->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
+	group_button->set_button_icon(get_editor_theme_icon(SNAME("Group")));
+	ungroup_button->set_button_icon(get_editor_theme_icon(SNAME("Ungroup")));
+	key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
+	key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
+	key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
+	key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("Key")));
+	key_auto_insert_button->set_button_icon(get_editor_theme_icon(SNAME("AutoKey")));
 	// Use a different color for the active autokey icon to make them easier
 	// to distinguish from the other key icons at the top. On a light theme,
 	// the icon will be dark, so we need to lighten it before blending it
 	// with the red color.
 	const Color key_auto_color = EditorThemeManager::is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
-	animation_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
@@ -4014,8 +4015,6 @@ void CanvasItemEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			_update_lock_and_group_button();
 
-			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
-			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CanvasItemEditor::_project_settings_changed));
 		} break;
 
@@ -4112,15 +4111,6 @@ void CanvasItemEditor::_notification(int p_what) {
 				break;
 			}
 			_update_editor_settings();
-		} break;
-
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible() && override_camera_button->is_pressed()) {
-				EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
-
-				debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
-				override_camera_button->set_pressed(false);
-			}
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -4280,16 +4270,6 @@ void CanvasItemEditor::_button_toggle_grid_snap(bool p_status) {
 	viewport->queue_redraw();
 }
 
-void CanvasItemEditor::_button_override_camera(bool p_pressed) {
-	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
-
-	if (p_pressed) {
-		debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_2D);
-	} else {
-		debugger->set_camera_override(EditorDebuggerNode::OVERRIDE_NONE);
-	}
-}
-
 void CanvasItemEditor::_button_tool_select(int p_index) {
 	Button *tb[TOOL_MAX] = { select_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button, ruler_button };
 	for (int i = 0; i < TOOL_MAX; i++) {
@@ -4394,17 +4374,6 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 		}
 	}
 	te->commit_insert_queue();
-}
-
-void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
-	if (p_game_running) {
-		override_camera_button->set_disabled(false);
-		override_camera_button->set_tooltip_text(TTR("Project Camera Override\nOverrides the running project's camera with the editor viewport camera."));
-	} else {
-		override_camera_button->set_disabled(true);
-		override_camera_button->set_pressed(false);
-		override_camera_button->set_tooltip_text(TTR("Project Camera Override\nNo project instance running. Run the project from the editor to use this feature."));
-	}
 }
 
 void CanvasItemEditor::_popup_callback(int p_op) {
@@ -5512,16 +5481,6 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
-	override_camera_button = memnew(Button);
-	override_camera_button->set_theme_type_variation("FlatButton");
-	main_menu_hbox->add_child(override_camera_button);
-	override_camera_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_override_camera));
-	override_camera_button->set_toggle_mode(true);
-	override_camera_button->set_disabled(true);
-	_update_override_camera_button(false);
-
-	main_menu_hbox->add_child(memnew(VSeparator));
-
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
 	view_menu->set_theme_type_variation("FlatMenuButton");
@@ -6264,7 +6223,7 @@ void CanvasItemEditorViewport::_update_theme() {
 
 	for (BaseButton *btn : btn_list) {
 		CheckBox *check = Object::cast_to<CheckBox>(btn);
-		check->set_icon(get_editor_theme_icon(check->get_text()));
+		check->set_button_icon(get_editor_theme_icon(check->get_text()));
 	}
 
 	label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));

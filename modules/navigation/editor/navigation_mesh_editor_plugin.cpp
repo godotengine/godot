@@ -54,8 +54,8 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 void NavigationMeshEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
+			button_bake->set_button_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+			button_reset->set_button_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }

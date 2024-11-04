@@ -932,7 +932,7 @@ public:
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
-	void edit_current() { _edit_current(); };
+	void edit_current() { _edit_current(); }
 
 	bool has_scenes_in_session();
 

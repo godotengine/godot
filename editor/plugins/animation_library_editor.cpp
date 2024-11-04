@@ -773,8 +773,8 @@ void AnimationLibraryEditor::show_dialog() {
 void AnimationLibraryEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			new_library_button->set_icon(get_editor_theme_icon(SNAME("Add")));
-			load_library_button->set_icon(get_editor_theme_icon(SNAME("Load")));
+			new_library_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			load_library_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 		}
 	}
 }

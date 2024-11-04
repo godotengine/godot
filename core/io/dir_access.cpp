@@ -177,7 +177,7 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		curpath = curpath.path_join(subdirs[i]);
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {
-			ERR_FAIL_V_MSG(err, "Could not create directory: " + curpath);
+			ERR_FAIL_V_MSG(err, vformat("Could not create directory: '%s'.", curpath));
 		}
 	}
 
@@ -239,7 +239,7 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 
 Ref<DirAccess> DirAccess::open(const String &p_path, Error *r_error) {
 	Ref<DirAccess> da = create_for_path(p_path);
-	ERR_FAIL_COND_V_MSG(da.is_null(), nullptr, "Cannot create DirAccess for path '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(da.is_null(), nullptr, vformat("Cannot create DirAccess for path '%s'.", p_path));
 	Error err = da->change_dir(p_path);
 	if (r_error) {
 		*r_error = err;
@@ -345,10 +345,10 @@ Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flag
 	Error err;
 	{
 		Ref<FileAccess> fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_from);
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to open '%s'.", p_from));
 
 		Ref<FileAccess> fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_to);
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to open '%s'.", p_to));
 
 		const size_t copy_buffer_limit = 65536; // 64 KB
 
@@ -444,11 +444,11 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 		String target_dir = p_to + rel_path;
 		if (!p_target_da->dir_exists(target_dir)) {
 			Error err = p_target_da->make_dir(target_dir);
-			ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + target_dir + "'.");
+			ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create directory '%s'.", target_dir));
 		}
 
 		Error err = change_dir(rel_path);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot change current directory to '" + rel_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot change current directory to '%s'.", rel_path));
 
 		err = _copy_dir(p_target_da, p_to + rel_path + "/", p_chmod_flags, p_copy_links);
 		if (err) {
@@ -466,11 +466,11 @@ Error DirAccess::copy_dir(const String &p_from, String p_to, int p_chmod_flags, 
 	ERR_FAIL_COND_V_MSG(!dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
 
 	Ref<DirAccess> target_da = DirAccess::create_for_path(p_to);
-	ERR_FAIL_COND_V_MSG(target_da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_to + "'.");
+	ERR_FAIL_COND_V_MSG(target_da.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", p_to));
 
 	if (!target_da->dir_exists(p_to)) {
 		Error err = target_da->make_dir_recursive(p_to);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + p_to + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create directory '%s'.", p_to));
 	}
 
 	if (!p_to.ends_with("/")) {

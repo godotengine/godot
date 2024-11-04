@@ -1402,7 +1402,7 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	ERR_FAIL_COND_V_MSG(err, err, "Cannot save json '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Cannot save json '%s'.", p_path));
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {

@@ -1271,18 +1271,18 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
 			error_label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
 
-			tool_select->set_icon(theme_cache.tool_icon_select);
-			tool_create->set_icon(theme_cache.tool_icon_create);
-			tool_connect->set_icon(theme_cache.tool_icon_connect);
+			tool_select->set_button_icon(theme_cache.tool_icon_select);
+			tool_create->set_button_icon(theme_cache.tool_icon_create);
+			tool_connect->set_button_icon(theme_cache.tool_icon_connect);
 
 			switch_mode->clear();
 			switch_mode->add_icon_item(theme_cache.transition_icon_immediate, TTR("Immediate"));
 			switch_mode->add_icon_item(theme_cache.transition_icon_sync, TTR("Sync"));
 			switch_mode->add_icon_item(theme_cache.transition_icon_end, TTR("At End"));
 
-			auto_advance->set_icon(theme_cache.play_icon_auto);
+			auto_advance->set_button_icon(theme_cache.play_icon_auto);
 
-			tool_erase->set_icon(theme_cache.tool_icon_erase);
+			tool_erase->set_button_icon(theme_cache.tool_icon_erase);
 
 			play_mode->clear();
 			play_mode->add_icon_item(theme_cache.play_icon_travel, TTR("Travel"));
