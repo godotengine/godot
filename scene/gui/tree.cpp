@@ -5362,14 +5362,16 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 
 	int y_offset = get_item_offset(p_item);
 	if (y_offset != -1) {
-		const int tbh = _get_title_button_height();
-		y_offset -= tbh;
+		const int title_button_height = _get_title_button_height();
+		y_offset -= title_button_height;
 
 		const int cell_h = compute_item_height(p_item) + theme_cache.v_separation;
-		int screen_h = area_size.height - tbh;
+		int screen_h = area_size.height - title_button_height;
 
 		if (p_center_on_item) {
-			v_scroll->set_value(y_offset - (screen_h - cell_h) / 2.0f);
+			// This makes sure that centering the offset doesn't overflow.
+			const double v_scroll_value = y_offset - MAX((screen_h - cell_h) / 2.0, 0.0);
+			v_scroll->set_value(v_scroll_value);
 		} else {
 			if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 				v_scroll->set_value(y_offset);
