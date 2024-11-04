@@ -34,6 +34,9 @@
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
+	if (node == nullptr) {
+		return;
+	}
 	if (physical) {
 		node->set_physics_process_internal(p_enabled);
 	} else {
@@ -77,7 +80,9 @@ void AudioStreamPlayerInternal::process() {
 		_set_process(false);
 	}
 	if (!playbacks_to_remove.is_empty()) {
-		node->emit_signal(SceneStringName(finished));
+		if (node != nullptr) {
+			node->emit_signal(SceneStringName(finished));
+		}
 	}
 }
 
@@ -89,6 +94,9 @@ void AudioStreamPlayerInternal::ensure_playback_limit() {
 }
 
 void AudioStreamPlayerInternal::notification(int p_what) {
+	if (node == nullptr) {
+		return;
+	}
 	switch (p_what) {
 		case Node::NOTIFICATION_ENTER_TREE: {
 			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
@@ -130,7 +138,7 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 	if (stream.is_null()) {
 		return stream_playback;
 	}
-	ERR_FAIL_COND_V_MSG(!node->is_inside_tree(), stream_playback, "Playback can only happen when a node is inside the scene tree");
+	//ERR_FAIL_COND_V_MSG(!node->is_inside_tree(), stream_playback, "Playback can only happen when a node is inside the scene tree");
 	if (stream->is_monophonic() && is_playing()) {
 		stop_callable.call();
 	}
@@ -156,7 +164,7 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 				stream_playback->set_sample_playback(sample_playback);
 			}
 		} else if (!stream->is_meta_stream()) {
-			WARN_PRINT(vformat(R"(%s is trying to play a sample from a stream that cannot be sampled.)", node->get_path()));
+			//WARN_PRINT(vformat(R"(%s is trying to play a sample from a stream that cannot be sampled.)", node->get_path()));
 		}
 	}
 
@@ -249,7 +257,9 @@ void AudioStreamPlayerInternal::set_stream(Ref<AudioStream> p_stream) {
 	if (stream.is_valid()) {
 		stream->connect(SNAME("parameter_list_changed"), callable_mp(this, &AudioStreamPlayerInternal::_update_stream_parameters));
 	}
-	node->notify_property_list_changed();
+	if (node != nullptr) {
+		node->notify_property_list_changed();
+	}
 }
 
 void AudioStreamPlayerInternal::seek(float p_seconds) {
