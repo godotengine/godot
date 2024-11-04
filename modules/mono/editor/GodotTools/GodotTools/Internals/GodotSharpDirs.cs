@@ -96,7 +96,6 @@ namespace GodotTools.Internals
 
             if (solutionFiles.Length == 0)
             {
-                GD.PrintErr($"No solution files found in directory: {globalizedPath}");
                 return Path.Combine(globalizedPath, $"{assemblyName}.sln");
             }
 
@@ -140,7 +139,6 @@ namespace GodotTools.Internals
                 }
                 catch (Exception ex)
                 {
-                    GD.PrintErr($"Failed to parse solution '{solutionPath}': {ex.Message}");
                     continue;
                 }
             }
@@ -156,7 +154,6 @@ namespace GodotTools.Internals
             }
             else
             {
-                GD.PrintErr($"No solution containing a project with assembly name '{assemblyName}' was found in {globalizedPath}");
                 return Path.Combine(globalizedPath, $"{assemblyName}.sln");
             }
         }
