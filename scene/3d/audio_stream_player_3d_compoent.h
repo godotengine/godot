@@ -206,8 +206,9 @@ public:
 
 	AudioServer::PlaybackType get_playback_type() const;
 	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+	void set_owenr(Node *p_owner) ;
 
-	AudioStreamPlayer3DCompoent(Node* p_owemr);
+	AudioStreamPlayer3DCompoent();
 	~AudioStreamPlayer3DCompoent();
 };
 

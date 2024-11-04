@@ -8,6 +8,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/audio_stream_player_3d_compoent.h"
 #include "scene/3d/label_3d.h"
 
 #include "animator/animation_help.h"
@@ -307,6 +308,43 @@ public:
     void set_body_prefab(const Ref<CharacterBodyPrefab> &p_body_prefab);
     Ref<CharacterBodyPrefab> get_body_prefab();
     void load_prefab();
+
+    // 声音相关
+public:
+    void set_audio_play_component(Dictionary p_audio_play_component) {
+        audio_players.clear();
+
+        TypedArray<StringName> keys = p_audio_play_component.keys();
+        for (int i = 0; i < keys.size(); i++) {
+            Ref<AudioStreamPlayer3DCompoent> player = p_audio_play_component[keys[i]];
+            if (player.is_valid()) {
+                player->set_owenr(this);
+                audio_players[keys[i]] = player;
+            }
+        }
+
+    }
+
+    Dictionary get_audio_play_component() {
+        Dictionary ret;
+        for (const KeyValue<StringName, Ref<AudioStreamPlayer3DCompoent>> &E : audio_players) {
+            ret[E.key] = E.value;
+        }
+        return ret;
+    }
+    // 播放音频
+    void play_audio(StringName p_audio_socket, Ref<AudioStream> p_stream) {
+        Ref<AudioStreamPlayer3DCompoent> player = audio_players[p_audio_socket];
+        if(player.is_null()) {
+            return;
+        }
+        if(player->is_playing()) {
+            return;
+        }
+        player->set_stream(p_stream);
+        player->play();
+    }
+
 
     // 技能相关
 public:
@@ -664,6 +702,8 @@ protected:
     HashSet<Ref<BufferItemBase>> buffer_item_remove;
 
     List<Ref<AutoDelete>> auto_deletes;
+
+    HashMap<StringName,Ref<AudioStreamPlayer3DCompoent>> audio_players;
 
 
     

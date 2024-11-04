@@ -882,9 +882,14 @@ void AudioStreamPlayer3DCompoent::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("finished"));
 }
+void AudioStreamPlayer3DCompoent::set_owenr(Node *p_owner) {
+	if(p_owner == nullptr) {
+		return ;
+	}
+	owenr = p_owner;	
+}
 
-AudioStreamPlayer3DCompoent::AudioStreamPlayer3DCompoent(Node* p_owemr) {
-	owenr = p_owemr;
+AudioStreamPlayer3DCompoent::AudioStreamPlayer3DCompoent() {
 	internal = memnew(AudioStreamPlayerInternal(nullptr, callable_mp(this, &AudioStreamPlayer3DCompoent::play), callable_mp(this, &AudioStreamPlayer3DCompoent::stop), true));
 	velocity_tracker.instantiate();
 	//set_disable_scale(true);
