@@ -663,6 +663,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
 	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
+	ClassDB::bind_method(D_METHOD("is_bundle", "path"), &DirAccess::is_bundle);
+
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
 	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);

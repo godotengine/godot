@@ -168,6 +168,7 @@ public:
 	bool get_include_hidden() const;
 
 	virtual bool is_case_sensitive(const String &p_path) const;
+	virtual bool is_bundle(const String &p_file) const { return false; }
 
 public:
 	DirAccess() {}
