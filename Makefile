@@ -1,4 +1,4 @@
 all:
 	scons platform=linuxbsd
 mac:
-	scons platform=macos
+	scons platform=macos arch=arm64
