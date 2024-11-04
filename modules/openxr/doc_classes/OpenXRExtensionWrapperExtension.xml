@@ -90,6 +90,21 @@
 				Called right after the main swapchains are (re)created.
 			</description>
 		</method>
+		<method name="_on_post_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Called right after the given viewport is rendered.
+				[b]Note:[/b] The draw commands might only be queued at this point, not executed.
+			</description>
+		</method>
+		<method name="_on_pre_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Called right before the given viewport is rendered.
+			</description>
+		</method>
 		<method name="_on_pre_render" qualifiers="virtual">
 			<return type="void" />
 			<description>
