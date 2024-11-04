@@ -49,6 +49,10 @@
 #include "extensions/platform/openxr_vulkan_extension.h"
 #endif
 
+#ifdef METAL_ENABLED
+#include "extensions/platform/openxr_metal_extension.h"
+#endif
+
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #include "extensions/platform/openxr_opengl_extension.h"
 #endif
@@ -1200,12 +1204,9 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 			}
 		}
 
-		if (color_swapchain_format == 0) {
-			color_swapchain_format = usable_swapchain_formats[0]; // just use the first one and hope for the best...
-			print_line("Couldn't find usable color swap chain format, using", get_swapchain_format_name(color_swapchain_format), "instead.");
-		} else {
-			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(color_swapchain_format));
-		}
+		ERR_FAIL_COND_V_MSG(color_swapchain_format == 0, false, "OpenXR: No usable color swap chain format available!");
+
+		print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(color_swapchain_format));
 	}
 
 	{
@@ -1222,11 +1223,9 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 			}
 		}
 
-		if (depth_swapchain_format == 0) {
-			WARN_PRINT_ONCE("Couldn't find usable depth swap chain format, depth buffer will not be submitted if requested.");
-		} else {
-			print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
-		}
+		ERR_FAIL_COND_V_MSG(depth_swapchain_format == 0, false, "OpenXR: No usable depth swap chain format available!");
+
+		print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(depth_swapchain_format));
 	}
 
 	return true;
@@ -1679,6 +1678,14 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
 		graphics_extension = memnew(OpenXRVulkanExtension);
+		register_extension_wrapper(graphics_extension);
+#else
+		// shouldn't be possible...
+		ERR_FAIL_V(false);
+#endif
+	} else if (p_rendering_driver == "metal") {
+#ifdef METAL_ENABLED
+		graphics_extension = memnew(OpenXRMetalExtension);
 		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
