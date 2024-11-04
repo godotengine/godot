@@ -230,6 +230,11 @@ public class GodotLib {
 	public static native void inputDialogCallback(String p_text);
 
 	/**
+	 * Invoked on the file picker closed.
+	 */
+	public static native void filePickerCallback(boolean p_ok, String[] p_selected_paths);
+
+	/**
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
 	 */
 	public static native void setVirtualKeyboardHeight(int p_height);

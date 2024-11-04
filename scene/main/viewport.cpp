@@ -3123,7 +3123,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (disable_input) {
+	if (disable_input || disable_input_override) {
 		return;
 	}
 
@@ -3195,7 +3195,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 
 	local_input_handled = false;
 
-	if (disable_input || !_can_consume_input_events()) {
+	if (disable_input || disable_input_override || !_can_consume_input_events()) {
 		return;
 	}
 
@@ -3298,7 +3298,7 @@ void Viewport::set_disable_input(bool p_disable) {
 	if (p_disable == disable_input) {
 		return;
 	}
-	if (p_disable) {
+	if (p_disable && !disable_input_override) {
 		_drop_mouse_focus();
 		_mouse_leave_viewport();
 		_gui_cancel_tooltip();
@@ -3309,6 +3309,19 @@ void Viewport::set_disable_input(bool p_disable) {
 bool Viewport::is_input_disabled() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return disable_input;
+}
+
+void Viewport::set_disable_input_override(bool p_disable) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_disable == disable_input_override) {
+		return;
+	}
+	if (p_disable && !disable_input) {
+		_drop_mouse_focus();
+		_mouse_leave_viewport();
+		_gui_cancel_tooltip();
+	}
+	disable_input_override = p_disable;
 }
 
 Variant Viewport::gui_get_drag_data() const {
@@ -4237,6 +4250,22 @@ void Viewport::set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near,
 	}
 }
 
+HashMap<StringName, real_t> Viewport::get_camera_3d_override_properties() const {
+	HashMap<StringName, real_t> props;
+
+	props["size"] = 0;
+	props["fov"] = 0;
+	props["z_near"] = 0;
+	props["z_far"] = 0;
+	ERR_READ_THREAD_GUARD_V(props);
+
+	props["size"] = camera_3d_override.size;
+	props["fov"] = camera_3d_override.fov;
+	props["z_near"] = camera_3d_override.z_near;
+	props["z_far"] = camera_3d_override.z_far;
+	return props;
+}
+
 void Viewport::set_disable_3d(bool p_disable) {
 	ERR_MAIN_THREAD_GUARD;
 	disable_3d = p_disable;
@@ -4268,6 +4297,54 @@ Transform3D Viewport::get_camera_3d_override_transform() const {
 	}
 
 	return Transform3D();
+}
+
+Vector3 Viewport::camera_3d_override_project_ray_normal(const Point2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	Vector3 ray = camera_3d_override_project_local_ray_normal(p_pos);
+	return camera_3d_override.transform.basis.xform(ray).normalized();
+}
+
+Vector3 Viewport::camera_3d_override_project_local_ray_normal(const Point2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	Size2 viewport_size = get_camera_rect_size();
+	Vector2 cpos = get_camera_coords(p_pos);
+	Vector3 ray;
+
+	if (camera_3d_override.projection == Camera3DOverrideData::PROJECTION_ORTHOGONAL) {
+		ray = Vector3(0, 0, -1);
+	} else {
+		Projection cm;
+		cm.set_perspective(camera_3d_override.fov, get_visible_rect().size.aspect(), camera_3d_override.z_near, camera_3d_override.z_far, false);
+
+		Vector2 screen_he = cm.get_viewport_half_extents();
+		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -camera_3d_override.z_near).normalized();
+	}
+
+	return ray;
+}
+
+Vector3 Viewport::camera_3d_override_project_ray_origin(const Point2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	Size2 viewport_size = get_camera_rect_size();
+	Vector2 cpos = get_camera_coords(p_pos);
+	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
+
+	if (camera_3d_override.projection == Camera3DOverrideData::PROJECTION_ORTHOGONAL) {
+		Vector2 pos = cpos / viewport_size;
+		real_t vsize, hsize;
+		hsize = camera_3d_override.size * viewport_size.aspect();
+		vsize = camera_3d_override.size;
+
+		Vector3 ray;
+		ray.x = pos.x * (hsize)-hsize / 2;
+		ray.y = (1.0 - pos.y) * (vsize)-vsize / 2;
+		ray.z = -camera_3d_override.z_near;
+		ray = camera_3d_override.transform.xform(ray);
+		return ray;
+	} else {
+		return camera_3d_override.transform.origin;
+	};
 }
 
 Ref<World3D> Viewport::get_world_3d() const {

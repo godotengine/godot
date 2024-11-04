@@ -56,7 +56,9 @@ Point2 Sprite2D::_edit_get_pivot() const {
 bool Sprite2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 bool Sprite2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return is_pixel_opaque(p_point);
 }
@@ -68,7 +70,7 @@ Rect2 Sprite2D::_edit_get_rect() const {
 bool Sprite2D::_edit_use_rect() const {
 	return texture.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 Sprite2D::get_anchorable_rect() const {
 	return get_rect();

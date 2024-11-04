@@ -31,19 +31,21 @@
 #ifndef SCENE_DEBUGGER_H
 #define SCENE_DEBUGGER_H
 
-#include "core/object/class_db.h"
+#include "core/input/shortcut.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
+#include "scene/gui/view_panner.h"
+#include "scene/resources/mesh.h"
 
+class PopupMenu;
 class Script;
 class Node;
 
 class SceneDebugger {
-public:
 private:
-	static SceneDebugger *singleton;
+	inline static SceneDebugger *singleton = nullptr;
 
 	SceneDebugger();
 
@@ -59,6 +61,7 @@ private:
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
 	static void _send_object_id(ObjectID p_id, int p_max_size = 1 << 20);
+	static void _next_frame();
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -160,10 +163,160 @@ private:
 		live_edit_root = NodePath("/root");
 	}
 
-	static LiveEditor *singleton;
+	inline static LiveEditor *singleton = nullptr;
 
 public:
 	static LiveEditor *get_singleton();
+};
+
+class RuntimeNodeSelect : public Object {
+	GDCLASS(RuntimeNodeSelect, Object);
+
+public:
+	enum NodeType {
+		NODE_TYPE_NONE,
+		NODE_TYPE_2D,
+		NODE_TYPE_3D,
+		NODE_TYPE_MAX
+	};
+
+	enum SelectMode {
+		SELECT_MODE_SINGLE,
+		SELECT_MODE_LIST,
+		SELECT_MODE_MAX
+	};
+
+private:
+	friend class SceneDebugger;
+
+	struct SelectResult {
+		Node *item = nullptr;
+		real_t order = 0;
+		_FORCE_INLINE_ bool operator<(const SelectResult &p_rr) const { return p_rr.order < order; }
+	};
+
+	bool has_selection = false;
+	Node *selected_node = nullptr;
+	PopupMenu *selection_list = nullptr;
+	bool selection_visible = true;
+	bool selection_update_queued = false;
+
+	bool camera_override = false;
+
+	// Values taken from EditorZoomWidget.
+	const float VIEW_2D_MIN_ZOOM = 1.0 / 128;
+	const float VIEW_2D_MAX_ZOOM = 128;
+
+	Ref<ViewPanner> panner;
+	Vector2 view_2d_offset;
+	real_t view_2d_zoom = 1.0;
+
+	RID sbox_2d_canvas;
+	RID sbox_2d_ci;
+	Transform2D sbox_2d_xform;
+	Rect2 sbox_2d_rect;
+
+#ifndef _3D_DISABLED
+	struct Cursor {
+		Vector3 pos;
+		real_t x_rot, y_rot, distance, fov_scale;
+		Vector3 eye_pos; // Used in freelook mode.
+
+		Cursor() {
+			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
+			x_rot = 0.5;
+			y_rot = -0.5;
+			distance = 4;
+			fov_scale = 1.0;
+		}
+	};
+	Cursor cursor;
+
+	// Values taken from Node3DEditor.
+	const float VIEW_3D_MIN_ZOOM = 0.01;
+#ifdef REAL_T_IS_DOUBLE
+	const double VIEW_3D_MAX_ZOOM = 1'000'000'000'000;
+#else
+	const float VIEW_3D_MAX_ZOOM = 10'000;
+#endif
+	const float CAMERA_ZNEAR = 0.05;
+	const float CAMERA_ZFAR = 4'000;
+
+	const float CAMERA_BASE_FOV = 75;
+	const float CAMERA_MIN_FOV_SCALE = 0.1;
+	const float CAMERA_MAX_FOV_SCALE = 2.5;
+
+	const float FREELOOK_BASE_SPEED = 4;
+	const float RADS_PER_PIXEL = 0.004;
+
+	bool camera_first_override = true;
+	bool camera_freelook = false;
+
+	Vector2 previous_mouse_position;
+
+	Ref<ArrayMesh> sbox_3d_mesh;
+	Ref<ArrayMesh> sbox_3d_mesh_xray;
+	RID sbox_3d_instance;
+	RID sbox_3d_instance_ofs;
+	RID sbox_3d_instance_xray;
+	RID sbox_3d_instance_xray_ofs;
+	Transform3D sbox_3d_xform;
+	AABB sbox_3d_bounds;
+#endif
+
+	Point2 selection_position = Point2(INFINITY, INFINITY);
+	bool list_shortcut_pressed = false;
+
+	NodeType node_select_type = NODE_TYPE_2D;
+	SelectMode node_select_mode = SELECT_MODE_SINGLE;
+
+	void _setup();
+
+	void _node_set_type(NodeType p_type);
+	void _select_set_mode(SelectMode p_mode);
+
+	void _set_camera_override_enabled(bool p_enabled);
+
+	void _root_window_input(const Ref<InputEvent> &p_event);
+	void _items_popup_index_pressed(int p_index, PopupMenu *p_popup);
+	void _update_input_state();
+
+	void _process_frame();
+	void _physics_frame();
+
+	void _click_point();
+	void _select_node(Node *p_node);
+	void _queue_selection_update();
+	void _update_selection();
+	void _clear_selection();
+	void _set_selection_visible(bool p_visible);
+
+	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+	void _reset_camera_2d();
+	void _update_view_2d();
+
+#ifndef _3D_DISABLED
+	void _find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items);
+	bool _handle_3d_input(const Ref<InputEvent> &p_event);
+	void _set_camera_freelook_enabled(bool p_enabled);
+	void _cursor_scale_distance(real_t p_scale);
+	void _cursor_look(Ref<InputEventWithModifiers> p_event);
+	void _cursor_pan(Ref<InputEventWithModifiers> p_event);
+	void _cursor_orbit(Ref<InputEventWithModifiers> p_event);
+	Transform3D _get_cursor_transform();
+	void _reset_camera_3d();
+#endif
+
+	RuntimeNodeSelect() { singleton = this; }
+
+	inline static RuntimeNodeSelect *singleton = nullptr;
+
+public:
+	static RuntimeNodeSelect *get_singleton();
+
+	~RuntimeNodeSelect();
 };
 #endif
 

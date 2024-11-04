@@ -1,26 +1,26 @@
 GDTEST_OK
 ===
-prop1 setter (0, 0)
-prop1 setter (1, 0)
+prop1 setter (0.0, 0.0)
+prop1 setter (1.0, 0.0)
 ---
 prop1 setter <Inner>
 subprop getter
-subprop setter (1, 0)
+subprop setter (1.0, 0.0)
 ===
 prop2 setter <Inner>
 subprop getter
-subprop setter (1, 0)
+subprop setter (1.0, 0.0)
 ===
-prop3 setter (0, 0)
+prop3 setter (0.0, 0.0)
 prop3 getter
-prop3 setter (1, 0)
+prop3 setter (1.0, 0.0)
 ---
 prop3 setter <Inner>
 prop3 getter
 subprop getter
-subprop setter (1, 0)
+subprop setter (1.0, 0.0)
 ===
 prop4 setter <Inner>
 prop4 getter
 subprop getter
-subprop setter (1, 0)
+subprop setter (1.0, 0.0)

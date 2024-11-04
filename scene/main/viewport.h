@@ -401,6 +401,7 @@ private:
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 	bool disable_input = false;
+	bool disable_input_override = false;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -579,6 +580,8 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_disable_input_override(bool p_disable);
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
@@ -770,6 +773,11 @@ public:
 
 	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
+	HashMap<StringName, real_t> get_camera_3d_override_properties() const;
+
+	Vector3 camera_3d_override_project_ray_normal(const Point2 &p_pos) const;
+	Vector3 camera_3d_override_project_ray_origin(const Point2 &p_pos) const;
+	Vector3 camera_3d_override_project_local_ray_normal(const Point2 &p_pos) const;
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;

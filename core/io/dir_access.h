@@ -116,10 +116,10 @@ public:
 		Ref<DirAccess> da = create(ACCESS_FILESYSTEM);
 		if (da->file_exists(p_path)) {
 			if (da->remove(p_path) != OK) {
-				ERR_FAIL_MSG("Cannot remove file or directory: " + p_path);
+				ERR_FAIL_MSG(vformat("Cannot remove file or directory: '%s'.", p_path));
 			}
 		} else {
-			ERR_FAIL_MSG("Cannot remove non-existent file or directory: " + p_path);
+			ERR_FAIL_MSG(vformat("Cannot remove non-existent file or directory: '%s'.", p_path));
 		}
 	}
 
