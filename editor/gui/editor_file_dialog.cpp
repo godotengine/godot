@@ -191,6 +191,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.favorites_up = get_editor_theme_icon(SNAME("MoveUp"));
 	theme_cache.favorites_down = get_editor_theme_icon(SNAME("MoveDown"));
 	theme_cache.create_folder = get_editor_theme_icon(SNAME("FolderCreate"));
+	theme_cache.open_folder = get_editor_theme_icon(SNAME("FolderBrowse"));
 
 	theme_cache.filter_box = get_editor_theme_icon(SNAME("Search"));
 	theme_cache.file_sort_button = get_editor_theme_icon(SNAME("Sort"));
@@ -541,7 +542,7 @@ void EditorFileDialog::_action_pressed() {
 	String file_text = file->get_text();
 	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
-	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
+	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
 		_save_to_recent();
 		hide();
 		emit_signal(SNAME("file_selected"), f);
@@ -793,6 +794,12 @@ void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_
 		item_menu->add_icon_item(theme_cache.filesystem, item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 #endif
+	if (single_item_selected) {
+		Dictionary item_meta = item_list->get_item_metadata(p_item);
+		if (item_meta["bundle"]) {
+			item_menu->add_icon_item(theme_cache.open_folder, TTR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
+		}
+	}
 
 	if (item_menu->get_item_count() > 0) {
 		item_menu->set_position(item_list->get_screen_position() + p_pos);
@@ -855,7 +862,7 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 		case ITEM_MENU_SHOW_IN_EXPLORER: {
 			String path;
 			int idx = item_list->get_current();
-			if (idx == -1 || item_list->get_selected_items().size() == 0) {
+			if (idx == -1 || !item_list->is_anything_selected()) {
 				// Folder background was clicked. Open this folder.
 				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir());
 			} else {
@@ -864,6 +871,20 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 				path = ProjectSettings::get_singleton()->globalize_path(item_meta["path"]);
 			}
 			OS::get_singleton()->shell_show_in_file_manager(path, true);
+		} break;
+
+		case ITEM_MENU_SHOW_BUNDLE_CONTENT: {
+			String path;
+			int idx = item_list->get_current();
+			if (idx == -1 || !item_list->is_anything_selected()) {
+				return;
+			}
+			Dictionary item_meta = item_list->get_item_metadata(idx);
+			dir_access->change_dir(item_meta["path"]);
+			callable_mp(this, &EditorFileDialog::update_file_list).call_deferred();
+			callable_mp(this, &EditorFileDialog::update_dir).call_deferred();
+
+			_push_history();
 		} break;
 	}
 }
@@ -1032,28 +1053,6 @@ void EditorFileDialog::update_file_list() {
 	}
 	sort_file_info_list(file_infos, file_sort);
 
-	while (!dirs.is_empty()) {
-		const String &dir_name = dirs.front()->get();
-
-		item_list->add_item(dir_name);
-
-		if (display_mode == DISPLAY_THUMBNAILS) {
-			item_list->set_item_icon(-1, folder_thumbnail);
-		} else {
-			item_list->set_item_icon(-1, theme_cache.folder);
-		}
-
-		Dictionary d;
-		d["name"] = dir_name;
-		d["path"] = cdir.path_join(dir_name);
-		d["dir"] = true;
-
-		item_list->set_item_metadata(-1, d);
-		item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
-
-		dirs.pop_front();
-	}
-
 	List<String> patterns;
 	// build filter
 	if (filter->get_selected() == filter->get_item_count() - 1) {
@@ -1078,6 +1077,44 @@ void EditorFileDialog::update_file_list() {
 				patterns.push_back(f.get_slice(",", j).strip_edges());
 			}
 		}
+	}
+
+	while (!dirs.is_empty()) {
+		const String &dir_name = dirs.front()->get();
+
+		bool bundle = dir_access->is_bundle(dir_name);
+		bool found = true;
+		if (bundle) {
+			bool match = patterns.is_empty();
+			for (const String &E : patterns) {
+				if (dir_name.matchn(E)) {
+					match = true;
+					break;
+				}
+			}
+			found = match;
+		}
+
+		if (found) {
+			item_list->add_item(dir_name);
+
+			if (display_mode == DISPLAY_THUMBNAILS) {
+				item_list->set_item_icon(-1, folder_thumbnail);
+			} else {
+				item_list->set_item_icon(-1, theme_cache.folder);
+			}
+
+			Dictionary d;
+			d["name"] = dir_name;
+			d["path"] = cdir.path_join(dir_name);
+			d["dir"] = !bundle;
+			d["bundle"] = bundle;
+
+			item_list->set_item_metadata(-1, d);
+			item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
+		}
+
+		dirs.pop_front();
 	}
 
 	while (!file_infos.is_empty()) {
@@ -1115,6 +1152,7 @@ void EditorFileDialog::update_file_list() {
 			Dictionary d;
 			d["name"] = file_info.name;
 			d["dir"] = false;
+			d["bundle"] = false;
 			d["path"] = file_info.path;
 			item_list->set_item_metadata(-1, d);
 
