@@ -57,6 +57,7 @@ import com.google.android.vending.expansion.downloader.*
 import org.godotengine.godot.error.Error
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
+import org.godotengine.godot.io.FilePicker
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.AndroidRuntimePlugin
@@ -677,6 +678,9 @@ class Godot(private val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
+		}
 	}
 
 	/**
@@ -888,6 +892,13 @@ class Godot(private val context: Context) {
 	fun setClipboard(text: String?) {
 		val clip = ClipData.newPlainText("myLabel", text)
 		mClipboard.setPrimaryClip(clip)
+	}
+
+	@Keep
+	private fun showFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
+		}
 	}
 
 	/**

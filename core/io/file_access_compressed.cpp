@@ -58,7 +58,7 @@ Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	block_size = f->get_32();
 	if (block_size == 0) {
 		f.unref();
-		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Can't open compressed file '" + p_base->get_path() + "' with block size 0, it is corrupted.");
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("Can't open compressed file '%s' with block size 0, it is corrupted.", p_base->get_path()));
 	}
 	read_total = f->get_32();
 	uint32_t bc = (read_total / block_size) + 1;

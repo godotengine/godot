@@ -116,6 +116,10 @@ void Engine::set_time_scale(double p_scale) {
 }
 
 double Engine::get_time_scale() const {
+	return freeze_time_scale ? 0 : _time_scale;
+}
+
+double Engine::get_unfrozen_time_scale() const {
 	return _time_scale;
 }
 
@@ -402,6 +406,10 @@ Engine *Engine::get_singleton() {
 bool Engine::notify_frame_server_synced() {
 	frame_server_synced = true;
 	return server_syncs > SERVER_SYNC_FRAME_COUNT_WARNING;
+}
+
+void Engine::set_freeze_time_scale(bool p_frozen) {
+	freeze_time_scale = p_frozen;
 }
 
 Engine::Engine() {

@@ -7,7 +7,6 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.3-stable and 4.4-stable
-
 GH-95374
 --------
 Validate extension JSON: Error: Field 'classes/ShapeCast2D/properties/collision_result': getter changed value in new API, from "_get_collision_result" to &"get_collision_result".
@@ -102,3 +101,10 @@ GH-97020
 Validate extension JSON: Error: Field 'classes/AnimationNode/methods/_process': is_const changed value in new API, from true to false.
 
 `_process` virtual method fixed to be non const instead.
+
+
+GH-97257
+--------
+Validate extension JSON: Error: Field 'classes/EditorFeatureProfile/enums/Feature/values/FEATURE_MAX': value changed value in new API, from 8.0 to 9.
+
+New entry to the `EditorFeatureProfile.Feature` enum added. Those need to go before `FEATURE_MAX`, which will always cause a compatibility break.

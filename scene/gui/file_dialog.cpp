@@ -67,7 +67,18 @@ void FileDialog::_native_popup() {
 	} else if (access == ACCESS_USERDATA) {
 		root = OS::get_singleton()->get_user_data_dir();
 	}
-	DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb));
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
+	} else {
+		DisplayServer::get_singleton()->file_dialog_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+	}
+}
+
+bool FileDialog::_can_use_native_popup() {
+	if (access == ACCESS_RESOURCES || access == ACCESS_USERDATA || options.size() > 0) {
+		return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA);
+	}
+	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
 }
 
 void FileDialog::popup(const Rect2i &p_rect) {
@@ -80,7 +91,7 @@ void FileDialog::popup(const Rect2i &p_rect) {
 	}
 #endif
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (_can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		_native_popup();
 	} else {
 		ConfirmationDialog::popup(p_rect);
@@ -99,7 +110,7 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 #endif
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (_can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		if (p_visible) {
 			_native_popup();
 		}
@@ -108,7 +119,11 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 }
 
-void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
+void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter) {
+	_native_dialog_cb_with_options(p_ok, p_files, p_filter, Dictionary());
+}
+
+void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
 	if (!p_ok) {
 		file->set_text("");
 		emit_signal(SNAME("canceled"));
@@ -182,7 +197,7 @@ void FileDialog::_notification(int p_what) {
 #endif
 
 			// Replace the built-in dialog with the native one if it started visible.
-			if (is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+			if (is_visible() && _can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 				ConfirmationDialog::set_visible(false);
 				_native_popup();
 			}
@@ -1487,7 +1502,7 @@ void FileDialog::set_use_native_dialog(bool p_native) {
 #endif
 
 	// Replace the built-in dialog with the native one if it's currently visible.
-	if (is_inside_tree() && is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (is_inside_tree() && is_visible() && _can_use_native_popup() && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		ConfirmationDialog::set_visible(false);
 		_native_popup();
 	}

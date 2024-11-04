@@ -152,6 +152,7 @@ public:
 		FEATURE_NATIVE_HELP,
 		FEATURE_NATIVE_DIALOG_INPUT,
 		FEATURE_NATIVE_DIALOG_FILE,
+		FEATURE_NATIVE_DIALOG_FILE_EXTRA,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
