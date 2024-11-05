@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "renderer_scene_render.h"
+RenderCallbackManager *RenderCallbackManager::singleton = nullptr;
 
 /////////////////////////////////////////////////////////////////////////////
 // CameraData

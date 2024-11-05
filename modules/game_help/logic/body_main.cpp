@@ -221,7 +221,7 @@ void CharacterBodyMain::_process_move()
     {
         set_velocity(_velocity);
 
-        move_and_slide(animator->get_time_delta());
+        _move_and_slide(animator->get_time_delta());
     }
 
 }

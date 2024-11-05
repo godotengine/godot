@@ -33,7 +33,11 @@
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-bool CharacterBody3D::move_and_slide(float delta) {
+bool CharacterBody3D::move_and_slide() {
+	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+	return _move_and_slide(delta);	
+}
+bool CharacterBody3D::_move_and_slide(float delta) {
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
 	//double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
 
