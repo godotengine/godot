@@ -300,6 +300,7 @@ public:
 		// flags
 		uint32_t view_count;
 		bool is_orthogonal;
+		bool is_frustum;
 		uint32_t visible_layers;
 		bool vaspect;
 
@@ -312,8 +313,8 @@ public:
 		Vector2 taa_jitter;
 		float taa_frame_count = 0.0f;
 
-		void set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2(), float p_taa_frame_count = 0.0f, uint32_t p_visible_layers = 0xFFFFFFFF);
-		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect);
+		void set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2(), float p_taa_frame_count = 0.0f, uint32_t p_visible_layers = 0xFFFFFFFF);
+		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect);
 	};
 
 	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;

@@ -981,7 +981,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, projection, screen_size, Vector2(0.0f, 0.0f), this);
 			} else {
-				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, screen_size, p_render_data->scene_data->taa_jitter, this);
+				Projection projection = p_render_data->scene_data->cam_projection;
+				if (p_render_data->scene_data->cam_frustum) {
+					// Sky is drawn upside down, the frustum offset doesn't know the image is upside down so needs a flip.
+					projection[2].y = -projection[2].y;
+				}
+
+				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, &projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, projection, screen_size, p_render_data->scene_data->taa_jitter, this);
 			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
