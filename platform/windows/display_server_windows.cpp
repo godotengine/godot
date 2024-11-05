@@ -735,7 +735,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 		GetWindowRect(fd->hwnd_owner, &crect);
 		fd->wrect = Rect2i(crect.left, crect.top, crect.right - crect.left, crect.bottom - crect.top);
 	} else {
-		fd->hwnd_owner = 0;
+		fd->hwnd_owner = nullptr;
 		fd->wrect = Rect2i(CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT);
 	}
 	fd->appid = appname;

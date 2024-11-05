@@ -211,6 +211,13 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
+uint multimesh_stride() {
+	uint stride = sc_multimesh_format_2d() ? 2 : 3;
+	stride += sc_multimesh_has_color() ? 1 : 0;
+	stride += sc_multimesh_has_custom_data() ? 1 : 0;
+	return stride;
+}
+
 void vertex_shader(vec3 vertex_input,
 #ifdef NORMAL_USED
 		in vec3 normal_input,
@@ -219,7 +226,7 @@ void vertex_shader(vec3 vertex_input,
 		in vec3 tangent_input,
 		in vec3 binormal_input,
 #endif
-		in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+		in uint instance_index, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -248,7 +255,7 @@ void vertex_shader(vec3 vertex_input,
 	mat4 matrix;
 	mat4 read_model_matrix = model_matrix;
 
-	if (is_multimesh) {
+	if (sc_multimesh()) {
 		//multimesh, instances are for it
 
 #ifdef USE_PARTICLE_TRAILS
@@ -296,25 +303,10 @@ void vertex_shader(vec3 vertex_input,
 #endif
 
 #else
-		uint stride = 0;
-		{
-			//TODO implement a small lookup table for the stride
-			if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
-				stride += 2;
-			} else {
-				stride += 3;
-			}
-			if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
-				stride += 1;
-			}
-			if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
-				stride += 1;
-			}
-		}
-
+		uint stride = multimesh_stride();
 		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
 
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
+		if (sc_multimesh_format_2d()) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
 		} else {
@@ -322,14 +314,14 @@ void vertex_shader(vec3 vertex_input,
 			offset += 3;
 		}
 
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
+		if (sc_multimesh_has_color()) {
 #ifdef COLOR_USED
 			color_interp *= transforms.data[offset];
 #endif
 			offset += 1;
 		}
 
-		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
+		if (sc_multimesh_has_custom_data()) {
 			instance_custom = transforms.data[offset];
 		}
 
@@ -427,7 +419,7 @@ void vertex_shader(vec3 vertex_input,
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
-	if (is_multimesh) {
+	if (sc_multimesh()) {
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
@@ -708,9 +700,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 
 void main() {
 	uint instance_index = draw_call.instance_index;
-
-	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
-	if (!is_multimesh) {
+	if (!sc_multimesh()) {
 		instance_index += gl_InstanceIndex;
 	}
 
@@ -753,7 +743,7 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
-			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+			instance_index, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
 #else
 	// Unused output.
 	vec4 screen_position;
@@ -792,7 +782,7 @@ void main() {
 			tangent,
 			binormal,
 #endif
-			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+			instance_index, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 }
 
 #[fragment]

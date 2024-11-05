@@ -649,8 +649,9 @@ QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const V
 
 	for (const StringName &type : grid_preferred_types) {
 		for (const StringName &base_type : p_base_types) {
-			if (base_type == type || ClassDB::is_parent_class(base_type, type))
+			if (base_type == type || ClassDB::is_parent_class(base_type, type)) {
 				return QuickOpenDisplayMode::GRID;
+			}
 		}
 	}
 

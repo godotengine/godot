@@ -432,7 +432,7 @@ License: BSD-3-clause
 Files: ./thirdparty/misc/smolv.cpp
  ./thirdparty/misc/smolv.h
 Comment: SMOL-V
-Copyright: 2016-2020, Aras Pranckevicius
+Copyright: 2016-2024, Aras Pranckevicius
 License: public-domain or Unlicense or Expat
 
 Files: ./thirdparty/misc/stb_rect_pack.h

@@ -612,8 +612,9 @@ void RendererCanvasCull::canvas_item_set_visibility_layer(RID p_item, uint32_t p
 
 uint32_t RendererCanvasCull::canvas_item_get_visibility_layer(RID p_item) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
-	if (!canvas_item)
+	if (!canvas_item) {
 		return 0;
+	}
 	return canvas_item->visibility_layer;
 }
 

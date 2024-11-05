@@ -193,7 +193,7 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 
 	// spec says to use proper values but runtimes don't care
 	graphics_binding_gl.visualid = 0;
-	graphics_binding_gl.glxFBConfig = 0;
+	graphics_binding_gl.glxFBConfig = nullptr;
 #endif
 #endif
 

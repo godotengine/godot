@@ -470,7 +470,7 @@ void EditorPropertyOTVariation::update_property() {
 			Vector3i range = supported.get_value_at_index(i);
 
 			EditorPropertyInteger *prop = memnew(EditorPropertyInteger);
-			prop->setup(range.x, range.y, false, 1, false, false);
+			prop->setup(range.x, range.y, false, true, false, false);
 			prop->set_object_and_property(object.ptr(), "keys/" + itos(name_tag));
 
 			String name = TS->tag_to_name(name_tag);
