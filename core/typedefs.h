@@ -131,7 +131,7 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 #ifndef SWAP
 #define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
 template <typename T>
-inline void __swap_tmpl(T &x, T &y) {
+constexpr void __swap_tmpl(T &x, T &y) {
 	T aux = x;
 	x = y;
 	y = aux;
@@ -141,7 +141,7 @@ inline void __swap_tmpl(T &x, T &y) {
 /* Functions to handle powers of 2 and shifting. */
 
 // Function to find the next power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
+constexpr unsigned int next_power_of_2(unsigned int x) {
 	if (x == 0) {
 		return 0;
 	}
@@ -157,7 +157,7 @@ static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
 }
 
 // Function to find the previous power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
+constexpr unsigned int previous_power_of_2(unsigned int x) {
 	x |= x >> 1;
 	x |= x >> 2;
 	x |= x >> 4;
@@ -167,14 +167,14 @@ static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
 }
 
 // Function to find the closest power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
+constexpr unsigned int closest_power_of_2(unsigned int x) {
 	unsigned int nx = next_power_of_2(x);
 	unsigned int px = previous_power_of_2(x);
 	return (nx - x) > (x - px) ? px : nx;
 }
 
 // Get a shift value from a power of 2.
-static inline int get_shift_from_power_of_2(unsigned int p_bits) {
+constexpr int get_shift_from_power_of_2(unsigned int p_bits) {
 	for (unsigned int i = 0; i < 32; i++) {
 		if (p_bits == (unsigned int)(1 << i)) {
 			return i;
@@ -185,7 +185,7 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 }
 
 template <typename T>
-static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
+constexpr T nearest_power_of_2_templated(T x) {
 	--x;
 
 	// The number of operations on x is the base two logarithm
@@ -203,7 +203,7 @@ static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 }
 
 // Function to find the nearest (bigger) power of 2 to an integer.
-static inline unsigned int nearest_shift(unsigned int p_number) {
+constexpr unsigned int nearest_shift(unsigned int p_number) {
 	for (int i = 30; i >= 0; i--) {
 		if (p_number & (1 << i)) {
 			return i + 1;
@@ -256,7 +256,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 // Generic comparator used in Map, List, etc.
 template <typename T>
 struct Comparator {
-	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
+	constexpr bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };
 
 // Global lock macro, relies on the static Mutex::_global_mutex.
