@@ -12,24 +12,9 @@ thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/libktx/"
 thirdparty_sources = [
-    "lib/basis_transcode.cpp",
-    "lib/checkheader.c",
-    "lib/filestream.c",
-    "lib/hashlist.c",
-    "lib/memstream.c",
-    "lib/miniz_wrapper.cpp",
-    "lib/swap.c",
-    "lib/texture.c",
-    "lib/texture1.c",
-    "lib/texture2.c",
-    "lib/vkformat_check.c",
-    "lib/vkformat_typesize.c",
-    "lib/dfdutils/createdfd.c",
-    "lib/dfdutils/colourspaces.c",
-    "lib/dfdutils/interpretdfd.c",
-    "lib/dfdutils/printdfd.c",
-    "lib/dfdutils/queries.c",
-    "lib/dfdutils/vk2dfd.c",
+    "lib/*.cpp",
+    "lib/*.c",
+    "lib/dfdutils/*.c",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

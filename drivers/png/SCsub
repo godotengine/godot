@@ -12,21 +12,7 @@ thirdparty_obj = []
 if env["builtin_libpng"]:
     thirdparty_dir = "#thirdparty/libpng/"
     thirdparty_sources = [
-        "png.c",
-        "pngerror.c",
-        "pngget.c",
-        "pngmem.c",
-        "pngpread.c",
-        "pngread.c",
-        "pngrio.c",
-        "pngrtran.c",
-        "pngrutil.c",
-        "pngset.c",
-        "pngtrans.c",
-        "pngwio.c",
-        "pngwrite.c",
-        "pngwtran.c",
-        "pngwutil.c",
+        "*.c",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

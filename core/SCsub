@@ -38,16 +38,8 @@ env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)
 if env["brotli"] and env["builtin_brotli"]:
     thirdparty_brotli_dir = "#thirdparty/brotli/"
     thirdparty_brotli_sources = [
-        "common/constants.c",
-        "common/context.c",
-        "common/dictionary.c",
-        "common/platform.c",
-        "common/shared_dictionary.c",
-        "common/transform.c",
-        "dec/bit_reader.c",
-        "dec/decode.c",
-        "dec/huffman.c",
-        "dec/state.c",
+        "common/*.c",
+        "dec/*.c",
     ]
     thirdparty_brotli_sources = [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
 
@@ -63,9 +55,7 @@ if env["brotli"] and env["builtin_brotli"]:
 if env["builtin_clipper2"]:
     thirdparty_clipper_dir = "#thirdparty/clipper2/"
     thirdparty_clipper_sources = [
-        "src/clipper.engine.cpp",
-        "src/clipper.offset.cpp",
-        "src/clipper.rectclip.cpp",
+        "src/*.cpp",
     ]
     thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
 

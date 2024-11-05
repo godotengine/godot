@@ -72,22 +72,25 @@ def print_error(*values: object) -> None:
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
-    # Convert string to list of absolute paths (including expanding wildcard)
     if isinstance(files, str):
+        files = [files]
+
+    for path in files:
+        _files = self.Glob(str(path))
+
         # Exclude .gen.cpp files from globbing, to avoid including obsolete ones.
         # They should instead be added manually.
-        skip_gen_cpp = "*" in files
-        files = self.Glob(files)
+        skip_gen_cpp = "*" in str(path)
         if skip_gen_cpp and not allow_gen:
-            files = [f for f in files if not str(f).endswith(".gen.cpp")]
+            _files = [f for f in _files if not str(f).endswith(".gen.cpp")]
 
-    # Add each path as compiled Object following environment (self) configuration
-    for path in files:
-        obj = self.Object(path)
-        if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
-            continue
-        sources.append(obj)
+        # Add each file as compiled Object following environment (self) configuration
+        for f in _files:
+            obj = self.Object(f)
+            if obj in sources:
+                print_warning('Object "{}" already included in environment sources.'.format(obj))
+                continue
+            sources.append(obj)
 
 
 # The section name is used for checking
