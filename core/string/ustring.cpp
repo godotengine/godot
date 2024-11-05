@@ -42,8 +42,8 @@
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cstdint>
 
 #ifdef _MSC_VER

@@ -30,7 +30,7 @@
 
 #include "string_builder.h"
 
-#include <string.h>
+#include <cstring>
 
 StringBuilder &StringBuilder::append(const String &p_string) {
 	if (p_string.is_empty()) {
