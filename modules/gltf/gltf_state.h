@@ -51,6 +51,8 @@ class GLTFState : public Resource {
 
 protected:
 	String base_path;
+	String extract_path;
+	String extract_prefix;
 	String filename;
 	Dictionary json;
 	int major_version = 0;
@@ -186,7 +188,13 @@ public:
 	void set_scene_name(String p_scene_name);
 
 	String get_base_path();
-	void set_base_path(String p_base_path);
+	void set_base_path(const String &p_base_path);
+
+	String get_extract_path();
+	void set_extract_path(const String &p_extract_path);
+
+	String get_extract_prefix();
+	void set_extract_prefix(const String &p_extract_prefix);
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);

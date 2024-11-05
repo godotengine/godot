@@ -3501,18 +3501,19 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 	}
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
-		if (p_state->base_path.is_empty()) {
-			p_state->images.push_back(Ref<Texture2D>());
-			p_state->source_images.push_back(Ref<Image>());
-		} else if (p_image->get_name().is_empty()) {
-			WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. Skipping it.", p_index));
-			p_state->images.push_back(Ref<Texture2D>());
-			p_state->source_images.push_back(Ref<Image>());
+		if (p_state->extract_path.is_empty()) {
+			WARN_PRINT("glTF: Couldn't extract image because the base and extract paths are empty. It will be loaded directly instead, uncompressed.");
+		} else if (p_state->extract_path.begins_with("res://.godot/imported")) {
+			WARN_PRINT(vformat("glTF: Extract path is in the imported directory. Image index '%d' will be loaded directly, uncompressed.", p_index));
 		} else {
+			if (p_image->get_name().is_empty()) {
+				WARN_PRINT(vformat("glTF: Image index '%d' did not have a name. It will be automatically given a name based on its index.", p_index));
+				p_image->set_name(itos(p_index));
+			}
 			bool must_import = true;
 			Vector<uint8_t> img_data = p_image->get_data();
 			Dictionary generator_parameters;
-			String file_path = p_state->get_base_path().path_join(p_state->filename.get_basename() + "_" + p_image->get_name());
+			String file_path = p_state->get_extract_path().path_join(p_state->get_extract_prefix() + "_" + p_image->get_name());
 			file_path += p_file_extension.is_empty() ? ".png" : p_file_extension;
 			if (FileAccess::exists(file_path + ".import")) {
 				Ref<ConfigFile> config;
@@ -3559,14 +3560,11 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 			if (saved_image.is_valid()) {
 				p_state->images.push_back(saved_image);
 				p_state->source_images.push_back(saved_image->get_image());
+				return;
 			} else {
-				WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded with the name: %s. Skipping it.", p_index, p_image->get_name()));
-				// Placeholder to keep count.
-				p_state->images.push_back(Ref<Texture2D>());
-				p_state->source_images.push_back(Ref<Image>());
+				WARN_PRINT(vformat("glTF: Image index '%d' with the name '%s' couldn't be imported. It will be loaded directly instead, uncompressed.", p_index, p_image->get_name()));
 			}
 		}
-		return;
 	}
 #endif // TOOLS_ENABLED
 	if (handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
@@ -3649,16 +3647,19 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_decode();
 				uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
-				// ResourceLoader will rely on the file extension to use the relevant loader.
-				// The spec says that if mimeType is defined, it should take precedence (e.g.
-				// there could be a `.png` image which is actually JPEG), but there's no easy
-				// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
-				// the material), so we only do that only as fallback.
-				Ref<Texture2D> texture = ResourceLoader::load(uri);
-				if (texture.is_valid()) {
-					p_state->images.push_back(texture);
-					p_state->source_images.push_back(texture->get_image());
-					continue;
+				// If the image is in the .godot/imported directory, we can't use ResourceLoader.
+				if (!p_base_path.begins_with("res://.godot/imported")) {
+					// ResourceLoader will rely on the file extension to use the relevant loader.
+					// The spec says that if mimeType is defined, it should take precedence (e.g.
+					// there could be a `.png` image which is actually JPEG), but there's no easy
+					// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
+					// the material), so we only do that only as fallback.
+					Ref<Texture2D> texture = ResourceLoader::load(uri, "Texture2D");
+					if (texture.is_valid()) {
+						p_state->images.push_back(texture);
+						p_state->source_images.push_back(texture->get_image());
+						continue;
+					}
 				}
 				// mimeType is optional, but if we have it in the file extension, let's use it.
 				// If the mimeType does not match with the file extension, either it should be
@@ -7350,7 +7351,7 @@ PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 	Ref<GLTFState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
-	state->base_path = p_path.get_base_dir();
+	state->set_base_path(p_path.get_base_dir());
 	state->filename = p_path.get_file();
 	Error err = _serialize(state);
 	if (err != OK) {
@@ -7463,7 +7464,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
-	state->base_path = p_base_path.get_base_dir();
+	state->set_base_path(p_base_path.get_base_dir());
 	err = _parse(p_state, state->base_path, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
@@ -7480,7 +7481,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 	if (state == Ref<GLTFState>()) {
 		state.instantiate();
 	}
-	state->filename = p_path.get_file().get_basename();
+	state->set_filename(p_path.get_file().get_basename());
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 	state->force_generate_tangents = p_flags & GLTF_IMPORT_GENERATE_TANGENT_ARRAYS;
@@ -7494,7 +7495,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();
 	}
-	state->base_path = base_path;
+	state->set_base_path(base_path);
 	err = _parse(p_state, base_path, file);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
