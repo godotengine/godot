@@ -2893,6 +2893,14 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 #endif
 
 	print_verbose("Successfully completed signing build.");
+
+#ifdef ANDROID_ENABLED
+	bool prompt_apk_install = EDITOR_GET("export/android/install_exported_apk");
+	if (prompt_apk_install) {
+		OS_Android::get_singleton()->shell_open(apk_path);
+	}
+#endif
+
 	return OK;
 }
 
