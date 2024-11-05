@@ -4,8 +4,6 @@ from misc.utility.scons_hints import *
 import os
 from pathlib import Path
 
-import methods
-
 Import("env")
 
 env_d3d12_rdd = env.Clone()
@@ -156,7 +154,7 @@ else:
     extra_defines += [
         "HAVE_STRUCT_TIMESPEC",
     ]
-    if methods.using_gcc(env) and methods.get_compiler_version(env)["major"] < 13:
+    if env.using_gcc and env.compiler_version["major"] < 13:
         # `region` & `endregion` not recognized as valid pragmas.
         env_d3d12_rdd.Append(CCFLAGS=["-Wno-unknown-pragmas"])
         env.Append(CCFLAGS=["-Wno-unknown-pragmas"])

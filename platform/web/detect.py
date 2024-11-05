@@ -15,7 +15,7 @@ from emscripten_helpers import (
 )
 from SCons.Util import WhereIs
 
-from methods import get_compiler_version, print_error, print_info, print_warning
+from methods import print_error, print_info, print_warning
 from platform_methods import validate_arch
 
 if TYPE_CHECKING:
@@ -96,7 +96,7 @@ def library_emitter(target, source, env):
     # Make every source file dependent on the compiler version.
     # This makes sure that when emscripten is updated, that the cached files
     # aren't used and are recompiled instead.
-    env.Depends(source, env.Value(get_compiler_version(env)))
+    env.Depends(source, env.Value(env.compiler_version))
     return target, source
 
 
@@ -108,8 +108,7 @@ def configure(env: "SConsEnvironment"):
     env["RANLIB"] = "emranlib"
 
     # Get version info for checks below.
-    cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+    cc_semver = (env.compiler_version["major"], env.compiler_version["minor"], env.compiler_version["patch"])
 
     # Minimum emscripten requirements.
     if cc_semver < (4, 0, 0):

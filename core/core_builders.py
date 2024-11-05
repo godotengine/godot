@@ -46,6 +46,42 @@ const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
         )
 
 
+def buildsystem_info_builder(target, source, env):
+    with methods.generated_wrapper(str(target[0])) as file:
+        import platform
+
+        os_name = platform.system()
+        if os_name == "Darwin":
+            os_name = "macOS"
+
+        compiler_name = "unknown"
+        compiler_version = (
+            f"{env.compiler_version['major']}.{env.compiler_version['minor']}.{env.compiler_version['patch']}"
+        )
+        if env.using_gcc:
+            compiler_name = "gcc"
+        elif env.using_clang:
+            if env.is_apple_clang:
+                compiler_name = "apple-clang"
+                compiler_version = f"{env.compiler_version['apple_major']}.{env.compiler_version['apple_minor']}.{env.compiler_version['apple_patch1']}.{env.compiler_version['apple_patch2']}.{env.compiler_version['apple_patch3']}"
+            else:
+                compiler_name = "clang"
+        elif env.msvc:
+            compiler_name = "msvc"
+        elif env.using_emcc:
+            compiler_name = "emcc"
+
+        file.write(
+            f"""\
+#define BUILDSYSTEM_OS_NAME "{os_name}"
+#define BUILDSYSTEM_COMPILER_NAME "{compiler_name}"
+#define BUILDSYSTEM_COMPILER_VERSION "{compiler_version}"
+#define BUILDSYSTEM_OPTIMIZATION_TYPE "{env["optimize"]}"
+#define BUILDSYSTEM_OPTIMIZATION_LTO "{env["lto"]}"
+"""
+        )
+
+
 def encryption_key_builder(target, source, env):
     src = source[0].read() or "0" * 64
     try:

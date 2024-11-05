@@ -5542,6 +5542,18 @@ String EditorNode::_get_system_info() const {
 		driver_name = "Metal";
 	}
 
+	const Dictionary build_system_info = Engine::get_singleton()->get_build_system_info();
+	String compiler_name = String(build_system_info["compiler_name"]).capitalize();
+	if (compiler_name == "Gcc") {
+		compiler_name = "GCC";
+	} else if (compiler_name == "Msvc") {
+		compiler_name = "MSVC";
+	}
+	String build_system_string = ("Compiled on " + String(build_system_info["os_name"]) +
+			" with " + compiler_name + " " + String(build_system_info["compiler_version"]) +
+			", optimization: " + String(build_system_info["optimization_type"]) +
+			", LTO: " + String(build_system_info["optimization_lto"]));
+
 	// Join info.
 	Vector<String> info;
 	info.push_back(godot_version);
@@ -5597,6 +5609,8 @@ String EditorNode::_get_system_info() const {
 		// If the memory info is available, display it.
 		info.push_back(vformat("%s memory", String::humanize_size(system_ram)));
 	}
+
+	info.push_back(build_system_string);
 
 	return String(" - ").join(info);
 }
