@@ -34,6 +34,7 @@
 #include "java_godot_view_wrapper.h"
 #include "string_android.h"
 
+#include "core/math/color.h"
 #include "core/templates/list.h"
 
 #include <android/log.h>
@@ -55,6 +56,7 @@ private:
 	jmethodID _alert = nullptr;
 	jmethodID _is_dark_mode_supported = nullptr;
 	jmethodID _is_dark_mode = nullptr;
+	jmethodID _get_accent_color = nullptr;
 	jmethodID _get_clipboard = nullptr;
 	jmethodID _set_clipboard = nullptr;
 	jmethodID _has_clipboard = nullptr;
@@ -99,6 +101,7 @@ public:
 	void alert(const String &p_message, const String &p_title);
 	bool is_dark_mode_supported();
 	bool is_dark_mode();
+	Color get_accent_color();
 	bool has_get_clipboard();
 	String get_clipboard();
 	bool has_set_clipboard();

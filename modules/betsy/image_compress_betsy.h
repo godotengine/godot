@@ -91,10 +91,10 @@ class BetsyCompressor : public Object {
 	RenderingDevice *compress_rd = nullptr;
 	RenderingContextDriver *compress_rcd = nullptr;
 	HashMap<String, BetsyShader> cached_shaders;
-	RID src_sampler = RID();
+	RID src_sampler;
 
 	// Format-specific resources.
-	RID dxt1_encoding_table_buffer = RID();
+	RID dxt1_encoding_table_buffer;
 
 	void _init();
 	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);

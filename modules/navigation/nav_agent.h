@@ -67,7 +67,7 @@ class NavAgent : public NavRid {
 	uint32_t avoidance_mask = 1;
 	real_t avoidance_priority = 1.0;
 
-	Callable avoidance_callback = Callable();
+	Callable avoidance_callback;
 
 	bool agent_dirty = true;
 

@@ -173,6 +173,8 @@ void EditorColorMap::create() {
 	add_conversion_exception("OverbrightIndicator");
 	add_conversion_exception("MaterialPreviewCube");
 	add_conversion_exception("MaterialPreviewSphere");
+	add_conversion_exception("MaterialPreviewQuad");
+
 	add_conversion_exception("MaterialPreviewLight1");
 	add_conversion_exception("MaterialPreviewLight2");
 

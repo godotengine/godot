@@ -315,6 +315,4 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
-#define FORCE_SEMICOLON ;
-
 #endif // TYPEDEFS_H

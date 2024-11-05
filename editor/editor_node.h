@@ -789,7 +789,7 @@ public:
 
 	struct AdditiveNodeEntry {
 		Node *node = nullptr;
-		NodePath parent = NodePath();
+		NodePath parent;
 		Node *owner = nullptr;
 		int index = 0;
 		// Used if the original parent node is lost
