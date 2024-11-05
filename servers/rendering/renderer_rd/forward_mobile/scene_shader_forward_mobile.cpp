@@ -237,6 +237,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			"VERSION:", p_pipeline_key.version,
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
 			"SPEC PACKED #1:", p_pipeline_key.shader_specialization.packed_1,
+			"SPEC PACKED #2:", p_pipeline_key.shader_specialization.packed_2,
 			"RENDER PASS:", p_pipeline_key.render_pass,
 			"WIREFRAME:", p_pipeline_key.wireframe);
 #endif

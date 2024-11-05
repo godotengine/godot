@@ -911,14 +911,19 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	Color clear_color = p_default_bg_color;
 	bool load_color = false;
 	bool copy_canvas = false;
+	bool use_ambient_cubemap = false;
+	bool use_reflection_cubemap = false;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
 	} else if (is_environment(p_render_data->environment)) {
+		RS::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_render_data->environment);
 		RS::EnvironmentBG bg_mode = environment_get_background(p_render_data->environment);
 		float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_render_data->environment);
 		bg_energy_multiplier *= environment_get_bg_intensity(p_render_data->environment);
 		RS::EnvironmentReflectionSource reflection_source = environment_get_reflection_source(p_render_data->environment);
+		use_ambient_cubemap = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_reflection_cubemap = (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY;
 
 		if (p_render_data->camera_attributes.is_valid()) {
 			bg_energy_multiplier *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
@@ -963,7 +968,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		// setup sky if used for ambient, reflections, or background
-		if (draw_sky || draw_sky_fog_only || (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
+		if (draw_sky || draw_sky_fog_only || (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
 
@@ -1008,13 +1013,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	SceneShaderForwardMobile::ShaderSpecialization base_specialization = scene_shader.default_specialization;
 
 	{
-		//figure out spec constants
-
-		if (p_render_data->directional_light_count > 0) {
-			base_specialization.use_directional_soft_shadows = p_render_data->directional_light_soft_shadows;
-		} else {
-			base_specialization.disable_directional_lights = true;
-		}
+		base_specialization.use_directional_soft_shadows = p_render_data->directional_light_count > 0 ? p_render_data->directional_light_soft_shadows : false;
+		base_specialization.directional_lights = p_render_data->directional_light_count;
 
 		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
 			base_specialization.disable_fog = true;
@@ -1023,6 +1023,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (p_render_data->environment.is_valid() && environment_get_fog_mode(p_render_data->environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH) {
 			base_specialization.use_depth_fog = true;
 		}
+
+		base_specialization.scene_use_ambient_cubemap = use_ambient_cubemap;
+		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
+		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
 	}
 
 	{
@@ -2144,7 +2148,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		}
 
 		SceneShaderForwardMobile::ShaderSpecialization pipeline_specialization = p_params->base_specialization;
-		pipeline_specialization.is_multimesh = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH);
+		pipeline_specialization.multimesh = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH);
+		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
+		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
+		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
 
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
@@ -2165,10 +2172,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		} else {
 			pipeline_specialization.use_light_projector = inst->use_projector;
 			pipeline_specialization.use_light_soft_shadows = inst->use_soft_shadow;
-			pipeline_specialization.disable_omni_lights = inst->omni_light_count == 0;
-			pipeline_specialization.disable_spot_lights = inst->spot_light_count == 0;
-			pipeline_specialization.disable_reflection_probes = inst->reflection_probe_count == 0;
-			pipeline_specialization.disable_decals = inst->decals_count == 0;
+			pipeline_specialization.omni_lights = inst->omni_light_count;
+			pipeline_specialization.spot_lights = inst->spot_light_count;
+			pipeline_specialization.reflection_probes = inst->reflection_probe_count;
+			pipeline_specialization.decals = inst->decals_count;
 
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
