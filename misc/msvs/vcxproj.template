@@ -5,7 +5,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{%%UUID%%}</ProjectGuid>
-    <RootNamespace>godot</RootNamespace>
+    <RootNamespace>blazium</RootNamespace>
     <Keyword>MakeFileProj</Keyword>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
