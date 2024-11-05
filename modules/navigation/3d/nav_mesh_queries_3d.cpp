@@ -234,7 +234,7 @@ Vector<Vector3> NavMeshQueries3D::polygons_get_path(const LocalVector<gd::Polygo
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
 		for (const gd::Edge &edge : navigation_polys[least_cost_id].poly->edges) {
 			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
-			for (int connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
+			for (uint32_t connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
 				const gd::Edge::Connection &connection = edge.connections[connection_index];
 
 				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
