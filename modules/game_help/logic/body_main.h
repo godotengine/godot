@@ -344,6 +344,8 @@ public:
         player->set_stream(p_stream);
         player->play();
     }
+    DECL_GODOT_PROPERTY(StringName, audio_socket_name,StringName());
+	DECL_MEMBER_BUTTON(bt_add_audio_socket);
 
 
     // 技能相关

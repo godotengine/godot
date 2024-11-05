@@ -378,6 +378,9 @@ void CharacterBodyMain::_bind_methods()
 {
     
 	ClassDB::bind_method(D_METHOD("restart"), &CharacterBodyMain::restart);
+    
+    ClassDB::bind_method(D_METHOD("set_audio_play_component", "audio_play_component"), &CharacterBodyMain::set_audio_play_component);
+    ClassDB::bind_method(D_METHOD("get_audio_play_component"), &CharacterBodyMain::get_audio_play_component);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -424,6 +427,9 @@ void CharacterBodyMain::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
 
 
+    ADD_GROUP("audio", "audio_");
+    IMP_GODOT_PROPERTY(StringName,audio_socket_name)
+    ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "audio_play_component" ), "set_audio_play_component", "get_audio_play_component");
 
     ADD_GROUP("editor", "editor_");
 
