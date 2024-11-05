@@ -54,29 +54,27 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	enum {
+		INSTANCE_FLAGS_LIGHT_COUNT_SHIFT = 0, // 4 bits for light count.
 
-		FLAGS_INSTANCING_MASK = 0x7F,
-		FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
-		FLAGS_INSTANCING_HAS_CUSTOM_DATA = (1 << 8),
+		INSTANCE_FLAGS_CLIP_RECT_UV = (1 << 4),
+		INSTANCE_FLAGS_TRANSPOSE_RECT = (1 << 5),
+		INSTANCE_FLAGS_USE_MSDF = (1 << 6),
+		INSTANCE_FLAGS_USE_LCD = (1 << 7),
 
-		FLAGS_CLIP_RECT_UV = (1 << 9),
-		FLAGS_TRANSPOSE_RECT = (1 << 10),
+		INSTANCE_FLAGS_NINEPACH_DRAW_CENTER = (1 << 8),
+		INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT = 9,
+		INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT = 11,
 
-		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
+		INSTANCE_FLAGS_SHADOW_MASKED_SHIFT = 13, // 16 bits.
+	};
 
-		FLAGS_USE_SKELETON = (1 << 15),
-		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
-		FLAGS_NINEPATCH_V_MODE_SHIFT = 18,
-		FLAGS_LIGHT_COUNT_SHIFT = 20,
+	enum {
+		BATCH_FLAGS_INSTANCING_MASK = 0x7F,
+		BATCH_FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
+		BATCH_FLAGS_INSTANCING_HAS_CUSTOM_DATA = (1 << 8),
 
-		FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 26),
-		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
-
-		FLAGS_USE_MSDF = (1 << 28),
-		FLAGS_USE_LCD = (1 << 29),
-
-		FLAGS_FLIP_H = (1 << 30),
-		FLAGS_FLIP_V = (1 << 31),
+		BATCH_FLAGS_DEFAULT_NORMAL_MAP_USED = (1 << 9),
+		BATCH_FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 10),
 	};
 
 	enum {
@@ -279,6 +277,8 @@ public:
 		const Item::Command *command = nullptr;
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
 		uint32_t primitive_points = 0;
+
+		uint32_t flags = 0;
 	};
 
 	// DataBuffer contains our per-frame data. I.e. the resources that are updated each frame.
