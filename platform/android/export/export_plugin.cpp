@@ -1693,7 +1693,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_monochrome_option)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive monochrome icon from " + path);
-		ImageLoader::load_image(path, background);
+		ImageLoader::load_image(path, monochrome);
 	}
 }
 
@@ -1777,6 +1777,12 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 
 			if (!is_package_name_valid(pn, &pn_err)) {
 				return TTR("Invalid package name:") + " " + pn_err;
+			}
+		} else if (p_name == launcher_adaptive_icon_monochrome_option) {
+			String monochrome_icon_path = p_preset->get(launcher_adaptive_icon_monochrome_option);
+
+			if (monochrome_icon_path.is_empty()) {
+				return TTR("No adaptive monochrome icon specified; default Godot monochrome icon will be used.");
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
