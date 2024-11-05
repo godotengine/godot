@@ -39,7 +39,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 class FileAccessWindowsPipe : public FileAccess {
-	HANDLE fd[2] = { nullptr, nullptr };
+	HANDLE fd[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
 
 	mutable Error last_error = OK;
 

@@ -139,13 +139,13 @@ void RedirectIOToConsole() {
 
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
 		// Restore redirection (Note: if not redirected it's NULL handles not INVALID_HANDLE_VALUE).
-		if (h_stdin != nullptr) {
+		if (h_stdin != INVALID_HANDLE_VALUE) {
 			SetStdHandle(STD_INPUT_HANDLE, h_stdin);
 		}
-		if (h_stdout != nullptr) {
+		if (h_stdout != INVALID_HANDLE_VALUE) {
 			SetStdHandle(STD_OUTPUT_HANDLE, h_stdout);
 		}
-		if (h_stderr != nullptr) {
+		if (h_stderr != INVALID_HANDLE_VALUE) {
 			SetStdHandle(STD_ERROR_HANDLE, h_stderr);
 		}
 
@@ -908,9 +908,9 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	}
 
 	// Create pipes.
-	HANDLE pipe_in[2] = { nullptr, nullptr };
-	HANDLE pipe_out[2] = { nullptr, nullptr };
-	HANDLE pipe_err[2] = { nullptr, nullptr };
+	HANDLE pipe_in[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
+	HANDLE pipe_out[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
+	HANDLE pipe_err[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
 
 	SECURITY_ATTRIBUTES sa;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -981,7 +981,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Ref<FileAccessWindowsPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], nullptr, p_blocking);
+	err_pipe->open_existing(pipe_err[0], INVALID_HANDLE_VALUE, p_blocking);
 
 	ret["stdio"] = main_pipe;
 	ret["stderr"] = err_pipe;
@@ -1005,7 +1005,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
 	bool inherit_handles = false;
-	HANDLE pipe[2] = { nullptr, nullptr };
+	HANDLE pipe[2] = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE };
 	if (r_pipe) {
 		// Create pipe for StdOut and StdErr.
 		SECURITY_ATTRIBUTES sa;
@@ -1650,7 +1650,7 @@ String OS_Windows::get_stdin_string() {
 }
 
 Error OS_Windows::shell_open(const String &p_uri) {
-	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
+	INT_PTR ret = (INT_PTR)ShellExecuteW((HWND)INVALID_HANDLE_VALUE, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	if (ret > 32) {
 		return OK;
 	} else {
@@ -1686,9 +1686,9 @@ Error OS_Windows::shell_show_in_file_manager(String p_path, bool p_open_folder) 
 
 	INT_PTR ret = OK;
 	if (open_folder) {
-		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR(p_path.utf16().get_data()), nullptr, SW_SHOWNORMAL);
+		ret = (INT_PTR)ShellExecuteW((HWND)INVALID_HANDLE_VALUE, nullptr, L"explorer.exe", LPCWSTR(p_path.utf16().get_data()), nullptr, SW_SHOWNORMAL);
 	} else {
-		ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, L"explorer.exe", LPCWSTR((String("/select,") + p_path).utf16().get_data()), nullptr, SW_SHOWNORMAL);
+		ret = (INT_PTR)ShellExecuteW((HWND)INVALID_HANDLE_VALUE, nullptr, L"explorer.exe", LPCWSTR((String("/select,") + p_path).utf16().get_data()), nullptr, SW_SHOWNORMAL);
 	}
 
 	if (ret > 32) {

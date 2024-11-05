@@ -193,7 +193,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		uint64_t id = OS::get_singleton()->get_ticks_usec();
 		while (true) {
 			tmpfile = path + itos(id++) + ".tmp";
-			HANDLE handle = CreateFileW((LPCWSTR)tmpfile.utf16().get_data(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+			HANDLE handle = CreateFileW((LPCWSTR)tmpfile.utf16().get_data(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, INVALID_HANDLE_VALUE);
 			if (handle != INVALID_HANDLE_VALUE) {
 				CloseHandle(handle);
 				break;
@@ -413,7 +413,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 		file = file.substr(0, file.length() - 1);
 	}
 
-	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, INVALID_HANDLE_VALUE);
 
 	if (handle != INVALID_HANDLE_VALUE) {
 		FILETIME ft_create, ft_write;

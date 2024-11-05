@@ -555,7 +555,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<IndicatorID, IndicatorData> indicators;
 
 	struct FileDialogData {
-		HWND hwnd_owner = 0;
+		HWND hwnd_owner = (HWND)INVALID_HANDLE_VALUE;
 		Rect2i wrect;
 		String appid;
 		String title;
