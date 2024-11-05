@@ -814,8 +814,7 @@ public:
 	static void unregister_types();
 
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() :
-			type(NIL) {}
+	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
 		clear();
 	}

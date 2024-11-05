@@ -489,7 +489,7 @@ private:
 	struct UniformSetInfo {
 		VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
 		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
-		DescriptorSetPools::Iterator pool_sets_it = {};
+		DescriptorSetPools::Iterator pool_sets_it;
 	};
 
 public:

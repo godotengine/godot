@@ -159,7 +159,7 @@ extern void CrashHandlerException(int signal) {
 
 	// Load process and image info to determine ASLR addresses offset.
 	MODULEINFO mi;
-	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(mi));
+	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &mi, sizeof(mi));
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
 	int64_t image_file_base = get_image_base(_execpath);
 	data.offset = image_mem_base - image_file_base;

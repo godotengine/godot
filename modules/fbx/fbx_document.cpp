@@ -369,21 +369,25 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 				// all skin clusters connected to the bone.
 				for (const ufbx_connection &child_conn : fbx_node->element.connections_src) {
 					ufbx_skin_cluster *child_cluster = ufbx_as_skin_cluster(child_conn.dst);
-					if (!child_cluster)
+					if (!child_cluster) {
 						continue;
+					}
 					ufbx_skin_deformer *child_deformer = _find_skin_deformer(child_cluster);
-					if (!child_deformer)
+					if (!child_deformer) {
 						continue;
+					}
 
 					// Found a skin cluster: Now iterate through all the skin clusters of the parent and
 					// try to find one that used by the same deformer.
 					for (const ufbx_connection &parent_conn : fbx_node->parent->element.connections_src) {
 						ufbx_skin_cluster *parent_cluster = ufbx_as_skin_cluster(parent_conn.dst);
-						if (!parent_cluster)
+						if (!parent_cluster) {
 							continue;
+						}
 						ufbx_skin_deformer *parent_deformer = _find_skin_deformer(parent_cluster);
-						if (parent_deformer != child_deformer)
+						if (parent_deformer != child_deformer) {
 							continue;
+						}
 
 						// Success: Found two skin clusters from the same deformer, now we can resolve the
 						// local bind pose from the difference between the two world-space bind poses.

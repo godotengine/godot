@@ -40,7 +40,7 @@ Error FileAccessWindowsPipe::open_existing(HANDLE p_rfd, HANDLE p_wfd, bool p_bl
 	_close();
 
 	path_src = String();
-	ERR_FAIL_COND_V_MSG(fd[0] != 0 || fd[1] != 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
+	ERR_FAIL_COND_V_MSG(fd[0] != nullptr || fd[1] != nullptr, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 	fd[0] = p_rfd;
 	fd[1] = p_wfd;
 
@@ -58,18 +58,18 @@ Error FileAccessWindowsPipe::open_internal(const String &p_path, int p_mode_flag
 	_close();
 
 	path_src = p_path;
-	ERR_FAIL_COND_V_MSG(fd[0] != 0 || fd[1] != 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
+	ERR_FAIL_COND_V_MSG(fd[0] != nullptr || fd[1] != nullptr, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 
 	path = String("\\\\.\\pipe\\LOCAL\\") + p_path.replace("pipe://", "").replace("/", "_");
 
-	HANDLE h = CreateFileW((LPCWSTR)path.utf16().get_data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	HANDLE h = CreateFileW((LPCWSTR)path.utf16().get_data(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (h == INVALID_HANDLE_VALUE) {
 		h = CreateNamedPipeW((LPCWSTR)path.utf16().get_data(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_NOWAIT, 1, 4096, 4096, 0, nullptr);
 		if (h == INVALID_HANDLE_VALUE) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
-		ConnectNamedPipe(h, NULL);
+		ConnectNamedPipe(h, nullptr);
 	}
 	fd[0] = h;
 	fd[1] = h;
@@ -79,19 +79,19 @@ Error FileAccessWindowsPipe::open_internal(const String &p_path, int p_mode_flag
 }
 
 void FileAccessWindowsPipe::_close() {
-	if (fd[0] == 0) {
+	if (fd[0] == nullptr) {
 		return;
 	}
 	if (fd[1] != fd[0]) {
 		CloseHandle(fd[1]);
 	}
 	CloseHandle(fd[0]);
-	fd[0] = 0;
-	fd[1] = 0;
+	fd[0] = nullptr;
+	fd[1] = nullptr;
 }
 
 bool FileAccessWindowsPipe::is_open() const {
-	return (fd[0] != 0 || fd[1] != 0);
+	return (fd[0] != nullptr || fd[1] != nullptr);
 }
 
 String FileAccessWindowsPipe::get_path() const {
@@ -103,7 +103,7 @@ String FileAccessWindowsPipe::get_path_absolute() const {
 }
 
 uint64_t FileAccessWindowsPipe::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V_MSG(fd[0] == 0, -1, "Pipe must be opened before use.");
+	ERR_FAIL_COND_V_MSG(fd[0] == nullptr, -1, "Pipe must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	DWORD read = 0;
@@ -120,7 +120,7 @@ Error FileAccessWindowsPipe::get_error() const {
 }
 
 void FileAccessWindowsPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND_MSG(fd[1] == 0, "Pipe must be opened before use.");
+	ERR_FAIL_COND_MSG(fd[1] == nullptr, "Pipe must be opened before use.");
 	ERR_FAIL_COND(!p_src && p_length > 0);
 
 	DWORD read = -1;

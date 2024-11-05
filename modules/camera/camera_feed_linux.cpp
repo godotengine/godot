@@ -145,7 +145,7 @@ bool CameraFeedLinux::_request_buffers() {
 		}
 
 		buffers[i].length = buffer.length;
-		buffers[i].start = mmap(NULL, buffer.length, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, buffer.m.offset);
+		buffers[i].start = mmap(nullptr, buffer.length, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, buffer.m.offset);
 
 		if (buffers[i].start == MAP_FAILED) {
 			for (unsigned int b = 0; b < i; b++) {
