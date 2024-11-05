@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_loader_hdr.h                                                    */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,17 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_LOADER_HDR_H
-#define IMAGE_LOADER_HDR_H
+#include "register_types.h"
 
-#include "core/io/image_loader.h"
+#include "image_compress_betsy.h"
 
-class ImageLoaderHDR : public ImageFormatLoader {
-public:
-	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+void initialize_betsy_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-	ImageLoaderHDR();
-};
+	Image::_image_compress_bptc_rd_func = _betsy_compress_bptc;
+}
 
-#endif // IMAGE_LOADER_HDR_H
+void uninitialize_betsy_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

@@ -341,8 +341,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	}
 
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
-		mipmaps = true;
-
 		//if using video ram, optimize
 		if (channel_pack == 0) {
 			//remove alpha if not needed, so compression is more efficient
