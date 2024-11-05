@@ -1002,15 +1002,19 @@ void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuf
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
+	Rect2i screen_rect;
+	float atlas_width = p_dst_size.width / p_rect.size.width;
+	float atlas_height = p_dst_size.height / p_rect.size.height;
+	screen_rect.position.x = (int32_t)(Math::round(p_rect.position.x * atlas_width));
+	screen_rect.position.y = (int32_t)(Math::round(p_rect.position.y * atlas_height));
+	screen_rect.size.width = (int32_t)(Math::round(p_dst_size.width));
+	screen_rect.size.height = (int32_t)(Math::round(p_dst_size.height));
+
 	CopyToDPPushConstant push_constant;
-	push_constant.screen_rect[0] = p_rect.position.x;
-	push_constant.screen_rect[1] = p_rect.position.y;
-	push_constant.screen_rect[2] = p_rect.size.width;
-	push_constant.screen_rect[3] = p_rect.size.height;
 	push_constant.z_far = p_z_far;
 	push_constant.z_near = p_z_near;
-	push_constant.texel_size[0] = 1.0f / p_dst_size.x;
-	push_constant.texel_size[1] = 1.0f / p_dst_size.y;
+	push_constant.texel_size[0] = 1.0f / p_dst_size.width;
+	push_constant.texel_size[1] = 1.0f / p_dst_size.height;
 	push_constant.texel_size[0] *= p_dp_flip ? -1.0f : 1.0f; // Encode dp flip as x size sign
 
 	// setup our uniforms
@@ -1021,7 +1025,7 @@ void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuf
 	RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0);
 	ERR_FAIL_COND(shader.is_null());
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0f, 0, screen_rect);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, cube_to_dp.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());

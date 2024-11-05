@@ -1560,7 +1560,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 			shader_code += "	COLOR.rgb = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
 		} break;
 		case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
-			shader_code += "	COLOR.rgb = n_out" + itos(p_node) + "p" + itos(p_port) + ".xyz;\n";
+			shader_code += "	COLOR = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
 		} break;
 		default: {
 			shader_code += "	COLOR.rgb = vec3(0.0);\n";

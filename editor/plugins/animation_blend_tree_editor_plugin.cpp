@@ -178,7 +178,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 				Button *delete_button = memnew(Button);
 				delete_button->set_flat(true);
 				delete_button->set_focus_mode(FOCUS_NONE);
-				delete_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+				delete_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 				delete_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
 				node->get_titlebar_hbox()->add_child(delete_button);
 			}
@@ -216,7 +216,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			node->add_child(memnew(HSeparator));
 			Button *open_in_editor = memnew(Button);
 			open_in_editor->set_text(TTR("Open Editor"));
-			open_in_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			open_in_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			node->add_child(open_in_editor);
 			open_in_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor).bind(E), CONNECT_DEFERRED);
 			open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
@@ -230,7 +230,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			} else {
 				inspect_filters->set_text(TTR("Edit Filters"));
 			}
-			inspect_filters->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
+			inspect_filters->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			node->add_child(inspect_filters);
 			inspect_filters->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_inspect_filters).bind(E), CONNECT_DEFERRED);
 			inspect_filters->set_h_size_flags(SIZE_SHRINK_CENTER);
@@ -240,7 +240,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		if (anim.is_valid()) {
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
-			mb->set_icon(get_editor_theme_icon(SNAME("Animation")));
+			mb->set_button_icon(get_editor_theme_icon(SNAME("Animation")));
 			mb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			mb->set_disabled(read_only);
 			Array options;
@@ -1375,7 +1375,7 @@ void AnimationNodeAnimationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			button->set_theme_type_variation(SNAME("InspectorActionButton"));
-			button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		} break;
 	}
 }

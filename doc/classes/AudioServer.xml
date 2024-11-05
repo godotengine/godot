@@ -123,6 +123,12 @@
 				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 			</description>
 		</method>
+		<method name="get_input_mix_rate" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the sample rate at the input of the [AudioServer].
+			</description>
+		</method>
 		<method name="get_mix_rate" qualifiers="const">
 			<return type="float" />
 			<description>

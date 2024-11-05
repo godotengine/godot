@@ -76,7 +76,7 @@ LocaleKeyFactory::updateVisibleIDs(Hashtable& result, UErrorCode& status) const 
         const UHashElement* elem = nullptr;
         int32_t pos = UHASH_FIRST;
         while ((elem = supported->nextElement(pos)) != nullptr) {
-            const UnicodeString& id = *((const UnicodeString*)elem->key.pointer);
+            const UnicodeString& id = *static_cast<const UnicodeString*>(elem->key.pointer);
             if (!visible) {
                 result.remove(id);
             } else {
@@ -105,9 +105,9 @@ LocaleKeyFactory::getDisplayName(const UnicodeString& id, const Locale& locale, 
 }
 
 UObject*
-LocaleKeyFactory::handleCreate(const Locale& /* loc */, 
-                   int32_t /* kind */, 
-                   const ICUService* /* service */, 
+LocaleKeyFactory::handleCreate(const Locale& /* loc */,
+                   int32_t /* kind */,
+                   const ICUService* /* service */,
                    UErrorCode& /* status */) const {
     return nullptr;
 }

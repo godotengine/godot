@@ -174,7 +174,7 @@ isPNJConsonant(UChar32 c) {
     if (c < 0xa00 || 0xa50 <= c) {
         return false;
     } else {
-        return (UBool)(pnjMap[c - 0xa00] & 1);
+        return pnjMap[c - 0xa00] & 1;
     }
 }
 
@@ -183,7 +183,7 @@ isPNJBindiTippi(UChar32 c) {
     if (c < 0xa00 || 0xa50 <= c) {
         return false;
     } else {
-        return (UBool)(pnjMap[c - 0xa00] >> 1);
+        return pnjMap[c - 0xa00] >> 1;
     }
 }
 U_CDECL_BEGIN
@@ -213,13 +213,13 @@ _ISCIIOpen(UConverter *cnv, UConverterLoadArgs *pArgs, UErrorCode *errorCode) {
             converterData->currentMaskFromUnicode
                     = converterData->currentMaskToUnicode
                             = converterData->defMaskToUnicode = lookupInitialData[pArgs->options & UCNV_OPTIONS_VERSION_MASK].maskEnum;
-            
+
             converterData->isFirstBuffer=true;
             (void)uprv_strcpy(converterData->name, ISCII_CNV_PREFIX);
             len = (int32_t)uprv_strlen(converterData->name);
             converterData->name[len]= (char)((pArgs->options & UCNV_OPTIONS_VERSION_MASK) + '0');
             converterData->name[len+1]=0;
-            
+
             converterData->prevToUnicodeStatus = 0x0000;
         } else {
             uprv_free(cnv->extraInfo);
@@ -934,12 +934,12 @@ UConverter_fromUnicode_ISCII_OFFSETS_LOGIC(
                 break;
             }
         }
-        
+
         sourceChar = *source++;
         tempContextFromUnicode = converterData->contextCharFromUnicode;
-        
+
         targetByteUnit = missingCharMarker;
-        
+
         /*check if input is in ASCII and C0 control codes range*/
         if (sourceChar <= ASCII_END) {
             args->converter->fromUnicodeStatus = sourceChar;
@@ -989,8 +989,8 @@ UConverter_fromUnicode_ISCII_OFFSETS_LOGIC(
                         deltaChanged =true;
                         converterData->isFirstBuffer=false;
                     }
-                    
-                    if (converterData->currentDeltaFromUnicode == PNJ_DELTA) { 
+
+                    if (converterData->currentDeltaFromUnicode == PNJ_DELTA) {
                         if (sourceChar == PNJ_TIPPI) {
                             /* Make sure Tippi is converted to Bindi. */
                             sourceChar = PNJ_BINDI;
@@ -998,7 +998,7 @@ UConverter_fromUnicode_ISCII_OFFSETS_LOGIC(
                             /* This is for consonant cluster handling. */
                             converterData->contextCharFromUnicode = PNJ_ADHAK;
                         }
-                        
+
                     }
                     /* Normalize all Indic codepoints to Devanagari and map them to ISCII */
                     /* now subtract the new delta from sourceChar*/
@@ -1031,7 +1031,7 @@ UConverter_fromUnicode_ISCII_OFFSETS_LOGIC(
                         break;
                     }
                 }
-                
+
                 if (converterData->currentDeltaFromUnicode == PNJ_DELTA && (sourceChar + PNJ_DELTA) == PNJ_ADHAK) {
                     continue;
                 }
@@ -1189,7 +1189,7 @@ UConverter_toUnicode_ISCII_OFFSETS_LOGIC(UConverterToUnicodeArgs *args, UErrorCo
     UChar32 tempTargetUniChar = 0x0000;
     char16_t* contextCharToUnicode= nullptr;
     UBool found;
-    int i; 
+    int i;
     int offset = 0;
 
     if ((args->converter == nullptr) || (target < args->target) || (source < args->source)) {
@@ -1245,7 +1245,7 @@ UConverter_toUnicode_ISCII_OFFSETS_LOGIC(UConverterToUnicodeArgs *args, UErrorCo
                     /* We currently support only Anudatta and Devanagari abbreviation sign */
                     if (sourceChar==0xBF || sourceChar == 0xB8) {
                         targetUniChar = (sourceChar==0xBF) ? DEV_ABBR_SIGN : DEV_ANUDATTA;
-                        
+
                         /* find out if the mapping is valid in this state */
                         if (validityTable[(uint8_t)targetUniChar] & data->currentMaskToUnicode) {
                             *contextCharToUnicode= NO_CHAR_MARKER;
@@ -1452,7 +1452,7 @@ UConverter_toUnicode_ISCII_OFFSETS_LOGIC(UConverterToUnicodeArgs *args, UErrorCo
                         WRITE_TO_TARGET_TO_U(args,source,target,args->offsets,(source-args->source -1),data->prevToUnicodeStatus,0,err);
                         data->prevToUnicodeStatus = 0x0000;
                     }
-                    /* Check to make sure that Bindi and Tippi are handled correctly for Gurmukhi script. 
+                    /* Check to make sure that Bindi and Tippi are handled correctly for Gurmukhi script.
                      * If 0xA2 is preceded by a codepoint in the PNJ_BINDI_TIPPI_SET then the target codepoint should be Tippi instead of Bindi.
                      */
                     if (data->currentDeltaToUnicode == PNJ_DELTA && (targetUniChar + PNJ_DELTA) == PNJ_BINDI && isPNJBindiTippi((*toUnicodeStatus + PNJ_DELTA))) {
@@ -1484,7 +1484,7 @@ UConverter_toUnicode_ISCII_OFFSETS_LOGIC(UConverterToUnicodeArgs *args, UErrorCo
                  */
                 *err = U_INVALID_CHAR_FOUND;
 CALLBACK:
-                args->converter->toUBytes[0] = (uint8_t) sourceChar;
+                args->converter->toUBytes[0] = sourceChar;
                 args->converter->toULength = 1;
                 break;
             }

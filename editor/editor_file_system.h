@@ -180,6 +180,7 @@ class EditorFileSystem : public Node {
 	EditorFileSystemDirectory *new_filesystem = nullptr;
 	ScannedDirectory *first_scan_root_dir = nullptr;
 
+	bool filesystem_changed_queued = false;
 	bool scanning = false;
 	bool importing = false;
 	bool first_scan = true;
@@ -189,6 +190,7 @@ class EditorFileSystem : public Node {
 	bool revalidate_import_files = false;
 	int nb_files_total = 0;
 
+	void _notify_filesystem_changed();
 	void _scan_filesystem();
 	void _first_scan_filesystem();
 	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, List<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions);

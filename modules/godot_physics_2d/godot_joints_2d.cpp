@@ -311,7 +311,7 @@ bool GodotPinJoint2D::get_flag(PhysicsServer2D::PinJointFlag p_flag) const {
 			return motor_enabled;
 		}
 	}
-	ERR_FAIL_V(0);
+	ERR_FAIL_V(false);
 }
 
 GodotPinJoint2D::GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, GodotBody2D *p_body_b) :

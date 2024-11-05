@@ -118,7 +118,7 @@ ubiditransform_close(UBiDiTransform *pBiDiTransform)
 
 /**
  * Performs Bidi resolution of text.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -135,7 +135,7 @@ action_resolve(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
 
 /**
  * Performs basic reordering of text (Logical -> Visual LTR).
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -155,7 +155,7 @@ action_reorder(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
 
 /**
  * Sets "inverse" mode on the <code>UBiDi</code> object.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -174,7 +174,7 @@ action_setInverse(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
 /**
  * Sets "runs only" reordering mode indicating a Logical LTR <-> Logical RTL
  * transformation.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -191,7 +191,7 @@ action_setRunsOnly(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
 
 /**
  * Performs string reverse.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -212,7 +212,7 @@ action_reverse(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
  * Applies a new value to the text that serves as input at the current
  * processing step. This value is identical to the original one when we begin
  * the processing, but usually changes as the transformation progresses.
- * 
+ *
  * @param pTransform A pointer to the <code>UBiDiTransform</code> structure.
  * @param newSrc A pointer whose value is to be used as input text.
  * @param newLength A length of the new text in <code>char16_t</code>s.
@@ -233,7 +233,7 @@ updateSrc(UBiDiTransform *pTransform, const char16_t *newSrc, uint32_t newLength
             uprv_free(pTransform->src);
             pTransform->src = nullptr;
         }
-        pTransform->src = (char16_t *)uprv_malloc(newSize * sizeof(char16_t));
+        pTransform->src = static_cast<char16_t*>(uprv_malloc(newSize * sizeof(char16_t)));
         if (pTransform->src == nullptr) {
             *pErrorCode = U_MEMORY_ALLOCATION_ERROR;
             //pTransform->srcLength = pTransform->srcSize = 0;
@@ -248,7 +248,7 @@ updateSrc(UBiDiTransform *pTransform, const char16_t *newSrc, uint32_t newLength
 
 /**
  * Calls a lower level shaping function.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param options Shaping options.
  * @param pErrorCode Pointer to the error code value.
@@ -263,7 +263,7 @@ doShape(UBiDiTransform *pTransform, uint32_t options, UErrorCode *pErrorCode)
 
 /**
  * Performs digit and letter shaping.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -293,7 +293,7 @@ action_shapeArabic(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
 
 /**
  * Performs character mirroring.
- * 
+ *
  * @param pTransform Pointer to the <code>UBiDiTransform</code> structure.
  * @param pErrorCode Pointer to the error code value.
  *
@@ -314,10 +314,10 @@ action_mirror(UBiDiTransform *pTransform, UErrorCode *pErrorCode)
     }
     do {
         UBool isOdd = ubidi_getLevelAt(pTransform->pBidi, i) & 1;
-        U16_NEXT(pTransform->src, i, pTransform->srcLength, c); 
+        U16_NEXT(pTransform->src, i, pTransform->srcLength, c);
         U16_APPEND_UNSAFE(pTransform->dest, j, isOdd ? u_charMirror(c) : c);
     } while (i < pTransform->srcLength);
-    
+
     *pTransform->pDestLength = pTransform->srcLength;
     pTransform->reorderingOptions = UBIDI_REORDER_DEFAULT;
     return true;
@@ -416,7 +416,7 @@ resolveBaseDirection(const char16_t *text, uint32_t length,
 /**
  * Finds a valid <code>ReorderingScheme</code> matching the
  * caller-defined scheme.
- * 
+ *
  * @return A valid <code>ReorderingScheme</code> object or nullptr
  */
 static const ReorderingScheme*
@@ -499,7 +499,7 @@ ubiditransform_transform(UBiDiTransform *pBiDiTransform,
     /* Checking for U_SUCCESS() within the loop to bail out on first failure. */
     for (action = pBiDiTransform->pActiveScheme->actions; *action && U_SUCCESS(*pErrorCode); action++) {
         if ((*action)(pBiDiTransform, pErrorCode)) {
-            if (action + 1) {
+            if (action[1] != nullptr) {
                 updateSrc(pBiDiTransform, pBiDiTransform->dest, *pBiDiTransform->pDestLength,
                         *pBiDiTransform->pDestLength, pErrorCode);
             }

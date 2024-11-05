@@ -248,7 +248,7 @@
 			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
-				[param values] can be a [Dictionary] or an [Array]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				[param values] can be a [Dictionary], an [Array] or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
 				[codeblock]
 				# Prints "Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it."
 				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
@@ -262,6 +262,12 @@
 				# Prints "User 42 is Godot."
 				print("User {} is {}.".format([42, "Godot"], "{}"))
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
+				[/codeblock]
+				When passing an [Object], the property names from [method Object.get_property_list] are used as keys.
+				[codeblock]
+				# Prints: Visible true, position (0, 0).
+				var node = Node2D.new()
+				print("Visible {visible}, position {position}".format(node))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
 				[b]Note:[/b] The replacement of placeholders is not done all at once, instead each placeholder is replaced in the order they are passed, this means that if one of the replacement strings contains a key it will also be replaced. This can be very powerful, but can also cause unexpected results if you are not careful. If you do not need to perform replacement in the replacement strings, make sure your replacements do not contain placeholders to ensure reliable results.

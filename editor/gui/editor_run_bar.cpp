@@ -52,8 +52,8 @@ void EditorRunBar::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_play_buttons();
-			pause_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
-			stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			pause_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
 			if (is_movie_maker_enabled()) {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
@@ -63,7 +63,7 @@ void EditorRunBar::_notification(int p_what) {
 				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
-			write_movie_button->set_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
+			write_movie_button->set_button_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
 			// This button behaves differently, so color it as such.
 			write_movie_button->begin_bulk_theme_override();
 			write_movie_button->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("movie_writer_icon_normal"), EditorStringName(EditorStyles)));
@@ -77,15 +77,15 @@ void EditorRunBar::_notification(int p_what) {
 
 void EditorRunBar::_reset_play_buttons() {
 	play_button->set_pressed(false);
-	play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	play_button->set_tooltip_text(TTR("Play the project."));
 
 	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayScene")));
+	play_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayScene")));
 	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
 
 	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayCustom")));
+	play_custom_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayCustom")));
 	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
 }
 
@@ -106,7 +106,7 @@ void EditorRunBar::_update_play_buttons() {
 
 	if (active_button) {
 		active_button->set_pressed(true);
-		active_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
+		active_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 		active_button->set_tooltip_text(TTR("Reload the played scene."));
 	}
 }

@@ -64,7 +64,7 @@ HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
 #else
 	request_extensions[XR_KHR_OPENGL_ENABLE_EXTENSION_NAME] = nullptr;
 #endif
-#if defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED)
+#if defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
 	request_extensions[XR_MNDX_EGL_ENABLE_EXTENSION_NAME] = &egl_extension_enabled;
 #endif
 
@@ -135,7 +135,7 @@ XrGraphicsBindingOpenGLESAndroidKHR OpenXROpenGLExtension::graphics_binding_gl;
 #ifdef X11_ENABLED
 XrGraphicsBindingOpenGLXlibKHR OpenXROpenGLExtension::graphics_binding_gl;
 #endif
-#ifdef EGL_ENABLED
+#if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
 XrGraphicsBindingEGLMNDX OpenXROpenGLExtension::graphics_binding_egl;
 #endif
 #endif
@@ -193,7 +193,7 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 
 	// spec says to use proper values but runtimes don't care
 	graphics_binding_gl.visualid = 0;
-	graphics_binding_gl.glxFBConfig = 0;
+	graphics_binding_gl.glxFBConfig = nullptr;
 #endif
 #endif
 

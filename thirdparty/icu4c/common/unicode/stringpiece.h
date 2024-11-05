@@ -23,7 +23,7 @@
 #define __STRINGPIECE_H__
 
 /**
- * \file 
+ * \file
  * \brief C++ API: StringPiece: Read-only byte string wrapper class.
  */
 
@@ -32,6 +32,7 @@
 #if U_SHOW_CPLUSPLUS_API
 
 #include <cstddef>
+#include <string_view>
 #include <type_traits>
 
 #include "unicode/uobject.h"
@@ -176,6 +177,16 @@ class U_COMMON_API StringPiece : public UMemory {
    */
   StringPiece(const StringPiece& x, int32_t pos, int32_t len);
 
+#ifndef U_HIDE_INTERNAL_API
+  /**
+   * Converts to a std::string_view().
+   * @internal
+   */
+  inline operator std::string_view() const {
+    return {data(), static_cast<std::string_view::size_type>(size())};
+  }
+#endif  // U_HIDE_INTERNAL_API
+
   /**
    * Returns the string pointer. May be nullptr if it is empty.
    *
@@ -222,7 +233,7 @@ class U_COMMON_API StringPiece : public UMemory {
 
   /**
    * Reset the stringpiece to refer to new data.
-   * @param str a pointer to a NUL-terminated string. 
+   * @param str a pointer to a NUL-terminated string.
    * @stable ICU 4.8
    */
   void set(const char* str);
@@ -322,7 +333,7 @@ class U_COMMON_API StringPiece : public UMemory {
  * @return true if the string data is equal
  * @stable ICU 4.8
  */
-U_EXPORT UBool U_EXPORT2 
+U_EXPORT UBool U_EXPORT2
 operator==(const StringPiece& x, const StringPiece& y);
 
 /**

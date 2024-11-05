@@ -76,7 +76,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 				existing->path_cache = String();
 				ResourceCache::resources.erase(p_path);
 			} else {
-				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+				ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
 			}
 		}
 

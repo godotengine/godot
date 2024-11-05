@@ -56,7 +56,9 @@ Point2 AnimatedSprite2D::_edit_get_pivot() const {
 bool AnimatedSprite2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 AnimatedSprite2D::_edit_get_rect() const {
 	return _get_rect();
 }
@@ -75,7 +77,7 @@ bool AnimatedSprite2D::_edit_use_rect() const {
 	}
 	return t.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 AnimatedSprite2D::get_anchorable_rect() const {
 	return _get_rect();
@@ -593,7 +595,7 @@ void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_
 	}
 	Node2D::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 bool AnimatedSprite2D::_set(const StringName &p_name, const Variant &p_value) {

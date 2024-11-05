@@ -1,6 +1,6 @@
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-/*  
+/*
 **********************************************************************
 *   Copyright (C) 2002-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
@@ -199,7 +199,7 @@ _UTF16BEFromUnicodeWithOffsets(UConverterFromUnicodeArgs *pArgs,
     } else {
         length=0; /* from here on, length counts the bytes in overflow[] */
     }
-    
+
     if(c!=0) {
         /*
          * c is a surrogate, and
@@ -236,10 +236,10 @@ _UTF16BEFromUnicodeWithOffsets(UConverterFromUnicodeArgs *pArgs,
         /* output length bytes with overflow (length>targetCapacity>0) */
         ucnv_fromUWriteBytes(cnv,
                              overflow, length,
-                             (char **)&target, pArgs->targetLimit,
+                             &target, pArgs->targetLimit,
                              &offsets, sourceIndex,
                              pErrorCode);
-        targetCapacity=(uint32_t)(pArgs->targetLimit-(char *)target);
+        targetCapacity = static_cast<uint32_t>(pArgs->targetLimit - target);
     }
 
     if(U_SUCCESS(*pErrorCode) && source<pArgs->sourceLimit && targetCapacity==0) {
@@ -248,7 +248,7 @@ _UTF16BEFromUnicodeWithOffsets(UConverterFromUnicodeArgs *pArgs,
 
     /* write back the updated pointers */
     pArgs->source=source;
-    pArgs->target=(char *)target;
+    pArgs->target = target;
     pArgs->offsets=offsets;
 }
 
@@ -567,7 +567,7 @@ _UTF16BEGetNextUChar(UConverterToUnicodeArgs *pArgs, UErrorCode *err) {
 
     pArgs->source=(const char *)s;
     return c;
-} 
+}
 
 static void  U_CALLCONV
 _UTF16BEReset(UConverter *cnv, UConverterResetChoice choice) {
@@ -800,7 +800,7 @@ _UTF16LEFromUnicodeWithOffsets(UConverterFromUnicodeArgs *pArgs,
     } else {
         length=0; /* from here on, length counts the bytes in overflow[] */
     }
-    
+
     if(c!=0) {
         /*
          * c is a surrogate, and
@@ -840,7 +840,7 @@ _UTF16LEFromUnicodeWithOffsets(UConverterFromUnicodeArgs *pArgs,
                              &target, pArgs->targetLimit,
                              &offsets, sourceIndex,
                              pErrorCode);
-        targetCapacity=(uint32_t)(pArgs->targetLimit-(char *)target);
+        targetCapacity = static_cast<uint32_t>(pArgs->targetLimit - target);
     }
 
     if(U_SUCCESS(*pErrorCode) && source<pArgs->sourceLimit && targetCapacity==0) {
@@ -1168,7 +1168,7 @@ _UTF16LEGetNextUChar(UConverterToUnicodeArgs *pArgs, UErrorCode *err) {
 
     pArgs->source=(const char *)s;
     return c;
-} 
+}
 
 static void  U_CALLCONV
 _UTF16LEReset(UConverter *cnv, UConverterResetChoice choice) {

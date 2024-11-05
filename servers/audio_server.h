@@ -99,6 +99,7 @@ public:
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
+	virtual int get_input_mix_rate() const { return get_mix_rate(); }
 	virtual SpeakerMode get_speaker_mode() const = 0;
 	virtual float get_latency() { return 0; }
 
@@ -443,6 +444,7 @@ public:
 
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual float get_mix_rate() const;
+	virtual float get_input_mix_rate() const;
 
 	virtual float read_output_peak_db() const;
 

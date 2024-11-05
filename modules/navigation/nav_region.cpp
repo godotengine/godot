@@ -59,7 +59,7 @@ void NavRegion::set_enabled(bool p_enabled) {
 
 	// TODO: This should not require a full rebuild as the region has not really changed.
 	polygons_dirty = true;
-};
+}
 
 void NavRegion::set_use_edge_connections(bool p_enabled) {
 	if (use_edge_connections != p_enabled) {

@@ -43,7 +43,7 @@ void PackedSceneEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			open_scene_button->set_icon(get_editor_theme_icon(SNAME("PackedScene")));
+			open_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PackedScene")));
 		} break;
 	}
 }

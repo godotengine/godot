@@ -107,16 +107,16 @@ protected:
 	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 	void force_update(int p_layer);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;

@@ -5069,7 +5069,7 @@ bool TextEdit::multicaret_edit_ignore_caret(int p_caret) const {
 }
 
 bool TextEdit::is_caret_visible(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), 0);
+	ERR_FAIL_INDEX_V(p_caret, carets.size(), false);
 	return carets[p_caret].visible;
 }
 
@@ -5736,7 +5736,7 @@ TextServer::AutowrapMode TextEdit::get_autowrap_mode() const {
 }
 
 bool TextEdit::is_line_wrapped(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	if (get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
 		return false;
 	}

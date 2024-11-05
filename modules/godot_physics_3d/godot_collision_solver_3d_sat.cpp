@@ -76,8 +76,9 @@ struct _CollectorCallback {
 	Vector3 *prev_axis = nullptr;
 
 	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B, Vector3 p_normal) {
-		if (p_normal.dot(p_point_B - p_point_A) < 0)
+		if (p_normal.dot(p_point_B - p_point_A) < 0) {
 			p_normal = -p_normal;
+		}
 		if (swap) {
 			callback(p_point_B, 0, p_point_A, 0, -p_normal, userdata);
 		} else {
@@ -175,10 +176,11 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 	// The normal should be perpendicular to both edges.
 	Vector3 normal = rel_A.cross(rel_B);
 	real_t normal_len = normal.length();
-	if (normal_len > 1e-3)
+	if (normal_len > 1e-3) {
 		normal /= normal_len;
-	else
+	} else {
 		normal = p_callback->normal;
+	}
 	p_callback->call(closest_A, closest_B, normal);
 }
 
@@ -784,8 +786,9 @@ static void analytic_sphere_collision(const Vector3 &p_origin_a, real_t p_radius
 
 	// Calculate the sphere overlap, and bail if not overlapping
 	real_t overlap = p_radius_a + p_radius_b - b_to_a_len;
-	if (overlap < 0)
+	if (overlap < 0) {
 		return;
+	}
 
 	// Report collision
 	p_collector->collided = true;

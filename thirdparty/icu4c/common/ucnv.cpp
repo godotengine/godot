@@ -83,7 +83,7 @@ ucnv_open (const char *name,
     return r;
 }
 
-U_CAPI UConverter* U_EXPORT2 
+U_CAPI UConverter* U_EXPORT2
 ucnv_openPackage   (const char *packageName, const char *converterName, UErrorCode * err)
 {
     return ucnv_createConverterFromPackage(packageName, converterName,  err);
@@ -150,7 +150,7 @@ ucnv_openCCSID (int32_t codepage,
     return ucnv_createConverter(nullptr, myName, err);
 }
 
-/* Creating a temporary stack-based object that can be used in one thread, 
+/* Creating a temporary stack-based object that can be used in one thread,
 and created from a converter that is shared across threads.
 */
 
@@ -455,7 +455,7 @@ ucnv_setSubstChars (UConverter * converter,
 {
     if (U_FAILURE (*err))
         return;
-    
+
     /*Makes sure that the subChar is within the codepages char length boundaries */
     if ((len > converter->sharedData->staticData->maxBytesPerChar)
      || (len < converter->sharedData->staticData->minBytesPerChar))
@@ -463,7 +463,7 @@ ucnv_setSubstChars (UConverter * converter,
         *err = U_ILLEGAL_ARGUMENT_ERROR;
         return;
     }
-    
+
     uprv_memcpy (converter->subChars, mySubChar, len); /*copies the subchars */
     converter->subCharLen = len;  /*sets the new len */
 
@@ -662,7 +662,7 @@ ucnv_getMinCharSize (const UConverter * converter)
 
 U_CAPI const char*   U_EXPORT2
 ucnv_getName (const UConverter * converter, UErrorCode * err)
-     
+
 {
     if (U_FAILURE (*err))
         return nullptr;
@@ -916,7 +916,7 @@ _fromUnicodeWithCallback(UConverterFromUnicodeArgs *pArgs, UErrorCode *err) {
              * s<sourceLimit before converterSawEndOfInput is checked
              */
             converterSawEndOfInput=
-                (UBool)(U_SUCCESS(*err) &&
+                static_cast<UBool>(U_SUCCESS(*err) &&
                         pArgs->flush && pArgs->source==pArgs->sourceLimit &&
                         cnv->fromUChar32==0);
         } else {
@@ -941,7 +941,7 @@ _fromUnicodeWithCallback(UConverterFromUnicodeArgs *pArgs, UErrorCode *err) {
         for(;;) {
             /* update offsets if we write any */
             if(offsets!=nullptr) {
-                int32_t length=(int32_t)(pArgs->target-t);
+                int32_t length = static_cast<int32_t>(pArgs->target - t);
                 if(length>0) {
                     _updateOffsets(offsets, length, sourceIndex, errorInputLength);
 
@@ -956,7 +956,7 @@ _fromUnicodeWithCallback(UConverterFromUnicodeArgs *pArgs, UErrorCode *err) {
                 }
 
                 if(sourceIndex>=0) {
-                    sourceIndex+=(int32_t)(pArgs->source-s);
+                    sourceIndex += static_cast<int32_t>(pArgs->source - s);
                 }
             }
 
@@ -1066,10 +1066,10 @@ _fromUnicodeWithCallback(UConverterFromUnicodeArgs *pArgs, UErrorCode *err) {
 
                         U_ASSERT(cnv->preFromULength==0);
 
-                        length=(int32_t)(pArgs->sourceLimit-pArgs->source);
+                        length = static_cast<int32_t>(pArgs->sourceLimit - pArgs->source);
                         if(length>0) {
                             u_memcpy(cnv->preFromU, pArgs->source, length);
-                            cnv->preFromULength=(int8_t)-length;
+                            cnv->preFromULength = static_cast<int8_t>(-length);
                         }
 
                         pArgs->source=realSource;
@@ -1089,7 +1089,7 @@ _fromUnicodeWithCallback(UConverterFromUnicodeArgs *pArgs, UErrorCode *err) {
                 codePoint=cnv->fromUChar32;
                 errorInputLength=0;
                 U16_APPEND_UNSAFE(cnv->invalidUCharBuffer, errorInputLength, codePoint);
-                cnv->invalidUCharLength=(int8_t)errorInputLength;
+                cnv->invalidUCharLength = static_cast<int8_t>(errorInputLength);
 
                 /* set the converter state to deal with the next character */
                 cnv->fromUChar32=0;
@@ -1134,7 +1134,7 @@ ucnv_outputOverflowFromUnicode(UConverter *cnv,
         offsets=nullptr;
     }
 
-    overflow=(char *)cnv->charErrorBuffer;
+    overflow = reinterpret_cast<char*>(cnv->charErrorBuffer);
     length=cnv->charErrorBufferLength;
     i=0;
     while(i<length) {
@@ -1146,7 +1146,7 @@ ucnv_outputOverflowFromUnicode(UConverter *cnv,
                 overflow[j++]=overflow[i++];
             } while(i<length);
 
-            cnv->charErrorBufferLength=(int8_t)j;
+            cnv->charErrorBufferLength = static_cast<int8_t>(j);
             *target=t;
             if(offsets!=nullptr) {
                 *pOffsets=offsets;
@@ -1231,7 +1231,7 @@ ucnv_fromUnicode(UConverter *cnv,
         *err=U_ILLEGAL_ARGUMENT_ERROR;
         return;
     }
-    
+
     /* output the target overflow buffer */
     if( cnv->charErrorBufferLength>0 &&
         ucnv_outputOverflowFromUnicode(cnv, target, targetLimit, &offsets, err)
@@ -1361,7 +1361,7 @@ _toUnicodeWithCallback(UConverterToUnicodeArgs *pArgs, UErrorCode *err) {
              * s<sourceLimit before converterSawEndOfInput is checked
              */
             converterSawEndOfInput=
-                (UBool)(U_SUCCESS(*err) &&
+                static_cast<UBool>(U_SUCCESS(*err) &&
                         pArgs->flush && pArgs->source==pArgs->sourceLimit &&
                         cnv->toULength==0);
         } else {
@@ -1386,7 +1386,7 @@ _toUnicodeWithCallback(UConverterToUnicodeArgs *pArgs, UErrorCode *err) {
         for(;;) {
             /* update offsets if we write any */
             if(offsets!=nullptr) {
-                int32_t length=(int32_t)(pArgs->target-t);
+                int32_t length = static_cast<int32_t>(pArgs->target - t);
                 if(length>0) {
                     _updateOffsets(offsets, length, sourceIndex, errorInputLength);
 
@@ -1401,7 +1401,7 @@ _toUnicodeWithCallback(UConverterToUnicodeArgs *pArgs, UErrorCode *err) {
                 }
 
                 if(sourceIndex>=0) {
-                    sourceIndex+=(int32_t)(pArgs->source-s);
+                    sourceIndex += static_cast<int32_t>(pArgs->source - s);
                 }
             }
 
@@ -1513,10 +1513,10 @@ _toUnicodeWithCallback(UConverterToUnicodeArgs *pArgs, UErrorCode *err) {
 
                         U_ASSERT(cnv->preToULength==0);
 
-                        length=(int32_t)(pArgs->sourceLimit-pArgs->source);
+                        length = static_cast<int32_t>(pArgs->sourceLimit - pArgs->source);
                         if(length>0) {
                             uprv_memcpy(cnv->preToU, pArgs->source, length);
-                            cnv->preToULength=(int8_t)-length;
+                            cnv->preToULength = static_cast<int8_t>(-length);
                         }
 
                         pArgs->source=realSource;
@@ -1592,7 +1592,7 @@ ucnv_outputOverflowToUnicode(UConverter *cnv,
                 overflow[j++]=overflow[i++];
             } while(i<length);
 
-            cnv->UCharErrorBufferLength=(int8_t)j;
+            cnv->UCharErrorBufferLength = static_cast<int8_t>(j);
             *target=t;
             if(offsets!=nullptr) {
                 *pOffsets=offsets;
@@ -1677,7 +1677,7 @@ ucnv_toUnicode(UConverter *cnv,
         *err=U_ILLEGAL_ARGUMENT_ERROR;
         return;
     }
-    
+
     /* output the target overflow buffer */
     if( cnv->UCharErrorBufferLength>0 &&
         ucnv_outputOverflowToUnicode(cnv, target, targetLimit, &offsets, err)
@@ -2088,7 +2088,7 @@ ucnv_convertEx(UConverter *targetCnv, UConverter *sourceCnv,
         *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
         return;
     }
-    
+
     if(pivotStart==nullptr) {
         if(!flush) {
             /* streaming conversion requires an explicit pivot buffer */
@@ -2337,7 +2337,7 @@ ucnv_convertEx(UConverter *targetCnv, UConverter *sourceCnv,
                 break;
             }
         }
-        
+
         /*
          * toUnicode(source -> pivot);
          *
@@ -2437,7 +2437,7 @@ ucnv_internalConvert(UConverter *outConverter, UConverter *inConverter,
                        false,
                        true,
                        pErrorCode);
-        targetLength=(int32_t)(myTarget-target);
+        targetLength = static_cast<int32_t>(myTarget - target);
     }
 
     /*
@@ -2460,7 +2460,7 @@ ucnv_internalConvert(UConverter *outConverter, UConverter *inConverter,
                            false,
                            true,
                            pErrorCode);
-            targetLength+=(int32_t)(myTarget-targetBuffer);
+            targetLength += static_cast<int32_t>(myTarget - targetBuffer);
         } while(*pErrorCode==U_BUFFER_OVERFLOW_ERROR);
 
         /* done with preflighting, set warnings and errors as appropriate */
@@ -2619,7 +2619,7 @@ ucnv_getType(const UConverter* converter)
 }
 
 U_CAPI void  U_EXPORT2
-ucnv_getStarters(const UConverter* converter, 
+ucnv_getStarters(const UConverter* converter,
                  UBool starters[256],
                  UErrorCode* err)
 {
@@ -2662,7 +2662,7 @@ static const UAmbiguousConverter *ucnv_getAmbiguous(const UConverter *cnv)
 }
 
 U_CAPI void  U_EXPORT2
-ucnv_fixFileSeparator(const UConverter *cnv, 
+ucnv_fixFileSeparator(const UConverter *cnv,
                       char16_t* source,
                       int32_t sourceLength) {
     const UAmbiguousConverter *a;
@@ -2684,7 +2684,7 @@ ucnv_fixFileSeparator(const UConverter *cnv,
 
 U_CAPI UBool  U_EXPORT2
 ucnv_isAmbiguous(const UConverter *cnv) {
-    return (UBool)(ucnv_getAmbiguous(cnv)!=nullptr);
+    return ucnv_getAmbiguous(cnv)!=nullptr;
 }
 
 U_CAPI void  U_EXPORT2
@@ -2761,7 +2761,7 @@ ucnv_detectUnicodeSignature( const char* source,
     int32_t dummy;
 
     /* initial 0xa5 bytes: make sure that if we read <SIG_MAX_LEN
-     * bytes we don't misdetect something 
+     * bytes we don't misdetect something
      */
     char start[SIG_MAX_LEN]={ '\xa5', '\xa5', '\xa5', '\xa5', '\xa5' };
     int i = 0;
@@ -2769,7 +2769,7 @@ ucnv_detectUnicodeSignature( const char* source,
     if((pErrorCode==nullptr) || U_FAILURE(*pErrorCode)){
         return nullptr;
     }
-    
+
     if(source == nullptr || sourceLength < -1){
         *pErrorCode = U_ILLEGAL_ARGUMENT_ERROR;
         return nullptr;
@@ -2783,7 +2783,7 @@ ucnv_detectUnicodeSignature( const char* source,
         sourceLength=(int32_t)uprv_strlen(source);
     }
 
-    
+
     while(i<sourceLength&& i<SIG_MAX_LEN){
         start[i]=source[i];
         i++;
@@ -2803,7 +2803,7 @@ ucnv_detectUnicodeSignature( const char* source,
     } else if(start[0] == '\xEF' && start[1] == '\xBB' && start[2] == '\xBF') {
         *signatureLength=3;
         return  "UTF-8";
-    } else if(start[0] == '\x00' && start[1] == '\x00' && 
+    } else if(start[0] == '\x00' && start[1] == '\x00' &&
               start[2] == '\xFE' && start[3]=='\xFF') {
         *signatureLength=4;
         return  "UTF-32BE";
@@ -2860,7 +2860,7 @@ ucnv_fromUCountPending(const UConverter* cnv, UErrorCode* status)
     }else if(cnv->fromUChar32 > 0){
         return 1;
     }
-    return 0; 
+    return 0;
 
 }
 

@@ -293,11 +293,11 @@ U_CDECL_BEGIN
 static UBool U_CALLCONV uprv_normalizer2_cleanup() {
     delete noopSingleton;
     noopSingleton = nullptr;
-    noopInitOnce.reset(); 
+    noopInitOnce.reset();
 #if NORM2_HARDCODE_NFC_DATA
     delete nfcSingleton;
     nfcSingleton = nullptr;
-    nfcInitOnce.reset(); 
+    nfcInitOnce.reset();
 #endif
     return true;
 }
@@ -380,8 +380,8 @@ normalizeSecondAndAppend(const UNormalizer2 *norm2,
     firstLength=firstString.length();  // In case it was -1.
     // secondLength==0: Nothing to do, and n2wi->normalizeAndAppend(nullptr, nullptr, buffer, ...) would crash.
     if(secondLength!=0) {
-        const Normalizer2 *n2=(const Normalizer2 *)norm2;
-        const Normalizer2WithImpl *n2wi=dynamic_cast<const Normalizer2WithImpl *>(n2);
+        const Normalizer2* n2 = reinterpret_cast<const Normalizer2*>(norm2);
+        const Normalizer2WithImpl* n2wi = dynamic_cast<const Normalizer2WithImpl*>(n2);
         if(n2wi!=nullptr) {
             // Avoid duplicate argument checking and support NUL-terminated src.
             UnicodeString safeMiddle;

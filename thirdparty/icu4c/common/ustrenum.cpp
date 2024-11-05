@@ -10,7 +10,7 @@
 * Since: ICU 2.4
 **********************************************************************
 */
-#include "utypeinfo.h"  // for 'typeid' to work 
+#include "utypeinfo.h"  // for 'typeid' to work
 
 #include "unicode/ustring.h"
 #include "unicode/strenum.h"
@@ -89,7 +89,7 @@ StringEnumeration::ensureCharsCapacity(int32_t capacity, UErrorCode &status) {
         if(chars!=charsBuffer) {
             uprv_free(chars);
         }
-        chars=(char *)uprv_malloc(capacity);
+        chars = static_cast<char*>(uprv_malloc(capacity));
         if(chars==nullptr) {
             chars=charsBuffer;
             charsCapacity=sizeof(charsBuffer);
@@ -104,7 +104,7 @@ UnicodeString *
 StringEnumeration::setChars(const char *s, int32_t length, UErrorCode &status) {
     if(U_SUCCESS(status) && s!=nullptr) {
         if(length<0) {
-            length=(int32_t)uprv_strlen(s);
+            length = static_cast<int32_t>(uprv_strlen(s));
         }
 
         char16_t *buffer=unistr.getBuffer(length+1);
@@ -122,7 +122,7 @@ StringEnumeration::setChars(const char *s, int32_t length, UErrorCode &status) {
 }
 bool
 StringEnumeration::operator==(const StringEnumeration& that)const {
-    return typeid(*this) == typeid(that); 
+    return typeid(*this) == typeid(that);
 }
 
 bool
@@ -260,7 +260,7 @@ U_CDECL_END
  * delete it (regardless of error status).
  */
 U_CAPI UEnumeration* U_EXPORT2
-uenum_openFromStringEnumeration(icu::StringEnumeration* adopted, UErrorCode* ec) { 
+uenum_openFromStringEnumeration(icu::StringEnumeration* adopted, UErrorCode* ec) {
     UEnumeration* result = nullptr;
     if (U_SUCCESS(*ec) && adopted != nullptr) {
         result = (UEnumeration*) uprv_malloc(sizeof(UEnumeration));
@@ -307,7 +307,7 @@ ucharstrenum_unext(UEnumeration* en,
     }
     const char16_t* result = ((const char16_t**)e->uenum.context)[e->index++];
     if (resultLength) {
-        *resultLength = (int32_t)u_strlen(result);
+        *resultLength = u_strlen(result);
     }
     return result;
 }

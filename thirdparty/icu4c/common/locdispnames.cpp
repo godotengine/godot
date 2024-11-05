@@ -245,7 +245,7 @@ Locale::getDisplayName(const Locale &displayLocale,
     return result;
 }
 
-#if ! UCONFIG_NO_BREAK_ITERATION
+#if !UCONFIG_NO_BREAK_ITERATION
 
 // -------------------------------------
 // Gets the objectLocale display name in the default locale language.
@@ -299,7 +299,7 @@ constexpr char _kSeparator[]       = "separator";
 
 int32_t
 _getStringOrCopyKey(const char *path, const char *locale,
-                    const char *tableKey, 
+                    const char *tableKey,
                     const char* subTableKey,
                     const char *itemKey,
                     const char *substitute,
@@ -351,7 +351,7 @@ _getStringOrCopyKey(const char *path, const char *locale,
         }
     } else {
         /* no string from a resource bundle: convert the substitute */
-        length=(int32_t)uprv_strlen(substitute);
+        length = static_cast<int32_t>(uprv_strlen(substitute));
         u_charsToUChars(substitute, dest, uprv_min(length, destCapacity));
         errorCode = U_USING_DEFAULT_WARNING;
     }
@@ -507,7 +507,7 @@ uloc_getDisplayName(const char *locale,
     const char16_t *pattern;
     int32_t patLen = 0;
     int32_t sub0Pos, sub1Pos;
-    
+
     char16_t formatOpenParen         = 0x0028; // (
     char16_t formatReplaceOpenParen  = 0x005B; // [
     char16_t formatCloseParen        = 0x0029; // )
@@ -805,8 +805,8 @@ uloc_getDisplayKeyword(const char* keyword,
     /* pass itemKey=nullptr to look for a top-level item */
     return _getStringOrCopyKey(U_ICUDATA_LANG, displayLocale,
                                _kKeys, nullptr,
-                               keyword, 
-                               keyword,      
+                               keyword,
+                               keyword,
                                dest, destCapacity,
                                *status);
 
@@ -835,10 +835,13 @@ uloc_getDisplayKeywordValue(   const char* locale,
     }
 
     /* get the keyword value */
-    CharString keywordValue = ulocimp_getKeywordValue(locale, keyword, *status);
+    CharString keywordValue;
+    if (keyword != nullptr && *keyword != '\0') {
+        keywordValue = ulocimp_getKeywordValue(locale, keyword, *status);
+    }
 
-    /* 
-     * if the keyword is equal to currency .. then to get the display name 
+    /*
+     * if the keyword is equal to currency .. then to get the display name
      * we need to do the fallback ourselves
      */
     if(uprv_stricmp(keyword, _kCurrency)==0){
@@ -884,11 +887,11 @@ uloc_getDisplayKeywordValue(   const char* locale,
             }
         }
 
-        
+
     }else{
 
         return _getStringOrCopyKey(U_ICUDATA_LANG, displayLocale,
-                                   _kTypes, keyword, 
+                                   _kTypes, keyword,
                                    keywordValue.data(),
                                    keywordValue.data(),
                                    dest, destCapacity,

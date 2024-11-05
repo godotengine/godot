@@ -132,13 +132,13 @@ u_strFromUTF32WithSub(char16_t *dest,
 
     /* Terminate the buffer */
     u_terminateUChars(dest, destCapacity, reqLength, pErrorCode);
-    
+
     return dest;
 }
 
 U_CAPI char16_t* U_EXPORT2
 u_strFromUTF32(char16_t *dest,
-               int32_t destCapacity, 
+               int32_t destCapacity,
                int32_t *pDestLength,
                const UChar32 *src,
                int32_t srcLength,
@@ -150,7 +150,7 @@ u_strFromUTF32(char16_t *dest,
             pErrorCode);
 }
 
-U_CAPI UChar32* U_EXPORT2 
+U_CAPI UChar32* U_EXPORT2
 u_strToUTF32WithSub(UChar32 *dest,
              int32_t destCapacity,
              int32_t *pDestLength,
@@ -242,8 +242,8 @@ u_strToUTF32WithSub(UChar32 *dest,
     return dest;
 }
 
-U_CAPI UChar32* U_EXPORT2 
-u_strToUTF32(UChar32 *dest, 
+U_CAPI UChar32* U_EXPORT2
+u_strToUTF32(UChar32 *dest,
              int32_t destCapacity,
              int32_t *pDestLength,
              const char16_t *src,
@@ -566,7 +566,7 @@ u_strFromUTF8Lenient(char16_t *dest,
     if(U_FAILURE(*pErrorCode)){
         return nullptr;
     }
-        
+
     if( (src==nullptr && srcLength!=0) || srcLength < -1 ||
         (destCapacity<0) || (dest == nullptr && destCapacity > 0)
     ) {
@@ -771,25 +771,25 @@ static inline uint8_t *
 _appendUTF8(uint8_t *pDest, UChar32 c) {
     /* it is 0<=c<=0x10ffff and not a surrogate if called by a validating function */
     if((c)<=0x7f) {
-        *pDest++=(uint8_t)c;
+        *pDest++ = static_cast<uint8_t>(c);
     } else if(c<=0x7ff) {
-        *pDest++=(uint8_t)((c>>6)|0xc0);
-        *pDest++=(uint8_t)((c&0x3f)|0x80);
+        *pDest++ = static_cast<uint8_t>((c >> 6) | 0xc0);
+        *pDest++ = static_cast<uint8_t>((c & 0x3f) | 0x80);
     } else if(c<=0xffff) {
-        *pDest++=(uint8_t)((c>>12)|0xe0);
-        *pDest++=(uint8_t)(((c>>6)&0x3f)|0x80);
-        *pDest++=(uint8_t)(((c)&0x3f)|0x80);
+        *pDest++ = static_cast<uint8_t>((c >> 12) | 0xe0);
+        *pDest++ = static_cast<uint8_t>(((c >> 6) & 0x3f) | 0x80);
+        *pDest++ = static_cast<uint8_t>(((c) & 0x3f) | 0x80);
     } else /* if((uint32_t)(c)<=0x10ffff) */ {
-        *pDest++=(uint8_t)(((c)>>18)|0xf0);
-        *pDest++=(uint8_t)((((c)>>12)&0x3f)|0x80);
-        *pDest++=(uint8_t)((((c)>>6)&0x3f)|0x80);
-        *pDest++=(uint8_t)(((c)&0x3f)|0x80);
+        *pDest++ = static_cast<uint8_t>(((c) >> 18) | 0xf0);
+        *pDest++ = static_cast<uint8_t>((((c) >> 12) & 0x3f) | 0x80);
+        *pDest++ = static_cast<uint8_t>((((c) >> 6) & 0x3f) | 0x80);
+        *pDest++ = static_cast<uint8_t>(((c) & 0x3f) | 0x80);
     }
     return pDest;
 }
 
-   
-U_CAPI char* U_EXPORT2 
+
+U_CAPI char* U_EXPORT2
 u_strToUTF8WithSub(char *dest,
             int32_t destCapacity,
             int32_t *pDestLength,
@@ -807,7 +807,7 @@ u_strToUTF8WithSub(char *dest,
     if(U_FAILURE(*pErrorCode)){
         return nullptr;
     }
-        
+
     if( (pSrc==nullptr && srcLength!=0) || srcLength < -1 ||
         (destCapacity<0) || (dest == nullptr && destCapacity > 0) ||
         subchar > 0x10ffff || U_IS_SURROGATE(subchar)
@@ -852,7 +852,7 @@ u_strToUTF8WithSub(char *dest,
                 int32_t length;
 
                 /*need not check for NUL because NUL fails U16_IS_TRAIL() anyway*/
-                if(U16_IS_SURROGATE_LEAD(ch) && U16_IS_TRAIL(ch2=*pSrc)) { 
+                if(U16_IS_SURROGATE_LEAD(ch) && U16_IS_TRAIL(ch2=*pSrc)) {
                     ++pSrc;
                     ch=U16_GET_SUPPLEMENTARY(ch, ch2);
                 } else if(subchar>=0) {
@@ -939,7 +939,7 @@ u_strToUTF8WithSub(char *dest,
                         break;  /* recompute count */
                     }
 
-                    if(U16_IS_SURROGATE_LEAD(ch) && U16_IS_TRAIL(ch2=*pSrc)) { 
+                    if(U16_IS_SURROGATE_LEAD(ch) && U16_IS_TRAIL(ch2=*pSrc)) {
                         ++pSrc;
                         ch=U16_GET_SUPPLEMENTARY(ch, ch2);
 
@@ -994,7 +994,7 @@ u_strToUTF8WithSub(char *dest,
             } else /* ch is a surrogate */ {
                 int32_t length;
 
-                if(U16_IS_SURROGATE_LEAD(ch) && pSrc<pSrcLimit && U16_IS_TRAIL(ch2=*pSrc)) { 
+                if(U16_IS_SURROGATE_LEAD(ch) && pSrc<pSrcLimit && U16_IS_TRAIL(ch2=*pSrc)) {
                     ++pSrc;
                     ch=U16_GET_SUPPLEMENTARY(ch, ch2);
                 } else if(subchar>=0) {
@@ -1053,7 +1053,7 @@ u_strToUTF8WithSub(char *dest,
     return dest;
 }
 
-U_CAPI char* U_EXPORT2 
+U_CAPI char* U_EXPORT2
 u_strToUTF8(char *dest,
             int32_t destCapacity,
             int32_t *pDestLength,
@@ -1309,7 +1309,7 @@ u_strFromJavaModifiedUTF8WithSub(
     return dest;
 }
 
-U_CAPI char* U_EXPORT2 
+U_CAPI char* U_EXPORT2
 u_strToJavaModifiedUTF8(
         char *dest,
         int32_t destCapacity,

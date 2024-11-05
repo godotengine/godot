@@ -79,7 +79,7 @@ public:
 		for (int i = 0; i < custom_monitor_names.size(); i++) {
 			Variant monitor_value = performance->call("get_custom_monitor", custom_monitor_names[i]);
 			if (!monitor_value.is_num()) {
-				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
+				ERR_PRINT(vformat("Value of custom monitor '%s' is not a number.", String(custom_monitor_names[i])));
 				arr[i + max] = Variant();
 			} else {
 				arr[i + max] = monitor_value;
@@ -569,7 +569,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
 				if (!captured) {
-					WARN_PRINT("Unknown message received from debugger: " + command);
+					WARN_PRINT(vformat("Unknown message received from debugger: %s.", command));
 				}
 			}
 		} else {

@@ -54,7 +54,7 @@ void Light2D::_update_light_visibility() {
 	if (editor_only) {
 		editor_ok = false;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	RS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree() && editor_ok);
 }
@@ -343,7 +343,6 @@ Light2D::~Light2D() {
 //////////////////////////////
 
 #ifdef TOOLS_ENABLED
-
 Dictionary PointLight2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = get_texture_offset();
@@ -367,7 +366,9 @@ Point2 PointLight2D::_edit_get_pivot() const {
 bool PointLight2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 PointLight2D::_edit_get_rect() const {
 	if (texture.is_null()) {
 		return Rect2();
@@ -380,7 +381,7 @@ Rect2 PointLight2D::_edit_get_rect() const {
 bool PointLight2D::_edit_use_rect() const {
 	return !texture.is_null();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 PointLight2D::get_anchorable_rect() const {
 	if (texture.is_null()) {

@@ -20,7 +20,7 @@ U_NAMESPACE_BEGIN
  * or a pointer.  If a hint bit is zero, then the associated
  * token is assumed to be an integer. This is needed for iSeries
  */
- 
+
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(UVector64)
 
 UVector64::UVector64(UErrorCode &status) :
@@ -51,10 +51,10 @@ void UVector64::_init(int32_t initialCapacity, UErrorCode &status) {
     if (maxCapacity>0 && maxCapacity<initialCapacity) {
         initialCapacity = maxCapacity;
     }
-    if (initialCapacity > (int32_t)(INT32_MAX / sizeof(int64_t))) {
+    if (initialCapacity > static_cast<int32_t>(INT32_MAX / sizeof(int64_t))) {
         initialCapacity = uprv_min(DEFAULT_CAPACITY, maxCapacity);
     }
-    elements = (int64_t *)uprv_malloc(sizeof(int64_t)*initialCapacity);
+    elements = static_cast<int64_t*>(uprv_malloc(sizeof(int64_t) * initialCapacity));
     if (elements == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
     } else {
@@ -141,12 +141,12 @@ UBool UVector64::expandCapacity(int32_t minimumCapacity, UErrorCode &status) {
     if (maxCapacity > 0 && newCap > maxCapacity) {
         newCap = maxCapacity;
     }
-    if (newCap > (int32_t)(INT32_MAX / sizeof(int64_t))) {  // integer overflow check
+    if (newCap > static_cast<int32_t>(INT32_MAX / sizeof(int64_t))) { // integer overflow check
         // We keep the original memory contents on bad minimumCapacity/maxCapacity.
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return false;
     }
-    int64_t* newElems = (int64_t *)uprv_realloc(elements, sizeof(int64_t)*newCap);
+    int64_t* newElems = static_cast<int64_t*>(uprv_realloc(elements, sizeof(int64_t) * newCap));
     if (newElems == nullptr) {
         // We keep the original contents on the memory failure on realloc.
         status = U_MEMORY_ALLOCATION_ERROR;
@@ -162,7 +162,7 @@ void UVector64::setMaxCapacity(int32_t limit) {
     if (limit < 0) {
         limit = 0;
     }
-    if (limit > (int32_t)(INT32_MAX / sizeof(int64_t))) {  // integer overflow check for realloc
+    if (limit > static_cast<int32_t>(INT32_MAX / sizeof(int64_t))) { // integer overflow check for realloc
         //  Something is very wrong, don't realloc, leave capacity and maxCapacity unchanged
         return;
     }
@@ -171,10 +171,10 @@ void UVector64::setMaxCapacity(int32_t limit) {
         // Current capacity is within the new limit.
         return;
     }
-    
+
     // New maximum capacity is smaller than the current size.
     // Realloc the storage to the new, smaller size.
-    int64_t* newElems = (int64_t *)uprv_realloc(elements, sizeof(int64_t)*maxCapacity);
+    int64_t* newElems = static_cast<int64_t*>(uprv_realloc(elements, sizeof(int64_t) * maxCapacity));
     if (newElems == nullptr) {
         // Realloc to smaller failed.
         //   Just keep what we had.  No need to call it a failure.
@@ -206,7 +206,7 @@ void UVector64::setSize(int32_t newSize) {
         for (i=count; i<newSize; ++i) {
             elements[i] = 0;
         }
-    } 
+    }
     count = newSize;
 }
 

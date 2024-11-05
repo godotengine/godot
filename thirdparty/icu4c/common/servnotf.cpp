@@ -23,8 +23,8 @@ UOBJECT_DEFINE_RTTI_IMPLEMENTATION(EventListener)
 
 static UMutex notifyLock;
 
-ICUNotifier::ICUNotifier() 
-: listeners(nullptr) 
+ICUNotifier::ICUNotifier()
+: listeners(nullptr)
 {
 }
 
@@ -37,8 +37,8 @@ ICUNotifier::~ICUNotifier() {
 }
 
 
-void 
-ICUNotifier::addListener(const EventListener* l, UErrorCode& status) 
+void
+ICUNotifier::addListener(const EventListener* l, UErrorCode& status)
 {
     if (U_SUCCESS(status)) {
         if (l == nullptr) {
@@ -56,7 +56,7 @@ ICUNotifier::addListener(const EventListener* l, UErrorCode& status)
                 listeners = lpListeners.orphan();
             } else {
                 for (int i = 0, e = listeners->size(); i < e; ++i) {
-                    const EventListener* el = (const EventListener*)(listeners->elementAt(i));
+                    const EventListener* el = static_cast<const EventListener*>(listeners->elementAt(i));
                     if (l == el) {
                         return;
                     }
@@ -74,8 +74,8 @@ ICUNotifier::addListener(const EventListener* l, UErrorCode& status)
     }
 }
 
-void 
-ICUNotifier::removeListener(const EventListener *l, UErrorCode& status) 
+void
+ICUNotifier::removeListener(const EventListener *l, UErrorCode& status)
 {
     if (U_SUCCESS(status)) {
         if (l == nullptr) {
@@ -88,7 +88,7 @@ ICUNotifier::removeListener(const EventListener *l, UErrorCode& status)
             if (listeners != nullptr) {
                 // identity equality check
                 for (int i = 0, e = listeners->size(); i < e; ++i) {
-                    const EventListener* el = (const EventListener*)listeners->elementAt(i);
+                    const EventListener* el = static_cast<const EventListener*>(listeners->elementAt(i));
                     if (l == el) {
                         listeners->removeElementAt(i);
                         if (listeners->size() == 0) {
@@ -103,13 +103,13 @@ ICUNotifier::removeListener(const EventListener *l, UErrorCode& status)
     }
 }
 
-void 
-ICUNotifier::notifyChanged() 
+void
+ICUNotifier::notifyChanged()
 {
     Mutex lmx(&notifyLock);
     if (listeners != nullptr) {
         for (int i = 0, e = listeners->size(); i < e; ++i) {
-            EventListener* el = (EventListener*)listeners->elementAt(i);
+            EventListener* el = static_cast<EventListener*>(listeners->elementAt(i));
             notifyListener(*el);
         }
     }

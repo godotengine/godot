@@ -116,7 +116,6 @@ private:
 		FILE_REMOVE,
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
-		FILE_INFO,
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
@@ -402,7 +401,7 @@ public:
 	FileSortOption get_file_sort() const { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
 

@@ -33,7 +33,7 @@ static icu::Hashtable * LocaleUtility_cache = nullptr;
  */
 
 /**
- * Release all static memory held by Locale Utility.  
+ * Release all static memory held by Locale Utility.
  */
 U_CDECL_BEGIN
 static UBool U_CALLCONV service_cleanup() {
@@ -171,7 +171,7 @@ LocaleUtility::initLocaleFromName(const UnicodeString& id, Locale& result)
         prev = 0;
         UErrorCode status = U_ZERO_ERROR;
         do {
-            i = id.indexOf((char16_t)0x40, prev);
+            i = id.indexOf(static_cast<char16_t>(0x40), prev);
             if(i < 0) {
                 // no @ between prev and the rest of the string
                 buffer.appendInvariantChars(id.tempSubString(prev), status);
@@ -224,7 +224,7 @@ LocaleUtility::getAvailableLocaleNames(const UnicodeString& bundleID)
 
     Hashtable* htp;
     umtx_lock(nullptr);
-    htp = (Hashtable*) cache->get(bundleID);
+    htp = static_cast<Hashtable*>(cache->get(bundleID));
     umtx_unlock(nullptr);
 
     if (htp == nullptr) {

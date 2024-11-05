@@ -139,13 +139,13 @@ void RedirectIOToConsole() {
 
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
 		// Restore redirection (Note: if not redirected it's NULL handles not INVALID_HANDLE_VALUE).
-		if (h_stdin != 0) {
+		if (h_stdin != nullptr) {
 			SetStdHandle(STD_INPUT_HANDLE, h_stdin);
 		}
-		if (h_stdout != 0) {
+		if (h_stdout != nullptr) {
 			SetStdHandle(STD_OUTPUT_HANDLE, h_stdout);
 		}
-		if (h_stderr != 0) {
+		if (h_stderr != nullptr) {
 			SetStdHandle(STD_ERROR_HANDLE, h_stderr);
 		}
 
@@ -908,9 +908,9 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	}
 
 	// Create pipes.
-	HANDLE pipe_in[2] = { 0, 0 };
-	HANDLE pipe_out[2] = { 0, 0 };
-	HANDLE pipe_err[2] = { 0, 0 };
+	HANDLE pipe_in[2] = { nullptr, nullptr };
+	HANDLE pipe_out[2] = { nullptr, nullptr };
+	HANDLE pipe_err[2] = { nullptr, nullptr };
 
 	SECURITY_ATTRIBUTES sa;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -981,7 +981,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Ref<FileAccessWindowsPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], nullptr, p_blocking);
 
 	ret["stdio"] = main_pipe;
 	ret["stderr"] = err_pipe;
@@ -1363,7 +1363,7 @@ public:
 		locale = p_locale;
 		n_sub = p_nsub;
 		rtl = p_rtl;
-	};
+	}
 
 	virtual ~FallbackTextAnalysisSource() {}
 };

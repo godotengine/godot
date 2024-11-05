@@ -539,7 +539,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 	if (p_generate_lods) {
 		// Use normal merge/split angles that match the defaults used for 3D scene importing.
-		mesh->generate_lods(60.0f, 25.0f, {});
+		mesh->generate_lods(60.0f, {});
 	}
 
 	if (p_generate_shadow_mesh) {

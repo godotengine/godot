@@ -21,6 +21,7 @@
 */
 
 #include "unicode/utypes.h"
+#include "unicode/char16ptr.h"
 #include "unicode/uobject.h"
 #include "unicode/uset.h"
 #include "unicode/uniset.h"
@@ -83,7 +84,7 @@ uset_add(USet* set, UChar32 c) {
 
 U_CAPI void U_EXPORT2
 uset_addRange(USet* set, UChar32 start, UChar32 end) {
-    ((UnicodeSet*) set)->UnicodeSet::add(start, end);    
+    ((UnicodeSet*) set)->UnicodeSet::add(start, end);
 }
 
 U_CAPI void U_EXPORT2
@@ -307,9 +308,29 @@ uset_getRangeCount(const USet *set) {
 }
 
 U_CAPI int32_t U_EXPORT2
+uset_getStringCount(const USet *uset) {
+    const UnicodeSet &set = *(const UnicodeSet *)uset;
+    return USetAccess::getStringCount(set);
+}
+
+U_CAPI int32_t U_EXPORT2
 uset_getItemCount(const USet* uset) {
     const UnicodeSet& set = *(const UnicodeSet*)uset;
     return set.getRangeCount() + USetAccess::getStringCount(set);
+}
+
+U_CAPI const UChar* U_EXPORT2
+uset_getString(const USet *uset, int32_t index, int32_t *pLength) {
+    if (pLength == nullptr) { return nullptr; }
+    const UnicodeSet &set = *(const UnicodeSet *)uset;
+    int32_t count = USetAccess::getStringCount(set);
+    if (index < 0 || count <= index) {
+        *pLength = 0;
+        return nullptr;
+    }
+    const UnicodeString *s = USetAccess::getString(set, index);
+    *pLength = s->length();
+    return toUCharPtr(s->getBuffer());
 }
 
 U_CAPI int32_t U_EXPORT2
@@ -475,7 +496,7 @@ uset_serializedContains(const USerializedSet* set, UChar32 c) {
         } else {
             hi += 1;
         }
-        return (UBool)(hi&1);
+        return hi&1;
     } else {
         /* find c in the supplementary part */
         uint16_t high=(uint16_t)(c>>16), low=(uint16_t)c;
@@ -500,7 +521,7 @@ uset_serializedContains(const USerializedSet* set, UChar32 c) {
             hi += 2;
         }
         /* count pairs of 16-bit units even per BMP and check if the number of pairs is odd */
-        return (UBool)(((hi+(base<<1))&2)!=0);
+        return ((hi+(base<<1))&2)!=0;
     }
 }
 
@@ -567,40 +588,40 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 // efficiency.
 // ---
 // #define USET_GROW_DELTA 20
-// 
+//
 // static int32_t
 // findChar(const UChar32* array, int32_t length, UChar32 c) {
 //     int32_t i;
-// 
+//
 //     /* check the last range limit first for more efficient appending */
 //     if(length>0) {
 //         if(c>=array[length-1]) {
 //             return length;
 //         }
-// 
+//
 //         /* do not check the last range limit again in the loop below */
 //         --length;
 //     }
-// 
+//
 //     for(i=0; i<length && c>=array[i]; ++i) {}
 //     return i;
 // }
-// 
+//
 // static UBool
 // addRemove(USet* set, UChar32 c, int32_t doRemove) {
 //     int32_t i, length, more;
-// 
+//
 //     if(set==nullptr || (uint32_t)c>0x10ffff) {
 //         return false;
 //     }
-// 
+//
 //     length=set->length;
 //     i=findChar(set->array, length, c);
 //     if((i&1)^doRemove) {
 //         /* c is already in the set */
 //         return true;
 //     }
-// 
+//
 //     /* how many more array items do we need? */
 //     if(i<length && (c+1)==set->array[i]) {
 //         /* c is just before the following range, extend that in-place by one */
@@ -640,7 +661,7 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //         /* insert two range limits c, c+1 */
 //         more=2;
 //     }
-// 
+//
 //     /* insert <more> range limits */
 //     if(length+more>set->capacity) {
 //         /* reallocate */
@@ -651,13 +672,13 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //         }
 //         set->capacity=newCapacity;
 //         uprv_memcpy(newArray, set->array, length*4);
-// 
+//
 //         if(set->array!=set->staticBuffer) {
 //             uprv_free(set->array);
 //         }
 //         set->array=newArray;
 //     }
-// 
+//
 //     if(i<length) {
 //         uprv_memmove(set->array+i+more, set->array+i, (length-i)*4);
 //     }
@@ -666,15 +687,15 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //         set->array[i+1]=c+1;
 //     }
 //     set->length+=more;
-// 
+//
 //     return true;
 // }
-// 
+//
 // U_CAPI UBool U_EXPORT2
 // uset_add(USet* set, UChar32 c) {
 //     return addRemove(set, c, 0);
 // }
-// 
+//
 // U_CAPI void U_EXPORT2
 // uset_remove(USet* set, UChar32 c) {
 //     addRemove(set, c, 1);

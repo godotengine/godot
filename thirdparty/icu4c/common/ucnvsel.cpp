@@ -377,7 +377,7 @@ ucnvsel_swap(const UDataSwapper *ds,
   }
 
   /* check data format and format version */
-  const UDataInfo *pInfo = (const UDataInfo *)((const char *)inData + 4);
+  const UDataInfo* pInfo = reinterpret_cast<const UDataInfo*>(static_cast<const char*>(inData) + 4);
   if(!(
     pInfo->dataFormat[0] == 0x43 &&  /* dataFormat="CSel" */
     pInfo->dataFormat[1] == 0x53 &&
@@ -407,11 +407,11 @@ ucnvsel_swap(const UDataSwapper *ds,
     }
   }
 
-  const uint8_t *inBytes = (const uint8_t *)inData + headerSize;
-  uint8_t *outBytes = (uint8_t *)outData + headerSize;
+  const uint8_t* inBytes = static_cast<const uint8_t*>(inData) + headerSize;
+  uint8_t* outBytes = static_cast<uint8_t*>(outData) + headerSize;
 
   /* read the indexes */
-  const int32_t *inIndexes = (const int32_t *)inBytes;
+  const int32_t* inIndexes = reinterpret_cast<const int32_t*>(inBytes);
   int32_t indexes[16];
   int32_t i;
   for(i = 0; i < 16; ++i) {
@@ -658,7 +658,7 @@ static const UEnumeration defaultEncodings = {
     ucnvsel_close_selector_iterator,
     ucnvsel_count_encodings,
     uenum_unextDefault,
-    ucnvsel_next_encoding, 
+    ucnvsel_next_encoding,
     ucnvsel_reset_iterator
 };
 
@@ -711,7 +711,7 @@ static UEnumeration *selectForMask(const UConverterSelector* sel,
     return nullptr;
   }
   memcpy(en.getAlias(), &defaultEncodings, sizeof(UEnumeration));
-  
+
   int32_t columns = (sel->encodingsCount+31)/32;
   int16_t numOnes = countOnes(mask.getAlias(), columns);
   // now, we know the exact space we need for index
@@ -767,7 +767,7 @@ ucnvsel_selectForString(const UConverterSelector* sel,
     } else {
       limit = nullptr;
     }
-    
+
     while (limit == nullptr ? *s != 0 : s != limit) {
       UChar32 c;
       uint16_t pvIndex;
@@ -808,7 +808,7 @@ ucnvsel_selectForUTF8(const UConverterSelector* sel,
 
   if(s!=nullptr) {
     const char *limit = s + length;
-    
+
     while (s != limit) {
       uint16_t pvIndex;
       UTRIE2_U8_NEXT16(sel->trie, s, limit, pvIndex);

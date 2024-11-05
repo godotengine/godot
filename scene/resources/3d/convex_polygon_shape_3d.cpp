@@ -35,7 +35,7 @@
 Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> poly_points = get_points();
 
-	if (poly_points.size() > 3) {
+	if (poly_points.size() > 1) { // Need at least 2 points for a line.
 		Vector<Vector3> varr = Variant(poly_points);
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(varr, md);

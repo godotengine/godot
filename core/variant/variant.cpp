@@ -1736,7 +1736,7 @@ String Variant::stringify(int recursion_count) const {
 		case INT:
 			return itos(_data._int);
 		case FLOAT:
-			return rtos(_data._float);
+			return String::num_real(_data._float, true);
 		case STRING:
 			return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2:
@@ -2719,8 +2719,7 @@ Variant::Variant(const Vector<Plane> &p_array) :
 	}
 }
 
-Variant::Variant(const Vector<Face3> &p_face_array) :
-		type(NIL) {
+Variant::Variant(const Vector<Face3> &p_face_array) {
 	PackedVector3Array vertices;
 	int face_count = p_face_array.size();
 	vertices.resize(face_count * 3);
@@ -2739,8 +2738,7 @@ Variant::Variant(const Vector<Face3> &p_face_array) :
 	*this = vertices;
 }
 
-Variant::Variant(const Vector<Variant> &p_array) :
-		type(NIL) {
+Variant::Variant(const Vector<Variant> &p_array) {
 	Array arr;
 	arr.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
@@ -2749,8 +2747,7 @@ Variant::Variant(const Vector<Variant> &p_array) :
 	*this = arr;
 }
 
-Variant::Variant(const Vector<StringName> &p_array) :
-		type(NIL) {
+Variant::Variant(const Vector<StringName> &p_array) {
 	PackedStringArray v;
 	int len = p_array.size();
 	v.resize(len);
@@ -2908,8 +2905,7 @@ Variant::Variant(const IPAddress &p_address) :
 	memnew_placement(_data._mem, String(p_address));
 }
 
-Variant::Variant(const Variant &p_variant) :
-		type(NIL) {
+Variant::Variant(const Variant &p_variant) {
 	reference(p_variant);
 }
 

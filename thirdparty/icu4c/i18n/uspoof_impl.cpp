@@ -73,7 +73,7 @@ void SpoofImpl::construct(UErrorCode& status) {
 
 // Copy Constructor, used by the user level clone() function.
 SpoofImpl::SpoofImpl(const SpoofImpl &src, UErrorCode &status)  :
-        fChecks(USPOOF_ALL_CHECKS), fSpoofData(nullptr), fAllowedCharsSet(nullptr) , 
+        fChecks(USPOOF_ALL_CHECKS), fSpoofData(nullptr), fAllowedCharsSet(nullptr) ,
         fAllowedLocales(nullptr) {
     if (U_FAILURE(status)) {
         return;
@@ -148,7 +148,7 @@ void SpoofImpl::setAllowedLocales(const char *localesList, UErrorCode &status) {
         if (trimmedEnd <= locStart) {
             break;
         }
-        const char *locale = uprv_strndup(locStart, (int32_t)(trimmedEnd + 1 - locStart));
+        const char* locale = uprv_strndup(locStart, static_cast<int32_t>(trimmedEnd + 1 - locStart));
         localeListCount++;
 
         // We have one locale from the locales list.
@@ -170,7 +170,7 @@ void SpoofImpl::setAllowedLocales(const char *localesList, UErrorCode &status) {
         if (fAllowedLocales == nullptr || tmpSet == nullptr) {
             status = U_MEMORY_ALLOCATION_ERROR;
             return;
-        } 
+        }
         tmpSet->freeze();
         delete fAllowedCharsSet;
         fAllowedCharsSet = tmpSet;
@@ -178,14 +178,14 @@ void SpoofImpl::setAllowedLocales(const char *localesList, UErrorCode &status) {
         return;
     }
 
-        
+
     // Add all common and inherited characters to the set of allowed chars.
     UnicodeSet tempSet;
     tempSet.applyIntPropertyValue(UCHAR_SCRIPT, USCRIPT_COMMON, status);
     allowedChars.addAll(tempSet);
     tempSet.applyIntPropertyValue(UCHAR_SCRIPT, USCRIPT_INHERITED, status);
     allowedChars.addAll(tempSet);
-    
+
     // If anything went wrong, we bail out without changing
     // the state of the spoof checker.
     if (U_FAILURE(status)) {
@@ -305,7 +305,7 @@ void SpoofImpl::getNumerics(const UnicodeString& input, UnicodeSet& result, UErr
         if (u_charType(codePoint) == U_DECIMAL_DIGIT_NUMBER) {
             // Store the zero character as a representative for comparison.
             // Unicode guarantees it is codePoint - value
-            result.add(codePoint - (UChar32)u_getNumericValue(codePoint));
+            result.add(codePoint - static_cast<UChar32>(u_getNumericValue(codePoint)));
         }
     }
 }
@@ -432,7 +432,7 @@ UChar32 SpoofImpl::ScanHex(const char16_t *s, int32_t start, int32_t limit, UErr
         status = U_PARSE_ERROR;
         val = 0;
     }
-    return (UChar32)val;
+    return static_cast<UChar32>(val);
 }
 
 
@@ -554,7 +554,7 @@ uspoof_cleanupDefaultData() {
 
 static void U_CALLCONV uspoof_loadDefaultData(UErrorCode& status) {
     UDataMemory *udm = udata_openChoice(nullptr, "cfu", "confusables",
-                                        spoofDataIsAcceptable, 
+                                        spoofDataIsAcceptable,
                                         nullptr,       // context, would receive dataVersion if supplied.
                                         &status);
     if (U_FAILURE(status)) { return; }
@@ -601,7 +601,7 @@ SpoofData::SpoofData(const void *data, int32_t length, UErrorCode &status)
     if (U_FAILURE(status)) {
         return;
     }
-    if ((size_t)length < sizeof(SpoofDataHeader)) {
+    if (static_cast<size_t>(length) < sizeof(SpoofDataHeader)) {
         status = U_INVALID_FORMAT_ERROR;
         return;
     }
@@ -633,7 +633,7 @@ SpoofData::SpoofData(UErrorCode &status) {
     // Just in case it's not, round it up.
     uint32_t initialSize = (sizeof(SpoofDataHeader) + 15) & ~15;
     U_ASSERT(initialSize == sizeof(SpoofDataHeader));
-    
+
     fRawData = static_cast<SpoofDataHeader *>(uprv_malloc(initialSize));
     fMemLimit = initialSize;
     if (fRawData == nullptr) {
@@ -688,13 +688,13 @@ void SpoofData::initPtrs(UErrorCode &status) {
         return;
     }
     if (fRawData->fCFUKeys != 0) {
-        fCFUKeys = (int32_t *)((char *)fRawData + fRawData->fCFUKeys);
+        fCFUKeys = reinterpret_cast<int32_t*>(reinterpret_cast<char*>(fRawData) + fRawData->fCFUKeys);
     }
     if (fRawData->fCFUStringIndex != 0) {
-        fCFUValues = (uint16_t *)((char *)fRawData + fRawData->fCFUStringIndex);
+        fCFUValues = reinterpret_cast<uint16_t*>(reinterpret_cast<char*>(fRawData) + fRawData->fCFUStringIndex);
     }
     if (fRawData->fCFUStringTable != 0) {
-        fCFUStrings = (char16_t *)((char *)fRawData + fRawData->fCFUStringTable);
+        fCFUStrings = reinterpret_cast<char16_t*>(reinterpret_cast<char*>(fRawData) + fRawData->fCFUStringTable);
     }
 }
 
@@ -739,7 +739,7 @@ void *SpoofData::reserveSpace(int32_t numBytes,  UErrorCode &status) {
     fRawData->fLength = fMemLimit;
     uprv_memset((char *)fRawData + returnOffset, 0, numBytes);
     initPtrs(status);
-    return (char *)fRawData + returnOffset;
+    return reinterpret_cast<char*>(fRawData) + returnOffset;
 }
 
 int32_t SpoofData::serialize(void *buf, int32_t capacity, UErrorCode &status) const {
@@ -806,7 +806,7 @@ int32_t SpoofData::appendValueTo(int32_t index, UnicodeString& dest) const {
     // an index into the string table (for longer strings)
     uint16_t value = fCFUValues[index];
     if (stringLength == 1) {
-        dest.append((char16_t)value);
+        dest.append(static_cast<char16_t>(value));
     } else {
         dest.append(fCFUStrings + value, stringLength);
     }
@@ -875,7 +875,7 @@ uspoof_swap(const UDataSwapper *ds, const void *inData, int32_t length, void *ou
     const uint8_t   *inBytes =(const uint8_t *)inData+headerSize;
     SpoofDataHeader *spoofDH = (SpoofDataHeader *)inBytes;
     if (ds->readUInt32(spoofDH->fMagic)   != USPOOF_MAGIC ||
-        ds->readUInt32(spoofDH->fLength)  <  sizeof(SpoofDataHeader)) 
+        ds->readUInt32(spoofDH->fLength)  <  sizeof(SpoofDataHeader))
     {
         udata_printError(ds, "uspoof_swap(): Spoof Data header is invalid.\n");
         *status=U_UNSUPPORTED_ERROR;

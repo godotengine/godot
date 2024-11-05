@@ -3,6 +3,8 @@ import os
 
 from SCons.Util import WhereIs
 
+from platform_methods import get_build_version
+
 
 def run_closure_compiler(target, source, env, for_signature):
     closure_bin = os.path.join(
@@ -21,27 +23,16 @@ def run_closure_compiler(target, source, env, for_signature):
     return " ".join(cmd)
 
 
-def get_build_version():
-    import version
-
-    name = "custom_build"
-    if os.getenv("BUILD_NAME") is not None:
-        name = os.getenv("BUILD_NAME")
-    v = "%d.%d" % (version.major, version.minor)
-    if version.patch > 0:
-        v += ".%d" % version.patch
-    status = version.status
-    if os.getenv("GODOT_VERSION_STATUS") is not None:
-        status = str(os.getenv("GODOT_VERSION_STATUS"))
-    v += ".%s.%s" % (status, name)
-    return v
-
-
 def create_engine_file(env, target, source, externs, threads_enabled):
     if env["use_closure_compiler"]:
         return env.BuildJS(target, source, JSEXTERNS=externs)
-    subst_dict = {"___GODOT_THREADS_ENABLED": "true" if threads_enabled else "false"}
-    return env.Substfile(target=target, source=[env.File(s) for s in source], SUBST_DICT=subst_dict)
+    subst_dict = {
+        "___GODOT_THREADS_ENABLED": "true" if threads_enabled else "false"}
+    return env.Substfile(
+        target=target,
+        source=[
+            env.File(s) for s in source],
+        SUBST_DICT=subst_dict)
 
 
 def create_template_zip(env, js, wasm, worker, side):
@@ -84,14 +75,17 @@ def create_template_zip(env, js, wasm, worker, side):
             cache.append("godot.editor.worker.js")
         opt_cache = ["godot.editor.wasm"]
         subst_dict = {
-            "___GODOT_VERSION___": get_build_version(),
+            "___GODOT_VERSION___": get_build_version(False),
             "___GODOT_NAME___": "GodotEngine",
             "___GODOT_CACHE___": json.dumps(cache),
             "___GODOT_OPT_CACHE___": json.dumps(opt_cache),
             "___GODOT_OFFLINE_PAGE___": "offline.html",
             "___GODOT_THREADS_ENABLED___": "true" if env["threads"] else "false",
         }
-        html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
+        html = env.Substfile(
+            target="#bin/godot${PROGSUFFIX}.html",
+            source=html,
+            SUBST_DICT=subst_dict)
         in_files.append(html)
         out_files.append(zip_dir.File(binary_name + ".html"))
         # And logo/favicon
