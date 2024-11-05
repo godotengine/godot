@@ -6177,6 +6177,8 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 			return false;
 		case API_TRAIT_USE_GENERAL_IN_COPY_QUEUES:
 			return true;
+		case API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS:
+			return !barrier_capabilities.enhanced_barriers_supported;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}

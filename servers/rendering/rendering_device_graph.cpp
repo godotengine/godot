@@ -140,6 +140,25 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 #endif
 }
 
+bool RenderingDeviceGraph::_check_command_intersection(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index) const {
+	if (p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE && p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE) {
+		// We don't check possible intersections for usages that aren't consecutive color or depth writes.
+		return true;
+	}
+
+	const uint32_t previous_command_data_offset = command_data_offsets[p_previous_command_index];
+	const uint32_t current_command_data_offset = command_data_offsets[p_command_index];
+	const RecordedDrawListCommand &previous_draw_list_command = *reinterpret_cast<const RecordedDrawListCommand *>(&command_data[previous_command_data_offset]);
+	const RecordedDrawListCommand &current_draw_list_command = *reinterpret_cast<const RecordedDrawListCommand *>(&command_data[current_command_data_offset]);
+	if (previous_draw_list_command.type != RecordedCommand::TYPE_DRAW_LIST || current_draw_list_command.type != RecordedCommand::TYPE_DRAW_LIST) {
+		// We don't check possible intersections if both commands aren't draw lists.
+		return true;
+	}
+
+	// We check if the region used by both draw lists have an intersection.
+	return previous_draw_list_command.region.intersects(current_draw_list_command.region);
+}
+
 int32_t RenderingDeviceGraph::_add_to_command_list(int32_t p_command_index, int32_t p_list_index) {
 	DEV_ASSERT(p_command_index < int32_t(command_count));
 	DEV_ASSERT(p_list_index < int32_t(command_list_nodes.size()));
@@ -425,11 +444,9 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 #if USE_BUFFER_BARRIERS
 				_add_buffer_barrier_to_command(resource_tracker->buffer_driver_id, resource_tracker->usage_access, new_usage_access, r_command->buffer_barrier_index, r_command->buffer_barrier_count);
 #endif
-				// FIXME: Memory barriers are currently pushed regardless of whether buffer barriers are being used or not. Refer to the comment on the
-				// definition of USE_BUFFER_BARRIERS for the reason behind this. This can be fixed to be one case or the other once it's been confirmed
-				// the buffer and memory barrier behavior discrepancy has been solved.
-				r_command->memory_barrier.src_access = resource_tracker->usage_access;
-				r_command->memory_barrier.dst_access = new_usage_access;
+				// Memory barriers are pushed regardless of buffer barriers being used or not.
+				r_command->memory_barrier.src_access = r_command->memory_barrier.src_access | resource_tracker->usage_access;
+				r_command->memory_barrier.dst_access = r_command->memory_barrier.dst_access | new_usage_access;
 			} else {
 				DEV_ASSERT(false && "Resource tracker does not contain a valid buffer or texture ID.");
 			}
@@ -449,10 +466,12 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 
 		if (different_usage) {
 			// Even if the usage of the resource isn't a write usage explicitly, a different usage implies a transition and it should therefore be considered a write.
-			write_usage = true;
+			// In the case of buffers however, this is not exactly necessary if the driver does not consider different buffer usages as different states.
+			write_usage = write_usage || bool(resource_tracker->texture_driver_id) || driver_buffers_require_transitions;
 			resource_tracker->usage = new_resource_usage;
 		}
 
+		bool command_intersection_failed = false;
 		if (search_tracker->write_command_or_list_index >= 0) {
 			if (search_tracker->write_command_list_enabled) {
 				// Make this command adjacent to any commands that wrote to this resource and intersect with the slice if it applies.
@@ -464,7 +483,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 					if (!resource_has_parent || search_tracker_rect.intersects(write_list_node.subresources)) {
 						if (write_list_node.command_index == p_command_index) {
 							ERR_FAIL_COND_MSG(!resource_has_parent, "Command can't have itself as a dependency.");
-						} else {
+						} else if (_check_command_intersection(resource_tracker, write_list_node.command_index, p_command_index)) {
 							// Command is dependent on this command. Add this command to the adjacency list of the write command.
 							_add_adjacent_command(write_list_node.command_index, p_command_index, r_command);
 
@@ -480,6 +499,8 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 								write_list_index = write_list_node.next_list_index;
 								continue;
 							}
+						} else {
+							command_intersection_failed = true;
 						}
 					}
 
@@ -490,14 +511,16 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 				// The index is just the latest command index that wrote to the resource.
 				if (search_tracker->write_command_or_list_index == p_command_index) {
 					ERR_FAIL_MSG("Command can't have itself as a dependency.");
-				} else {
+				} else if (_check_command_intersection(resource_tracker, search_tracker->write_command_or_list_index, p_command_index)) {
 					_add_adjacent_command(search_tracker->write_command_or_list_index, p_command_index, r_command);
+				} else {
+					command_intersection_failed = true;
 				}
 			}
 		}
 
 		if (write_usage) {
-			if (resource_has_parent) {
+			if (resource_has_parent || command_intersection_failed) {
 				if (!search_tracker->write_command_list_enabled && search_tracker->write_command_or_list_index >= 0) {
 					// Write command list was not being used but there was a write command recorded. Add a new node with the entire parent resource's subresources and the recorded command index to the list.
 					const RDD::TextureSubresourceRange &tracker_subresources = search_tracker->texture_subresources;
@@ -1318,6 +1341,7 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, RenderingContextDriver::Dev
 
 	driver_honors_barriers = driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS);
 	driver_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_CLEARS_WITH_COPY_ENGINE);
+	driver_buffers_require_transitions = driver->api_trait_get(RDD::API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS);
 }
 
 void RenderingDeviceGraph::finalize() {
