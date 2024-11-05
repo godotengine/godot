@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
@@ -303,11 +303,7 @@ bool FileAccessPack::is_open() const {
 void FileAccessPack::seek(uint64_t p_position) {
 	ERR_FAIL_COND_MSG(f.is_null(), "File must be opened before use.");
 
-	if (p_position > pf.size) {
-		eof = true;
-	} else {
-		eof = false;
-	}
+	eof = p_position > pf.size;
 
 	f->seek(off + p_position);
 	pos = p_position;

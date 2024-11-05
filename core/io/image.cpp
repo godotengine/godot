@@ -40,7 +40,7 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {

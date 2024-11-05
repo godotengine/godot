@@ -65,7 +65,7 @@ subject to the following restrictions:
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/paged_allocator.h"
 
-#include <string.h>
+#include <cstring>
 
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
