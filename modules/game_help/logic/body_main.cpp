@@ -86,6 +86,19 @@ void CharacterBodyMain::_notification( int p_notification )
     }
 
 }
+
+void CharacterBodyMain::bt_add_audio_socket() {
+    if(audio_socket_name.str().size() > 0) {
+        return;
+    }
+    if(audio_players.has(audio_socket_name)) {
+        return;
+    }
+    Ref<AudioStreamPlayer3DCompoent> player = memnew(AudioStreamPlayer3DCompoent);
+    player->set_owenr(this);
+    audio_players[audio_socket_name] = player;
+}
+
 void CharacterBodyMain::init_ai_context()
 {
 	if (ai_context.is_null()) {
@@ -378,9 +391,11 @@ void CharacterBodyMain::_bind_methods()
 {
     
 	ClassDB::bind_method(D_METHOD("restart"), &CharacterBodyMain::restart);
-    
+
     ClassDB::bind_method(D_METHOD("set_audio_play_component", "audio_play_component"), &CharacterBodyMain::set_audio_play_component);
     ClassDB::bind_method(D_METHOD("get_audio_play_component"), &CharacterBodyMain::get_audio_play_component);
+
+    ClassDB::bind_method(D_METHOD("play_audio", "audio_socket", "stream"), &CharacterBodyMain::play_audio);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
