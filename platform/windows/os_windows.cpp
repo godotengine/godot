@@ -1528,7 +1528,8 @@ DWRITE_FONT_STRETCH OS_Windows::_stretch_to_dw(int p_stretch) const {
 }
 
 Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
-	if (!dwrite2_init) {
+	// This may be called before TextServerManager has been created, which would cause a crash downstream if we do not check here
+	if (!dwrite2_init || !TextServerManager::get_singleton()) {
 		return Vector<String>();
 	}
 
