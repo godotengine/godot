@@ -22,6 +22,7 @@ def get_doc_classes():
         "GLTFLight",
         "GLTFMesh",
         "GLTFNode",
+        "GLTFObjectModelProperty",
         "GLTFPhysicsBody",
         "GLTFPhysicsShape",
         "GLTFSkeleton",

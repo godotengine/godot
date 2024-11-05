@@ -102,9 +102,9 @@ private:
 	/* Canvas Texture API */
 
 	struct CanvasTextureCache {
-		RID diffuse = RID();
-		RID normal = RID();
-		RID specular = RID();
+		RID diffuse;
+		RID normal;
+		RID specular;
 	};
 
 	class CanvasTexture {

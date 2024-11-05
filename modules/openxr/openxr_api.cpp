@@ -2752,8 +2752,9 @@ void OpenXRAPI::parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_l
 }
 
 bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const {
-	if (XR_SUCCEEDED(result))
+	if (XR_SUCCEEDED(result)) {
 		return true;
+	}
 
 	char resultString[XR_MAX_RESULT_STRING_SIZE];
 	xrResultToString(instance, result, resultString);

@@ -49,6 +49,7 @@ public:
 	virtual Error parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image);
 	virtual String get_image_file_extension();
 	virtual Error parse_texture_json(Ref<GLTFState> p_state, const Dictionary &p_texture_json, Ref<GLTFTexture> r_gltf_texture);
+	virtual Ref<GLTFObjectModelProperty> import_object_model_property(Ref<GLTFState> p_state, const PackedStringArray &p_split_json_pointer, const TypedArray<NodePath> &p_partial_paths);
 	virtual Error import_post_parse(Ref<GLTFState> p_state);
 	virtual Error import_pre_generate(Ref<GLTFState> p_state);
 	virtual Node3D *generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent);
@@ -59,6 +60,7 @@ public:
 	virtual void convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node);
 	virtual Error export_post_convert(Ref<GLTFState> p_state, Node *p_root);
 	virtual Error export_preserialize(Ref<GLTFState> p_state);
+	virtual Ref<GLTFObjectModelProperty> export_object_model_property(Ref<GLTFState> p_state, const NodePath &p_node_path, const Node *p_godot_node, GLTFNodeIndex p_gltf_node_index, const Object *p_target_object, int p_target_depth);
 	virtual Vector<String> get_saveable_image_formats();
 	virtual PackedByteArray serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary p_image_dict, const String &p_image_format, float p_lossy_quality);
 	virtual Error save_image_at_path(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_file_path, const String &p_image_format, float p_lossy_quality);
@@ -73,6 +75,7 @@ public:
 	GDVIRTUAL4R(Error, _parse_image_data, Ref<GLTFState>, PackedByteArray, String, Ref<Image>);
 	GDVIRTUAL0R(String, _get_image_file_extension);
 	GDVIRTUAL3R(Error, _parse_texture_json, Ref<GLTFState>, Dictionary, Ref<GLTFTexture>);
+	GDVIRTUAL3R(Ref<GLTFObjectModelProperty>, _import_object_model_property, Ref<GLTFState>, PackedStringArray, TypedArray<NodePath>);
 	GDVIRTUAL1R(Error, _import_post_parse, Ref<GLTFState>);
 	GDVIRTUAL1R(Error, _import_pre_generate, Ref<GLTFState>);
 	GDVIRTUAL3R(Node3D *, _generate_scene_node, Ref<GLTFState>, Ref<GLTFNode>, Node *);
@@ -83,6 +86,7 @@ public:
 	GDVIRTUAL3(_convert_scene_node, Ref<GLTFState>, Ref<GLTFNode>, Node *);
 	GDVIRTUAL2R(Error, _export_post_convert, Ref<GLTFState>, Node *);
 	GDVIRTUAL1R(Error, _export_preserialize, Ref<GLTFState>);
+	GDVIRTUAL6R(Ref<GLTFObjectModelProperty>, _export_object_model_property, Ref<GLTFState>, NodePath, const Node *, GLTFNodeIndex, const Object *, int);
 	GDVIRTUAL0R(Vector<String>, _get_saveable_image_formats);
 	GDVIRTUAL5R(PackedByteArray, _serialize_image_to_bytes, Ref<GLTFState>, Ref<Image>, Dictionary, String, float);
 	GDVIRTUAL5R(Error, _save_image_at_path, Ref<GLTFState>, Ref<Image>, String, String, float);

@@ -33,9 +33,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
+	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
@@ -48,12 +49,13 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	taa_frame_count = p_taa_frame_count;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
 	visible_layers = 0xFFFFFFFF;
 	view_count = p_view_count;
 	is_orthogonal = p_is_orthogonal;
+	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 	Vector<Plane> planes[2];
 
@@ -347,6 +349,14 @@ float RendererSceneRender::environment_get_ambient_sky_contribution(RID p_env) c
 
 RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_source(RID p_env) const {
 	return environment_storage.environment_get_reflection_source(p_env);
+}
+
+void RendererSceneRender::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	environment_storage.environment_set_camera_feed_id(p_env, p_camera_feed_id);
+}
+
+int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
+	return environment_storage.environment_get_camera_feed_id(p_env);
 }
 
 // Tonemap

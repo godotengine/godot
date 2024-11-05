@@ -1034,7 +1034,7 @@ void Input::action_release(const StringName &p_action) {
 
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
-	action_state.cache.pressed = 0;
+	action_state.cache.pressed = false;
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.

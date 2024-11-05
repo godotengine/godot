@@ -45,6 +45,16 @@
 				Takes a Godot Engine scene node and exports it and its descendants to the given [GLTFState] object through the [param state] parameter.
 			</description>
 		</method>
+		<method name="export_object_model_property" qualifiers="static">
+			<return type="GLTFObjectModelProperty" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="node_path" type="NodePath" />
+			<param index="2" name="godot_node" type="Node" />
+			<param index="3" name="gltf_node_index" type="int" />
+			<description>
+				Determines a mapping between the given Godot [param node_path] and the corresponding glTF Object Model JSON pointer(s) in the generated glTF file. The details of this mapping are returned in a [GLTFObjectModelProperty] object. Additional mappings can be supplied via the [method GLTFDocumentExtension._import_object_model_property] callback method.
+			</description>
+		</method>
 		<method name="generate_buffer">
 			<return type="PackedByteArray" />
 			<param index="0" name="state" type="GLTFState" />
@@ -68,6 +78,14 @@
 			<description>
 				Returns a list of all support glTF extensions, including extensions supported directly by the engine, and extensions supported by user plugins registering [GLTFDocumentExtension] classes.
 				[b]Note:[/b] If this method is run before a GLTFDocumentExtension is registered, its extensions won't be included in the list. Be sure to only run this method after all extensions are registered. If you run this when the engine starts, consider waiting a frame before calling this method to ensure all extensions are registered.
+			</description>
+		</method>
+		<method name="import_object_model_property" qualifiers="static">
+			<return type="GLTFObjectModelProperty" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="json_pointer" type="String" />
+			<description>
+				Determines a mapping between the given glTF Object Model [param json_pointer] and the corresponding Godot node path(s) in the generated Godot scene. The details of this mapping are returned in a [GLTFObjectModelProperty] object. Additional mappings can be supplied via the [method GLTFDocumentExtension._export_object_model_property] callback method.
 			</description>
 		</method>
 		<method name="register_gltf_document_extension" qualifiers="static">
