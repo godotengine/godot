@@ -33,7 +33,7 @@
 #include <miniwget.h>
 #include <upnpcommands.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 bool UPNP::is_common_device(const String &dev) const {
 	return dev.is_empty() ||

@@ -298,7 +298,7 @@ Vector<Vector3> NavMeshQueries3D::polygons_get_path(const LocalVector<gd::Polygo
 		// unreachable.
 		if (traversable_polys.is_empty()) {
 			// Thus use the further reachable polygon
-			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
+			ERR_BREAK_MSG(!is_reachable, "It's not expect to not find the most reachable polygons");
 			is_reachable = false;
 			if (reachable_end == nullptr) {
 				// The path is not found and there is not a way out.
