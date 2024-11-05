@@ -125,6 +125,8 @@ public:
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, const FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 	void emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths);
 
+	virtual Color get_accent_color() const override;
+
 	virtual TypedArray<Rect2> get_display_cutouts() const override;
 	virtual Rect2i get_display_safe_area() const override;
 
