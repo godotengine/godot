@@ -145,7 +145,6 @@ protected:
 
 	void _add_builtin_input_map();
 
-protected:
 	static void _bind_methods();
 
 public:

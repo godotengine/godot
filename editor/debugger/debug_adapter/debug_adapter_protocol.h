@@ -39,8 +39,10 @@
 #include "debug_adapter_types.h"
 #include "scene/debugger/scene_debugger.h"
 
-#define DAP_MAX_BUFFER_SIZE 4194304 // 4MB
-#define DAP_MAX_CLIENTS 8
+enum {
+	DAP_MAX_BUFFER_SIZE = 4194304, // 4MB
+	DAP_MAX_CLIENTS = 8
+};
 
 class DebugAdapterParser;
 
@@ -166,7 +168,7 @@ public:
 	void stop();
 
 	DebugAdapterProtocol();
-	~DebugAdapterProtocol();
+	~DebugAdapterProtocol() override;
 };
 
 #endif // DEBUG_ADAPTER_PROTOCOL_H

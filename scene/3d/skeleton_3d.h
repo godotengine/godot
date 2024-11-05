@@ -303,7 +303,6 @@ public:
 	void physical_bones_remove_collision_exception(RID p_exception);
 #endif // _DISABLE_DEPRECATED
 
-public:
 	Skeleton3D();
 	~Skeleton3D();
 };

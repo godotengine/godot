@@ -594,7 +594,7 @@ private:
 
 	void _exit_editor(int p_exit_code);
 
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool has_main_screen() const { return true; }
 
@@ -887,7 +887,7 @@ public:
 
 	Control *get_gui_base() { return gui_base; }
 
-	void save_scene_to_path(String p_file, bool p_with_preview = true) {
+	void save_scene_to_path(const String &p_file, bool p_with_preview = true) {
 		if (p_with_preview) {
 			_save_scene_with_preview(p_file);
 		} else {
@@ -942,7 +942,7 @@ public:
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
 
 	EditorNode();
-	~EditorNode();
+	~EditorNode() override;
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
@@ -979,7 +979,7 @@ public:
 	bool is_empty();
 
 	EditorPluginList();
-	~EditorPluginList();
+	~EditorPluginList() override;
 };
 
 struct EditorProgressBG {

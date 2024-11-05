@@ -35,7 +35,7 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #ifdef WINDOWS_ENABLED
 #define WIN32_LEAN_AND_MEAN
@@ -43,7 +43,7 @@
 
 #define ENV_PATH_SEP ";"
 #else
-#include <limits.h>
+#include <climits>
 #include <unistd.h>
 
 #define ENV_PATH_SEP ":"

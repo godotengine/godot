@@ -372,7 +372,6 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
-protected:
 	virtual void input(const Ref<InputEvent> &p_event);
 	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);

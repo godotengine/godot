@@ -82,4 +82,4 @@ const char *error_names[] = {
 	"Printer on fire", // ERR_PRINTER_ON_FIRE
 };
 
-static_assert(sizeof(error_names) / sizeof(*error_names) == ERR_MAX);
+static_assert(sizeof(error_names) / sizeof(*error_names) == ERR_MAX );

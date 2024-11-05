@@ -43,7 +43,7 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
-#include <string.h>
+#include <cstring>
 
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
@@ -68,10 +68,7 @@ class CallableCustomExtension : public CallableCustom {
 		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
 		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
 
-		if (a->call_func != b->call_func || a->userdata != b->userdata) {
-			return false;
-		}
-		return true;
+		return !(a->call_func != b->call_func || a->userdata != b->userdata);
 	}
 
 	static bool default_compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {

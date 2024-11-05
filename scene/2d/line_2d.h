@@ -125,7 +125,6 @@ private:
 	void _gradient_changed();
 	void _curve_changed();
 
-private:
 	Vector<Vector2> _points;
 	LineJointMode _joint_mode = LINE_JOINT_SHARP;
 	LineCapMode _begin_cap_mode = LINE_CAP_NONE;

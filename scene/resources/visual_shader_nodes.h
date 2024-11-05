@@ -56,7 +56,6 @@ public:
 protected:
 	OpType op_type = OP_TYPE_VECTOR_3D;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -1664,7 +1663,6 @@ protected:
 	Function func = FUNC_SUM;
 	Precision precision = PRECISION_NONE;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -2546,7 +2544,6 @@ protected:
 	TextureRepeat texture_repeat = REPEAT_DEFAULT;
 	TextureSource texture_source = SOURCE_NONE;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -2793,7 +2790,6 @@ public:
 protected:
 	Function func = FUNC_IS_INF;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -2862,7 +2858,6 @@ protected:
 	Function func = FUNC_EQUAL;
 	Condition condition = COND_ALL;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -2914,7 +2909,6 @@ public:
 protected:
 	OpType op_type = OP_TYPE_SCALAR;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -2964,7 +2958,6 @@ protected:
 	BillboardType billboard_type = BILLBOARD_TYPE_ENABLED;
 	bool keep_scale = false;
 
-protected:
 	static void _bind_methods();
 
 public:
