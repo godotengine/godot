@@ -1248,7 +1248,6 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 	append(method);
 	append(p_arguments.size());
 	ct.cleanup();
-	return;
 }
 
 void GDScriptByteCodeGenerator::write_call_native_static_validated(const GDScriptCodeGenerator::Address &p_target, MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
