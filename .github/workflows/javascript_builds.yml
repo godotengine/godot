@@ -13,7 +13,7 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
@@ -25,14 +25,14 @@ jobs:
       # Additional cache for Emscripten generated system libraries
       - name: Load Emscripten cache
         id: javascript-template-emscripten-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{env.EM_CACHE_FOLDER}}
           key: ${{env.EM_VERSION}}-${{github.job}}
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           # Semantic version range syntax or exact version of a Python version
           python-version: '3.x'
@@ -48,7 +48,7 @@ jobs:
           scons --version
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v7
+        uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
