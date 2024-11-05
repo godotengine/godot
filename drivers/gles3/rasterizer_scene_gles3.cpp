@@ -31,6 +31,7 @@
 #include "rasterizer_scene_gles3.h"
 
 #include "drivers/gles3/effects/copy_effects.h"
+#include "drivers/gles3/effects/feed_effects.h"
 #include "rasterizer_gles3.h"
 #include "storage/config.h"
 #include "storage/mesh_storage.h"
@@ -39,6 +40,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/templates/sort_array.h"
+#include "servers/camera/camera_feed.h"
+#include "servers/camera_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -2382,7 +2385,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
 	bool keep_color = false;
+	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
+	int camera_feed_id = -1;
 
 	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2427,6 +2432,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				keep_color = true;
 			} break;
 			case RS::ENV_BG_CAMERA_FEED: {
+				camera_feed_id = environment_get_camera_feed_id(render_data.environment);
+				draw_feed = true;
 			} break;
 			default: {
 			}
@@ -2538,7 +2545,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	if (!keep_color) {
+	if (!keep_color && !draw_feed) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	} else if (fbo != rt->fbo) {
@@ -2578,6 +2585,29 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			spec_constant_base_flags |= SceneShaderGLES3::APPLY_TONEMAPPING;
 		}
 	}
+
+	if (draw_feed && camera_feed_id > -1) {
+		RENDER_TIMESTAMP("Render Camera feed");
+
+		scene_state.enable_gl_depth_draw(false);
+		scene_state.enable_gl_depth_test(false);
+		scene_state.enable_gl_blend(false);
+		scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_BACK);
+
+		Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+
+		if (feed.is_valid()) {
+			RID camera_YCBCR = feed->get_texture(CameraServer::FEED_YCBCR_IMAGE);
+			GLES3::TextureStorage::get_singleton()->texture_bind(camera_YCBCR, 0);
+
+			GLES3::FeedEffects *feed_effects = GLES3::FeedEffects::get_singleton();
+			feed_effects->draw();
+		}
+		scene_state.enable_gl_depth_draw(true);
+		scene_state.enable_gl_depth_test(true);
+		scene_state.enable_gl_blend(true);
+	}
+
 	// Render Opaque Objects.
 	RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
 
