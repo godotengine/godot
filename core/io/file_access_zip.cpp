@@ -43,7 +43,7 @@ static void *godot_open(void *data, const char *p_fname, int mode) {
 		return nullptr;
 	}
 
-	FileAccess *f = FileAccess::open(p_fname, FileAccess::READ);
+	FileAccess *f = FileAccess::open(String::utf8(p_fname), FileAccess::READ);
 	ERR_FAIL_COND_V(!f, nullptr);
 
 	return f;
