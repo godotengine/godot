@@ -73,7 +73,6 @@ public:
 	HashMap<String, ExtendGDScriptParser *> parse_results;
 	HashMap<StringName, ClassMembers> native_members;
 
-public:
 	Error initialize();
 
 	Error parse_script(const String &p_path, const String &p_content);

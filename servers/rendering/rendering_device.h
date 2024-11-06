@@ -130,7 +130,6 @@ private:
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
 
-private:
 	/***************************/
 	/**** BUFFER MANAGEMENT ****/
 	/***************************/
@@ -304,7 +303,6 @@ public:
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
 
-public:
 	struct TextureView {
 		DataFormat format_override = DATA_FORMAT_MAX; // // Means, use same as format.
 		TextureSwizzle swizzle_r = TEXTURE_SWIZZLE_R;

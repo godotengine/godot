@@ -353,7 +353,6 @@ private:
 	bool _can_dock_horizontal() const;
 	void _set_dock_horizontal(bool p_enable);
 
-private:
 	static FileSystemDock *singleton;
 
 public:

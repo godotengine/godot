@@ -154,7 +154,6 @@ protected:
 	void _menu_option(int p_id);
 	void _update_debug_options();
 
-protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
