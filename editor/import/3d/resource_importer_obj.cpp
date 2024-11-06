@@ -535,8 +535,6 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		}
 	}
 
-	mesh->optimize_indices_for_cache();
-
 	if (p_generate_lods) {
 		// Use normal merge/split angles that match the defaults used for 3D scene importing.
 		mesh->generate_lods(60.0f, {});
@@ -545,6 +543,8 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	if (p_generate_shadow_mesh) {
 		mesh->create_shadow_mesh();
 	}
+
+	mesh->optimize_indices();
 
 	if (p_single_mesh && mesh->get_surface_count() > 0) {
 		r_meshes.push_back(mesh);
