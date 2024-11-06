@@ -57,6 +57,8 @@ public:
 
 #ifdef DEBUG_ENABLED
 private:
+	static void _handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut);
+
 	static void _save_node(ObjectID id, const String &p_path);
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
