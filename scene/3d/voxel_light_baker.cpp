@@ -854,8 +854,6 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 
 	float distance_adv = _get_normal_advance(light_axis);
 
-	int success_count = 0;
-
 	Vector3 light_energy = Vector3(p_color.r, p_color.g, p_color.b) * p_energy * p_indirect_energy;
 
 	int idx = first_leaf;
@@ -916,7 +914,6 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 					light->direct_accum[i][2] += light_energy.z * s;
 				}
 			}
-			success_count++;
 		}
 
 		idx = light_data[idx].next_leaf;

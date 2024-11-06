@@ -35,6 +35,7 @@
 #include "core/safe_refcount.h"
 
 #include <stddef.h>
+#include <type_traits>
 
 #ifndef PAD_ALIGN
 #define PAD_ALIGN 16 //must always be greater than this at much
@@ -111,7 +112,7 @@ void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!__has_trivial_destructor(T)) {
+	if (!std::is_trivially_destructible<T>::value) {
 		p_class->~T();
 	}
 
@@ -123,7 +124,7 @@ void memdelete_allocator(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!__has_trivial_destructor(T)) {
+	if (!std::is_trivially_destructible<T>::value) {
 		p_class->~T();
 	}
 
@@ -152,7 +153,7 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;
 
-	if (!__has_trivial_constructor(T)) {
+	if (!std::is_trivially_constructible<T>::value) {
 		T *elems = (T *)mem;
 
 		/* call operator new */
@@ -179,7 +180,7 @@ template <typename T>
 void memdelete_arr(T *p_class) {
 	uint64_t *ptr = (uint64_t *)p_class;
 
-	if (!__has_trivial_destructor(T)) {
+	if (!std::is_trivially_destructible<T>::value) {
 		uint64_t elem_count = *(ptr - 1);
 
 		for (uint64_t i = 0; i < elem_count; i++) {

@@ -16,7 +16,7 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

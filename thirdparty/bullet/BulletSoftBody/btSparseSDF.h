@@ -233,9 +233,9 @@ struct btSparseSdf
 			//int sz = sizeof(Cell);
 			if (ncells > m_clampCells)
 			{
-				static int numResets = 0;
-				numResets++;
-				//				printf("numResets=%d\n",numResets);
+				//static int numResets = 0;
+				//numResets++;
+				//printf("numResets=%d\n",numResets);
 				Reset();
 			}
 
