@@ -202,6 +202,7 @@ private:
 	PopupMenu *selection_list = nullptr;
 	bool selection_visible = true;
 	bool selection_update_queued = false;
+	bool warped_panning = false;
 
 	bool camera_override = false;
 
@@ -272,7 +273,7 @@ private:
 	NodeType node_select_type = NODE_TYPE_2D;
 	SelectMode node_select_mode = SELECT_MODE_SINGLE;
 
-	void _setup();
+	void _setup(const Dictionary &p_settings);
 
 	void _node_set_type(NodeType p_type);
 	void _select_set_mode(SelectMode p_mode);
