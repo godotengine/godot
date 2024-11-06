@@ -32,7 +32,7 @@
 
 #include <openxr/openxr_reflection.h>
 
-#include <math.h>
+#include <cmath>
 
 #define XR_ENUM_CASE_STR(name, val) \
 	case name:                      \

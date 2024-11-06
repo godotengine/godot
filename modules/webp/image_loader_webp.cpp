@@ -40,7 +40,7 @@
 #include <webp/decode.h>
 #include <webp/encode.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 static Ref<Image> _webp_mem_loader_func(const uint8_t *p_webp_data, int p_size) {
 	Ref<Image> img;
