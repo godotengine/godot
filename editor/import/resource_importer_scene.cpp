@@ -2101,6 +2101,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 			} break;
 		}
 
+		mesh_node->set_visible(src_mesh_node->is_visible());
 		p_node->replace_by(mesh_node);
 		p_node->set_owner(nullptr);
 		memdelete(p_node);
