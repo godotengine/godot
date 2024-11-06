@@ -571,7 +571,7 @@ private:
 	Transparency transparency = TRANSPARENCY_DISABLED;
 	ShadingMode shading_mode = SHADING_MODE_PER_PIXEL;
 
-	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+	TextureFilter texture_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC;
 
 	Vector3 uv1_scale;
 	Vector3 uv1_offset;
