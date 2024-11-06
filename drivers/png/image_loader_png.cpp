@@ -34,7 +34,7 @@
 #include "core/string/print_string.h"
 #include "drivers/png/png_driver_common.h"
 
-#include <string.h>
+#include <cstring>
 
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();

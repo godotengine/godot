@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 
 #include <png.h>
-#include <string.h>
+#include <cstring>
 
 namespace PNGDriverCommon {
 

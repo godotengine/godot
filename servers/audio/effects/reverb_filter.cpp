@@ -32,7 +32,7 @@
 
 #include "core/math/math_funcs.h"
 
-#include <math.h>
+#include <cmath>
 
 const float Reverb::comb_tunings[MAX_COMBS] = {
 	//freeverb comb tunings
