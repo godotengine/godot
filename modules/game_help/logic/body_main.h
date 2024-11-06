@@ -598,6 +598,7 @@ public:
 
     Ref<CharacterBoneMap> editor_ref_bone_map;
     String editor_animation_file_path;
+    void editor_build_animation_form_path(String p_file_path);
     DECL_MEMBER_BUTTON(editor_build_animation);
 
     void set_editor_animation_speed(float p_speed) {
@@ -651,6 +652,26 @@ public:
     Ref<Animation> play_animation;
     DECL_MEMBER_BUTTON(editor_play_select_animation);
 
+
+    
+    // 动画路径
+    String editor_convert_animations_path;
+    void set_editor_convert_animations_path(const String& p_path) {
+        editor_convert_animations_path = p_path;
+    }
+
+    String get_editor_convert_animations_path() {
+        return editor_convert_animations_path;
+    }
+    
+	DECL_MEMBER_BUTTON(editor_convert_animations_bt);
+
+    
+	DECL_MEMBER_BUTTON(editor_install_mkhm);
+
+    void update_bone_visble();
+
+public:
     void set_track_target(String p_track_target) {
         track_target = p_track_target;
     }
@@ -659,20 +680,7 @@ public:
     }
     // 跟踪的角色
     String track_target;
-	LocalVector<Quaternion> temp_last_bone_pose;
     void update_track_target();
-
-    // 重定向的动画存储名称
-    String editor_retarget_save_animation_name;
-    // 重定向的来源骨骼
-    String editor_retarget_source_seketon_path;
-
-    
-	DECL_MEMBER_BUTTON(editor_install_mkhm);
-
-    void update_bone_visble();
-
-public:
     static ObjectID& get_curr_editor_player();
     // 获取当前编辑的角色
     static CharacterBodyMain* get_current_editor_player()

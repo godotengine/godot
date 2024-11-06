@@ -47,8 +47,7 @@ public:
 		PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY,
 		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
-	bool move_and_slide();
-	bool _move_and_slide(float delta);
+	bool move_and_slide(float delta = -1.0);
 	void apply_floor_snap();
 
 	const Vector3 &get_velocity() const;

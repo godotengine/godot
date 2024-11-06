@@ -221,7 +221,7 @@ void CharacterBodyMain::_process_move()
     {
         set_velocity(_velocity);
 
-        _move_and_slide(animator->get_time_delta());
+        move_and_slide(animator->get_time_delta());
     }
 
 }
@@ -468,6 +468,13 @@ void CharacterBodyMain::_bind_methods()
 
     ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
 
+
+    ClassDB::bind_method(D_METHOD("set_editor_convert_animations_path", "path"), &CharacterBodyMain::set_editor_convert_animations_path);
+    ClassDB::bind_method(D_METHOD("get_editor_convert_animations_path"), &CharacterBodyMain::get_editor_convert_animations_path);
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_convert_animations_path", PROPERTY_HINT_DIR), "set_editor_convert_animations_path", "get_editor_convert_animations_path");
+
+    ADD_MEMBER_BUTTON(editor_convert_animations_bt,L"转换动画文件夹",CharacterBodyMain);
+
     
     ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterBodyMain::set_play_animation);
     ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
@@ -476,6 +483,9 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animayion_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
+
+
+
     ADD_MEMBER_BUTTON(editor_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
 
@@ -922,17 +932,20 @@ static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_pa
 	
 }
 
-void CharacterBodyMain::editor_build_animation()
+void CharacterBodyMain::editor_build_animation() {
+    editor_build_animation_form_path(editor_animation_file_path);
+}
+void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 {
-    if(!FileAccess::exists(editor_animation_file_path))
+    if(!FileAccess::exists(p_file_path))
     {
-		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_animation_file_path);
+		print_line(L"CharacterBodyMain: 路径不存在 :" + p_file_path);
         return;
     }
-	Ref<PackedScene> scene = ResourceLoader::load(editor_animation_file_path);
+	Ref<PackedScene> scene = ResourceLoader::load(p_file_path);
 	if (scene.is_null())
 	{
-		print_line(L"CharacterBodyMain: 路径不存在 :" + editor_animation_file_path);
+		print_line(L"CharacterBodyMain: 路径不存在 :" + p_file_path);
         return;
 	}
 	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
@@ -942,17 +955,17 @@ void CharacterBodyMain::editor_build_animation()
 	Node* anim_node = p_node->find_child("AnimationPlayer");
     if(anim_node == nullptr)
     {
-        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + editor_animation_file_path);
+        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + p_file_path);
         return;
     }
 
     AnimationPlayer* player = Object::cast_to<AnimationPlayer>(anim_node);
     if(player == nullptr)
     {
-        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + editor_animation_file_path);
+        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + p_file_path);
         return;
     }
-	String p_group = editor_animation_file_path.get_file().get_basename();
+	String p_group = p_file_path.get_file().get_basename();
     List<StringName> p_animations;
     player->get_animation_list(&p_animations);
 
@@ -1061,6 +1074,22 @@ void CharacterBodyMain::editor_build_animation()
 		bone_map_skeleton = nullptr;
 	}
     p_node->queue_free();
+}
+void CharacterBodyMain::editor_convert_animations_bt() {
+
+    if( !DirAccess::exists(editor_convert_animations_path) ) {
+        return;
+    }
+
+    PackedStringArray files = DirAccess::get_files_at(editor_convert_animations_path);
+
+    for (int i = 0; i < files.size(); ++i) {
+        String file = files[i];
+        String ext = file.get_extension().to_lower();
+        if (ext == "fbx" || ext == "gltf" || ext == "glb") {
+            editor_build_animation_form_path(file);
+        }
+    }
 }
 
 #include "modules/zip/zip_reader.h"
