@@ -1,6 +1,7 @@
 """Functions used to generate scu build source files during build time
 
 """
+
 import glob, os
 import math
 from pathlib import Path
@@ -158,6 +159,7 @@ def find_section_name(sub_folder):
 # These will automatically be placed in their own separate scu file,
 # which is slow like a normal build, but prevents the naming conflicts.
 # Ideally in these situations, the source code should be changed to prevent naming conflicts.
+
 
 # "extension" will usually be cpp, but can also be set to c (for e.g. third party libraries that use c)
 def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension="cpp"):
