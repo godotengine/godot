@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from misc.utility.scons_hints import *
 
 EnsureSConsVersion(3, 1, 2)
-EnsurePythonVersion(3, 6)
+EnsurePythonVersion(3, 8)
 
 # System
 import atexit

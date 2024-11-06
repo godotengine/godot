@@ -129,7 +129,7 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.6
+          python-version: 3.8
           scons-version: 3.1.2
 
       - name: Setup GCC problem matcher

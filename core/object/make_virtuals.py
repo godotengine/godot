@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 proto = """#define GDVIRTUAL$VER($RET m_name $ARG)\\
 	StringName _gdvirtual_##m_name##_sn = #m_name;\\
 	mutable bool _gdvirtual_##m_name##_initialized = false;\\

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import glob
 import os
@@ -5,10 +7,10 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
+from collections.abc import Generator
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, List, Optional, Union
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -1515,7 +1517,7 @@ def generate_copyright_header(filename: str) -> str:
 @contextlib.contextmanager
 def generated_wrapper(
     path,  # FIXME: type with `Union[str, Node, List[Node]]` when pytest conflicts are resolved
-    guard: Optional[bool] = None,
+    guard: bool | None = None,
     prefix: str = "",
     suffix: str = "",
 ) -> Generator[TextIOWrapper, None, None]:
@@ -1582,13 +1584,13 @@ def generated_wrapper(
         file.write("\n")
 
 
-def to_raw_cstring(value: Union[str, List[str]]) -> str:
+def to_raw_cstring(value: str | list[str]) -> str:
     MAX_LITERAL = 16 * 1024
 
     if isinstance(value, list):
         value = "\n".join(value) + "\n"
 
-    split: List[bytes] = []
+    split: list[bytes] = []
     offset = 0
     encoded = value.encode()
 

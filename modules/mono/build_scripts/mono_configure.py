@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def is_desktop(platform):
     return platform in ["windows", "macos", "linuxbsd"]
 

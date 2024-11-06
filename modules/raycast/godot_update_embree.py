@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glob
 import os
 import re
@@ -5,7 +7,8 @@ import shutil
 import stat
 import subprocess
 import sys
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 git_tag = "v4.3.1"
 

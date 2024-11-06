@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def can_build(env, platform):
     return not env["disable_3d"]
 

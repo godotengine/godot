@@ -22,6 +22,8 @@ and acquire a `Value` object using `gdb.selected_frame().read_var("variable name
 From there you can figure out how to print it nicely.
 """
 
+from __future__ import annotations
+
 import re
 
 import gdb  # type: ignore
