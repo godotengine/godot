@@ -1,5 +1,7 @@
 #include "body_main.h"
 #include "character_manager.h"
+#include "scene/resources/animation.h"
+
 CharacterManager* CharacterManager::singleton = nullptr;
 static float time_delta = 0.0f;
 
@@ -99,4 +101,18 @@ void CharacterManager::update_finish()
         task_handle->wait_completion();
         task_handle.unref();
     }
+}
+
+static void animation_get_groups(Array* arr) {
+    CharacterManager::get_singleton()->get_animation_groups(arr);
+}
+CharacterManager::CharacterManager() {
+    animation_groups.insert(StringName(L"人形"));
+    animation_groups.insert(StringName(L"马"));
+    animation_groups.insert(StringName(L"龙"));
+    animation_groups.insert(StringName(L"狗"));
+
+}
+CharacterManager::~CharacterManager() {
+    
 }

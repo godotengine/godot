@@ -484,6 +484,9 @@ Error DirAccess::copy_dir(const String &p_from, String p_to, int p_chmod_flags, 
 }
 
 bool DirAccess::exists(const String &p_dir) {
+	if (p_dir.is_empty()) {
+		return false;
+	}
 	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
 	return da->change_dir(p_dir) == OK;
 }

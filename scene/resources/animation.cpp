@@ -35,6 +35,7 @@
 #include "core/math/geometry_3d.h"
 #include "scene/scene_string_names.h"
 #include "scene/3d/skeleton_3d.h"
+Animation::pf_get_animation_group_names Animation::get_animation_group_names_func = nullptr;
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -4175,6 +4176,11 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_human_bone_mask", "human_bone_mask"), &Animation::set_human_bone_mask);
 	ClassDB::bind_method(D_METHOD("get_human_bone_mask"), &Animation::get_human_bone_mask);
 
+	ClassDB::bind_method(D_METHOD("set_animation_group", "group"), &Animation::set_animation_group);
+	ClassDB::bind_method(D_METHOD("get_animation_group"), &Animation::get_animation_group);
+
+	ClassDB::bind_method(D_METHOD("editor_get_animation_Group"), &Animation::editor_get_animation_Group);
+
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
 
@@ -4192,6 +4198,7 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_human", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_is_human_animation", "get_is_human_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "human_bone_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_human_bone_mask", "get_human_bone_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
@@ -6575,6 +6582,18 @@ bool Animation::inform_variant_array(int &r_min, int &r_max) {
 	return true;
 }
 
+Array Animation::editor_get_animation_Group() const {
+	Array arr;
+	if(get_animation_group_names_func != nullptr) {
+		get_animation_group_names_func(&arr);
+		return arr;
+	}
+    arr.append(L"人形");
+    arr.append(L"马");
+    arr.append(L"龙");
+    arr.append(L"狗");
+	return arr;
+}
 
 
 Animation::Animation() {

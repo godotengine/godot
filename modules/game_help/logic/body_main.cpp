@@ -396,6 +396,7 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_audio_play_component"), &CharacterBodyMain::get_audio_play_component);
 
     ClassDB::bind_method(D_METHOD("play_audio", "audio_socket", "stream"), &CharacterBodyMain::play_audio);
+    ClassDB::bind_method(D_METHOD("get_animation_Group"), &CharacterBodyMain::get_animation_Group);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -450,8 +451,12 @@ void CharacterBodyMain::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("set_editor_show_mesh", "editor_show_mesh"), &CharacterBodyMain::set_editor_show_mesh);
     ClassDB::bind_method(D_METHOD("get_editor_show_mesh"), &CharacterBodyMain::get_editor_show_mesh);
+
     ClassDB::bind_method(D_METHOD("set_editor_is_skeleton_human", "editor_is_skeleton_human"), &CharacterBodyMain::set_editor_is_skeleton_human);
     ClassDB::bind_method(D_METHOD("get_editor_is_skeleton_human"), &CharacterBodyMain::get_editor_is_skeleton_human);
+
+    ClassDB::bind_method(D_METHOD("set_editor_animation_group"), &CharacterBodyMain::set_editor_animation_group);
+    ClassDB::bind_method(D_METHOD("get_editor_animation_group"), &CharacterBodyMain::get_editor_animation_group);
 
 
 
@@ -460,6 +465,9 @@ void CharacterBodyMain::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human"), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
+
+    
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "get_animation_Group",PROPERTY_USAGE_EDITOR), "set_editor_animation_group", "get_editor_animation_group");
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_ref_bone_map", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBoneMap", PROPERTY_USAGE_DEFAULT ), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_human_config", PROPERTY_HINT_NONE, "HumanSkeletonConfig", PROPERTY_USAGE_EDITOR), "set_editor_human_config", "get_editor_human_config");
@@ -669,6 +677,11 @@ void CharacterBodyMain::init_blackboard_plan(Ref<BlackboardPlan> p_plan)
     {
         p_plan->add_var("ai/personality",BBVariable(Variant::INT,0,PROPERTY_HINT_ENUM,L"和平,好斗,胆小,忠诚,复仇心强,狡猾"));
     }
+}
+Array CharacterBodyMain::get_animation_Group() const {
+    Array arr;
+    CharacterManager::get_singleton()->get_animation_groups(&arr);
+    return arr;
 }
 
 
@@ -1080,16 +1093,26 @@ void CharacterBodyMain::editor_convert_animations_bt() {
     if( !DirAccess::exists(editor_convert_animations_path) ) {
         return;
     }
+    editor_convert_animations(editor_convert_animations_path);
+}
+void CharacterBodyMain::editor_convert_animations(String p_file_path)
+{
 
-    PackedStringArray files = DirAccess::get_files_at(editor_convert_animations_path);
+    PackedStringArray files = DirAccess::get_files_at(p_file_path);
 
     for (int i = 0; i < files.size(); ++i) {
         String file = files[i];
         String ext = file.get_extension().to_lower();
         if (ext == "fbx" || ext == "gltf" || ext == "glb") {
-            editor_build_animation_form_path(file);
+            editor_build_animation_form_path(p_file_path.path_join(file));
         }
     }
+    PackedStringArray dirs = DirAccess::get_directories_at(p_file_path);
+    for (int i = 0; i < dirs.size(); ++i) {
+        String dir = p_file_path.path_join(dirs[i]);
+        editor_convert_animations(dir);
+    }
+
 }
 
 #include "modules/zip/zip_reader.h"

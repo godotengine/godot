@@ -40,9 +40,11 @@
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);
 	RES_BASE_EXTENSION("anim");
-
+	typedef void (*pf_get_animation_group_names)(Array* p_names);
+	static pf_get_animation_group_names get_animation_group_names_func;
 public:
 	typedef uint32_t TypeHash;
+	static void set_pf_get_animation_group_names(pf_get_animation_group_names p_func) { get_animation_group_names_func = p_func; }
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 
@@ -376,6 +378,7 @@ public:
 	Vector<Track *> tracks;
 	bool is_human_animation = false;
 	Vector<uint8_t> human_bone_mask;
+	StringName animation_group;
 
 	template <typename T>
 	void _clear(T &p_keys);
@@ -681,6 +684,14 @@ public:
 
 	void remap_node_to_bone_name(const Vector<String> &p_bone_names);
 	void get_node_names(HashSet<String>& p_bone_names);
+
+	Array editor_get_animation_Group() const;
+	void set_animation_group(StringName p_animation_group) {
+		animation_group = p_animation_group;
+	}
+	StringName get_animation_group() const {
+		return animation_group;
+	}
 
 	void clear();
 

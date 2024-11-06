@@ -64,8 +64,19 @@ public:
     static void _process_animation(void* p_user,uint32_t p_index);
     static void _process_ik(void* p_user,uint32_t p_index);
     void update_finish();
+    
+    void get_animation_groups(Array *arr)
+    {
+        for(const StringName& group : animation_groups)
+        {
+            arr->push_back(group.str());
+        }
+    }
+    CharacterManager();
+    ~CharacterManager();
 protected:
     HashSet<class CharacterBodyMain*> characters;
+    HashSet<StringName> animation_groups;
     ObjectID main_player_id;
     Ref<TaskJobHandle> task_handle;
     String mesh_root_path = "res://Assets/public/meshs";

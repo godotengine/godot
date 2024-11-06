@@ -548,6 +548,18 @@ protected:
         }
         return false;
     }
+
+    StringName editor_animation_group;
+    void set_editor_animation_group(StringName p_name) {
+        editor_animation_group = p_name;
+    }
+
+    StringName get_editor_animation_group() {
+        return editor_animation_group;
+    }
+
+
+	Array get_animation_Group() const;
 public:
     void set_editor_form_mesh_file_path(const String& p_file_path)
     {
@@ -663,6 +675,8 @@ public:
     String get_editor_convert_animations_path() {
         return editor_convert_animations_path;
     }
+
+    void editor_convert_animations(String p_file_path);
     
 	DECL_MEMBER_BUTTON(editor_convert_animations_bt);
 
