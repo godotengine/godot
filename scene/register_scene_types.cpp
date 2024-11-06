@@ -733,6 +733,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ShaderInclude);
 	GDREGISTER_CLASS(VisualShaderGroup);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNode);
+	GDREGISTER_CLASS(VisualShaderNodeGroupInput);
+	GDREGISTER_CLASS(VisualShaderNodeGroupOutput);
 	GDREGISTER_CLASS(VisualShaderNodeCustom);
 	GDREGISTER_CLASS(VisualShaderNodeInput);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeOutput);

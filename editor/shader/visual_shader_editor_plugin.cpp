@@ -659,16 +659,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	bool is_resizable = resizable_node.is_valid();
 	Size2 size = Size2(0, 0);
 
-	Ref<VisualShaderNodeGroupBase> group_base_node = vsnode;
-	bool is_group_base = group_base_node.is_valid();
-
 	Ref<VisualShaderNodeFrame> frame_node = vsnode;
 	bool is_frame = frame_node.is_valid();
 
 	Ref<VisualShaderNodeGroup> group_node = vsnode;
 	bool is_group = group_node.is_valid();
 
-	Ref<VisualShaderNodeExpression> expression_node = group_base_node;
+	Ref<VisualShaderNodeExpression> expression_node = vsnode;
 	bool is_expression = expression_node.is_valid();
 	String expression = "";
 
@@ -700,7 +697,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			Button *edit_group_btn = memnew(Button);
 			edit_group_btn->set_text(TTR("Edit"));
 			edit_group_btn->set_icon(editor->get_theme_icon("Edit", "EditorIcons"));
-			edit_group_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_group).bind(p_id));
+			edit_group_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_group_in_graph).bind(p_id));
 			titlebar->add_child(edit_group_btn);
 		}
 	}
@@ -738,14 +735,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		register_link(p_type, p_id, vsnode.ptr(), node);
 	}
 
-	if (is_resizable) {
+	if (is_resizable && !is_group) {
 		size = resizable_node->get_size();
 
 		node->set_resizable(true);
 		node->connect("resize_end", callable_mp(editor, &VisualShaderEditor::_node_resized).bind((int)p_type, p_id));
 		node->set_size(size);
-		// node->call_deferred(SNAME("set_size"), size);
-		// editor->call_deferred(SNAME("_set_node_size"), (int)p_type, p_id, size);
 	}
 
 	if (is_expression) {
@@ -809,7 +804,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		node->add_child(content_offset);
 	}
 
-	if (is_group_base) {
+	if (is_expression) {
 		port_offset += 1;
 	}
 
@@ -988,11 +983,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	}
 
 	if (is_expression) {
-		if (group_base_node->is_editable()) {
+		if (expression_node->is_editable()) {
 			HBoxContainer *hb2 = memnew(HBoxContainer);
 
-			String input_port_name = "input" + itos(group_base_node->get_free_input_port_id());
-			String output_port_name = "output" + itos(group_base_node->get_free_output_port_id());
+			String input_port_name = "input" + itos(expression_node->get_free_input_port_id());
+			String output_port_name = "output" + itos(expression_node->get_free_output_port_id());
 
 			for (int i = 0; i < MAX(vsnode->get_input_port_count(), vsnode->get_output_port_count()); i++) {
 				if (i < vsnode->get_input_port_count()) {
@@ -1009,14 +1004,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 			Button *add_input_btn = memnew(Button);
 			add_input_btn->set_text(TTR("Add Input"));
-			add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_input_port).bind(p_id, group_base_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
+			add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_input_port).bind(p_id, expression_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_input_btn);
 
 			hb2->add_spacer();
 
 			Button *add_output_btn = memnew(Button);
 			add_output_btn->set_text(TTR("Add Output"));
-			add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_output_port).bind(p_id, group_base_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
+			add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_output_port).bind(p_id, expression_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_output_btn);
 
 			node->add_child(hb2);
@@ -1149,7 +1144,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
 					type_box->add_item(TTR("Sampler"));
-					type_box->select(group_base_node->get_input_port_type(j));
+					type_box->select(expression_node->get_input_port_type(j));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 					type_box->connect(SceneStringName(item_selected), callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, j), CONNECT_DEFERRED);
 
@@ -1185,12 +1180,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 				}
 			}
 
-			if (!is_group_base && !is_first_hbox) {
+			if (!is_expression && !is_first_hbox) {
 				hb->add_spacer();
 			}
 
 			if (valid_right) {
-				if (is_group_base) {
+				if (is_expression) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
@@ -1215,7 +1210,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Vector4"));
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
-					type_box->select(group_base_node->get_output_port_type(i));
+					type_box->select(expression_node->get_output_port_type(i));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 					type_box->connect(SceneStringName(item_selected), callable_mp(editor, &VisualShaderEditor::_change_output_port_type).bind(p_id, i), CONNECT_DEFERRED);
 				} else {
@@ -1256,7 +1251,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 
-		if (is_group_base) {
+		if (is_expression) {
 			offset = memnew(Control);
 			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
 			node->add_child(offset);
@@ -1453,6 +1448,28 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 		expression_box->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_expression_focus_out).bind(expression_box, p_id));
 	}
+
+	Ref<VisualShaderNodeGroupInput> group_input = vsnode;
+	Ref<VisualShaderNodeGroupOutput> group_output = vsnode;
+	if (group_input.is_valid()) {
+		Button *add_input_btn = memnew(Button);
+		add_input_btn->set_text(TTR("Add Input"));
+		add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_group_input_pressed).bind(p_id));
+		add_input_btn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		node->add_child(add_input_btn);
+	}
+	if (group_output.is_valid()) {
+		Button *add_output_btn = memnew(Button);
+		add_output_btn->set_text(TTR("Add Output"));
+		add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_group_output_pressed).bind(p_id));
+		add_output_btn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		node->add_child(add_output_btn);
+	}
+	if (group_input.is_valid() || group_output.is_valid()) {
+		Control *spacer = memnew(Control);
+		spacer->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+		node->add_child(spacer);
+	}
 }
 
 void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
@@ -1555,6 +1572,7 @@ void VisualShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 		}
 		visual_shader = p_shader;
 		editing_shader_graph = visual_shader->get_graph(current_type);
+		visual_shader_group = nullptr;
 
 		graph_plugin->register_shader(visual_shader.ptr());
 
@@ -1601,7 +1619,18 @@ bool VisualShaderEditor::is_unsaved() const {
 }
 
 void VisualShaderEditor::save_external_data(const String &p_str) {
-	ResourceSaver::save(visual_shader, visual_shader->get_path());
+	if (visual_shader.is_valid()) {
+		ResourceSaver::save(visual_shader, visual_shader->get_path());
+	}
+	if (visual_shader_group.is_valid()) {
+		ResourceSaver::save(visual_shader_group, visual_shader_group->get_path());
+	}
+
+	for (Ref<VisualShaderGroup> edited_group : group_edit_stack) {
+		if (edited_group.is_valid()) {
+			ResourceSaver::save(edited_group, edited_group->get_path());
+		}
+	}
 }
 
 void VisualShaderEditor::validate_script() {
@@ -1969,8 +1998,17 @@ void VisualShaderEditor::_resources_removed() {
 	}
 	if (has_any_instance) {
 		EditorUndoRedoManager::get_singleton()->clear_history(); // Need to clear undo history, otherwise it may lead to hard-detected errors and crashes (since the script was removed).
-		// TODO: Logic to save visual_shader as well as group if necessary.
-		ResourceSaver::save(visual_shader, visual_shader->get_path());
+		if (visual_shader.is_valid()) {
+			ResourceSaver::save(visual_shader, visual_shader->get_path());
+		}
+		if (visual_shader_group.is_valid()) {
+			ResourceSaver::save(visual_shader_group, visual_shader_group->get_path());
+		}
+		for (Ref<VisualShaderGroup> edited_group : group_edit_stack) {
+			if (edited_group.is_valid()) {
+				ResourceSaver::save(edited_group, edited_group->get_path());
+			}
+		}
 	}
 	_update_options_menu();
 
@@ -2563,8 +2601,39 @@ void VisualShaderEditor::_set_mode(int p_which) {
 	set_current_shader_type((VisualShader::Type)saved_type);
 }
 
-void VisualShaderEditor::_edit_group(int p_idx) {
+void VisualShaderEditor::_edit_group_in_graph(int p_idx) {
 	print_line("Edit group: " + itos(p_idx));
+
+	Ref<VisualShaderNodeGroup> group_node = editing_shader_graph->get_node(p_idx);
+	ERR_FAIL_COND(group_node.is_null());
+	editing_shader_graph = group_node->get_group()->get_graph().ptr();
+	group_edit_stack.push_back(group_node->get_group());
+
+	_update_graph();
+}
+
+void VisualShaderEditor::_exit_group() {
+	if (group_edit_stack.is_empty()) {
+		DEV_ASSERT(false);
+		return;
+	}
+
+	group_edit_stack.pop_back();
+	if (group_edit_stack.is_empty()) {
+		editing_shader_graph = visual_shader->get_graph(get_current_shader_type());
+	} else {
+		Ref<VisualShaderGroup> group = group_edit_stack.back()->get();
+		ERR_FAIL_COND(group.is_null());
+		editing_shader_graph = group->get_graph().ptr();
+	}
+
+	_update_graph();
+}
+
+void VisualShaderEditor::_add_group_input_pressed(int p_group_input_node_id) {
+}
+
+void VisualShaderEditor::_add_group_output_pressed(int p_group_input_node_id) {
 }
 
 Size2 VisualShaderEditor::get_minimum_size() const {
@@ -2721,6 +2790,12 @@ void VisualShaderEditor::_update_graph() {
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
 	graph->set_connection_lines_curvature(graph_lines_curvature);
+
+	if (group_edit_stack.size() > 0) {
+		exit_group_button->set_visible(true);
+	} else {
+		exit_group_button->set_visible(false);
+	}
 }
 
 void VisualShaderEditor::_restore_editor_state() {
@@ -5318,6 +5393,7 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			code_preview_button->set_button_icon(Control::get_editor_theme_icon(SNAME("Shader")));
 			shader_preview_button->set_button_icon(Control::get_editor_theme_icon(SNAME("SubViewport")));
+			exit_group_button->set_button_icon(Control::get_editor_theme_icon(SNAME("MoveUp")));
 
 			{
 				Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
@@ -6738,6 +6814,13 @@ VisualShaderEditor::VisualShaderEditor() {
 	shader_preview_button->set_pressed(true);
 	toolbar_hflow->add_child(shader_preview_button);
 	shader_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_shader_preview));
+
+	exit_group_button = memnew(Button);
+	exit_group_button->set_theme_type_variation("FlatButton");
+	exit_group_button->set_tooltip_text(TTR("Exit currently editing group."));
+	exit_group_button->set_visible(false);
+	toolbar->add_child(exit_group_button);
+	exit_group_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_exit_group));
 
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND);

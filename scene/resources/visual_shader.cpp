@@ -61,10 +61,116 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "from_node", "from_port", "to_node", "to_port"), &ShaderGraph::disconnect_nodes);
 	ClassDB::bind_method(D_METHOD("connect_nodes_forced", "from_node", "from_port", "to_node", "to_port"), &ShaderGraph::connect_nodes_forced);
 
-	ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &ShaderGraph::get_node_connections);
+	// ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &ShaderGraph::get_node_connections);
 
 	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "id", "frame"), &ShaderGraph::attach_node_to_frame);
 	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "id"), &ShaderGraph::detach_node_from_frame);
+}
+
+bool ShaderGraph::_set(const StringName &p_name, const Variant &p_value) {
+	const String prop_name = p_name;
+	if (prop_name.begins_with("nodes/")) {
+		String index = prop_name.get_slicec('/', 1);
+
+		if (index == "connections") {
+			Vector<int> conns = p_value;
+			if (conns.size() % 4 == 0) {
+				for (int i = 0; i < conns.size(); i += 4) {
+					connect_nodes_forced(conns[i + 0], conns[i + 1], conns[i + 2], conns[i + 3]);
+				}
+			}
+			return true;
+		}
+
+		const int id = index.to_int();
+		const String node_info = prop_name.get_slicec('/', 2);
+
+		if (node_info == "node") {
+			add_node(p_value, Vector2(), id);
+			return true;
+		} else if (node_info == "position") {
+			set_node_position(id, p_value);
+			return true;
+		} else if (node_info == "size") {
+			((VisualShaderNodeResizableBase *)get_node(id).ptr())->set_size(p_value);
+			return true;
+		} else if (node_info == "input_ports") {
+			((VisualShaderNodeGroupBase *)get_node(id).ptr())->set_inputs(p_value);
+			return true;
+		} else if (node_info == "output_ports") {
+			((VisualShaderNodeGroupBase *)get_node(id).ptr())->set_outputs(p_value);
+			return true;
+		} else if (node_info == "expression") {
+			((VisualShaderNodeExpression *)get_node(id).ptr())->set_expression(p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ShaderGraph::_get(const StringName &p_name, Variant &r_ret) const {
+	const String prop_name = p_name;
+	if (prop_name.begins_with("nodes/")) {
+		const String index = prop_name.get_slicec('/', 1);
+		if (index == "connections") {
+			Vector<int> conns;
+			for (const ShaderGraph::Connection &E : connections) {
+				conns.push_back(E.from_node);
+				conns.push_back(E.from_port);
+				conns.push_back(E.to_node);
+				conns.push_back(E.to_port);
+			}
+
+			r_ret = conns;
+			return true;
+		}
+
+		const int id = index.to_int();
+		const String what = prop_name.get_slicec('/', 2);
+
+		if (what == "node") {
+			r_ret = get_node(id);
+			return true;
+		} else if (what == "position") {
+			r_ret = get_node_position(id);
+			return true;
+		} else if (what == "size") {
+			r_ret = ((VisualShaderNodeResizableBase *)get_node(id).ptr())->get_size();
+			return true;
+		} else if (what == "input_ports") {
+			r_ret = ((VisualShaderNodeGroupBase *)get_node(id).ptr())->get_inputs();
+			return true;
+		} else if (what == "output_ports") {
+			r_ret = ((VisualShaderNodeGroupBase *)get_node(id).ptr())->get_outputs();
+			return true;
+		} else if (what == "expression") {
+			r_ret = ((VisualShaderNodeExpression *)get_node(id).ptr())->get_expression();
+			return true;
+		}
+	}
+	return false;
+}
+
+void ShaderGraph::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const KeyValue<int, ShaderGraph::Node> &E : nodes) {
+		String prop_name = "nodes/";
+		prop_name += itos(E.key);
+
+		if (E.key != ShaderGraph::NODE_ID_OUTPUT) {
+			p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE));
+		}
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+
+		if (Object::cast_to<VisualShaderNodeGroupBase>(E.value.node.ptr()) != nullptr) {
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		}
+		if (Object::cast_to<VisualShaderNodeExpression>(E.value.node.ptr()) != nullptr) {
+			p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		}
+	}
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 }
 
 bool ShaderGraph::_check_reroute_subgraph(int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes) const {
@@ -819,11 +925,11 @@ void VisualShaderNode::set_disabled(bool p_disabled) {
 }
 
 bool VisualShaderNode::is_deletable() const {
-	return closable;
+	return deletable;
 }
 
-void VisualShaderNode::set_deletable(bool p_closable) {
-	closable = p_closable;
+void VisualShaderNode::set_deletable(bool p_deletable) {
+	deletable = p_deletable;
 }
 
 void VisualShaderNode::set_frame(int p_node) {
@@ -4904,6 +5010,7 @@ String VisualShaderNodeGroupBase::get_outputs() const {
 	return outputs;
 }
 
+// TODO: Copy to VisualShaderNodeGroup.
 bool VisualShaderNodeGroupBase::is_valid_port_name(const String &p_name) const {
 	if (!p_name.is_valid_ascii_identifier()) {
 		return false;
@@ -5323,27 +5430,45 @@ String VisualShaderNodeGroup::get_caption() const {
 }
 
 int VisualShaderNodeGroup::get_input_port_count() const {
-	return 0;
+	if (group.is_null()) {
+		return 0;
+	}
+	return group->get_input_ports().size();
 }
 
 VisualShaderNode::PortType VisualShaderNodeGroup::get_input_port_type(int p_port) const {
-	return PortType();
+	if (group.is_null()) {
+		return PortType();
+	}
+	return group->get_input_port(p_port).type;
 }
 
 String VisualShaderNodeGroup::get_input_port_name(int p_port) const {
-	return String();
+	if (group.is_null()) {
+		return String();
+	}
+	return group->get_input_port(p_port).name;
 }
 
 int VisualShaderNodeGroup::get_output_port_count() const {
-	return 0;
+	if (group.is_null()) {
+		return 0;
+	}
+	return group->get_output_ports().size();
 }
 
 VisualShaderNode::PortType VisualShaderNodeGroup::get_output_port_type(int p_port) const {
-	return PortType();
+	if (group.is_null()) {
+		return PortType();
+	}
+	return group->get_output_port(p_port).type;
 }
 
 String VisualShaderNodeGroup::get_output_port_name(int p_port) const {
-	return String();
+	if (group.is_null()) {
+		return String();
+	}
+	return group->get_output_port(p_port).name;
 }
 
 bool VisualShaderNodeGroup::is_show_prop_names() const {
@@ -5370,14 +5495,17 @@ Ref<VisualShaderGroup> VisualShaderNodeGroup::get_group() const {
 }
 
 String VisualShaderNodeGroup::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	// TODO: Implement.
 	return String();
 }
 
 bool VisualShaderNodeGroup::is_output_port_expandable(int p_port) const {
+	// TODO: Implement.
 	return false;
 }
 
 VisualShaderNodeGroup::VisualShaderNodeGroup() {
+	simple_decl = false;
 }
 ////////////// Expression
 
@@ -5827,6 +5955,18 @@ void VisualShaderGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "id"), &VisualShaderGroup::detach_node_from_frame);
 }
 
+bool VisualShaderGroup::_set(const StringName &p_name, const Variant &p_value) {
+	return graph->_set(p_name, p_value);
+}
+
+bool VisualShaderGroup::_get(const StringName &p_name, Variant &r_ret) const {
+	return graph->_get(p_name, r_ret);
+}
+
+void VisualShaderGroup::_get_property_list(List<PropertyInfo> *p_list) const {
+	graph->_get_property_list(p_list);
+}
+
 Ref<ShaderGraph> VisualShaderGroup::get_graph() const {
 	return graph;
 }
@@ -5836,7 +5976,7 @@ void VisualShaderGroup::add_input_port(int p_id, VisualShaderNode::PortType p_ty
 }
 
 VisualShaderGroup::Port VisualShaderGroup::get_input_port(int p_id) const {
-	return Port();
+	return input_ports[p_id];
 }
 
 Vector<VisualShaderGroup::Port> VisualShaderGroup::get_input_ports() const {
@@ -5965,6 +6105,9 @@ VisualShaderGroup::VisualShaderGroup() {
 	output_node->set_group(this);
 	graph->nodes[NODE_ID_GROUP_OUTPUT].node = output_node;
 	graph->nodes[NODE_ID_GROUP_OUTPUT].position = Vector2(400, 150);
+
+	add_input_port(0, VisualShaderNode::PORT_TYPE_SCALAR, "hardcoded_test in");
+	add_output_port(0, VisualShaderNode::PORT_TYPE_SCALAR, "hardcoded_test out");
 }
 
 // void VisualShaderNodeGroupInput::_bind_methods() {
@@ -5996,26 +6139,37 @@ String VisualShaderNodeGroupInput::get_input_port_name(int p_port) const {
 }
 
 int VisualShaderNodeGroupInput::get_output_port_count() const {
-	return 0;
+	if (!group) {
+		return 0;
+	}
+	return group->get_input_ports().size();
 }
 
 VisualShaderNode::PortType VisualShaderNodeGroupInput::get_output_port_type(int p_port) const {
-	return PortType();
+	if (!group) {
+		return PortType();
+	}
+	return group->get_input_port(p_port).type;
 }
 
 String VisualShaderNodeGroupInput::get_output_port_name(int p_port) const {
-	return String();
+	if (!group) {
+		return String();
+	}
+	return group->get_input_port(p_port).name;
 }
 
 bool VisualShaderNodeGroupInput::is_output_port_expandable(int p_port) const {
+	// TODO: Implement.
 	return false;
 }
 
 String VisualShaderNodeGroupInput::get_caption() const {
-	return String();
+	return "Group Input";
 }
 
 String VisualShaderNodeGroupInput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	// TODO: Implement.
 	return String();
 }
 
@@ -6035,18 +6189,28 @@ VisualShaderGroup *VisualShaderNodeGroupOutput::get_group() const {
 }
 
 int VisualShaderNodeGroupOutput::get_input_port_count() const {
-	return 0;
+	if (!group) {
+		return 0;
+	}
+	return group->get_output_ports().size();
 }
 
 VisualShaderNode::PortType VisualShaderNodeGroupOutput::get_input_port_type(int p_port) const {
-	return PortType();
+	if (!group) {
+		return PortType();
+	}
+	return group->get_output_port(p_port).type;
 }
 
 String VisualShaderNodeGroupOutput::get_input_port_name(int p_port) const {
-	return String();
+	if (!group) {
+		return String();
+	}
+	return group->get_output_port(p_port).name;
 }
 
 Variant VisualShaderNodeGroupOutput::get_input_port_default_value(int p_port) const {
+	// TODO: Implement.
 	return Variant();
 }
 
@@ -6063,11 +6227,12 @@ String VisualShaderNodeGroupOutput::get_output_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeGroupOutput::is_port_separator(int p_index) const {
+	// TODO: Remove this?
 	return false;
 }
 
 String VisualShaderNodeGroupOutput::get_caption() const {
-	return String();
+	return "Group Output";
 }
 
 String VisualShaderNodeGroupOutput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {

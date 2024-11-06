@@ -201,9 +201,9 @@ class VisualShaderEditor : public ShaderEditor {
 	GDCLASS(VisualShaderEditor, ShaderEditor);
 	friend class VisualShaderGraphPlugin;
 
-	Ref<VisualShader> visual_shader;
-	ShaderGraph *editing_shader_graph;
-	Ref<VisualShaderGroup> editing_visual_shader_group; // Might be null.
+	ShaderGraph *editing_shader_graph = nullptr;
+	Ref<VisualShader> visual_shader; // Could be null (editing just a VisualShaderGroup).
+	Ref<VisualShaderGroup> visual_shader_group; // Could be null.
 
 	Ref<ShaderMaterial> preview_material;
 	Ref<Environment> env;
@@ -228,6 +228,7 @@ class VisualShaderEditor : public ShaderEditor {
 	MenuButton *varying_button = nullptr;
 	Button *code_preview_button = nullptr;
 	Button *shader_preview_button = nullptr;
+	Button *exit_group_button = nullptr;
 	HFlowContainer *toolbar_hflow = nullptr;
 
 	int last_to_node = -1;
@@ -295,6 +296,8 @@ class VisualShaderEditor : public ShaderEditor {
 	HashMap<String, PropertyInfo> parameter_props;
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
+
+	List<Ref<VisualShaderGroup>> group_edit_stack;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -451,7 +454,11 @@ class VisualShaderEditor : public ShaderEditor {
 	void _remove_varying(const String &p_name);
 	void _update_options_menu();
 	void _set_mode(int p_which);
-	void _edit_group(int p_idx);
+
+	void _edit_group_in_graph(int p_idx);
+	void _exit_group();
+	void _add_group_input_pressed(int p_group_input_node_id);
+	void _add_group_output_pressed(int p_group_input_node_id);
 
 	void _show_preview_text();
 	void _preview_close_requested();

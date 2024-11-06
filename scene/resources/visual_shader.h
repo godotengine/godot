@@ -41,8 +41,7 @@ class VisualShaderNode;
 class ShaderGraph : public RefCounted {
 	GDCLASS(ShaderGraph, RefCounted);
 
-protected:
-	static void _bind_methods();
+	friend class VisualShaderGroup; // For _get,_set and _get_property_list.
 
 public:
 	struct Node {
@@ -74,7 +73,14 @@ public:
 
 	RBMap<int, Node> nodes; // TODO: Does order really matter here? Maybe for serialization?
 	List<Connection> connections; // TODO: Evaluate whether this should be a LocalVector.
+protected:
+	static void _bind_methods();
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
 	bool _check_reroute_subgraph(int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
 	void add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(int p_id, const Vector2 &p_position);
@@ -332,83 +338,9 @@ public: // internal methods
 };
 
 // TODO: Uncomment before push (this is a temporary intellisense fix)
-VARIANT_ENUM_CAST(VisualShader::Type)
-VARIANT_ENUM_CAST(VisualShader::VaryingMode)
-VARIANT_ENUM_CAST(VisualShader::VaryingType)
-
-class VisualShaderGroup : public Resource {
-	GDCLASS(VisualShaderGroup, Resource);
-
-public:
-	struct Port {
-		VisualShaderNode::PortType type = VisualShaderNode::PortType::PORT_TYPE_MAX;
-		String name;
-	};
-
-private:
-	HashMap<int, Port> input_ports;
-	HashMap<int, Port> output_ports;
-
-	Ref<ShaderGraph> graph;
-
-	inline static int NODE_ID_GROUP_INPUT = 0;
-	inline static int NODE_ID_GROUP_OUTPUT = 1;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Ref<ShaderGraph> get_graph() const;
-
-	void add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
-	Port get_input_port(int p_id) const;
-	Vector<Port> get_input_ports() const;
-	void remove_input_port(int p_id);
-
-	void add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
-	Port get_output_port(int p_id) const;
-	Vector<Port> get_output_ports() const;
-	void remove_output_port(int p_id);
-
-	void add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
-	void set_node_position(int p_id, const Vector2 &p_position);
-	Vector2 get_node_position(int p_id) const;
-	Ref<VisualShaderNode> get_node(int p_id) const;
-
-	Vector<int> get_node_ids() const;
-	int get_valid_node_id() const;
-	int find_node_id(const Ref<VisualShaderNode> &p_node) const;
-	void remove_node(int p_id);
-	void replace_node(int p_id, const StringName &p_new_class);
-
-	// TODO: Rename this method and evaluate whether it is necessary.
-	bool are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
-
-	// TODO: Do you need the graph as a parameter
-	bool is_nodes_connected_relatively(int p_node, int p_target) const;
-	bool can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
-	Error connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	void disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	void connect_nodes_forced(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	bool is_port_types_compatible(int p_a, int p_b) const;
-
-	void attach_node_to_frame(int p_node, int p_frame);
-	void detach_node_from_frame(int p_node);
-
-	String get_reroute_parameter_name(int p_reroute_node) const;
-
-	// TODO: Maybe change this method to use a return type.
-
-	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
-	// TODO: Implement?
-	String generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
-
-	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
-	// TODO: Implement?
-	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
-
-	VisualShaderGroup();
-};
+VARIANT_ENUM_CAST(VisualShader::Type);
+VARIANT_ENUM_CAST(VisualShader::VaryingMode);
+VARIANT_ENUM_CAST(VisualShader::VaryingType);
 
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
@@ -455,7 +387,7 @@ protected:
 	HashMap<int, Variant> default_input_values;
 	bool simple_decl = true;
 	bool disabled = false;
-	bool closable = false;
+	bool deletable = false;
 
 	static void _bind_methods();
 
@@ -511,7 +443,7 @@ public:
 	void set_disabled(bool p_disabled = true);
 
 	bool is_deletable() const;
-	void set_deletable(bool p_closable = true);
+	void set_deletable(bool p_deletable = true);
 
 	void set_frame(int p_node);
 	int get_frame() const;
@@ -533,7 +465,88 @@ public:
 	VisualShaderNode();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNode::PortType)
+VARIANT_ENUM_CAST(VisualShaderNode::PortType);
+
+class VisualShaderGroup : public Resource {
+	GDCLASS(VisualShaderGroup, Resource);
+
+public:
+	struct Port {
+		VisualShaderNode::PortType type = VisualShaderNode::PortType::PORT_TYPE_MAX;
+		String name;
+	};
+
+private:
+	// TODO: Why does this need to be a HashMap? (copied from Expression node)
+	HashMap<int, Port> input_ports;
+	HashMap<int, Port> output_ports;
+
+	Ref<ShaderGraph> graph;
+
+	inline static int NODE_ID_GROUP_INPUT = 0;
+	inline static int NODE_ID_GROUP_OUTPUT = 1;
+
+protected:
+	static void _bind_methods();
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+public:
+	Ref<ShaderGraph> get_graph() const;
+
+	void add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
+	Port get_input_port(int p_id) const;
+	// TODO: Maybe replace this method with get_input_port_count(...)
+	Vector<Port> get_input_ports() const;
+	void remove_input_port(int p_id);
+
+	void add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
+	Port get_output_port(int p_id) const;
+	// TODO: Maybe replace this method with get_output_port_count(...)
+	Vector<Port> get_output_ports() const;
+	void remove_output_port(int p_id);
+
+	void add_node(const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
+	void set_node_position(int p_id, const Vector2 &p_position);
+	Vector2 get_node_position(int p_id) const;
+	Ref<VisualShaderNode> get_node(int p_id) const;
+
+	Vector<int> get_node_ids() const;
+	int get_valid_node_id() const;
+	int find_node_id(const Ref<VisualShaderNode> &p_node) const;
+	void remove_node(int p_id);
+	void replace_node(int p_id, const StringName &p_new_class);
+
+	// TODO: Rename this method and evaluate whether it is necessary.
+	bool are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+
+	// TODO: Do you need the graph as a parameter
+	bool is_nodes_connected_relatively(int p_node, int p_target) const;
+	bool can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
+	Error connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	void disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	void connect_nodes_forced(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	bool is_port_types_compatible(int p_a, int p_b) const;
+
+	void attach_node_to_frame(int p_node, int p_frame);
+	void detach_node_from_frame(int p_node);
+
+	String get_reroute_parameter_name(int p_reroute_node) const;
+
+	// TODO: Maybe change this method to use a return type.
+
+	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
+	// TODO: Implement?
+	String generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
+
+	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
+	// TODO: Implement?
+	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
+
+	VisualShaderGroup();
+};
 
 class VisualShaderNodeCustom : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCustom, VisualShaderNode);
@@ -1012,8 +1025,8 @@ public:
 	VisualShaderNodeGroupBase();
 };
 
-class VisualShaderNodeGroup : public VisualShaderNodeGroupBase {
-	GDCLASS(VisualShaderNodeGroup, VisualShaderNodeGroupBase);
+class VisualShaderNodeGroup : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeGroup, VisualShaderNode);
 
 	Ref<VisualShaderGroup> group;
 
@@ -1040,6 +1053,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 	virtual bool is_output_port_expandable(int p_port) const override;
+
+	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
 
 	VisualShaderNodeGroup();
 };
@@ -1186,7 +1201,7 @@ class VisualShaderNodeGroupInput : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeGroupInput, VisualShaderNode);
 
 	// TODO: Possibly dangerous, but it is necessary for now since we don't have a proper weak reference.
-	VisualShaderGroup *group;
+	VisualShaderGroup *group = nullptr;
 
 	// struct Port {
 	// 	PortType type = PortType::PORT_TYPE_MAX;
