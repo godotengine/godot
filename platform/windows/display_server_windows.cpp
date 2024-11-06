@@ -30,6 +30,7 @@
 
 #include "display_server_windows.h"
 
+#include "drop_target_windows.h"
 #include "os_windows.h"
 #include "wgl_detect_version.h"
 
@@ -1617,11 +1618,17 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 
-	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
-		wintab_WTClose(windows[p_window].wtctx);
-		windows[p_window].wtctx = nullptr;
+	if ((tablet_get_current_driver() == "wintab") && wintab_available && wd.wtctx) {
+		wintab_WTClose(wd.wtctx);
+		wd.wtctx = nullptr;
 	}
-	DestroyWindow(windows[p_window].hWnd);
+
+	if (wd.drop_target != nullptr) {
+		RevokeDragDrop(wd.hWnd);
+		wd.drop_target->Release();
+	}
+
+	DestroyWindow(wd.hWnd);
 	windows.erase(p_window);
 
 	if (last_focused_window == p_window) {
@@ -1731,7 +1738,14 @@ void DisplayServerWindows::window_set_drop_files_callback(const Callable &p_call
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	windows[p_window].drop_files_callback = p_callable;
+	WindowData &window_data = windows[p_window];
+
+	window_data.drop_files_callback = p_callable;
+
+	if (window_data.drop_target == nullptr) {
+		window_data.drop_target = memnew(DropTargetWindows(&window_data));
+		ERR_FAIL_COND(RegisterDragDrop(window_data.hWnd, window_data.drop_target) != S_OK);
+	}
 }
 
 void DisplayServerWindows::window_set_title(const String &p_title, WindowID p_window) {
@@ -5320,32 +5334,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 		} break;
-		case WM_DROPFILES: {
-			HDROP hDropInfo = (HDROP)wParam;
-			const int buffsize = 4096;
-			WCHAR buf[buffsize];
-
-			int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
-
-			Vector<String> files;
-
-			for (int i = 0; i < fcount; i++) {
-				DragQueryFileW(hDropInfo, i, buf, buffsize);
-				String file = String::utf16((const char16_t *)buf);
-				files.push_back(file);
-			}
-
-			if (files.size() && windows[window_id].drop_files_callback.is_valid()) {
-				Variant v_files = files;
-				const Variant *v_args[1] = { &v_files };
-				Variant ret;
-				Callable::CallError ce;
-				windows[window_id].drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(windows[window_id].drop_files_callback, v_args, 1, ce)));
-				}
-			}
-		} break;
 		default: {
 			if (user_proc) {
 				return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
@@ -6174,6 +6162,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		FreeLibrary(comctl32);
 	}
 
+	OleInitialize(nullptr);
+
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.style = CS_OWNDC | CS_DBLCLKS;
@@ -6606,6 +6596,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 			wintab_WTClose(windows[MAIN_WINDOW_ID].wtctx);
 			windows[MAIN_WINDOW_ID].wtctx = nullptr;
 		}
+
+		if (windows[MAIN_WINDOW_ID].drop_target != nullptr) {
+			RevokeDragDrop(windows[MAIN_WINDOW_ID].hWnd);
+			windows[MAIN_WINDOW_ID].drop_target->Release();
+		}
+
 		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
 	}
 
@@ -6637,4 +6633,6 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (tts) {
 		memdelete(tts);
 	}
+
+	OleUninitialize();
 }
