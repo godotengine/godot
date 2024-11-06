@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  drop_target_windows.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef DROP_TARGET_WINDOWS_H
+#define DROP_TARGET_WINDOWS_H
 
-#include "scene/resources/surface_tool.h"
+#include "display_server_windows.h"
 
-#include "thirdparty/meshoptimizer/meshoptimizer.h"
+#include <shlobj.h>
 
-void initialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+// Silence warning due to a COM API weirdness.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
 
-	SurfaceTool::optimize_vertex_cache_func = meshopt_optimizeVertexCache;
-	SurfaceTool::optimize_vertex_fetch_remap_func = meshopt_optimizeVertexFetchRemap;
-	SurfaceTool::simplify_func = meshopt_simplify;
-	SurfaceTool::simplify_with_attrib_func = meshopt_simplifyWithAttributes;
-	SurfaceTool::simplify_scale_func = meshopt_simplifyScale;
-	SurfaceTool::generate_remap_func = meshopt_generateVertexRemap;
-	SurfaceTool::remap_vertex_func = meshopt_remapVertexBuffer;
-	SurfaceTool::remap_index_func = meshopt_remapIndexBuffer;
-}
+// https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-dodragdrop#remarks
+class DropTargetWindows : public IDropTarget {
+	LONG ref_count;
+	DisplayServerWindows::WindowData *window_data = nullptr;
+	CLIPFORMAT cf_filedescriptor = 0;
+	CLIPFORMAT cf_filecontents = 0;
+	String tmp_path;
 
-void uninitialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+	bool is_valid_filedescriptor();
+	HRESULT handle_hdrop_format(Vector<String> *p_files, IDataObject *pDataObj);
+	HRESULT handle_filedescriptor_format(Vector<String> *p_files, IDataObject *pDataObj);
+	HRESULT save_as_file(const String &p_out_dir, FILEDESCRIPTORW *p_file_desc, IDataObject *pDataObj, int p_file_idx);
 
-	SurfaceTool::optimize_vertex_cache_func = nullptr;
-	SurfaceTool::optimize_vertex_fetch_remap_func = nullptr;
-	SurfaceTool::simplify_func = nullptr;
-	SurfaceTool::simplify_scale_func = nullptr;
-	SurfaceTool::generate_remap_func = nullptr;
-	SurfaceTool::remap_vertex_func = nullptr;
-	SurfaceTool::remap_index_func = nullptr;
-}
+public:
+	DropTargetWindows(DisplayServerWindows::WindowData *p_window_data);
+	virtual ~DropTargetWindows() {}
+
+	// IUnknown
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
+	ULONG STDMETHODCALLTYPE AddRef() override;
+	ULONG STDMETHODCALLTYPE Release() override;
+
+	// IDropTarget
+	HRESULT STDMETHODCALLTYPE DragEnter(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+	HRESULT STDMETHODCALLTYPE DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+	HRESULT STDMETHODCALLTYPE DragLeave() override;
+	HRESULT STDMETHODCALLTYPE Drop(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+};
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+#endif // DROP_TARGET_WINDOWS_H
