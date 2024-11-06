@@ -87,8 +87,8 @@ void CharacterBodyMain::_notification( int p_notification )
 
 }
 
-void CharacterBodyMain::bt_add_audio_socket() {
-    if(audio_socket_name.str().size() > 0) {
+void CharacterBodyMain::audio_add_socket() {
+    if(audio_socket_name.str().is_empty()) {
         return;
     }
     if(audio_players.has(audio_socket_name)) {
@@ -395,7 +395,11 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_audio_play_component", "audio_play_component"), &CharacterBodyMain::set_audio_play_component);
     ClassDB::bind_method(D_METHOD("get_audio_play_component"), &CharacterBodyMain::get_audio_play_component);
 
+
     ClassDB::bind_method(D_METHOD("play_audio", "audio_socket", "stream"), &CharacterBodyMain::play_audio);
+
+    ClassDB::bind_method(D_METHOD("get_audio_player"), &CharacterBodyMain::get_audio_player);
+
     ClassDB::bind_method(D_METHOD("get_animation_Group"), &CharacterBodyMain::get_animation_Group);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
@@ -433,8 +437,6 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
     ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
 
-    ClassDB::bind_method(D_METHOD("set_editor_ref_bone_map", "editor_ref_bone_map"), &CharacterBodyMain::set_editor_ref_bone_map);
-    ClassDB::bind_method(D_METHOD("get_editor_ref_bone_map"), &CharacterBodyMain::get_editor_ref_bone_map);
 
     ClassDB::bind_method(D_METHOD("set_editor_animation_file_path", "path"), &CharacterBodyMain::set_editor_animation_file_path);
     ClassDB::bind_method(D_METHOD("get_editor_animation_file_path"), &CharacterBodyMain::get_editor_animation_file_path);
@@ -443,11 +445,12 @@ void CharacterBodyMain::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
 
 
-    ADD_GROUP("audio", "audio_");
-    IMP_GODOT_PROPERTY(StringName,audio_socket_name)
+    ADD_SUBGROUP("audio", "audio_");
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "audio_play_component" ), "set_audio_play_component", "get_audio_play_component");
+    IMP_GODOT_PROPERTY(StringName,audio_socket_name)
+    ADD_MEMBER_BUTTON(audio_add_socket,L"增加音频插槽",CharacterBodyMain);
 
-    ADD_GROUP("editor", "editor_");
+    ADD_SUBGROUP("editor", "editor_");
 
     ClassDB::bind_method(D_METHOD("set_editor_show_mesh", "editor_show_mesh"), &CharacterBodyMain::set_editor_show_mesh);
     ClassDB::bind_method(D_METHOD("get_editor_show_mesh"), &CharacterBodyMain::get_editor_show_mesh);
@@ -458,6 +461,18 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_editor_animation_group"), &CharacterBodyMain::set_editor_animation_group);
     ClassDB::bind_method(D_METHOD("get_editor_animation_group"), &CharacterBodyMain::get_editor_animation_group);
 
+    ClassDB::bind_method(D_METHOD("set_editor_convert_animations_path", "path"), &CharacterBodyMain::set_editor_convert_animations_path);
+    ClassDB::bind_method(D_METHOD("get_editor_convert_animations_path"), &CharacterBodyMain::get_editor_convert_animations_path);
+
+    ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterBodyMain::set_play_animation);
+    ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
+
+    ClassDB::bind_method(D_METHOD("set_play_animayion_speed", "speed"), &CharacterBodyMain::set_play_animayion_speed);
+    ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
+    
+    ClassDB::bind_method(D_METHOD("set_track_target", "track_target"), &CharacterBodyMain::set_track_target);
+    ClassDB::bind_method(D_METHOD("get_track_target"), &CharacterBodyMain::get_track_target);
+
 
 
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
@@ -467,27 +482,19 @@ void CharacterBodyMain::_bind_methods()
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
     
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "get_animation_Group",PROPERTY_USAGE_EDITOR), "set_editor_animation_group", "get_editor_animation_group");
 
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_ref_bone_map", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBoneMap", PROPERTY_USAGE_DEFAULT ), "set_editor_ref_bone_map", "get_editor_ref_bone_map");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_human_config", PROPERTY_HINT_NONE, "HumanSkeletonConfig", PROPERTY_USAGE_EDITOR), "set_editor_human_config", "get_editor_human_config");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"tres,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
 
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "get_animation_Group",PROPERTY_USAGE_EDITOR), "set_editor_animation_group", "get_editor_animation_group");
     ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
 
 
-    ClassDB::bind_method(D_METHOD("set_editor_convert_animations_path", "path"), &CharacterBodyMain::set_editor_convert_animations_path);
-    ClassDB::bind_method(D_METHOD("get_editor_convert_animations_path"), &CharacterBodyMain::get_editor_convert_animations_path);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_convert_animations_path", PROPERTY_HINT_DIR), "set_editor_convert_animations_path", "get_editor_convert_animations_path");
 
     ADD_MEMBER_BUTTON(editor_convert_animations_bt,L"转换动画文件夹",CharacterBodyMain);
 
     
-    ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterBodyMain::set_play_animation);
-    ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
-    ClassDB::bind_method(D_METHOD("set_play_animayion_speed", "speed"), &CharacterBodyMain::set_play_animayion_speed);
-    ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animayion_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
@@ -497,20 +504,18 @@ void CharacterBodyMain::_bind_methods()
     ADD_MEMBER_BUTTON(editor_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
 
-    ClassDB::bind_method(D_METHOD("set_track_target", "track_target"), &CharacterBodyMain::set_track_target);
-    ClassDB::bind_method(D_METHOD("get_track_target"), &CharacterBodyMain::get_track_target);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_track_target", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), "set_track_target", "get_track_target");
 
 
 
-    ADD_GROUP("show", "");
+    ADD_SUBGROUP("show", "");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ik", PROPERTY_HINT_RESOURCE_TYPE, "RenIK",PROPERTY_USAGE_DEFAULT ), "set_ik", "get_ik");
 
 
-    ADD_GROUP("logic", "");
+    ADD_SUBGROUP("logic", "");
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "character_ai", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAI"), "set_character_ai", "get_character_ai");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent3D"), "set_navigation_agent", "get_navigation_agent");
@@ -833,7 +838,6 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
         }
 
 
-        editor_ref_bone_map = bone_map_ref;
 		skeleton->set_owner(nullptr);
 		reset_owenr(skeleton, skeleton);
 
@@ -946,6 +950,10 @@ static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_pa
 }
 
 void CharacterBodyMain::editor_build_animation() {
+    if(editor_animation_group.is_empty()) {
+        WARN_PRINT("请先设置动画组名");
+        return;
+    }
     editor_build_animation_form_path(editor_animation_file_path);
 }
 void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
@@ -1046,6 +1054,7 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 			if (animation_human_config.is_valid()) {
 				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map);
 			}
+            new_animation->set_animation_group(editor_animation_group);
             new_animation->optimize();
             new_animation->compress();
             play_animation = new_animation;
@@ -1091,6 +1100,10 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 void CharacterBodyMain::editor_convert_animations_bt() {
 
     if( !DirAccess::exists(editor_convert_animations_path) ) {
+        return;
+    }
+    if(editor_animation_group.is_empty()) {
+        WARN_PRINT("请先设置动画组名");
         return;
     }
     editor_convert_animations(editor_convert_animations_path);

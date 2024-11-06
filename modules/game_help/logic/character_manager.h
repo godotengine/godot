@@ -69,7 +69,7 @@ public:
     {
         for(const StringName& group : animation_groups)
         {
-            arr->push_back(group.str());
+            arr->push_back(group);
         }
     }
     CharacterManager();

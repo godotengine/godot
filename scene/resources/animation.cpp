@@ -4198,7 +4198,7 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_human", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_is_human_animation", "get_is_human_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "human_bone_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_human_bone_mask", "get_human_bone_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);

@@ -344,8 +344,14 @@ public:
         player->set_stream(p_stream);
         player->play();
     }
+    Ref<AudioStreamPlayer3DCompoent> get_audio_player(StringName p_audio_socket) {
+        if(audio_players.has(p_audio_socket)) {
+            return audio_players[p_audio_socket];
+        }
+        return Ref<AudioStreamPlayer3DCompoent>();
+    }
     DECL_GODOT_PROPERTY(StringName, audio_socket_name,StringName());
-	DECL_MEMBER_BUTTON(bt_add_audio_socket);
+	DECL_MEMBER_BUTTON(audio_add_socket);
 
 
     // 技能相关
@@ -591,13 +597,6 @@ public:
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
 
     // 生成动画资产帮助类
-    void set_editor_ref_bone_map(Ref<CharacterBoneMap> p_bone_map) {
-        editor_ref_bone_map = p_bone_map;
-    }
-
-    Ref<CharacterBoneMap> get_editor_ref_bone_map() {
-        return editor_ref_bone_map;
-    }
     void set_editor_animation_file_path(const String& p_file_path)
     {
 		editor_animation_file_path = p_file_path;
@@ -608,7 +607,6 @@ public:
         return editor_animation_file_path;
     }
 
-    Ref<CharacterBoneMap> editor_ref_bone_map;
     String editor_animation_file_path;
     void editor_build_animation_form_path(String p_file_path);
     DECL_MEMBER_BUTTON(editor_build_animation);
