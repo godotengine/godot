@@ -36,7 +36,7 @@
 #include <jpgd.h>
 #include <jpge.h>
 
-#include <string.h>
+#include <cstring>
 
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
 	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer, p_buffer_len);

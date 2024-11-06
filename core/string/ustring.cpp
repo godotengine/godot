@@ -42,9 +42,9 @@
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy

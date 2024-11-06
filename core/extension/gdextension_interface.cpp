@@ -43,7 +43,7 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
-#include <string.h>
+#include <cstring>
 
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;

@@ -33,7 +33,7 @@
 
 #include "core/version_generated.gen.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 // Copied from typedefs.h to stay lean.
 #ifndef _STR

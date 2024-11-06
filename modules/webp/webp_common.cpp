@@ -36,7 +36,7 @@
 #include <webp/decode.h>
 #include <webp/encode.h>
 
-#include <string.h>
+#include <cstring>
 
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {

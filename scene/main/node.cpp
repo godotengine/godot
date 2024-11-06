@@ -43,7 +43,7 @@
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 int Node::orphan_node_count = 0;
 

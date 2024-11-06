@@ -39,7 +39,7 @@
 #include "scene/main/window.h" // SceneTree only forward declares it.
 
 #include <emscripten/emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 static OS_Web *os = nullptr;
 #ifndef PROXY_TO_PTHREAD_ENABLED
