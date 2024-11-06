@@ -18,11 +18,7 @@ jobs:
     name: Editor (target=release_debug, tools=yes)
 
     steps:
-<<<<<<< HEAD
     - uses: actions/checkout@v4
-=======
-      - uses: actions/checkout@v4
->>>>>>> 6b202812ff (CI: Update all GitHub actions to their latest version)
 
       # Upload cache on completion and check it out now
       # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
