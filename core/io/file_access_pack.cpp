@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {

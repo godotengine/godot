@@ -37,7 +37,7 @@
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
 
-#include <stdio.h>
+#include <cstdio>
 
 void Resource::emit_changed() {
 	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
