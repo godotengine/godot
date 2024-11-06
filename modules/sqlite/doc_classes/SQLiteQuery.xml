@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SQLiteQuery" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Class for executing SQL queries on an SQLite database.
+	</brief_description>
+	<description>
+		A class that allows you to execute SQL queries on an SQLite database. It provides methods for both single and batch execution of queries. It also provides a method to retrieve the column names from the last executed query and a method to get the last error message, if any.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="batch_execute">
+			<return type="Variant" />
+			<param index="0" name="rows" type="Array" />
+			<description>
+				Executes a batch of SQL queries. The queries are provided as an array of strings. Returns the result of the last query in the batch.
+			</description>
+		</method>
+		<method name="execute">
+			<return type="Variant" />
+			<param index="0" name="arguments" type="Array" default="[]" />
+			<description>
+				Executes a single SQL query. The query is provided as a string. If the query requires arguments, they can be provided as an array. Returns the result of the query.
+			</description>
+		</method>
+		<method name="get_columns">
+			<return type="Array" />
+			<description>
+				Returns an array of column names from the last executed query.
+			</description>
+		</method>
+		<method name="get_last_error_message" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the last error message, if any. If there was no error, returns an empty string.
+			</description>
+		</method>
+	</methods>
+</class>

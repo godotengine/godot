@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3 uid="uid://qmfl04b8ycnr"]
+
+[ext_resource type="Script" path="res://SQLite/item_database.gd" id="1"]
+[ext_resource type="Script" path="res://SQLite/sql_queries.gd" id="2"]
+[ext_resource type="Script" path="res://SQLite/game_highscore.gd" id="3"]
+[ext_resource type="Script" path="res://SQLite/blob_data.gd" id="4"]
+[ext_resource type="Script" path="res://SQLite/test_database.gd" id="5_l7232"]
+
+[node name="Node" type="Node"]
+
+[node name="TestDatabase" type="Node2D" parent="."]
+script = ExtResource("5_l7232")
+
+[node name="ItemDatabase" type="Node2D" parent="."]
+script = ExtResource("1")
+
+[node name="SqlQueries" type="Node2D" parent="."]
+script = ExtResource("2")
+
+[node name="GameHighScore" type="Node2D" parent="."]
+script = ExtResource("3")
+
+[node name="BLOBData" type="Node2D" parent="."]
+script = ExtResource("4")
