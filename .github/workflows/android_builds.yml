@@ -14,7 +14,7 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
@@ -23,15 +23,16 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      - name: Set up Java 8
-        uses: actions/setup-java@v1
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
         with:
-          java-version: 8
+          distribution: temurin
+          java-version: 11
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
         id: android-template-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/.scons_cache/
           key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
@@ -43,7 +44,7 @@ jobs:
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           # Semantic version range syntax or exact version of a Python version
           python-version: '3.x'
@@ -68,7 +69,7 @@ jobs:
           cd ../../..
           ls -l bin/
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.job }}
           path: bin/*

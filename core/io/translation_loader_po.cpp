@@ -50,7 +50,9 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 
 	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
+#ifdef DEBUG_ENABLED
 	int line = 1;
+#endif
 	bool skip_this = false;
 	bool skip_next = false;
 	bool is_eof = false;
@@ -108,7 +110,9 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 			if (l.find("fuzzy") != -1) {
 				skip_next = true;
 			}
+#ifdef DEBUG_ENABLED
 			line++;
+#endif
 			continue; //nothing to read or comment
 		}
 
@@ -141,7 +145,9 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		else
 			msg_str += l;
 
+#ifdef DEBUG_ENABLED
 		line++;
+#endif
 	}
 
 	memdelete(f);

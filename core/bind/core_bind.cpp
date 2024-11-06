@@ -1020,7 +1020,9 @@ struct _OSCoreBindImg {
 };
 
 void _OS::print_all_textures_by_size() {
-
+	// HACK: This is broken, was fixed in 3.4+, we don't bother here.
+	// Just comment out to silence warnings.
+	/*
 	List<_OSCoreBindImg> imgs;
 	uint64_t total = 0;
 	{
@@ -1052,6 +1054,7 @@ void _OS::print_all_textures_by_size() {
 
 		total -= E->get().vram;
 	}
+	*/
 }
 
 void _OS::print_resources_by_type(const Vector<String> &p_types) {

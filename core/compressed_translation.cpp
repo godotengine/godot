@@ -63,7 +63,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 	int idx = 0;
 	int total_compression_size = 0;
-	int total_string_size = 0;
 
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
 
@@ -102,7 +101,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 		compressed.write[idx] = ps;
 		total_compression_size += ps.compressed.size();
-		total_string_size += src_s.size();
 		idx++;
 	}
 
@@ -149,7 +147,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	uint32_t *btw = (uint32_t *)&btwb[0];
 
 	int btindex = 0;
-	int collisions = 0;
 
 	for (int i = 0; i < size; i++) {
 
@@ -157,8 +154,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
-		} else if (t.size() > 1) {
-			collisions += t.size() - 1;
 		}
 
 		htw[i] = btindex;
