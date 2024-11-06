@@ -71,6 +71,7 @@ def create_template_zip(env, js, wasm, side):
             "___GODOT_OPT_CACHE___": json.dumps(opt_cache),
             "___GODOT_OFFLINE_PAGE___": "offline.html",
             "___GODOT_THREADS_ENABLED___": "true" if env["threads"] else "false",
+            "___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___": "true",
         }
         html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
         in_files.append(html)
