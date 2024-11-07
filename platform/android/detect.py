@@ -1,7 +1,6 @@
 import os
 import sys
 import platform
-from distutils.version import LooseVersion
 
 
 def is_active():
@@ -265,8 +264,14 @@ def configure(env):
 
     # Link flags
 
+    # HACK: Replaced use of now obsoleted distutils.version.LooseVersion with this simple method,
+    # which isn't bullet proof but should be sufficient here with "x.y.z" parameters.
+    # Alternatives imply adding more dependencies.
+    def version_tuple(v):
+        return tuple(map(int, (v.split("."))))
+
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
-    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
+    if ndk_version != None and version_tuple(ndk_version) >= version_tuple("17.1.4828580"):
         env.Append(LINKFLAGS=["-Wl,--exclude-libs,libgcc.a", "-Wl,--exclude-libs,libatomic.a", "-nostdlib++"])
     else:
         env.Append(

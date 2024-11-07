@@ -32,10 +32,8 @@
 
 #include "in_app_store.h"
 
-extern "C" {
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-};
 
 bool auto_finish_transactions = true;
 NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
