@@ -477,6 +477,8 @@ public:
 	};
 
 private:
+	String group_name;
+
 	// TODO: Why does this need to be a HashMap? (copied from Expression node)
 	HashMap<int, Port> input_ports;
 	HashMap<int, Port> output_ports;
@@ -495,6 +497,9 @@ protected:
 
 public:
 	Ref<ShaderGraph> get_graph() const;
+
+	void set_group_name(const String &p_name);
+	String get_group_name() const;
 
 	void add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
 	Port get_input_port(int p_id) const;
@@ -1030,6 +1035,7 @@ class VisualShaderNodeGroup : public VisualShaderNode {
 
 	Ref<VisualShaderGroup> group;
 
+	void _emit_changed();
 protected:
 	static void _bind_methods();
 

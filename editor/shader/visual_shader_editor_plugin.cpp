@@ -691,14 +691,26 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		gnode->set_title(vsnode->get_caption());
 		node = gnode;
 
-		// Add "Edit" button to group node titlebar.
 		if (is_group) {
+			// Add group icon to node titlebar.
 			HBoxContainer *titlebar = gnode->get_titlebar_hbox();
+			TextureRect *group_icon = memnew(TextureRect);
+			group_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+			group_icon->set_texture(editor->get_theme_icon("VisualShaderGroup", "EditorIcons"));
+			titlebar->add_child(group_icon, false, Node::INTERNAL_MODE_FRONT);
+
+			// Add "Edit" button to group node titlebar.
 			Button *edit_group_btn = memnew(Button);
 			edit_group_btn->set_text(TTR("Edit"));
 			edit_group_btn->set_icon(editor->get_theme_icon("Edit", "EditorIcons"));
-			edit_group_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_group_in_graph).bind(p_id));
+			edit_group_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_group_in_graph).bind(p_id), CONNECT_DEFERRED);
 			titlebar->add_child(edit_group_btn);
+
+			// Update title and inputs/outputs on changes.
+			Ref<VisualShaderGroup> group = group_node->get_group();
+			if (group.is_valid()) {
+				group->connect_changed(callable_mp(editor, &VisualShaderEditor::_update_group_node).bind(p_id));
+			}
 		}
 	}
 	node->set_name(itos(p_id));
@@ -1370,6 +1382,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	bool has_relative_parameter_instances = false;
 	if (vsnode->get_output_port_for_preview() >= 0) {
+		// TODO: Handle this in VSG.
 		has_relative_parameter_instances = is_node_has_parameter_instances_relatively(p_type, p_id);
 		show_port_preview(p_type, p_id, vsnode->get_output_port_for_preview(), !has_relative_parameter_instances);
 	} else if (!is_reroute) {
@@ -2171,7 +2184,7 @@ void VisualShaderEditor::_clear_preview_param() {
 }
 
 void VisualShaderEditor::_update_preview_parameter_list() {
-	material_editor->edit(preview_material.ptr(), env);
+	material_editor->edit(preview_material.ptr(), preview_environment);
 
 	List<PropertyInfo> properties;
 	RenderingServer::get_singleton()->get_shader_parameter_list(visual_shader->get_rid(), &properties);
@@ -2606,7 +2619,13 @@ void VisualShaderEditor::_edit_group_in_graph(int p_idx) {
 
 	Ref<VisualShaderNodeGroup> group_node = editing_shader_graph->get_node(p_idx);
 	ERR_FAIL_COND(group_node.is_null());
-	editing_shader_graph = group_node->get_group()->get_graph().ptr();
+
+	Ref<VisualShaderGroup> group = group_node->get_group();
+	if (group.is_null()) {
+		return;
+	}
+
+	editing_shader_graph = group->get_graph().ptr();
 	group_edit_stack.push_back(group_node->get_group());
 
 	_update_graph();
@@ -2628,6 +2647,11 @@ void VisualShaderEditor::_exit_group() {
 	}
 
 	_update_graph();
+}
+
+
+void VisualShaderEditor::_update_group_node(int p_idx) {
+	graph_plugin->update_node(get_current_shader_type(), p_idx);
 }
 
 void VisualShaderEditor::_add_group_input_pressed(int p_group_input_node_id) {
@@ -6919,12 +6943,12 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// Initialize material editor.
 	{
-		env.instantiate();
+		preview_environment.instantiate();
 		Ref<Sky> sky = memnew(Sky());
-		env->set_sky(sky);
-		env->set_background(Environment::BG_COLOR);
-		env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
-		env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+		preview_environment->set_sky(sky);
+		preview_environment->set_background(Environment::BG_COLOR);
+		preview_environment->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+		preview_environment->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
 
 		preview_material.instantiate();
 		preview_material->connect(CoreStringName(property_list_changed), callable_mp(this, &VisualShaderEditor::_update_preview_parameter_list));
@@ -8097,7 +8121,7 @@ public:
 		undo_redo->add_do_property(node.ptr(), p_property, p_value);
 		undo_redo->add_undo_property(node.ptr(), p_property, node->get(p_property));
 
-		Ref<VisualShaderNode> vsnode = editor->get_visual_shader()->get_node(shader_type, node_id);
+		Ref<VisualShaderNode> vsnode = editor->get_shader_graph()->get_node(node_id);
 		ERR_FAIL_COND(vsnode.is_null());
 
 		// Check for invalid connections due to removed ports.
@@ -8109,17 +8133,17 @@ public:
 		const int output_port_count = vsnode_new->get_expanded_output_port_count();
 
 		List<ShaderGraph::Connection> conns;
-		editor->get_visual_shader()->get_node_connections(shader_type, &conns);
+		editor->get_shader_graph()->get_node_connections(&conns);
 		VisualShaderGraphPlugin *graph_plugin = editor->get_graph_plugin();
 		bool undo_node_already_updated = false;
 		for (const ShaderGraph::Connection &c : conns) {
 			if ((c.from_node == node_id && c.from_port >= output_port_count) || (c.to_node == node_id && c.to_port >= input_port_count)) {
-				undo_redo->add_do_method(editor->get_visual_shader().ptr(), "disconnect_nodes", shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
+				undo_redo->add_do_method(editor->get_shader_graph(), "disconnect_nodes", shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
 				undo_redo->add_do_method(graph_plugin, "disconnect_nodes", shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
 				// We need to update the node before reconnecting to avoid accessing a non-existing port.
 				undo_redo->add_undo_method(graph_plugin, "update_node_deferred", shader_type, node_id);
 				undo_node_already_updated = true;
-				undo_redo->add_undo_method(editor->get_visual_shader().ptr(), "connect_nodes", shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
+				undo_redo->add_undo_method(editor->get_shader_graph(), "connect_nodes", shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
 				undo_redo->add_undo_method(graph_plugin, "connect_nodes", shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
 			}
 		}
