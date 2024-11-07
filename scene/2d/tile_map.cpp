@@ -1269,7 +1269,8 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 	for (int i = 0; i < c; i += offset) {
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
-		for (int j = 0; j < ((format == FORMAT_2) ? 12 : 8); j++) {
+		const int buffer_size = (format == FORMAT_2) ? 12 : 8;
+		for (int j = 0; j < buffer_size; j++) {
 			local[j] = ptr[j];
 		}
 
