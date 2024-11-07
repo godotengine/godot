@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Ref&lt;*&gt;">
+		<SmartPointer Usage="Minimal">reference</SmartPointer>
+		<DisplayString Condition="!reference">[empty]</DisplayString>
+		<DisplayString Condition="!!reference">{*reference}</DisplayString>
+		<Expand>
+			<Item Condition="!!reference" Name="[ptr]">reference</Item>
+			<Item Condition="!!reference" Name="[refcount]">reference->refcount.count.value</Item>
+		</Expand>
+	</Type>
+
 	<Type Name="Vector&lt;*&gt;">
 		<Expand>
 			<Item Name="[size]">_cowdata._ptr ? (((const unsigned long long *)(_cowdata._ptr))[-1]) : 0</Item>
@@ -89,6 +99,16 @@
 		<DisplayString Condition="!_data">[empty]</DisplayString>
 		<StringView Condition="_data &amp;&amp; _data->cname">_data->cname,s8b</StringView>
 		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,s32b</StringView>
+	</Type>
+
+	<Type Name="HashSet&lt;*,*,*&gt;">
+		<Expand>
+			<Item Name="[size]">num_elements</Item>
+			<ArrayItems>
+				<Size>num_elements</Size>
+				<ValuePointer>($T1 *) keys._cowdata._ptr</ValuePointer>
+			</ArrayItems>
+		</Expand>
 	</Type>
 
 	<Type Name="HashMapElement&lt;*,*&gt;">
