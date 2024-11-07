@@ -37,6 +37,7 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader_group.h"
 
 class CodeEdit;
 class ColorPicker;

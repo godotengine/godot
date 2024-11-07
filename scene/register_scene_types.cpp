@@ -156,6 +156,7 @@
 #include "scene/resources/theme.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader_group.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
