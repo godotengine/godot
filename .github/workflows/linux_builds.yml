@@ -58,13 +58,19 @@ jobs:
           # Azure repositories are flaky, remove them.
           sudo rm -f /etc/apt/sources.list.d/{azure,microsoft}*
           sudo apt-get update
-          # The actual dependencies
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-              libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
-              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+          # The actual dependencies.
+          sudo apt-get install --no-install-recommends build-essential pkg-config libx11-dev \
+              libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev \
+              libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Free disk space on runner
+        run: |
+          echo "Disk usage before:" && df -h
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk usage after:" && df -h
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
@@ -82,6 +88,12 @@ jobs:
           platform: linuxbsd
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       # Generate mono glue
       - name: Generate Mono glue code
@@ -103,9 +115,9 @@ jobs:
       - name: Download test project
         if: ${{ matrix.test }}
         run: |
-          wget https://github.com/godotengine/regression-test-project/archive/3.x.zip
-          unzip 3.x.zip
-          mv "regression-test-project-3.x" "test_project"
+          wget https://github.com/godotengine/regression-test-project/archive/3.5.zip
+          unzip 3.5.zip
+          mv "regression-test-project-3.5" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
