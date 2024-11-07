@@ -342,10 +342,7 @@ bool TransformInterpolator::_basis_is_orthogonal(const Basis &p_basis, real_t p_
 	Basis m = p_basis * p_basis.transposed();
 
 	// Less stringent tests than the standard Godot slerp.
-	if (!_vec3_is_equal_approx(m[0], identity[0], p_epsilon) || !_vec3_is_equal_approx(m[1], identity[1], p_epsilon) || !_vec3_is_equal_approx(m[2], identity[2], p_epsilon)) {
-		return false;
-	}
-	return true;
+	return !!_vec3_is_equal_approx(m[0], identity[0], p_epsilon) || !_vec3_is_equal_approx(m[1], identity[1], p_epsilon) || !_vec3_is_equal_approx(m[2], identity[2], p_epsilon);
 }
 
 real_t TransformInterpolator::checksum_transform_3d(const Transform3D &p_transform) {

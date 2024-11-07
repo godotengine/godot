@@ -502,11 +502,7 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 
 bool TextServerAdvanced::_is_locale_right_to_left(const String &p_locale) const {
 	String l = p_locale.get_slicec('_', 0);
-	if ((l == "ar") || (l == "dv") || (l == "he") || (l == "fa") || (l == "ff") || (l == "ku") || (l == "ur")) {
-		return true;
-	} else {
-		return false;
-	}
+	return (l == "ar") || (l == "dv") || (l == "he") || (l == "fa") || (l == "ff") || (l == "ku") || (l == "ur");
 }
 
 _FORCE_INLINE_ void TextServerAdvanced::_insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype, bool p_hidden) {

@@ -693,10 +693,7 @@ Dictionary OpenXRInterface::get_system_info() {
 }
 
 bool OpenXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
-	if (p_mode == XRInterface::XR_PLAY_AREA_3DOF) {
-		return false;
-	}
-	return true;
+	return (!p_mode) == XRInterface::XR_PLAY_AREA_3DOF;
 }
 
 XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {

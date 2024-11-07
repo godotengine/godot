@@ -1218,10 +1218,7 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 		}
 	}
 
-	if (is_nodes_connected_relatively(g, p_from_node, p_to_node)) {
-		return false;
-	}
-	return true;
+	return !is_nodes_connected_relatively(g, p_from_node, p_to_node);
 }
 
 bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {

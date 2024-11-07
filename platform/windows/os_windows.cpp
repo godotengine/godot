@@ -1931,11 +1931,7 @@ bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "system_fonts") {
 		return dwrite_init;
 	}
-	if (p_feature == "pc") {
-		return true;
-	}
-
-	return false;
+	return p_feature == "pc";
 }
 
 void OS_Windows::disable_crash_handler() {

@@ -1721,11 +1721,7 @@ void RichTextLabel::_scroll_changed(double) {
 		return;
 	}
 
-	if (scroll_follow && vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
-		scroll_following = true;
-	} else {
-		scroll_following = false;
-	}
+	scroll_following = scroll_follow && vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1);
 
 	scroll_updated = true;
 

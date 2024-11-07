@@ -113,7 +113,7 @@ uint32_t AudioDriverDummy::get_channels() const {
 
 void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
 	ERR_FAIL_COND(!active.is_set()); // If not active, should not mix.
-	ERR_FAIL_COND(use_threads == true); // If using threads, this will not work well.
+	ERR_FAIL_COND(use_threads); // If using threads, this will not work well.
 
 	uint32_t todo = p_frames;
 	while (todo) {

@@ -263,10 +263,7 @@ void RenderForwardClustered::setup_render_buffer_data(Ref<RenderSceneBuffersRD> 
 }
 
 bool RenderForwardClustered::free(RID p_rid) {
-	if (RendererSceneRenderRD::free(p_rid)) {
-		return true;
-	}
-	return false;
+	return RendererSceneRenderRD::free(p_rid);
 }
 
 void RenderForwardClustered::update() {

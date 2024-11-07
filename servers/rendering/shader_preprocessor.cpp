@@ -335,14 +335,10 @@ ShaderPreprocessor::Token::Token(char32_t p_text, int p_line) {
 // ShaderPreprocessor
 
 bool ShaderPreprocessor::is_char_word(char32_t p_char) {
-	if ((p_char >= '0' && p_char <= '9') ||
+	return (p_char >= '0' && p_char <= '9') ||
 			(p_char >= 'a' && p_char <= 'z') ||
 			(p_char >= 'A' && p_char <= 'Z') ||
-			p_char == '_') {
-		return true;
-	}
-
-	return false;
+			p_char == '_';
 }
 
 bool ShaderPreprocessor::is_char_space(char32_t p_char) {

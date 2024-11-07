@@ -311,11 +311,7 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	Rect2 frame_rect = Rect2(0, 0, get_size().width, get_size().height);
 	Rect2 no_drag_rect = frame_rect.grow(-drag_margin);
 
-	if (frame_rect.has_point(p_point) && !no_drag_rect.has_point(p_point)) {
-		return true;
-	}
-
-	return false;
+	return frame_rect.has_point(p_point) && !no_drag_rect.has_point(p_point);
 }
 
 Size2 GraphFrame::get_minimum_size() const {

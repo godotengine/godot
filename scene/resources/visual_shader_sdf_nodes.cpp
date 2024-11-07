@@ -98,10 +98,7 @@ String VisualShaderNodeScreenUVToSDF::get_output_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeScreenUVToSDF::is_input_port_default(int p_port, Shader::Mode p_mode) const {
-	if (p_port == 0) {
-		return true;
-	}
-	return false;
+	return p_port == 0;
 }
 
 String VisualShaderNodeScreenUVToSDF::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {

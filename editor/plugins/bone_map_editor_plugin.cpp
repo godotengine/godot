@@ -238,10 +238,7 @@ void BonePicker::popup_bones_tree(const Size2i &p_minsize) {
 
 bool BonePicker::has_selected_bone() {
 	TreeItem *selected = bones->get_selected();
-	if (!selected) {
-		return false;
-	}
-	return true;
+	return !!selected;
 }
 
 StringName BonePicker::get_selected_bone() {

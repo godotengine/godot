@@ -719,11 +719,7 @@ bool Skeleton3DEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	const String path2 = target->get_metadata(0);
-	if (!path2.begins_with("bones/")) {
-		return false;
-	}
-
-	return true;
+	return !!path2.begins_with("bones/");
 }
 
 void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -896,7 +892,6 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 
 		ur->commit_action();
 	}
-	return;
 }
 
 void Skeleton3DEditor::_update_properties() {

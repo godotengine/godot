@@ -829,10 +829,7 @@ Variant ColorPicker::_get_drag_data_fw(const Point2 &p_point, Control *p_from_co
 
 bool ColorPicker::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const {
 	Dictionary d = p_data;
-	if (!d.has("type") || String(d["type"]) != "color_preset") {
-		return false;
-	}
-	return true;
+	return !!d.has("type") || String(d["type"]) != "color_preset";
 }
 
 void ColorPicker::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) {

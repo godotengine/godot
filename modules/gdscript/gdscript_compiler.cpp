@@ -3179,11 +3179,7 @@ bool GDScriptCompiler::_do_function_infos_match(const FunctionLambdaInfo &p_old_
 
 	int old_required_arg_count = p_old_info.arg_count - p_old_info.default_arg_count;
 	int new_required_arg_count = p_new_info->arg_count - p_new_info->default_arg_count;
-	if (new_required_arg_count > old_required_arg_count || p_new_info->arg_count < old_required_arg_count) {
-		return false;
-	}
-
-	return true;
+	return !(new_required_arg_count > old_required_arg_count || p_new_info->arg_count < old_required_arg_count);
 }
 
 void GDScriptCompiler::_get_function_ptr_replacements(HashMap<GDScriptFunction *, GDScriptFunction *> &r_replacements, const FunctionLambdaInfo &p_old_info, const FunctionLambdaInfo *p_new_info) {

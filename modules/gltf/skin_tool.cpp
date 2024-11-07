@@ -64,11 +64,7 @@ bool SkinTool::_capture_nodes_in_skin(const Vector<Ref<GLTFNode>> &nodes, Ref<GL
 		}
 	}
 
-	if (p_skin->joints.find(p_node_index) > 0) {
-		return true;
-	}
-
-	return false;
+	return p_skin->joints.find(p_node_index) > 0;
 }
 
 void SkinTool::_capture_nodes_for_multirooted_skin(Vector<Ref<GLTFNode>> &r_nodes, Ref<GLTFSkin> p_skin) {
