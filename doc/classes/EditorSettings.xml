@@ -241,6 +241,9 @@
 		<member name="docks/scene_tree/center_node_on_reparent" type="bool" setter="" getter="">
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
 		</member>
+		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
+			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
+		</member>
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
