@@ -38,28 +38,41 @@ const GodotIME = {
 	$GodotIME: {
 		ime: null,
 		active: false,
+		focusTimerIntervalId: -1,
 
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
 		},
 
 		ime_active: function (active) {
+			function clearFocusTimerInterval() {
+				clearInterval(GodotIME.focusTimerIntervalId);
+				GodotIME.focusTimerIntervalId = -1;
+			}
+
+			function focusTimer() {
+				if (GodotIME.ime == null) {
+					clearFocusTimerInterval();
+					return;
+				}
+				GodotIME.ime.focus();
+			}
+
+			if (GodotIME.focusTimerIntervalId > -1) {
+				clearFocusTimerInterval();
+			}
+
 			if (GodotIME.ime == null) {
 				return;
 			}
 
-			function focus_timer() {
-				GodotIME.active = true;
-				GodotIME.ime.focus();
-			}
-
+			GodotIME.active = active;
 			if (active) {
 				GodotIME.ime.style.display = 'block';
-				setInterval(focus_timer, 100);
+				GodotIME.focusTimerIntervalId = setInterval(focusTimer, 100);
 			} else {
 				GodotIME.ime.style.display = 'none';
 				GodotConfig.canvas.focus();
-				GodotIME.active = false;
 			}
 		},
 
@@ -90,18 +103,24 @@ const GodotIME = {
 				if (GodotIME.ime == null) {
 					return;
 				}
-				if (event.type === 'compositionstart') {
+				switch (event.type) {
+				case 'compositionstart':
 					ime_cb(0, null);
 					GodotIME.ime.innerHTML = '';
-				} else if (event.type === 'compositionupdate') {
+					break;
+				case 'compositionupdate': {
 					const ptr = GodotRuntime.allocString(event.data);
 					ime_cb(1, ptr);
 					GodotRuntime.free(ptr);
-				} else if (event.type === 'compositionend') {
+				} break;
+				case 'compositionend': {
 					const ptr = GodotRuntime.allocString(event.data);
 					ime_cb(2, ptr);
 					GodotRuntime.free(ptr);
 					GodotIME.ime.innerHTML = '';
+				} break;
+				default:
+					// Do nothing.
 				}
 			}
 
@@ -139,6 +158,10 @@ const GodotIME = {
 		clear: function () {
 			if (GodotIME.ime == null) {
 				return;
+			}
+			if (GodotIME.focusTimerIntervalId > -1) {
+				clearInterval(GodotIME.focusTimerIntervalId);
+				GodotIME.focusTimerIntervalId = -1;
 			}
 			GodotIME.ime.remove();
 			GodotIME.ime = null;
