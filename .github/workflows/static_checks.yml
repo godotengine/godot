@@ -1,37 +1,32 @@
 name: 📊 Static Checks
-on: [push, pull_request]
+on:
+  workflow_call:
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
+  cancel-in-progress: true
 
 jobs:
   static-checks:
     name: Static Checks (clang-format, black format, file format, documentation checks)
-    runs-on: ubuntu-20.04
+    runs-on: "ubuntu-22.04"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
-          sudo apt-get update
-
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-13
-          sudo update-alternatives --remove-all clang-format
+          # Azure repositories are flaky, remove them.
+          sudo rm -f /etc/apt/sources.list.d/{azure,microsoft}*
+          sudo apt-get update
+          sudo apt-get install -qq dos2unix python3-pip moreutils
+          sudo update-alternatives --remove-all clang-format || true
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
-          sudo pip3 install black==21.10b0 pygments
+          sudo pip3 install black==24.10.0 pygments
 
       - name: File formatting checks (file_format.sh)
         run: |
           bash ./misc/scripts/file_format.sh
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          bash ./misc/scripts/clang_format.sh
 
       - name: Python style checks via black (black_format.sh)
         run: |
@@ -47,3 +42,7 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/make_rst.py --dry-run doc/classes modules
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./misc/scripts/clang_format.sh
