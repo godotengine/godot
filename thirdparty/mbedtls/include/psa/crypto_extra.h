@@ -154,6 +154,14 @@ static inline void psa_clear_key_slot_number(
  * specified in \p attributes.
  *
  * \param[in] attributes        The attributes of the existing key.
+ *                              - The lifetime must be a persistent lifetime
+ *                                in a secure element. Volatile lifetimes are
+ *                                not currently supported.
+ *                              - The key identifier must be in the valid
+ *                                range for persistent keys.
+ *                              - The key type and size must be specified and
+ *                                must be consistent with the key material
+ *                                in the secure element.
  *
  * \retval #PSA_SUCCESS
  *         The key was successfully registered.
@@ -479,7 +487,7 @@ psa_status_t mbedtls_psa_external_get_random(
  * #PSA_KEY_ID_VENDOR_MIN and #PSA_KEY_ID_VENDOR_MAX and must not intersect
  * with any other set of implementation-chosen key identifiers.
  *
- * This value is part of the library's ABI since changing it would invalidate
+ * This value is part of the library's API since changing it would invalidate
  * the values of built-in key identifiers in applications.
  */
 #define MBEDTLS_PSA_KEY_ID_BUILTIN_MIN          ((psa_key_id_t) 0x7fff0000)

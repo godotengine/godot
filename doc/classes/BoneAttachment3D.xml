@@ -15,6 +15,12 @@
 				Returns the [NodePath] to the external [Skeleton3D] node, if one has been set.
 			</description>
 		</method>
+		<method name="get_skeleton">
+			<return type="Skeleton3D" />
+			<description>
+				Get parent or external [Skeleton3D] node if found.
+			</description>
+		</method>
 		<method name="get_use_external_skeleton" qualifiers="const">
 			<return type="bool" />
 			<description>

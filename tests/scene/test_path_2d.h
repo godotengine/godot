@@ -40,7 +40,7 @@ namespace TestPath2D {
 TEST_CASE("[SceneTree][Path2D] Initialization") {
 	SUBCASE("Path should be empty right after initialization") {
 		Path2D *test_path = memnew(Path2D);
-		CHECK(test_path->get_curve() == nullptr);
+		CHECK(test_path->get_curve().is_null());
 		memdelete(test_path);
 	}
 }

@@ -31,7 +31,7 @@
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
-			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for text shaping algorithms, if left empty current locale is used instead.

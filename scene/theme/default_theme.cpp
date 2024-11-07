@@ -30,6 +30,7 @@
 
 #include "default_theme.h"
 
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "default_font.gen.h"
 #include "default_theme_icons.gen.h"
@@ -504,6 +505,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
 	theme->set_icon("folded_code_region", "CodeEdit", icons["region_folded"]);
 	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
+	theme->set_icon("completion_color_bg", "CodeEdit", icons["mini_checkerboard"]);
 
 	theme->set_font(SceneStringName(font), "CodeEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "CodeEdit", -1);
@@ -613,7 +615,43 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// SpinBox
 
-	theme->set_icon("updown", "SpinBox", icons["updown"]);
+	theme->set_icon("updown", "SpinBox", empty_icon);
+	theme->set_icon("up", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_hover", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_pressed", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_disabled", "SpinBox", icons["value_up"]);
+	theme->set_icon("down", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_hover", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_pressed", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_disabled", "SpinBox", icons["value_down"]);
+
+	theme->set_stylebox("up_background", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("up_background_hovered", "SpinBox", button_hover);
+	theme->set_stylebox("up_background_pressed", "SpinBox", button_pressed);
+	theme->set_stylebox("up_background_disabled", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("down_background", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("down_background_hovered", "SpinBox", button_hover);
+	theme->set_stylebox("down_background_pressed", "SpinBox", button_pressed);
+	theme->set_stylebox("down_background_disabled", "SpinBox", make_empty_stylebox());
+
+	theme->set_color("up_icon_modulate", "SpinBox", control_font_color);
+	theme->set_color("up_hover_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("up_pressed_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("up_disabled_icon_modulate", "SpinBox", control_font_disabled_color);
+	theme->set_color("down_icon_modulate", "SpinBox", control_font_color);
+	theme->set_color("down_hover_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("down_pressed_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("down_disabled_icon_modulate", "SpinBox", control_font_disabled_color);
+
+	theme->set_stylebox("field_and_buttons_separator", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("up_down_buttons_separator", "SpinBox", make_empty_stylebox());
+
+	theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
+	theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
+	theme->set_constant("buttons_width", "SpinBox", 16);
+#ifndef DISABLE_DEPRECATED
+	theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
+#endif
 
 	// ScrollContainer
 
@@ -652,6 +690,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("forward_folder", "FileDialog", icons["arrow_right"]);
 	theme->set_icon("reload", "FileDialog", icons["reload"]);
 	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
+	theme->set_icon("toggle_filename_filter", "FileDialog", icons["toggle_filename_filter"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
@@ -794,10 +833,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox(SceneStringName(panel), "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
 	theme->set_stylebox("focus", "Tree", focus);
+	theme->set_stylebox("hovered", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
+	theme->set_stylebox("hovered_dimmed", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.03)));
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "Tree", focus);
 	theme->set_stylebox("cursor_unfocused", "Tree", focus);
+	theme->set_stylebox("button_hover", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("button_pressed", "Tree", button_pressed);
 	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
@@ -825,6 +867,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color(SceneStringName(font_color), "Tree", control_font_low_color);
+	theme->set_color("font_hovered_color", "Tree", control_font_hover_color);
+	theme->set_color("font_hovered_dimmed_color", "Tree", control_font_color);
 	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "Tree", control_font_disabled_color);
 	theme->set_color("font_outline_color", "Tree", Color(0, 0, 0));
@@ -1174,6 +1218,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("v_separation", "VFlowContainer", Math::round(4 * scale));
 
 	theme->set_stylebox(SceneStringName(panel), "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox("split_bar_background", "SplitContainer", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("split_bar_background", "VSplitContainer", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("split_bar_background", "HSplitContainer", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_icon("zoom_out", "GraphEdit", icons["zoom_less"]);
 	theme->set_icon("zoom_in", "GraphEdit", icons["zoom_more"]);

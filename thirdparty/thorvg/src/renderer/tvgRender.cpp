@@ -46,41 +46,6 @@ uint32_t RenderMethod::unref()
 }
 
 
-void RenderTransform::override(const Matrix& m)
-{
-    this->m = m;
-    overriding = true;
-}
-
-
-void RenderTransform::update()
-{
-    if (overriding) return;
-
-    m.e11 = 1.0f;
-    m.e12 = 0.0f;
-
-    m.e21 = 0.0f;
-    m.e22 = 1.0f;
-
-    m.e31 = 0.0f;
-    m.e32 = 0.0f;
-    m.e33 = 1.0f;
-
-    mathScale(&m, scale, scale);
-    mathRotate(&m, degree);
-}
-
-
-RenderTransform::RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs)
-{
-    if (lhs && rhs) m = lhs->m * rhs->m;
-    else if (lhs) m = lhs->m;
-    else if (rhs) m = rhs->m;
-    else mathIdentity(&m);
-}
-
-
 void RenderRegion::intersect(const RenderRegion& rhs)
 {
     auto x1 = x + w;

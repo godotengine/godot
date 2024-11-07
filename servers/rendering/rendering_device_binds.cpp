@@ -31,7 +31,10 @@
 #include "rendering_device_binds.h"
 
 Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
-	ERR_FAIL_NULL_V(RenderingDevice::get_singleton(), ERR_UNAVAILABLE);
+	ERR_FAIL_NULL_V_MSG(
+			RenderingDevice::get_singleton(),
+			ERR_UNAVAILABLE,
+			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility backend.");
 
 	Vector<String> lines = p_text.split("\n");
 
@@ -112,7 +115,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				}
 				Vector<String> slices = l.get_slice(";", 0).split("=");
 				String version = slices[0].strip_edges();
-				if (!version.is_valid_identifier()) {
+				if (!version.is_valid_ascii_identifier()) {
 					base_error = "Version names must be valid identifiers, found '" + version + "' instead.";
 					break;
 				}

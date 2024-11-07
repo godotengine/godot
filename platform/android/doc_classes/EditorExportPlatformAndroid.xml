@@ -102,6 +102,9 @@
 		<member name="launcher_icons/adaptive_foreground_432x432" type="String" setter="" getter="">
 			Foreground layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
+		<member name="launcher_icons/adaptive_monochrome_432x432" type="String" setter="" getter="">
+			Monochrome layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
 		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
 			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
 		</member>
@@ -574,7 +577,7 @@
 			Allows an application to write to the user dictionary.
 		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
-			If [code]true[/code], hides navigation and status bar.
+			If [code]true[/code], hides navigation and status bar. See [method DisplayServer.window_set_mode] to toggle it at runtime.
 		</member>
 		<member name="screen/support_large" type="bool" setter="" getter="">
 			Indicates whether the application supports larger screen form-factors.

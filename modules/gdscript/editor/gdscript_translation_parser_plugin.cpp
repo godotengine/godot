@@ -71,7 +71,7 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 
 bool GDScriptEditorTranslationParserPlugin::_is_constant_string(const GDScriptParser::ExpressionNode *p_expression) {
 	ERR_FAIL_NULL_V(p_expression, false);
-	return p_expression->is_constant && (p_expression->reduced_value.get_type() == Variant::STRING || p_expression->reduced_value.get_type() == Variant::STRING_NAME);
+	return p_expression->is_constant && p_expression->reduced_value.is_string();
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {

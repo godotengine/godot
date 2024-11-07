@@ -36,7 +36,8 @@
 
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
-#include "thirdparty/openxr/include/openxr/openxr.h"
+
+#include <openxr/openxr.h>
 
 void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
@@ -159,11 +160,11 @@ void OpenXRInterface::_bind_methods() {
 
 StringName OpenXRInterface::get_name() const {
 	return StringName("OpenXR");
-};
+}
 
 uint32_t OpenXRInterface::get_capabilities() const {
 	return XRInterface::XR_VR + XRInterface::XR_STEREO;
-};
+}
 
 PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 	// These are hardcoded in OpenXR, note that they will only be available if added to our action map
@@ -299,10 +300,7 @@ void OpenXRInterface::_load_action_map() {
 						continue;
 					}
 
-					PackedStringArray paths = xr_binding->get_paths();
-					for (int k = 0; k < paths.size(); k++) {
-						openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
-					}
+					openxr_api->interaction_profile_add_binding(ip, action->action_rid, xr_binding->get_binding_path());
 				}
 
 				// Now submit our suggestions
@@ -613,7 +611,7 @@ bool OpenXRInterface::initialize_on_startup() const {
 
 bool OpenXRInterface::is_initialized() const {
 	return initialized;
-};
+}
 
 bool OpenXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();

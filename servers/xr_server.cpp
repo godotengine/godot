@@ -183,7 +183,7 @@ Transform3D XRServer::get_reference_frame() const {
 }
 
 void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
-	if (primary_interface == nullptr) {
+	if (primary_interface.is_null()) {
 		return;
 	}
 
@@ -235,7 +235,7 @@ void XRServer::_set_render_reference_frame(const Transform3D &p_reference_frame)
 
 Transform3D XRServer::get_hmd_transform() {
 	Transform3D hmd_transform;
-	if (primary_interface != nullptr) {
+	if (primary_interface.is_valid()) {
 		hmd_transform = primary_interface->get_camera_transform();
 	}
 	return hmd_transform;

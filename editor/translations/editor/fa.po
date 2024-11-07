@@ -41,7 +41,7 @@
 # محمد ایرانی <mohamadir10g01@gmail.com>, 2023.
 # "P. A." <thekhanxp@gmail.com>, 2023.
 # MohammadSaleh Kamyab <mskf1383@envs.net>, 2023.
-# theBSH <bloodshot1387@hotmail.com>, 2023.
+# theBSH <bloodshot1387@hotmail.com>, 2023, 2024.
 # Amirhossein Basirat <amir.basirat.2004@gmail.com>, 2023.
 # Mehdi Fardadi <mahdi777jan@gmail.com>, 2024.
 # saeed dashti <saeed777724@gmail.com>, 2024.
@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-23 23:03+0000\n"
+"PO-Revision-Date: 2024-08-16 00:22+0000\n"
 "Last-Translator: Armin <Armin-KF@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7\n"
 
 msgid "Main Thread"
 msgstr "موضوع اصلی"
@@ -475,6 +475,9 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "عملیاتی با نام '%s' از قبل وجود دارد."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "امکان بازگشت وجود ندارد - عمل مانند وضعیت اولیه است"
+
 msgid "Revert Action"
 msgstr "بازگردانی کنش"
 
@@ -538,6 +541,9 @@ msgstr "حذف کلید(های) انتخاب شده"
 msgid "Copy Selected Key(s)"
 msgstr "کپی کلید(های) انتخاب شده"
 
+msgid "Paste Key(s)"
+msgstr "جای‌گذاری کلید(ها)"
+
 msgid "Delete Selected Key(s)"
 msgstr "حذف کلید(های) منتخب"
 
@@ -567,6 +573,9 @@ msgstr "انتقال نقاط بِزیِر"
 
 msgid "Animation Duplicate Keys"
 msgstr "کلیدهای تکراری انیمیشن"
+
+msgid "Animation Cut Keys"
+msgstr "کلیدهای برش انیمیشن"
 
 msgid "Animation Paste Keys"
 msgstr "کلیدهای جای‌گذاری انیمیشن"
@@ -6047,6 +6056,15 @@ msgstr "else مچ نشده."
 
 msgid "Invalid else."
 msgstr "else نامعتبر."
+
+msgid "Invalid endif."
+msgstr "endif نامعتبر."
+
+msgid "Invalid ifdef."
+msgstr "ifdef نامعتبر."
+
+msgid "Invalid ifndef."
+msgstr "ifndef نامعتبر."
 
 msgid "Shader include file does not exist:"
 msgstr "فایل سایه‌زن موجود نیست:"

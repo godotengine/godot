@@ -89,8 +89,8 @@ void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMap
 			SWAP(local[8], local[11]);
 			SWAP(local[9], local[10]);
 		}
-#endif
-		// Extracts position in TileMap.
+#endif // BIG_ENDIAN_ENABLED
+	   // Extracts position in TileMap.
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
 
@@ -172,7 +172,7 @@ void TileMap::_notification(int p_what) {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
 			in_editor = Engine::get_singleton()->is_editor_hint();
-#endif
+#endif // TOOLS_ENABLED
 			if (is_inside_tree() && collision_animatable && !in_editor) {
 				// Update transform on the physics tick when in animatable mode.
 				last_valid_transform = new_transform;
@@ -188,7 +188,7 @@ void TileMap::_notification(int p_what) {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
 			in_editor = Engine::get_singleton()->is_editor_hint();
-#endif
+#endif // TOOLS_ENABLED
 
 			if (is_inside_tree() && collision_animatable && !in_editor) {
 				// Store last valid transform.
@@ -209,7 +209,7 @@ void TileMap::force_update(int p_layer) {
 	notify_runtime_tile_data_update(p_layer);
 	update_internals();
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void TileMap::set_rendering_quadrant_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 1, "TileMapQuadrant size cannot be smaller than 1.");
@@ -649,7 +649,7 @@ void TileMap::notify_runtime_tile_data_update(int p_layer) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 TileMap::_edit_get_rect() const {
 	// Return the visible rect of the tilemap.
 	if (layers.is_empty()) {
@@ -667,7 +667,7 @@ Rect2 TileMap::_edit_get_rect() const {
 	const_cast<TileMap *>(this)->item_rect_changed(any_changed);
 	return rect;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 	int index;
@@ -726,7 +726,7 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_rendering_quadrant_size();
 		return true;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	else {
 		return property_helper.property_get_value(sname, r_ret);
 	}
@@ -827,7 +827,7 @@ TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &p_coords) {
 }
 
 PackedStringArray TileMap::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	warnings.push_back(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 

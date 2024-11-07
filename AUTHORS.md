@@ -1,11 +1,17 @@
 # Godot Engine authors
 
 Godot Engine is developed by a community of voluntary contributors who
-contribute code, bug reports, documentation, artwork, support, etc.
+contribute code, bug reports, documentation, translations, support, etc.,
+across multiple repositories.
 
 It is impossible to list them all; nevertheless, this file aims at listing
-the developers who contributed significant patches to this MIT licensed
-source code. "Significant" is arbitrarily decided, but should be fair :)
+the developers who contributed significant improvements to the engine code.
+
+To keep the list curated, we use a threshold of a minimum of 11 commits.
+
+This file does not strictly reflect copyright ownership for the engine
+source code. For this, refer to the Git history to know which contributor
+wrote which part of the codebase.
 
 GitHub usernames are indicated in parentheses, or as sole entry when no other
 name is available.
@@ -25,8 +31,6 @@ name is available.
 
 ## Developers
 
-(in alphabetical order, with over 10 commits excluding merges)
-
     Aaron Franke (aaronfranke)
     Aaron Pagano (aaronp64)
     Aaron Record (LightningAA)
@@ -38,6 +42,7 @@ name is available.
     Alfred Reinold Baudisch (alfredbaudisch)
     Alistair Leslie-Hughes (alesliehughes)
     Alket Rexhepi (alketii)
+    Alvin Wong (alvinhochun)
     Andrea Catania (AndreaCatania)
     Andreia Gaita (shana)
     Andrii Doroshenko (Xrayez)
@@ -46,11 +51,13 @@ name is available.
     Angad Kambli (angad-k)
     Anilforextra (AnilBK)
     Anish Bhobe (KidRigger)
+    Anni Ryynänen (anniryynanen)
     Anton Yabchinskiy (a12n)
     Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
     Arman Elgudzhyan (puchik)
+    Arseny Kapoulkine (zeux)
     AThousandShips
     aXu-AP
     Bartłomiej T. Listwon (Listwon)
@@ -72,6 +79,7 @@ name is available.
     Carter Anderson (cart)
     ChibiDenDen
     Chris Bradfield (cbscribe)
+    Chris Cranford (Naros)
     Christian Kaiser (ckaiser)
     Clay John (clayjohn)
     ConteZero
@@ -86,7 +94,9 @@ name is available.
     David Cambré (Gallilus)
     David Sichma (DavidSichma)
     David Snopek (dsnopek)
+    derammo
     Dharkael (lupoDharkael)
+    Dirk Steinmetz (rsjtdrjgfuzkfg)
     Dmitry Koteroff (Krakean)
     Dmitry Maganov (vonagam)
     Dominik Jasiński (dreamsComeTrue)
@@ -117,6 +127,7 @@ name is available.
     Geequlim
     George Marques (vnen)
     Gerrit Großkopf (Grosskopf)
+    Giganzo
     Gilles Roudiere (groud)
     Gordon MacPherson (RevoluPowered)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
@@ -126,7 +137,6 @@ name is available.
     Hein-Pieter van Braam-Stewart (hpvb)
     Hendrik Brucker (Geometror)
     Hilderin
-    hilfazer
     Hiroshi Ogawa (hi-ogawa)
     HolonProduction
     homer666
@@ -151,6 +161,7 @@ name is available.
     Jia Jun Chai (SkyLucilfer)
     jitspoe
     Joan Fons Sanchez (JFonS)
+    Johan Aires Rastén (JohanAR)
     Johan Manuel (29jm)
     Johannes Witt (HaSa1002)
     Jonathan Nicholl (jtnicholl)
@@ -163,11 +174,13 @@ name is available.
     Jummit
     Justo Delgado (mrcdk)
     karroffel
+    Kassandra Pucher (PucklaJ)
     Kelly Thomas (KellyThomas)
     kleonc
     Kongfa Waroros (gongpha)
     Kostadin Damyanov (Max-Might)
     K. S. Ernest (iFire) Lee (fire)
+    Kyle Eichlin (likeich)
     lawnjelly
     Leon Krause (leonkrause)
     Liz Haas (27thLiz)
@@ -185,6 +198,7 @@ name is available.
     Marcus Brummer (mbrlabs)
     Marcus Elg (MCrafterzz)
     Mariano Javier Suligoy (MarianoGnu)
+    Mario Liebisch (MarioLiebisch)
     Mario Schlack (hurikhan)
     Marios Staikopoulos (marstaik)
     Marius Hanl (Maran23)
@@ -198,6 +212,7 @@ name is available.
     Masoud BH (masoudbh3)
     Mateo Kuruk Miccino (kuruk-mm)
     Matias N. Goldberg (darksylinc)
+    Matthew Murphy (mashumafi)
     Matthew (skyace65)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
@@ -209,9 +224,10 @@ name is available.
     MichiRecRoom (LikeLakers2)
     Micky (Mickeon)
     Mikael Hermansson (mihe)
+    Mika Viskari (miv391)
     MinusKube
     MJacred
-    Morris "Tabor" Arroad (mortarroad)
+    Mounir Tohami (WhalesState)
     mrezai
     Muhammad Huri (CakHuri)
     muiroc
@@ -234,6 +250,7 @@ name is available.
     Patrick Dawson (pkdawson)
     Patrick Exner (FlameLizard)
     Patrick (firefly2442)
+    patwork
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
     Paul Trojahn (ptrojahn)
@@ -245,6 +262,7 @@ name is available.
     Pieter-Jan Briers (PJB3005)
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
+    Radiant (RadiantUwU)
     Rafael M. G. (rafallus)
     Rafał Mikrut (qarmin)
     Raffaele Picca (RPicster)
@@ -282,6 +300,7 @@ name is available.
     Stanislav Labzyuk (DarkMessiah)
     Stijn Hinlopen (hinlopen)
     stmSi
+    Stuart Carnie (stuartcarnie)
     Swarnim Arun (minraws)
     TC (floppyhammer)
     TechnoPorg
@@ -289,6 +308,7 @@ name is available.
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)
+    Thomas ten Cate (ttencate)
     Timo Schwarzer (timoschwarzer)
     Timothé Bonhoure (ajreckof)
     Timo (toger5)

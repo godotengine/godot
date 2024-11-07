@@ -54,6 +54,7 @@ class ScriptServer {
 	static int _language_count;
 	static bool languages_ready;
 	static Mutex languages_mutex;
+	static thread_local bool thread_entered;
 
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
@@ -101,6 +102,7 @@ public:
 	static void init_languages();
 	static void finish_languages();
 	static bool are_languages_initialized();
+	static bool thread_is_entered();
 };
 
 class PlaceHolderScriptInstance;
@@ -110,7 +112,10 @@ class Script : public Resource {
 	OBJ_SAVE_TYPE(Script);
 
 protected:
-	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
+	// Scripts are reloaded via the Script Editor when edited in Godot,
+	// the LSP server when edited in a connected external editor, or
+	// through EditorFileSystem::_update_script_documentation when updated directly on disk.
+	virtual bool editor_can_reload_from_file() override { return false; }
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -180,7 +185,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual const Variant get_rpc_config() const = 0;
+	virtual Variant get_rpc_config() const = 0;
 
 	Script() {}
 };
@@ -441,8 +446,8 @@ public:
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
 	virtual void validate_property(PropertyInfo &p_property) const override {}
 
-	virtual bool property_can_revert(const StringName &p_name) const override { return false; };
-	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; };
+	virtual bool property_can_revert(const StringName &p_name) const override { return false; }
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; }
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
@@ -454,10 +459,7 @@ public:
 		return 0;
 	}
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	virtual void notification(int p_notification, bool p_reversed = false) override {}
 
 	virtual Ref<Script> get_script() const override { return script; }

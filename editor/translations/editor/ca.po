@@ -25,13 +25,15 @@
 # pc <polct50@users.noreply.hosted.weblate.org>, 2024.
 # sprin <graham32@tutamail.com>, 2024.
 # Azor Carreras Alcaraz <azorcarreras@gmail.com>, 2024.
+# Alberto Blanco Celdrán <flaberto.abc@gmail.com>, 2024.
+# Luna Moreno <akaluna99@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-07 15:09+0000\n"
-"Last-Translator: Azor Carreras Alcaraz <azorcarreras@gmail.com>\n"
+"PO-Revision-Date: 2024-09-03 22:09+0000\n"
+"Last-Translator: Luna Moreno <akaluna99@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -39,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -190,6 +192,9 @@ msgstr "Botó del Joypad %d"
 
 msgid "Pressure:"
 msgstr "Pressió:"
+
+msgid "canceled"
+msgstr "cancel·lat"
 
 msgid "touched"
 msgstr "Tocat"
@@ -513,6 +518,9 @@ msgstr "Insereix una Clau aquí"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplica les Claus seleccionades"
 
+msgid "Cut Selected Key(s)"
+msgstr "Elimina les claus seleccionades"
+
 msgid "Copy Selected Key(s)"
 msgstr "Copia les Claus seleccionades"
 
@@ -576,6 +584,9 @@ msgstr "Animació canviar posició3D"
 msgid "Animation Change Rotation3D"
 msgstr "Canviar l'animació de Rotació3D"
 
+msgid "Animation Change Scale3D"
+msgstr "Canviar l'escala 3D a l'animació"
+
 msgid "Animation Change Keyframe Value"
 msgstr "Modifica el valor del fotograma clau de l'animació"
 
@@ -584,6 +595,15 @@ msgstr "Canvia la crida de l'animació"
 
 msgid "Animation Multi Change Transition"
 msgstr "Modifica diverses transicions d'animació"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Canviar diverses posicions 3D a l'animació"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Canviar diverses rotacions 3D a l'animació"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Canviar diverses escales 3D a l'animació"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Modifica el valor de diversos fotogrames clau de l'animació"
@@ -624,6 +644,12 @@ msgstr "Pista de Crida de Mètodes..."
 
 msgid "Bezier Curve Track..."
 msgstr "Pista de Corbes de Bézier..."
+
+msgid "Audio Playback Track..."
+msgstr "Pista de reproducció d'àudio..."
+
+msgid "Animation Playback Track..."
+msgstr "Pista de reproducció d'animacions..."
 
 msgid "Animation length (frames)"
 msgstr "Longitud de l'animació (fotogrames)"
@@ -911,13 +937,16 @@ msgid "Clipboard is empty!"
 msgstr "El porta-retalls és buit!"
 
 msgid "Paste Tracks"
-msgstr "Enganxa les Pistes"
+msgstr "Enganxar pistes"
 
 msgid "Animation Scale Keys"
 msgstr "Claus d'Escala de l'Animació"
 
+msgid "Animation Set End Offset"
+msgstr "Establir Offset Final d'Animació"
+
 msgid "Make Easing Keys"
-msgstr "Crea Claus de Suavització"
+msgstr "Crea Claus de Suavitzat"
 
 msgid "Animation Add RESET Keys"
 msgstr "Afegeix Claus de RESET a l'animació"
@@ -4651,14 +4680,14 @@ msgstr "Elimina Out-Control de la Corba"
 msgid "Remove In-Control from Curve"
 msgstr "Elimina In-Control de la Corba"
 
-msgid "Split Curve"
-msgstr "Partir Corba"
-
 msgid "Move Point in Curve"
 msgstr "Mou un Punt de la Corba"
 
 msgid "Add Point to Curve"
 msgstr "Afegeix un Punt a la Corba"
+
+msgid "Split Curve"
+msgstr "Partir Corba"
 
 msgid "Move In-Control in Curve"
 msgstr "Mou In-Control de la Corba"

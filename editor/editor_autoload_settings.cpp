@@ -55,12 +55,12 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				file_dialog->add_filter("*." + E);
 			}
 
-			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
-			add_autoload->set_icon(get_editor_theme_icon(SNAME("Add")));
+			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
+			add_autoload->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -88,14 +88,9 @@ void EditorAutoloadSettings::_notification(int p_what) {
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-	if (!p_name.is_valid_identifier()) {
+	if (!p_name.is_valid_unicode_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " ";
-			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
-				*r_error += TTR("Cannot begin with a digit.");
-			} else {
-				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
-			}
+			*r_error = TTR("Invalid name.") + " " + TTR("Must be a valid Unicode identifier.");
 		}
 
 		return false;
@@ -644,6 +639,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 	for (int i = 0; i < max_size; i++) {
 		Label *label = memnew(Label(autoloads[i]));
 		label->set_self_modulate(Color(1, 1, 1, Math::lerp(1, 0, float(i) / PREVIEW_LIST_MAX_SIZE)));
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 		preview->add_child(label);
 	}

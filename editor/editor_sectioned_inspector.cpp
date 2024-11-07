@@ -30,10 +30,12 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "editor/editor_inspector.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/tree.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.containsn(p_filter)) {
@@ -307,18 +309,35 @@ void SectionedInspector::register_search_box(LineEdit *p_box) {
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &SectionedInspector::_search_changed));
 }
 
+void SectionedInspector::register_advanced_toggle(CheckButton *p_toggle) {
+	advanced_toggle = p_toggle;
+	advanced_toggle->connect(SceneStringName(toggled), callable_mp(this, &SectionedInspector::_advanced_toggled));
+	_advanced_toggled(advanced_toggle->is_pressed());
+}
+
 void SectionedInspector::_search_changed(const String &p_what) {
+	if (advanced_toggle) {
+		if (p_what.is_empty()) {
+			advanced_toggle->set_pressed_no_signal(!restrict_to_basic);
+			advanced_toggle->set_disabled(false);
+			advanced_toggle->set_tooltip_text(String());
+		} else {
+			advanced_toggle->set_pressed_no_signal(true);
+			advanced_toggle->set_disabled(true);
+			advanced_toggle->set_tooltip_text(TTR("Advanced settings are always shown when searching."));
+		}
+	}
 	update_category_list();
+}
+
+void SectionedInspector::_advanced_toggled(bool p_toggled_on) {
+	restrict_to_basic = !p_toggled_on;
+	update_category_list();
+	inspector->set_restrict_to_basic_settings(restrict_to_basic);
 }
 
 EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
-}
-
-void SectionedInspector::set_restrict_to_basic_settings(bool p_restrict) {
-	restrict_to_basic = p_restrict;
-	update_category_list();
-	inspector->set_restrict_to_basic_settings(p_restrict);
 }
 
 SectionedInspector::SectionedInspector() :

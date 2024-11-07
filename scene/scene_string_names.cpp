@@ -130,8 +130,11 @@ SceneStringNames::SceneStringNames() {
 	shader_overrides_group = StaticCString::create("_shader_overrides_group_");
 	shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
 
+	_custom_type_script = StaticCString::create("_custom_type_script");
+
 	pressed = StaticCString::create("pressed");
 	id_pressed = StaticCString::create("id_pressed");
+	toggled = StaticCString::create("toggled");
 
 	panel = StaticCString::create("panel");
 
@@ -140,5 +143,6 @@ SceneStringNames::SceneStringNames() {
 	confirmed = StaticCString::create("confirmed");
 
 	text_changed = StaticCString::create("text_changed");
+	text_submitted = StaticCString::create("text_submitted");
 	value_changed = StaticCString::create("value_changed");
 }

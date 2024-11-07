@@ -51,4 +51,12 @@
 			</description>
 		</signal>
 	</signals>
+	<theme_items>
+		<theme_item name="updown" data_type="icon" type="Texture2D">
+			Single texture representing both the up and down buttons.
+		</theme_item>
+		<theme_item name="updown_disabled" data_type="icon" type="Texture2D">
+			Single texture representing both the up and down buttons, when the control is readonly or disabled.
+		</theme_item>
+	</theme_items>
 </class>

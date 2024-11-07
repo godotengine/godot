@@ -34,7 +34,7 @@
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/2d/physics/physics_body_2d.h"
 #include "scene/resources/2d/circle_shape_2d.h"
-#include "servers/physics_2d/godot_physics_server_2d.h"
+#include "servers/physics_server_2d.h"
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;

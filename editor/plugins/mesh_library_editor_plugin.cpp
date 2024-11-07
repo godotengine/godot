@@ -260,7 +260,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
-	menu->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
+	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();
@@ -308,7 +308,7 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
 	mesh_library_editor = memnew(MeshLibraryEditor);
 
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(mesh_library_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(mesh_library_editor);
 	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();

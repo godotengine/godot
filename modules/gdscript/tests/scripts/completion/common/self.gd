@@ -14,3 +14,4 @@ func test_func_2(t: int) -> void:
 
 func _init():
     self.➡
+    pass

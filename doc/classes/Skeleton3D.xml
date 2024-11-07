@@ -99,6 +99,21 @@
 				Returns the global rest transform for [param bone_idx].
 			</description>
 		</method>
+		<method name="get_bone_meta" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="key" type="StringName" />
+			<description>
+				Returns bone metadata for [param bone_idx] with [param key].
+			</description>
+		</method>
+		<method name="get_bone_meta_list" qualifiers="const">
+			<return type="StringName[]" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns a list of all metadata keys for [param bone_idx].
+			</description>
+		</method>
 		<method name="get_bone_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="bone_idx" type="int" />
@@ -169,6 +184,14 @@
 				Returns the number of times the bone hierarchy has changed within this skeleton, including renames.
 				The Skeleton version is not serialized: only use within a single instance of Skeleton3D.
 				Use for invalidating caches in IK solvers and other nodes which process bones.
+			</description>
+		</method>
+		<method name="has_bone_meta" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="key" type="StringName" />
+			<description>
+				Returns whether there exists any bone metadata for [param bone_idx] with key [param key].
 			</description>
 		</method>
 		<method name="is_bone_enabled" qualifiers="const">
@@ -261,6 +284,15 @@
 				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
 				[param amount] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a global pose! To convert a world transform from a [Node3D] to a global bone pose, multiply the [method Transform3D.affine_inverse] of the node's [member Node3D.global_transform] by the desired world transform.
+			</description>
+		</method>
+		<method name="set_bone_meta">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="key" type="StringName" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets bone metadata for [param bone_idx], will set the [param key] meta to [param value].
 			</description>
 		</method>
 		<method name="set_bone_name">

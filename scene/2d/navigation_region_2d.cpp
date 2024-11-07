@@ -142,7 +142,7 @@ RID NavigationRegion2D::get_region_rid() const {
 	return get_rid();
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 NavigationRegion2D::_edit_get_rect() const {
 	return navigation_polygon.is_valid() ? navigation_polygon->_edit_get_rect() : Rect2();
 }
@@ -150,7 +150,7 @@ Rect2 NavigationRegion2D::_edit_get_rect() const {
 bool NavigationRegion2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return navigation_polygon.is_valid() ? navigation_polygon->_edit_is_selected_on_click(p_point, p_tolerance) : false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void NavigationRegion2D::_notification(int p_what) {
 	switch (p_what) {
@@ -452,6 +452,7 @@ void NavigationRegion2D::_update_debug_mesh() {
 	const Transform2D region_gt = get_global_transform();
 
 	rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
+	rs->canvas_item_set_z_index(debug_instance_rid, RS::CANVAS_ITEM_Z_MAX - 2);
 	rs->canvas_item_set_transform(debug_instance_rid, region_gt);
 
 	if (!debug_mesh_dirty) {

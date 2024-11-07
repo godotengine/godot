@@ -94,7 +94,7 @@ struct ContainerTypeValidate {
 				return true;
 			}
 
-			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
+			ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
 		}
 
 		if (type != Variant::OBJECT) {
@@ -113,7 +113,7 @@ struct ContainerTypeValidate {
 			return true; // This is fine, it's null.
 		}
 		Object *object = ObjectDB::get_instance(object_id);
-		ERR_FAIL_NULL_V_MSG(object, false, "Attempted to " + String(p_operation) + " an invalid (previously freed?) object instance into a '" + String(where) + ".");
+		ERR_FAIL_NULL_V_MSG(object, false, vformat("Attempted to %s an invalid (previously freed?) object instance into a '%s'.", String(p_operation), String(where)));
 #else
 		Object *object = p_variant;
 		if (object == nullptr) {
@@ -126,7 +126,7 @@ struct ContainerTypeValidate {
 
 		StringName obj_class = object->get_class_name();
 		if (obj_class != class_name) {
-			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, "Attempted to " + String(p_operation) + " an object of type '" + object->get_class() + "' into a " + where + ", which does not inherit from '" + String(class_name) + "'.");
+			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class(), where, String(class_name)));
 		}
 
 		if (script.is_null()) {
@@ -136,8 +136,8 @@ struct ContainerTypeValidate {
 		Ref<Script> other_script = object->get_script();
 
 		// Check base script..
-		ERR_FAIL_COND_V_MSG(other_script.is_null(), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
-		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(script), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
+		ERR_FAIL_COND_V_MSG(other_script.is_null(), false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
+		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(script), false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
 
 		return true;
 	}

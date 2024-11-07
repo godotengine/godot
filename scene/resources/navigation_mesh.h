@@ -33,16 +33,14 @@
 
 #include "core/os/rw_lock.h"
 #include "scene/resources/mesh.h"
+#include "servers/navigation/navigation_globals.h"
 
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
 	RWLock rwlock;
 
 	Vector<Vector3> vertices;
-	struct Polygon {
-		Vector<int> indices;
-	};
-	Vector<Polygon> polygons;
+	Vector<Vector<int>> polygons;
 	Ref<ArrayMesh> debug_mesh;
 
 protected:
@@ -80,8 +78,8 @@ public:
 	};
 
 protected:
-	float cell_size = 0.25f; // Must match ProjectSettings default 3D cell_size and NavigationServer NavMap cell_size.
-	float cell_height = 0.25f; // Must match ProjectSettings default 3D cell_height and NavigationServer NavMap cell_height.
+	float cell_size = NavigationDefaults3D::navmesh_cell_size;
+	float cell_height = NavigationDefaults3D::navmesh_cell_height;
 	float border_size = 0.0f;
 	float agent_height = 1.5f;
 	float agent_radius = 0.5f;
@@ -96,7 +94,7 @@ protected:
 	float detail_sample_max_error = 1.0f;
 
 	SamplePartitionType partition_type = SAMPLE_PARTITION_WATERSHED;
-	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
+	ParsedGeometryType parsed_geometry_type = PARSED_GEOMETRY_BOTH;
 	uint32_t collision_mask = 0xFFFFFFFF;
 
 	SourceGeometryMode source_geometry_mode = SOURCE_GEOMETRY_ROOT_NODE_CHILDREN;
@@ -194,6 +192,8 @@ public:
 	int get_polygon_count() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+	void set_polygons(const Vector<Vector<int>> &p_polygons);
+	Vector<Vector<int>> get_polygons() const;
 
 	void clear();
 

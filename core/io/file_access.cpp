@@ -59,11 +59,9 @@ bool FileAccess::exists(const String &p_name) {
 		return true;
 	}
 
-	Ref<FileAccess> f = open(p_name, READ);
-	if (f.is_null()) {
-		return false;
-	}
-	return true;
+	// Using file_exists because it's faster than trying to open the file.
+	Ref<FileAccess> ret = create_for_path(p_name);
+	return ret->file_exists(p_name);
 }
 
 void FileAccess::_set_access_type(AccessType p_access) {
@@ -225,59 +223,44 @@ String FileAccess::fix_path(const String &p_path) const {
 }
 
 /* these are all implemented for ease of porting, then can later be optimized */
+uint8_t FileAccess::get_8() const {
+	uint8_t data = 0;
+	get_buffer(&data, sizeof(uint8_t));
+
+	return data;
+}
 
 uint16_t FileAccess::get_16() const {
-	uint16_t res;
-	uint8_t a, b;
-
-	a = get_8();
-	b = get_8();
+	uint16_t data = 0;
+	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint16_t));
 
 	if (big_endian) {
-		SWAP(a, b);
+		data = BSWAP16(data);
 	}
 
-	res = b;
-	res <<= 8;
-	res |= a;
-
-	return res;
+	return data;
 }
 
 uint32_t FileAccess::get_32() const {
-	uint32_t res;
-	uint16_t a, b;
-
-	a = get_16();
-	b = get_16();
+	uint32_t data = 0;
+	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint32_t));
 
 	if (big_endian) {
-		SWAP(a, b);
+		data = BSWAP32(data);
 	}
 
-	res = b;
-	res <<= 16;
-	res |= a;
-
-	return res;
+	return data;
 }
 
 uint64_t FileAccess::get_64() const {
-	uint64_t res;
-	uint32_t a, b;
-
-	a = get_32();
-	b = get_32();
+	uint64_t data = 0;
+	get_buffer(reinterpret_cast<uint8_t *>(&data), sizeof(uint64_t));
 
 	if (big_endian) {
-		SWAP(a, b);
+		data = BSWAP64(data);
 	}
 
-	res = b;
-	res <<= 32;
-	res |= a;
-
-	return res;
+	return data;
 }
 
 float FileAccess::get_float() const {
@@ -467,17 +450,6 @@ String FileAccess::get_as_text(bool p_skip_cr) const {
 	return text;
 }
 
-uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-
-	uint64_t i = 0;
-	for (i = 0; i < p_length && !eof_reached(); i++) {
-		p_dst[i] = get_8();
-	}
-
-	return i;
-}
-
 Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
 
@@ -487,10 +459,10 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	}
 
 	Error err = data.resize(p_length);
-	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
+	ERR_FAIL_COND_V_MSG(err != OK, data, vformat("Can't resize data to %d elements.", p_length));
 
 	uint8_t *w = data.ptrw();
-	int64_t len = get_buffer(&w[0], p_length);
+	int64_t len = get_buffer(w, p_length);
 
 	if (len < p_length) {
 		data.resize(len);
@@ -514,46 +486,32 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	return s;
 }
 
+void FileAccess::store_8(uint8_t p_dest) {
+	store_buffer(&p_dest, sizeof(uint8_t));
+}
+
 void FileAccess::store_16(uint16_t p_dest) {
-	uint8_t a, b;
-
-	a = p_dest & 0xFF;
-	b = p_dest >> 8;
-
 	if (big_endian) {
-		SWAP(a, b);
+		p_dest = BSWAP16(p_dest);
 	}
 
-	store_8(a);
-	store_8(b);
+	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
 }
 
 void FileAccess::store_32(uint32_t p_dest) {
-	uint16_t a, b;
-
-	a = p_dest & 0xFFFF;
-	b = p_dest >> 16;
-
 	if (big_endian) {
-		SWAP(a, b);
+		p_dest = BSWAP32(p_dest);
 	}
 
-	store_16(a);
-	store_16(b);
+	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
 }
 
 void FileAccess::store_64(uint64_t p_dest) {
-	uint32_t a, b;
-
-	a = p_dest & 0xFFFFFFFF;
-	b = p_dest >> 32;
-
 	if (big_endian) {
-		SWAP(a, b);
+		p_dest = BSWAP64(p_dest);
 	}
 
-	store_32(a);
-	store_32(b);
+	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
 }
 
 void FileAccess::store_real(real_t p_real) {
@@ -582,7 +540,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	uint64_t mt = fa->_get_modified_time(p_file);
 	return mt;
@@ -594,7 +552,7 @@ BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_unix_permissions(p_file);
 }
@@ -605,7 +563,7 @@ Error FileAccess::set_unix_permissions(const String &p_file, BitField<FileAccess
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
 	return err;
@@ -617,7 +575,7 @@ bool FileAccess::get_hidden_attribute(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_hidden_attribute(p_file);
 }
@@ -628,7 +586,7 @@ Error FileAccess::set_hidden_attribute(const String &p_file, bool p_hidden) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_hidden_attribute(p_file, p_hidden);
 	return err;
@@ -640,7 +598,7 @@ bool FileAccess::get_read_only_attribute(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_read_only_attribute(p_file);
 }
@@ -651,7 +609,7 @@ Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_read_only_attribute(p_file, p_ro);
 	return err;
@@ -710,22 +668,11 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 	store_line(line);
 }
 
-void FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND(!p_src && p_length > 0);
-	for (uint64_t i = 0; i < p_length; i++) {
-		store_8(p_src[i]);
-	}
-}
-
 void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
-	if (len == 0) {
-		return;
-	}
-
 	const uint8_t *r = p_buffer.ptr();
 
-	store_buffer(&r[0], len);
+	store_buffer(r, len);
 }
 
 void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
@@ -750,7 +697,7 @@ Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_err
 		if (r_error) { // if error requested, do not throw error
 			return Vector<uint8_t>();
 		}
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("Can't open file from path '%s'.", String(p_path)));
 	}
 	Vector<uint8_t> data;
 	data.resize(f->get_length());
@@ -768,7 +715,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 		if (r_error) {
 			return String();
 		}
-		ERR_FAIL_V_MSG(String(), "Can't get file as string from path '" + String(p_path) + "'.");
+		ERR_FAIL_V_MSG(String(), vformat("Can't get file as string from path '%s'.", String(p_path)));
 	}
 
 	String ret;

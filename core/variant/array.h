@@ -152,7 +152,9 @@ public:
 	void reverse();
 
 	int find(const Variant &p_value, int p_from = 0) const;
+	int find_custom(const Callable &p_callable, int p_from = 0) const;
 	int rfind(const Variant &p_value, int p_from = -1) const;
+	int rfind_custom(const Callable &p_callable, int p_from = -1) const;
 	int count(const Variant &p_value) const;
 	bool has(const Variant &p_value) const;
 
@@ -186,12 +188,14 @@ public:
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
+	bool is_same_instance(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
 
 	void make_read_only();
 	bool is_read_only() const;
+	static Array create_read_only();
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);

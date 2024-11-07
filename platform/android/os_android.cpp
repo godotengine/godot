@@ -775,6 +775,16 @@ void OS_Android::benchmark_dump() {
 #endif
 }
 
+#ifdef TOOLS_ENABLED
+Error OS_Android::sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password) {
+	return godot_java->sign_apk(p_input_path, p_output_path, p_keystore_path, p_keystore_user, p_keystore_password);
+}
+
+Error OS_Android::verify_apk(const String &p_apk_path) {
+	return godot_java->verify_apk(p_apk_path);
+}
+#endif
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "macos" || p_feature == "web_ios" || p_feature == "web_macos" || p_feature == "windows") {
 		return false;

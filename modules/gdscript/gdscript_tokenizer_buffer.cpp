@@ -296,6 +296,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 	encode_uint32(identifier_map.size(), &contents.write[0]);
 	encode_uint32(constant_map.size(), &contents.write[4]);
 	encode_uint32(token_lines.size(), &contents.write[8]);
+	encode_uint32(0, &contents.write[12]); // Unused, kept for compatibility. Please remove at next `TOKENIZER_VERSION` increment.
 	encode_uint32(token_counter, &contents.write[16]);
 
 	int buf_pos = 20;

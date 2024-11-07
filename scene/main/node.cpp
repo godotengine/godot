@@ -111,6 +111,7 @@ void Node::_notification(int p_notification) {
 				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
 			}
 			data.is_auto_translate_dirty = true;
+			data.is_translation_domain_dirty = true;
 
 #ifdef TOOLS_ENABLED
 			// Don't translate UI elements when they're being edited.
@@ -183,6 +184,7 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
 				reset_physics_interpolation();
@@ -694,6 +696,16 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	data.blocked--;
 }
 
+void Node::_propagate_suspend_notification(bool p_enable) {
+	notification(p_enable ? NOTIFICATION_SUSPENDED : NOTIFICATION_UNSUSPENDED);
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &KV : data.children) {
+		KV.value->_propagate_suspend_notification(p_enable);
+	}
+	data.blocked--;
+}
+
 Node::ProcessMode Node::get_process_mode() const {
 	return data.process_mode;
 }
@@ -757,7 +769,7 @@ void Node::rpc_config(const StringName &p_method, const Variant &p_config) {
 	}
 }
 
-const Variant Node::get_node_rpc_config() const {
+Variant Node::get_rpc_config() const {
 	return data.rpc_config;
 }
 
@@ -770,8 +782,7 @@ Error Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallErro
 		return ERR_INVALID_PARAMETER;
 	}
 
-	Variant::Type type = p_args[0]->get_type();
-	if (type != Variant::STRING_NAME && type != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -799,8 +810,7 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 		return ERR_INVALID_PARAMETER;
 	}
 
-	Variant::Type type = p_args[1]->get_type();
-	if (type != Variant::STRING_NAME && type != Variant::STRING) {
+	if (!p_args[1]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
@@ -851,7 +861,7 @@ bool Node::can_process_notification(int p_what) const {
 
 bool Node::can_process() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	return _can_process(get_tree()->is_paused());
+	return !get_tree()->is_suspended() && _can_process(get_tree()->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
@@ -1320,6 +1330,51 @@ bool Node::can_auto_translate() const {
 	}
 
 	return data.is_auto_translating;
+}
+
+StringName Node::get_translation_domain() const {
+	ERR_READ_THREAD_GUARD_V(StringName());
+
+	if (data.is_translation_domain_inherited && data.is_translation_domain_dirty) {
+		const_cast<Node *>(this)->_translation_domain = data.parent ? data.parent->get_translation_domain() : StringName();
+		data.is_translation_domain_dirty = false;
+	}
+	return _translation_domain;
+}
+
+void Node::set_translation_domain(const StringName &p_domain) {
+	ERR_THREAD_GUARD
+
+	if (!data.is_translation_domain_inherited && _translation_domain == p_domain) {
+		return;
+	}
+
+	_translation_domain = p_domain;
+	data.is_translation_domain_inherited = false;
+	data.is_translation_domain_dirty = false;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::set_translation_domain_inherited() {
+	ERR_THREAD_GUARD
+
+	if (data.is_translation_domain_inherited) {
+		return;
+	}
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::_propagate_translation_domain_dirty() {
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		Node *child = K.value;
+		if (child->data.is_translation_domain_inherited) {
+			child->data.is_translation_domain_dirty = true;
+			child->_propagate_translation_domain_dirty();
+		}
+	}
+	notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
 StringName Node::get_name() const {
@@ -2809,9 +2864,11 @@ Node *Node::duplicate(int p_flags) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *dupe = _duplicate(p_flags);
 
+	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
+
 	_duplicate_properties(this, this, dupe, p_flags);
 
-	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
+	if (p_flags & DUPLICATE_SIGNALS) {
 		_duplicate_signals(this, dupe);
 	}
 
@@ -2826,6 +2883,8 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) con
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	int flags = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR;
 	Node *dupe = _duplicate(flags, &r_duplimap);
+
+	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	_duplicate_properties(this, this, dupe, flags);
 
@@ -3432,7 +3491,7 @@ Variant Node::_call_deferred_thread_group_bind(const Variant **p_args, int p_arg
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3455,7 +3514,7 @@ Variant Node::_call_thread_safe_bind(const Variant **p_args, int p_argcount, Cal
 		return Variant();
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING_NAME && p_args[0]->get_type() != Variant::STRING) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -3608,6 +3667,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
@@ -3636,6 +3696,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "config"), &Node::rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Node::get_rpc_config);
 
 	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Node::set_editor_description);
 	ClassDB::bind_method(D_METHOD("get_editor_description"), &Node::get_editor_description);
@@ -3967,6 +4028,11 @@ void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_THREAD_GUARD_V(false);
 	return Object::is_connected(p_signal, p_callable);
+}
+
+bool Node::has_connections(const StringName &p_signal) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_connections(p_signal);
 }
 
 #endif

@@ -158,9 +158,9 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
-			button_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
-			button_delete->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
+			button_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			button_edit->set_button_icon(get_editor_theme_icon(SNAME("CurveEdit")));
+			button_delete->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -748,7 +748,9 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 }
 
 void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {
-	polygon_editor->edit(Object::cast_to<Node>(p_object));
+	Node *polygon_node = Object::cast_to<Node>(p_object);
+	polygon_editor->edit(polygon_node);
+	make_visible(polygon_node != nullptr);
 }
 
 bool AbstractPolygon2DEditorPlugin::handles(Object *p_object) const {

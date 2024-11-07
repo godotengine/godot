@@ -39,16 +39,19 @@
 class String;
 
 struct [[nodiscard]] Transform2D {
-	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of columns array, the basis matrix looks like "on paper":
+	// WARNING: The basis of Transform2D is stored differently from Basis.
+	// In terms of columns array, the basis matrix looks like "on paper":
 	// M = (columns[0][0] columns[1][0])
 	//     (columns[0][1] columns[1][1])
-	// This is such that the columns, which can be interpreted as basis vectors of the coordinate system "painted" on the object, can be accessed as columns[i].
-	// Note that this is the opposite of the indices in mathematical texts, meaning: $M_{12}$ in a math book corresponds to columns[1][0] here.
+	// This is such that the columns, which can be interpreted as basis vectors
+	// of the coordinate system "painted" on the object, can be accessed as columns[i].
+	// NOTE: This is the opposite of the indices in mathematical texts,
+	// meaning: $M_{12}$ in a math book corresponds to columns[1][0] here.
 	// This requires additional care when working with explicit indices.
 	// See https://en.wikipedia.org/wiki/Row-_and_column-major_order for further reading.
 
-	// Warning #2: 2D be aware that unlike 3D code, 2D code uses a left-handed coordinate system: Y-axis points down,
-	// and angle is measure from +X to +Y in a clockwise-fashion.
+	// WARNING: Be aware that unlike 3D code, 2D code uses a left-handed coordinate system:
+	// Y-axis points down, and angle is measure from +X to +Y in a clockwise-fashion.
 
 	Vector2 columns[3];
 

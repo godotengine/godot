@@ -90,7 +90,8 @@ void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_mode", PROPERTY_HINT_ENUM, "Detect From WAV,Disabled,Forward,Ping-Pong,Backward", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_begin"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_end"), -1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM),QOA (Quite OK Audio)"), 0));
+	// Quite OK Audio is lightweight enough and supports virtually every significant AudioStreamWAV feature.
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "PCM (Uncompressed),IMA ADPCM,Quite OK Audio"), 2));
 }
 
 Error ResourceImporterWAV::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -111,7 +112,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	}
 
 	/* GET FILESIZE */
-	file->get_32(); // filesize
+
+	// The file size in header is 8 bytes less than the actual size.
+	// See https://docs.fileformat.com/audio/wav/
+	const int FILE_SIZE_HEADER_OFFSET = 8;
+	uint32_t file_size_header = file->get_32() + FILE_SIZE_HEADER_OFFSET;
+	uint64_t file_size = file->get_length();
+	if (file_size != file_size_header) {
+		WARN_PRINT(vformat("File size %d is %s than the expected size %d. (%s)", file_size, file_size > file_size_header ? "larger" : "smaller", file_size_header, p_source_file));
+	}
 
 	/* CHECK WAVE */
 
@@ -197,7 +206,12 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				break;
 			}
 
+			uint64_t remaining_bytes = file_size - file_pos;
 			frames = chunksize;
+			if (remaining_bytes < chunksize) {
+				WARN_PRINT(vformat("Data chunk size is smaller than expected. Proceeding with actual data size. (%s)", p_source_file));
+				frames = remaining_bytes;
+			}
 
 			if (format_channels == 0) {
 				ERR_FAIL_COND_V(format_channels == 0, ERR_INVALID_DATA);
@@ -428,10 +442,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		loop_end = p_options["edit/loop_end"];
 		// Wrap around to max frames, so `-1` can be used to select the end, etc.
 		if (loop_begin < 0) {
-			loop_begin = CLAMP(loop_begin + frames + 1, 0, frames);
+			loop_begin = CLAMP(loop_begin + frames, 0, frames - 1);
 		}
 		if (loop_end < 0) {
-			loop_end = CLAMP(loop_end + frames + 1, 0, frames);
+			loop_end = CLAMP(loop_end + frames, 0, frames - 1);
 		}
 	}
 
@@ -517,16 +531,19 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	Vector<uint8_t> dst_data;
 	if (compression == 2) {
 		dst_format = AudioStreamWAV::FORMAT_QOA;
-		qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
+		qoa_desc desc = {};
 		uint32_t qoa_len = 0;
 
 		desc.samplerate = rate;
 		desc.samples = frames;
 		desc.channels = format_channels;
 
-		void *encoded = qoa_encode((short *)pcm_data.ptrw(), &desc, &qoa_len);
-		dst_data.resize(qoa_len);
-		memcpy(dst_data.ptrw(), encoded, qoa_len);
+		void *encoded = qoa_encode((short *)pcm_data.ptr(), &desc, &qoa_len);
+		if (encoded) {
+			dst_data.resize(qoa_len);
+			memcpy(dst_data.ptrw(), encoded, qoa_len);
+			QOA_FREE(encoded);
+		}
 	} else {
 		dst_data = pcm_data;
 	}

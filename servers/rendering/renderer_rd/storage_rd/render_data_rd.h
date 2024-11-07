@@ -73,6 +73,8 @@ public:
 	uint32_t directional_light_count = 0;
 	bool directional_light_soft_shadows = false;
 
+	bool lightmap_bicubic_filter = false;
+
 	RenderingMethod::RenderInfo *render_info = nullptr;
 
 	/* Viewport data */

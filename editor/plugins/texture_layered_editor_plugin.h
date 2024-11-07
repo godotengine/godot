@@ -54,17 +54,20 @@ class TextureLayeredEditor : public Control {
 	bool setting = false;
 
 	void _make_shaders();
-	void _update_material();
+	void _update_material(bool p_texture_changed);
 
 	void _layer_changed(double) {
 		if (!setting) {
-			_update_material();
+			_update_material(false);
 		}
 	}
+
 	void _texture_changed();
 
 	void _texture_rect_update_area();
 	void _texture_rect_draw();
+
+	void _update_gui();
 
 protected:
 	void _notification(int p_what);
@@ -72,6 +75,7 @@ protected:
 
 public:
 	void edit(Ref<TextureLayered> p_texture);
+
 	TextureLayeredEditor();
 	~TextureLayeredEditor();
 };

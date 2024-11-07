@@ -142,14 +142,17 @@ static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 }
 
 void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
+	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
 	if (p_image->is_compressed()) {
 		return; //do not compress, already compressed
 	}
+
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
-	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RH) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
+	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RF) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
 
 	if (!is_ldr && !is_hdr) {
 		return; // Not a usable source format
@@ -171,17 +174,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			p_image->convert(Image::FORMAT_RGBH);
 		}
 
-		const uint8_t *rb = p_image->get_data().ptr();
-
-		const uint16_t *source_data = reinterpret_cast<const uint16_t *>(&rb[0]);
-		int pixel_element_count = w * h * 3;
-		for (int i = 0; i < pixel_element_count; i++) {
-			if ((source_data[i] & 0x8000) != 0 && (source_data[i] & 0x7fff) != 0) {
-				is_signed = true;
-				break;
-			}
-		}
-
+		is_signed = p_image->detect_signed();
 		target_format = is_signed ? Image::FORMAT_BPTC_RGBF : Image::FORMAT_BPTC_RGBFU;
 	} else {
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
@@ -250,6 +243,8 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+
+	print_verbose(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
 
 void image_decompress_cvtt(Image *p_image) {

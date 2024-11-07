@@ -52,10 +52,6 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
 	}
 
-	if (p_editor_notify) {
-		err_str += " (User)";
-	}
-
 	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
 
 	if (!Thread::is_main_thread()) {
@@ -104,20 +100,20 @@ void EditorLog::_update_theme() {
 	log->add_theme_font_size_override("mono_font_size", font_size);
 	log->end_bulk_theme_override();
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusWarning")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 
-	clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
-	copy_button->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
-	collapse_button->set_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	show_search_button->set_icon(get_editor_theme_icon(SNAME("Search")));
+	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+	copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	show_search_button->set_button_icon(get_editor_theme_icon(SNAME("Search")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -208,7 +204,7 @@ void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
 	_reset_message_counts();
-	tool_button->set_icon(Ref<Texture2D>());
+	tool_button->set_button_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -363,14 +359,14 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
 			log->add_text(" ");
-			tool_button->set_icon(icon);
+			tool_button->set_button_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
 			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
 			log->add_text(" ");
-			tool_button->set_icon(icon);
+			tool_button->set_button_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
@@ -398,7 +394,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (p_replace_previous) {
 		// Force sync last line update (skip if number of unprocessed log messages is too large to avoid editor lag).
 		if (log->get_pending_paragraphs() < 100) {
-			while (!log->is_ready()) {
+			while (!log->is_finished()) {
 				::OS::get_singleton()->delay_usec(1);
 			}
 		}
@@ -514,7 +510,7 @@ EditorLog::EditorLog() {
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
-	collapse_button->connect("toggled", callable_mp(this, &EditorLog::_set_collapse));
+	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
 	hb_tools2->add_child(collapse_button);
 
 	// Show Search.
@@ -525,7 +521,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_pressed(true);
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
 	show_search_button->set_shortcut_context(this);
-	show_search_button->connect("toggled", callable_mp(this, &EditorLog::_set_search_visible));
+	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
 	hb_tools2->add_child(show_search_button);
 
 	// Message Type Filters.

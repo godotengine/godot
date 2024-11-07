@@ -112,12 +112,20 @@ void AudioStreamPlayerInternal::notification(int p_what) {
 			stream_playbacks.clear();
 		} break;
 
+		case Node::NOTIFICATION_SUSPENDED:
 		case Node::NOTIFICATION_PAUSED: {
 			if (!node->can_process()) {
 				// Node can't process so we start fading out to silence
 				set_stream_paused(true);
 			}
 		} break;
+
+		case Node::NOTIFICATION_UNSUSPENDED: {
+			if (node->get_tree()->is_paused()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 
 		case Node::NOTIFICATION_UNPAUSED: {
 			set_stream_paused(false);
@@ -152,6 +160,7 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 				Ref<AudioSamplePlayback> sample_playback;
 				sample_playback.instantiate();
 				sample_playback->stream = stream;
+				sample_playback->pitch_scale = pitch_scale;
 				stream_playback->set_sample_playback(sample_playback);
 			}
 		} else if (!stream->is_meta_stream()) {

@@ -59,30 +59,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		size_t height = (size_t)p_header.bmp_info_header.bmp_height;
 		size_t bits_per_pixel = (size_t)p_header.bmp_info_header.bmp_bit_count;
 
-		// Check whether we can load it
-
-		if (bits_per_pixel == 1) {
-			// Requires bit unpacking...
-			ERR_FAIL_COND_V_MSG(width % 8 != 0, ERR_UNAVAILABLE,
-					vformat("1-bpp BMP images must have a width that is a multiple of 8, but the imported BMP is %d pixels wide.", int(width)));
-			ERR_FAIL_COND_V_MSG(height % 8 != 0, ERR_UNAVAILABLE,
-					vformat("1-bpp BMP images must have a height that is a multiple of 8, but the imported BMP is %d pixels tall.", int(height)));
-
-		} else if (bits_per_pixel == 2) {
-			// Requires bit unpacking...
-			ERR_FAIL_COND_V_MSG(width % 4 != 0, ERR_UNAVAILABLE,
-					vformat("2-bpp BMP images must have a width that is a multiple of 4, but the imported BMP is %d pixels wide.", int(width)));
-			ERR_FAIL_COND_V_MSG(height % 4 != 0, ERR_UNAVAILABLE,
-					vformat("2-bpp BMP images must have a height that is a multiple of 4, but the imported BMP is %d pixels tall.", int(height)));
-
-		} else if (bits_per_pixel == 4) {
-			// Requires bit unpacking...
-			ERR_FAIL_COND_V_MSG(width % 2 != 0, ERR_UNAVAILABLE,
-					vformat("4-bpp BMP images must have a width that is a multiple of 2, but the imported BMP is %d pixels wide.", int(width)));
-			ERR_FAIL_COND_V_MSG(height % 2 != 0, ERR_UNAVAILABLE,
-					vformat("4-bpp BMP images must have a height that is a multiple of 2, but the imported BMP is %d pixels tall.", int(height)));
-		}
-
 		// Image data (might be indexed)
 		Vector<uint8_t> data;
 		int data_len = 0;
@@ -98,55 +74,32 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		uint8_t *data_w = data.ptrw();
 		uint8_t *write_buffer = data_w;
 
-		const uint32_t width_bytes = width * bits_per_pixel / 8;
-		const uint32_t line_width = (width_bytes + 3) & ~3;
+		const uint32_t width_bytes = (width * bits_per_pixel + 7) / 8;
+		const uint32_t line_width = (width_bytes + 3) & ~3; // Padded to 4 bytes.
 
-		// The actual data traversal is determined by
-		// the data width in case of 8/4/2/1 bit images
-		const uint32_t w = bits_per_pixel >= 16 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
 		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
+		ERR_FAIL_COND_V(line + line_width > end_buffer, ERR_FILE_CORRUPT);
 
 		for (uint64_t i = 0; i < height; i++) {
 			const uint8_t *line_ptr = line;
 
-			for (unsigned int j = 0; j < w; j++) {
-				ERR_FAIL_COND_V(line_ptr >= end_buffer, ERR_FILE_CORRUPT);
+			for (unsigned int j = 0; j < width; j++) {
 				switch (bits_per_pixel) {
 					case 1: {
-						uint8_t color_index = *line_ptr;
+						write_buffer[index] = (line[(j * bits_per_pixel) / 8] >> (8 - bits_per_pixel * (1 + j % 8))) & 0x01;
 
-						write_buffer[index + 0] = (color_index >> 7) & 1;
-						write_buffer[index + 1] = (color_index >> 6) & 1;
-						write_buffer[index + 2] = (color_index >> 5) & 1;
-						write_buffer[index + 3] = (color_index >> 4) & 1;
-						write_buffer[index + 4] = (color_index >> 3) & 1;
-						write_buffer[index + 5] = (color_index >> 2) & 1;
-						write_buffer[index + 6] = (color_index >> 1) & 1;
-						write_buffer[index + 7] = (color_index >> 0) & 1;
-
-						index += 8;
-						line_ptr += 1;
+						index++;
 					} break;
 					case 2: {
-						uint8_t color_index = *line_ptr;
+						write_buffer[index] = (line[(j * bits_per_pixel) / 8] >> (8 - bits_per_pixel * (1 + j % 4))) & 0x03;
 
-						write_buffer[index + 0] = (color_index >> 6) & 3;
-						write_buffer[index + 1] = (color_index >> 4) & 3;
-						write_buffer[index + 2] = (color_index >> 2) & 3;
-						write_buffer[index + 3] = color_index & 3;
-
-						index += 4;
-						line_ptr += 1;
+						index++;
 					} break;
 					case 4: {
-						uint8_t color_index = *line_ptr;
+						write_buffer[index] = (line[(j * bits_per_pixel) / 8] >> (8 - bits_per_pixel * (1 + j % 2))) & 0x0f;
 
-						write_buffer[index + 0] = (color_index >> 4) & 0x0f;
-						write_buffer[index + 1] = color_index & 0x0f;
-
-						index += 2;
-						line_ptr += 1;
+						index++;
 					} break;
 					case 8: {
 						uint8_t color_index = *line_ptr;

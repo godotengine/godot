@@ -1,5 +1,9 @@
 GDTEST_OK
 >> WARNING
->> Line: 3
+>> Line: 11
 >> UNUSED_SIGNAL
->> The signal "s3" is declared but never explicitly used in the class.
+>> The signal "used_with_dynamic_name" is declared but never explicitly used in the class.
+>> WARNING
+>> Line: 12
+>> UNUSED_SIGNAL
+>> The signal "just_unused" is declared but never explicitly used in the class.

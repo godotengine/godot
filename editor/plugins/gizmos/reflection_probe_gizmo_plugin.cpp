@@ -40,7 +40,7 @@
 
 ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	helper.instantiate();
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/reflection_probe", Color(0.6, 1, 0.5));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/reflection_probe");
 
 	create_material("reflection_probe_material", gizmo_color);
 

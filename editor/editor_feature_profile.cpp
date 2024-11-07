@@ -43,6 +43,7 @@
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),
 	TTRC("Script Editor"),
+	TTRC("Game View"),
 	TTRC("Asset Library"),
 	TTRC("Scene Tree Editing"),
 	TTRC("Node Dock"),
@@ -54,6 +55,7 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 	TTRC("Allows to view and edit 3D scenes."),
 	TTRC("Allows to edit scripts using the integrated script editor."),
+	TTRC("Provides tools for selecting and debugging nodes at runtime."),
 	TTRC("Provides built-in access to the Asset Library."),
 	TTRC("Allows editing the node hierarchy in the Scene dock."),
 	TTRC("Allows to work with signals and groups of the node selected in the Scene dock."),
@@ -65,6 +67,7 @@ const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
 	"3d",
 	"script",
+	"game",
 	"asset_lib",
 	"scene_tree",
 	"node_dock",
@@ -307,6 +310,7 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_FILESYSTEM_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_IMPORT_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_HISTORY_DOCK);
+	BIND_ENUM_CONSTANT(FEATURE_GAME);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
@@ -558,7 +562,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
@@ -643,7 +647,7 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_save_and_update();
@@ -666,7 +670,7 @@ void EditorFeatureProfileManager::_class_list_item_collapsed(Object *p_item) {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
+	if (!md.is_string()) {
 		return;
 	}
 
@@ -686,7 +690,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 	}
 
 	Variant md = class_item->get_metadata(0);
-	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
+	if (!md.is_string()) {
 		return;
 	}
 
@@ -699,7 +703,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 	bool checked = item->is_checked(0);
 
 	md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		String property_selected = md;
 		edited->set_disable_class_property(class_name, property_selected, !checked);
 		_save_and_update();
@@ -732,7 +736,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+		if (md.is_string()) {
 			class_selected = md;
 		} else if (md.get_type() == Variant::INT) {
 			feature_selected = md;

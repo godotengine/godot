@@ -92,13 +92,22 @@ private:
 	RBSet<JoyButton> joy_buttons_pressed;
 	RBMap<JoyAxis, float> _joy_axis;
 	//RBMap<StringName,int> custom_action_press;
+	bool gravity_enabled = false;
 	Vector3 gravity;
+	bool accelerometer_enabled = false;
 	Vector3 accelerometer;
+	bool magnetometer_enabled = false;
 	Vector3 magnetometer;
+	bool gyroscope_enabled = false;
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
+	bool disable_input = false;
+
+	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -275,6 +284,8 @@ protected:
 public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
+	void set_mouse_mode_override_enabled(bool p_enabled);
+	void set_mouse_mode_override(MouseMode p_mode);
 
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
@@ -375,6 +386,9 @@ public:
 	void release_pressed_events();
 
 	void set_event_dispatch_function(EventDispatchFunc p_function);
+
+	void set_disable_input(bool p_disable);
+	bool is_input_disabled() const;
 
 	Input();
 	~Input();

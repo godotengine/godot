@@ -77,7 +77,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _fill_type_list();
 	void _cleanup();
 
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _text_changed(const String &p_newtext);
 	void select_type(const String &p_type, bool p_center_on_item = true);
 	void _item_selected();

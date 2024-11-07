@@ -44,6 +44,9 @@
 #include "core/error/error_list.h"
 #include <cstdint>
 
+// Ensure that C++ standard is at least C++17. If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
+static_assert(__cplusplus >= 201703L);
+
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
 #ifndef _STR

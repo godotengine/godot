@@ -59,9 +59,8 @@ public:
 	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) = 0;
 
 	/* Texture API */
-	virtual bool can_create_resources_async() const = 0;
 
-	virtual ~RendererTextureStorage(){};
+	virtual ~RendererTextureStorage() {}
 
 	virtual RID texture_allocate() = 0;
 	virtual void texture_free(RID p_rid) = 0;
@@ -69,10 +68,14 @@ public:
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) = 0;
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
+	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) = 0;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
+
+	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) = 0;
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
+	virtual void texture_external_update(RID p_proxy, int p_width, int p_height, uint64_t p_external_buffer) = 0;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
 
 	//these two APIs can be used together or in combination with the others.

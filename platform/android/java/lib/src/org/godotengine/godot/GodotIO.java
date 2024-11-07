@@ -47,6 +47,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.DisplayCutout;
+import android.view.Surface;
 import android.view.WindowInsets;
 
 import androidx.core.content.FileProvider;
@@ -214,6 +215,14 @@ public class GodotIO {
 			result[index++] = rect.height();
 		}
 		return result;
+	}
+
+	public boolean hasHardwareKeyboard() {
+		if (edit != null) {
+			return edit.hasHardwareKeyboard();
+		} else {
+			return false;
+		}
 	}
 
 	public void showKeyboard(String p_existing_text, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {

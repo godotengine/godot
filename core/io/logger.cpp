@@ -84,11 +84,7 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	if (p_editor_notify) {
-		logf_error("%s: %s\n", err_type, err_details);
-	} else {
-		logf_error("USER %s: %s\n", err_type, err_details);
-	}
+	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
 }
 

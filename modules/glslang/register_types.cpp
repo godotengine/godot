@@ -73,6 +73,9 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		// - SPIRV-Reflect won't be able to parse the compute workgroup size.
 		// - We want to play it safe with NIR-DXIL.
 		TargetVersion = glslang::EShTargetSpv_1_3;
+	} else if (capabilities.device_family == RDD::DEVICE_METAL) {
+		ClientVersion = glslang::EShTargetVulkan_1_1;
+		TargetVersion = glslang::EShTargetSpv_1_6;
 	} else {
 		// once we support other backends we'll need to do something here
 		if (r_error) {

@@ -213,6 +213,23 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
+void LightStorage::light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->shadow_caster_mask = p_caster_mask;
+
+	light->version++;
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
+uint32_t LightStorage::light_get_shadow_caster_mask(RID p_light) const {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, 0);
+
+	return light->shadow_caster_mask;
+}
+
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
@@ -1046,6 +1063,9 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 	lightmap->light_texture = p_light;
 	lightmap->uses_spherical_harmonics = p_uses_spherical_haromics;
 
+	Vector3i light_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->light_texture);
+	lightmap->light_texture_size = Vector2i(light_texture_size.x, light_texture_size.y);
+
 	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->light_texture);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1518,6 +1538,11 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 		uint64_t min_pass = 0; // Pass of the existing one, try to use the least recently used one (LRU fashion).
 
 		for (int j = 0; j < sc; j++) {
+			if (sarr[j].owner_is_omni != is_omni) {
+				// Existing light instance type doesn't match new light instance type skip.
+				continue;
+			}
+
 			LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
 			if (!sli) {
 				// Found a released light instance.

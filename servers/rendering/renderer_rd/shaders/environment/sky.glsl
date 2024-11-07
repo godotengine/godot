@@ -106,9 +106,11 @@ layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 directional_lights;
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
+/* clang-format off */
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
+/* clang-format on */
 #endif
 
 layout(set = 2, binding = 0) uniform textureCube radiance;
@@ -247,17 +249,11 @@ void main() {
 #endif //USE_CUBEMAP_PASS
 
 	{
-
 #CODE : SKY
-
 	}
 
 	frag_color.rgb = color;
 	frag_color.a = alpha;
-
-	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
-	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
-	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
 
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 
@@ -277,6 +273,10 @@ void main() {
 	}
 
 #endif // DISABLE_FOG
+
+	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
+	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
+	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
 
 	// Blending is disabled for Sky, so alpha doesn't blend.
 	// Alpha is used for subsurface scattering so make sure it doesn't get applied to Sky.

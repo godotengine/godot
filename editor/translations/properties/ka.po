@@ -173,15 +173,6 @@ msgstr "სესიის კატეგორია"
 msgid "Mix With Others"
 msgstr "სხვებთან შერევა"
 
-msgid "Editor"
-msgstr "რედაქტორი"
-
-msgid "Script"
-msgstr "სკრიპტი"
-
-msgid "Search in File Extensions"
-msgstr "ძებნა ფაილის გაფართოებებში"
-
 msgid "Subwindows"
 msgstr "ქვეფანჯრები"
 
@@ -772,6 +763,9 @@ msgstr "მუქი რეჟიმის გადართვა"
 
 msgid "Interface"
 msgstr "ინტერფეისი"
+
+msgid "Editor"
+msgstr "რედაქტორი"
 
 msgid "Editor Language"
 msgstr "რედაქტორის ენა"
@@ -1818,6 +1812,9 @@ msgstr "ვერსიის კონტროლი"
 msgid "Username"
 msgstr "მომხმარებლის სახელი"
 
+msgid "Script"
+msgstr "სკრიპტი"
+
 msgid "Scene Name Casing"
 msgstr "სცენის სახელის რეგისტრი"
 
@@ -1934,6 +1931,9 @@ msgstr "Android"
 
 msgid "Text Driver"
 msgstr "ტექსტის დრაივერი"
+
+msgid "Search in File Extensions"
+msgstr "ძებნა ფაილის გაფართოებებში"
 
 msgid "Custom Image"
 msgstr "ხელით მითითებული გამოსახულება"

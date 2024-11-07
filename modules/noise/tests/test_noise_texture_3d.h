@@ -44,7 +44,7 @@ class NoiseTexture3DTester : public RefCounted {
 
 public:
 	NoiseTexture3DTester(const NoiseTexture3D *const p_texture) :
-			texture{ p_texture } {};
+			texture{ p_texture } {}
 
 	Color compute_average_color(const Ref<Image> &p_noise_image) {
 		Color r_avg_color{};
@@ -133,7 +133,7 @@ TEST_CASE("[NoiseTexture][SceneTree] Getter and setter") {
 	noise_texture->set_noise(noise);
 	CHECK(noise_texture->get_noise() == noise);
 	noise_texture->set_noise(nullptr);
-	CHECK(noise_texture->get_noise() == nullptr);
+	CHECK(noise_texture->get_noise().is_null());
 
 	noise_texture->set_width(8);
 	noise_texture->set_height(4);
@@ -174,7 +174,7 @@ TEST_CASE("[NoiseTexture][SceneTree] Getter and setter") {
 	noise_texture->set_color_ramp(gradient);
 	CHECK(noise_texture->get_color_ramp() == gradient);
 	noise_texture->set_color_ramp(nullptr);
-	CHECK(noise_texture->get_color_ramp() == nullptr);
+	CHECK(noise_texture->get_color_ramp().is_null());
 }
 
 TEST_CASE("[NoiseTexture3D][SceneTree] Generating a basic noise texture with mipmaps and color ramp modulation") {

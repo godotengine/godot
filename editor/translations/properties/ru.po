@@ -352,15 +352,6 @@ msgstr "Категория сеанса"
 msgid "Mix With Others"
 msgstr "Смешивание с другими"
 
-msgid "Editor"
-msgstr "Редактор"
-
-msgid "Script"
-msgstr "Скрипт"
-
-msgid "Search in File Extensions"
-msgstr "Поиск в расширениях файлов"
-
 msgid "Subwindows"
 msgstr "Подокна"
 
@@ -1011,6 +1002,9 @@ msgstr "Режим переключения"
 
 msgid "Interface"
 msgstr "Интерфейс"
+
+msgid "Editor"
+msgstr "Редактор"
 
 msgid "Editor Language"
 msgstr "Язык редактора"
@@ -2903,6 +2897,9 @@ msgstr "Путь к закрытому ключу SSH"
 msgid "Main Run Args"
 msgstr "Основные аргументы запуска"
 
+msgid "Script"
+msgstr "Скрипт"
+
 msgid "Templates Search Path"
 msgstr "Путь поиска шаблонов"
 
@@ -3159,6 +3156,9 @@ msgstr "Ось прокрутки поворотного ввода"
 
 msgid "Text Driver"
 msgstr "Драйвер текста"
+
+msgid "Search in File Extensions"
+msgstr "Поиск в расширениях файлов"
 
 msgid "Mouse Cursor"
 msgstr "Курсор мыши"

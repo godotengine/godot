@@ -5068,14 +5068,14 @@ msgstr "Quitar Out-Control de la Curva"
 msgid "Remove In-Control from Curve"
 msgstr "Quitar In-Control de la Curva"
 
-msgid "Split Curve"
-msgstr "Partir Curva"
-
 msgid "Move Point in Curve"
 msgstr "Mover Punto en Curva"
 
 msgid "Add Point to Curve"
 msgstr "Agregar Punto a Curva"
+
+msgid "Split Curve"
+msgstr "Partir Curva"
 
 msgid "Move In-Control in Curve"
 msgstr "Mover In-Control en Curva"

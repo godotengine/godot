@@ -241,7 +241,7 @@ public:
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
-	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); };
+	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); }
 };
 
 template <typename T>

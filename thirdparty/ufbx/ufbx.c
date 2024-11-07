@@ -570,7 +570,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 14, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 14, 3)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -7257,8 +7257,8 @@ typedef enum {
 } ufbxi_parse_state;
 
 typedef enum {
-	UFBXI_ARRAY_FLAG_RESULT       = 0x1, // < Alloacte the array from the result buffer
-	UFBXI_ARRAY_FLAG_TMP_BUF      = 0x2, // < Alloacte the array from the result buffer
+	UFBXI_ARRAY_FLAG_RESULT       = 0x1, // < Allocate the array from the result buffer
+	UFBXI_ARRAY_FLAG_TMP_BUF      = 0x2, // < Allocate the array from the result buffer
 	UFBXI_ARRAY_FLAG_PAD_BEGIN    = 0x4, // < Pad the begin of the array with 4 zero elements to guard from invalid -1 index accesses
 	UFBXI_ARRAY_FLAG_ACCURATE_F32 = 0x8, // < Must be parsed as bit-accurate 32-bit floats
 } ufbxi_array_flags;
@@ -21772,6 +21772,10 @@ ufbxi_noinline static ufbx_quat ufbxi_get_rotation(const ufbx_props *props, ufbx
 		ufbxi_mul_rotate_quat(&t, node->adjust_pre_rotation);
 	}
 
+	if (node->adjust_mirror_axis) {
+		ufbxi_mirror_rotation(&t.rotation, node->adjust_mirror_axis);
+	}
+
 	return t.rotation;
 }
 
@@ -24710,7 +24714,7 @@ static ufbxi_noinline const ufbx_prop *ufbxi_next_prop_slow(ufbxi_prop_iter *ite
 	const ufbx_prop_override *over = iter->over;
 	if (prop == iter->prop_end && over == iter->over_end) return NULL;
 
-	// We can use `UINT32_MAX` as a termianting key (aka prefix) as prop names must
+	// We can use `UINT32_MAX` as a terminating key (aka prefix) as prop names must
 	// be valid UTF-8 and the byte sequence "\xff\xff\xff\xff" is not valid.
 	uint32_t prop_key = prop != iter->prop_end ? prop->_internal_key : UINT32_MAX;
 	uint32_t over_key = over != iter->over_end ? over->_internal_key : UINT32_MAX;

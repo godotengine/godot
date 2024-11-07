@@ -67,11 +67,11 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		{
 			// The custom LoadLibraryExW is used instead of open_dynamic_library
 			// to avoid loading the original PDB into the debugger.
-			HMODULE library_ptr = LoadLibraryExW((LPCWSTR)(p_dll_path.utf16().get_data()), NULL, LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
+			HMODULE library_ptr = LoadLibraryExW((LPCWSTR)(p_dll_path.utf16().get_data()), nullptr, LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
 
 			ERR_FAIL_NULL_V_MSG(library_ptr, ERR_FILE_CANT_OPEN, vformat("Failed to load library '%s'.", p_dll_path));
 
-			IMAGE_DEBUG_DIRECTORY *dbg_dir = (IMAGE_DEBUG_DIRECTORY *)ImageDirectoryEntryToDataEx(library_ptr, FALSE, IMAGE_DIRECTORY_ENTRY_DEBUG, &dbg_info_size, NULL);
+			IMAGE_DEBUG_DIRECTORY *dbg_dir = (IMAGE_DEBUG_DIRECTORY *)ImageDirectoryEntryToDataEx(library_ptr, FALSE, IMAGE_DIRECTORY_ENTRY_DEBUG, &dbg_info_size, nullptr);
 
 			bool has_debug = dbg_dir && dbg_dir->Type == IMAGE_DEBUG_TYPE_CODEVIEW;
 			if (has_debug) {
@@ -155,7 +155,11 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 	} else if (!FileAccess::exists(copy_pdb_path)) {
 		copy_pdb_path = dll_base_dir.path_join(copy_pdb_path.get_file());
 	}
-	ERR_FAIL_COND_V_MSG(!FileAccess::exists(copy_pdb_path), FAILED, vformat("File '%s' does not exist.", copy_pdb_path));
+	if (!FileAccess::exists(copy_pdb_path)) {
+		// The PDB file may be distributed separately on purpose, so we don't consider this an error.
+		WARN_VERBOSE(vformat("PDB file '%s' for library '%s' was not found, skipping copy/rename.", copy_pdb_path, p_dll_path));
+		return ERR_SKIP;
+	}
 
 	String new_pdb_base_name = p_dll_path.get_file().get_basename() + "_";
 

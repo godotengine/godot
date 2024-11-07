@@ -95,6 +95,8 @@ protected:
 	void _pose_lost_tracking(const Ref<XRPose> &p_pose);
 	void _set_has_tracking_data(bool p_has_tracking_data);
 
+	void _update_visibility();
+
 public:
 	void _validate_property(PropertyInfo &p_property) const;
 	void set_tracker(const StringName &p_tracker_name);

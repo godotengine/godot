@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A resource used by [AnimationNodeBlendTree].
-		[AnimationNodeBlendSpace1D] represents a virtual 2D space on which [AnimationRootNode]s are placed. Outputs the linear blend of the three adjacent animations using a [Vector2] weight. Adjacent in this context means the three [AnimationRootNode]s making up the triangle that contains the current value.
+		[AnimationNodeBlendSpace2D] represents a virtual 2D space on which [AnimationRootNode]s are placed. Outputs the linear blend of the three adjacent animations using a [Vector2] weight. Adjacent in this context means the three [AnimationRootNode]s making up the triangle that contains the current value.
 		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to triangulate the blend space by hand.
 	</description>
 	<tutorials>
@@ -93,7 +93,7 @@
 			<param index="0" name="point" type="int" />
 			<param index="1" name="pos" type="Vector2" />
 			<description>
-				Updates the position of the point at index [param point] on the blend axis.
+				Updates the position of the point at index [param point] in the blend space.
 			</description>
 		</method>
 	</methods>

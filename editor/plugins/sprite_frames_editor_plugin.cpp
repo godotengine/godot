@@ -498,10 +498,86 @@ void SpriteFramesEditor::_toggle_show_settings() {
 
 void SpriteFramesEditor::_update_show_settings() {
 	if (is_layout_rtl()) {
-		toggle_settings_button->set_icon(get_editor_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Back") : SNAME("Forward")));
+		toggle_settings_button->set_button_icon(get_editor_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Back") : SNAME("Forward")));
 	} else {
-		toggle_settings_button->set_icon(get_editor_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Forward") : SNAME("Back")));
+		toggle_settings_button->set_button_icon(get_editor_theme_icon(split_sheet_settings_vb->is_visible() ? SNAME("Forward") : SNAME("Back")));
 	}
+}
+
+void SpriteFramesEditor::_auto_slice_sprite_sheet() {
+	if (updating_split_settings) {
+		return;
+	}
+	updating_split_settings = true;
+
+	const Size2i size = split_sheet_preview->get_texture()->get_size();
+
+	const Size2i split_sheet = _estimate_sprite_sheet_size(split_sheet_preview->get_texture());
+	split_sheet_h->set_value(split_sheet.x);
+	split_sheet_v->set_value(split_sheet.y);
+	split_sheet_size_x->set_value(size.x / split_sheet.x);
+	split_sheet_size_y->set_value(size.y / split_sheet.y);
+	split_sheet_sep_x->set_value(0);
+	split_sheet_sep_y->set_value(0);
+	split_sheet_offset_x->set_value(0);
+	split_sheet_offset_y->set_value(0);
+
+	updating_split_settings = false;
+
+	frames_selected.clear();
+	selected_count = 0;
+	last_frame_selected = -1;
+	split_sheet_preview->queue_redraw();
+}
+
+bool SpriteFramesEditor::_matches_background_color(const Color &p_background_color, const Color &p_pixel_color) {
+	if ((p_background_color.a == 0 && p_pixel_color.a == 0) || p_background_color.is_equal_approx(p_pixel_color)) {
+		return true;
+	}
+
+	Color d = p_background_color - p_pixel_color;
+	// 0.04f is the threshold for how much a colour can deviate from background colour and still be considered a match. Arrived at through experimentation, can be tweaked.
+	return (d.r * d.r) + (d.g * d.g) + (d.b * d.b) + (d.a * d.a) < 0.04f;
+}
+
+Size2i SpriteFramesEditor::_estimate_sprite_sheet_size(const Ref<Texture2D> p_texture) {
+	Ref<Image> image = p_texture->get_image();
+	Size2i size = p_texture->get_size();
+
+	Color assumed_background_color = image->get_pixel(0, 0);
+	Size2i sheet_size;
+
+	bool previous_line_background = true;
+	for (int x = 0; x < size.x; x++) {
+		int y = 0;
+		while (y < size.y && _matches_background_color(assumed_background_color, image->get_pixel(x, y))) {
+			y++;
+		}
+		bool current_line_background = (y == size.y);
+		if (previous_line_background && !current_line_background) {
+			sheet_size.x++;
+		}
+		previous_line_background = current_line_background;
+	}
+
+	previous_line_background = true;
+	for (int y = 0; y < size.y; y++) {
+		int x = 0;
+		while (x < size.x && _matches_background_color(assumed_background_color, image->get_pixel(x, y))) {
+			x++;
+		}
+		bool current_line_background = (x == size.x);
+		if (previous_line_background && !current_line_background) {
+			sheet_size.y++;
+		}
+		previous_line_background = current_line_background;
+	}
+
+	if (sheet_size == Size2i(0, 0) || sheet_size == Size2i(1, 1)) {
+		sheet_size = Size2i(4, 4);
+	}
+
+	return sheet_size;
 }
 
 void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
@@ -530,10 +606,11 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 			// Different texture, reset to 4x4.
 			dominant_param = PARAM_FRAME_COUNT;
 			updating_split_settings = true;
-			split_sheet_h->set_value(4);
-			split_sheet_v->set_value(4);
-			split_sheet_size_x->set_value(size.x / 4);
-			split_sheet_size_y->set_value(size.y / 4);
+			const Size2i split_sheet = Size2i(4, 4);
+			split_sheet_h->set_value(split_sheet.x);
+			split_sheet_v->set_value(split_sheet.y);
+			split_sheet_size_x->set_value(size.x / split_sheet.x);
+			split_sheet_size_y->set_value(size.y / split_sheet.y);
 			split_sheet_sep_x->set_value(0);
 			split_sheet_sep_y->set_value(0);
 			split_sheet_offset_x->set_value(0);
@@ -562,31 +639,32 @@ void SpriteFramesEditor::_notification(int p_what) {
 			pause_icon = get_editor_theme_icon(SNAME("Pause"));
 			_update_stop_icon();
 
-			autoplay->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
-			anim_loop->set_icon(get_editor_theme_icon(SNAME("Loop")));
-			play->set_icon(get_editor_theme_icon(SNAME("PlayStart")));
-			play_from->set_icon(get_editor_theme_icon(SNAME("Play")));
-			play_bw->set_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
-			play_bw_from->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
+			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
+			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
+			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
+			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
+			play_bw_from->set_button_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 
-			load->set_icon(get_editor_theme_icon(SNAME("Load")));
-			load_sheet->set_icon(get_editor_theme_icon(SNAME("SpriteSheet")));
-			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
-			paste->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
-			empty_before->set_icon(get_editor_theme_icon(SNAME("InsertBefore")));
-			empty_after->set_icon(get_editor_theme_icon(SNAME("InsertAfter")));
-			move_up->set_icon(get_editor_theme_icon(SNAME("MoveLeft")));
-			move_down->set_icon(get_editor_theme_icon(SNAME("MoveRight")));
-			delete_frame->set_icon(get_editor_theme_icon(SNAME("Remove")));
-			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
-			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
-			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
-			add_anim->set_icon(get_editor_theme_icon(SNAME("New")));
-			delete_anim->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			load->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+			load_sheet->set_button_icon(get_editor_theme_icon(SNAME("SpriteSheet")));
+			copy->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			paste->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+			empty_before->set_button_icon(get_editor_theme_icon(SNAME("InsertBefore")));
+			empty_after->set_button_icon(get_editor_theme_icon(SNAME("InsertAfter")));
+			move_up->set_button_icon(get_editor_theme_icon(SNAME("MoveLeft")));
+			move_down->set_button_icon(get_editor_theme_icon(SNAME("MoveRight")));
+			delete_frame->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			zoom_out->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			add_anim->set_button_icon(get_editor_theme_icon(SNAME("New")));
+			duplicate_anim->set_button_icon(get_editor_theme_icon(SNAME("Duplicate")));
+			delete_anim->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			anim_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			split_sheet_zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
-			split_sheet_zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
-			split_sheet_zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			split_sheet_zoom_out->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			split_sheet_zoom_reset->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			split_sheet_zoom_in->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 			split_sheet_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 
 			_update_show_settings();
@@ -1102,6 +1180,41 @@ void SpriteFramesEditor::_animation_add() {
 	animations->grab_focus();
 }
 
+void SpriteFramesEditor::_animation_duplicate() {
+	if (updating) {
+		return;
+	}
+
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
+	int counter = 1;
+	String new_name = edited_anim;
+	PackedStringArray name_component = new_name.rsplit("_", true, 1);
+	String base_name = name_component[0];
+	if (name_component.size() > 1 && name_component[1].is_valid_int() && name_component[1].to_int() >= 0) {
+		counter = name_component[1].to_int();
+	}
+	new_name = base_name + "_" + itos(counter);
+	while (frames->has_animation(new_name)) {
+		counter++;
+		new_name = base_name + "_" + itos(counter);
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Duplicate Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_method(frames.ptr(), "duplicate_animation", edited_anim, new_name);
+	undo_redo->add_undo_method(frames.ptr(), "remove_animation", new_name);
+	undo_redo->add_do_method(this, "_select_animation", new_name);
+	undo_redo->add_undo_method(this, "_select_animation", edited_anim);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->commit_action();
+
+	animations->grab_focus();
+}
+
 void SpriteFramesEditor::_animation_remove() {
 	if (updating) {
 		return;
@@ -1464,6 +1577,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	_zoom_reset();
 
 	add_anim->set_disabled(read_only);
+	duplicate_anim->set_disabled(read_only);
 	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
@@ -1626,9 +1740,9 @@ void SpriteFramesEditor::_update_stop_icon() {
 		is_playing = animated_sprite->call("is_playing");
 	}
 	if (is_playing) {
-		stop->set_icon(pause_icon);
+		stop->set_button_icon(pause_icon);
 	} else {
-		stop->set_icon(stop_icon);
+		stop->set_button_icon(stop_icon);
 	}
 }
 
@@ -1788,6 +1902,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(add_anim);
 	add_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_add));
 
+	duplicate_anim = memnew(Button);
+	duplicate_anim->set_flat(true);
+	hbc_animlist->add_child(duplicate_anim);
+	duplicate_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
+
 	delete_anim = memnew(Button);
 	delete_anim->set_theme_type_variation("FlatButton");
 	hbc_animlist->add_child(delete_anim);
@@ -1841,6 +1960,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	add_anim->set_shortcut_context(animations);
 	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTR("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+	duplicate_anim->set_shortcut_context(animations);
+	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTR("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
 
@@ -1865,6 +1986,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(hfc);
 
 	playback_container = memnew(HBoxContainer);
+	playback_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
 	hfc->add_child(playback_container);
 
 	play_bw_from = memnew(Button);
@@ -1892,7 +2014,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
 	playback_container->add_child(play_from);
 
-	playback_container->add_child(memnew(VSeparator));
+	hfc->add_child(memnew(VSeparator));
 
 	autoplay->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
@@ -2289,6 +2411,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_vb->add_child(split_sheet_offset_y);
 	split_sheet_offset_hb->add_child(split_sheet_offset_vb);
 	split_sheet_settings_vb->add_child(split_sheet_offset_hb);
+
+	Button *auto_slice = memnew(Button);
+	auto_slice->set_text(TTR("Auto Slice"));
+	auto_slice->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_auto_slice_sprite_sheet));
+	split_sheet_settings_vb->add_child(auto_slice);
 
 	split_sheet_hb->add_child(split_sheet_settings_vb);
 

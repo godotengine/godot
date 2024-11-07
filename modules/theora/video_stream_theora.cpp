@@ -31,6 +31,7 @@
 #include "video_stream_theora.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "scene/resources/image_texture.h"
 
@@ -114,7 +115,7 @@ void VideoStreamPlaybackTheora::video_write() {
 		format = Image::FORMAT_RGBA8;
 	}
 
-	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
+	Ref<Image> img = memnew(Image(size.x, size.y, false, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
 	texture->update(img); //zero copy send to rendering server
 
@@ -644,7 +645,7 @@ VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 	memdelete(thread_sem);
 #endif
 	clear();
-};
+}
 
 void VideoStreamTheora::_bind_methods() {}
 

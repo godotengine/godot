@@ -497,7 +497,7 @@ bool GeometryInstance3D::is_ignoring_occlusion_culling() {
 }
 
 PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	if (!Math::is_zero_approx(visibility_range_end) && visibility_range_end <= visibility_range_begin) {
 		warnings.push_back(RTR("The GeometryInstance3D visibility range's End distance is set to a non-zero value, but is lower than the Begin distance.\nThis means the GeometryInstance3D will never be visible.\nTo resolve this, set the End distance to 0 or to a value greater than the Begin distance."));

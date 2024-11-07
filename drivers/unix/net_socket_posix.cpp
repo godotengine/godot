@@ -67,6 +67,7 @@
 #define SOCK_BUF(x) x
 #define SOCK_CBUF(x) x
 #define SOCK_IOCTL ioctl
+#define SOCK_FIONREAD_LEN_TYPE int
 #define SOCK_CLOSE ::close
 #define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::connect(p_sock, p_addr, p_addr_len)
 
@@ -81,6 +82,7 @@
 #define SOCK_BUF(x) (char *)(x)
 #define SOCK_CBUF(x) (const char *)(x)
 #define SOCK_IOCTL ioctlsocket
+#define SOCK_FIONREAD_LEN_TYPE unsigned long
 #define SOCK_CLOSE closesocket
 // connect is broken on windows under certain conditions, reasons unknown:
 // See https://github.com/godotengine/webrtc-native/issues/6
@@ -742,7 +744,7 @@ bool NetSocketPosix::is_open() const {
 int NetSocketPosix::get_available_bytes() const {
 	ERR_FAIL_COND_V(!is_open(), -1);
 
-	unsigned long len;
+	SOCK_FIONREAD_LEN_TYPE len;
 	int ret = SOCK_IOCTL(_sock, FIONREAD, &len);
 	if (ret == -1) {
 		_get_socket_error();

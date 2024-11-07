@@ -545,7 +545,6 @@ void SkyRD::Sky::free() {
 	}
 
 	if (material.is_valid()) {
-		RSG::material_storage->material_free(material);
 		material = RID();
 	}
 }
@@ -702,7 +701,7 @@ RendererRD::MaterialStorage::ShaderData *SkyRD::_create_sky_shader_func() {
 RendererRD::MaterialStorage::ShaderData *SkyRD::_create_sky_shader_funcs() {
 	// !BAS! Why isn't _create_sky_shader_func not just static too?
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->sky._create_sky_shader_func();
-};
+}
 
 RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_func(SkyShaderData *p_shader) {
 	SkyMaterialData *material_data = memnew(SkyMaterialData);
@@ -714,7 +713,7 @@ RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_func(SkyS
 RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader) {
 	// !BAS! same here, we could just make _create_sky_material_func static?
 	return static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton)->sky._create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
-};
+}
 
 SkyRD::SkyRD() {
 	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
@@ -1251,7 +1250,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 	RS::SkyMode sky_mode = sky->mode;
 
 	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
-		if (shader_data->uses_time || shader_data->uses_position) {
+		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == 256) {
 			update_single_frame = true;
 			sky_mode = RS::SKY_MODE_REALTIME;
 		} else if (shader_data->uses_light || shader_data->ubo_size > 0) {
@@ -1348,7 +1347,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
 			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP, sky_shader.default_shader_rd, p_render_buffers);
 
-			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, Rect2(), RDD::BreadcrumbMarker::SKY_PASS | uint32_t(i));
 			_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier);
 			RD::get_singleton()->draw_list_end();
 		}

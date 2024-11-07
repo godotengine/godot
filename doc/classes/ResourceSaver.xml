@@ -26,6 +26,14 @@
 				Returns the list of extensions available for saving a resource of a given type.
 			</description>
 		</method>
+		<method name="get_resource_id_for_path">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="generate" type="bool" default="false" />
+			<description>
+				Returns the resource ID for the given path. If [param generate] is [code]true[/code], a new resource ID will be generated if one for the path is not found. If [param generate] is [code]false[/code] and the path is not found, [constant ResourceUID.INVALID_ID] is returned.
+			</description>
+		</method>
 		<method name="remove_resource_format_saver">
 			<return type="void" />
 			<param index="0" name="format_saver" type="ResourceFormatSaver" />

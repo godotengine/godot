@@ -38,6 +38,17 @@
 #include "scene/resources/packed_scene.h"
 
 class ResourceLoaderText {
+public:
+	enum {
+		// Version 2: Changed names for Basis, AABB, Vectors, etc.
+		// Version 3: New string ID for ext/subresources, breaks forward compat.
+		// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
+		FORMAT_VERSION = 4,
+		// For compat, save as version 3 if not using PackedVector4Array or no big PackedByteArray.
+		FORMAT_VERSION_COMPAT = 3,
+	};
+
+private:
 	bool translation_remapped = false;
 	String local_path;
 	String res_path;
@@ -100,6 +111,7 @@ class ResourceLoaderText {
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+	void _printerr();
 
 	VariantParser::ResourceParser rp;
 

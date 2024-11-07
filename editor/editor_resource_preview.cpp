@@ -131,7 +131,7 @@ Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() const {
 }
 
 bool EditorResourcePreview::is_threaded() const {
-	return RSG::texture_storage->can_create_resources_async();
+	return RSG::rasterizer->can_create_resources_async();
 }
 
 void EditorResourcePreview::_thread_func(void *ud) {
@@ -221,7 +221,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			r_small_texture->set_image(small_image);
 		}
 
-		break;
+		if (generated.is_valid()) {
+			break;
+		}
 	}
 
 	if (!p_item.resource.is_valid()) {
@@ -412,6 +414,24 @@ void EditorResourcePreview::_update_thumbnail_sizes() {
 	}
 }
 
+EditorResourcePreview::PreviewItem EditorResourcePreview::get_resource_preview_if_available(const String &p_path) {
+	PreviewItem item;
+	{
+		MutexLock lock(preview_mutex);
+
+		HashMap<String, EditorResourcePreview::Item>::Iterator I = cache.find(p_path);
+		if (!I) {
+			return item;
+		}
+
+		EditorResourcePreview::Item &cached_item = I->value;
+		item.preview = cached_item.preview;
+		item.small_preview = cached_item.small_preview;
+	}
+	preview_sem.post();
+	return item;
+}
+
 void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
 	ERR_FAIL_NULL(p_receiver);
 	ERR_FAIL_COND(!p_res.is_valid());
@@ -531,8 +551,10 @@ void EditorResourcePreview::stop() {
 			}
 
 			while (!exited.is_set()) {
+				// Sync pending work.
 				OS::get_singleton()->delay_usec(10000);
-				RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
+				RenderingServer::get_singleton()->sync();
+				MessageQueue::get_singleton()->flush();
 			}
 
 			thread.wait_to_finish();

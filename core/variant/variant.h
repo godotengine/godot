@@ -62,6 +62,10 @@
 #include "core/variant/dictionary.h"
 
 class Object;
+class RefCounted;
+
+template <typename T>
+class Ref;
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -175,6 +179,20 @@ private:
 	struct ObjData {
 		ObjectID id;
 		Object *obj = nullptr;
+
+		void ref(const ObjData &p_from);
+		void ref_pointer(Object *p_object);
+		void ref_pointer(RefCounted *p_object);
+		void unref();
+
+		template <typename T>
+		_ALWAYS_INLINE_ void ref(const Ref<T> &p_from) {
+			if (p_from.is_valid()) {
+				ref(ObjData{ p_from->get_instance_id(), p_from.ptr() });
+			} else {
+				unref();
+			}
+		}
 	};
 
 	/* array helpers */
@@ -254,7 +272,6 @@ private:
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
-	static bool initialize_ref(Object *p_object);
 
 	void _clear_internal();
 
@@ -797,8 +814,7 @@ public:
 	static void unregister_types();
 
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() :
-			type(NIL) {}
+	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
 		clear();
 	}
@@ -835,6 +851,19 @@ struct VariantComparator {
 
 struct StringLikeVariantComparator {
 	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
+};
+
+struct StringLikeVariantOrder {
+	static _ALWAYS_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) {
+		if (p_lhs.is_string() && p_rhs.is_string()) {
+			return p_lhs.operator String() < p_rhs.operator String();
+		}
+		return p_lhs < p_rhs;
+	}
+
+	_ALWAYS_INLINE_ bool operator()(const Variant &p_lhs, const Variant &p_rhs) const {
+		return compare(p_lhs, p_rhs);
+	}
 };
 
 Variant::ObjData &Variant::_get_obj() {

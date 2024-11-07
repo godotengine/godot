@@ -42,6 +42,9 @@ class NavigationMeshSourceGeometryData2D : public Resource {
 	Vector<Vector<Vector2>> traversable_outlines;
 	Vector<Vector<Vector2>> obstruction_outlines;
 
+	Rect2 bounds;
+	bool bounds_dirty = true;
+
 public:
 	struct ProjectedObstruction;
 
@@ -102,6 +105,8 @@ public:
 
 	void set_data(const Vector<Vector<Vector2>> &p_traversable_outlines, const Vector<Vector<Vector2>> &p_obstruction_outlines, Vector<ProjectedObstruction> &p_projected_obstructions);
 	void get_data(Vector<Vector<Vector2>> &r_traversable_outlines, Vector<Vector<Vector2>> &r_obstruction_outlines, Vector<ProjectedObstruction> &r_projected_obstructions);
+
+	Rect2 get_bounds();
 
 	NavigationMeshSourceGeometryData2D() {}
 	~NavigationMeshSourceGeometryData2D() { clear(); }

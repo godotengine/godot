@@ -96,7 +96,7 @@ struct UniRange {
 };
 
 // Unicode Character Blocks
-// Source: https://www.unicode.org/Public/14.0.0/ucd/Blocks.txt
+// Source: https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt
 static UniRange unicode_ranges[] = {
 	{ 0x0000, 0x007F, U"Basic Latin" },
 	{ 0x0080, 0x00FF, U"Latin-1 Supplement" },
@@ -283,6 +283,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x10500, 0x1052F, U"Elbasan" },
 	{ 0x10530, 0x1056F, U"Caucasian Albanian" },
 	{ 0x10570, 0x105BF, U"Vithkuqi" },
+	{ 0x105C0, 0x105FF, U"Todhri" },
 	{ 0x10600, 0x1077F, U"Linear A" },
 	{ 0x10780, 0x107BF, U"Latin Extended-F" },
 	{ 0x10800, 0x1083F, U"Cypriot Syllabary" },
@@ -305,6 +306,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x10C00, 0x10C4F, U"Old Turkic" },
 	{ 0x10C80, 0x10CFF, U"Old Hungarian" },
 	{ 0x10D00, 0x10D3F, U"Hanifi Rohingya" },
+	{ 0x10D40, 0x10D8F, U"Garay" },
 	{ 0x10E60, 0x10E7F, U"Rumi Numeral Symbols" },
 	{ 0x10E80, 0x10EBF, U"Yezidi" },
 	{ 0x10EC0, 0x10EFF, U"Arabic Extended-C" },
@@ -324,12 +326,14 @@ static UniRange unicode_ranges[] = {
 	{ 0x11280, 0x112AF, U"Multani" },
 	{ 0x112B0, 0x112FF, U"Khudawadi" },
 	{ 0x11300, 0x1137F, U"Grantha" },
+	{ 0x11380, 0x113FF, U"Tulu-Tigalari" },
 	{ 0x11400, 0x1147F, U"Newa" },
 	{ 0x11480, 0x114DF, U"Tirhuta" },
 	{ 0x11580, 0x115FF, U"Siddham" },
 	{ 0x11600, 0x1165F, U"Modi" },
 	{ 0x11660, 0x1167F, U"Mongolian Supplement" },
 	{ 0x11680, 0x116CF, U"Takri" },
+	{ 0x116D0, 0x116FF, U"Myanmar Extended-C" },
 	{ 0x11700, 0x1174F, U"Ahom" },
 	{ 0x11800, 0x1184F, U"Dogra" },
 	{ 0x118A0, 0x118FF, U"Warang Citi" },
@@ -340,6 +344,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x11AB0, 0x11ABF, U"Unified Canadian Aboriginal Syllabics Extended-A" },
 	{ 0x11AC0, 0x11AFF, U"Pau Cin Hau" },
 	{ 0x11B00, 0x11B5F, U"Devanagari Extended-A" },
+	{ 0x11BC0, 0x11BFF, U"Sunuwar" },
 	{ 0x11C00, 0x11C6F, U"Bhaiksuki" },
 	{ 0x11C70, 0x11CBF, U"Marchen" },
 	{ 0x11D00, 0x11D5F, U"Masaram Gondi" },
@@ -354,12 +359,15 @@ static UniRange unicode_ranges[] = {
 	{ 0x12F90, 0x12FFF, U"Cypro-Minoan" },
 	{ 0x13000, 0x1342F, U"Egyptian Hieroglyphs" },
 	{ 0x13430, 0x1343F, U"Egyptian Hieroglyph Format Controls" },
+	{ 0x13460, 0x143FF, U"Egyptian Hieroglyphs Extended-A" },
 	{ 0x14400, 0x1467F, U"Anatolian Hieroglyphs" },
+	{ 0x16100, 0x1613F, U"Gurung Khema" },
 	{ 0x16800, 0x16A3F, U"Bamum Supplement" },
 	{ 0x16A40, 0x16A6F, U"Mro" },
 	{ 0x16A70, 0x16ACF, U"Tangsa" },
 	{ 0x16AD0, 0x16AFF, U"Bassa Vah" },
 	{ 0x16B00, 0x16B8F, U"Pahawh Hmong" },
+	{ 0x16D40, 0x16D7F, U"Kirat Rai" },
 	{ 0x16E40, 0x16E9F, U"Medefaidrin" },
 	{ 0x16F00, 0x16F9F, U"Miao" },
 	{ 0x16FE0, 0x16FFF, U"Ideographic Symbols and Punctuation" },
@@ -374,6 +382,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x1B170, 0x1B2FF, U"Nushu" },
 	{ 0x1BC00, 0x1BC9F, U"Duployan" },
 	{ 0x1BCA0, 0x1BCAF, U"Shorthand Format Controls" },
+	{ 0x1CC00, 0x1CEBF, U"Symbols for Legacy Computing Supplement" },
 	{ 0x1CF00, 0x1CFCF, U"Znamenny Musical Notation" },
 	{ 0x1D000, 0x1D0FF, U"Byzantine Musical Symbols" },
 	{ 0x1D100, 0x1D1FF, U"Musical Symbols" },
@@ -391,6 +400,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x1E290, 0x1E2BF, U"Toto" },
 	{ 0x1E2C0, 0x1E2FF, U"Wancho" },
 	{ 0x1E4D0, 0x1E4FF, U"Nag Mundari" },
+	{ 0x1E5D0, 0x1E5FF, U"Ol Onal" },
 	{ 0x1E7E0, 0x1E7FF, U"Ethiopic Extended-B" },
 	{ 0x1E800, 0x1E8DF, U"Mende Kikakui" },
 	{ 0x1E900, 0x1E95F, U"Adlam" },
@@ -418,6 +428,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x2B740, 0x2B81F, U"CJK Unified Ideographs Extension D" },
 	{ 0x2B820, 0x2CEAF, U"CJK Unified Ideographs Extension E" },
 	{ 0x2CEB0, 0x2EBEF, U"CJK Unified Ideographs Extension F" },
+	{ 0x2EBF0, 0x2EE5F, U"CJK Unified Ideographs Extension I" },
 	{ 0x2F800, 0x2FA1F, U"CJK Compatibility Ideographs Supplement" },
 	{ 0x30000, 0x3134F, U"CJK Unified Ideographs Extension G" },
 	{ 0x31350, 0x323AF, U"CJK Unified Ideographs Extension H" },
@@ -509,7 +520,7 @@ void DynamicFontImportSettingsDialog::_variation_add() {
 	Ref<DynamicFontImportSettingsData> import_variation_data;
 	import_variation_data.instantiate();
 	import_variation_data->owner = this;
-	ERR_FAIL_NULL(import_variation_data);
+	ERR_FAIL_COND(import_variation_data.is_null());
 
 	for (List<ResourceImporter::ImportOption>::Element *E = options_variations.front(); E; E = E->next()) {
 		import_variation_data->defaults[E->get().option.name] = E->get().default_value;
@@ -529,7 +540,7 @@ void DynamicFontImportSettingsDialog::_variation_selected() {
 	TreeItem *vars_item = vars_list->get_selected();
 	if (vars_item) {
 		Ref<DynamicFontImportSettingsData> import_variation_data = vars_item->get_metadata(0);
-		ERR_FAIL_NULL(import_variation_data);
+		ERR_FAIL_COND(import_variation_data.is_null());
 
 		inspector_vars->edit(import_variation_data.ptr());
 		import_variation_data->notify_property_list_changed();
@@ -588,14 +599,14 @@ void DynamicFontImportSettingsDialog::_variations_validate() {
 	}
 	for (TreeItem *vars_item_a = vars_list_root->get_first_child(); vars_item_a; vars_item_a = vars_item_a->get_next()) {
 		Ref<DynamicFontImportSettingsData> import_variation_data_a = vars_item_a->get_metadata(0);
-		ERR_FAIL_NULL(import_variation_data_a);
+		ERR_FAIL_COND(import_variation_data_a.is_null());
 
 		for (TreeItem *vars_item_b = vars_list_root->get_first_child(); vars_item_b; vars_item_b = vars_item_b->get_next()) {
 			if (vars_item_b != vars_item_a) {
 				bool match = true;
 				for (const KeyValue<StringName, Variant> &E : import_variation_data_a->settings) {
 					Ref<DynamicFontImportSettingsData> import_variation_data_b = vars_item_b->get_metadata(0);
-					ERR_FAIL_NULL(import_variation_data_b);
+					ERR_FAIL_COND(import_variation_data_b.is_null());
 					match = match && (import_variation_data_b->settings[E.key] == E.value);
 				}
 				if (match) {
@@ -929,7 +940,7 @@ void DynamicFontImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			add_var->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_var->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			label_warn->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
@@ -956,7 +967,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	Array configurations;
 	for (TreeItem *vars_item = vars_list_root->get_first_child(); vars_item; vars_item = vars_item->get_next()) {
 		Ref<DynamicFontImportSettingsData> import_variation_data = vars_item->get_metadata(0);
-		ERR_FAIL_NULL(import_variation_data);
+		ERR_FAIL_COND(import_variation_data.is_null());
 
 		Dictionary preload_config;
 		preload_config["name"] = vars_item->get_text(0);
@@ -1107,7 +1118,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	inspector_general->edit(nullptr);
 
 	text_settings_data.instantiate();
-	ERR_FAIL_NULL(text_settings_data);
+	ERR_FAIL_COND(text_settings_data.is_null());
 
 	text_settings_data->owner = this;
 
@@ -1137,7 +1148,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 	Ref<ConfigFile> config;
 	config.instantiate();
-	ERR_FAIL_NULL(config);
+	ERR_FAIL_COND(config.is_null());
 
 	Error err = config->load(p_path + ".import");
 	print_verbose("Loading import settings:");
@@ -1169,7 +1180,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 					Ref<DynamicFontImportSettingsData> import_variation_data_custom;
 					import_variation_data_custom.instantiate();
-					ERR_FAIL_NULL(import_variation_data_custom);
+					ERR_FAIL_COND(import_variation_data_custom.is_null());
 
 					import_variation_data_custom->owner = this;
 					for (List<ResourceImporter::ImportOption>::Element *F = options_variations.front(); F; F = F->next()) {

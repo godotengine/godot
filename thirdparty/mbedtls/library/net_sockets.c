@@ -683,7 +683,7 @@ void mbedtls_net_close(mbedtls_net_context *ctx)
  */
 void mbedtls_net_free(mbedtls_net_context *ctx)
 {
-    if (ctx->fd == -1) {
+    if (ctx == NULL || ctx->fd == -1) {
         return;
     }
 

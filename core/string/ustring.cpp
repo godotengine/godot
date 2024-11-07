@@ -33,6 +33,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
+#include "core/object/object.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
@@ -221,18 +222,35 @@ void CharString::copy_from(const char *p_cstr) {
 /*  String                                                               */
 /*************************************************************************/
 
-Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path) const {
-	// Splits the URL into scheme, host, port, path. Strip credentials when present.
+Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r_path, String &r_fragment) const {
+	// Splits the URL into scheme, host, port, path, fragment. Strip credentials when present.
 	String base = *this;
 	r_scheme = "";
 	r_host = "";
 	r_port = 0;
 	r_path = "";
+	r_fragment = "";
+
 	int pos = base.find("://");
 	// Scheme
 	if (pos != -1) {
-		r_scheme = base.substr(0, pos + 3).to_lower();
-		base = base.substr(pos + 3, base.length() - pos - 3);
+		bool is_scheme_valid = true;
+		for (int i = 0; i < pos; i++) {
+			if (!is_ascii_alphanumeric_char(base[i]) && base[i] != '+' && base[i] != '-' && base[i] != '.') {
+				is_scheme_valid = false;
+				break;
+			}
+		}
+		if (is_scheme_valid) {
+			r_scheme = base.substr(0, pos + 3).to_lower();
+			base = base.substr(pos + 3, base.length() - pos - 3);
+		}
+	}
+	pos = base.find("#");
+	// Fragment
+	if (pos != -1) {
+		r_fragment = base.substr(pos + 1);
+		base = base.substr(0, pos);
 	}
 	pos = base.find("/");
 	// Path
@@ -1694,29 +1712,39 @@ char32_t String::char_lowercase(char32_t p_char) {
 }
 
 String String::to_upper() const {
-	String upper = *this;
-
-	for (int i = 0; i < upper.size(); i++) {
-		const char32_t s = upper[i];
-		const char32_t t = _find_upper(s);
-		if (s != t) { // avoid copy on write
-			upper[i] = t;
-		}
+	if (is_empty()) {
+		return *this;
 	}
+
+	String upper;
+	upper.resize(size());
+	const char32_t *old_ptr = ptr();
+	char32_t *upper_ptrw = upper.ptrw();
+
+	while (*old_ptr) {
+		*upper_ptrw++ = _find_upper(*old_ptr++);
+	}
+
+	*upper_ptrw = 0;
 
 	return upper;
 }
 
 String String::to_lower() const {
-	String lower = *this;
-
-	for (int i = 0; i < lower.size(); i++) {
-		const char32_t s = lower[i];
-		const char32_t t = _find_lower(s);
-		if (s != t) { // avoid copy on write
-			lower[i] = t;
-		}
+	if (is_empty()) {
+		return *this;
 	}
+
+	String lower;
+	lower.resize(size());
+	const char32_t *old_ptr = ptr();
+	char32_t *lower_ptrw = lower.ptrw();
+
+	while (*old_ptr) {
+		*lower_ptrw++ = _find_lower(*old_ptr++);
+	}
+
+	*lower_ptrw = 0;
 
 	return lower;
 }
@@ -1791,7 +1819,7 @@ String String::num(double p_num, int p_decimals) {
 #endif
 
 	buf[324] = 0;
-	//destroy trailing zeroes
+	// Destroy trailing zeroes, except one after period.
 	{
 		bool period = false;
 		int z = 0;
@@ -1808,7 +1836,7 @@ String String::num(double p_num, int p_decimals) {
 				if (buf[z] == '0') {
 					buf[z] = 0;
 				} else if (buf[z] == '.') {
-					buf[z] = 0;
+					buf[z + 1] = '0';
 					break;
 				} else {
 					break;
@@ -1823,6 +1851,8 @@ String String::num(double p_num, int p_decimals) {
 }
 
 String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
+	ERR_FAIL_COND_V_MSG(base < 2 || base > 36, "", "Cannot convert to base " + itos(base) + ", since the value is " + (base < 2 ? "less than 2." : "greater than 36."));
+
 	bool sign = p_num < 0;
 
 	int64_t n = p_num;
@@ -1861,6 +1891,8 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 }
 
 String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
+	ERR_FAIL_COND_V_MSG(base < 2 || base > 36, "", "Cannot convert to base " + itos(base) + ", since the value is " + (base < 2 ? "less than 2." : "greater than 36."));
+
 	uint64_t n = p_num;
 
 	int chars = 0;
@@ -1897,14 +1929,28 @@ String String::num_real(double p_num, bool p_trailing) {
 			return num_int64((int64_t)p_num);
 		}
 	}
-#ifdef REAL_T_IS_DOUBLE
 	int decimals = 14;
-#else
-	int decimals = 6;
-#endif
 	// We want to align the digits to the above sane default, so we only need
 	// to subtract log10 for numbers with a positive power of ten magnitude.
-	double abs_num = Math::abs(p_num);
+	const double abs_num = Math::abs(p_num);
+	if (abs_num > 10) {
+		decimals -= (int)floor(log10(abs_num));
+	}
+	return num(p_num, decimals);
+}
+
+String String::num_real(float p_num, bool p_trailing) {
+	if (p_num == (float)(int64_t)p_num) {
+		if (p_trailing) {
+			return num_int64((int64_t)p_num) + ".0";
+		} else {
+			return num_int64((int64_t)p_num);
+		}
+	}
+	int decimals = 6;
+	// We want to align the digits to the above sane default, so we only need
+	// to subtract log10 for numbers with a positive power of ten magnitude.
+	const float abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
 		decimals -= (int)floor(log10(abs_num));
 	}
@@ -1955,14 +2001,15 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 	static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
 	String ret;
-	char v[2] = { 0, 0 };
+	ret.resize(p_len * 2 + 1);
+	char32_t *ret_ptrw = ret.ptrw();
 
 	for (int i = 0; i < p_len; i++) {
-		v[0] = hex[p_buffer[i] >> 4];
-		ret += v;
-		v[0] = hex[p_buffer[i] & 0xF];
-		ret += v;
+		*ret_ptrw++ = hex[p_buffer[i] >> 4];
+		*ret_ptrw++ = hex[p_buffer[i] & 0xF];
 	}
+
+	*ret_ptrw = 0;
 
 	return ret;
 }
@@ -1986,11 +2033,12 @@ Vector<uint8_t> String::hex_decode() const {
 	Vector<uint8_t> out;
 	int len = length() / 2;
 	out.resize(len);
+	uint8_t *out_ptrw = out.ptrw();
 	for (int i = 0; i < len; i++) {
 		char32_t c;
 		HEX_TO_BYTE(first, i * 2);
 		HEX_TO_BYTE(second, i * 2 + 1);
-		out.write[i] = first * 16 + second;
+		out_ptrw[i] = first * 16 + second;
 	}
 	return out;
 #undef HEX_TO_BYTE
@@ -2011,14 +2059,16 @@ CharString String::ascii(bool p_allow_extended) const {
 
 	CharString cs;
 	cs.resize(size());
+	char *cs_ptrw = cs.ptrw();
+	const char32_t *this_ptr = ptr();
 
 	for (int i = 0; i < size(); i++) {
-		char32_t c = operator[](i);
+		char32_t c = this_ptr[i];
 		if ((c <= 0x7f) || (c <= 0xff && p_allow_extended)) {
-			cs[i] = c;
+			cs_ptrw[i] = c;
 		} else {
 			print_unicode_error(vformat("Invalid unicode codepoint (%x), cannot represent as ASCII/Latin-1", (uint32_t)c));
-			cs[i] = 0x20; // ascii doesn't have a replacement character like unicode, 0x1a is sometimes used but is kinda arcane
+			cs_ptrw[i] = 0x20; // ASCII doesn't have a replacement character like unicode, 0x1a is sometimes used but is kinda arcane.
 		}
 	}
 
@@ -3151,8 +3201,9 @@ Vector<uint8_t> String::md5_buffer() const {
 
 	Vector<uint8_t> ret;
 	ret.resize(16);
+	uint8_t *ret_ptrw = ret.ptrw();
 	for (int i = 0; i < 16; i++) {
-		ret.write[i] = hash[i];
+		ret_ptrw[i] = hash[i];
 	}
 	return ret;
 }
@@ -3164,8 +3215,9 @@ Vector<uint8_t> String::sha1_buffer() const {
 
 	Vector<uint8_t> ret;
 	ret.resize(20);
+	uint8_t *ret_ptrw = ret.ptrw();
 	for (int i = 0; i < 20; i++) {
-		ret.write[i] = hash[i];
+		ret_ptrw[i] = hash[i];
 	}
 
 	return ret;
@@ -3178,8 +3230,9 @@ Vector<uint8_t> String::sha256_buffer() const {
 
 	Vector<uint8_t> ret;
 	ret.resize(32);
+	uint8_t *ret_ptrw = ret.ptrw();
 	for (int i = 0; i < 32; i++) {
-		ret.write[i] = hash[i];
+		ret_ptrw[i] = hash[i];
 	}
 	return ret;
 }
@@ -3917,8 +3970,9 @@ Vector<String> String::bigrams() const {
 		return b;
 	}
 	b.resize(n_pairs);
+	String *b_ptrw = b.ptrw();
 	for (int i = 0; i < n_pairs; i++) {
-		b.write[i] = substr(i, 2);
+		b_ptrw[i] = substr(i, 2);
 	}
 	return b;
 }
@@ -4025,61 +4079,178 @@ String String::format(const Variant &values, const String &placeholder) const {
 		for (const Variant &key : keys) {
 			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
 		}
+	} else if (values.get_type() == Variant::OBJECT) {
+		Object *obj = values.get_validated_object();
+		ERR_FAIL_NULL_V(obj, new_string);
+
+		List<PropertyInfo> props;
+		obj->get_property_list(&props);
+
+		for (const PropertyInfo &E : props) {
+			new_string = new_string.replace(placeholder.replace("_", E.name), obj->get(E.name));
+		}
 	} else {
-		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());
+		ERR_PRINT(String("Invalid type: use Array, Dictionary or Object.").ascii().get_data());
 	}
+
+	return new_string;
+}
+
+static String _replace_common(const String &p_this, const String &p_key, const String &p_with, bool p_case_insensitive) {
+	if (p_key.is_empty() || p_this.is_empty()) {
+		return p_this;
+	}
+
+	const int key_length = p_key.length();
+
+	int search_from = 0;
+	int result = 0;
+
+	LocalVector<int> found;
+
+	while ((result = (p_case_insensitive ? p_this.findn(p_key, search_from) : p_this.find(p_key, search_from))) >= 0) {
+		found.push_back(result);
+		search_from = result + key_length;
+	}
+
+	if (found.is_empty()) {
+		return p_this;
+	}
+
+	String new_string;
+
+	const int with_length = p_with.length();
+	const int old_length = p_this.length();
+
+	new_string.resize(old_length + found.size() * (with_length - key_length) + 1);
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = p_this.ptr();
+	const char32_t *with_ptr = p_with.ptr();
+
+	int last_pos = 0;
+
+	for (const int &pos : found) {
+		if (last_pos != pos) {
+			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			new_ptrw += (pos - last_pos);
+		}
+		if (with_length) {
+			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			new_ptrw += with_length;
+		}
+		last_pos = pos + key_length;
+	}
+
+	if (last_pos != old_length) {
+		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		new_ptrw += old_length - last_pos;
+	}
+
+	*new_ptrw = 0;
+
+	return new_string;
+}
+
+static String _replace_common(const String &p_this, char const *p_key, char const *p_with, bool p_case_insensitive) {
+	int key_length = strlen(p_key);
+
+	if (key_length == 0 || p_this.is_empty()) {
+		return p_this;
+	}
+
+	int search_from = 0;
+	int result = 0;
+
+	LocalVector<int> found;
+
+	while ((result = (p_case_insensitive ? p_this.findn(p_key, search_from) : p_this.find(p_key, search_from))) >= 0) {
+		found.push_back(result);
+		search_from = result + key_length;
+	}
+
+	if (found.is_empty()) {
+		return p_this;
+	}
+
+	String new_string;
+
+	// Create string to speed up copying as we can't do `memcopy` between `char32_t` and `char`.
+	const String with_string(p_with);
+	const int with_length = with_string.length();
+	const int old_length = p_this.length();
+
+	new_string.resize(old_length + found.size() * (with_length - key_length) + 1);
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = p_this.ptr();
+	const char32_t *with_ptr = with_string.ptr();
+
+	int last_pos = 0;
+
+	for (const int &pos : found) {
+		if (last_pos != pos) {
+			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			new_ptrw += (pos - last_pos);
+		}
+		if (with_length) {
+			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			new_ptrw += with_length;
+		}
+		last_pos = pos + key_length;
+	}
+
+	if (last_pos != old_length) {
+		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		new_ptrw += old_length - last_pos;
+	}
+
+	*new_ptrw = 0;
 
 	return new_string;
 }
 
 String String::replace(const String &p_key, const String &p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return _replace_common(*this, p_key, p_with, false);
 }
 
 String String::replace(const char *p_key, const char *p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = find(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		int k = 0;
-		while (p_key[k] != '\0') {
-			k++;
-		}
-		search_from = result + k;
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return _replace_common(*this, p_key, p_with, false);
 }
 
 String String::replace_first(const String &p_key, const String &p_with) const {
 	int pos = find(p_key);
 	if (pos >= 0) {
-		return substr(0, pos) + p_with + substr(pos + p_key.length(), length());
+		const int old_length = length();
+		const int key_length = p_key.length();
+		const int with_length = p_with.length();
+
+		String new_string;
+		new_string.resize(old_length + (with_length - key_length) + 1);
+
+		char32_t *new_ptrw = new_string.ptrw();
+		const char32_t *old_ptr = ptr();
+		const char32_t *with_ptr = p_with.ptr();
+
+		if (pos > 0) {
+			memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
+			new_ptrw += pos;
+		}
+
+		if (with_length) {
+			memcpy(new_ptrw, with_ptr, with_length * sizeof(char32_t));
+			new_ptrw += with_length;
+		}
+		pos += key_length;
+
+		if (pos != old_length) {
+			memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
+			new_ptrw += (old_length - pos);
+		}
+
+		*new_ptrw = 0;
+
+		return new_string;
 	}
 
 	return *this;
@@ -4088,55 +4259,45 @@ String String::replace_first(const String &p_key, const String &p_with) const {
 String String::replace_first(const char *p_key, const char *p_with) const {
 	int pos = find(p_key);
 	if (pos >= 0) {
-		int substring_length = strlen(p_key);
-		return substr(0, pos) + p_with + substr(pos + substring_length, length());
+		const int old_length = length();
+		const int key_length = strlen(p_key);
+		const int with_length = strlen(p_with);
+
+		String new_string;
+		new_string.resize(old_length + (with_length - key_length) + 1);
+
+		char32_t *new_ptrw = new_string.ptrw();
+		const char32_t *old_ptr = ptr();
+
+		if (pos > 0) {
+			memcpy(new_ptrw, old_ptr, pos * sizeof(char32_t));
+			new_ptrw += pos;
+		}
+
+		for (int i = 0; i < with_length; ++i) {
+			*new_ptrw++ = p_with[i];
+		}
+		pos += key_length;
+
+		if (pos != old_length) {
+			memcpy(new_ptrw, old_ptr + pos, (old_length - pos) * sizeof(char32_t));
+			new_ptrw += (old_length - pos);
+		}
+
+		*new_ptrw = 0;
+
+		return new_string;
 	}
 
 	return *this;
 }
 
 String String::replacen(const String &p_key, const String &p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-
-	while ((result = findn(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + p_key.length();
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-	return new_string;
+	return _replace_common(*this, p_key, p_with, true);
 }
 
 String String::replacen(const char *p_key, const char *p_with) const {
-	String new_string;
-	int search_from = 0;
-	int result = 0;
-	int substring_length = strlen(p_key);
-
-	if (substring_length == 0) {
-		return *this; // there's nothing to match or substitute
-	}
-
-	while ((result = findn(p_key, search_from)) >= 0) {
-		new_string += substr(search_from, result - search_from);
-		new_string += p_with;
-		search_from = result + substring_length;
-	}
-
-	if (search_from == 0) {
-		return *this;
-	}
-
-	new_string += substr(search_from, length() - search_from);
-
-	return new_string;
+	return _replace_common(*this, p_key, p_with, true);
 }
 
 String String::repeat(int p_count) const {
@@ -4430,10 +4591,7 @@ String String::simplify_path() const {
 			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
-			if (i == 0) {
-				dirs.remove_at(i);
-				i--;
-			} else {
+			if (i != 0) {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
@@ -4472,7 +4630,7 @@ String String::humanize_size(uint64_t p_size) {
 	}
 
 	if (magnitude == 0) {
-		return String::num(p_size) + " " + RTR("B");
+		return String::num_uint64(p_size) + " " + RTR("B");
 	} else {
 		String suffix;
 		switch (magnitude) {
@@ -4512,9 +4670,9 @@ bool String::is_absolute_path() const {
 	}
 }
 
-String String::validate_identifier() const {
+String String::validate_ascii_identifier() const {
 	if (is_empty()) {
-		return "_"; // Empty string is not a valid identifier;
+		return "_"; // Empty string is not a valid identifier.
 	}
 
 	String result;
@@ -4535,7 +4693,30 @@ String String::validate_identifier() const {
 	return result;
 }
 
-bool String::is_valid_identifier() const {
+String String::validate_unicode_identifier() const {
+	if (is_empty()) {
+		return "_"; // Empty string is not a valid identifier.
+	}
+
+	String result;
+	if (is_unicode_identifier_start(operator[](0))) {
+		result = *this;
+	} else {
+		result = "_" + *this;
+	}
+
+	int len = result.length();
+	char32_t *buffer = result.ptrw();
+	for (int i = 0; i < len; i++) {
+		if (!is_unicode_identifier_continue(buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+
+	return result;
+}
+
+bool String::is_valid_ascii_identifier() const {
 	int len = length();
 
 	if (len == 0) {
@@ -4554,6 +4735,26 @@ bool String::is_valid_identifier() const {
 		}
 	}
 
+	return true;
+}
+
+bool String::is_valid_unicode_identifier() const {
+	const char32_t *str = ptr();
+	int len = length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	if (!is_unicode_identifier_start(str[0])) {
+		return false;
+	}
+
+	for (int i = 1; i < len; i++) {
+		if (!is_unicode_identifier_continue(str[i])) {
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -4803,8 +5004,9 @@ String String::xml_unescape() const {
 		return String();
 	}
 	str.resize(len + 1);
-	_xml_unescape(get_data(), l, str.ptrw());
-	str[len] = 0;
+	char32_t *str_ptrw = str.ptrw();
+	_xml_unescape(get_data(), l, str_ptrw);
+	str_ptrw[len] = 0;
 	return str;
 }
 

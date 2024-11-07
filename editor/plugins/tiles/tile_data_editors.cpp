@@ -722,7 +722,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 void GenericTilePolygonEditor::_set_snap_option(int p_index) {
 	current_snap_option = p_index;
-	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
+	button_pixel_snap->set_button_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
 	snap_subdivision->set_visible(p_index == SNAP_GRID);
 
 	if (initializing) {
@@ -874,17 +874,22 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 				button_expand->set_pressed_no_signal(false);
 			}
 		} break;
+
+		case NOTIFICATION_READY: {
+			get_parent()->connect(SceneStringName(tree_exited), callable_mp(TileSetEditor::get_singleton(), &TileSetEditor::remove_expanded_editor));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			button_expand->set_icon(get_editor_theme_icon(SNAME("DistractionFree")));
-			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
-			button_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
-			button_delete->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
-			button_center_view->set_icon(get_editor_theme_icon(SNAME("CenterView")));
-			button_advanced_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			button_expand->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			button_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			button_edit->set_button_icon(get_editor_theme_icon(SNAME("CurveEdit")));
+			button_delete->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
+			button_center_view->set_button_icon(get_editor_theme_icon(SNAME("CenterView")));
+			button_advanced_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			button_pixel_snap->get_popup()->set_item_icon(0, get_editor_theme_icon(SNAME("SnapDisable")));
 			button_pixel_snap->get_popup()->set_item_icon(1, get_editor_theme_icon(SNAME("Snap")));
 			button_pixel_snap->get_popup()->set_item_icon(2, get_editor_theme_icon(SNAME("SnapGrid")));
-			button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(current_snap_option));
+			button_pixel_snap->set_button_icon(button_pixel_snap->get_popup()->get_item_icon(current_snap_option));
 
 			PopupMenu *p = button_advanced_menu->get_popup();
 			p->set_item_icon(p->get_item_index(ROTATE_RIGHT), get_editor_theme_icon(SNAME("RotateRight")));
@@ -917,7 +922,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
-	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
+	button_expand->connect(SceneStringName(toggled), callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
 	toolbar->add_child(button_expand);
 
 	toolbar->add_child(memnew(VSeparator));
@@ -1095,11 +1100,10 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 		}
 		p_canvas_item->draw_set_transform_matrix(Transform2D());
 	}
-};
+}
 
-void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){
-
-};
+void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
+}
 
 void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1357,7 +1361,7 @@ void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
+			picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
 			tile_bool_checked = get_editor_theme_icon(SNAME("TileChecked"));
 			tile_bool_unchecked = get_editor_theme_icon(SNAME("TileUnchecked"));
 		} break;
@@ -1482,30 +1486,36 @@ void TileDataOcclusionShapeEditor::draw_over_tile(CanvasItem *p_canvas_item, Tra
 	debug_occlusion_color.push_back(color);
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
-	Ref<OccluderPolygon2D> occluder = tile_data->get_occluder(occlusion_layer);
-	if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
-		p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		Ref<OccluderPolygon2D> occluder = tile_data->get_occluder_polygon(occlusion_layer, i);
+		if (occluder.is_valid() && occluder->get_polygon().size() >= 3) {
+			p_canvas_item->draw_polygon(Variant(occluder->get_polygon()), debug_occlusion_color);
+		}
 	}
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
 
 Variant TileDataOcclusionShapeEditor::_get_painted_value() {
-	Ref<OccluderPolygon2D> occluder_polygon;
-	if (polygon_editor->get_polygon_count() >= 1) {
+	Array polygons;
+	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon;
 		occluder_polygon.instantiate();
-		occluder_polygon->set_polygon(polygon_editor->get_polygon(0));
+		occluder_polygon->set_polygon(polygon_editor->get_polygon(i));
+		polygons.push_back(occluder_polygon);
 	}
-	return occluder_polygon;
+	return polygons;
 }
 
 void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
 
-	Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder(occlusion_layer);
 	polygon_editor->clear_polygons();
-	if (occluder_polygon.is_valid()) {
-		polygon_editor->add_polygon(occluder_polygon->get_polygon());
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon = tile_data->get_occluder_polygon(occlusion_layer, i);
+		if (occluder_polygon.is_valid()) {
+			polygon_editor->add_polygon(occluder_polygon->get_polygon());
+		}
 	}
 	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
@@ -1513,8 +1523,13 @@ void TileDataOcclusionShapeEditor::_set_painted_value(TileSetAtlasSource *p_tile
 void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, const Variant &p_value) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL(tile_data);
-	Ref<OccluderPolygon2D> occluder_polygon = p_value;
-	tile_data->set_occluder(occlusion_layer, occluder_polygon);
+
+	Array polygons = p_value;
+	tile_data->set_occluder_polygons_count(occlusion_layer, polygons.size());
+	for (int i = 0; i < polygons.size(); i++) {
+		Ref<OccluderPolygon2D> occluder_polygon = polygons[i];
+		tile_data->set_occluder_polygon(occlusion_layer, i, occluder_polygon);
+	}
 
 	polygon_editor->set_background_tile(p_tile_set_atlas_source, p_coords, p_alternative_tile);
 }
@@ -1522,7 +1537,11 @@ void TileDataOcclusionShapeEditor::_set_value(TileSetAtlasSource *p_tile_set_atl
 Variant TileDataOcclusionShapeEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_NULL_V(tile_data, Variant());
-	return tile_data->get_occluder(occlusion_layer);
+	Array polygons;
+	for (int i = 0; i < tile_data->get_occluder_polygons_count(occlusion_layer); i++) {
+		polygons.push_back(tile_data->get_occluder_polygon(occlusion_layer, i));
+	}
+	return polygons;
 }
 
 void TileDataOcclusionShapeEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, const Variant &p_new_value) {
@@ -1548,6 +1567,7 @@ void TileDataOcclusionShapeEditor::_notification(int p_what) {
 
 TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
 	polygon_editor = memnew(GenericTilePolygonEditor);
+	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);
 }
 
@@ -2847,7 +2867,7 @@ void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
+			picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
 		} break;
 	}
 }

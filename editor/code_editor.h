@@ -70,6 +70,7 @@ class FindReplaceBar : public HBoxContainer {
 		SEARCH_PREV,
 	};
 
+	Button *toggle_replace_button = nullptr;
 	LineEdit *search_text = nullptr;
 	Label *matches_label = nullptr;
 	Button *find_prev = nullptr;
@@ -106,12 +107,14 @@ class FindReplaceBar : public HBoxContainer {
 
 	void _show_search(bool p_with_replace, bool p_show_only);
 	void _hide_bar(bool p_force_focus = false);
+	void _update_toggle_replace_button(bool p_replace_visible);
 
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
+	void _toggle_replace_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -161,6 +164,7 @@ class CodeTextEditor : public VBoxContainer {
 	HBoxContainer *status_bar = nullptr;
 
 	Button *toggle_scripts_button = nullptr;
+	Control *toggle_scripts_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -246,9 +250,9 @@ public:
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
-	void goto_line(int p_line);
+	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
@@ -285,6 +289,7 @@ public:
 
 	void validate_script();
 
+	void set_toggle_list_control(Control *p_control);
 	void show_toggle_scripts_button();
 	void update_toggle_scripts_button();
 

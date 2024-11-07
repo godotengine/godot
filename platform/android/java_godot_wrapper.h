@@ -34,6 +34,7 @@
 #include "java_godot_view_wrapper.h"
 #include "string_android.h"
 
+#include "core/math/color.h"
 #include "core/templates/list.h"
 
 #include <android/log.h>
@@ -55,9 +56,12 @@ private:
 	jmethodID _alert = nullptr;
 	jmethodID _is_dark_mode_supported = nullptr;
 	jmethodID _is_dark_mode = nullptr;
+	jmethodID _get_accent_color = nullptr;
 	jmethodID _get_clipboard = nullptr;
 	jmethodID _set_clipboard = nullptr;
 	jmethodID _has_clipboard = nullptr;
+	jmethodID _show_input_dialog = nullptr;
+	jmethodID _show_file_picker = nullptr;
 	jmethodID _request_permission = nullptr;
 	jmethodID _request_permissions = nullptr;
 	jmethodID _get_granted_permissions = nullptr;
@@ -75,6 +79,10 @@ private:
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
 	jmethodID _has_feature = nullptr;
+	jmethodID _sign_apk = nullptr;
+	jmethodID _verify_apk = nullptr;
+	jmethodID _enable_immersive_mode = nullptr;
+	jmethodID _is_in_immersive_mode = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -93,12 +101,15 @@ public:
 	void alert(const String &p_message, const String &p_title);
 	bool is_dark_mode_supported();
 	bool is_dark_mode();
+	Color get_accent_color();
 	bool has_get_clipboard();
 	String get_clipboard();
 	bool has_set_clipboard();
 	void set_clipboard(const String &p_text);
 	bool has_has_clipboard();
 	bool has_clipboard();
+	Error show_input_dialog(const String &p_title, const String &p_message, const String &p_existing_text);
+	Error show_file_picker(const String &p_current_directory, const String &p_filename, int p_mode, const Vector<String> &p_filters);
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
@@ -116,6 +127,13 @@ public:
 
 	// Return true if the given feature is supported.
 	bool has_feature(const String &p_feature) const;
+
+	// Sign and verify apks
+	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
+	Error verify_apk(const String &p_apk_path);
+
+	void enable_immersive_mode(bool p_enabled);
+	bool is_in_immersive_mode();
 };
 
 #endif // JAVA_GODOT_WRAPPER_H

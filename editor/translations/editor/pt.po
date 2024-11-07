@@ -63,12 +63,13 @@
 # Rick and Morty <7777rickandmorty@gmail.com>, 2024.
 # David Alysson <davialysson1@gmail.com>, 2024.
 # "Francisco (F4VSE)" <kikosgc@gmail.com>, 2024.
+# AesirVR <vic.eles@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-13 23:09+0000\n"
+"PO-Revision-Date: 2024-08-21 00:32+0000\n"
 "Last-Translator: Rick and Morty <7777rickandmorty@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -77,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7\n"
 
 msgid "Main Thread"
 msgstr "Thread Principal"
@@ -230,7 +231,7 @@ msgid "Pressure:"
 msgstr "Pressão:"
 
 msgid "canceled"
-msgstr "Cancelado"
+msgstr "cancelado"
 
 msgid "touched"
 msgstr "tocado"
@@ -933,6 +934,11 @@ msgstr "Caminho da pista é inválido, não se consegue adicionar uma chave."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "A faixa não é do tipo Node3D, não é possível inserir a chave"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr ""
+"A trilha não é do tipo Instância de Malha 3D (MeshInstance3D), não é possível "
+"inserir a chave"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Caminho da pista é inválido, incapaz de adicionar uma chave método."
 
@@ -1057,7 +1063,7 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Agrupar faixas por nó ou exibi-las como lista simples."
 
 msgid "Snap:"
-msgstr "Ajustar:"
+msgstr "Encaixe:"
 
 msgid "Animation step value."
 msgstr "Valor passo da Animação."
@@ -2290,15 +2296,15 @@ msgid "Must not collide with an existing global script class name."
 msgstr "Não se pode colidir com uma nome de classe global existente."
 
 msgid "Must not collide with an existing built-in type name."
-msgstr "Não pode colidir com um nome de tipo embutido."
+msgstr "Não deve colidir com um nome de tipo integrado existente."
 
 msgid "Must not collide with an existing global constant name."
 msgstr "Não se pode colidir com uma nome de constante global existente."
 
 msgid "Keyword cannot be used as an Autoload name."
 msgstr ""
-"As palavras-chave do shader não podem ser usadas como nomes de parâmetros.\n"
-"Escolha outro nome."
+"A palavra-chave não pode ser usada como nome de carregamento automático (Auto "
+"carregar)."
 
 msgid "Autoload '%s' already exists!"
 msgstr "Carregamento Automático '%s' já existe!"
@@ -3803,6 +3809,24 @@ msgid ""
 msgstr ""
 "Não foi possível gravar no arquivo '%s', arquivo em uso, bloqueado ou sem "
 "permissões."
+
+msgid "Preparing scenes for reload"
+msgstr "Preparando cenas para recarregar"
+
+msgid "Analyzing scene %s"
+msgstr "Analisando cena %s"
+
+msgid "Preparation done."
+msgstr "Preparação feita."
+
+msgid "Scenes reloading"
+msgstr "Cenas carregando"
+
+msgid "Reloading..."
+msgstr "Recarregando..."
+
+msgid "Reloading done."
+msgstr "Recarregamento concluído."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -5797,9 +5821,9 @@ msgid ""
 "The project will run at stable FPS and the visual and audio output will be "
 "recorded to a video file."
 msgstr ""
-"Ativar Modo Gravação.\n"
-"O projeto será executado em FPS estável e a saída visual e de áudio será "
-"gravada num ficheiro de vídeo."
+"Ativar modo Criador de Filmes.\n"
+"O projeto será executado em QPS estável e a saída visual e de áudio será "
+"gravada num arquivo de vídeo."
 
 msgid "Play This Scene"
 msgstr "Executar Esta Cena"
@@ -6481,6 +6505,9 @@ msgstr "Estilo de Nome da Propriedade"
 msgid "Raw (e.g. \"%s\")"
 msgstr "Bruto (por exemplo, \"%s\")"
 
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "Capitalizado (exp. \"%s\")"
+
 msgid "Localized (e.g. \"Z Index\")"
 msgstr "Localizado (por exemplo, \"Índice Z\")"
 
@@ -6695,7 +6722,7 @@ msgid "Select and move points, create points with RMB."
 msgstr "Selecionar e mover pontos, criar pontos com RMB."
 
 msgid "Enable snap and show grid."
-msgstr "Ativar ajuste e mostrar a grelha."
+msgstr "Habilitar encaixe(snap) e mostrar a grade."
 
 msgid "Sync:"
 msgstr "Sincronizar:"
@@ -7455,7 +7482,7 @@ msgid "Preview"
 msgstr "Pré-visualização"
 
 msgid "Configure Snap"
-msgstr "Configurar Ajuste"
+msgstr "Configurar Encaixe(Snap)"
 
 msgid "Grid Offset:"
 msgstr "Compensação da grelha:"
@@ -7706,7 +7733,7 @@ msgid "Ruler Mode"
 msgstr "Modo Régua"
 
 msgid "Toggle smart snapping."
-msgstr "Alternar ajuste inteligente."
+msgstr "Alternância de encaixe(snap) inteligente."
 
 msgid "Use Smart Snap"
 msgstr "Usar Ajuste Inteligente"
@@ -9726,14 +9753,14 @@ msgstr "Remover Out-Control da curva"
 msgid "Remove In-Control from Curve"
 msgstr "Remover In-Control da curva"
 
-msgid "Split Curve"
-msgstr "Dividir Curva"
-
 msgid "Move Point in Curve"
 msgstr "Mover Ponto na curva"
 
 msgid "Add Point to Curve"
 msgstr "Adicionar Ponto à curva"
+
+msgid "Split Curve"
+msgstr "Dividir Curva"
 
 msgid "Move In-Control in Curve"
 msgstr "Mover In-Control na curva"
@@ -9793,13 +9820,13 @@ msgid "Curve Point #"
 msgstr "Ponto da curva #"
 
 msgid "Handle In #"
-msgstr "Lidar em #"
+msgstr "Manusear em #"
 
 msgid "Handle Out #"
-msgstr "Lidar com #"
+msgstr "Manuseio de Saída #"
 
 msgid "Handle Tilt #"
-msgstr "Lidar com inclinação #"
+msgstr "Manuseio de Inclinação #"
 
 msgid "Set Curve Point Position"
 msgstr "Definir posição do Ponto da curva"
@@ -9836,6 +9863,9 @@ msgstr "Selecionar Pontos de Controlo"
 
 msgid "Shift+Click: Drag out Control Points"
 msgstr "Shift+Arrastar: Arrastar Pontos de Controlo"
+
+msgid "Select Tilt Handles"
+msgstr "Selecionar Manuseadores de Inclinação"
 
 msgid "Split Segment (in curve)"
 msgstr "Separar segmento (na curva)"
@@ -10526,18 +10556,25 @@ msgstr "Fechar Ficheiro"
 msgid "Make the shader editor floating."
 msgstr "Faça o editor de shader flutuar."
 
+msgid "Toggle Shader Editor Bottom Panel"
+msgstr ""
+"Interruptor do Painel inferior do Editor de sombreamento (Shader Editor)"
+
 msgid "No valid shader stages found."
-msgstr "Não foi encontrado estágio válido de Shader."
+msgstr "Não foi encontrado estágios de sombreador(shader) válido."
 
 msgid "Shader stage compiled without errors."
-msgstr "Estágio de Shader compilado sem erros."
+msgstr "Estágio do sombreamento(Shader) compilado sem erros."
 
 msgid ""
 "File structure for '%s' contains unrecoverable errors:\n"
 "\n"
 msgstr ""
-"Estrutura de ficheiro para '%s' contém erros irrecuperáveis:\n"
+"Estrutura de Arquivo para '%s' contém erros irrecuperáveis:\n"
 "\n"
+
+msgid "ShaderFile"
+msgstr "Salvar Arquivo"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto não tem ossos, crie alguns nós filhos Bone2D."
@@ -10672,7 +10709,7 @@ msgid "Create LightOccluder2D Sibling"
 msgstr "Criar Irmão de LightOccluder2D"
 
 msgid "Sprite2D"
-msgstr "Sprite2D"
+msgstr "Sprite2D(Figurinha)"
 
 msgid "Simplification:"
 msgstr "Simplificação:"
@@ -10838,6 +10875,9 @@ msgstr "Desvio"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Criar Frames a partir de Folha de Sprites"
+
+msgid "SpriteFrames"
+msgstr "Selecionar Manuseadores de Inclinação"
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Os avisos devem ser corrigidos para evitar erros."
@@ -11998,6 +12038,9 @@ msgstr ""
 "Cada bloco pintado tem coordenadas do atlas associados, então mudando esta "
 "propriedade pode levar à não exibição correta dos seus TileMaps."
 
+msgid "The unit size of the tile."
+msgstr "O tamanho unitário de um Tile."
+
 msgid ""
 "Number of columns for the animation grid. If number of columns is lower than "
 "number of frames, the animation will automatically adjust row count."
@@ -12008,6 +12051,9 @@ msgstr ""
 
 msgid "The space (in tiles) between each frame of the animation."
 msgstr "O espaço (em tiles) de cada frame da animação."
+
+msgid "Animation speed in frames per second."
+msgstr "Velocidade de Animação em quadros por segundo."
 
 msgid ""
 "Determines how animation will start. In \"Default\" mode all tiles start "
@@ -12243,6 +12289,15 @@ msgstr ""
 
 msgid "Absolute path to the scene associated with this tile."
 msgstr "Caminho absoluto para a cena associada com este tile."
+
+msgid ""
+"If [code]true[/code], a placeholder marker will be displayed on top of the "
+"scene's preview. The marker is displayed anyway if the scene has no valid "
+"preview."
+msgstr ""
+"Se [code]true[/code], um marcador temporário será exibido no topo da prévia "
+"da cena. O marcador será exibido mesmo se a cena não possuir uma prévia "
+"válida."
 
 msgid "Scenes collection properties:"
 msgstr "Propriedades da coleção de cenas:"
@@ -12579,6 +12634,9 @@ msgstr "Remover Varying do Visual Shader: %s"
 
 msgid "Move and Attach VisualShader Node(s) to parent frame"
 msgstr "Mova e anexe nós VisualShader ao quadro pai"
+
+msgid "Insert node"
+msgstr "Inserir nó"
 
 msgid "Convert Constant Node(s) To Parameter(s)"
 msgstr "Converter Nó(s) Constante(s) para Parâmetro(s)"
@@ -13644,8 +13702,20 @@ msgstr "Gerar VoxelGI"
 msgid "Select path for VoxelGI Data File"
 msgstr "Selecione o caminho para o ficheiro de dados VoxelGI"
 
+msgid "Go Online and Open Asset Library"
+msgstr "Acesse a Internet e Abra a Biblioteca de Ativos"
+
 msgid "Are you sure to run %d projects at once?"
 msgstr "Está seguro que quer executar %d projetos em simultâneo?"
+
+msgid ""
+"Can't run project: Project has no main scene defined.\n"
+"Please edit the project and set the main scene in the Project Settings under "
+"the \"Application\" category."
+msgstr ""
+"Incapaz de executar o projeto: cena principal não definida.\n"
+"Por favor edite o projeto e defina a cena principal em Configurações do "
+"Projeto dentro da categoria \"Aplicações\"."
 
 msgid ""
 "Can't open project at '%s'.\n"
@@ -15808,6 +15878,11 @@ msgstr "ID da equipe da App Store não especificado."
 msgid "Invalid Identifier:"
 msgstr "Identificador Inválido:"
 
+msgid "At least one file timestamp access reason should be selected."
+msgstr ""
+"Pelo menos um motivo de acesso ao carimbo tempo do arquivo deve ser "
+"selecionado."
+
 msgid "At least one disk space access reason should be selected."
 msgstr "Ao menos uma razão de acesso do espaço de disco deve estar selecionada."
 
@@ -15842,14 +15917,38 @@ msgstr ""
 "Arquivos inesperados encontrados no diretório de destino de exportação "
 "\"%s\", apague-os manualmente ou selecione outro destino."
 
+msgid "Failed to create the directory: \"%s\""
+msgstr "Não foi possível criar o diretório: \"%s\""
+
+msgid "Could not create and open the directory: \"%s\""
+msgstr "Não foi possível criar e abrir o diretório: \"%s\""
+
+msgid "iOS Plugins"
+msgstr "Plugins iOS"
+
 msgid "Failed to export iOS plugins with code %d. Please check the output log."
 msgstr ""
 "Falha ao exportar plugins do iOS com código %d. Por favor verifique o log de "
 "saída."
 
-msgid "Code signing failed, see editor log for details."
+msgid "ARM64 simulator library, generating from device library."
 msgstr ""
-"A assinatura do código falhou, consulte o log do editor para obter detalhes."
+"Biblioteca de simulador ARM64, gerando a partir da biblioteca do dispositivo."
+
+msgid "Unable to generate ARM64 simulator library."
+msgstr "Não é possível gerar a biblioteca do simulador ARM64."
+
+msgid "Could not copy a file at path \"%s\" to \"%s\"."
+msgstr "Não foi possível copiar um arquivo do caminho \"%s\" para \"%s\"."
+
+msgid "Could not access the filesystem."
+msgstr "Não foi possível acessar o sistema de ficheiros."
+
+msgid "Failed to create a file at path \"%s\" with code %d."
+msgstr "Falha ao criar um arquivo no caminho \"%s\" com o código \"%d\"."
+
+msgid "Code signing failed, see editor log for details."
+msgstr "Assinatura de código falhou, consulte o log do editor para detalhes."
 
 msgid "Failed to run xcodebuild with code %d"
 msgstr "Falha ao executar xcodebuild com código %d"
@@ -15878,6 +15977,12 @@ msgstr "A exportação para iOS ao usar C#/.NET é experimental."
 
 msgid "Invalid additional PList content: "
 msgstr "Conteúdo Adicionado PList inválido: "
+
+msgid "Identifier is missing."
+msgstr "Identificador faltando."
+
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "O Caractere '%s' não é permitidos nas etiquetas."
 
 msgid "Could not start simctl executable."
 msgstr "Não foi possível iniciar o executável simctl."

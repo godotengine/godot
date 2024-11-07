@@ -149,7 +149,7 @@ Ref<AudioEffectInstance> AudioEffectRecord::instantiate() {
 
 	ensure_thread_stopped();
 	bool is_currently_recording = false;
-	if (current_instance != nullptr) {
+	if (current_instance.is_valid()) {
 		is_currently_recording = current_instance->is_recording;
 	}
 	if (is_currently_recording) {
@@ -161,28 +161,28 @@ Ref<AudioEffectInstance> AudioEffectRecord::instantiate() {
 }
 
 void AudioEffectRecord::ensure_thread_stopped() {
-	if (current_instance != nullptr) {
+	if (current_instance.is_valid()) {
 		current_instance->finish();
 	}
 }
 
 void AudioEffectRecord::set_recording_active(bool p_record) {
 	if (p_record) {
-		if (current_instance == nullptr) {
+		if (current_instance.is_null()) {
 			WARN_PRINT("Recording should not be set as active before Godot has initialized.");
 			return;
 		}
 		ensure_thread_stopped();
 		current_instance->init();
 	} else {
-		if (current_instance != nullptr) {
+		if (current_instance.is_valid()) {
 			current_instance->is_recording = false;
 		}
 	}
 }
 
 bool AudioEffectRecord::is_recording_active() const {
-	if (current_instance == nullptr) {
+	if (current_instance.is_null()) {
 		return false;
 	} else {
 		return current_instance->is_recording;
@@ -283,7 +283,7 @@ void AudioEffectRecord::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &AudioEffectRecord::get_format);
 	ClassDB::bind_method(D_METHOD("get_recording"), &AudioEffectRecord::get_recording);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA ADPCM,Quite OK Audio"), "set_format", "get_format");
 }
 
 AudioEffectRecord::AudioEffectRecord() {

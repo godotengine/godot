@@ -70,7 +70,7 @@
 			<param index="0" name="character" type="int" />
 			<description>
 				Returns the line number of the character position provided. Line and character numbers are both zero-indexed.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_character_paragraph">
@@ -78,28 +78,28 @@
 			<param index="0" name="character" type="int" />
 			<description>
 				Returns the paragraph number of the character position provided. Paragraph and character numbers are both zero-indexed.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the height of the content.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_width" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the width of the content.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_offset">
@@ -107,7 +107,7 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Returns the vertical offset of the line found at the provided index.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -167,7 +167,7 @@
 			<param index="0" name="paragraph" type="int" />
 			<description>
 				Returns the vertical offset of the paragraph found at the provided index.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">
@@ -211,14 +211,14 @@
 			<return type="int" />
 			<description>
 				Returns the number of visible lines.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_visible_paragraph_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="install_effect">
@@ -256,13 +256,19 @@
 				Invalidates [param paragraph] and all subsequent paragraphs cache.
 			</description>
 		</method>
+		<method name="is_finished" qualifiers="const">
+			<return type="bool" />
+			<description>
+				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
+			</description>
+		</method>
 		<method name="is_menu_visible" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
-		<method name="is_ready" qualifiers="const">
+		<method name="is_ready" qualifiers="const" deprecated="Use [method is_finished] instead.">
 			<return type="bool" />
 			<description>
 				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
@@ -625,6 +631,12 @@
 		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
 			If [code]true[/code], the label underlines hint tags such as [code skip-lint][hint=description]{text}[/hint][/code].
 		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+		</member>
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
@@ -655,6 +667,9 @@
 		</member>
 		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size" default="4">
 			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
+		</member>
+		<member name="tab_stops" type="PackedFloat32Array" setter="set_tab_stops" getter="get_tab_stops" default="PackedFloat32Array()">
+			Aligns text to the given tab-stops.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.

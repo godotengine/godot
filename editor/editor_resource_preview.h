@@ -65,7 +65,7 @@ public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const;
 	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const;
-	virtual void abort(){};
+	virtual void abort() {}
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
@@ -128,11 +128,18 @@ protected:
 public:
 	static EditorResourcePreview *get_singleton();
 
+	struct PreviewItem {
+		Ref<Texture2D> preview;
+		Ref<Texture2D> small_preview;
+	};
+
 	// p_receiver_func callback has signature (String p_path, Ref<Texture2D> p_preview, Ref<Texture2D> p_preview_small, Variant p_userdata)
 	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	const Dictionary get_preview_metadata(const String &p_path) const;
+
+	PreviewItem get_resource_preview_if_available(const String &p_path);
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);

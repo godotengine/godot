@@ -130,13 +130,16 @@
 # zefdzeqf <azrzrezfafe@users.noreply.hosted.weblate.org>, 2024.
 # Mathieu Druart <mathieu.druart@gmail.com>, 2024.
 # Xabi GOITY <xabigoity@gmail.com>, 2024.
+# Edvard Fauchelevent <edvardfauchelevent@gmail.com>, 2024.
+# rznn <jest1gabriel@gmail.com>, 2024.
+# Fontaine Nathan <nathan.fontaine53@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-11 19:09+0000\n"
-"Last-Translator: Xabi GOITY <xabigoity@gmail.com>\n"
+"PO-Revision-Date: 2024-09-04 20:31+0000\n"
+"Last-Translator: Fontaine Nathan <nathan.fontaine53@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -144,7 +147,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.2-rc\n"
 
 msgid "Application"
 msgstr "Application"
@@ -284,6 +287,9 @@ msgstr "Disposition de bus par défaut"
 msgid "General"
 msgstr "Général"
 
+msgid "Default Playback Type"
+msgstr "Type par défaut d'un retour"
+
 msgid "Text to Speech"
 msgstr "Synthèse vocale"
 
@@ -301,15 +307,6 @@ msgstr "Catégorie de la session"
 
 msgid "Mix With Others"
 msgstr "Mixer avec les autres"
-
-msgid "Editor"
-msgstr "Éditeur"
-
-msgid "Script"
-msgstr "Script"
-
-msgid "Search in File Extensions"
-msgstr "Recherche dans les fichiers : extensions"
 
 msgid "Subwindows"
 msgstr "Sous-fenêtres"
@@ -352,6 +349,9 @@ msgstr "Profileur"
 
 msgid "Max Functions"
 msgstr "Maximum de fonctions"
+
+msgid "Max Timestamp Query Elements"
+msgstr "Éléments de requête de l'horodatage maximum"
 
 msgid "Compression"
 msgstr "Compression"
@@ -959,6 +959,9 @@ msgstr "Basculer le mode"
 msgid "Interface"
 msgstr "Interface"
 
+msgid "Editor"
+msgstr "Éditeur"
+
 msgid "Editor Language"
 msgstr "Langue de l'éditeur"
 
@@ -1433,17 +1436,29 @@ msgstr "Ouvrir le script quand signal se connecte à une méthode existante"
 msgid "Use Default Word Separators"
 msgstr "Utiliser les séparateurs de mots par défaut"
 
+msgid "Use Custom Word Separators"
+msgstr "Utiliser des séparateurs de mots personnalisés"
+
+msgid "Custom Word Separators"
+msgstr "Séparateurs de mots personnalisés"
+
 msgid "Indent"
 msgstr "Indentation"
 
 msgid "Auto Indent"
 msgstr "Indentation automatique"
 
+msgid "Indent Wrapped Lines"
+msgstr "Indenter les lignes refermées"
+
 msgid "Files"
 msgstr "Fichiers"
 
 msgid "Trim Trailing Whitespace on Save"
 msgstr "Retirer les espaces de fin de ligne à l'enregistrement"
+
+msgid "Trim Final Newlines on Save"
+msgstr "Supprimer les sauts de ligne finaux lors de l'enregistrement"
 
 msgid "Autosave Interval Secs"
 msgstr "Intervalle entre les sauvegardes automatiques (en secondes)"
@@ -2820,6 +2835,9 @@ msgstr "Chemin de la clé privée SSH"
 msgid "Main Run Args"
 msgstr "Arguments de démarrage du programme principal"
 
+msgid "Script"
+msgstr "Script"
+
 msgid "Templates Search Path"
 msgstr "Chemin de recherche des modèles"
 
@@ -2897,6 +2915,12 @@ msgstr "Limite de fichiers de journal"
 
 msgid "Driver"
 msgstr "Pilote"
+
+msgid "Fallback to Vulkan"
+msgstr "Repli à Vulkan"
+
+msgid "Fallback to D3D12"
+msgstr "Repli à D3D12"
 
 msgid "GL Compatibility"
 msgstr "Compatibilité GL"
@@ -3054,6 +3078,9 @@ msgstr "Android"
 msgid "Text Driver"
 msgstr "Pilote de texte"
 
+msgid "Search in File Extensions"
+msgstr "Recherche dans les fichiers : extensions"
+
 msgid "Mouse Cursor"
 msgstr "Curseur de la souris"
 
@@ -3096,8 +3123,29 @@ msgstr "Choisir un répertoire pour la solution"
 msgid "Time"
 msgstr "Temps"
 
+msgid "Physics Process"
+msgstr "Processus physique"
+
+msgid "Navigation Process"
+msgstr "Processus de navigation"
+
+msgid "Static"
+msgstr "Statique"
+
+msgid "Static Max"
+msgstr "Statique maximum"
+
 msgid "Msg Buf Max"
 msgstr "Buf de message maximum"
+
+msgid "Object"
+msgstr "Objet"
+
+msgid "Objects"
+msgstr "Objets"
+
+msgid "Resources"
+msgstr "Ressources"
 
 msgid "Orphan Nodes"
 msgstr "Nœuds orphelins"
@@ -3114,8 +3162,20 @@ msgstr "Total de primitives dessinées"
 msgid "Video"
 msgstr "Vidéo"
 
+msgid "Physics 2D"
+msgstr "Physique 2D"
+
+msgid "Active Objects"
+msgstr "Objets actifs"
+
+msgid "Collision Pairs"
+msgstr "Paires de collision"
+
 msgid "Islands"
 msgstr "Îles"
+
+msgid "Physics 3D"
+msgstr "Physique 3D"
 
 msgid "Regions"
 msgstr "Régions"

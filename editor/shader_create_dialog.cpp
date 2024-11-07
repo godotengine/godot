@@ -74,7 +74,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 				}
 			}
 
-			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			path_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
 }
@@ -629,7 +629,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	internal = memnew(CheckBox);
 	internal->set_text(TTR("On"));
-	internal->connect("toggled", callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
+	internal->connect(SceneStringName(toggled), callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
 

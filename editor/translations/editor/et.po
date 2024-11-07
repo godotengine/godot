@@ -6342,14 +6342,14 @@ msgstr "Ei saanud uut occluder'it salvestada antud teel:"
 msgid "Remove Point from Curve"
 msgstr "Eemalda Punkt Kõveralt"
 
-msgid "Split Curve"
-msgstr "Tükelda Kõver"
-
 msgid "Move Point in Curve"
 msgstr "Liiguta Kõvera Punkti"
 
 msgid "Add Point to Curve"
 msgstr "Lisa Punkt Kõverale"
+
+msgid "Split Curve"
+msgstr "Tükelda Kõver"
 
 msgid "Right Click: Delete Point"
 msgstr "Parem Klõps: Kustuda Punkt"

@@ -33,14 +33,29 @@ package com.godot.game;
 import org.godotengine.godot.GodotActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.core.splashscreen.SplashScreen;
+
+import com.godot.game.BuildConfig;
 
 /**
  * Template activity for Godot Android builds.
  * Feel free to extend and modify this class for your custom logic.
  */
 public class GodotApp extends GodotActivity {
+	static {
+		// .NET libraries.
+		if (BuildConfig.FLAVOR.equals("mono")) {
+			try {
+				Log.v("GODOT", "Loading System.Security.Cryptography.Native.Android library");
+				System.loadLibrary("System.Security.Cryptography.Native.Android");
+			} catch (UnsatisfiedLinkError e) {
+				Log.e("GODOT", "Unable to load System.Security.Cryptography.Native.Android library");
+			}
+		}
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		SplashScreen.installSplashScreen(this);

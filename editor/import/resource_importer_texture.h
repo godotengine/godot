@@ -104,7 +104,7 @@ public:
 
 	void update_imports();
 
-	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;
 
 	ResourceImporterTexture(bool p_singleton = false);

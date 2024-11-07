@@ -284,6 +284,9 @@
 		<member name="navigation_visibility_mode" type="int" setter="set_navigation_visibility_mode" getter="get_navigation_visibility_mode" enum="TileMapLayer.DebugVisibilityMode" default="0">
 			Show or hide the [TileMapLayer]'s navigation meshes. If set to [constant DEBUG_VISIBILITY_MODE_DEFAULT], this depends on the show navigation debug settings.
 		</member>
+		<member name="occlusion_enabled" type="bool" setter="set_occlusion_enabled" getter="is_occlusion_enabled" default="true">
+			Enable or disable light occlusion.
+		</member>
 		<member name="rendering_quadrant_size" type="int" setter="set_rendering_quadrant_size" getter="get_rendering_quadrant_size" default="16">
 			The [TileMapLayer]'s quadrant size. A quadrant is a group of tiles to be drawn together on a single canvas item, for optimization purposes. [member rendering_quadrant_size] defines the length of a square's side, in the map's coordinate system, that forms the quadrant. Thus, the default quadrant size groups together [code]16 * 16 = 256[/code] tiles.
 			The quadrant size does not apply on a Y-sorted [TileMapLayer], as tiles are grouped by Y position instead in that case.

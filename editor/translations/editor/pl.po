@@ -89,13 +89,14 @@
 # Szymon Hałucha <99204426+SzymonHalucha@users.noreply.github.com>, 2024.
 # Krzysztof Rams <krzysztofeczek@gmail.com>, 2024.
 # gre-gorn <gre-gorn@users.noreply.hosted.weblate.org>, 2024.
+# Dawid Kobylewski <d.kobylewski@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-01 02:20+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2024-08-30 21:09+0000\n"
+"Last-Translator: Dawid Kobylewski <d.kobylewski@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -104,7 +105,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Główny Wątek"
@@ -3830,6 +3831,24 @@ msgid ""
 msgstr ""
 "Nie można zapisać do pliku '%s', plik jest w użyciu, zablokowany lub nie ma "
 "wystarczających uprawnień."
+
+msgid "Preparing scenes for reload"
+msgstr "Przygotowywanie scen do przeładowania"
+
+msgid "Analyzing scene %s"
+msgstr "Analizowanie sceny %s"
+
+msgid "Preparation done."
+msgstr "Przygotowanie ukończone."
+
+msgid "Scenes reloading"
+msgstr "Przeładowywanie scen"
+
+msgid "Reloading..."
+msgstr "Przeładowywanie..."
+
+msgid "Reloading done."
+msgstr "Przeładowywanie zakończone."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -9757,14 +9776,14 @@ msgstr "Usuń punkt kontrolny wychodzący z krzywej"
 msgid "Remove In-Control from Curve"
 msgstr "Usuń punkt kontrolny wchodzący z krzywej"
 
-msgid "Split Curve"
-msgstr "Podziel krzywą"
-
 msgid "Move Point in Curve"
 msgstr "Przenieś punkt krzywej"
 
 msgid "Add Point to Curve"
 msgstr "Dodaj punkt do krzywej"
+
+msgid "Split Curve"
+msgstr "Podziel krzywą"
 
 msgid "Move In-Control in Curve"
 msgstr "Przesuń punkt kontrolny wchodzący z krzywej"
@@ -15406,7 +15425,7 @@ msgid ""
 "Found Blender version %d.x, which is too old for this importer (3.0+ is "
 "required)."
 msgstr ""
-"Znaleziono wersję Blendera %s.x, która jest za stara dla tego importera "
+"Znaleziono wersję Blendera %d.x, która jest za stara dla tego importera "
 "(wymagane jest 3.0+)."
 
 msgid "Path to Blender executable is valid (Autodetected)."
@@ -17347,6 +17366,19 @@ msgstr ""
 "ustaw ją."
 
 msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Węzeł TileMap jest przestarzały, zastąpiony przez użycie wielu węzłów "
+"TileMapLayer.\n"
+"By przekonwertować TileMap do kilku TileMapLayer, otwórz dolny panel TileMap "
+"wybierając ten węzeł, kliknij ikonkę narzędzi w prawym-górnym rogu i wybierz "
+"\"Wyodrębnij warstwy jako osobne węzły TileMapLayer\"."
+
+msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
 "This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
 "Y-sorted as a whole with tiles from Y-sorted layers."
@@ -17788,13 +17820,6 @@ msgid ""
 msgstr ""
 "Właściwość \"Remote Path\" musi wskazywać na poprawny węzeł Node3D lub "
 "pochodny Node3D, aby działał."
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Węzeł Skeleton3D nie jest ustawiony! SkeletonModifier3D musi być węzłem "
-"potomnym Skeleton3D lub ustawić ścieżkę do zewnętrznego szkieletu."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "To ciało będzie ignorowane, dopóki nie ustawisz siatki."

@@ -132,7 +132,10 @@ void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
 		String hint = "";
 		for (int i = 0; i < bones.size(); i++) {
-			hint += i == 0 ? String(bones[i].bone_name) : "," + String(bones[i].bone_name);
+			if (i > 0) {
+				hint += ",";
+			}
+			hint += String(bones[i].bone_name);
 		}
 		p_property.hint_string = hint;
 	}

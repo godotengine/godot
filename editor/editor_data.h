@@ -37,6 +37,7 @@
 class ConfigFile;
 class EditorPlugin;
 class EditorUndoRedoManager;
+class PopupMenu;
 
 /**
  * Stores the history of objects which have been selected for editing in the Editor & the Inspector.

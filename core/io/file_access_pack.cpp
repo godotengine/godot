@@ -102,6 +102,22 @@ void PackedData::add_pack_source(PackSource *p_source) {
 	}
 }
 
+uint8_t *PackedData::get_file_hash(const String &p_path) {
+	PathMD5 pmd5(p_path.md5_buffer());
+	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	if (!E || E->value.offset == 0) {
+		return nullptr;
+	}
+
+	return E->value.md5;
+}
+
+void PackedData::clear() {
+	files.clear();
+	_free_packed_dirs(root);
+	root = memnew(PackedDir);
+}
+
 PackedData *PackedData::singleton = nullptr;
 
 PackedData::PackedData() {
@@ -207,8 +223,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint32_t ver_minor = f->get_32();
 	f->get_32(); // patch number, not used for validation.
 
-	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, "Pack version unsupported: " + itos(version) + ".");
-	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
+	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, vformat("Pack version unsupported: %d.", version));
+	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
 
 	uint32_t pack_flags = f->get_32();
 	uint64_t file_base = f->get_64();
@@ -313,17 +329,6 @@ bool FileAccessPack::eof_reached() const {
 	return eof;
 }
 
-uint8_t FileAccessPack::get_8() const {
-	ERR_FAIL_COND_V_MSG(f.is_null(), 0, "File must be opened before use.");
-	if (pos >= pf.size) {
-		eof = true;
-		return 0;
-	}
-
-	pos++;
-	return f->get_8();
-}
-
 uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V_MSG(f.is_null(), -1, "File must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
@@ -366,10 +371,6 @@ void FileAccessPack::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_8(uint8_t p_dest) {
-	ERR_FAIL();
-}
-
 void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL();
 }
@@ -385,7 +386,7 @@ void FileAccessPack::close() {
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
-	ERR_FAIL_COND_MSG(f.is_null(), "Can't open pack-referenced file '" + String(pf.pack) + "'.");
+	ERR_FAIL_COND_MSG(f.is_null(), vformat("Can't open pack-referenced file '%s'.", String(pf.pack)));
 
 	f->seek(pf.offset);
 	off = pf.offset;
@@ -393,7 +394,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	if (pf.encrypted) {
 		Ref<FileAccessEncrypted> fae;
 		fae.instantiate();
-		ERR_FAIL_COND_MSG(fae.is_null(), "Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
+		ERR_FAIL_COND_MSG(fae.is_null(), vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
 
 		Vector<uint8_t> key;
 		key.resize(32);
@@ -402,7 +403,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		ERR_FAIL_COND_MSG(err, "Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
+		ERR_FAIL_COND_MSG(err, vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
 		f = fae;
 		off = 0;
 	}

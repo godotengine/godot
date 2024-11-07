@@ -49,7 +49,7 @@
 class WSLPeer : public WebSocketPeer {
 private:
 	static CryptoCore::RandomGenerator *_static_rng;
-	static WebSocketPeer *_create() { return memnew(WSLPeer); }
+	static WebSocketPeer *_create(bool p_notify_postinitialize) { return static_cast<WebSocketPeer *>(ClassDB::creator<WSLPeer>(p_notify_postinitialize)); }
 
 	// Callbacks.
 	static ssize_t _wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, size_t len, int flags, void *user_data);
@@ -127,7 +127,7 @@ public:
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override { return packet_buffer.size(); };
+	virtual int get_max_packet_size() const override { return packet_buffer.size(); }
 
 	// WebSocketPeer
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;

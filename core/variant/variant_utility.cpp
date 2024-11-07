@@ -452,12 +452,14 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 		case Variant::QUATERNION:
 		case Variant::BASIS:
 		case Variant::COLOR:
+		case Variant::TRANSFORM2D:
+		case Variant::TRANSFORM3D:
 			break;
 		default:
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
 			r_error.expected = Variant::NIL;
-			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Quaternion", "Basis, or "Color".)";
+			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Color", "Quaternion", "Basis", "Transform2D", or "Transform3D".)";
 	}
 
 	if (from.get_type() != to.get_type()) {
@@ -489,6 +491,12 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 		} break;
 		case Variant::BASIS: {
 			return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
+		} break;
+		case Variant::TRANSFORM2D: {
+			return VariantInternalAccessor<Transform2D>::get(&from).interpolate_with(VariantInternalAccessor<Transform2D>::get(&to), weight);
+		} break;
+		case Variant::TRANSFORM3D: {
+			return VariantInternalAccessor<Transform3D>::get(&from).interpolate_with(VariantInternalAccessor<Transform3D>::get(&to), weight);
 		} break;
 		case Variant::COLOR: {
 			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
@@ -1663,7 +1671,7 @@ static void register_utility_function(const String &p_name, const Vector<String>
 	bfi.argnames = argnames;
 	bfi.argcount = T::get_argument_count();
 	if (!bfi.is_vararg) {
-		ERR_FAIL_COND_MSG(argnames.size() != bfi.argcount, "wrong number of arguments binding utility function: " + name);
+		ERR_FAIL_COND_MSG(argnames.size() != bfi.argcount, vformat("Wrong number of arguments binding utility function: '%s'.", name));
 	}
 	bfi.get_arg_type = T::get_argument_type;
 	bfi.return_type = T::get_return_type();

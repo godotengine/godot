@@ -9691,14 +9691,14 @@ msgstr "曲線からOut-Controlを削除"
 msgid "Remove In-Control from Curve"
 msgstr "曲線からIn-Controlを削除"
 
-msgid "Split Curve"
-msgstr "曲線を分割する"
-
 msgid "Move Point in Curve"
 msgstr "曲線内の点を移動"
 
 msgid "Add Point to Curve"
 msgstr "点を曲線に追加"
+
+msgid "Split Curve"
+msgstr "曲線を分割する"
 
 msgid "Move In-Control in Curve"
 msgstr "曲線内のIn-Controlを移動する"
@@ -17219,13 +17219,6 @@ msgid ""
 msgstr ""
 "「リモート パス」プロパティが機能するには、有効な Node3D または Node3D 派生"
 "ノードを指す必要があります。"
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Skeleton3Dノードが設定されていません！SkeletonModifier3D は Skeleton3D の子で"
-"あるか、外部スケルトンへのパスを設定する必要があります。"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "このボディは、メッシュを設定するまで無視されます。"

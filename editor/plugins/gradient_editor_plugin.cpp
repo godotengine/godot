@@ -604,8 +604,8 @@ void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 void GradientEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			reverse_button->set_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
-			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			reverse_button->set_button_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
+			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Gradient> gradient = gradient_editor_rect->get_gradient();
@@ -632,7 +632,7 @@ GradientEditor::GradientEditor() {
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", callable_mp(this, &GradientEditor::_set_snap_enabled));
+	snap_button->connect(SceneStringName(toggled), callable_mp(this, &GradientEditor::_set_snap_enabled));
 
 	snap_count_edit = memnew(EditorSpinSlider);
 	snap_count_edit->set_min(2);

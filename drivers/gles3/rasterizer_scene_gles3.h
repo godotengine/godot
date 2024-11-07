@@ -103,6 +103,7 @@ struct RenderDataGLES3 {
 	Transform3D inv_cam_transform;
 	Projection cam_projection;
 	bool cam_orthogonal = false;
+	bool cam_frustum = false;
 	uint32_t camera_visible_layers = 0xFFFFFFFF;
 
 	// For billboards to cast correct shadows.
@@ -680,6 +681,8 @@ protected:
 	bool glow_bicubic_upscale = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
 
+	bool lightmap_bicubic_upscale = false;
+
 	/* Sky */
 
 	struct SkyGlobals {
@@ -764,6 +767,11 @@ public:
 	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
 	uint32_t geometry_instance_get_pair_mask() override;
+
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override {}
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override { return 0; }
 
 	/* SDFGI UPDATE */
 
@@ -863,6 +871,7 @@ public:
 
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
+	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
 
 	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();

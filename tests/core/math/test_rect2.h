@@ -57,7 +57,7 @@ TEST_CASE("[Rect2] Constructor methods") {
 TEST_CASE("[Rect2] String conversion") {
 	// Note: This also depends on the Vector2 string representation.
 	CHECK_MESSAGE(
-			String(Rect2(0, 100, 1280, 720)) == "[P: (0, 100), S: (1280, 720)]",
+			String(Rect2(0, 100, 1280, 720)) == "[P: (0.0, 100.0), S: (1280.0, 720.0)]",
 			"The string representation should match the expected value.");
 }
 
@@ -178,6 +178,28 @@ TEST_CASE("[Rect2] Expanding") {
 	CHECK_MESSAGE(
 			Rect2(0, 100, 1280, 720).expand(Vector2(0, 0)).is_equal_approx(Rect2(0, 0, 1280, 820)),
 			"expand() with non-contained Vector2 should return the expected result.");
+}
+
+TEST_CASE("[Rect2] Get support") {
+	const Rect2 rect = Rect2(Vector2(-1.5, 2), Vector2(4, 5));
+	CHECK_MESSAGE(
+			rect.get_support(Vector2(1, 0)) == Vector2(2.5, 2),
+			"get_support() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_support(Vector2(0.5, 1)) == Vector2(2.5, 7),
+			"get_support() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_support(Vector2(0.5, 1)) == Vector2(2.5, 7),
+			"get_support() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_support(Vector2(0, -1)) == Vector2(-1.5, 2),
+			"get_support() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_support(Vector2(0, -0.1)) == Vector2(-1.5, 2),
+			"get_support() should return the expected value.");
+	CHECK_MESSAGE(
+			rect.get_support(Vector2()) == Vector2(-1.5, 2),
+			"get_support() should return the Rect2 position when given a zero vector.");
 }
 
 TEST_CASE("[Rect2] Growing") {

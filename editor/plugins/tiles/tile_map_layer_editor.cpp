@@ -86,8 +86,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		transform_toolbar->show();
 		tools_settings_vsep_2->show();
 		random_tile_toggle->show();
-		scatter_label->show();
-		scatter_spinbox->show();
+		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	} else {
 		tools_settings_vsep->show();
 		picker_button->show();
@@ -96,8 +95,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 		tools_settings_vsep_2->show();
 		bucket_contiguous_checkbox->show();
 		random_tile_toggle->show();
-		scatter_label->show();
-		scatter_spinbox->show();
+		scatter_controls_container->set_visible(random_tile_toggle->is_pressed());
 	}
 }
 
@@ -505,21 +503,21 @@ void TileMapLayerEditorTilesPlugin::_scenes_list_lmb_empty_clicked(const Vector2
 }
 
 void TileMapLayerEditorTilesPlugin::_update_theme() {
-	source_sort_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Sort")));
-	select_tool_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("ToolSelect")));
-	paint_tool_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Edit")));
-	line_tool_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Line")));
-	rect_tool_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Rectangle")));
-	bucket_tool_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Bucket")));
+	source_sort_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Sort")));
+	select_tool_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("ToolSelect")));
+	paint_tool_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Edit")));
+	line_tool_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Line")));
+	rect_tool_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Rectangle")));
+	bucket_tool_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Bucket")));
 
-	picker_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("ColorPick")));
-	erase_button->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Eraser")));
-	random_tile_toggle->set_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("RandomNumberGenerator")));
+	picker_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("ColorPick")));
+	erase_button->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("Eraser")));
+	random_tile_toggle->set_button_icon(tiles_bottom_panel->get_editor_theme_icon(SNAME("RandomNumberGenerator")));
 
-	transform_button_rotate_left->set_icon(tiles_bottom_panel->get_editor_theme_icon("RotateLeft"));
-	transform_button_rotate_right->set_icon(tiles_bottom_panel->get_editor_theme_icon("RotateRight"));
-	transform_button_flip_h->set_icon(tiles_bottom_panel->get_editor_theme_icon("MirrorX"));
-	transform_button_flip_v->set_icon(tiles_bottom_panel->get_editor_theme_icon("MirrorY"));
+	transform_button_rotate_left->set_button_icon(tiles_bottom_panel->get_editor_theme_icon("RotateLeft"));
+	transform_button_rotate_right->set_button_icon(tiles_bottom_panel->get_editor_theme_icon("RotateRight"));
+	transform_button_flip_h->set_button_icon(tiles_bottom_panel->get_editor_theme_icon("MirrorX"));
+	transform_button_flip_v->set_button_icon(tiles_bottom_panel->get_editor_theme_icon("MirrorY"));
 
 	missing_atlas_texture_icon = tiles_bottom_panel->get_editor_theme_icon(SNAME("TileSet"));
 	_update_tile_set_sources_list();
@@ -1366,10 +1364,12 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 				Vector2i coords;
 				HashMap<Vector2i, TileMapCell> cells_undo;
 				for (int i = 0; i < selection_used_cells.size(); i++) {
-					coords = tile_set->map_pattern(top_left, selection_used_cells[i], selection_pattern);
-					cells_undo[coords] = TileMapCell(drag_modified[coords].source_id, drag_modified[coords].get_atlas_coords(), drag_modified[coords].alternative_tile);
 					coords = tile_set->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
 					cells_undo[coords] = TileMapCell(edited_layer->get_cell_source_id(coords), edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
+				}
+				for (int i = 0; i < selection_used_cells.size(); i++) {
+					coords = tile_set->map_pattern(top_left, selection_used_cells[i], selection_pattern);
+					cells_undo[coords] = TileMapCell(drag_modified[coords].source_id, drag_modified[coords].get_atlas_coords(), drag_modified[coords].alternative_tile);
 				}
 
 				// Build the list of cells to do.
@@ -1550,6 +1550,7 @@ int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternativ
 		case TRANSFORM_ROTATE_RIGHT: {
 			// A matrix with every possible flip/transpose combination, sorted by what comes next when you rotate.
 			const LocalVector<bool> rotation_matrix = {
+				// NOLINTBEGIN(modernize-use-bool-literals)
 				0, 0, 0,
 				0, 1, 1,
 				1, 1, 0,
@@ -1558,6 +1559,7 @@ int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternativ
 				0, 0, 1,
 				0, 1, 0,
 				1, 1, 1
+				// NOLINTEND(modernize-use-bool-literals)
 			};
 
 			for (int i = 0; i < 8; i++) {
@@ -2330,7 +2332,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	random_tile_toggle->set_theme_type_variation("FlatButton");
 	random_tile_toggle->set_toggle_mode(true);
 	random_tile_toggle->set_tooltip_text(TTR("Place Random Tile"));
-	random_tile_toggle->connect("toggled", callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_random_tile_checkbox_toggled));
+	random_tile_toggle->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_random_tile_checkbox_toggled));
 	tools_settings->add_child(random_tile_toggle);
 
 	// Random tile scattering.
@@ -3486,13 +3488,13 @@ void TileMapLayerEditorTerrainsPlugin::_update_tiles_list() {
 }
 
 void TileMapLayerEditorTerrainsPlugin::_update_theme() {
-	paint_tool_button->set_icon(main_vbox_container->get_editor_theme_icon(SNAME("Edit")));
-	line_tool_button->set_icon(main_vbox_container->get_editor_theme_icon(SNAME("Line")));
-	rect_tool_button->set_icon(main_vbox_container->get_editor_theme_icon(SNAME("Rectangle")));
-	bucket_tool_button->set_icon(main_vbox_container->get_editor_theme_icon(SNAME("Bucket")));
+	paint_tool_button->set_button_icon(main_vbox_container->get_editor_theme_icon(SNAME("Edit")));
+	line_tool_button->set_button_icon(main_vbox_container->get_editor_theme_icon(SNAME("Line")));
+	rect_tool_button->set_button_icon(main_vbox_container->get_editor_theme_icon(SNAME("Rectangle")));
+	bucket_tool_button->set_button_icon(main_vbox_container->get_editor_theme_icon(SNAME("Bucket")));
 
-	picker_button->set_icon(main_vbox_container->get_editor_theme_icon(SNAME("ColorPick")));
-	erase_button->set_icon(main_vbox_container->get_editor_theme_icon(SNAME("Eraser")));
+	picker_button->set_button_icon(main_vbox_container->get_editor_theme_icon(SNAME("ColorPick")));
+	erase_button->set_button_icon(main_vbox_container->get_editor_theme_icon(SNAME("Eraser")));
 
 	_update_tiles_list();
 }
@@ -3689,12 +3691,12 @@ void TileMapLayerEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			missing_tile_texture = get_editor_theme_icon(SNAME("StatusWarning"));
 			warning_pattern_texture = get_editor_theme_icon(SNAME("WarningPattern"));
-			advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
-			select_previous_layer->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
-			select_next_layer->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
-			select_all_layers->set_icon(get_editor_theme_icon(SNAME("FileList")));
-			toggle_grid_button->set_icon(get_editor_theme_icon(SNAME("Grid")));
-			toggle_highlight_selected_layer_button->set_icon(get_editor_theme_icon(SNAME("TileMapHighlightSelected")));
+			advanced_menu_button->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
+			select_previous_layer->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
+			select_next_layer->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
+			select_all_layers->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
+			toggle_grid_button->set_button_icon(get_editor_theme_icon(SNAME("Grid")));
+			toggle_highlight_selected_layer_button->set_button_icon(get_editor_theme_icon(SNAME("TileMapHighlightSelected")));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -4486,7 +4488,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	toggle_highlight_selected_layer_button->set_theme_type_variation("FlatButton");
 	toggle_highlight_selected_layer_button->set_toggle_mode(true);
 	toggle_highlight_selected_layer_button->set_pressed(true);
-	toggle_highlight_selected_layer_button->connect("toggled", callable_mp(this, &TileMapLayerEditor::_highlight_selected_layer_button_toggled));
+	toggle_highlight_selected_layer_button->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditor::_highlight_selected_layer_button_toggled));
 	toggle_highlight_selected_layer_button->set_tooltip_text(TTR("Highlight Selected TileMap Layer"));
 	tile_map_toolbar->add_child(toggle_highlight_selected_layer_button);
 
@@ -4497,7 +4499,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	toggle_grid_button->set_theme_type_variation("FlatButton");
 	toggle_grid_button->set_toggle_mode(true);
 	toggle_grid_button->set_tooltip_text(TTR("Toggle grid visibility."));
-	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapLayerEditor::_on_grid_toggled));
+	toggle_grid_button->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditor::_on_grid_toggled));
 	tile_map_toolbar->add_child(toggle_grid_button);
 
 	// Advanced settings menu button.

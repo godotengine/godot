@@ -23,8 +23,6 @@
 #ifndef _TVG_TASK_SCHEDULER_H_
 #define _TVG_TASK_SCHEDULER_H_
 
-#define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
-
 #include <mutex>
 #include <condition_variable>
 

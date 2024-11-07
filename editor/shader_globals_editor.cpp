@@ -31,6 +31,7 @@
 #include "shader_globals_editor.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "servers/rendering/shader_language.h"
@@ -349,7 +350,7 @@ String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_na
 		return TTR("Name cannot be empty.");
 	}
 
-	if (!p_variable_name.is_valid_identifier()) {
+	if (!p_variable_name.is_valid_ascii_identifier()) {
 		return TTR("Name must be a valid identifier.");
 	}
 
@@ -437,7 +438,7 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			variable_add->set_icon(get_editor_theme_icon(SNAME("Add")));
+			variable_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {

@@ -33,10 +33,10 @@
 #define EQ_VERTEX_DIST 0.00001
 
 SurfaceTool::OptimizeVertexCacheFunc SurfaceTool::optimize_vertex_cache_func = nullptr;
+SurfaceTool::OptimizeVertexFetchRemapFunc SurfaceTool::optimize_vertex_fetch_remap_func = nullptr;
 SurfaceTool::SimplifyFunc SurfaceTool::simplify_func = nullptr;
 SurfaceTool::SimplifyWithAttribFunc SurfaceTool::simplify_with_attrib_func = nullptr;
 SurfaceTool::SimplifyScaleFunc SurfaceTool::simplify_scale_func = nullptr;
-SurfaceTool::SimplifySloppyFunc SurfaceTool::simplify_sloppy_func = nullptr;
 SurfaceTool::GenerateRemapFunc SurfaceTool::generate_remap_func = nullptr;
 SurfaceTool::RemapVertexFunc SurfaceTool::remap_vertex_func = nullptr;
 SurfaceTool::RemapIndexFunc SurfaceTool::remap_index_func = nullptr;
@@ -792,7 +792,7 @@ void SurfaceTool::deindex() {
 }
 
 void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
 
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND(arr.size() != RS::ARRAY_MAX);
@@ -968,7 +968,7 @@ void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
 }
 
 void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
 
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
@@ -983,7 +983,7 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 }
 
 void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
 
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
@@ -1023,7 +1023,7 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 }
 
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 
 	if (vertex_array.size() == 0) {
 		primitive = p_existing->surface_get_primitive_type(p_surface);

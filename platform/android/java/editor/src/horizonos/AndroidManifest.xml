@@ -1,0 +1,99 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:horizonos="http://schemas.horizonos/sdk">
+
+    <horizonos:uses-horizonos-sdk
+        horizonos:minSdkVersion="69"
+        horizonos:targetSdkVersion="69" />
+
+    <uses-feature
+        android:name="android.hardware.vr.headtracking"
+        android:required="true"
+        android:version="1"/>
+
+    <!-- Oculus Quest hand tracking -->
+    <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+    <uses-feature
+        android:name="oculus.software.handtracking"
+        android:required="false" />
+
+    <!-- Passthrough feature flag -->
+    <uses-feature android:name="com.oculus.feature.PASSTHROUGH"
+        android:required="false" />
+
+    <!-- Overlay keyboard support -->
+    <uses-feature android:name="oculus.software.overlay_keyboard" android:required="false"/>
+
+    <!-- Render model -->
+    <uses-permission android:name="com.oculus.permission.RENDER_MODEL" />
+    <uses-feature android:name="com.oculus.feature.RENDER_MODEL" android:required="false" />
+
+    <!-- Anchor api -->
+    <uses-permission android:name="com.oculus.permission.USE_ANCHOR_API" />
+
+    <!-- Scene api -->
+    <uses-permission android:name="com.oculus.permission.USE_SCENE" />
+
+    <application>
+
+        <activity
+            android:name=".GodotEditor"
+            android:exported="true"
+            android:screenOrientation="landscape"
+            tools:node="merge"
+            tools:replace="android:screenOrientation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="com.oculus.intent.category.2D" />
+            </intent-filter>
+
+            <meta-data android:name="com.oculus.vrshell.free_resizing_lock_aspect_ratio" android:value="true"/>
+        </activity>
+
+        <activity
+            android:name=".GodotXRGame"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:process=":GodotXRGame"
+            android:launchMode="singleTask"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:resizeableActivity="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="com.oculus.intent.category.VR" />
+                <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
+            </intent-filter>
+        </activity>
+
+        <!-- Supported Meta devices -->
+        <meta-data
+            android:name="com.oculus.supportedDevices"
+            android:value="quest3|questpro"
+            tools:replace="android:value" />
+
+        <!--
+        We remove this meta-data originating from the vendors plugin as we only need the loader for
+        now since the project being edited provides its own version of the vendors plugin.
+
+        This needs to be removed once we start implementing the immersive version of the project
+        manager and editor windows.
+         -->
+        <meta-data
+            android:name="org.godotengine.plugin.v2.GodotOpenXRMeta"
+            android:value="org.godotengine.openxr.vendors.meta.GodotOpenXRMeta"
+            tools:node="remove" />
+
+        <!-- Enable system splash screen -->
+        <meta-data android:name="com.oculus.ossplash" android:value="true"/>
+        <!-- Enable passthrough background during the splash screen -->
+        <meta-data android:name="com.oculus.ossplash.background" android:value="passthrough-contextual"/>
+
+    </application>
+
+</manifest>

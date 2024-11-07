@@ -411,9 +411,9 @@ void EditorAssetInstaller::_toggle_source_tree(bool p_visible, bool p_scroll_to_
 	show_source_files_button->set_pressed_no_signal(p_visible); // To keep in sync if triggered by something else.
 
 	if (p_visible) {
-		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 	} else {
-		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 	}
 
 	if (p_visible && p_scroll_to_error && first_file_conflict) {
@@ -597,9 +597,9 @@ void EditorAssetInstaller::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (show_source_files_button->is_pressed()) {
-				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			} else {
-				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
 			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
@@ -685,7 +685,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	show_source_files_button->set_toggle_mode(true);
 	show_source_files_button->set_tooltip_text(TTR("Open the list of the asset contents and select which files to install."));
 	remapping_tools->add_child(show_source_files_button);
-	show_source_files_button->connect("toggled", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
+	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
 	Button *target_dir_button = memnew(Button);
 	target_dir_button->set_text(TTR("Change Install Folder"));
@@ -698,7 +698,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	skip_toplevel_check = memnew(CheckBox);
 	skip_toplevel_check->set_text(TTR("Ignore asset root"));
 	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
-	skip_toplevel_check->connect("toggled", callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
+	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
 
 	remapping_tools->add_spacer();

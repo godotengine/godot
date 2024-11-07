@@ -2592,14 +2592,6 @@ void PopupMenu::clear_autohide_areas() {
 	autohide_areas.clear();
 }
 
-void PopupMenu::take_mouse_focus() {
-	ERR_FAIL_COND(!is_inside_tree());
-
-	if (get_parent()) {
-		get_parent()->get_viewport()->pass_mouse_focus_to(this, control);
-	}
-}
-
 bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 	if (property_helper.property_set_value(p_name, p_value)) {
 		return true;
@@ -2823,7 +2815,7 @@ void PopupMenu::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked, &PopupMenu::set_item_checked, &PopupMenu::is_item_checked);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &PopupMenu::set_item_id, &PopupMenu::get_item_id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &PopupMenu::set_item_disabled, &PopupMenu::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &PopupMenu::set_item_as_separator, &PopupMenu::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);

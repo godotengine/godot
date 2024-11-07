@@ -41,6 +41,7 @@
  * - Are added to the Error enum in core/error/error_list.h
  * - Have a description added to error_names in core/error/error_list.cpp
  * - Are bound with BIND_CORE_ENUM_CONSTANT() in core/core_constants.cpp
+ * - Have a matching Android version in platform/android/java/lib/src/org/godotengine/godot/error/Error.kt
  */
 
 enum Error {

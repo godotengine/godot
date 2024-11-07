@@ -86,13 +86,15 @@
 # 0rang30rang3z <igbinewekajoel9@gmail.com>, 2024.
 # Simone Lungarella <simonelungarella@gmail.com>, 2024.
 # Matteo Peretto <skymatti12@gmail.com>, 2024.
+# Alessandro Muscio <muscioalex30@gmail.com>, 2024.
+# Stefano siser <stefano.siser@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-13 23:09+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2024-09-10 14:09+0000\n"
+"Last-Translator: Stefano siser <stefano.siser@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -100,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -261,15 +263,6 @@ msgstr "Categoria della sessione"
 msgid "Mix With Others"
 msgstr "Mischia con altri"
 
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Script"
-
-msgid "Search in File Extensions"
-msgstr "Estensioni di file disponibili per la ricerca"
-
 msgid "Subwindows"
 msgstr "Sottofinestre"
 
@@ -321,6 +314,9 @@ msgstr "Formati"
 msgid "Zstd"
 msgstr "Zstd"
 
+msgid "Long Distance Matching"
+msgstr "Coerenza della lunga distanza"
+
 msgid "Compression Level"
 msgstr "Livello di compressione"
 
@@ -341,6 +337,9 @@ msgstr "Messaggio"
 
 msgid "Rendering"
 msgstr "Renderer"
+
+msgid "Occlusion Culling"
+msgstr "Riduzione Occlusione"
 
 msgid "BVH Build Quality"
 msgstr "Qualità di costruzione BVH"
@@ -428,6 +427,9 @@ msgstr "Descrittori massimi per Pool"
 
 msgid "D3D12"
 msgstr "D3D12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "Descrittori Risorsa Massimi per Frame"
 
 msgid "Agility SDK Version"
 msgstr "Versione di SDK Agility"
@@ -887,6 +889,9 @@ msgstr "Modalità Interruttore"
 
 msgid "Interface"
 msgstr "Interfaccia"
+
+msgid "Editor"
+msgstr "Editor"
 
 msgid "Editor Language"
 msgstr "Lingua dell'editor"
@@ -2696,6 +2701,9 @@ msgstr "Percorso chiave privata SSH"
 msgid "Main Run Args"
 msgstr "Parametri di esecuzione principale"
 
+msgid "Script"
+msgstr "Script"
+
 msgid "Templates Search Path"
 msgstr "Percorso di ricerca dei modelli"
 
@@ -2932,6 +2940,9 @@ msgstr "Asse di scorrimento per input rotatorio"
 
 msgid "Text Driver"
 msgstr "Driver di testo"
+
+msgid "Search in File Extensions"
+msgstr "Estensioni di file disponibili per la ricerca"
 
 msgid "Mouse Cursor"
 msgstr "Cursore del mouse"

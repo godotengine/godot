@@ -91,6 +91,7 @@ class EditorExportPlugin : public RefCounted {
 protected:
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
+	Ref<EditorExportPlatform> get_export_platform() const;
 
 	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
 	void add_shared_object(const String &p_path, const Vector<String> &tags, const String &p_target = String());
@@ -118,11 +119,11 @@ protected:
 	GDVIRTUAL0(_export_end)
 
 	GDVIRTUAL2RC(bool, _begin_customize_resources, const Ref<EditorExportPlatform> &, const Vector<String> &)
-	GDVIRTUAL2R(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
+	GDVIRTUAL2R_REQUIRED(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
 
 	GDVIRTUAL2RC(bool, _begin_customize_scenes, const Ref<EditorExportPlatform> &, const Vector<String> &)
-	GDVIRTUAL2R(Node *, _customize_scene, Node *, String)
-	GDVIRTUAL0RC(uint64_t, _get_customization_configuration_hash)
+	GDVIRTUAL2R_REQUIRED(Node *, _customize_scene, Node *, String)
+	GDVIRTUAL0RC_REQUIRED(uint64_t, _get_customization_configuration_hash)
 
 	GDVIRTUAL0(_end_customize_scenes)
 	GDVIRTUAL0(_end_customize_resources)
@@ -131,9 +132,10 @@ protected:
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_export_options, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL1RC(Dictionary, _get_export_options_overrides, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL2RC(bool, _get_export_option_visibility, const Ref<EditorExportPlatform> &, String);
 	GDVIRTUAL2RC(String, _get_export_option_warning, const Ref<EditorExportPlatform> &, String);
 
-	GDVIRTUAL0RC(String, _get_name)
+	GDVIRTUAL0RC_REQUIRED(String, _get_name)
 
 	GDVIRTUAL1RC(bool, _supports_platform, const Ref<EditorExportPlatform> &);
 
@@ -159,12 +161,14 @@ protected:
 	virtual void _get_export_options(const Ref<EditorExportPlatform> &p_export_platform, List<EditorExportPlatform::ExportOption> *r_options) const;
 	virtual Dictionary _get_export_options_overrides(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual bool _should_update_export_options(const Ref<EditorExportPlatform> &p_export_platform) const;
+	virtual bool _get_export_option_visibility(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const;
 	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const;
 
 public:
 	virtual String get_name() const;
 
 	virtual bool supports_platform(const Ref<EditorExportPlatform> &p_export_platform) const;
+	PackedStringArray get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 
 	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_dependencies_maven_repos(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
@@ -182,8 +186,6 @@ public:
 	String get_ios_cpp_code() const;
 	const Vector<String> &get_macos_plugin_files() const;
 	Variant get_option(const StringName &p_name) const;
-
-	EditorExportPlugin();
 };
 
 #endif // EDITOR_EXPORT_PLUGIN_H

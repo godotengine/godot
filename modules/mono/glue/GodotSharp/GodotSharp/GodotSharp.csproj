@@ -135,7 +135,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <!-- Compat Sources -->
-  <ItemGroup>
+  <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />
   </ItemGroup>
   <!--

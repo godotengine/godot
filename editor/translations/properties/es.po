@@ -283,15 +283,6 @@ msgstr "Categoría de la sesión"
 msgid "Mix With Others"
 msgstr "Mezclar con otros"
 
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Script"
-
-msgid "Search in File Extensions"
-msgstr "Buscar en Extensiones de Archivos"
-
 msgid "Subwindows"
 msgstr "Subventanas"
 
@@ -942,6 +933,9 @@ msgstr "Cambiar Modo"
 
 msgid "Interface"
 msgstr "Interfaz"
+
+msgid "Editor"
+msgstr "Editor"
 
 msgid "Editor Language"
 msgstr "Idioma del Editor"
@@ -2831,6 +2825,9 @@ msgstr "Ruta de la Clave Privada SSH"
 msgid "Main Run Args"
 msgstr "Argumentos de la Ejecución Principal"
 
+msgid "Script"
+msgstr "Script"
+
 msgid "Templates Search Path"
 msgstr "Ruta de Búsqueda de Plantillas"
 
@@ -3085,6 +3082,9 @@ msgstr "Eje de Desplazamiento de Entrada Rotativo"
 
 msgid "Text Driver"
 msgstr "Controlador de Texto"
+
+msgid "Search in File Extensions"
+msgstr "Buscar en Extensiones de Archivos"
 
 msgid "Mouse Cursor"
 msgstr "Cursor del Mouse"

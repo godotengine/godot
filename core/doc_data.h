@@ -522,6 +522,10 @@ public:
 		String type;
 		String data_type;
 		String description;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 		String default_value;
 		String keywords;
 		bool operator<(const ThemeItemDoc &p_theme_item) const {
@@ -548,6 +552,16 @@ public:
 
 			if (p_dict.has("description")) {
 				doc.description = p_dict["description"];
+			}
+
+			if (p_dict.has("deprecated")) {
+				doc.is_deprecated = true;
+				doc.deprecated_message = p_dict["deprecated"];
+			}
+
+			if (p_dict.has("experimental")) {
+				doc.is_experimental = true;
+				doc.experimental_message = p_dict["experimental"];
 			}
 
 			if (p_dict.has("default_value")) {
@@ -577,6 +591,14 @@ public:
 
 			if (!p_doc.description.is_empty()) {
 				dict["description"] = p_doc.description;
+			}
+
+			if (p_doc.is_deprecated) {
+				dict["deprecated"] = p_doc.deprecated_message;
+			}
+
+			if (p_doc.is_experimental) {
+				dict["experimental"] = p_doc.experimental_message;
 			}
 
 			if (!p_doc.default_value.is_empty()) {

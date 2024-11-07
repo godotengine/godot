@@ -28,13 +28,15 @@
 # mrbeast mrban <screenmax1234@gmail.com>, 2023.
 # Marios1Gr <Marios1Gr@users.noreply.hosted.weblate.org>, 2023.
 # Lentiles GR <lentiles.gr@gmail.com>, 2024.
+# mantis-goatman <toads.r.epic@gmail.com>, 2024.
+# "Anthony V." <anthonyv156@outlook.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-04-20 08:08+0000\n"
-"Last-Translator: Lentiles GR <lentiles.gr@gmail.com>\n"
+"PO-Revision-Date: 2024-09-09 10:11+0000\n"
+"Last-Translator: \"Anthony V.\" <anthonyv156@outlook.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -42,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Κύριο νήμα"
@@ -75,10 +77,10 @@ msgid "Mouse Wheel Right"
 msgstr "Ροδέλα ποντικιού δεξιά"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Κουμπί ποντικιού αντίχειρα 1"
+msgstr "Κουμπί αντίχειρα ποντικιού 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Κουμπί ποντικιού αντίχειρα 2"
+msgstr "Κουμπί αντίχειρα ποντικιού 2"
 
 msgid "Button"
 msgstr "Κουμπί"
@@ -90,22 +92,22 @@ msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Κίνηση ποντικιού στη θέση (%s) με ταχύτητα (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Αριστερό Xειριστήριο Χ-Άξονας, Joystick 0 Χ-Άξονας"
+msgstr "Άξονας-Χ Αριστερού Μοχλού, Άξονας-Χ Joystick 0"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Αριστερό Xειριστήριο Υ-Άξονας, Joystick 0 Υ-Άξονας"
+msgstr "Άξονας-Υ Αριστερού Μοχλού, Άξονας-Υ Joystick 0"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Δεξί Xειριστήριο Χ-Άξονας, Joystick 1 Χ-Άξονας"
+msgstr "Άξονας-Χ Δεξιού Μοχλού, Άξονας-Χ Joystick 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Δεξί Xειριστήριο Υ-Άξονας, Joystick 1 Υ-Άξονας"
+msgstr "Άξονας-Υ Δεξιού Μοχλού, Άξονας-Υ Joystick 1"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Joystick 2 Χ-Άξονας, Αριστερή Σκανδάλη, Sony L2, Xbox LT"
+msgstr "Άξονας-Χ Joystick 2, Αριστερή Σκανδάλη, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Joystick 2 Υ-Άξονας, Δεξιά Σκανδάλη, Sony R2, Xbox RT"
+msgstr "Άξονας-Υ Joystick 2, Δεξιά Σκανδάλη, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
 msgstr "Joystick 3 Χ-Άξονας"
@@ -179,6 +181,12 @@ msgstr "Xbox Κουπί 1"
 msgid "Xbox Paddle 2"
 msgstr "Xbox Κουπί 2"
 
+msgid "Xbox Paddle 3"
+msgstr "Xbox Κουπί 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Κουπί 4"
+
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 επιφάνεια αφής"
 
@@ -187,6 +195,12 @@ msgstr "Κουμπί Joystick %d"
 
 msgid "Pressure:"
 msgstr "Πίεση:"
+
+msgid "canceled"
+msgstr "ακυρωμένο"
+
+msgid "touched"
+msgstr "αγγιγμένο"
 
 msgid "released"
 msgstr "αφέθηκε"
@@ -238,10 +252,10 @@ msgid "Down"
 msgstr "Κάτω"
 
 msgid "Page Up"
-msgstr "Μετακίνηση σελίδα πάνω"
+msgstr "Μετακίνηση σελίδας πάνω"
 
 msgid "Page Down"
-msgstr "Μετακίνηση σελίδα κάτω"
+msgstr "Μετακίνηση σελίδας κάτω"
 
 msgid "Home"
 msgstr "Αρχική"
@@ -280,7 +294,13 @@ msgid "Indent"
 msgstr "Στοιχειοθέτηση"
 
 msgid "Backspace"
-msgstr "Backspace"
+msgstr "Οπισθοδιαγραφή"
+
+msgid "Backspace Word"
+msgstr "Οπισθοδιαγραφή λέξης"
+
+msgid "Backspace all to Left"
+msgstr "Οπισθοδιαγραφή όλων στα Αριστερά"
 
 msgid "Delete"
 msgstr "Διαγραφή"
@@ -291,20 +311,62 @@ msgstr "Διαγραφή Λέξης"
 msgid "Delete all to Right"
 msgstr "Διαγραφή όλων στα Δεξιά"
 
+msgid "Caret Left"
+msgstr "Δείκτης Αριστερά"
+
+msgid "Caret Word Left"
+msgstr "Επισήμανση λέξης στα Αριστερά"
+
+msgid "Caret Right"
+msgstr "Δείκτης Δεξιά"
+
+msgid "Caret Word Right"
+msgstr "Επισήμανση λέξης Δεξιά"
+
+msgid "Caret Up"
+msgstr "Δείκτης πάνω"
+
+msgid "Caret Down"
+msgstr "Δείκτης Κάτω"
+
+msgid "Caret Line Start"
+msgstr "Δείκτης στην αρχή της γραμμής"
+
+msgid "Caret Line End"
+msgstr "Δείκτης στο τέλος της γραμμής"
+
 msgid "Caret Page Up"
-msgstr "Caret Σελίδα Πάνω"
+msgstr "Δείκτης προς την άνω σελίδα"
+
+msgid "Caret Page Down"
+msgstr "Δείκτης προς την κάτω σελίδα"
+
+msgid "Caret Document Start"
+msgstr "Δείκτης στην αρχή της Τεκμηρίωσης"
+
+msgid "Caret Document End"
+msgstr "Δείκτης στο τέλος της Τεκμηρίωσης"
 
 msgid "Scroll Up"
-msgstr "Μετακίνηση προς τα επάνω"
+msgstr "Κύλιση άνω"
 
 msgid "Scroll Down"
-msgstr "Κύληση προς τα κάτω"
+msgstr "Κύλιση κάτω"
 
 msgid "Select All"
 msgstr "Επιλογή όλων"
 
+msgid "Select Word Under Caret"
+msgstr "Επιλογή λέξης επί του δείκτη"
+
 msgid "Add Selection for Next Occurrence"
 msgstr "Πρόσθεσε επιλογή για την επόμενη εμφάνιση"
+
+msgid "Skip Selection for Next Occurrence"
+msgstr "Παράλειψε επιλογή για την επόμενη εμφάνιση"
+
+msgid "Clear Carets and Selection"
+msgstr "Εκκαθάριση δεικτών και επιλογής"
 
 msgid "Toggle Insert Mode"
 msgstr "Εναλλαγή λειτουργίας εισαγωγής"
@@ -325,14 +387,17 @@ msgid "Refresh"
 msgstr "Ανανέωση"
 
 msgid "Show Hidden"
-msgstr "Εναλλαγή κρυμμένων"
+msgstr "Προβολή κρυμμένων"
+
+msgid "Swap Input Direction"
+msgstr "Εναλλαγή κατεύθυνσης εισόδου"
 
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Άκυρη είσοδος %d (δεν πέρασε) στην έκφραση"
+msgstr "Άκυρη είσοδος %d (δεν περάστηκε) στην έκφραση"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
-"το self δεν μπορεί να χρησιμοποιηθεί επειδή το αντικείμενο είναι null (δεν "
+"ο εαυτός δεν μπορεί να χρησιμοποιηθεί επειδή το αντικείμενο είναι κενό (δεν "
 "έχει περαστεί)"
 
 msgid "Invalid operands to operator %s, %s and %s."
@@ -387,11 +452,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Υπάρχει ήδη ενέργεια με το όνομα «%s»."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Αδυναμία επαναφοράς - Η ενέργεια είναι ίδια με την αρχική"
+
 msgid "Revert Action"
 msgstr "Επαναφορά Ενέργειας"
 
 msgid "Add Event"
 msgstr "Προσθήκη συμβάντος"
+
+msgid "Remove Action"
+msgstr "Αφαίρεση ενέργειας"
 
 msgid "Cannot Remove Action"
 msgstr "Αδύνατη η αφαίρεση της Ενέργειας"
@@ -402,8 +473,14 @@ msgstr "Επεξεργασία Συμβάντος"
 msgid "Remove Event"
 msgstr "Αφαίρεση Συμβάντος"
 
+msgid "Filter by Name"
+msgstr "Φιλτράρισμα κατ'όνομα"
+
 msgid "Clear All"
 msgstr "Εκκαθάριση όλων"
+
+msgid "Clear all search filters."
+msgstr "Εκκαθάριση πρόσφατων αρχείων."
 
 msgid "Add New Action"
 msgstr "Προσθήκη Νέας Ενέργειας"
@@ -426,14 +503,44 @@ msgstr "Χρόνος:"
 msgid "Value:"
 msgstr "Τιμή:"
 
+msgid "Update Selected Key Handles"
+msgstr "Ενημέρωση Επιλεγμένων Κλειδιών"
+
 msgid "Insert Key Here"
 msgstr "Εισαγωγή κλειδιού εδώ"
 
 msgid "Duplicate Selected Key(s)"
-msgstr "Αναπαραγωγή Επιλεγμένων Κλειδιών"
+msgstr "Διπλασιασμός Επιλεγμένων Κλειδιών"
+
+msgid "Cut Selected Key(s)"
+msgstr "Αποκοπή επιλεγμένων κλειδιών"
+
+msgid "Copy Selected Key(s)"
+msgstr "Αντιγραφή επιλεγμένων κλειδιών"
+
+msgid "Paste Key(s)"
+msgstr "Επικόλληση κλειδιών"
 
 msgid "Delete Selected Key(s)"
-msgstr "Διαγραφή επιλογής"
+msgstr "Διαγραφή επιλεγμένων κλειδιών"
+
+msgid "Make Handles Free"
+msgstr "Ορισμός λαβών ως ελεύθερες"
+
+msgid "Make Handles Linear"
+msgstr "Ορισμός λαβών ως γραμμικές"
+
+msgid "Make Handles Balanced"
+msgstr "Ορισμός λαβών ως ισορροπημένες"
+
+msgid "Make Handles Mirrored"
+msgstr "Ορισμός λαβών ως κατοπτρισμένες"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Ορισμών λαβών ως ισορροπημένες (αυτόματη εφαπτομένη)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Ορισμός λαβών ως κατοπτρισμένες (αυτόματη εφαπτομένη)"
 
 msgid "Add Bezier Point"
 msgstr "Προσθήκη σημείου Bezier"
@@ -441,17 +548,90 @@ msgstr "Προσθήκη σημείου Bezier"
 msgid "Move Bezier Points"
 msgstr "Μετακίνηση σημείου Bezier"
 
+msgid "Animation Duplicate Keys"
+msgstr "Διπλασιασμός Κλειδιών Κίνησης"
+
+msgid "Animation Cut Keys"
+msgstr "Αποκοπή Κλειδιών Κίνησης"
+
+msgid "Animation Paste Keys"
+msgstr "Επικόλληση Κλειδιών Κίνησης"
+
 msgid "Focus"
 msgstr "Εστίαση"
 
+msgid "Select All Keys"
+msgstr "Επιλογή όλων των κλειδιών"
+
 msgid "Deselect All Keys"
-msgstr "Αποεπιλογή όλων"
+msgstr "Αποεπιλογή όλων των κλειδιών"
+
+msgid "Animation Change Position3D"
+msgstr "Αλλαγή Θέσης 3Δ Κίνησης"
+
+msgid "Animation Change Rotation3D"
+msgstr "Αλλαγή Περιστροφής 3Δ Κίνησης"
+
+msgid "Animation Change Scale3D"
+msgstr "Αλλαγή Κλίμακας 3Δ Κίνησης"
+
+msgid "Animation Multi Change Transition"
+msgstr "Πολυαλλαγή Μεταβάσεων Κίνησης"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Πολυαλλαγή Θέσεων 3Δ Κίνησης"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Πολυαλλαγή Περιστροφής 3Δ Κίνησης"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Πολυαλλαγή Κλίμακας 3Δ Κίνησης"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Πολυαλλαγή Τιμών Κλειδιών Κίνησης"
+
+msgid "Animation Multi Change Call"
+msgstr "Πολυαλλαγή Κλήσεων Κίνησης"
 
 msgid "Change Animation Length"
 msgstr "Αλλαγή Μήκους Κίνησης"
 
 msgid "Change Animation Loop"
 msgstr "Αλλαγή βρόχου κίνησης"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "Αδυναμίας αλλαγής λειτουργίας βρόχου σε κίνηση από εισηγμένη σκηνή."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr ""
+"Αδυναμία αλλαγής λειτουργίας βρόχου σε κίνηση ενσωματωμένη σε άλλη σκηνή."
+
+msgid "Property Track..."
+msgstr "Κομμάτι Ιδιότητας..."
+
+msgid "3D Position Track..."
+msgstr "Κομμάτι Θέσης 3Δ..."
+
+msgid "3D Rotation Track..."
+msgstr "Κομμάτι Περιστροφής 3Δ..."
+
+msgid "3D Scale Track..."
+msgstr "Κομμάτι Κλίμακας 3Δ..."
+
+msgid "Blend Shape Track..."
+msgstr "Κομμάτι σχήματος ανάμειξης..."
+
+msgid "Call Method Track..."
+msgstr "Κομμάτι κλήσης μεθόδου..."
+
+msgid "Bezier Curve Track..."
+msgstr "Κομμάτι καμπύλης Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Κομμάτι αναπαραγωγής ήχου..."
+
+msgid "Animation Playback Track..."
+msgstr "Κομμάτι αναπαραγωγής κίνησης..."
 
 msgid "Animation length (frames)"
 msgstr "Μήκος κίνησης (καρέ)"
@@ -475,7 +655,7 @@ msgid "Change Track Path"
 msgstr "Αλλαγή Διαδρομής Κομματιού"
 
 msgid "Toggle this track on/off."
-msgstr "Εναλλαγή κομματιού on/off."
+msgstr "Εναλλαγή αναπαραγωγής κομματιού."
 
 msgid "Use Blend"
 msgstr "Χρήση Ανάμειξης"
@@ -493,13 +673,19 @@ msgid "Remove this track."
 msgstr "Αφαίρεση κομματιού."
 
 msgid "Time (s):"
-msgstr "Χρόνος (s):"
+msgstr "Χρόνος (δεύτερα):"
 
 msgid "Position:"
 msgstr "Θέση:"
 
+msgid "Rotation:"
+msgstr "Περιστροφή:"
+
 msgid "Scale:"
 msgstr "Κλιμάκωση:"
+
+msgid "Blend Shape:"
+msgstr "Σχήμα Ανάμειξης:"
 
 msgid "Type:"
 msgstr "Τύπος:"
@@ -507,20 +693,47 @@ msgstr "Τύπος:"
 msgid "(Invalid, expected type: %s)"
 msgstr "(Άκυρο, αναμενόμενος τύπος: %s)"
 
+msgid "Easing:"
+msgstr "Εξομάλυνση:"
+
 msgid "In-Handle:"
-msgstr "Ορισμός λαβής:"
+msgstr "Λαβή έσω:"
 
 msgid "Out-Handle:"
-msgstr "Ορισμός λαβής:"
+msgstr "Λαβή έξω:"
+
+msgid "Handle mode: Free\n"
+msgstr "Λειτουργία λαβής: Ελεύθερη\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Λειτουργία λαβής: Γραμμική\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Λειτουργία λαβής: Ισορροπημένη\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Λειτουργία λαβής: Κατοπτρισμένη\n"
 
 msgid "Stream:"
 msgstr "Ροή:"
 
+msgid "Start (s):"
+msgstr "Εκκίνηση (δεύτερα):"
+
+msgid "End (s):"
+msgstr "Λήξη (δεύτερα):"
+
+msgid "Animation Clip:"
+msgstr "Κομμάτι κίνησης:"
+
 msgid "Toggle Track Enabled"
-msgstr "(Απ)ενεργοποίηση Κομματιού"
+msgstr "Εναλλαγή ενεργοποίησης Κομματιού"
+
+msgid "Don't Use Blend"
+msgstr "Μην χρησιμοποιείς ανάμειξη"
 
 msgid "Continuous"
-msgstr "Συνεχόμενη"
+msgstr "Συνεχής"
 
 msgid "Discrete"
 msgstr "Διακριτή"
@@ -537,14 +750,32 @@ msgstr "Γραμμική"
 msgid "Cubic"
 msgstr "Κυβική"
 
+msgid "Linear Angle"
+msgstr "Γραμμική Γωνία"
+
+msgid "Cubic Angle"
+msgstr "Κυβική Γωνία"
+
 msgid "Clamp Loop Interp"
 msgstr "Περιορισμός παρεμβολής επανάληψης"
 
 msgid "Wrap Loop Interp"
 msgstr "Αναδίπλωση παρεμβολής επανάληψης"
 
+msgid "Insert Key..."
+msgstr "Εισαγωγή κλειδιού..."
+
 msgid "Duplicate Key(s)"
-msgstr "Αναπαραγωγή Κλειδιών"
+msgstr "Διπλασιασμός Κλειδιών"
+
+msgid "Cut Key(s)"
+msgstr "Αποκοπή κλειδιών"
+
+msgid "Copy Key(s)"
+msgstr "Αντιγραφή κλειδιών"
+
+msgid "Add RESET Value(s)"
+msgstr "Προσθήκη τιμή ΕΠΑΝΑΦΟΡΑΣ"
 
 msgid "Delete Key(s)"
 msgstr "Διαγραφή κλειδιών"
@@ -556,16 +787,49 @@ msgid "Change Animation Interpolation Mode"
 msgstr "Αλλαγή Λειτουργίας Παρεμβολής Κίνησης"
 
 msgid "Change Animation Loop Mode"
-msgstr "Αλλαγή λειτουργίας επανάληψης κίνησης"
+msgstr "Αλλαγή Λειτουργίας Επανάληψης Κίνησης"
+
+msgid "Change Animation Use Blend"
+msgstr "Αλλαγή Λειτουργίας Ανάμειξης Κίνησης"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Συμπεπιεσμένα κομμάτια δεν υπόκεινται σε επεξεργασία ούτε διαγράφονται. "
+"Επαναεισαγάγετε την κίνηση με την συμπίεση απενεργοποιημένη, ώστε να την "
+"επεξεργαστείτε."
 
 msgid "Remove Anim Track"
 msgstr "Αφαίρεση Κομματιού Κίνησης"
 
+msgid "Create new track for %s and insert key?"
+msgstr "Δημιουργία νέου κομματιού για %s και εισαγωγή κλειδιού;"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Δημιουργία %d νέων κομματιών και εισαγωγή κλειδιών;"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Πατήστε Shift καθώς πατάτε το εικονίδιο κλειδιών για να παραλείψετε τον "
+"διάλογο."
+
 msgid "Create"
 msgstr "Δημιουργία"
 
+msgid "Animation Insert Key"
+msgstr "Εισαγωγή Κλειδιού Κίνησης"
+
+msgid "node '%s'"
+msgstr "κόμβος '%s'."
+
+msgid "animation"
+msgstr "κίνηση"
+
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "Ένα AnimationPlayer δεν μπορεί να κινήσει τον εαυτό του."
+msgstr ""
+"Ένας αναπαραγωγέας κίνησης δεν μπορεί να κινήσει τον εαυτό του, μόνο τους "
+"άλλους αναπαραγωγείς."
 
 msgid "property '%s'"
 msgstr "ιδιότητα '%s'"
@@ -575,6 +839,12 @@ msgstr "Αλλαγή βήματος κίνησης"
 
 msgid "Rearrange Tracks"
 msgstr "Αναδιάταξη Κομματιών"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Τα σχήματα ανάμειξης εφαρμόζονται μόνο σε κόμβους MeshInstance3D."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr "Κομμάτια μετασχηματισμών 3Δ εφαρμόζονται μόνο σε κόμβους 3Δ."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -595,13 +865,19 @@ msgid "Not possible to add a new track without a root"
 msgstr "Αδύνατη η προσθήκη κομματιού χωρίς ρίζα"
 
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr "Άκυρο κομμάτι καμπύλης Bezier (χωρίς κατάλληλες υπό-ιδιότητες)"
+msgstr "Άκυρο κομμάτι καμπύλης Bezier (χωρίς κατάλληλες υποϊδιότητες)"
 
 msgid "Add Bezier Track"
 msgstr "Προσθήκη κομματιού Bezier"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "Αδύνατη η προσθήκη κλειδιού, λόγω άκυρης διαδρομής κομματιού."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Αδύνατη η προσθήκη κλειδιού, το κομμάτι δεν είναι τύπου Node3D"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "Αδύνατη η προσθήκη κλειδιού, το κομμάτι δεν είναι τύπου MeshInstance3D"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Αδύνατη η προσθήκη κλειδιού μεθόδου, λόγω άκυρης διαδρομής κομματιού."
@@ -619,13 +895,16 @@ msgid "Rotation"
 msgstr "Περιστροφή"
 
 msgid "Scale"
-msgstr "Μέγεθος"
+msgstr "Κλιμάκωση"
 
 msgid "BlendShape"
 msgstr "Σχήμα μείγματος"
 
 msgid "Methods"
 msgstr "Μέθοδοι"
+
+msgid "Bezier"
+msgstr "Μπεζιέ"
 
 msgid "Audio"
 msgstr "Ήχος"
@@ -724,6 +1003,9 @@ msgstr "Αρ. γραμμής:"
 msgid "%d replaced."
 msgstr "%d αντικαταστάθηκαν."
 
+msgid "No match"
+msgstr "Κανένα αποτέλεσμα"
+
 msgid "%d match"
 msgid_plural "%d matches"
 msgstr[0] "%d αποτέλεσμα"
@@ -733,6 +1015,9 @@ msgid "%d of %d match"
 msgid_plural "%d of %d matches"
 msgstr[0] "%d απο %d αποτέλεσμα"
 msgstr[1] "%d απο %d αποτελέσματα"
+
+msgid "Next Match"
+msgstr "Επόμενο Αποτέλεσμα"
 
 msgid "Match Case"
 msgstr "Αντιστοίχηση πεζών-κεφαλαίων"
@@ -881,6 +1166,9 @@ msgstr "Αντιγραφή Ονόματος"
 msgid "Edit..."
 msgstr "Επεξεργασία..."
 
+msgid "Change Type of \"%s\""
+msgstr "Αλλαγή τύπου \"%S\""
+
 msgid "Change"
 msgstr "Αλλαγή"
 
@@ -985,8 +1273,17 @@ msgstr "Ψηφιολέξεις:"
 msgid "Error:"
 msgstr "Σφάλμα:"
 
+msgid "%s Error"
+msgstr "Σφάλμα %s"
+
 msgid "%s Error:"
 msgstr "%s Σφάλμα:"
+
+msgid "%s Source"
+msgstr "Πηγή %s"
+
+msgid "%s Source:"
+msgstr "Πηγή %s:"
 
 msgid "Stack Trace"
 msgstr "Ίχνος Σωρός"
@@ -996,6 +1293,9 @@ msgstr "Ίχνος Σωρού:"
 
 msgid "Debug session started."
 msgstr "Ο Αποσφαλματωτής ξεκίνησε."
+
+msgid "Line %d"
+msgstr "Γραμμή %d"
 
 msgid "Delete All Breakpoints in:"
 msgstr "Αφαίρεση όλων των σημείων διακοπής στο:"
@@ -1161,6 +1461,9 @@ msgstr "Πόροι χωρίς ρητή ιδιοκτησία:"
 msgid "Could not create folder."
 msgstr "Αδύνατη η δημιουργία φακέλου."
 
+msgid "Create new folder in %s:"
+msgstr "Δημιουργία νέου φακέλου στο %s:"
+
 msgid "Create Folder"
 msgstr "Δημιουργία φακέλου"
 
@@ -1221,14 +1524,24 @@ msgstr "Συστατικά"
 msgid "Licenses"
 msgstr "Άδειες"
 
+msgid "Error opening asset file for \"%s\" (not in ZIP format)."
+msgstr "Σφάλμα ανοίγματος αρχείου πακέτου για \"%s\" (όχι σε μορφή ZIP)."
+
 msgid "Uncompressing Assets"
 msgstr "Αποσυμπίεση asset"
+
+msgid "The following files failed extraction from asset \"%s\":"
+msgstr ""
+"Η εξαγωγή των ακόλουθων αρχείων από το περιουσιακό στοιχείο \"%s\" απέτυχε:"
 
 msgid "(and %s more files)"
 msgstr "Και %s αρχεία ακόμα"
 
 msgid "Success!"
 msgstr "Επιτυχία!"
+
+msgid "No files conflict with your project"
+msgstr "Δεν υπάρχουν αρχεία που συγκρούονται με το έργο σας"
 
 msgid "Install"
 msgstr "Εγκατάσταση"
@@ -1350,6 +1663,9 @@ msgstr "Φόρτωση προεπιλεγμένης διάταξης διαύλ�
 msgid "Create a new Bus Layout."
 msgstr "Δημιουργία νέας διάταξης διαύλων ήχου."
 
+msgid "Valid characters:"
+msgstr "Έγκυροι χαρακτήρες:"
+
 msgid "Autoload '%s' already exists!"
 msgstr "AutoLoad '%s' υπάρχει ήδη!"
 
@@ -1368,11 +1684,23 @@ msgstr "Ενεργοποίηση"
 msgid "Rearrange Autoloads"
 msgstr "Αναδιάταξη των AutoLoad"
 
+msgid "%s is an invalid path. File does not exist."
+msgstr "%s είναι μια άκυρη διαδρομή. Το αρχείο δεν υπάρχει."
+
 msgid "Path:"
 msgstr "Διαδρομή:"
 
 msgid "Node Name:"
 msgstr "Όνομα κόμβου:"
+
+msgid "3D Engine"
+msgstr "3D Μηχανή"
+
+msgid "2D Physics"
+msgstr "2D Φυσική"
+
+msgid "3D Physics"
+msgstr "3D Φυσική"
 
 msgid "Navigation"
 msgstr "Πλοήγηση"
@@ -1380,8 +1708,14 @@ msgstr "Πλοήγηση"
 msgid "Navigation, both 2D and 3D."
 msgstr "Δημιουργία Πλοήγησης, 2-Διαστάσεων και 3-Διαστάσεων."
 
+msgid "Reset the edited profile?"
+msgstr "Επαναφορά του επεξεργασμένου προφίλ;"
+
 msgid "File saving failed."
 msgstr "Σφάλμα αποθήκευσης αρχείου."
+
+msgid "Create a new profile?"
+msgstr "Δημιουργία νέου προφίλ;"
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "Άκυρη μορφή αρχείου «%s», ακύρωση εισαγωγής."
@@ -1406,6 +1740,13 @@ msgstr "Παρακαλώ επιβεβαιώστε:"
 
 msgid "Export Profile"
 msgstr "Εξαγωγή Προφίλ"
+
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"Απέτυχε η εκτέλεση της εντολής \"%s\":\n"
+"%s."
 
 msgid "Paste Params"
 msgstr "Επικόλληση παραμέτρων"
@@ -1572,6 +1913,9 @@ msgstr "Διαδικτυακή Εκμάθηση"
 msgid "Properties"
 msgstr "Ιδιότητες"
 
+msgid "overrides %s:"
+msgstr "παρακάμπτει %s:"
+
 msgid "default:"
 msgstr "προεπιλογή:"
 
@@ -1602,6 +1946,9 @@ msgstr ""
 
 msgid "Editor"
 msgstr "Επεξεργαστής"
+
+msgid "No description available."
+msgstr "Δεν υπάρχει διαθέσιμη περιγραφή."
 
 msgid "Property:"
 msgstr "Ιδιότητα:"
@@ -1669,6 +2016,11 @@ msgstr "Είδος μέλους"
 msgid "Class"
 msgstr "Κλάση"
 
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "{Αλλαγή %d}"
+msgstr[1] "{Αλλαγές %d}"
+
 msgid "Move Up"
 msgstr "Μετακίνηση πάνω"
 
@@ -1684,11 +2036,23 @@ msgstr "Αλλαγή μεγέθους πίνακα"
 msgid "New Size:"
 msgstr "Νέο Μέγεθος:"
 
+msgid "Element %s"
+msgstr "Στοιχείο %s"
+
 msgid "Set %s"
 msgstr "Θέσε %s"
 
+msgid "Set Multiple: %s"
+msgstr "Ορισμός πολλών: %s"
+
+msgid "Remove metadata %s"
+msgstr "Αφαίρεση μεταδεδομένων %s"
+
 msgid "Name:"
 msgstr "Όνομα:"
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Προσθήκη Ιδιότητας Μεταδεδομένων για \"%s\""
 
 msgid "Creating Mesh Previews"
 msgstr "Δημιουργία προεπισκοπήσεων πλεγμάτων"
@@ -1742,6 +2106,9 @@ msgstr "Ανώνυμο έργο"
 msgid "Spins when the editor window redraws."
 msgstr "Περιστρέφεται όταν το παράθυρο του επεξεργαστή επαναχρωματίζεται."
 
+msgid "Imported resources can't be saved."
+msgstr "Δεν μπορούν να αποθηκευτούν οι εισακτέοι πόροι."
+
 msgid "OK"
 msgstr "Εντάξει"
 
@@ -1754,6 +2121,9 @@ msgstr ""
 
 msgid "Save Resource As..."
 msgstr "Αποθήκευση πόρου ως..."
+
+msgid "Error while loading file '%s'."
+msgstr "Σφάλμα κατά την φόρτωση αρχείου '%s':"
 
 msgid "Saving Scene"
 msgstr "Αποθήκευση σκηνής"
@@ -1835,11 +2205,23 @@ msgstr "Αποθήκευση σκηνή ως..."
 msgid "Current scene not saved. Open anyway?"
 msgstr "Η τρέχουσα σκηνή δεν έχει αποθηκευτεί. Συνέχεια με το άνοιγμα;"
 
+msgid "Global Undo: %s"
+msgstr "Παγκόσμια Αναίρεση: %s"
+
 msgid "Remote Undo: %s"
 msgstr "Απομακρυσμένη Αναίρεση: %s"
 
+msgid "Scene Undo: %s"
+msgstr "Αναίρεση Σκηνικού: %s"
+
+msgid "Global Redo: %s"
+msgstr "Παγκόσμια Αναίρεση: %s"
+
 msgid "Remote Redo: %s"
 msgstr "Απομακρυσμένη Επανάληψη Ενέργειας: %s"
+
+msgid "Scene Redo: %s"
+msgstr "Επανάληψη Σκηνής: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr ""
@@ -1856,8 +2238,14 @@ msgstr ""
 "Επαναφόρτωση της αποθηκευμένης σκηνής; Αυτή η ενέργεια δεν μπορεί να "
 "αναιρεθεί."
 
+msgid "Save modified resources before reloading?"
+msgstr "Αποθήκευση τροποποιημένων πόρων πριν την επαναφόρτωση;"
+
 msgid "Save & Quit"
 msgstr "Αποθήκευση & Έξοδος"
+
+msgid "Save modified resources before closing?"
+msgstr "Αποθήκευση τροποποιημένων πόρων πριν το κλείσιμο;"
 
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
@@ -1944,6 +2332,9 @@ msgstr "Διαγραφή διάταξης"
 msgid "Save & Close"
 msgstr "Αποθήκευση & Κλείσιμο"
 
+msgid "Save before closing?"
+msgstr "Αποθήκευση αλλαγών πριν το κλείσιμο;"
+
 msgid "%d more files or folders"
 msgstr "%d περισσότερα αρχεία ή φάκελοι"
 
@@ -1952,6 +2343,9 @@ msgstr "%d περισσότεροι φάκελοι"
 
 msgid "%d more files"
 msgstr "%d περισσότερα αρχεία"
+
+msgid "Analyzing scene %s"
+msgstr "Ανάλυση σκηνής %s"
 
 msgid "Forward+"
 msgstr "Εμπρός+"
@@ -2151,6 +2545,9 @@ msgstr "Επεξεργασία Κειμένου:"
 msgid "On"
 msgstr "Ναι"
 
+msgid "Renaming layer %d:"
+msgstr "Μετονομασία στρώματος %d:"
+
 msgid "No name provided."
 msgstr "Δεν δόθηκε όνομα."
 
@@ -2162,6 +2559,9 @@ msgstr "Bit %d, τιμή %d"
 
 msgid "Rename"
 msgstr "Μετονομασία"
+
+msgid "Layer %d"
+msgstr "Στρώμα %d"
 
 msgid "Assign..."
 msgstr "Εκχώρηση..."
@@ -2205,6 +2605,9 @@ msgstr "Αφαίρεση στοιχείου"
 msgid "Add Key/Value Pair"
 msgstr "Προσθήκη ζεύγους κλειδιού/τιμής"
 
+msgid "Localizable String (size %d)"
+msgstr "Localizable συμβολοσειρά (μέγεθος %d)"
+
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
 "(%s)."
@@ -2238,8 +2641,17 @@ msgstr ""
 "Δεν βρέθηκε εκτελέσιμη διαμόρφωση εξαγωγής για αυτή την πλατφόρμα.\n"
 "Παρακαλούμε προσθέστε μία εκτελέσιμη διαμόρφωση στο μενού εξαγωγής."
 
+msgid "Run 'Remote Debug' anyway?"
+msgstr "Εκτέλεση της 'Απομακρυσμένης Αποσφαλμάτωσης' ούτως ή άλλως;"
+
 msgid "Write your logic in the _run() method."
 msgstr "Γράψτε τη λογική σας στη μέθοδο _run()."
+
+msgid "Edit Built-in Action: %s"
+msgstr "Επεξεργασία ενσωματωμένης ενέργειας: %s"
+
+msgid "Edit Shortcut: %s"
+msgstr "Eπεξεργασία συντόμευσης: %s"
 
 msgid "Editor Settings"
 msgstr "Ρυθμίσεις επεξεργαστή"
@@ -2256,11 +2668,17 @@ msgstr "Συντομεύσεις"
 msgid "Binding"
 msgstr "Δεσμός"
 
+msgid "Joypad Axis %d %s (%s)"
+msgstr "Άξονας Joypad %d %s (%s)"
+
 msgid "All Devices"
 msgstr "Όλες οι Συσκευές"
 
 msgid "Device"
 msgstr "Συσκευή"
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Αδύνατη η δημιουργία υποφακέλου \"%s\"."
 
 msgid "Project export for platform:"
 msgstr "Εξαγωγή Έργου για πλατφόρμα:"
@@ -2274,11 +2692,20 @@ msgstr "Επιτυχής Ολοκλήρωση."
 msgid "Failed."
 msgstr "Απέτυχε."
 
+msgid "Storing File: %s"
+msgstr "Αποθήκευση Αρχείου: %s"
+
 msgid "Storing File:"
 msgstr "Αρχείο αποθήκευσης:"
 
+msgid "Could not open file to read from path \"%s\"."
+msgstr "Δεν μπόρεσε να ανοίξει to αρχείο για ανάγνωση από τη διαδρομή \"%s\"."
+
 msgid "Packing"
 msgstr "Πακετάρισμα"
+
+msgid "Cannot create file \"%s\"."
+msgstr "Αδύνατη η δημιουργία αρχείου \"%s\"."
 
 msgid "Failed to export project files."
 msgstr "Απέτυχε η εξαγωγή αρχείων έργου."
@@ -4332,14 +4759,14 @@ msgstr "Αφαίρεση στοιχείου ελέγχου εξόδου από �
 msgid "Remove In-Control from Curve"
 msgstr "Αφαίρεση στοιχείου ελέγχου εισόδου από την καμπύλη"
 
-msgid "Split Curve"
-msgstr "Διαίρεση Καμπύλης"
-
 msgid "Move Point in Curve"
 msgstr "Μετακίνηση σημείου στην καμπύλη"
 
 msgid "Add Point to Curve"
 msgstr "Προσθήκη σημείου στην καμπύλη"
+
+msgid "Split Curve"
+msgstr "Διαίρεση Καμπύλης"
 
 msgid "Move In-Control in Curve"
 msgstr "Μετακίνηση ελεγκτή εισόδου στην καμπύλη"
@@ -4361,6 +4788,9 @@ msgstr "κλείσιμο καμπύλης"
 
 msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
+
+msgid "Remove all curve points?"
+msgstr "Αφαίρεση όλων των σημείων καμπύλης;"
 
 msgid "Mirror Handle Angles"
 msgstr "Καθρεπτισμός Γωνιών Λαβών"

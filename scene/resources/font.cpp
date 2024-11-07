@@ -647,13 +647,13 @@ void FontFile::_convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			wa[ofs_dst + 1] = r[ofs_src + 3];
 		}
 	}
-	Ref<Image> img_r = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_r));
+	Ref<Image> img_r = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_r));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 0, img_r);
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 1, img_g);
-	Ref<Image> img_b = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_b));
+	Ref<Image> img_b = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_b));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 2, img_b);
-	Ref<Image> img_a = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_a));
+	Ref<Image> img_a = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_a));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 3, img_a);
 }
 
@@ -738,22 +738,22 @@ void FontFile::_convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			}
 		}
 	}
-	Ref<Image> img_r = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_r));
+	Ref<Image> img_r = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_r));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 0, img_r);
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 1, img_g);
-	Ref<Image> img_b = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_b));
+	Ref<Image> img_b = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_b));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 2, img_b);
-	Ref<Image> img_a = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_a));
+	Ref<Image> img_a = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_a));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 3, img_a);
 
-	Ref<Image> img_ro = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_ro));
+	Ref<Image> img_ro = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_ro));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 0, img_ro);
-	Ref<Image> img_go = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_go));
+	Ref<Image> img_go = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_go));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 1, img_go);
-	Ref<Image> img_bo = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_bo));
+	Ref<Image> img_bo = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_bo));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 2, img_bo);
-	Ref<Image> img_ao = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_ao));
+	Ref<Image> img_ao = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_ao));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 3, img_ao);
 }
 
@@ -806,10 +806,10 @@ void FontFile::_convert_rgba_4bit(Ref<Image> &p_source, int p_page, int p_sz) {
 			}
 		}
 	}
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_RGBA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_RGBA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page, img_g);
 
-	Ref<Image> img_o = memnew(Image(w, h, 0, Image::FORMAT_RGBA8, imgdata_o));
+	Ref<Image> img_o = memnew(Image(w, h, false, Image::FORMAT_RGBA8, imgdata_o));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page, img_o);
 }
 
@@ -838,7 +838,7 @@ void FontFile::_convert_mono_8bit(Ref<Image> &p_source, int p_page, int p_ch, in
 			wg[ofs_dst + 1] = r[ofs_src + p_ch];
 		}
 	}
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, p_ol), p_page, img_g);
 }
 
@@ -878,10 +878,10 @@ void FontFile::_convert_mono_4bit(Ref<Image> &p_source, int p_page, int p_ch, in
 			}
 		}
 	}
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page, img_g);
 
-	Ref<Image> img_o = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_o));
+	Ref<Image> img_o = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_o));
 	set_texture_image(0, Vector2i(p_sz, p_ol), p_page, img_o);
 }
 
@@ -2912,13 +2912,13 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	List<Ref<Theme>> themes = global_context->get_themes();
+	Vector<Ref<Theme>> themes = global_context->get_themes();
 	if (Engine::get_singleton()->is_editor_hint()) {
-		themes.push_front(ThemeDB::get_singleton()->get_project_theme());
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
 	}
 
 	for (const Ref<Theme> &theme : themes) {
@@ -3280,8 +3280,8 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
 	for (const Ref<Theme> &theme : global_context->get_themes()) {

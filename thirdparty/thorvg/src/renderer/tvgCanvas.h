@@ -93,11 +93,13 @@ struct Canvas::Impl
         auto flag = RenderUpdateFlag::None;
         if (status == Status::Damanged || force) flag = RenderUpdateFlag::All;
 
+        auto m = Matrix{1, 0, 0, 0, 1, 0, 0, 0, 1};
+
         if (paint) {
-            paint->pImpl->update(renderer, nullptr, clips, 255, flag);
+            paint->pImpl->update(renderer, m, clips, 255, flag);
         } else {
             for (auto paint : paints) {
-                paint->pImpl->update(renderer, nullptr, clips, 255, flag);
+                paint->pImpl->update(renderer, m, clips, 255, flag);
             }
         }
         status = Status::Updating;

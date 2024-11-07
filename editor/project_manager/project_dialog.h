@@ -77,6 +77,8 @@ private:
 	Label *renderer_info = nullptr;
 	HBoxContainer *default_files_container = nullptr;
 	Ref<ButtonGroup> renderer_button_group;
+	bool rendering_device_supported = false;
+	Label *rd_not_supported = nullptr;
 
 	Label *msg = nullptr;
 	LineEdit *project_name = nullptr;

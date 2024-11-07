@@ -328,6 +328,7 @@ class SampleNodeBus {
  *   offset?: number
  *   playbackRate?: number
  *   startTime?: number
+ *   pitchScale?: number
  *   loopMode?: LoopMode
  *   volume?: Float32Array
  *   start?: boolean
@@ -438,7 +439,7 @@ class SampleNode {
 		/** @type {LoopMode} */
 		this.loopMode = options.loopMode ?? this.getSample().loopMode ?? 'disabled';
 		/** @type {number} */
-		this._pitchScale = 1;
+		this._pitchScale = options.pitchScale ?? 1;
 		/** @type {number} */
 		this._sourceStartTime = 0;
 		/** @type {Map<Bus, SampleNodeBus>} */
@@ -867,7 +868,10 @@ class Bus {
 	 * @returns {void}
 	 */
 	static move(fromIndex, toIndex) {
-		const movedBus = GodotAudio.Bus.getBus(fromIndex);
+		const movedBus = GodotAudio.Bus.getBusOrNull(fromIndex);
+		if (movedBus == null) {
+			return;
+		}
 		const buses = GodotAudio.buses.filter((_, i) => i !== fromIndex);
 		// Inserts at index.
 		buses.splice(toIndex - 1, 0, movedBus);
@@ -1423,7 +1427,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		remove_sample_bus: function (index) {
-			const bus = GodotAudio.Bus.getBus(index);
+			const bus = GodotAudio.Bus.getBusOrNull(index);
+			if (bus == null) {
+				return;
+			}
 			bus.clear();
 		},
 
@@ -1453,8 +1460,17 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_send: function (busIndex, sendIndex) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
-			bus.setSend(GodotAudio.Bus.getBus(sendIndex));
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				// Cannot send from an invalid bus.
+				return;
+			}
+			let targetBus = GodotAudio.Bus.getBusOrNull(sendIndex);
+			if (targetBus == null) {
+				// Send to master.
+				targetBus = GodotAudio.Bus.getBus(0);
+			}
+			bus.setSend(targetBus);
 		},
 
 		/**
@@ -1464,7 +1480,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_volume_db: function (busIndex, volumeDb) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				return;
+			}
 			bus.setVolumeDb(volumeDb);
 		},
 
@@ -1475,7 +1494,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_solo: function (busIndex, enable) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				return;
+			}
 			bus.solo(enable);
 		},
 
@@ -1486,7 +1508,10 @@ const _GodotAudio = {
 		 * @returns {void}
 		 */
 		set_sample_bus_mute: function (busIndex, enable) {
-			const bus = GodotAudio.Bus.getBus(busIndex);
+			const bus = GodotAudio.Bus.getBusOrNull(busIndex);
+			if (bus == null) {
+				return;
+			}
 			bus.mute(enable);
 		},
 	},
@@ -1648,13 +1673,14 @@ const _GodotAudio = {
 	},
 
 	godot_audio_sample_start__proxy: 'sync',
-	godot_audio_sample_start__sig: 'viiiii',
+	godot_audio_sample_start__sig: 'viiiifi',
 	/**
 	 * Starts a sample.
 	 * @param {number} playbackObjectIdStrPtr Playback object id pointer
 	 * @param {number} streamObjectIdStrPtr Stream object id pointer
 	 * @param {number} busIndex Bus index
 	 * @param {number} offset Sample offset
+	 * @param {number} pitchScale Pitch scale
 	 * @param {number} volumePtr Volume pointer
 	 * @returns {void}
 	 */
@@ -1663,6 +1689,7 @@ const _GodotAudio = {
 		streamObjectIdStrPtr,
 		busIndex,
 		offset,
+		pitchScale,
 		volumePtr
 	) {
 		/** @type {string} */
@@ -1671,11 +1698,12 @@ const _GodotAudio = {
 		const streamObjectId = GodotRuntime.parseString(streamObjectIdStrPtr);
 		/** @type {Float32Array} */
 		const volume = GodotRuntime.heapSub(HEAPF32, volumePtr, 8);
-		/** @type {SampleNodeConstructorOptions} */
+		/** @type {SampleNodeOptions} */
 		const startOptions = {
 			offset,
 			volume,
 			playbackRate: 1,
+			pitchScale,
 			start: true,
 		};
 		GodotAudio.start_sample(

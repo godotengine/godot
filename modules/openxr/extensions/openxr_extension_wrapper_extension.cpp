@@ -51,6 +51,8 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_process);
 	GDVIRTUAL_BIND(_on_pre_render);
 	GDVIRTUAL_BIND(_on_main_swapchains_created);
+	GDVIRTUAL_BIND(_on_pre_draw_viewport, "viewport");
+	GDVIRTUAL_BIND(_on_post_draw_viewport, "viewport");
 	GDVIRTUAL_BIND(_on_session_destroyed);
 	GDVIRTUAL_BIND(_on_state_idle);
 	GDVIRTUAL_BIND(_on_state_ready);
@@ -65,6 +67,7 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_properties);
 	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_property_defaults);
 	GDVIRTUAL_BIND(_on_viewport_composition_layer_destroyed, "layer");
+	GDVIRTUAL_BIND(_set_android_surface_swapchain_create_info_and_get_next_pointer, "property_values", "next_pointer");
 
 	ClassDB::bind_method(D_METHOD("get_openxr_api"), &OpenXRExtensionWrapperExtension::get_openxr_api);
 	ClassDB::bind_method(D_METHOD("register_extension_wrapper"), &OpenXRExtensionWrapperExtension::register_extension_wrapper);
@@ -207,6 +210,14 @@ void OpenXRExtensionWrapperExtension::on_session_destroyed() {
 	GDVIRTUAL_CALL(_on_session_destroyed);
 }
 
+void OpenXRExtensionWrapperExtension::on_pre_draw_viewport(RID p_render_target) {
+	GDVIRTUAL_CALL(_on_pre_draw_viewport, p_render_target);
+}
+
+void OpenXRExtensionWrapperExtension::on_post_draw_viewport(RID p_render_target) {
+	GDVIRTUAL_CALL(_on_post_draw_viewport, p_render_target);
+}
+
 void OpenXRExtensionWrapperExtension::on_state_idle() {
 	GDVIRTUAL_CALL(_on_state_idle);
 }
@@ -249,7 +260,7 @@ bool OpenXRExtensionWrapperExtension::on_event_polled(const XrEventDataBuffer &p
 	return false;
 }
 
-void *OpenXRExtensionWrapperExtension::set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, Dictionary p_property_values, void *p_next_pointer) {
+void *OpenXRExtensionWrapperExtension::set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, const Dictionary &p_property_values, void *p_next_pointer) {
 	uint64_t pointer = 0;
 
 	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
@@ -279,6 +290,16 @@ Dictionary OpenXRExtensionWrapperExtension::get_viewport_composition_layer_exten
 	return property_defaults;
 }
 
+void *OpenXRExtensionWrapperExtension::set_android_surface_swapchain_create_info_and_get_next_pointer(const Dictionary &p_property_values, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_android_surface_swapchain_create_info_and_get_next_pointer, p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return p_next_pointer;
+}
+
 Ref<OpenXRAPIExtension> OpenXRExtensionWrapperExtension::get_openxr_api() {
 	return openxr_api;
 }
@@ -287,8 +308,7 @@ void OpenXRExtensionWrapperExtension::register_extension_wrapper() {
 	OpenXRAPI::register_extension_wrapper(this);
 }
 
-OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() :
-		Object(), OpenXRExtensionWrapper() {
+OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() {
 	openxr_api.instantiate();
 }
 

@@ -486,7 +486,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector2" />
 			<description>
-				Returns the point closest to the provided [param to_point] on the navigation mesh surface.
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_owner" qualifiers="const">
@@ -494,7 +494,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector2" />
 			<description>
-				Returns the owner region RID for the point returned by [method map_get_closest_point].
+				Returns the owner region RID for the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
@@ -766,6 +766,14 @@
 			<return type="RID" />
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_closest_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector2" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param region].
 			</description>
 		</method>
 		<method name="region_get_connection_pathway_end" qualifiers="const">

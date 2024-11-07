@@ -278,7 +278,7 @@
 			Ellipsis character used for text clipping.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
-			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text shown.

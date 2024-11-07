@@ -452,8 +452,8 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 		return FAILED;
 	}
 
-	// WARNING: p_window_id is an eternally growing integer since popup windows keep coming and going
-	// and each of them has a higher id than the previous, so it must be used in a map not a vector
+	// WARNING: `p_window_id` is an eternally growing integer since popup windows keep coming and going
+	// and each of them has a higher id than the previous, so it must be used in a map not a vector.
 	_windows[p_window_id] = win;
 
 	// make current

@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
@@ -68,14 +69,14 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 		String cmd_args;
 		bool wait = false;
 
-		SSHCleanupCommand(){};
+		SSHCleanupCommand() {}
 		SSHCleanupCommand(const String &p_host, const String &p_port, const Vector<String> &p_ssh_arg, const String &p_cmd_args, bool p_wait = false) {
 			host = p_host;
 			port = p_port;
 			ssh_args = p_ssh_arg;
 			cmd_args = p_cmd_args;
 			wait = p_wait;
-		};
+		}
 	};
 
 	Ref<ImageTexture> run_icon;
@@ -147,7 +148,7 @@ public:
 
 	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
@@ -167,7 +168,7 @@ public:
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
 	EditorExportPlatformMacOS();

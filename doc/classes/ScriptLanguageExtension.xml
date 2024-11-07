@@ -314,6 +314,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_reload_scripts" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="scripts" type="Array" />
+			<param index="1" name="soft_reload" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_reload_tool_script" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="script" type="Script" />

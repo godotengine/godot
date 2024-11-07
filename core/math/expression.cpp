@@ -30,12 +30,7 @@
 
 #include "expression.h"
 
-#include "core/io/marshalls.h"
-#include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
-#include "core/object/ref_counted.h"
-#include "core/os/os.h"
-#include "core/variant/variant_parser.h"
 
 Error Expression::_get_token(Token &r_token) {
 	while (true) {
@@ -392,7 +387,6 @@ Error Expression::_get_token(Token &r_token) {
 								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
-
 								} else {
 									reading = READING_DONE;
 								}
@@ -419,7 +413,9 @@ Error Expression::_get_token(Token &r_token) {
 						is_first_char = false;
 					}
 
-					str_ofs--;
+					if (c != 0) {
+						str_ofs--;
+					}
 
 					r_token.type = TK_CONSTANT;
 
@@ -1495,7 +1491,7 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 }
 
 Variant Expression::execute(const Array &p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
-	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
+	ERR_FAIL_COND_V_MSG(error_set, Variant(), vformat("There was previously a parse error: %s.", error_str));
 
 	execution_error = false;
 	Variant output;

@@ -746,7 +746,93 @@ static void exp_mod_precompute_window(const mbedtls_mpi_uint *A,
     }
 }
 
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+// Set to a default that is neither MBEDTLS_MPI_IS_PUBLIC nor MBEDTLS_MPI_IS_SECRET
+int mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_PUBLIC + MBEDTLS_MPI_IS_SECRET + 1;
+#endif
+
+/*
+ * This function calculates the indices of the exponent where the exponentiation algorithm should
+ * start processing.
+ *
+ * Warning! If the parameter E_public has MBEDTLS_MPI_IS_PUBLIC as its value,
+ * this function is not constant time with respect to the exponent (parameter E).
+ */
+static inline void exp_mod_calc_first_bit_optionally_safe(const mbedtls_mpi_uint *E,
+                                                          size_t E_limbs,
+                                                          int E_public,
+                                                          size_t *E_limb_index,
+                                                          size_t *E_bit_index)
+{
+    if (E_public == MBEDTLS_MPI_IS_PUBLIC) {
+        /*
+         * Skip leading zero bits.
+         */
+        size_t E_bits = mbedtls_mpi_core_bitlen(E, E_limbs);
+        if (E_bits == 0) {
+            /*
+             * If E is 0 mbedtls_mpi_core_bitlen() returns 0. Even if that is the case, we will want
+             * to represent it as a single 0 bit and as such the bitlength will be 1.
+             */
+            E_bits = 1;
+        }
+
+        *E_limb_index = E_bits / biL;
+        *E_bit_index = E_bits % biL;
+
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_PUBLIC;
+#endif
+    } else {
+        /*
+         * Here we need to be constant time with respect to E and can't do anything better than
+         * start at the first allocated bit.
+         */
+        *E_limb_index = E_limbs;
+        *E_bit_index = 0;
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        // Only mark the codepath safe if there wasn't an unsafe codepath before
+        if (mbedtls_mpi_optionally_safe_codepath != MBEDTLS_MPI_IS_PUBLIC) {
+            mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_SECRET;
+        }
+#endif
+    }
+}
+
+/*
+ * Warning! If the parameter window_public has MBEDTLS_MPI_IS_PUBLIC as its value, this function is
+ * not constant time with respect to the window parameter and consequently the exponent of the
+ * exponentiation (parameter E of mbedtls_mpi_core_exp_mod_optionally_safe).
+ */
+static inline void exp_mod_table_lookup_optionally_safe(mbedtls_mpi_uint *Wselect,
+                                                        mbedtls_mpi_uint *Wtable,
+                                                        size_t AN_limbs, size_t welem,
+                                                        mbedtls_mpi_uint window,
+                                                        int window_public)
+{
+    if (window_public == MBEDTLS_MPI_IS_PUBLIC) {
+        memcpy(Wselect, Wtable + window * AN_limbs, AN_limbs * ciL);
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_PUBLIC;
+#endif
+    } else {
+        /* Select Wtable[window] without leaking window through
+         * memory access patterns. */
+        mbedtls_mpi_core_ct_uint_table_lookup(Wselect, Wtable,
+                                              AN_limbs, welem, window);
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+        // Only mark the codepath safe if there wasn't an unsafe codepath before
+        if (mbedtls_mpi_optionally_safe_codepath != MBEDTLS_MPI_IS_PUBLIC) {
+            mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_SECRET;
+        }
+#endif
+    }
+}
+
 /* Exponentiation: X := A^E mod N.
+ *
+ * Warning! If the parameter E_public has MBEDTLS_MPI_IS_PUBLIC as its value,
+ * this function is not constant time with respect to the exponent (parameter E).
  *
  * A must already be in Montgomery form.
  *
@@ -758,16 +844,25 @@ static void exp_mod_precompute_window(const mbedtls_mpi_uint *A,
  * (The difference is that the body in our loop processes a single bit instead
  * of a full window.)
  */
-void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
-                              const mbedtls_mpi_uint *A,
-                              const mbedtls_mpi_uint *N,
-                              size_t AN_limbs,
-                              const mbedtls_mpi_uint *E,
-                              size_t E_limbs,
-                              const mbedtls_mpi_uint *RR,
-                              mbedtls_mpi_uint *T)
+static void mbedtls_mpi_core_exp_mod_optionally_safe(mbedtls_mpi_uint *X,
+                                                     const mbedtls_mpi_uint *A,
+                                                     const mbedtls_mpi_uint *N,
+                                                     size_t AN_limbs,
+                                                     const mbedtls_mpi_uint *E,
+                                                     size_t E_limbs,
+                                                     int E_public,
+                                                     const mbedtls_mpi_uint *RR,
+                                                     mbedtls_mpi_uint *T)
 {
-    const size_t wsize = exp_mod_get_window_size(E_limbs * biL);
+    /* We'll process the bits of E from most significant
+     * (limb_index=E_limbs-1, E_bit_index=biL-1) to least significant
+     * (limb_index=0, E_bit_index=0). */
+    size_t E_limb_index;
+    size_t E_bit_index;
+    exp_mod_calc_first_bit_optionally_safe(E, E_limbs, E_public,
+                                           &E_limb_index, &E_bit_index);
+
+    const size_t wsize = exp_mod_get_window_size(E_limb_index * biL);
     const size_t welem = ((size_t) 1) << wsize;
 
     /* This is how we will use the temporary storage T, which must have space
@@ -786,7 +881,7 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
 
     const mbedtls_mpi_uint mm = mbedtls_mpi_core_montmul_init(N);
 
-    /* Set Wtable[i] = A^(2^i) (in Montgomery representation) */
+    /* Set Wtable[i] = A^i (in Montgomery representation) */
     exp_mod_precompute_window(A, N, AN_limbs,
                               mm, RR,
                               welem, Wtable, temp);
@@ -798,11 +893,6 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
     /* X = 1 (in Montgomery presentation) initially */
     memcpy(X, Wtable, AN_limbs * ciL);
 
-    /* We'll process the bits of E from most significant
-     * (limb_index=E_limbs-1, E_bit_index=biL-1) to least significant
-     * (limb_index=0, E_bit_index=0). */
-    size_t E_limb_index = E_limbs;
-    size_t E_bit_index = 0;
     /* At any given time, window contains window_bits bits from E.
      * window_bits can go up to wsize. */
     size_t window_bits = 0;
@@ -828,10 +918,9 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
          * when we've finished processing the exponent. */
         if (window_bits == wsize ||
             (E_bit_index == 0 && E_limb_index == 0)) {
-            /* Select Wtable[window] without leaking window through
-             * memory access patterns. */
-            mbedtls_mpi_core_ct_uint_table_lookup(Wselect, Wtable,
-                                                  AN_limbs, welem, window);
+
+            exp_mod_table_lookup_optionally_safe(Wselect, Wtable, AN_limbs, welem,
+                                                 window, E_public);
             /* Multiply X by the selected element. */
             mbedtls_mpi_core_montmul(X, X, Wselect, AN_limbs, N, AN_limbs, mm,
                                      temp);
@@ -839,6 +928,42 @@ void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
             window_bits = 0;
         }
     } while (!(E_bit_index == 0 && E_limb_index == 0));
+}
+
+void mbedtls_mpi_core_exp_mod(mbedtls_mpi_uint *X,
+                              const mbedtls_mpi_uint *A,
+                              const mbedtls_mpi_uint *N, size_t AN_limbs,
+                              const mbedtls_mpi_uint *E, size_t E_limbs,
+                              const mbedtls_mpi_uint *RR,
+                              mbedtls_mpi_uint *T)
+{
+    mbedtls_mpi_core_exp_mod_optionally_safe(X,
+                                             A,
+                                             N,
+                                             AN_limbs,
+                                             E,
+                                             E_limbs,
+                                             MBEDTLS_MPI_IS_SECRET,
+                                             RR,
+                                             T);
+}
+
+void mbedtls_mpi_core_exp_mod_unsafe(mbedtls_mpi_uint *X,
+                                     const mbedtls_mpi_uint *A,
+                                     const mbedtls_mpi_uint *N, size_t AN_limbs,
+                                     const mbedtls_mpi_uint *E, size_t E_limbs,
+                                     const mbedtls_mpi_uint *RR,
+                                     mbedtls_mpi_uint *T)
+{
+    mbedtls_mpi_core_exp_mod_optionally_safe(X,
+                                             A,
+                                             N,
+                                             AN_limbs,
+                                             E,
+                                             E_limbs,
+                                             MBEDTLS_MPI_IS_PUBLIC,
+                                             RR,
+                                             T);
 }
 
 mbedtls_mpi_uint mbedtls_mpi_core_sub_int(mbedtls_mpi_uint *X,

@@ -178,6 +178,7 @@ private:
 	real_t emission_ring_height = 0.0;
 	real_t emission_ring_radius = 0.0;
 	real_t emission_ring_inner_radius = 0.0;
+	real_t emission_ring_cone_angle = 0.0;
 
 	Ref<Curve> scale_curve_x;
 	Ref<Curve> scale_curve_y;
@@ -282,6 +283,7 @@ public:
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);
+	void set_emission_ring_cone_angle(real_t p_angle);
 	void set_scale_curve_x(Ref<Curve> p_scale_curve);
 	void set_scale_curve_y(Ref<Curve> p_scale_curve);
 	void set_scale_curve_z(Ref<Curve> p_scale_curve);
@@ -297,6 +299,7 @@ public:
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
 	real_t get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_cone_angle() const;
 	Ref<Curve> get_scale_curve_x() const;
 	Ref<Curve> get_scale_curve_y() const;
 	Ref<Curve> get_scale_curve_z() const;

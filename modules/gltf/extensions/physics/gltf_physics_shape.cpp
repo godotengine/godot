@@ -229,7 +229,7 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_resource(const Ref<Shape3D> &p_shap
 }
 
 Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
-	if (!p_cache_shapes || _shape_cache == nullptr) {
+	if (!p_cache_shapes || _shape_cache.is_null()) {
 		if (shape_type == "box") {
 			Ref<BoxShape3D> box;
 			box.instantiate();

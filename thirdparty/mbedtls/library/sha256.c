@@ -44,7 +44,9 @@
 #endif /* defined(__clang__) &&  (__clang_major__ >= 4) */
 
 /* Ensure that SIG_SETMASK is defined when -std=c99 is used. */
+#if !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
+#endif
 
 #include "common.h"
 
@@ -150,7 +152,9 @@ static int mbedtls_a64_crypto_sha256_determine_support(void)
     return 1;
 }
 #elif defined(MBEDTLS_PLATFORM_IS_WINDOWS_ON_ARM64)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
 #include <processthreadsapi.h>
 

@@ -199,7 +199,7 @@ class GridMapEditor : public VBoxContainer {
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _mesh_library_palette_input(const Ref<InputEvent> &p_ie);
 
 	void _icon_size_changed(float p_value);

@@ -7239,14 +7239,14 @@ msgstr "Poista lähtöohjain käyrästä"
 msgid "Remove In-Control from Curve"
 msgstr "Poista tulo-ohjain käyrästä"
 
-msgid "Split Curve"
-msgstr "Puolita käyrä"
-
 msgid "Move Point in Curve"
 msgstr "Siirrä pistettä käyrällä"
 
 msgid "Add Point to Curve"
 msgstr "Lisää käyrään piste"
+
+msgid "Split Curve"
+msgstr "Puolita käyrä"
 
 msgid "Move In-Control in Curve"
 msgstr "Siirrä tulo-ohjainta käyrällä"

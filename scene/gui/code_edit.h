@@ -113,6 +113,9 @@ private:
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
 	String line_number_padding = " ";
+	HashMap<int, RID> line_number_text_cache;
+	void _clear_line_number_text_cache();
+	void _update_line_number_gutter_width();
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
@@ -245,15 +248,16 @@ private:
 		Ref<Texture2D> can_fold_code_region_icon;
 		Ref<Texture2D> folded_code_region_icon;
 		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> completion_color_bg;
 
 		Color breakpoint_color = Color(1, 1, 1);
-		Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
+		Ref<Texture2D> breakpoint_icon;
 
 		Color bookmark_color = Color(1, 1, 1);
-		Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
+		Ref<Texture2D> bookmark_icon;
 
 		Color executing_line_color = Color(1, 1, 1);
-		Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
+		Ref<Texture2D> executing_line_icon;
 
 		Color line_number_color = Color(1, 1, 1);
 

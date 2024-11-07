@@ -579,6 +579,7 @@ bool PropertyTweener::step(double &r_delta) {
 
 	Object *target_instance = ObjectDB::get_instance(target);
 	if (!target_instance) {
+		_finish();
 		return false;
 	}
 	elapsed_time += r_delta;
@@ -706,6 +707,7 @@ bool CallbackTweener::step(double &r_delta) {
 	}
 
 	if (!callback.is_valid()) {
+		_finish();
 		return false;
 	}
 
@@ -770,6 +772,7 @@ bool MethodTweener::step(double &r_delta) {
 	}
 
 	if (!callback.is_valid()) {
+		_finish();
 		return false;
 	}
 

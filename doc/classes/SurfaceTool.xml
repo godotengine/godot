@@ -241,7 +241,7 @@
 			<param index="0" name="count" type="int" enum="SurfaceTool.SkinWeightCount" />
 			<description>
 				Set to [constant SKIN_8_WEIGHTS] to indicate that up to 8 bone influences per vertex may be used.
-				By default, only 4 bone influences are used ([constant SKIN_4_WEIGHTS])
+				By default, only 4 bone influences are used ([constant SKIN_4_WEIGHTS]).
 				[b]Note:[/b] This function takes an enum, not the exact number of weights.
 			</description>
 		</method>

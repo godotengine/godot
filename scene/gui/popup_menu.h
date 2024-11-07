@@ -369,8 +369,6 @@ public:
 	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
 	virtual void set_visible(bool p_visible) override;
 
-	void take_mouse_focus();
-
 	PopupMenu();
 	~PopupMenu();
 };

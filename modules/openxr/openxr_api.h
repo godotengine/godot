@@ -336,6 +336,7 @@ private:
 		XrTime predicted_display_time = 0;
 		XrSpace play_space = XR_NULL_HANDLE;
 		double render_target_size_multiplier = 1.0;
+		uint64_t frame = 0;
 
 		uint32_t view_count = 0;
 		XrView *views = nullptr;
@@ -395,12 +396,12 @@ private:
 	}
 
 public:
-	XrInstance get_instance() const { return instance; };
-	XrSystemId get_system_id() const { return system_id; };
-	XrSession get_session() const { return session; };
-	OpenXRGraphicsExtensionWrapper *get_graphics_extension() const { return graphics_extension; };
-	String get_runtime_name() const { return runtime_name; };
-	String get_runtime_version() const { return runtime_version; };
+	XrInstance get_instance() const { return instance; }
+	XrSystemId get_system_id() const { return system_id; }
+	XrSession get_session() const { return session; }
+	OpenXRGraphicsExtensionWrapper *get_graphics_extension() const { return graphics_extension; }
+	String get_runtime_name() const { return runtime_name; }
+	String get_runtime_version() const { return runtime_version; }
 
 	// helper method to convert an XrPosef to a Transform3D
 	Transform3D transform_from_pose(const XrPosef &p_pose);
@@ -422,6 +423,10 @@ public:
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result) const;
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
+	void set_object_name(XrObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name);
+	void begin_debug_label_region(const String &p_label_name);
+	void end_debug_label_region();
+	void insert_debug_label(const String &p_label_name);
 
 	OpenXRInterface *get_xr_interface() const { return xr_interface; }
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
@@ -434,6 +439,7 @@ public:
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
+	uint32_t get_view_count();
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 

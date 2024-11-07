@@ -34,7 +34,7 @@
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
 
-#define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment)-1)) / (m_alignment)) * (m_alignment))
+#define STEPIFY(m_number, m_alignment) ((((m_number) + ((m_alignment) - 1)) / (m_alignment)) * (m_alignment))
 
 class RenderingDeviceCommons : public Object {
 	////////////////////////////////////////////
@@ -269,6 +269,44 @@ public:
 		DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 		DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
 		DATA_FORMAT_MAX,
+	};
+
+	// Breadcrumb markers are useful for debugging GPU crashes (i.e. DEVICE_LOST). Internally
+	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
+	// (or at least shouldn't) alter the execution behavior in any way.
+	//
+	// When a GPU crashes and Godot was built in dev or debug mode; Godot will dump what commands
+	// were being executed and what tag they were marked with.
+	// This makes narrowing down the cause of a crash easier. Note that a GPU can be executing
+	// multiple commands at the same time. It is also useful to identify data hazards.
+	//
+	// For example if each LIGHTMAPPER_PASS must be executed in sequential order, but dumps
+	// indicated that pass (LIGHTMAPPER_PASS | 5) was being executed at the same time as
+	// (LIGHTMAPPER_PASS | 4), that would indicate there is a missing barrier or a render graph bug.
+	//
+	// The enums are bitshifted by 16 bits so it's possible to add user data via bitwise operations.
+	// Using this enum is not mandatory; but it is recommended so that all subsystems agree what each
+	// ID means when dumping info.
+	enum BreadcrumbMarker {
+		NONE = 0,
+		// Environment
+		REFLECTION_PROBES = 1u << 16u,
+		SKY_PASS = 2u << 16u,
+		// Light mapping
+		LIGHTMAPPER_PASS = 3u << 16u,
+		// Shadows
+		SHADOW_PASS_DIRECTIONAL = 4u << 16u,
+		SHADOW_PASS_CUBE = 5u << 16u,
+		// Geometry passes
+		OPAQUE_PASS = 6u << 16u,
+		ALPHA_PASS = 7u << 16u,
+		TRANSPARENT_PASS = 8u << 16u,
+		// Screen effects
+		POST_PROCESSING_PASS = 9u << 16u,
+		BLIT_PASS = 10u << 16u,
+		UI_PASS = 11u << 16u,
+		// Other
+		DEBUG_PASS = 12u << 16u,
 	};
 
 	enum CompareOperator {
@@ -855,7 +893,7 @@ protected:
 
 	static uint32_t get_image_format_pixel_size(DataFormat p_format);
 	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
-	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format);
+	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = nullptr, uint32_t *r_blockh = nullptr, uint32_t *r_depth = nullptr);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);

@@ -183,7 +183,6 @@
 			<return type="Tween" />
 			<description>
 				Makes the next [Tweener] run parallelly to the previous one.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
@@ -410,7 +409,6 @@
 			<param index="3" name="duration" type="float" />
 			<description>
 				Creates and appends a [PropertyTweener]. This method tweens a [param property] of an [param object] between an initial value and [param final_val] in a span of time equal to [param duration], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()

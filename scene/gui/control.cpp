@@ -29,17 +29,12 @@
 /**************************************************************************/
 
 #include "control.h"
-#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "core/string/translation_server.h"
-#include "scene/gui/label.h"
-#include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -49,7 +44,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/plugins/control_editor_plugin.h"
-#endif
+#endif // TOOLS_ENABLED
 
 // Editor plugin interoperability.
 
@@ -125,11 +120,11 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 void Control::_edit_set_position(const Point2 &p_position) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
-};
+}
 
 Point2 Control::_edit_get_position() const {
 	return get_position();
-};
+}
 
 void Control::_edit_set_scale(const Size2 &p_scale) {
 	set_scale(p_scale);
@@ -143,14 +138,6 @@ void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snappedf(1), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
 	set_size(p_edit_rect.size.snappedf(1), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
-}
-
-Rect2 Control::_edit_get_rect() const {
-	return Rect2(Point2(), get_size());
-}
-
-bool Control::_edit_use_rect() const {
-	return true;
 }
 
 void Control::_edit_set_rotation(real_t p_rotation) {
@@ -183,7 +170,17 @@ bool Control::_edit_use_pivot() const {
 Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
-#endif
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+Rect2 Control::_edit_get_rect() const {
+	return Rect2(Point2(), get_size());
+}
+
+bool Control::_edit_use_rect() const {
+	return true;
+}
+#endif // DEBUG_ENABLED
 
 void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_MAIN_THREAD_GUARD;
@@ -244,11 +241,11 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 	}
 	CanvasItem::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 PackedStringArray Control::get_configuration_warnings() const {
 	ERR_READ_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = CanvasItem::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
@@ -668,7 +665,7 @@ Rect2 Control::get_parent_anchorable_rect() const {
 
 #else
 		parent_rect = get_viewport()->get_visible_rect();
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	return parent_rect;
@@ -682,12 +679,10 @@ Size2 Control::get_parent_area_size() const {
 // Positioning and sizing.
 
 Transform2D Control::_get_internal_transform() const {
-	Transform2D rot_scale;
-	rot_scale.set_rotation_and_scale(data.rotation, data.scale);
-	Transform2D offset;
-	offset.set_origin(-data.pivot_offset);
-
-	return offset.affine_inverse() * (rot_scale * offset);
+	// T(pivot_offset) * R(rotation) * S(scale) * T(-pivot_offset)
+	Transform2D xform(data.rotation, data.scale, 0.0f, data.pivot_offset);
+	xform.translate_local(-data.pivot_offset);
+	return xform;
 }
 
 void Control::_update_canvas_item_transform() {
@@ -1403,7 +1398,7 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 		data.pos_cache = p_point;
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
@@ -1447,7 +1442,7 @@ void Control::_set_size(const Size2 &p_size) {
 	if (data.size_warning && (data.anchor[SIDE_LEFT] != data.anchor[SIDE_RIGHT] || data.anchor[SIDE_TOP] != data.anchor[SIDE_BOTTOM])) {
 		WARN_PRINT("Nodes with non-equal opposite anchors will have their size overridden after _ready(). \nIf you want to set size, change the anchors or consider using set_deferred().");
 	}
-#endif
+#endif // DEBUG_ENABLED
 	set_size(p_size);
 }
 
@@ -1469,7 +1464,7 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 		data.size_cache = new_size;
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(data.pos_cache, new_size), data.offset, data.anchor);
@@ -1748,10 +1743,10 @@ void Control::_size_changed() {
 			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
 
+			item_rect_changed(size_changed);
 			if (size_changed) {
 				notification(NOTIFICATION_RESIZED);
 			}
-			item_rect_changed(size_changed);
 		}
 
 		if (pos_changed && !size_changed) {
@@ -2358,6 +2353,24 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 		points[2] = xform.xform(c->get_size());
 		points[3] = xform.xform(Point2(0, c->get_size().y));
 
+		// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
+		// is right next to the currently focused control (e.g. in BoxContainer with
+		// separation overridden to 0). This needs specific handling so that the correct
+		// focus neighbor is selected.
+
+		// Calculate centers of the potential neighbor, currently focused, and closest controls.
+		Point2 center = xform.xform(0.5 * c->get_size());
+		// We only have the points, not an actual reference.
+		Point2 p_center = 0.25 * (p_points[0] + p_points[1] + p_points[2] + p_points[3]);
+		Point2 closest_center;
+		bool should_tiebreak = false;
+		if (*r_closest != nullptr) {
+			should_tiebreak = true;
+			Control *closest = *r_closest;
+			Transform2D closest_xform = closest->get_global_transform();
+			closest_center = closest_xform.xform(0.5 * closest->get_size());
+		}
+
 		real_t min = 1e7;
 
 		for (int i = 0; i < 4; i++) {
@@ -2378,10 +2391,15 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 
 					Vector2 pa, pb;
 					real_t d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					//real_t d = Geometry2D::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
 					if (d < r_closest_dist) {
 						r_closest_dist = d;
 						*r_closest = c;
+					} else if (should_tiebreak && d == r_closest_dist) {
+						// Tie-break in favor of the control most aligned with p_dir.
+						if (p_dir.dot((center - p_center).normalized()) > p_dir.dot((closest_center - p_center).normalized())) {
+							r_closest_dist = d;
+							*r_closest = c;
+						}
 					}
 				}
 			}
@@ -2577,8 +2595,8 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 		return data.theme_icon_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<Texture2D> icon = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 	data.theme_icon_cache[p_theme_type][p_name] = icon;
 	return icon;
@@ -2601,8 +2619,8 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 		return data.theme_style_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<StyleBox> style = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 	data.theme_style_cache[p_theme_type][p_name] = style;
 	return style;
@@ -2625,8 +2643,8 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 		return data.theme_font_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Ref<Font> font = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 	data.theme_font_cache[p_theme_type][p_name] = font;
 	return font;
@@ -2649,8 +2667,8 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 		return data.theme_font_size_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	int font_size = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 	data.theme_font_size_cache[p_theme_type][p_name] = font_size;
 	return font_size;
@@ -2673,8 +2691,8 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 		return data.theme_color_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	Color color = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 	data.theme_color_cache[p_theme_type][p_name] = color;
 	return color;
@@ -2697,8 +2715,8 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 		return data.theme_constant_cache[p_theme_type][p_name];
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	int constant = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	data.theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
@@ -2729,7 +2747,7 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 Ref<Texture2D> Control::get_editor_theme_icon(const StringName &p_name) const {
 	return get_theme_icon(p_name, SNAME("EditorIcons"));
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -2743,8 +2761,8 @@ bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
@@ -2760,8 +2778,8 @@ bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_t
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
 
@@ -2777,8 +2795,8 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
@@ -2794,8 +2812,8 @@ bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 }
 
@@ -2811,8 +2829,8 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_them
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
@@ -2828,8 +2846,8 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 		}
 	}
 
-	List<StringName> theme_types;
-	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
@@ -3026,7 +3044,7 @@ void Control::set_layout_direction(Control::LayoutDirection p_direction) {
 	if (data.layout_dir == p_direction) {
 		return;
 	}
-	ERR_FAIL_INDEX((int)p_direction, 4);
+	ERR_FAIL_INDEX(p_direction, LAYOUT_DIRECTION_MAX);
 
 	data.layout_dir = p_direction;
 
@@ -3071,7 +3089,7 @@ bool Control::is_layout_rtl() const {
 				const_cast<Control *>(this)->data.is_rtl = true;
 				return data.is_rtl;
 			}
-#endif
+#endif // TOOLS_ENABLED
 			Node *parent_node = get_parent();
 			while (parent_node) {
 				Control *parent_control = Object::cast_to<Control>(parent_node);
@@ -3099,11 +3117,18 @@ bool Control::is_layout_rtl() const {
 				String locale = TranslationServer::get_singleton()->get_tool_locale();
 				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
-		} else if (data.layout_dir == LAYOUT_DIRECTION_LOCALE) {
+		} else if (data.layout_dir == LAYOUT_DIRECTION_APPLICATION_LOCALE) {
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 				const_cast<Control *>(this)->data.is_rtl = true;
 			} else {
 				String locale = TranslationServer::get_singleton()->get_tool_locale();
+				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
+			}
+		} else if (data.layout_dir == LAYOUT_DIRECTION_SYSTEM_LOCALE) {
+			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
+				const_cast<Control *>(this)->data.is_rtl = true;
+			} else {
+				String locale = OS::get_singleton()->get_locale();
 				const_cast<Control *>(this)->data.is_rtl = TS->is_locale_right_to_left(locale);
 			}
 		} else {
@@ -3139,7 +3164,17 @@ bool Control::is_auto_translating() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return can_auto_translate();
 }
-#endif
+#endif // DISABLE_DEPRECATED
+
+void Control::set_tooltip_auto_translate_mode(AutoTranslateMode p_mode) {
+	ERR_MAIN_THREAD_GUARD;
+	data.tooltip_auto_translate_mode = p_mode;
+}
+
+Node::AutoTranslateMode Control::get_tooltip_auto_translate_mode() const {
+	ERR_READ_THREAD_GUARD_V(AUTO_TRANSLATE_MODE_INHERIT);
+	return data.tooltip_auto_translate_mode;
+}
 
 // Extra properties.
 
@@ -3182,7 +3217,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_EDITOR_POST_SAVE: {
 			saving = false;
 		} break;
-#endif
+#endif // TOOLS_ENABLED
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.initialized = true;
 
@@ -3228,7 +3263,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
 			connect(SceneStringName(ready), callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONE_SHOT);
-#endif
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -3490,6 +3525,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_grow_direction", "direction"), &Control::set_v_grow_direction);
 	ClassDB::bind_method(D_METHOD("get_v_grow_direction"), &Control::get_v_grow_direction);
 
+	ClassDB::bind_method(D_METHOD("set_tooltip_auto_translate_mode", "mode"), &Control::set_tooltip_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_tooltip_auto_translate_mode"), &Control::get_tooltip_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("set_tooltip_text", "hint"), &Control::set_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &Control::get_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
@@ -3538,7 +3575,7 @@ void Control::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Control::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_localize_numeral_system", "enable"), &Control::set_localize_numeral_system);
 	ClassDB::bind_method(D_METHOD("is_localizing_numeral_system"), &Control::is_localizing_numeral_system);
@@ -3546,7 +3583,7 @@ void Control::_bind_methods() {
 	ADD_GROUP("Layout", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
 
@@ -3593,10 +3630,11 @@ void Control::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ADD_GROUP("Tooltip", "tooltip_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip_text", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip_text", "get_tooltip_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tooltip_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_tooltip_auto_translate_mode", "get_tooltip_auto_translate_mode");
 
 	ADD_GROUP("Focus", "focus_");
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbor_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbor", "get_focus_neighbor", SIDE_LEFT);
@@ -3608,7 +3646,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 
 	ADD_GROUP("Mouse", "mouse_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
@@ -3694,9 +3732,14 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANCHOR_END);
 
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
-	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_APPLICATION_LOCALE);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_RTL);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_SYSTEM_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_MAX);
+#ifndef DISABLE_DEPRECATED
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_INHERITED);
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_AUTO);

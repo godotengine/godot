@@ -53,12 +53,10 @@ static bool _arrange(const SwImage* image, const SwBBox* region, int& yStart, in
         regionBottom = image->rle->spans[image->rle->size - 1].y;
     }
 
-    if (yStart >= regionBottom) return false;
-
     if (yStart < regionTop) yStart = regionTop;
     if (yEnd > regionBottom) yEnd = regionBottom;
 
-    return true;
+    return yEnd > yStart;
 }
 
 
@@ -868,10 +866,8 @@ static void _calcVertCoverage(AALine *lines, int32_t eidx, int32_t y, int32_t re
 
 static void _calcHorizCoverage(AALine *lines, int32_t eidx, int32_t y, int32_t x, int32_t x2)
 {
-    if (lines[y].length[eidx] < abs(x - x2)) {
-        lines[y].length[eidx] = abs(x - x2);
-        lines[y].coverage[eidx] = (255 / (lines[y].length[eidx] + 1));
-    }
+    lines[y].length[eidx] = abs(x - x2);
+    lines[y].coverage[eidx] = (255 / (lines[y].length[eidx] + 1));
 }
 
 
@@ -897,9 +893,14 @@ static void _calcAAEdge(AASpans *aaSpans, int32_t eidx)
         ptx[1] = tx[1]; \
     } while (0)
 
+    struct Point
+    {
+        int32_t x, y;
+    };
+
     int32_t y = 0;
-    SwPoint pEdge = {-1, -1};       //previous edge point
-    SwPoint edgeDiff = {0, 0};      //temporary used for point distance
+    Point pEdge = {-1, -1};       //previous edge point
+    Point edgeDiff = {0, 0};      //temporary used for point distance
 
     /* store bigger to tx[0] between prev and current edge's x positions. */
     int32_t tx[2] = {0, 0};
@@ -1024,6 +1025,7 @@ static void _calcAAEdge(AASpans *aaSpans, int32_t eidx)
 
 static bool _apply(SwSurface* surface, AASpans* aaSpans)
 {
+    auto end = surface->buf32 + surface->h * surface->stride;
     auto y = aaSpans->yStart;
     uint32_t pixel;
     uint32_t* dst;
@@ -1044,8 +1046,13 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
             dst = surface->buf32 + (offset + line->x[0]);
             if (line->x[0] > 1) pixel = *(dst - 1);
             else pixel = *dst;
-
             pos = 1;
+
+            //exceptional handling. out of memory bound.
+            if (dst + line->length[0] >= end) {
+                pos += (dst + line->length[0] - end);
+            }
+
             while (pos <= line->length[0]) {
                 *dst = INTERPOLATE(*dst, pixel, line->coverage[0] * pos);
                 ++dst;
@@ -1053,17 +1060,21 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
             }
 
             //Right edge
-            dst = surface->buf32 + (offset + line->x[1] - 1);
+            dst = surface->buf32 + offset + line->x[1] - 1;
+
             if (line->x[1] < (int32_t)(surface->w - 1)) pixel = *(dst + 1);
             else pixel = *dst;
+            pos = line->length[1];
 
-            pos = width;
-            while ((int32_t)(width - line->length[1]) < pos) {
-                *dst = INTERPOLATE(*dst, pixel, 255 - (line->coverage[1] * (line->length[1] - (width - pos))));
+            //exceptional handling. out of memory bound.
+            if (dst - pos < surface->buf32) --pos;
+
+            while (pos > 0) {
+                *dst = INTERPOLATE(*dst, pixel, 255 - (line->coverage[1] * pos));
                 --dst;
                 --pos;
             }
-          }
+        }
         y++;
     }
 
@@ -1084,7 +1095,7 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
     | /  |
     3 -- 2
 */
-static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox* region, uint8_t opacity)
+static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const Matrix& transform, const SwBBox* region, uint8_t opacity)
 {
     if (surface->channelSize == sizeof(uint8_t)) {
         TVGERR("SW_ENGINE", "Not supported grayscale Textmap polygon!");
@@ -1092,7 +1103,7 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
     }
 
     //Exceptions: No dedicated drawing area?
-    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
+    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return true;
 
    /* Prepare vertices.
       shift XY coordinates to match the sub-pixeling technique. */
@@ -1104,7 +1115,7 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
 
     float ys = FLT_MAX, ye = -1.0f;
     for (int i = 0; i < 4; i++) {
-        if (transform) vertices[i].pt *= *transform;
+        vertices[i].pt *= transform;
         if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
         if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
     }
@@ -1134,69 +1145,4 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
     }
 #endif
     return _apply(surface, aaSpans);
-}
-
-
-/*
-    Provide any number of triangles to draw a mesh using the supplied image.
-    Indexes are not used, so each triangle (Polygon) vertex has to be defined, even if they copy the previous one.
-    Example:
-
-      0 -- 1       0 -- 1   0
-      |  / |  -->  |  /   / |
-      | /  |       | /   /  |
-      2 -- 3       2   1 -- 2
-
-      Should provide two Polygons, one for each triangle.
-      // TODO: region?
-*/
-static bool _rasterTexmapPolygonMesh(SwSurface* surface, const SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox* region, uint8_t opacity)
-{
-    if (surface->channelSize == sizeof(uint8_t)) {
-        TVGERR("SW_ENGINE", "Not supported grayscale Textmap polygon mesh!");
-        return false;
-    }
-
-    //Exceptions: No dedicated drawing area?
-    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
-
-    // Step polygons once to transform
-    auto transformedTris = (Polygon*)malloc(sizeof(Polygon) * mesh->triangleCnt);
-    float ys = FLT_MAX, ye = -1.0f;
-    for (uint32_t i = 0; i < mesh->triangleCnt; i++) {
-        transformedTris[i] = mesh->triangles[i];
-        transformedTris[i].vertex[0].pt *= *transform;
-        transformedTris[i].vertex[1].pt *= *transform;
-        transformedTris[i].vertex[2].pt *= *transform;
-
-        if (transformedTris[i].vertex[0].pt.y < ys) ys = transformedTris[i].vertex[0].pt.y;
-        else if (transformedTris[i].vertex[0].pt.y > ye) ye = transformedTris[i].vertex[0].pt.y;
-        if (transformedTris[i].vertex[1].pt.y < ys) ys = transformedTris[i].vertex[1].pt.y;
-        else if (transformedTris[i].vertex[1].pt.y > ye) ye = transformedTris[i].vertex[1].pt.y;
-        if (transformedTris[i].vertex[2].pt.y < ys) ys = transformedTris[i].vertex[2].pt.y;
-        else if (transformedTris[i].vertex[2].pt.y > ye) ye = transformedTris[i].vertex[2].pt.y;
-
-        // Convert normalized UV coordinates to image coordinates
-        transformedTris[i].vertex[0].uv.x *= (float)image->w;
-        transformedTris[i].vertex[0].uv.y *= (float)image->h;
-        transformedTris[i].vertex[1].uv.x *= (float)image->w;
-        transformedTris[i].vertex[1].uv.y *= (float)image->h;
-        transformedTris[i].vertex[2].uv.x *= (float)image->w;
-        transformedTris[i].vertex[2].uv.y *= (float)image->h;
-    }
-
-    // Get AA spans and step polygons again to draw
-    if (auto aaSpans = _AASpans(ys, ye, image, region)) {
-        for (uint32_t i = 0; i < mesh->triangleCnt; i++) {
-            _rasterPolygonImage(surface, image, region, transformedTris[i], aaSpans, opacity);
-        }
-#if 0
-        if (_compositing(surface) && _masking(surface) && !_direct(surface->compositor->method)) {
-            _compositeMaskImage(surface, &surface->compositor->image, surface->compositor->bbox);
-        }
-#endif
-        _apply(surface, aaSpans);
-    }
-    free(transformedTris);
-    return true;
 }

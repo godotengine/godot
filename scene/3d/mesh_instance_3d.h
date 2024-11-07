@@ -102,6 +102,7 @@ public:
 	virtual AABB get_aabb() const override;
 
 	Ref<ArrayMesh> bake_mesh_from_current_blend_shape_mix(Ref<ArrayMesh> p_existing = Ref<ArrayMesh>());
+	Ref<ArrayMesh> bake_mesh_from_current_skeleton_pose(Ref<ArrayMesh> p_existing = Ref<ArrayMesh>());
 
 	MeshInstance3D();
 	~MeshInstance3D();

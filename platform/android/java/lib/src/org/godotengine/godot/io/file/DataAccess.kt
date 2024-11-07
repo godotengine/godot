@@ -33,12 +33,17 @@ package org.godotengine.godot.io.file
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import org.godotengine.godot.error.Error
 import org.godotengine.godot.io.StorageScope
+import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.InputStream
 import java.nio.ByteBuffer
+import java.nio.channels.Channels
 import java.nio.channels.ClosedChannelException
 import java.nio.channels.FileChannel
 import java.nio.channels.NonWritableChannelException
+import kotlin.jvm.Throws
 import kotlin.math.max
 
 /**
@@ -47,11 +52,37 @@ import kotlin.math.max
  * Its derived instances provide concrete implementations to handle regular file access, as well
  * as file access through the media store API on versions of Android were scoped storage is enabled.
  */
-internal abstract class DataAccess(private val filePath: String) {
+internal abstract class DataAccess {
 
 	companion object {
 		private val TAG = DataAccess::class.java.simpleName
 
+		@Throws(java.lang.Exception::class, FileNotFoundException::class)
+		fun getInputStream(storageScope: StorageScope, context: Context, filePath: String): InputStream? {
+			return when(storageScope) {
+				StorageScope.ASSETS -> {
+					val assetData = AssetData(context, filePath, FileAccessFlags.READ)
+					Channels.newInputStream(assetData.readChannel)
+				}
+
+				StorageScope.APP -> {
+					val fileData = FileData(filePath, FileAccessFlags.READ)
+					Channels.newInputStream(fileData.fileChannel)
+				}
+				StorageScope.SHARED -> {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+						val mediaStoreData = MediaStoreData(context, filePath, FileAccessFlags.READ)
+						Channels.newInputStream(mediaStoreData.fileChannel)
+					} else {
+						null
+					}
+				}
+
+				StorageScope.UNKNOWN -> null
+			}
+		}
+
+		@Throws(java.lang.Exception::class, FileNotFoundException::class)
 		fun generateDataAccess(
 			storageScope: StorageScope,
 			context: Context,
@@ -60,6 +91,8 @@ internal abstract class DataAccess(private val filePath: String) {
 		): DataAccess? {
 			return when (storageScope) {
 				StorageScope.APP -> FileData(filePath, accessFlag)
+
+				StorageScope.ASSETS -> AssetData(context, filePath, accessFlag)
 
 				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 					MediaStoreData(context, filePath, accessFlag)
@@ -74,7 +107,13 @@ internal abstract class DataAccess(private val filePath: String) {
 		fun fileExists(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.fileExists(path)
-				StorageScope.SHARED -> MediaStoreData.fileExists(context, path)
+				StorageScope.ASSETS -> AssetData.fileExists(context, path)
+				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					MediaStoreData.fileExists(context, path)
+				} else {
+					false
+				}
+
 				StorageScope.UNKNOWN -> false
 			}
 		}
@@ -82,7 +121,13 @@ internal abstract class DataAccess(private val filePath: String) {
 		fun fileLastModified(storageScope: StorageScope, context: Context, path: String): Long {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.fileLastModified(path)
-				StorageScope.SHARED -> MediaStoreData.fileLastModified(context, path)
+				StorageScope.ASSETS -> AssetData.fileLastModified(path)
+				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					MediaStoreData.fileLastModified(context, path)
+				} else {
+					0L
+				}
+
 				StorageScope.UNKNOWN -> 0L
 			}
 		}
@@ -90,7 +135,13 @@ internal abstract class DataAccess(private val filePath: String) {
 		fun removeFile(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.delete(path)
-				StorageScope.SHARED -> MediaStoreData.delete(context, path)
+				StorageScope.ASSETS -> AssetData.delete(path)
+				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					MediaStoreData.delete(context, path)
+				} else {
+					false
+				}
+
 				StorageScope.UNKNOWN -> false
 			}
 		}
@@ -98,103 +149,120 @@ internal abstract class DataAccess(private val filePath: String) {
 		fun renameFile(storageScope: StorageScope, context: Context, from: String, to: String): Boolean {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.rename(from, to)
-				StorageScope.SHARED -> MediaStoreData.rename(context, from, to)
+				StorageScope.ASSETS -> AssetData.rename(from, to)
+				StorageScope.SHARED -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					MediaStoreData.rename(context, from, to)
+				} else {
+					false
+				}
+
 				StorageScope.UNKNOWN -> false
 			}
 		}
 	}
 
-	protected abstract val fileChannel: FileChannel
 	internal var endOfFile = false
-
-	fun close() {
-		try {
-			fileChannel.close()
-		} catch (e: IOException) {
-			Log.w(TAG, "Exception when closing file $filePath.", e)
-		}
-	}
-
-	fun flush() {
-		try {
-			fileChannel.force(false)
-		} catch (e: IOException) {
-			Log.w(TAG, "Exception when flushing file $filePath.", e)
-		}
-	}
-
-	fun seek(position: Long) {
-		try {
-			fileChannel.position(position)
-			endOfFile = position >= fileChannel.size()
-		} catch (e: Exception) {
-			Log.w(TAG, "Exception when seeking file $filePath.", e)
-		}
-	}
+	abstract fun close()
+	abstract fun flush()
+	abstract fun seek(position: Long)
+	abstract fun resize(length: Long): Error
+	abstract fun position(): Long
+	abstract fun size(): Long
+	abstract fun read(buffer: ByteBuffer): Int
+	abstract fun write(buffer: ByteBuffer)
 
 	fun seekFromEnd(positionFromEnd: Long) {
 		val positionFromBeginning = max(0, size() - positionFromEnd)
 		seek(positionFromBeginning)
 	}
 
-	fun resize(length: Long): Int {
-		return try {
-			fileChannel.truncate(length)
-			FileErrors.OK.nativeValue
-		} catch (e: NonWritableChannelException) {
-			FileErrors.FILE_CANT_OPEN.nativeValue
-		} catch (e: ClosedChannelException) {
-			FileErrors.FILE_CANT_OPEN.nativeValue
-		} catch (e: IllegalArgumentException) {
-			FileErrors.INVALID_PARAMETER.nativeValue
-		} catch (e: IOException) {
-			FileErrors.FAILED.nativeValue
-		}
-	}
+	abstract class FileChannelDataAccess(private val filePath: String) : DataAccess() {
+		internal abstract val fileChannel: FileChannel
 
-	fun position(): Long {
-		return try {
-			fileChannel.position()
+		override fun close() {
+			try {
+				fileChannel.close()
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception when closing file $filePath.", e)
+			}
+		}
+
+		override fun flush() {
+			try {
+				fileChannel.force(false)
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception when flushing file $filePath.", e)
+			}
+		}
+
+		override fun seek(position: Long) {
+			try {
+				fileChannel.position(position)
+				endOfFile = position >= fileChannel.size()
+			} catch (e: Exception) {
+				Log.w(TAG, "Exception when seeking file $filePath.", e)
+			}
+		}
+
+		override fun resize(length: Long): Error {
+			return try {
+				fileChannel.truncate(length)
+				Error.OK
+			} catch (e: NonWritableChannelException) {
+				Error.ERR_FILE_CANT_OPEN
+			} catch (e: ClosedChannelException) {
+				Error.ERR_FILE_CANT_OPEN
+			} catch (e: IllegalArgumentException) {
+				Error.ERR_INVALID_PARAMETER
+			} catch (e: IOException) {
+				Error.FAILED
+			}
+		}
+
+		override fun position(): Long {
+			return try {
+				fileChannel.position()
+			} catch (e: IOException) {
+				Log.w(
+					TAG,
+					"Exception when retrieving position for file $filePath.",
+					e
+				)
+				0L
+			}
+		}
+
+		override fun size() = try {
+			fileChannel.size()
 		} catch (e: IOException) {
-			Log.w(
-				TAG,
-				"Exception when retrieving position for file $filePath.",
-				e
-			)
+			Log.w(TAG, "Exception when retrieving size for file $filePath.", e)
 			0L
 		}
-	}
 
-	fun size() = try {
-		fileChannel.size()
-	} catch (e: IOException) {
-		Log.w(TAG, "Exception when retrieving size for file $filePath.", e)
-		0L
-	}
-
-	fun read(buffer: ByteBuffer): Int {
-		return try {
-			val readBytes = fileChannel.read(buffer)
-			endOfFile = readBytes == -1 || (fileChannel.position() >= fileChannel.size())
-			if (readBytes == -1) {
+		override fun read(buffer: ByteBuffer): Int {
+			return try {
+				val readBytes = fileChannel.read(buffer)
+				endOfFile = readBytes == -1 || (fileChannel.position() >= fileChannel.size())
+				if (readBytes == -1) {
+					0
+				} else {
+					readBytes
+				}
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception while reading from file $filePath.", e)
 				0
-			} else {
-				readBytes
 			}
-		} catch (e: IOException) {
-			Log.w(TAG, "Exception while reading from file $filePath.", e)
-			0
 		}
-	}
 
-	fun write(buffer: ByteBuffer) {
-		try {
-			val writtenBytes = fileChannel.write(buffer)
-			if (writtenBytes > 0) {
-				endOfFile = false
+		override fun write(buffer: ByteBuffer) {
+			try {
+				val writtenBytes = fileChannel.write(buffer)
+				if (writtenBytes > 0) {
+					endOfFile = false
+				}
+			} catch (e: IOException) {
+				Log.w(TAG, "Exception while writing to file $filePath.", e)
 			}
-		} catch (e: IOException) {
-			Log.w(TAG, "Exception while writing to file $filePath.", e)
 		}
 	}
 }

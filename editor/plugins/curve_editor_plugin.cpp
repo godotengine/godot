@@ -972,7 +972,7 @@ void CurveEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			spacing = Math::round(BASE_SPACING * get_theme_default_base_scale());
-			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 			PopupMenu *p = presets_button->get_popup();
 			p->clear();
 			p->add_icon_item(get_editor_theme_icon(SNAME("CurveConstant")), TTR("Constant"), CurveEdit::PRESET_CONSTANT);
@@ -1003,7 +1003,7 @@ CurveEditor::CurveEditor() {
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", callable_mp(this, &CurveEditor::_set_snap_enabled));
+	snap_button->connect(SceneStringName(toggled), callable_mp(this, &CurveEditor::_set_snap_enabled));
 
 	toolbar->add_child(memnew(VSeparator));
 

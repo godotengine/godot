@@ -51,6 +51,10 @@ static int mbedtls_cipher_error_from_psa(psa_status_t status)
 
 void mbedtls_block_cipher_free(mbedtls_block_cipher_context_t *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
 #if defined(MBEDTLS_BLOCK_CIPHER_SOME_PSA)
     if (ctx->engine == MBEDTLS_BLOCK_CIPHER_ENGINE_PSA) {
         psa_destroy_key(ctx->psa_key_id);

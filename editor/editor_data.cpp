@@ -36,11 +36,14 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {
@@ -544,6 +547,7 @@ Variant EditorData::instantiate_custom_type(const String &p_type, const String &
 				if (n) {
 					n->set_name(p_type);
 				}
+				n->set_meta(SceneStringName(_custom_type_script), script);
 				((Object *)ob)->set_script(script);
 				return ob;
 			}
@@ -1005,6 +1009,7 @@ Variant EditorData::script_class_instance(const String &p_class) {
 			// Store in a variant to initialize the refcount if needed.
 			Variant obj = ClassDB::instantiate(script->get_instance_base_type());
 			if (obj) {
+				Object::cast_to<Object>(obj)->set_meta(SceneStringName(_custom_type_script), script);
 				obj.operator Object *()->set_script(script);
 			}
 			return obj;
