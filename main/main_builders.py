@@ -3,6 +3,7 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 from platform_methods import subprocess_main
 from compat import byte_to_str
 from collections import OrderedDict
