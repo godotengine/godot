@@ -4,6 +4,8 @@ on: [push, pull_request]
 # Global Settings
 env:
   SCONSFLAGS: platform=android verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
+  ANDROID_HOME: /home/runner/work/godot/godot/android-sdk
+  ANDROID_NDK_ROOT: /home/runner/work/godot/godot/android-sdk/ndk/21.1.6352462
   ANDROID_NDK_VERSION: 21.1.6352462
 
 jobs:
@@ -22,14 +24,19 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      - name: Set up Java 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-
-      - name: Install Android NDK r21
+      - name: Set up Java 8, Android SDK and NDK
         run: |
-          sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install 'ndk;${{env.ANDROID_NDK_VERSION}}'
+          # Not using actions/setup-java and android-actions/setup-android as I couldn't make them work for such old Java/SDK/NDK combination.
+          sudo apt-get install openjdk-8-jdk
+          sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+          mkdir -p ${{env.ANDROID_HOME}}
+          cd ${{env.ANDROID_HOME}}
+          # Using an old version to be compatible with older Java.
+          curl -LO https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
+          unzip commandlinetools-linux-8512546_latest.zip
+          yes | ./cmdline-tools/bin/sdkmanager --sdk_root=${{env.ANDROID_HOME}} --licenses
+          # https://github.com/godotengine/build-containers/blob/3.2/Dockerfile.android
+          ./cmdline-tools/bin/sdkmanager --sdk_root=${{env.ANDROID_HOME}} 'build-tools;28.0.3' 'platforms;android-28' 'cmake;3.10.2.4988404' 'ndk;${{env.ANDROID_NDK_VERSION}}'
 
       # Use python 3.x release (works cross platform)
       - name: Set up Python 3.x
@@ -48,8 +55,6 @@ jobs:
           scons --version
 
       - name: Compilation
-        env:
-          ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/${{env.ANDROID_NDK_VERSION}}/
         run: |
           scons target=release tools=no android_arch=armv7
           scons target=release tools=no android_arch=arm64v8
