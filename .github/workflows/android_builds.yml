@@ -14,18 +14,11 @@ concurrency:
 
 jobs:
   android-template:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-24.04"
     name: Template (target=release, tools=no)
 
     steps:
       - uses: actions/checkout@v4
-
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          sudo apt-get update
 
       - name: Set up Java 17
         uses: actions/setup-java@v4

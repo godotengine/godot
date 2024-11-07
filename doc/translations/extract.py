@@ -59,6 +59,7 @@ import sys
 sys.modules["_elementtree"] = None
 import xml.etree.ElementTree as ET
 
+
 ## override the parser to get the line number
 class LineNumberingParser(ET.XMLParser):
     def _start(self, *args, **kwargs):
