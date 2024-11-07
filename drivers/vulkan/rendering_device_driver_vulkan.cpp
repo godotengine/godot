@@ -2887,21 +2887,28 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 	// No swapchain yet, this is the first time we're creating it.
 	if (!swap_chain->vk_swapchain) {
-		uint32_t width = surface_capabilities.currentExtent.width;
-		uint32_t height = surface_capabilities.currentExtent.height;
+		if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
+			// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
+			// We make sure to overwrite surface_capabilities.currentExtent.width so that the same check further below
+			// does not set extent.width = CLAMP( surface->width, ... ) on the first run of this function, because
+			// that'd be potentially unswapped.
+			surface_capabilities.currentExtent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+			surface_capabilities.currentExtent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+		}
+
+		// We must SWAP() only once otherwise we'll keep ping-ponging between
+		// the right and wrong resolutions after multiple calls to swap_chain_resize().
 		if (surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
 				surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
 			// Swap to get identity width and height.
-			surface_capabilities.currentExtent.height = width;
-			surface_capabilities.currentExtent.width = height;
+			SWAP(surface_capabilities.currentExtent.width, surface_capabilities.currentExtent.height);
 		}
-
-		native_display_size = surface_capabilities.currentExtent;
 	}
 
 	VkExtent2D extent;
 	if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
 		// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
+		// We can only be here on the second call to swap_chain_resize(), by which time surface->width & surface->height should already be swapped if needed.
 		extent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
 		extent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
 	} else {
@@ -2991,7 +2998,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.minImageCount = desired_swapchain_images;
 	swap_create_info.imageFormat = swap_chain->format;
 	swap_create_info.imageColorSpace = swap_chain->color_space;
-	swap_create_info.imageExtent = native_display_size;
+	swap_create_info.imageExtent = extent;
 	swap_create_info.imageArrayLayers = 1;
 	swap_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swap_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
