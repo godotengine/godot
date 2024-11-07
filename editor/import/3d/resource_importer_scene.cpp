@@ -2622,6 +2622,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 
 		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
 		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
+		mesh_node->set_visible(src_mesh_node->is_visible());
 		mesh_node->set_visibility_range_begin(src_mesh_node->get_visibility_range_begin());
 		mesh_node->set_visibility_range_begin_margin(src_mesh_node->get_visibility_range_begin_margin());
 		mesh_node->set_visibility_range_end(src_mesh_node->get_visibility_range_end());
