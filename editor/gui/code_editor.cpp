@@ -1672,6 +1672,7 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 void CodeTextEditor::_toggle_files_pressed() {
 	ERR_FAIL_NULL(toggle_files_list);
 	toggle_files_list->set_visible(!toggle_files_list->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", toggle_files_list->is_visible());
 	update_toggle_files_button();
 }
 
