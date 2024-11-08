@@ -53,8 +53,8 @@ public:
 		UNUSED_PRIVATE_CLASS_VARIABLE, // Class variable is declared private ("_" prefix) but never used in the class.
 		UNUSED_PARAMETER, // Function parameter is never used.
 		UNUSED_SIGNAL, // Signal is defined but never explicitly used in the class.
-		SHADOWED_VARIABLE, // Variable name shadowed by other variable in same class.
-		SHADOWED_VARIABLE_BASE_CLASS, // Variable name shadowed by other variable in some base class.
+		SHADOWED_VARIABLE, // A local variable/constant shadows a current class member.
+		SHADOWED_VARIABLE_BASE_CLASS, // A local variable/constant shadows a base class member.
 		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
 		UNREACHABLE_CODE, // Code after a return statement.
 		UNREACHABLE_PATTERN, // Pattern in a match statement after a catch all pattern (wildcard or bind).
