@@ -967,7 +967,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
-    if env["platform_tools"]:
+    if not env["platform_tools"]:
         # resrc
         env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
 
