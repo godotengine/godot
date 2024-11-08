@@ -1,32 +1,34 @@
 name: 🤖 Android Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
-  SCONSFLAGS: platform=android verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
   ANDROID_HOME: /home/runner/work/godot/godot/android-sdk
   ANDROID_NDK_ROOT: /home/runner/work/godot/godot/android-sdk/ndk/21.1.6352462
   ANDROID_NDK_VERSION: 21.1.6352462
 
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-android
+  cancel-in-progress: true
+
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
-
     name: Template (target=release, tools=no)
 
     steps:
       - uses: actions/checkout@v4
 
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          sudo apt-get update
-
       - name: Set up Java 8, Android SDK and NDK
         run: |
           # Not using actions/setup-java and android-actions/setup-android as I couldn't make them work for such old Java/SDK/NDK combination.
+          # Azure repositories are flaky, remove them.
+          sudo rm -f /etc/apt/sources.list.d/{azure,microsoft}*
+          sudo apt-get update
           sudo apt-get install openjdk-8-jdk
           sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
           mkdir -p ${{env.ANDROID_HOME}}
@@ -38,27 +40,39 @@ jobs:
           # https://github.com/godotengine/build-containers/blob/3.2/Dockerfile.android
           ./cmdline-tools/bin/sdkmanager --sdk_root=${{env.ANDROID_HOME}} 'build-tools;28.0.3' 'platforms;android-28' 'cmake;3.10.2.4988404' 'ndk;${{env.ANDROID_NDK_VERSION}}'
 
-      # Use python 3.x release (works cross platform)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation (armv7)
+        uses: ./.github/actions/godot-build
         with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
+          sconsflags: ${{ env.SCONSFLAGS }} android_arch=armv7
+          platform: android
+          target: release
+          tools: false
 
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
+      - name: Compilation (arm64v8)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} android_arch=arm64v8
+          platform: android
+          target: release
+          tools: false
 
-      - name: Compilation
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        continue-on-error: true
+
+      - name: Generate Godot templates
         run: |
-          scons target=release tools=no android_arch=armv7
-          scons target=release tools=no android_arch=arm64v8
           cd platform/android/java
           ./gradlew generateGodotTemplates
           cd ../../..
           ls -l bin/
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact

@@ -1,67 +1,68 @@
 name: 🍎 macOS Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
-  SCONSFLAGS: platform=osx verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
+  cancel-in-progress: true
 
 jobs:
-  macos-editor:
+  build-macos:
     runs-on: "macos-latest"
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=release_debug, tools=yes)
+            cache-name: macos-editor
+            target: release_debug
+            tools: true
+            bin: "./bin/godot.osx.opt.tools.64"
 
-    name: Editor (target=release_debug, tools=yes)
+          - name: Template (target=release, tools=no)
+            cache-name: macos-template
+            target: release
+            tools: false
 
     steps:
       - uses: actions/checkout@v4
 
-      # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
-      # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
-
-      # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
-      - name: Compilation
-        run: |
-          scons tools=yes target=release_debug
-          ls -l bin/
-
-  macos-template:
-    runs-on: "macos-latest"
-    name: Template (target=release, tools=no)
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # Use python 3.x release (works cross platform)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
-        with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
-
-      # You can test your matrix by printing the current Python version
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
 
       - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }}
+          platform: osx
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Prepare artifact
         run: |
-          scons target=release tools=no
-          ls -l bin/
+          strip bin/godot.*
+          chmod +x bin/godot.*
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}

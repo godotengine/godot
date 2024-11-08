@@ -584,7 +584,7 @@ def escape_rst(text, until_pos=-1):  # type: (str) -> str
         pos = text.find("*", pos, until_pos)
         if pos == -1:
             break
-        text = text[:pos] + "\*" + text[pos + 1 :]
+        text = text[:pos] + "\\*" + text[pos + 1 :]
         pos += 2
 
     # Escape _ character at the end of a word to avoid interpreting it as an inline hyperlink
@@ -594,7 +594,7 @@ def escape_rst(text, until_pos=-1):  # type: (str) -> str
         if pos == -1:
             break
         if not text[pos + 1].isalnum():  # don't escape within a snake_case word
-            text = text[:pos] + "\_" + text[pos + 1 :]
+            text = text[:pos] + "\\_" + text[pos + 1 :]
             pos += 2
         else:
             pos += 1
@@ -852,7 +852,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
         # Properly escape things like `[Node]s`
         if escape_post and post_text and (post_text[0].isalnum() or post_text[0] == "("):  # not punctuation, escape
-            post_text = "\ " + post_text
+            post_text = "\\ " + post_text
 
         next_brac_pos = post_text.find("[", 0)
         iter_pos = 0
@@ -860,7 +860,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
             iter_pos = post_text.find("*", iter_pos, next_brac_pos)
             if iter_pos == -1:
                 break
-            post_text = post_text[:iter_pos] + "\*" + post_text[iter_pos + 1 :]
+            post_text = post_text[:iter_pos] + "\\*" + post_text[iter_pos + 1 :]
             iter_pos += 2
 
         iter_pos = 0
@@ -869,7 +869,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
             if iter_pos == -1:
                 break
             if not post_text[iter_pos + 1].isalnum():  # don't escape within a snake_case word
-                post_text = post_text[:iter_pos] + "\_" + post_text[iter_pos + 1 :]
+                post_text = post_text[:iter_pos] + "\\_" + post_text[iter_pos + 1 :]
                 iter_pos += 2
             else:
                 iter_pos += 1
