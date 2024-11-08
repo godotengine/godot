@@ -240,7 +240,10 @@ void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_eve
 bool SubViewportContainer::_is_propagated_in_gui_input(const Ref<InputEvent> &p_event) {
 	// Propagation of events with a position property happen in gui_input
 	// Propagation of other events happen in input
-	return Object::cast_to<InputEventMouse>(*p_event) || Object::cast_to<InputEventScreenDrag>(*p_event) || Object::cast_to<InputEventScreenTouch>(*p_event) || Object::cast_to<InputEventGesture>(*p_event);
+	return Object::cast_to<InputEventMouse>(*p_event) ||
+			Object::cast_to<InputEventScreenDrag>(*p_event) ||
+			Object::cast_to<InputEventScreenTouch>(*p_event) ||
+			Object::cast_to<InputEventGesture>(*p_event);
 }
 
 void SubViewportContainer::add_child_notify(Node *p_child) {

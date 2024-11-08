@@ -6255,7 +6255,7 @@ bool VisualShaderNodeTransformParameter::is_use_prop_slots() const {
 }
 
 bool VisualShaderNodeTransformParameter::is_qualifier_supported(Qualifier p_qual) const {
-	return (!p_qual) == Qualifier::QUAL_INSTANCE;
+	return p_qual != Qualifier::QUAL_INSTANCE;
 }
 
 bool VisualShaderNodeTransformParameter::is_convertible_to_constant() const {
