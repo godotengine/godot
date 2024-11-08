@@ -64,6 +64,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_is_dark_mode_supported = p_env->GetMethodID(godot_class, "isDarkModeSupported", "()Z");
 	_is_dark_mode = p_env->GetMethodID(godot_class, "isDarkMode", "()Z");
+	_get_accent_color = p_env->GetMethodID(godot_class, "getAccentColor", "()I");
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
@@ -211,6 +212,23 @@ bool GodotJavaWrapper::is_dark_mode() {
 		return env->CallBooleanMethod(godot_instance, _is_dark_mode);
 	} else {
 		return false;
+	}
+}
+
+Color GodotJavaWrapper::get_accent_color() {
+	if (_get_accent_color) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, Color(0, 0, 0, 0));
+		int accent_color = env->CallIntMethod(godot_instance, _get_accent_color);
+
+		// Convert ARGB to RGBA.
+		int alpha = (accent_color >> 24) & 0xFF;
+		int red = (accent_color >> 16) & 0xFF;
+		int green = (accent_color >> 8) & 0xFF;
+		int blue = accent_color & 0xFF;
+		return Color(red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f);
+	} else {
+		return Color(0, 0, 0, 0);
 	}
 }
 

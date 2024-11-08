@@ -218,6 +218,7 @@ void RasterizerGLES3::finalize() {
 	memdelete(glow);
 	memdelete(cubemap_filter);
 	memdelete(copy_effects);
+	memdelete(feed_effects);
 	memdelete(light_storage);
 	memdelete(particles_storage);
 	memdelete(mesh_storage);
@@ -366,6 +367,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	cubemap_filter = memnew(GLES3::CubemapFilter);
 	glow = memnew(GLES3::Glow);
 	post_effects = memnew(GLES3::PostEffects);
+	feed_effects = memnew(GLES3::FeedEffects);
 	gi = memnew(GLES3::GI);
 	fog = memnew(GLES3::Fog);
 	canvas = memnew(RasterizerCanvasGLES3());

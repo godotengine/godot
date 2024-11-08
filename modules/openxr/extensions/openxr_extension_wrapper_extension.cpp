@@ -51,6 +51,8 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_process);
 	GDVIRTUAL_BIND(_on_pre_render);
 	GDVIRTUAL_BIND(_on_main_swapchains_created);
+	GDVIRTUAL_BIND(_on_pre_draw_viewport, "viewport");
+	GDVIRTUAL_BIND(_on_post_draw_viewport, "viewport");
 	GDVIRTUAL_BIND(_on_session_destroyed);
 	GDVIRTUAL_BIND(_on_state_idle);
 	GDVIRTUAL_BIND(_on_state_ready);
@@ -208,6 +210,14 @@ void OpenXRExtensionWrapperExtension::on_session_destroyed() {
 	GDVIRTUAL_CALL(_on_session_destroyed);
 }
 
+void OpenXRExtensionWrapperExtension::on_pre_draw_viewport(RID p_render_target) {
+	GDVIRTUAL_CALL(_on_pre_draw_viewport, p_render_target);
+}
+
+void OpenXRExtensionWrapperExtension::on_post_draw_viewport(RID p_render_target) {
+	GDVIRTUAL_CALL(_on_post_draw_viewport, p_render_target);
+}
+
 void OpenXRExtensionWrapperExtension::on_state_idle() {
 	GDVIRTUAL_CALL(_on_state_idle);
 }
@@ -298,8 +308,7 @@ void OpenXRExtensionWrapperExtension::register_extension_wrapper() {
 	OpenXRAPI::register_extension_wrapper(this);
 }
 
-OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() :
-		Object(), OpenXRExtensionWrapper() {
+OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() {
 	openxr_api.instantiate();
 }
 

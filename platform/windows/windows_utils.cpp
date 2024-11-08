@@ -67,11 +67,11 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		{
 			// The custom LoadLibraryExW is used instead of open_dynamic_library
 			// to avoid loading the original PDB into the debugger.
-			HMODULE library_ptr = LoadLibraryExW((LPCWSTR)(p_dll_path.utf16().get_data()), NULL, LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
+			HMODULE library_ptr = LoadLibraryExW((LPCWSTR)(p_dll_path.utf16().get_data()), nullptr, LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE);
 
 			ERR_FAIL_NULL_V_MSG(library_ptr, ERR_FILE_CANT_OPEN, vformat("Failed to load library '%s'.", p_dll_path));
 
-			IMAGE_DEBUG_DIRECTORY *dbg_dir = (IMAGE_DEBUG_DIRECTORY *)ImageDirectoryEntryToDataEx(library_ptr, FALSE, IMAGE_DIRECTORY_ENTRY_DEBUG, &dbg_info_size, NULL);
+			IMAGE_DEBUG_DIRECTORY *dbg_dir = (IMAGE_DEBUG_DIRECTORY *)ImageDirectoryEntryToDataEx(library_ptr, FALSE, IMAGE_DIRECTORY_ENTRY_DEBUG, &dbg_info_size, nullptr);
 
 			bool has_debug = dbg_dir && dbg_dir->Type == IMAGE_DEBUG_TYPE_CODEVIEW;
 			if (has_debug) {

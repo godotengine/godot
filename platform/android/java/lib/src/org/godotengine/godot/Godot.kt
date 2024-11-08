@@ -925,6 +925,12 @@ class Godot(private val context: Context) {
 		}
 	}
 
+	@Keep
+	private fun getAccentColor(): Int {
+		val value = TypedValue()
+		context.theme.resolveAttribute(android.R.attr.colorAccent, value, true)
+		return value.data
+	}
 
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.

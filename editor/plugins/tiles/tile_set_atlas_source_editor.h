@@ -91,7 +91,7 @@ public:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
 
 		Ref<TileSetAtlasSource> tile_set_atlas_source;
-		RBSet<TileSelection> tiles = RBSet<TileSelection>();
+		RBSet<TileSelection> tiles;
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);

@@ -2581,7 +2581,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 		bool found = _find_file(file, &fs, cpos);
-		ERR_FAIL_COND_V_MSG(!found, ERR_UNCONFIGURED, "Can't find file '" + file + "'.");
+		ERR_FAIL_COND_V_MSG(!found, ERR_UNCONFIGURED, vformat("Can't find file '%s' during group reimport.", file));
 
 		//update modified times, to avoid reimport
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
@@ -2631,7 +2631,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	int cpos = -1;
 	if (p_update_file_system) {
 		bool found = _find_file(p_file, &fs, cpos);
-		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
+		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s' during file reimport.", p_file));
 	}
 
 	//try to obtain existing params

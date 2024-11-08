@@ -716,8 +716,9 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import")) {
 						proper_extension = true;
+					}
 
 					if (proper_extension) {
 						collected_files.append(current_dir.path_join(file_name));
@@ -1321,8 +1322,9 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 				break;
 			};
 			case '"': {
-				if (previous_character != '\\')
+				if (previous_character != '\\') {
 					is_inside_string = !is_inside_string;
+				}
 			}
 		}
 		previous_character = character;

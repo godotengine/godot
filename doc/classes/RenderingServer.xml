@@ -1278,6 +1278,14 @@
 				Sets the intensity of the background color.
 			</description>
 		</method>
+		<method name="environment_set_camera_id">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Sets the camera ID to be used as environment background.
+			</description>
+		</method>
 		<method name="environment_set_canvas_max_layer">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />

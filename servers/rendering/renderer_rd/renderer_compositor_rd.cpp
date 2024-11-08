@@ -67,7 +67,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
 
 		// We need to invert the phone rotation.
-		int screen_rotation_degrees = -DisplayServer::get_singleton()->screen_get_internal_current_rotation();
+		const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(p_screen);
 		float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
 
 		blit.push_constant.rotation_cos = Math::cos(screen_rotation);
@@ -238,7 +238,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
-	int screen_rotation_degrees = DisplayServer::get_singleton()->screen_get_internal_current_rotation();
+	const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(DisplayServer::MAIN_WINDOW_ID);
 	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
 	blit.push_constant.rotation_cos = Math::cos(screen_rotation);
 	blit.push_constant.rotation_sin = Math::sin(screen_rotation);

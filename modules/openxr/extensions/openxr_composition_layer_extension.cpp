@@ -341,7 +341,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 	}
 
 	XrSwapchainSubImage subimage = {
-		0, // swapchain
+		0, // swapchain // NOLINT(modernize-use-nullptr) - 32-bit uses non-pointer uint64
 		{ { 0, 0 }, { 0, 0 } }, // imageRect
 		0, // imageArrayIndex
 	};

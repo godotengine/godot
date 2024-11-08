@@ -2567,8 +2567,6 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 				}
 
-				src_mesh_node->get_mesh()->optimize_indices_for_cache();
-
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
 					src_mesh_node->get_mesh()->generate_lods(merge_angle, skin_pose_transform_array);
@@ -2577,6 +2575,8 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				if (create_shadow_meshes) {
 					src_mesh_node->get_mesh()->create_shadow_mesh();
 				}
+
+				src_mesh_node->get_mesh()->optimize_indices();
 
 				if (!save_to_file.is_empty()) {
 					Ref<Mesh> existing = ResourceCache::get_ref(save_to_file);
@@ -2622,6 +2622,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 
 		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
 		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
+		mesh_node->set_visible(src_mesh_node->is_visible());
 		mesh_node->set_visibility_range_begin(src_mesh_node->get_visibility_range_begin());
 		mesh_node->set_visibility_range_begin_margin(src_mesh_node->get_visibility_range_begin_margin());
 		mesh_node->set_visibility_range_end(src_mesh_node->get_visibility_range_end());

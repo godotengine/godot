@@ -65,25 +65,35 @@ public:
 				uint32_t use_directional_soft_shadows : 1;
 				uint32_t decal_use_mipmaps : 1;
 				uint32_t projector_use_mipmaps : 1;
-				uint32_t disable_omni_lights : 1;
-				uint32_t disable_spot_lights : 1;
-				uint32_t disable_reflection_probes : 1;
-				uint32_t disable_directional_lights : 1;
-				uint32_t disable_decals : 1;
 				uint32_t disable_fog : 1;
 				uint32_t use_depth_fog : 1;
-				uint32_t is_multimesh : 1;
 				uint32_t use_lightmap_bicubic_filter : 1;
+				uint32_t multimesh : 1;
+				uint32_t multimesh_format_2d : 1;
+				uint32_t multimesh_has_color : 1;
+				uint32_t multimesh_has_custom_data : 1;
+				uint32_t scene_use_ambient_cubemap : 1;
+				uint32_t scene_use_reflection_cubemap : 1;
+				uint32_t scene_roughness_limiter_enabled : 1;
+				uint32_t padding : 5;
 				uint32_t soft_shadow_samples : 6;
 				uint32_t penumbra_shadow_samples : 6;
-				uint32_t directional_soft_shadow_samples : 6;
 			};
 
 			uint32_t packed_0;
 		};
 
 		union {
-			uint32_t directional_penumbra_shadow_samples : 6;
+			struct {
+				uint32_t directional_soft_shadow_samples : 6;
+				uint32_t directional_penumbra_shadow_samples : 6;
+				uint32_t omni_lights : 4;
+				uint32_t spot_lights : 4;
+				uint32_t reflection_probes : 4;
+				uint32_t directional_lights : 4;
+				uint32_t decals : 4;
+			};
+
 			uint32_t packed_1;
 		};
 

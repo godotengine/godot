@@ -95,56 +95,80 @@ bool sc_projector_use_mipmaps() {
 	return ((sc_packed_0() >> 4) & 1U) != 0;
 }
 
-bool sc_disable_omni_lights() {
+bool sc_disable_fog() {
 	return ((sc_packed_0() >> 5) & 1U) != 0;
 }
 
-bool sc_disable_spot_lights() {
+bool sc_use_depth_fog() {
 	return ((sc_packed_0() >> 6) & 1U) != 0;
 }
 
-bool sc_disable_reflection_probes() {
+bool sc_use_lightmap_bicubic_filter() {
 	return ((sc_packed_0() >> 7) & 1U) != 0;
 }
 
-bool sc_disable_directional_lights() {
+bool sc_multimesh() {
 	return ((sc_packed_0() >> 8) & 1U) != 0;
 }
 
-bool sc_disable_decals() {
+bool sc_multimesh_format_2d() {
 	return ((sc_packed_0() >> 9) & 1U) != 0;
 }
 
-bool sc_disable_fog() {
+bool sc_multimesh_has_color() {
 	return ((sc_packed_0() >> 10) & 1U) != 0;
 }
 
-bool sc_use_depth_fog() {
+bool sc_multimesh_has_custom_data() {
 	return ((sc_packed_0() >> 11) & 1U) != 0;
 }
 
-bool sc_is_multimesh() {
+bool sc_scene_use_ambient_cubemap() {
 	return ((sc_packed_0() >> 12) & 1U) != 0;
 }
 
-bool sc_use_lightmap_bicubic_filter() {
+bool sc_scene_use_reflection_cubemap() {
 	return ((sc_packed_0() >> 13) & 1U) != 0;
 }
 
-uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 14) & 63U;
+bool sc_scene_roughness_limiter_enabled() {
+	return ((sc_packed_0() >> 14) & 1U) != 0;
 }
 
-uint sc_penumbra_shadow_samples() {
+uint sc_soft_shadow_samples() {
 	return (sc_packed_0() >> 20) & 63U;
 }
 
-uint sc_directional_soft_shadow_samples() {
+uint sc_penumbra_shadow_samples() {
 	return (sc_packed_0() >> 26) & 63U;
 }
 
-uint sc_directional_penumbra_shadow_samples() {
+uint sc_directional_soft_shadow_samples() {
 	return (sc_packed_1() >> 0) & 63U;
+}
+
+uint sc_directional_penumbra_shadow_samples() {
+	return (sc_packed_1() >> 6) & 63U;
+}
+
+uint sc_omni_lights() {
+	return (sc_packed_1() >> 12) & 15U;
+}
+
+uint sc_spot_lights() {
+	return (sc_packed_1() >> 16) & 15U;
+}
+
+uint sc_reflection_probes() {
+	return (sc_packed_1() >> 20) & 15U;
+}
+
+uint sc_directional_lights() {
+	return (sc_packed_1() >> 24) & 15U;
+}
+
+uint sc_decals() {
+	return (sc_packed_1() >> 28) & 15U;
 }
 
 float sc_luminance_multiplier() {
@@ -166,10 +190,6 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
 #define INSTANCE_FLAGS_PARTICLES (1 << 11)
-#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
-#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF

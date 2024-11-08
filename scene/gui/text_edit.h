@@ -139,7 +139,7 @@ private:
 			Variant metadata;
 			bool clickable = false;
 
-			Ref<Texture2D> icon = Ref<Texture2D>();
+			Ref<Texture2D> icon;
 			String text = "";
 			Color color = Color(1, 1, 1);
 		};

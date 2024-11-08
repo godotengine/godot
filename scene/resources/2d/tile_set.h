@@ -836,7 +836,7 @@ private:
 	bool flip_v = false;
 	bool transpose = false;
 	Vector2i texture_origin;
-	Ref<Material> material = Ref<Material>();
+	Ref<Material> material;
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
 	int y_sort_origin = 0;

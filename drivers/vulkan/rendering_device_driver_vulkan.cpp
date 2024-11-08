@@ -1519,7 +1519,7 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
 	err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, NULL);
+	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
 	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
 
 	// Bookkeep.
@@ -1745,7 +1745,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
 	err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
-	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, NULL);
+	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
 
 	// Create view.
@@ -2887,21 +2887,28 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 	// No swapchain yet, this is the first time we're creating it.
 	if (!swap_chain->vk_swapchain) {
-		uint32_t width = surface_capabilities.currentExtent.width;
-		uint32_t height = surface_capabilities.currentExtent.height;
+		if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
+			// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
+			// We make sure to overwrite surface_capabilities.currentExtent.width so that the same check further below
+			// does not set extent.width = CLAMP( surface->width, ... ) on the first run of this function, because
+			// that'd be potentially unswapped.
+			surface_capabilities.currentExtent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+			surface_capabilities.currentExtent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+		}
+
+		// We must SWAP() only once otherwise we'll keep ping-ponging between
+		// the right and wrong resolutions after multiple calls to swap_chain_resize().
 		if (surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
 				surface_capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
 			// Swap to get identity width and height.
-			surface_capabilities.currentExtent.height = width;
-			surface_capabilities.currentExtent.width = height;
+			SWAP(surface_capabilities.currentExtent.width, surface_capabilities.currentExtent.height);
 		}
-
-		native_display_size = surface_capabilities.currentExtent;
 	}
 
 	VkExtent2D extent;
 	if (surface_capabilities.currentExtent.width == 0xFFFFFFFF) {
 		// The current extent is currently undefined, so the current surface width and height will be clamped to the surface's capabilities.
+		// We can only be here on the second call to swap_chain_resize(), by which time surface->width & surface->height should already be swapped if needed.
 		extent.width = CLAMP(surface->width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
 		extent.height = CLAMP(surface->height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
 	} else {
@@ -2991,11 +2998,29 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	swap_create_info.minImageCount = desired_swapchain_images;
 	swap_create_info.imageFormat = swap_chain->format;
 	swap_create_info.imageColorSpace = swap_chain->color_space;
-	swap_create_info.imageExtent = native_display_size;
+	swap_create_info.imageExtent = extent;
 	swap_create_info.imageArrayLayers = 1;
 	swap_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swap_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	swap_create_info.preTransform = surface_transform_bits;
+	switch (swap_create_info.preTransform) {
+		case VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR:
+			swap_chain->pre_transform_rotation_degrees = 0;
+			break;
+		case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+			swap_chain->pre_transform_rotation_degrees = 90;
+			break;
+		case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+			swap_chain->pre_transform_rotation_degrees = 180;
+			break;
+		case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+			swap_chain->pre_transform_rotation_degrees = 270;
+			break;
+		default:
+			WARN_PRINT("Unexpected swap_create_info.preTransform = " + itos(swap_create_info.preTransform) + ".");
+			swap_chain->pre_transform_rotation_degrees = 0;
+			break;
+	}
 	swap_create_info.compositeAlpha = composite_alpha;
 	swap_create_info.presentMode = present_mode;
 	swap_create_info.clipped = true;
@@ -3165,6 +3190,13 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::swap_chain_get_render_pass(SwapCh
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	return swap_chain->render_pass;
+}
+
+int RenderingDeviceDriverVulkan::swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) {
+	DEV_ASSERT(p_swap_chain.id != 0);
+
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	return swap_chain->pre_transform_rotation_degrees;
 }
 
 RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p_swap_chain) {
@@ -4017,7 +4049,7 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	}
 
 	// Need a descriptor pool.
-	DescriptorSetPools::Iterator pool_sets_it = {};
+	DescriptorSetPools::Iterator pool_sets_it;
 	VkDescriptorPool vk_pool = _descriptor_set_pool_find_or_create(pool_key, &pool_sets_it);
 	DEV_ASSERT(vk_pool);
 	pool_sets_it->value[vk_pool]++;

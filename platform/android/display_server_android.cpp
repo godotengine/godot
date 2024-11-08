@@ -203,6 +203,12 @@ void DisplayServerAndroid::emit_file_picker_callback(bool p_ok, const Vector<Str
 	}
 }
 
+Color DisplayServerAndroid::get_accent_color() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
+	return godot_java->get_accent_color();
+}
+
 TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
@@ -241,14 +247,6 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	const int orientation = godot_io_java->get_screen_orientation();
 	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
 	return (ScreenOrientation)orientation;
-}
-
-int DisplayServerAndroid::screen_get_internal_current_rotation(int p_screen) const {
-	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_NULL_V(godot_io_java, 0);
-
-	const int rotation = godot_io_java->get_internal_current_screen_rotation();
-	return rotation;
 }
 
 int DisplayServerAndroid::get_screen_count() const {

@@ -1169,8 +1169,8 @@ void GodotPhysicsServer2D::pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, 
 
 bool GodotPhysicsServer2D::pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, 0);
+	ERR_FAIL_NULL_V(joint, false);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, false);
 
 	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	return pin_joint->get_flag(p_flag);

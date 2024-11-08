@@ -296,28 +296,6 @@ public class GodotIO {
 		}
 	}
 
-	/**
-	 This function is used by DisplayServer::screen_get_internal_current_rotation (C++)
-		and is used to implement a performance optimization in devices that do not offer
-		a HW rotator.
-	 @return
-		Rotation in degrees, in multiples of 90°
-	*/
-	public int getInternalCurrentScreenRotation() {
-		int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-
-		switch (rotation) {
-			case Surface.ROTATION_90:
-				return 90;
-			case Surface.ROTATION_180:
-				return 180;
-			case Surface.ROTATION_270:
-				return 270;
-			default:
-				return 0;
-		}
-	}
-
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
 	}

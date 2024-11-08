@@ -350,7 +350,7 @@ bool GI::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
 
 bool GI::voxel_gi_is_interior(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_NULL_V(voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 	return voxel_gi->interior;
 }
 

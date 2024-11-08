@@ -117,7 +117,17 @@ public:
 			uint32_t packed_0;
 		};
 
-		uint32_t packed_1;
+		union {
+			struct {
+				uint32_t multimesh : 1;
+				uint32_t multimesh_format_2d : 1;
+				uint32_t multimesh_has_color : 1;
+				uint32_t multimesh_has_custom_data : 1;
+			};
+
+			uint32_t packed_1;
+		};
+
 		uint32_t packed_2;
 	};
 

@@ -1550,6 +1550,7 @@ int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternativ
 		case TRANSFORM_ROTATE_RIGHT: {
 			// A matrix with every possible flip/transpose combination, sorted by what comes next when you rotate.
 			const LocalVector<bool> rotation_matrix = {
+				// NOLINTBEGIN(modernize-use-bool-literals)
 				0, 0, 0,
 				0, 1, 1,
 				1, 1, 0,
@@ -1558,6 +1559,7 @@ int TileMapLayerEditorTilesPlugin::_get_transformed_alternative(int p_alternativ
 				0, 0, 1,
 				0, 1, 0,
 				1, 1, 1
+				// NOLINTEND(modernize-use-bool-literals)
 			};
 
 			for (int i = 0; i < 8; i++) {

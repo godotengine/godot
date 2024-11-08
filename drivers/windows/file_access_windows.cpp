@@ -193,7 +193,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		uint64_t id = OS::get_singleton()->get_ticks_usec();
 		while (true) {
 			tmpfile = path + itos(id++) + ".tmp";
-			HANDLE handle = CreateFileW((LPCWSTR)tmpfile.utf16().get_data(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
+			HANDLE handle = CreateFileW((LPCWSTR)tmpfile.utf16().get_data(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 			if (handle != INVALID_HANDLE_VALUE) {
 				CloseHandle(handle);
 				break;

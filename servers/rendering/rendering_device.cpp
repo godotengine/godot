@@ -3757,6 +3757,15 @@ int RenderingDevice::screen_get_height(DisplayServer::WindowID p_screen) const {
 	return context->surface_get_height(surface);
 }
 
+int RenderingDevice::screen_get_pre_rotation_degrees(DisplayServer::WindowID p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
+	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
+
+	return driver->swap_chain_get_pre_rotation_degrees(it->value);
+}
+
 RenderingDevice::FramebufferFormatID RenderingDevice::screen_get_framebuffer_format(DisplayServer::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 
