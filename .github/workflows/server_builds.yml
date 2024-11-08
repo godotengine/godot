@@ -1,88 +1,68 @@
 name: ☁ Server Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
-  SCONSFLAGS: platform=server verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no module_mono_enabled=yes mono_static=yes mono_glue=no
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-server
+  cancel-in-progress: true
 
 jobs:
-  linux-editor:
+  build-server:
     runs-on: "ubuntu-20.04"
-    name: Linux Headless w/ Mono (target=release_debug, tools=yes)
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux Headless w/ Mono (target=release_debug, tools=yes)
+            cache-name: server-editor-mono
+            target: release_debug
+            tools: true
+
+          - name: Linux Server w/ Mono (target=release, tools=no)
+            cache-name: server-template-mono
+            target: release
+            tools: false
 
     steps:
       - uses: actions/checkout@v4
 
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
+      - name: Linux dependencies
+        shell: bash
         run: |
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          # Azure repositories are flaky, remove them.
+          sudo rm -f /etc/apt/sources.list.d/{azure,microsoft}*
           sudo apt-get update
+          # The actual dependencies.
+          sudo apt-get install --no-install-recommends build-essential pkg-config libx11-dev \
+              libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev \
+              libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
 
-      # Install all packages (except scons)
-      - name: Configure dependencies
-        run: |
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
-
-      # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
-      # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
-
-      # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
-      - name: Compilation
-        run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=server tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
-
-  linux-server:
-    runs-on: "ubuntu-20.04"
-    name: Linux Server w/ Mono (target=release, tools=no)
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          sudo apt-get update
-
-      # Install all packages (except scons)
-      - name: Configure dependencies
-        run: |
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-            libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
-
-      # Use python 3.x release (works cross platform)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
-        with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
-
-      # You can test your matrix by printing the current Python version
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
 
       - name: Compilation
-        run: |
-          scons -j2 target=release tools=no module_mono_enabled=yes mono_glue=no
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          platform: server
+          target: ${{ matrix.target }}
+          tools: ${{ matrix.tools }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true

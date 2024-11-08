@@ -114,7 +114,7 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2 ** 32
+    is64 = sys.maxsize > 2**32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 

@@ -1,9 +1,17 @@
 name: 🍏 iOS Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
-  SCONSFLAGS: platform=iphone verbose=yes warnings=all werror=no debug_symbols=no --jobs=2
+  # Only used for the cache key. Increment version to force clean build.
+  GODOT_BASE_BRANCH: 3.2
+  # iOS platform on this branch doesn't build without errors.
+  SCONSFLAGS: verbose=yes warnings=all werror=no debug_symbols=no
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-ios
+  cancel-in-progress: true
 
 jobs:
   ios-template:
@@ -13,24 +21,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Use python 3.x release (works cross platform)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        continue-on-error: true
+
+      - name: Setup python and scons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation (arm64v8)
+        uses: ./.github/actions/godot-build
         with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
+          sconsflags: ${{ env.SCONSFLAGS }}
+          platform: iphone
+          target: release
+          tools: false
 
-      # You can test your matrix by printing the current Python version
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        continue-on-error: true
 
-      - name: Compilation
-        run: |
-          scons target=release tools=no
-          ls -l bin/
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact

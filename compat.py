@@ -43,7 +43,6 @@ if sys.version_info < (3,):
         # Not properly equivalent to __qualname__ in py3, but it doesn't matter.
         return obj.__name__
 
-
 else:
 
     def isbasestring(s):

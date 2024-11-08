@@ -16,6 +16,8 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == "platform/android/java/lib/src/com/google"* ]]; then
         continue
+    elif [[ "$f" == *"-so_wrap."* ]]; then
+        continue
     fi
 
     for extension in ${CLANG_FORMAT_FILE_EXTS[@]}; do
@@ -38,7 +40,7 @@ while IFS= read -rd '' f; do
     done
 done
 
-git diff > patch.patch
+git diff --color > patch.patch
 
 # If no patch has been generated all is OK, clean up, and exit.
 if [ ! -s patch.patch ] ; then
