@@ -275,11 +275,13 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 			}
-			if (label.contains(".")) {
+			String draw_label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(label);
+			if (draw_label.contains(".")) {
 				// FIXME: Move this to the project settings editor, as this is only used
 				// for project settings feature tag overrides.
 				color.a = 0.5;
 			}
+			
 
 			int ofs = get_theme_constant(SNAME("font_offset"));
 			int text_limit = text_size - ofs;
@@ -335,7 +337,7 @@ void EditorProperty::_notification(int p_what) {
 				Ref<Texture2D> pinned_icon = get_editor_theme_icon(SNAME("Pin"));
 				int margin_w = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				int total_icon_w = margin_w + pinned_icon->get_width();
-				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
+				int text_w = font->get_string_size(draw_label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
 				if (rtl) {
 					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -347,9 +349,9 @@ void EditorProperty::_notification(int p_what) {
 
 			int v_ofs = (size.height - font->get_height(font_size)) / 2;
 			if (rtl) {
-				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
+				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), draw_label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
 			} else {
-				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), draw_label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
 			}
 
 			ofs = size.width;
@@ -1233,8 +1235,10 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			
+			String draw_label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(label);
 
-			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+			int w = font->get_string_size(draw_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
 				w += hs + icon_size;
 			}
@@ -1262,7 +1266,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 			}
 			float text_pos_y = font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2 + v_margin_offset;
 			Point2 text_pos = Point2(ofs, text_pos_y).round();
-			draw_string(font, text_pos, label, HORIZONTAL_ALIGNMENT_LEFT, w, font_size, color);
+			draw_string(font, text_pos, draw_label, HORIZONTAL_ALIGNMENT_LEFT, w, font_size, color);
 		} break;
 	}
 }
@@ -1467,9 +1471,11 @@ void EditorInspectorSection::_notification(int p_what) {
 				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 				int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 				Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+				String draw_label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(label);
 
 				if (folded && revertable_properties.size()) {
-					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
+					
+					int label_width = font->get_string_size(draw_label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
 					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
 					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
@@ -1501,7 +1507,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					text_offset.x = margin_end;
 				}
 				HorizontalAlignment text_align = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
-				draw_string(font, text_offset, label, text_align, available, font_size, font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+				draw_string(font, text_offset, draw_label, text_align, available, font_size, font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 			}
 
 			// Draw section indentation.

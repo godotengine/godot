@@ -684,15 +684,6 @@ public:
     void update_bone_visble();
 
 public:
-    void set_track_target(String p_track_target) {
-        track_target = p_track_target;
-    }
-    String get_track_target() {
-        return track_target;
-    }
-    // 跟踪的角色
-    String track_target;
-    void update_track_target();
     static ObjectID& get_curr_editor_player();
     // 获取当前编辑的角色
     static CharacterBodyMain* get_current_editor_player()

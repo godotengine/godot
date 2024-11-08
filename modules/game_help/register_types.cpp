@@ -76,6 +76,7 @@
 #include "modules/game_help/logic/data_table_manager.h"
 #include "modules/game_help/logic/path_manager.h"
 #include "modules/game_help/logic/character_manager.h"
+#include "modules/game_help/logic/message_manager.h"
 #include "modules/game_help/csv/CSV_EditorImportPlugin.h"
 
 #include "modules/game_help/unity/unity_link_server.h"
@@ -159,6 +160,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<PathManager>();
 
 		ClassDB::register_class<CharacterManager>();
+		ClassDB::register_class<MessageManager>();
 		
 		ClassDB::register_class<CharacterAnimationLibraryItem>();
 		ClassDB::register_class<CharacterAnimationLibrary>();
@@ -292,10 +294,13 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		character_manager = memnew(CharacterManager);
 		CharacterManager::singleton = character_manager;
 
+		MessageManager::singleton = memnew(MessageManager);
+
 		Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationManager", animation_help));
 		Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", data_table_manager));
 		Engine::get_singleton()->add_singleton(Engine::Singleton("PathManager", path_manager));
 		Engine::get_singleton()->add_singleton(Engine::Singleton("CharacterManager", character_manager));
+		Engine::get_singleton()->add_singleton(Engine::Singleton("MessageManager", MessageManager::singleton));
 
 
 
@@ -319,6 +324,7 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	}
 	Engine::get_singleton()->remove_singleton("DataTableManager");
 	Engine::get_singleton()->remove_singleton("PathManager");
+	Engine::get_singleton()->remove_singleton("MessageManager");
 	CharacterManager::singleton = nullptr;
 	if(Engine::get_singleton() != nullptr)
 	{
@@ -336,5 +342,11 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 
 	memdelete(character_manager);
 	character_manager = nullptr;
+	if(MessageManager::singleton != nullptr)
+	{
+		MessageManager::singleton->clear();
+		memdelete(MessageManager::singleton);
+		MessageManager::singleton = nullptr;
+	}
 
 }

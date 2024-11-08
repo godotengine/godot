@@ -46,6 +46,10 @@ public:
 	explicit					VehicleController(VehicleConstraint &inConstraint) : mConstraint(inConstraint) { }
 	virtual						~VehicleController() = default;
 
+	/// Access the vehicle constraint that this controller is part of
+	VehicleConstraint &			GetConstraint()								{ return mConstraint; }
+	const VehicleConstraint &	GetConstraint() const						{ return mConstraint; }
+
 protected:
 	// The functions below are only for the VehicleConstraint
 	friend class VehicleConstraint;

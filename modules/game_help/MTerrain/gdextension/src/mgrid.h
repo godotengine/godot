@@ -124,7 +124,7 @@ struct MSaveConfig
 class MGrid {
     friend class MRegion;
     friend class MTerrain;
-    friend class MImage;
+    friend struct MImage;
     private:
     bool _is_opengl=false;
     uint8_t _update_id=0; // Only for mesh update not for physics

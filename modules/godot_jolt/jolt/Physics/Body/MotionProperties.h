@@ -97,7 +97,7 @@ public:
 
 	/// Set the inverse mass (1 / mass).
 	/// Note that mass and inertia are linearly related (e.g. inertia of a sphere with mass m and radius r is \f$2/5 \: m \: r^2\f$).
-	/// If you change mass, inertia should probably change as well. See MassProperties::ScaleToMass.
+	/// If you change mass, inertia should probably change as well. You can use ScaleToMass to update mass and inertia at the same time.
 	/// If all your translation degrees of freedom are restricted, make sure this is zero (see EAllowedDOFs).
 	void					SetInverseMass(float inInverseMass)								{ mInvMass = inInverseMass; }
 
@@ -109,9 +109,13 @@ public:
 
 	/// Set the inverse inertia tensor in local space by setting the diagonal and the rotation: \f$I_{body}^{-1} = R \: D \: R^{-1}\f$.
 	/// Note that mass and inertia are linearly related (e.g. inertia of a sphere with mass m and radius r is \f$2/5 \: m \: r^2\f$).
-	/// If you change inertia, mass should probably change as well. See MassProperties::ScaleToMass.
+	/// If you change inertia, mass should probably change as well. You can use ScaleToMass to update mass and inertia at the same time.
 	/// If all your rotation degrees of freedom are restricted, make sure this is zero (see EAllowedDOFs).
 	void					SetInverseInertia(Vec3Arg inDiagonal, QuatArg inRot)			{ mInvInertiaDiagonal = inDiagonal; mInertiaRotation = inRot; }
+
+	/// Sets the mass to inMass and scale the inertia tensor based on the ratio between the old and new mass.
+	/// Note that this only works when the current mass is finite (i.e. the body is dynamic and translational degrees of freedom are not restricted).
+	void					ScaleToMass(float inMass);
 
 	/// Get inverse inertia matrix (\f$I_{body}^{-1}\f$). Will be a matrix of zeros for a static or kinematic object.
 	inline Mat44			GetLocalSpaceInverseInertia() const;

@@ -57,7 +57,6 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 		custom->call(p_arguments, p_argcount, r_return_value, r_call_error);
 	} else {
 		Object *obj = ObjectDB::get_instance(ObjectID(object));
-#ifdef DEBUG_ENABLED
 		if (!obj) {
 			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			r_call_error.argument = 0;
@@ -65,7 +64,6 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 			r_return_value = Variant();
 			return;
 		}
-#endif
 		r_return_value = obj->callp(method, p_arguments, p_argcount, r_call_error);
 	}
 }

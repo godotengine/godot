@@ -3538,6 +3538,9 @@ msgstr "缓冲视图"
 msgid "Byte Offset"
 msgstr "字节偏移"
 
+msgid "Component"
+msgstr "组件"
+
 msgid "Component Type"
 msgstr "组件类型"
 
@@ -11004,3 +11007,77 @@ msgstr "世界原点"
 
 msgid "Primary Interface"
 msgstr "主接口"
+
+msgid "Animation Group"
+msgstr "动画分组"
+
+msgid "Animation File"
+msgstr "动画文件"
+
+msgid "Animation File Path"
+msgstr "动画文件路径"
+
+msgid "Play Animation"
+msgstr "播放动画"
+
+msgid "Play Animation Speed"
+msgstr "播放动画速度"
+
+msgid "Prefab"
+msgstr "预制体"
+
+msgid "Body Prefab"
+msgstr "身体预制体"
+
+msgid "Eidtor"
+msgstr "编辑"
+
+msgid "Mesh File"
+msgstr "模型文件"
+
+msgid "Mesh File Path"
+msgstr "模型文件路径"
+
+msgid "Socket Name"
+msgstr "插槽名称"
+
+msgid "Play Component"
+msgstr "播放组件"
+
+msgid "Animator"
+msgstr "动画师"
+
+msgid "Animation Layer Arrays"
+msgstr "动作层数组"
+
+msgid "IK"
+msgstr "反向动力学"
+
+msgid "Check Area"
+msgstr "检测范围"
+
+msgid "Check Area"
+msgstr "检测范围"
+
+msgid "Main Shape"
+msgstr "主外形"
+
+msgid "Logic"
+msgstr "逻辑"
+
+msgid "Show"
+msgstr "显示"
+
+msgid "Show Mesh"
+msgstr "显示模型"
+
+msgid "Navigation Agent"
+msgstr "导航代理"
+
+msgid "Is Skeleton Human"
+msgstr "骨架是否为人形"
+
+
+
+
+

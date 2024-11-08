@@ -154,16 +154,19 @@ UVec4 UVec4::sEquals(UVec4Arg inV1, UVec4Arg inV2)
 #endif
 }
 
-UVec4 UVec4::sSelect(UVec4Arg inV1, UVec4Arg inV2, UVec4Arg inControl)
+UVec4 UVec4::sSelect(UVec4Arg inNotSet, UVec4Arg inSet, UVec4Arg inControl)
 {
-#if defined(JPH_USE_SSE4_1)
-	return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(inV1.mValue), _mm_castsi128_ps(inV2.mValue), _mm_castsi128_ps(inControl.mValue)));
+#if defined(JPH_USE_SSE4_1) && !defined(JPH_PLATFORM_WASM) // _mm_blendv_ps has problems on FireFox
+	return _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(inNotSet.mValue), _mm_castsi128_ps(inSet.mValue), _mm_castsi128_ps(inControl.mValue)));
+#elif defined(JPH_USE_SSE)
+	__m128 is_set = _mm_castsi128_ps(_mm_srai_epi32(inControl.mValue, 31));
+	return _mm_castps_si128(_mm_or_ps(_mm_and_ps(is_set, _mm_castsi128_ps(inSet.mValue)), _mm_andnot_ps(is_set, _mm_castsi128_ps(inNotSet.mValue))));
 #elif defined(JPH_USE_NEON)
-	return vbslq_u32(vreinterpretq_u32_s32(vshrq_n_s32(vreinterpretq_s32_u32(inControl.mValue), 31)), inV2.mValue, inV1.mValue);
+	return vbslq_u32(vreinterpretq_u32_s32(vshrq_n_s32(vreinterpretq_s32_u32(inControl.mValue), 31)), inSet.mValue, inNotSet.mValue);
 #else
 	UVec4 result;
 	for (int i = 0; i < 4; i++)
-		result.mU32[i] = inControl.mU32[i] ? inV2.mU32[i] : inV1.mU32[i];
+		result.mU32[i] = (inControl.mU32[i] & 0x80000000u) ? inSet.mU32[i] : inNotSet.mU32[i];
 	return result;
 #endif
 }

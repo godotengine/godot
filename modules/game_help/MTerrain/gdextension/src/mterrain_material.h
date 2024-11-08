@@ -17,7 +17,7 @@
 
 
 class MGrid;
-class MImage;
+struct MImage;
 
 
 class MTerrainMaterial : public Resource {

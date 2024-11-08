@@ -315,21 +315,21 @@ DVec3 DVec3::sFusedMultiplyAdd(DVec3Arg inMul1, DVec3Arg inMul2, DVec3Arg inAdd)
 #endif
 }
 
-DVec3 DVec3::sSelect(DVec3Arg inV1, DVec3Arg inV2, DVec3Arg inControl)
+DVec3 DVec3::sSelect(DVec3Arg inNotSet, DVec3Arg inSet, DVec3Arg inControl)
 {
 #if defined(JPH_USE_AVX)
-	return _mm256_blendv_pd(inV1.mValue, inV2.mValue, inControl.mValue);
+	return _mm256_blendv_pd(inNotSet.mValue, inSet.mValue, inControl.mValue);
 #elif defined(JPH_USE_SSE4_1)
-	Type v = { _mm_blendv_pd(inV1.mValue.mLow, inV2.mValue.mLow, inControl.mValue.mLow), _mm_blendv_pd(inV1.mValue.mHigh, inV2.mValue.mHigh, inControl.mValue.mHigh) };
+	Type v = { _mm_blendv_pd(inNotSet.mValue.mLow, inSet.mValue.mLow, inControl.mValue.mLow), _mm_blendv_pd(inNotSet.mValue.mHigh, inSet.mValue.mHigh, inControl.mValue.mHigh) };
 	return sFixW(v);
 #elif defined(JPH_USE_NEON)
-	Type v = { vbslq_f64(vreinterpretq_u64_s64(vshrq_n_s64(vreinterpretq_s64_f64(inControl.mValue.val[0]), 63)), inV2.mValue.val[0], inV1.mValue.val[0]),
-			   vbslq_f64(vreinterpretq_u64_s64(vshrq_n_s64(vreinterpretq_s64_f64(inControl.mValue.val[1]), 63)), inV2.mValue.val[1], inV1.mValue.val[1]) };
+	Type v = { vbslq_f64(vreinterpretq_u64_s64(vshrq_n_s64(vreinterpretq_s64_f64(inControl.mValue.val[0]), 63)), inSet.mValue.val[0], inNotSet.mValue.val[0]),
+			   vbslq_f64(vreinterpretq_u64_s64(vshrq_n_s64(vreinterpretq_s64_f64(inControl.mValue.val[1]), 63)), inSet.mValue.val[1], inNotSet.mValue.val[1]) };
 	return sFixW(v);
 #else
 	DVec3 result;
 	for (int i = 0; i < 3; i++)
-		result.mF64[i] = BitCast<uint64>(inControl.mF64[i])? inV2.mF64[i] : inV1.mF64[i];
+		result.mF64[i] = (BitCast<uint64>(inControl.mF64[i]) & (uint64(1) << 63))? inSet.mF64[i] : inNotSet.mF64[i];
 #ifdef JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 	result.mF64[3] = result.mF64[2];
 #endif // JPH_FLOATING_POINT_EXCEPTIONS_ENABLED

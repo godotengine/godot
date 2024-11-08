@@ -50,6 +50,16 @@ inline Mat44 MotionProperties::GetLocalSpaceInverseInertiaUnchecked() const
 	return rotation.Multiply3x3RightTransposed(rotation_mul_scale_transposed);
 }
 
+inline void MotionProperties::ScaleToMass(float inMass)
+{
+	JPH_ASSERT(mInvMass > 0.0f, "Body must have finite mass");
+	JPH_ASSERT(inMass > 0.0f, "New mass cannot be zero");
+
+	float new_inv_mass = 1.0f / inMass;
+	mInvInertiaDiagonal *= new_inv_mass / mInvMass;
+	mInvMass = new_inv_mass;
+}
+
 inline Mat44 MotionProperties::GetLocalSpaceInverseInertia() const
 {
 	JPH_ASSERT(mCachedMotionType == EMotionType::Dynamic);

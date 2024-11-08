@@ -157,7 +157,6 @@ void CharacterBodyMain::_process_animation()
 void CharacterBodyMain::_process_ik()
 {
     float delta = get_process_delta_time();
-    update_track_target();
     if(ik.is_valid())
     {
         ik->update_ik();
@@ -170,17 +169,6 @@ void CharacterBodyMain::_process_ik()
     }
 }
 
-void CharacterBodyMain::update_track_target() {
-
-    if(track_target.is_empty()) {
-        return;
-    }
-    
-    CharacterBodyMain* src_track_target = Object::cast_to<CharacterBodyMain>(get_parent()->find_child(track_target));
-    if(src_track_target == nullptr) {
-        return;
-    }
-}
 void CharacterBodyMain::_process_move()
 {
     // 处理角色移动
@@ -469,15 +457,12 @@ void CharacterBodyMain::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("set_play_animayion_speed", "speed"), &CharacterBodyMain::set_play_animayion_speed);
     ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
-    
-    ClassDB::bind_method(D_METHOD("set_track_target", "track_target"), &CharacterBodyMain::set_track_target);
-    ClassDB::bind_method(D_METHOD("get_track_target"), &CharacterBodyMain::get_track_target);
 
 
 
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_form_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human"), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
@@ -496,7 +481,7 @@ void CharacterBodyMain::_bind_methods()
 
     
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animayion_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animation_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
     ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
 
 

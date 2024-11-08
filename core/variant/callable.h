@@ -98,6 +98,11 @@ public:
 	}
 	bool is_valid() const;
 
+	void clear() {
+		method = StringName();
+		object = 0;
+	}
+
 	template <typename... VarArgs>
 	Callable bind(VarArgs... p_args) const;
 	Callable bindv(const Array &p_arguments);

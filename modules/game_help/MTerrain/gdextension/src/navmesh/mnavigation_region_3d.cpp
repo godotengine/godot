@@ -180,7 +180,7 @@ void MNavigationRegion3D::_update_loop(){
     }
 }
 
-void MNavigationRegion3D::update_navmesh(Vector3 cam_pos){
+void MNavigationRegion3D::update_navmesh(Vector3 p_cam_pos){
     ERR_FAIL_COND(is_updating);
     if(!grid->is_created()){
         return;
@@ -192,7 +192,7 @@ void MNavigationRegion3D::update_navmesh(Vector3 cam_pos){
     for(int i=0; i<obstacles.size(); i++){
         obstacles_infos.push_back({obstacles[i]->width,obstacles[i]->depth,obstacles[i]->get_global_transform()});
     }
-    update_thread = std::async(std::launch::async, &MNavigationRegion3D::_update_navmesh, this, cam_pos);
+    update_thread = std::async(std::launch::async, &MNavigationRegion3D::_update_navmesh, this, p_cam_pos);
 }
 
 void MNavigationRegion3D::_update_navmesh(Vector3 cam_pos){

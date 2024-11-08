@@ -6,7 +6,7 @@
 
 // Jolt library version
 #define JPH_VERSION_MAJOR 5
-#define JPH_VERSION_MINOR 1
+#define JPH_VERSION_MINOR 2
 #define JPH_VERSION_PATCH 1
 
 // Determine which features the library was compiled with
