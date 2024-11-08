@@ -31,7 +31,7 @@
 #ifndef NET_SOCKET_ANDROID_H
 #define NET_SOCKET_ANDROID_H
 
-#include "drivers/unix/net_socket_posix.h"
+#include "drivers/unix/net_socket_unix.h"
 
 #include <jni.h>
 
