@@ -35,6 +35,7 @@
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
 #include "core/os/memory.h"
+#include "core/string/char_utils.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
@@ -3835,6 +3836,17 @@ bool String::is_subsequence_ofn(const String &p_string) const {
 
 bool String::is_quoted() const {
 	return is_enclosed_in("\"") || is_enclosed_in("'");
+}
+
+bool String::is_whitespace() const {
+	int l = length();
+	const char32_t *src = get_data();
+	for (int i = 0; i < l; i++) {
+		if (!::is_whitespace(src[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
