@@ -333,15 +333,16 @@ ShaderPreprocessor::Token::Token(char32_t p_text, int p_line) {
 }
 
 // ShaderPreprocessor
+bool ShaderPreprocessor::is_identifier_char(char32_t p_char) {
+	return is_identifier_starting_char(p_char) || (p_char >= '0' && p_char <= '9');
+}
 
-bool ShaderPreprocessor::is_char_word(char32_t p_char) {
-	if ((p_char >= '0' && p_char <= '9') ||
-			(p_char >= 'a' && p_char <= 'z') ||
+bool ShaderPreprocessor::is_identifier_starting_char(char32_t p_char) {
+	if ((p_char >= 'a' && p_char <= 'z') ||
 			(p_char >= 'A' && p_char <= 'Z') ||
 			p_char == '_') {
 		return true;
 	}
-
 	return false;
 }
 
@@ -422,17 +423,32 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 		return;
 	}
 
+	bool functionlike = false;
 	Vector<String> args;
 	if (p_tokenizer->peek() == '(') {
-		// Macro has arguments.
 		p_tokenizer->get_token();
+		functionlike = true;
 
 		while (true) {
 			String name = p_tokenizer->get_identifier();
 			if (name.is_empty()) {
+				//Support 0 argument funktionlike macros.
+				if (args.is_empty()) {
+					p_tokenizer->skip_whitespace();
+					if (p_tokenizer->get_token().text == ')') {
+						break;
+					}
+				}
+
 				set_error(RTR("Invalid argument name."), line);
 				return;
 			}
+
+			if (args.has(name)) {
+				set_error(RTR("Duplicate macro parameter name:") + " '" + name + "'", line);
+				return;
+			}
+
 			args.push_back(name);
 
 			p_tokenizer->skip_whitespace();
@@ -460,7 +476,9 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 	if (!args.is_empty()) {
 		define->arguments = args;
 	}
+	define->is_functionlike = functionlike;
 	define->body = body;
+	define->expanded = false;
 	state->defines[label] = define;
 }
 
@@ -952,7 +970,7 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 					index_end = i;
 				}
 				word_completed = true;
-			} else if (is_char_word(c)) {
+			} else if (is_identifier_char(c)) {
 				text.push_back(c);
 				found_word = true;
 			} else {
@@ -987,26 +1005,90 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 	return OK;
 }
 
+bool ShaderPreprocessor::find_next_identifier(const String &p_string, int p_index_start, int &r_identifier_index, int &r_identifier_length) {
+	int index = p_index_start;
+	int len = p_string.length();
+	r_identifier_index = -1;
+	r_identifier_length = -1;
+
+	if (len == 0) {
+		return false;
+	}
+
+	//find start
+	while (!is_identifier_starting_char(p_string[index])) {
+		++index;
+		if (index >= len) {
+			return false;
+		}
+	}
+
+	r_identifier_index = index;
+
+	//find end
+	while (index < len && is_identifier_char(p_string[index])) {
+		++index;
+	}
+
+	r_identifier_length = index - r_identifier_index;
+
+	return true;
+}
+
 Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, String &r_expanded) {
 	String iterative = p_string;
-	int pass_count = 0;
-	bool expanded = true;
+	int index = 0;
+	int identifier_index;
+	int identifier_length;
+	int expanded_length;
 
-	while (expanded) {
-		expanded = false;
+	//To avoid recursion macros are marked with the "expanded" flag during extension (matching the GLSL preprocessor)
+	//but unlike GLSL we don't have a complex input structure which knows at what point an expansion has finished.
+	//Instead the expansionEndMarkers keep track of when these flags need to be reset, by updating the end position of their expansion
+	Vector<Pair<Define *, int>> expansionEndMarkers = {};
 
-		// As long as we find something to expand, keep going.
-		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
-			if (expand_macros_once(iterative, p_line, E, iterative)) {
-				expanded = true;
+	while (find_next_identifier(iterative, index, identifier_index, identifier_length)) {
+		String identifier = iterative.substr(identifier_index, identifier_length);
+		RBMap<String, Define *>::Element *definesEntry = state->defines.find(identifier);
+
+		//found identifier is not a macro
+		if (definesEntry == nullptr) {
+			index = identifier_index + identifier_length;
+			continue;
+		}
+
+		//update expanded flags by unmarking defines whose expansion has completed
+		for (int i = expansionEndMarkers.size() - 1; i >= 0; i--) {
+			if (expansionEndMarkers[i].second <= identifier_index) {
+				expansionEndMarkers[i].first->expanded = false;
+				expansionEndMarkers.remove_at(i);
 			}
 		}
 
-		pass_count++;
-		if (pass_count > 50) {
-			set_error(RTR("Macro expansion limit exceeded."), p_line);
-			break;
+		Define *def = definesEntry->value();
+		//Macro appears recursively, skip
+		if (def->expanded) {
+			index = identifier_index + identifier_length;
+			continue;
 		}
+
+		if (try_expand_macro(iterative, p_line, def, identifier_index, identifier_length, expanded_length, iterative)) {
+			def->expanded = true;
+
+			//Shift end markers to adjust to new text being inserted
+			for (Pair<Define *, int> &x : expansionEndMarkers) {
+				x.second += expanded_length;
+			}
+			expansionEndMarkers.push_back(Pair<Define *, int>(def, identifier_index + expanded_length));
+
+			index = identifier_index;
+		} else {
+			index = identifier_index + identifier_length;
+		}
+	}
+
+	for (int i = expansionEndMarkers.size() - 1; i >= 0; i--) {
+		expansionEndMarkers[i].first->expanded = false;
 	}
 
 	r_expanded = iterative;
@@ -1017,97 +1099,155 @@ Error ShaderPreprocessor::expand_macros(const String &p_string, int p_line, Stri
 	return OK;
 }
 
-bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded) {
-	String result = p_line;
+bool ShaderPreprocessor::try_expand_macro(const String &p_line, int p_line_number, Define *p_define, int p_identifer_index, int p_identifier_length, int &r_inserted_length, String &r_expanded) {
+	String body = p_define->body;
+	int identifier_end_index = p_identifer_index + p_identifier_length;
+	r_inserted_length = -1;
 
-	const String &key = p_define_pair->key();
-	const Define *define = p_define_pair->value();
+	//Macro without parenthesis.
+	if (!p_define->is_functionlike) {
+		concatenate_macro_body(body);
+		r_expanded = p_line.substr(0, p_identifer_index) + " " + body + " " + p_line.substr(identifier_end_index);
+		r_inserted_length = body.length();
+		return true;
+	}
 
-	int index_start = 0;
+	//Functionlike macro with parenthesis.
+	Vector<String> args;
+	int args_end_index;
+	if (!parse_macro_arguments(p_line, p_line_number, identifier_end_index, args, args_end_index)) {
+		return false;
+	}
+
+	if (args.size() != p_define->arguments.size()) {
+		set_error(RTR("Invalid macro argument count."), p_line_number);
+		return false;
+	}
+
+	expand_and_replace_macro_arguments(p_line_number, p_define, args, body);
+
+	concatenate_macro_body(body);
+
+	r_expanded = p_line.substr(0, p_identifer_index) + " " + body + " " + p_line.substr(args_end_index + 1);
+	r_inserted_length = body.length();
+	return true;
+}
+
+void ShaderPreprocessor::expand_and_replace_macro_arguments(int p_line_number, Define *p_define, Vector<String> &args, String &r_replaced_body) {
+	r_replaced_body = p_define->body;
+	Vector<String> args_expanded_bodies;
+	int identifier_index;
+	int identifier_length;
 	int index = 0;
-	if (find_match(result, key, index, index_start)) {
-		String body = define->body;
-		if (define->arguments.size() > 0) {
-			// Complex macro with arguments.
 
-			int args_start = -1;
-			int args_end = -1;
-			int brackets_open = 0;
-			Vector<String> args;
-			for (int i = index_start - 1; i < p_line.length(); i++) {
-				bool add_argument = false;
-				bool reached_end = false;
-				char32_t c = p_line[i];
+	//expand all arguments
+	for (int i = 0; i < args.size(); i++) {
+		String arg_body_expanded;
+		//expand macros in arguments to match glsl expansion order.
+		expand_macros(args[i], p_line_number, arg_body_expanded);
+		args_expanded_bodies.push_back(arg_body_expanded);
+	}
 
-				if (c == '(') {
-					brackets_open++;
-					if (brackets_open == 1) {
-						args_start = i + 1;
-						args_end = -1;
-					}
-				} else if (c == ')') {
-					brackets_open--;
-					if (brackets_open == 0) {
-						args_end = i;
-						add_argument = true;
-						reached_end = true;
-					}
-				} else if (c == ',') {
-					if (brackets_open == 1) {
-						args_end = i;
-						add_argument = true;
-					}
-				}
+	//replace found arguments
+	while (find_next_identifier(r_replaced_body, index, identifier_index, identifier_length)) {
+		String identifier = r_replaced_body.substr(identifier_index, identifier_length);
+		int arg_id = p_define->arguments.find(identifier);
 
-				if (add_argument) {
-					if (args_start == -1 || args_end == -1) {
-						set_error(RTR("Invalid macro argument list."), p_line_number);
-						return false;
-					}
+		if (arg_id < 0) {
+			index = identifier_index + identifier_length;
+			continue;
+		}
 
-					String arg = p_line.substr(args_start, args_end - args_start).strip_edges();
-					if (arg.is_empty()) {
-						set_error(RTR("Invalid macro argument."), p_line_number);
-						return false;
-					}
-					args.append(arg);
+		String replacement;
+		//When an argument is used in a string-concatenation it is not expanded, but copied literally.
+		if (is_identifier_part_of_concatenation(r_replaced_body, identifier_index, identifier_index + identifier_length)) {
+			replacement = args[arg_id];
+		} else {
+			replacement = args_expanded_bodies[arg_id];
+		}
 
-					args_start = args_end + 1;
-				}
+		r_replaced_body = r_replaced_body.substr(0, identifier_index) + replacement + r_replaced_body.substr(identifier_index + identifier_length);
+		index = identifier_index + replacement.length();
+	}
+}
 
-				if (reached_end) {
-					break;
-				}
+bool ShaderPreprocessor::parse_macro_arguments(const String &p_line, int p_line_number, int p_start_index, Vector<String> &r_args, int &r_args_end) {
+	int args_start = -1;
+	r_args_end = -1;
+	int brackets_open = 0;
+	bool reached_end = false;
+
+	for (int i = p_start_index; i < p_line.length(); i++) {
+		bool add_argument = false;
+		char32_t c = p_line[i];
+
+		if (c == '(') {
+			brackets_open++;
+			if (brackets_open == 1) {
+				args_start = i + 1;
+				r_args_end = -1;
 			}
+		} else if (c != ' ' && c != '\t' && args_start == -1) {
+			//functionlike macro has to start with an open parenthesis, otherwise we assume it's a variable or literal
+			return false;
 
-			if (args.size() != define->arguments.size()) {
-				set_error(RTR("Invalid macro argument count."), p_line_number);
+		} else if (c == ')') {
+			brackets_open--;
+			if (brackets_open == 0) {
+				r_args_end = i;
+				add_argument = true;
+				reached_end = true;
+			}
+		} else if (c == ',') {
+			if (brackets_open == 1) {
+				r_args_end = i;
+				add_argument = true;
+			}
+		}
+
+		if (add_argument) {
+			if (args_start == -1 || r_args_end == -1) {
+				set_error(RTR("Invalid macro argument list."), p_line_number);
 				return false;
 			}
 
-			// Insert macro arguments into the body.
-			for (int i = 0; i < args.size(); i++) {
-				String arg_name = define->arguments[i];
-				int arg_index_start = 0;
-				int arg_index = 0;
-				while (find_match(body, arg_name, arg_index, arg_index_start)) {
-					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length(), body.length() - (arg_index + arg_name.length()));
-					// Manually reset arg_index_start to where the arg value of the define finishes.
-					// This ensures we don't skip the other args of this macro in the string.
-					arg_index_start = arg_index + args[i].length() + 1;
+			String arg = p_line.substr(args_start, r_args_end - args_start).strip_edges();
+			if (arg.is_empty()) {
+				//Support 0 argument functionlike macros.
+				if (!reached_end || !r_args.is_empty()) {
+					set_error(RTR("Invalid macro argument."), p_line_number);
+					return false;
 				}
+			} else {
+				r_args.append(arg);
+				args_start = r_args_end + 1;
 			}
-
-			concatenate_macro_body(body);
-
-			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
-		} else {
-			concatenate_macro_body(body);
-
-			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length(), result.length() - (index + key.length()));
 		}
 
-		r_expanded = result;
+		if (reached_end) {
+			break;
+		}
+	}
+
+	return reached_end;
+}
+
+bool ShaderPreprocessor::is_identifier_part_of_concatenation(const String &p_string, int identifier_start_index, int identifier_end_index) {
+	// Scan backwards
+	int index = identifier_start_index - 1;
+	while (index >= 0 && is_whitespace(p_string[index])) {
+		index--;
+	}
+	if (index >= 1 && p_string[index] == '#' && p_string[index - 1] == '#') {
+		return true;
+	}
+
+	// Scan forwards
+	index = identifier_end_index;
+	while (index < p_string.length() && is_whitespace(p_string[index])) {
+		++index;
+	}
+	if (index + 1 < p_string.length() && p_string[index] == '#' && p_string[index + 1] == '#') {
 		return true;
 	}
 
@@ -1118,9 +1258,10 @@ bool ShaderPreprocessor::find_match(const String &p_string, const String &p_valu
 	// Looks for value in string and then determines if the boundaries
 	// are non-word characters. This method semi-emulates \b in regex.
 	r_index = p_string.find(p_value, r_index_start);
+
 	while (r_index > -1) {
 		if (r_index > 0) {
-			if (is_char_word(p_string[r_index - 1])) {
+			if (is_identifier_char(p_string[r_index - 1])) {
 				r_index_start = r_index + 1;
 				r_index = p_string.find(p_value, r_index_start);
 				continue;
@@ -1128,7 +1269,7 @@ bool ShaderPreprocessor::find_match(const String &p_string, const String &p_valu
 		}
 
 		if (r_index + p_value.length() < p_string.length()) {
-			if (is_char_word(p_string[r_index + p_value.length()])) {
+			if (is_identifier_char(p_string[r_index + p_value.length()])) {
 				r_index_start = r_index + p_value.length() + 1;
 				r_index = p_string.find(p_value, r_index_start);
 				continue;
