@@ -238,34 +238,6 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
-def parse_cg_file(fname, uniforms, sizes, conditionals):
-    with open(fname, "r", encoding="utf-8") as fs:
-        line = fs.readline()
-
-        while line:
-            if re.match(r"^\s*uniform", line):
-                res = re.match(r"uniform ([\d\w]*) ([\d\w]*)")
-                type = res.groups(1)
-                name = res.groups(2)
-
-                uniforms.append(name)
-
-                if type.find("texobj") != -1:
-                    sizes.append(1)
-                else:
-                    t = re.match(r"float(\d)x(\d)", type)
-                    if t:
-                        sizes.append(int(t.groups(1)) * int(t.groups(2)))
-                    else:
-                        t = re.match(r"float(\d)", type)
-                        sizes.append(int(t.groups(1)))
-
-                if line.find("[branch]") != -1:
-                    conditionals.append(name)
-
-            line = fs.readline()
-
-
 def get_cmdline_bool(option, default):
     """We use `ARGUMENTS.get()` to check if options were manually overridden on the command line,
     and SCons' _text2bool helper to convert them to booleans, otherwise they're handled as strings.
