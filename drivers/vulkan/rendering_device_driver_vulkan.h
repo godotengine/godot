@@ -367,7 +367,6 @@ private:
 	};
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
-	VkExtent2D native_display_size;
 
 public:
 	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override final;

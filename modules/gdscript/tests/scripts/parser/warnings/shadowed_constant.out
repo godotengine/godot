@@ -6,4 +6,4 @@ GDTEST_OK
 >> WARNING
 >> Line: 8
 >> SHADOWED_VARIABLE
->> The local constant "TEST" is shadowing an already-declared constant at line 2.
+>> The local constant "TEST" is shadowing an already-declared constant at line 2 in the current class.

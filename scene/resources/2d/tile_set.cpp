@@ -4931,10 +4931,13 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (const KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
+			const String formatted_key = itos(E_alternative.key);
+
 			// Add a dummy property to show the alternative exists.
-			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			tile_property_list.push_back(PropertyInfo(Variant::INT, formatted_key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 			// Get the alternative tile's properties and append them to the list of properties.
+			const String alternative_property_info_prefix = formatted_key + '/';
 			List<PropertyInfo> alternative_property_list;
 			E_alternative.value->get_property_list(&alternative_property_list);
 			for (PropertyInfo &alternative_property_info : alternative_property_list) {
@@ -4943,14 +4946,15 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					alternative_property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
-				alternative_property_info.name = vformat("%s/%s", vformat("%d", E_alternative.key), alternative_property_info.name);
+				alternative_property_info.name = alternative_property_info_prefix + alternative_property_info.name;
 				tile_property_list.push_back(alternative_property_info);
 			}
 		}
 
 		// Add all alternative.
+		const String property_info_prefix = vformat("%d:%d/", E_tile.key.x, E_tile.key.y);
 		for (PropertyInfo &tile_property_info : tile_property_list) {
-			tile_property_info.name = vformat("%s/%s", vformat("%d:%d", E_tile.key.x, E_tile.key.y), tile_property_info.name);
+			tile_property_info.name = property_info_prefix + tile_property_info.name;
 			p_list->push_back(tile_property_info);
 		}
 	}

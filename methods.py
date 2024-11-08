@@ -90,35 +90,6 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         sources.append(obj)
 
 
-# The section name is used for checking
-# the hash table to see whether the folder
-# is included in the SCU build.
-# It will be something like "core/math".
-def _find_scu_section_name(subdir):
-    section_path = os.path.abspath(subdir) + "/"
-
-    folders = []
-    folder = ""
-
-    for i in range(8):
-        folder = os.path.dirname(section_path)
-        folder = os.path.basename(folder)
-        if folder == base_folder_only:
-            break
-        folders += [folder]
-        section_path += "../"
-        section_path = os.path.abspath(section_path) + "/"
-
-    section_name = ""
-    for n in range(len(folders)):
-        # section_name += folders[len(folders) - n - 1] + " "
-        section_name += folders[len(folders) - n - 1]
-        if n != (len(folders) - 1):
-            section_name += "/"
-
-    return section_name
-
-
 def add_source_files_scu(self, sources, files, allow_gen=False):
     if self["scu_build"] and isinstance(files, str):
         if "*." not in files:
@@ -127,10 +98,8 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
         # If the files are in a subdirectory, we want to create the scu gen
         # files inside this subdirectory.
         subdir = os.path.dirname(files)
-        if subdir != "":
-            subdir += "/"
-
-        section_name = _find_scu_section_name(subdir)
+        subdir = subdir if subdir == "" else subdir + "/"
+        section_name = self.Dir(subdir).tpath
         # if the section name is in the hash table?
         # i.e. is it part of the SCU build?
         global _scu_folders

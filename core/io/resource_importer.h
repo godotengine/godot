@@ -148,7 +148,7 @@ public:
 	virtual String get_option_group_file() const { return String(); }
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
-	virtual bool can_import_threaded() const { return true; }
+	virtual bool can_import_threaded() const { return false; }
 	virtual void import_threaded_begin() {}
 	virtual void import_threaded_end() {}
 
