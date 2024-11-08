@@ -3,6 +3,7 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+
 from platform_methods import subprocess_main
 
 
@@ -385,7 +386,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             x = header_data.enums[xv]
             bits = 1
             amt = len(x)
-            while 2 ** bits < amt:
+            while 2**bits < amt:
                 bits += 1
             strs = "{"
             for i in range(amt):

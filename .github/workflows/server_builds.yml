@@ -1,8 +1,10 @@
 name: ☁ Server Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
+  # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: 3.4
   SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no module_mono_enabled=yes mono_static=yes mono_glue=no
 
@@ -34,17 +36,16 @@ jobs:
       - name: Linux dependencies
         shell: bash
         run: |
-          # Azure repositories are not reliable, we need to prevent azure giving us packages.
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          # Azure repositories are flaky, remove them.
+          sudo rm -f /etc/apt/sources.list.d/{azure,microsoft}*
           sudo apt-get update
-          # The actual dependencies
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-              libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev \
-              libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
+          # The actual dependencies.
+          sudo apt-get install --no-install-recommends build-essential pkg-config libx11-dev \
+              libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev \
+              libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
@@ -59,3 +60,9 @@ jobs:
           platform: server
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
