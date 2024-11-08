@@ -719,9 +719,6 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
-    if os.name != "nt":
-        env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
-
     if env["arch"] == "x86_32":
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
