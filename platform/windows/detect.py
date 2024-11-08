@@ -384,7 +384,9 @@ def setup_mingw(env: "SConsEnvironment"):
         print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
         sys.exit(255)
 
-    env.Tool("mingw")
+    if env["platform_tools"]:
+        env.Tool("mingw")
+
     env.AppendUnique(CCFLAGS=env.get("ccflags", "").split())
     env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
 
