@@ -8,7 +8,6 @@ env:
   GODOT_BASE_BRANCH: 3.x
   SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
   EM_VERSION: 3.1.39
-  EM_CACHE_FOLDER: "emsdk-cache"
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-javascript
@@ -26,8 +25,7 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{env.EM_VERSION}}
-          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
-          cache-key: emsdk-${{ matrix.cache-name }}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
+          no-cache: true
 
       - name: Verify Emscripten setup
         run: |
