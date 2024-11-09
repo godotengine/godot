@@ -420,7 +420,7 @@ NodePath::NodePath(const String &p_path) {
 						continue; // Allow end-of-path :
 					}
 
-					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
+					ERR_FAIL_MSG(vformat("Invalid NodePath '%s'.", p_path));
 				}
 				subpath.push_back(str);
 

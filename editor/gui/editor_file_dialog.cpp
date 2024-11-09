@@ -350,7 +350,7 @@ void EditorFileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 
 void EditorFileDialog::set_enable_multiple_selection(bool p_enable) {
 	item_list->set_select_mode(p_enable ? ItemList::SELECT_MULTI : ItemList::SELECT_SINGLE);
-};
+}
 
 Vector<String> EditorFileDialog::get_selected_files() const {
 	Vector<String> list;
@@ -360,7 +360,7 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 		}
 	}
 	return list;
-};
+}
 
 void EditorFileDialog::update_dir() {
 	if (drives->is_visible()) {
@@ -1355,6 +1355,13 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 void EditorFileDialog::_make_dir_confirm() {
 	const String stripped_dirname = makedirname->get_text().strip_edges();
 
+	if (stripped_dirname.is_empty()) {
+		error_dialog->set_text(TTR("The path specified is invalid."));
+		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		makedirname->set_text(""); // Reset label.
+		return;
+	}
+
 	if (dir_access->dir_exists(stripped_dirname)) {
 		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
 		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
@@ -1476,29 +1483,29 @@ void EditorFileDialog::_update_drives(bool p_select) {
 void EditorFileDialog::_update_icons() {
 	// Update icons.
 
-	mode_thumbnails->set_icon(theme_cache.mode_thumbnails);
-	mode_list->set_icon(theme_cache.mode_list);
+	mode_thumbnails->set_button_icon(theme_cache.mode_thumbnails);
+	mode_list->set_button_icon(theme_cache.mode_list);
 
 	if (is_layout_rtl()) {
-		dir_prev->set_icon(theme_cache.forward_folder);
-		dir_next->set_icon(theme_cache.back_folder);
+		dir_prev->set_button_icon(theme_cache.forward_folder);
+		dir_next->set_button_icon(theme_cache.back_folder);
 	} else {
-		dir_prev->set_icon(theme_cache.back_folder);
-		dir_next->set_icon(theme_cache.forward_folder);
+		dir_prev->set_button_icon(theme_cache.back_folder);
+		dir_next->set_button_icon(theme_cache.forward_folder);
 	}
-	dir_up->set_icon(theme_cache.parent_folder);
+	dir_up->set_button_icon(theme_cache.parent_folder);
 
-	refresh->set_icon(theme_cache.reload);
-	favorite->set_icon(theme_cache.favorite);
-	show_hidden->set_icon(theme_cache.toggle_hidden);
-	makedir->set_icon(theme_cache.create_folder);
+	refresh->set_button_icon(theme_cache.reload);
+	favorite->set_button_icon(theme_cache.favorite);
+	show_hidden->set_button_icon(theme_cache.toggle_hidden);
+	makedir->set_button_icon(theme_cache.create_folder);
 
 	filter_box->set_right_icon(theme_cache.filter_box);
-	file_sort_button->set_icon(theme_cache.file_sort_button);
+	file_sort_button->set_button_icon(theme_cache.file_sort_button);
 	filter_box->set_clear_button_enabled(true);
 
-	fav_up->set_icon(theme_cache.favorites_up);
-	fav_down->set_icon(theme_cache.favorites_down);
+	fav_up->set_button_icon(theme_cache.favorites_up);
+	fav_down->set_button_icon(theme_cache.favorites_down);
 }
 
 void EditorFileDialog::_favorite_selected(int p_idx) {
@@ -1580,7 +1587,7 @@ void EditorFileDialog::_favorite_move_down() {
 }
 
 void EditorFileDialog::_update_favorites() {
-	bool res = (access == ACCESS_RESOURCES);
+	bool access_resources = (access == ACCESS_RESOURCES);
 
 	String current = get_current_dir();
 	favorites->clear();
@@ -1596,8 +1603,11 @@ void EditorFileDialog::_update_favorites() {
 	for (int i = 0; i < favorited.size(); i++) {
 		String name = favorited[i];
 
-		bool cres = name.begins_with("res://");
-		if (cres != res || !name.ends_with("/")) {
+		if (access_resources != name.begins_with("res://")) {
+			continue;
+		}
+
+		if (!name.ends_with("/")) {
 			continue;
 		}
 
@@ -1609,7 +1619,7 @@ void EditorFileDialog::_update_favorites() {
 		}
 
 		// Compute favorite display text.
-		if (res && name == "res://") {
+		if (access_resources && name == "res://") {
 			if (name == current) {
 				current_favorite = favorited_paths.size();
 			}
@@ -1620,7 +1630,7 @@ void EditorFileDialog::_update_favorites() {
 			if (name == current || name == current + "/") {
 				current_favorite = favorited_paths.size();
 			}
-			name = name.substr(0, name.length() - 1);
+			name = name.trim_suffix("/");
 			name = name.get_file();
 			favorited_paths.append(favorited[i]);
 			favorited_names.append(name);
@@ -1635,6 +1645,7 @@ void EditorFileDialog::_update_favorites() {
 
 	for (int i = 0; i < favorited_paths.size(); i++) {
 		favorites->add_item(favorited_names[i], theme_cache.folder);
+		favorites->set_item_tooltip(-1, favorited_paths[i]);
 		favorites->set_item_metadata(-1, favorited_paths[i]);
 		favorites->set_item_icon_modulate(-1, get_dir_icon_color(favorited_paths[i]));
 
@@ -1647,7 +1658,7 @@ void EditorFileDialog::_update_favorites() {
 }
 
 void EditorFileDialog::_favorite_pressed() {
-	bool res = (access == ACCESS_RESOURCES);
+	bool access_resources = (access == ACCESS_RESOURCES);
 
 	String cd = get_current_dir();
 	if (!cd.ends_with("/")) {
@@ -1657,13 +1668,12 @@ void EditorFileDialog::_favorite_pressed() {
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 
 	bool found = false;
-	for (int i = 0; i < favorited.size(); i++) {
-		bool cres = favorited[i].begins_with("res://");
-		if (cres != res) {
+	for (const String &name : favorited) {
+		if (access_resources != name.begins_with("res://")) {
 			continue;
 		}
 
-		if (favorited[i] == cd) {
+		if (name == cd) {
 			found = true;
 			break;
 		}
@@ -1683,31 +1693,30 @@ void EditorFileDialog::_favorite_pressed() {
 void EditorFileDialog::_update_recent() {
 	recent->clear();
 
-	bool res = (access == ACCESS_RESOURCES);
+	bool access_resources = (access == ACCESS_RESOURCES);
 	Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
 	Vector<String> recentd_paths;
 	Vector<String> recentd_names;
+	bool modified = false;
 
 	for (int i = 0; i < recentd.size(); i++) {
-		bool cres = recentd[i].begins_with("res://");
-		if (cres != res) {
+		String name = recentd[i];
+		if (access_resources != name.begins_with("res://")) {
 			continue;
 		}
 
-		if (!dir_access->dir_exists(recentd[i])) {
+		if (!dir_access->dir_exists(name)) {
 			// Remove invalid directory from the list of Recent directories.
 			recentd.remove_at(i--);
+			modified = true;
 			continue;
 		}
 
 		// Compute recent directory display text.
-		String name = recentd[i];
-		if (res && name == "res://") {
+		if (access_resources && name == "res://") {
 			name = "/";
 		} else {
-			if (name.ends_with("/")) {
-				name = name.substr(0, name.length() - 1);
-			}
+			name = name.trim_suffix("/");
 			name = name.get_file();
 		}
 		recentd_paths.append(recentd[i]);
@@ -1718,10 +1727,14 @@ void EditorFileDialog::_update_recent() {
 
 	for (int i = 0; i < recentd_paths.size(); i++) {
 		recent->add_item(recentd_names[i], theme_cache.folder);
+		recent->set_item_tooltip(-1, recentd_paths[i]);
 		recent->set_item_metadata(-1, recentd_paths[i]);
 		recent->set_item_icon_modulate(-1, get_dir_icon_color(recentd_paths[i]));
 	}
-	EditorSettings::get_singleton()->set_recent_dirs(recentd);
+
+	if (modified) {
+		EditorSettings::get_singleton()->set_recent_dirs(recentd);
+	}
 }
 
 void EditorFileDialog::_recent_selected(int p_idx) {

@@ -376,6 +376,9 @@ public:
 
 	bool check_false(const String &p_name) {
 		bool has = _signals.has(p_name);
+		if (has) {
+			MESSAGE("Signal has " << _signals[p_name] << " expected none.");
+		}
 		discard_signal(p_name);
 		return !has;
 	}
@@ -471,6 +474,6 @@ public:
 		for (int i = 0; i < string_list.size(); ++i) {                                           \
 			CHECK(string_list[i] == m_slices[i]);                                                \
 		}                                                                                        \
-	} while (0)
+	} while (false)
 
 #endif // TEST_MACROS_H

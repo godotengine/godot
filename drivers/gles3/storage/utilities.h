@@ -165,8 +165,8 @@ public:
 
 	/* VISIBILITY NOTIFIER */
 
-	VisibilityNotifier *get_visibility_notifier(RID p_rid) { return visibility_notifier_owner.get_or_null(p_rid); };
-	bool owns_visibility_notifier(RID p_rid) const { return visibility_notifier_owner.owns(p_rid); };
+	VisibilityNotifier *get_visibility_notifier(RID p_rid) { return visibility_notifier_owner.get_or_null(p_rid); }
+	bool owns_visibility_notifier(RID p_rid) const { return visibility_notifier_owner.owns(p_rid); }
 
 	virtual RID visibility_notifier_allocate() override;
 	virtual void visibility_notifier_initialize(RID p_notifier) override;

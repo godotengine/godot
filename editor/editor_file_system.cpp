@@ -248,11 +248,16 @@ void EditorFileSystem::_first_scan_filesystem() {
 	ep.step(TTR("Scanning file structure..."), 0, true);
 	nb_files_total = _scan_new_dir(first_scan_root_dir, d);
 
+	// Preloading GDExtensions file extensions to prevent looping on all the resource loaders
+	// for each files in _first_scan_process_scripts.
+	List<String> gdextension_extensions;
+	ResourceLoader::get_recognized_extensions_for_type("GDExtension", &gdextension_extensions);
+
 	// This loads the global class names from the scripts and ensures that even if the
 	// global_script_class_cache.cfg was missing or invalid, the global class names are valid in ScriptServer.
 	// At the same time, to prevent looping multiple times in all files, it looks for extensions.
 	ep.step(TTR("Loading global class names..."), 1, true);
-	_first_scan_process_scripts(first_scan_root_dir, existing_class_names, extensions);
+	_first_scan_process_scripts(first_scan_root_dir, gdextension_extensions, existing_class_names, extensions);
 
 	// Removing invalid global class to prevent having invalid paths in ScriptServer.
 	_remove_invalid_global_class_names(existing_class_names);
@@ -276,16 +281,16 @@ void EditorFileSystem::_first_scan_filesystem() {
 	ep.step(TTR("Starting file scan..."), 5, true);
 }
 
-void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_scan_dir, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions) {
+void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_scan_dir, List<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions) {
 	for (ScannedDirectory *scan_sub_dir : p_scan_dir->subdirs) {
-		_first_scan_process_scripts(scan_sub_dir, p_existing_class_names, p_extensions);
+		_first_scan_process_scripts(scan_sub_dir, p_gdextension_extensions, p_existing_class_names, p_extensions);
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
 		// Optimization to skip the ResourceLoader::get_resource_type for files
 		// that are not scripts. Some loader get_resource_type methods read the file
 		// which can be very slow on large projects.
-		String ext = scan_file.get_extension().to_lower();
+		const String ext = scan_file.get_extension().to_lower();
 		bool is_script = false;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			if (ScriptServer::get_language(i)->get_extension() == ext) {
@@ -293,24 +298,29 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 				break;
 			}
 		}
-		if (!is_script) {
-			continue; // Not a script.
+		if (is_script) {
+			const String path = p_scan_dir->full_path.path_join(scan_file);
+			const String type = ResourceLoader::get_resource_type(path);
+
+			if (ClassDB::is_parent_class(type, SNAME("Script"))) {
+				String script_class_extends;
+				String script_class_icon_path;
+				String script_class_name = _get_global_script_class(type, path, &script_class_extends, &script_class_icon_path);
+				_register_global_class_script(path, path, type, script_class_name, script_class_extends, script_class_icon_path);
+
+				if (!script_class_name.is_empty()) {
+					p_existing_class_names.insert(script_class_name);
+				}
+			}
 		}
 
-		String path = p_scan_dir->full_path.path_join(scan_file);
-		String type = ResourceLoader::get_resource_type(path);
-
-		if (ClassDB::is_parent_class(type, SNAME("Script"))) {
-			String script_class_extends;
-			String script_class_icon_path;
-			String script_class_name = _get_global_script_class(type, path, &script_class_extends, &script_class_icon_path);
-			_register_global_class_script(path, path, type, script_class_name, script_class_extends, script_class_icon_path);
-
-			if (!script_class_name.is_empty()) {
-				p_existing_class_names.insert(script_class_name);
+		// Check for GDExtensions.
+		if (p_gdextension_extensions.find(ext)) {
+			const String path = p_scan_dir->full_path.path_join(scan_file);
+			const String type = ResourceLoader::get_resource_type(path);
+			if (type == SNAME("GDExtension")) {
+				p_extensions.insert(path);
 			}
-		} else if (type == SNAME("GDExtension")) {
-			p_extensions.insert(path);
 		}
 	}
 }
@@ -1017,7 +1027,9 @@ void EditorFileSystem::scan() {
 void EditorFileSystem::ScanProgress::increment() {
 	current++;
 	float ratio = current / MAX(hi, 1.0f);
-	progress->step(ratio * 1000.0f);
+	if (progress) {
+		progress->step(ratio * 1000.0f);
+	}
 	EditorFileSystem::singleton->scan_total = ratio;
 }
 
@@ -1283,7 +1295,7 @@ void EditorFileSystem::_process_removed_files(const HashSet<String> &p_processed
 	}
 }
 
-void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress &p_progress) {
+void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanProgress &p_progress, bool p_recursive) {
 	uint64_t current_mtime = FileAccess::get_modified_time(p_dir->get_path());
 
 	bool updated_dir = false;
@@ -1477,7 +1489,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 			scan_actions.push_back(ia);
 			continue;
 		}
-		_scan_fs_changes(p_dir->get_subdir(i), p_progress);
+		if (p_recursive) {
+			_scan_fs_changes(p_dir->get_subdir(i), p_progress);
+		}
 	}
 
 	nb_files_total = MAX(nb_files_total + diff_nb_files, 0);
@@ -2089,12 +2103,11 @@ void EditorFileSystem::_update_script_documentation() {
 					// return the last loaded version of the script (without the modifications).
 					scr->reload_from_file();
 				}
-				Vector<DocData::ClassDoc> docs = scr->get_documentation();
-				for (int j = 0; j < docs.size(); j++) {
-					EditorHelp::get_doc_data()->add_doc(docs[j]);
+				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
+					EditorHelp::get_doc_data()->add_doc(cd);
 					if (!first_scan) {
 						// Update the documentation in the Script Editor if it is open.
-						ScriptEditor::get_singleton()->update_doc(docs[j].name);
+						ScriptEditor::get_singleton()->update_doc(cd.name);
 					}
 				}
 			}
@@ -2363,8 +2376,16 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		if (!is_scanning()) {
 			_process_update_pending();
 		}
-		call_deferred(SNAME("emit_signal"), "filesystem_changed"); // Update later
+		if (!filesystem_changed_queued) {
+			filesystem_changed_queued = true;
+			callable_mp(this, &EditorFileSystem::_notify_filesystem_changed).call_deferred();
+		}
 	}
+}
+
+void EditorFileSystem::_notify_filesystem_changed() {
+	emit_signal("filesystem_changed");
+	filesystem_changed_queued = false;
 }
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
@@ -2560,7 +2581,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		EditorFileSystemDirectory *fs = nullptr;
 		int cpos = -1;
 		bool found = _find_file(file, &fs, cpos);
-		ERR_FAIL_COND_V_MSG(!found, ERR_UNCONFIGURED, "Can't find file '" + file + "'.");
+		ERR_FAIL_COND_V_MSG(!found, ERR_UNCONFIGURED, vformat("Can't find file '%s' during group reimport.", file));
 
 		//update modified times, to avoid reimport
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(file);
@@ -2610,7 +2631,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	int cpos = -1;
 	if (p_update_file_system) {
 		bool found = _find_file(p_file, &fs, cpos);
-		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
+		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s' during file reimport.", p_file));
 	}
 
 	//try to obtain existing params
@@ -2901,6 +2922,96 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 
 	// Emit the resource_reimported signal for the single file we just reimported.
 	emit_signal(SNAME("resources_reimported"), reloads);
+}
+
+Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (FileAccess::exists(p_from + ".import")) {
+		Error err = da->copy(p_from, p_to);
+		if (err != OK) {
+			return err;
+		}
+
+		// Remove uid from .import file to avoid conflict.
+		Ref<ConfigFile> cfg;
+		cfg.instantiate();
+		cfg->load(p_from + ".import");
+		cfg->erase_section_key("remap", "uid");
+		err = cfg->save(p_to + ".import");
+		if (err != OK) {
+			return err;
+		}
+	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
+		// Files which do not use an uid can just be copied.
+		Error err = da->copy(p_from, p_to);
+		if (err != OK) {
+			return err;
+		}
+	} else {
+		// Load the resource and save it again in the new location (this generates a new UID).
+		Error err;
+		Ref<Resource> res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		if (err == OK && res.is_valid()) {
+			err = ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS);
+			if (err != OK) {
+				return err;
+			}
+		} else if (err != OK) {
+			// When loading files like text files the error is OK but the resource is still null.
+			// We can ignore such files.
+			return err;
+		}
+	}
+	return OK;
+}
+
+bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to, List<CopiedFile> *p_files) {
+	Ref<DirAccess> old_dir = DirAccess::open(p_from);
+	ERR_FAIL_COND_V(old_dir.is_null(), false);
+
+	Error err = make_dir_recursive(p_to);
+	if (err != OK && err != ERR_ALREADY_EXISTS) {
+		return false;
+	}
+
+	bool success = true;
+	old_dir->set_include_navigational(false);
+	old_dir->list_dir_begin();
+
+	for (String F = old_dir->_get_next(); !F.is_empty(); F = old_dir->_get_next()) {
+		if (old_dir->current_is_dir()) {
+			success = _copy_directory(p_from.path_join(F), p_to.path_join(F), p_files) && success;
+		} else if (F.get_extension() != "import") {
+			CopiedFile copy;
+			copy.from = p_from.path_join(F);
+			copy.to = p_to.path_join(F);
+			p_files->push_back(copy);
+		}
+	}
+	return success;
+}
+
+void EditorFileSystem::_queue_refresh_filesystem() {
+	if (refresh_queued) {
+		return;
+	}
+	refresh_queued = true;
+	get_tree()->connect(SNAME("process_frame"), callable_mp(this, &EditorFileSystem::_refresh_filesystem), CONNECT_ONE_SHOT);
+}
+
+void EditorFileSystem::_refresh_filesystem() {
+	for (const ObjectID &id : folders_to_sort) {
+		EditorFileSystemDirectory *dir = Object::cast_to<EditorFileSystemDirectory>(ObjectDB::get_instance(id));
+		if (dir) {
+			dir->subdirs.sort_custom<DirectoryComparator>();
+		}
+	}
+	folders_to_sort.clear();
+
+	_update_scan_actions();
+
+	emit_signal(SNAME("filesystem_changed"));
+	refresh_queued = false;
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
@@ -3226,10 +3337,9 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 	const String path = da->get_current_dir();
 	EditorFileSystemDirectory *parent = get_filesystem_path(path);
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
+	folders_to_sort.insert(parent->get_instance_id());
 
 	const PackedStringArray folders = p_path.trim_prefix(path).trim_suffix("/").split("/");
-	bool first = true;
-
 	for (const String &folder : folders) {
 		const int current = parent->find_dir_index(folder);
 		if (current > -1) {
@@ -3241,16 +3351,57 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 		efd->parent = parent;
 		efd->name = folder;
 		parent->subdirs.push_back(efd);
-
-		if (first) {
-			parent->subdirs.sort_custom<DirectoryComparator>();
-			first = false;
-		}
 		parent = efd;
 	}
 
-	emit_signal(SNAME("filesystem_changed"));
+	_queue_refresh_filesystem();
 	return OK;
+}
+
+Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
+	_copy_file(p_from, p_to);
+
+	EditorFileSystemDirectory *parent = get_filesystem_path(p_to.get_base_dir());
+	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
+
+	ScanProgress sp;
+	_scan_fs_changes(parent, sp, false);
+
+	_queue_refresh_filesystem();
+	return OK;
+}
+
+Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to) {
+	List<CopiedFile> files;
+	bool success = _copy_directory(p_from, p_to, &files);
+
+	EditorProgress *ep = nullptr;
+	if (files.size() > 10) {
+		ep = memnew(EditorProgress("_copy_files", TTR("Copying files..."), files.size()));
+	}
+
+	int i = 0;
+	for (const CopiedFile &F : files) {
+		if (_copy_file(F.from, F.to) != OK) {
+			success = false;
+		}
+		if (ep) {
+			ep->step(F.from.get_file(), i++, false);
+		}
+	}
+	memdelete_notnull(ep);
+
+	EditorFileSystemDirectory *efd = get_filesystem_path(p_to);
+	ERR_FAIL_NULL_V(efd, FAILED);
+	ERR_FAIL_NULL_V(efd->get_parent(), FAILED);
+
+	folders_to_sort.insert(efd->get_parent()->get_instance_id());
+
+	ScanProgress sp;
+	_scan_fs_changes(efd, sp);
+
+	_queue_refresh_filesystem();
+	return success ? OK : FAILED;
 }
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {

@@ -199,6 +199,17 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
+	/* PIPELINES API */
+
+	enum PipelineSource {
+		PIPELINE_SOURCE_CANVAS,
+		PIPELINE_SOURCE_MESH,
+		PIPELINE_SOURCE_SURFACE,
+		PIPELINE_SOURCE_DRAW,
+		PIPELINE_SOURCE_SPECIALIZATION,
+		PIPELINE_SOURCE_MAX
+	};
+
 	/* SHADER API */
 
 	enum ShaderMode {
@@ -211,6 +222,7 @@ public:
 	};
 
 	virtual RID shader_create() = 0;
+	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
@@ -242,6 +254,7 @@ public:
 	};
 
 	virtual RID material_create() = 0;
+	virtual RID material_create_from_shader(RID p_next_pass, int p_render_priority, RID p_shader) = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
 
@@ -529,6 +542,7 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
+	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
 
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
@@ -1166,6 +1180,7 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
+	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 
 	enum EnvironmentGlowBlendMode {
 		ENV_GLOW_BLEND_MODE_ADDITIVE,
@@ -1697,6 +1712,11 @@ public:
 		RENDERING_INFO_TEXTURE_MEM_USED,
 		RENDERING_INFO_BUFFER_MEM_USED,
 		RENDERING_INFO_VIDEO_MEM_USED,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_MESH,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW,
+		RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION,
 		RENDERING_INFO_MAX
 	};
 
@@ -1807,6 +1827,7 @@ private:
 VARIANT_ENUM_CAST(RenderingServer::TextureType);
 VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
+VARIANT_ENUM_CAST(RenderingServer::PipelineSource);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
 VARIANT_ENUM_CAST(RenderingServer::ArrayType);
 VARIANT_BITFIELD_CAST(RenderingServer::ArrayFormat);

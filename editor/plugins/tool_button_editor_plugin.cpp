@@ -33,7 +33,7 @@
 #include "scene/gui/button.h"
 
 void EditorInspectorToolButtonPlugin::_update_action_icon(Button *p_action_button, const String &p_action_icon) {
-	p_action_button->set_icon(p_action_button->get_editor_theme_icon(p_action_icon));
+	p_action_button->set_button_icon(p_action_button->get_editor_theme_icon(p_action_icon));
 }
 
 void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, const StringName &p_property) {

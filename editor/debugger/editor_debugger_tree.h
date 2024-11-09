@@ -49,6 +49,8 @@ private:
 	ObjectID inspected_object_id;
 	int debugger_id = 0;
 	bool updating_scene_tree = false;
+	bool scrolling_to_item = false;
+	bool selection_uncollapse_all = false;
 	HashSet<ObjectID> unfold_cache;
 	PopupMenu *item_menu = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
@@ -78,6 +80,7 @@ public:
 	ObjectID get_selected_object();
 	int get_current_debugger(); // Would love to have one tree for every debugger.
 	void update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger);
+	void select_node(ObjectID p_id);
 	EditorDebuggerTree();
 };
 

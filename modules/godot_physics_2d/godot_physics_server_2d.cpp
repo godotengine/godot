@@ -116,7 +116,7 @@ void GodotPhysicsServer2D::shape_set_data(RID p_shape, const Variant &p_data) {
 	GodotShape2D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL(shape);
 	shape->set_data(p_data);
-};
+}
 
 void GodotPhysicsServer2D::shape_set_custom_solver_bias(RID p_shape, real_t p_bias) {
 	GodotShape2D *shape = shape_owner.get_or_null(p_shape);
@@ -128,14 +128,14 @@ PhysicsServer2D::ShapeType GodotPhysicsServer2D::shape_get_type(RID p_shape) con
 	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL_V(shape, SHAPE_CUSTOM);
 	return shape->get_type();
-};
+}
 
 Variant GodotPhysicsServer2D::shape_get_data(RID p_shape) const {
 	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL_V(shape, Variant());
 	ERR_FAIL_COND_V(!shape->is_configured(), Variant());
 	return shape->get_data();
-};
+}
 
 real_t GodotPhysicsServer2D::shape_get_custom_solver_bias(RID p_shape) const {
 	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
@@ -226,7 +226,7 @@ RID GodotPhysicsServer2D::space_create() {
 	area->set_priority(-1);
 
 	return id;
-};
+}
 
 void GodotPhysicsServer2D::space_set_active(RID p_space, bool p_active) {
 	GodotSpace2D *space = space_owner.get_or_null(p_space);
@@ -445,13 +445,13 @@ void GodotPhysicsServer2D::area_set_param(RID p_area, AreaParameter p_param, con
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
 	area->set_param(p_param, p_value);
-};
+}
 
 void GodotPhysicsServer2D::area_set_transform(RID p_area, const Transform2D &p_transform) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
 	area->set_transform(p_transform);
-};
+}
 
 Variant GodotPhysicsServer2D::area_get_param(RID p_area, AreaParameter p_param) const {
 	if (space_owner.owns(p_area)) {
@@ -462,14 +462,14 @@ Variant GodotPhysicsServer2D::area_get_param(RID p_area, AreaParameter p_param) 
 	ERR_FAIL_NULL_V(area, Variant());
 
 	return area->get_param(p_param);
-};
+}
 
 Transform2D GodotPhysicsServer2D::area_get_transform(RID p_area) const {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL_V(area, Transform2D());
 
 	return area->get_transform();
-};
+}
 
 void GodotPhysicsServer2D::area_set_pickable(RID p_area, bool p_pickable) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
@@ -551,7 +551,7 @@ void GodotPhysicsServer2D::body_set_space(RID p_body, RID p_space) {
 
 	body->clear_constraint_list();
 	body->set_space(space);
-};
+}
 
 RID GodotPhysicsServer2D::body_get_space(RID p_body) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -562,7 +562,7 @@ RID GodotPhysicsServer2D::body_get_space(RID p_body) const {
 		return RID();
 	}
 	return space->get_self();
-};
+}
 
 void GodotPhysicsServer2D::body_set_mode(RID p_body, BodyMode p_mode) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -570,14 +570,14 @@ void GodotPhysicsServer2D::body_set_mode(RID p_body, BodyMode p_mode) {
 	FLUSH_QUERY_CHECK(body);
 
 	body->set_mode(p_mode);
-};
+}
 
 PhysicsServer2D::BodyMode GodotPhysicsServer2D::body_get_mode(RID p_body) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, BODY_MODE_STATIC);
 
 	return body->get_mode();
-};
+}
 
 void GodotPhysicsServer2D::body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform, bool p_disabled) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -902,7 +902,7 @@ void GodotPhysicsServer2D::body_set_axis_velocity(RID p_body, const Vector2 &p_a
 	v += p_axis_velocity;
 	body->set_linear_velocity(v);
 	body->wakeup();
-};
+}
 
 void GodotPhysicsServer2D::body_add_collision_exception(RID p_body, RID p_body_b) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -910,7 +910,7 @@ void GodotPhysicsServer2D::body_add_collision_exception(RID p_body, RID p_body_b
 
 	body->add_exception(p_body_b);
 	body->wakeup();
-};
+}
 
 void GodotPhysicsServer2D::body_remove_collision_exception(RID p_body, RID p_body_b) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -918,7 +918,7 @@ void GodotPhysicsServer2D::body_remove_collision_exception(RID p_body, RID p_bod
 
 	body->remove_exception(p_body_b);
 	body->wakeup();
-};
+}
 
 void GodotPhysicsServer2D::body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -927,31 +927,31 @@ void GodotPhysicsServer2D::body_get_collision_exceptions(RID p_body, List<RID> *
 	for (int i = 0; i < body->get_exceptions().size(); i++) {
 		p_exceptions->push_back(body->get_exceptions()[i]);
 	}
-};
+}
 
 void GodotPhysicsServer2D::body_set_contacts_reported_depth_threshold(RID p_body, real_t p_threshold) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
-};
+}
 
 real_t GodotPhysicsServer2D::body_get_contacts_reported_depth_threshold(RID p_body) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, 0);
 	return 0;
-};
+}
 
 void GodotPhysicsServer2D::body_set_omit_force_integration(RID p_body, bool p_omit) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
 	body->set_omit_force_integration(p_omit);
-};
+}
 
 bool GodotPhysicsServer2D::body_is_omitting_force_integration(RID p_body) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, false);
 	return body->get_omit_force_integration();
-};
+}
 
 void GodotPhysicsServer2D::body_set_max_contacts_reported(RID p_body, int p_contacts) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
@@ -1169,8 +1169,8 @@ void GodotPhysicsServer2D::pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, 
 
 bool GodotPhysicsServer2D::pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, 0);
+	ERR_FAIL_NULL_V(joint, false);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, false);
 
 	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	return pin_joint->get_flag(p_flag);

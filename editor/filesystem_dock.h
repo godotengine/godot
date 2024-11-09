@@ -116,7 +116,6 @@ private:
 		FILE_REMOVE,
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
-		FILE_INFO,
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
@@ -183,8 +182,6 @@ private:
 	DependencyRemoveDialog *remove_dialog = nullptr;
 
 	EditorDirDialog *move_dialog = nullptr;
-	ConfirmationDialog *duplicate_dialog = nullptr;
-	LineEdit *duplicate_dialog_text = nullptr;
 	DirectoryCreateDialog *make_dir_dialog = nullptr;
 
 	ConfirmationDialog *overwrite_dialog = nullptr;
@@ -291,7 +288,7 @@ private:
 	void _resource_created();
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
-	void _duplicate_operation_confirm();
+	void _duplicate_operation_confirm(const String &p_path);
 	void _overwrite_dialog_action(bool p_overwrite);
 	void _convert_dialog_action();
 	Vector<String> _check_existing();
@@ -384,6 +381,7 @@ public:
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
 	void focus_on_filter();
+	void create_directory(const String &p_path, const String &p_base_dir);
 
 	ScriptCreateDialog *get_script_create_dialog() const;
 
@@ -403,7 +401,7 @@ public:
 	FileSortOption get_file_sort() const { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
 

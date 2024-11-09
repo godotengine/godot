@@ -300,6 +300,7 @@ private:
 
 	void _set_tree(SceneTree *p_tree);
 	void _propagate_pause_notification(bool p_enable);
+	void _propagate_suspend_notification(bool p_enable);
 
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
@@ -439,6 +440,8 @@ public:
 		// Editor specific node notifications
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
 		NOTIFICATION_EDITOR_POST_SAVE = 9002,
+		NOTIFICATION_SUSPENDED = 9003,
+		NOTIFICATION_UNSUSPENDED = 9004
 	};
 
 	/* NODE/TREE */
@@ -743,8 +746,13 @@ public:
 	virtual void set_translation_domain(const StringName &p_domain) override;
 	void set_translation_domain_inherited();
 
-	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
-	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
+	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr_n(const String &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const {
+		if (can_auto_translate()) {
+			return tr_n(p_message, p_message_plural, p_n, p_context);
+		}
+		return p_n == 1 ? p_message : String(p_message_plural);
+	}
 
 	/* THREADING */
 

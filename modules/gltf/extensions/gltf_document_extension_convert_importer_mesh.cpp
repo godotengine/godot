@@ -63,6 +63,7 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 				mesh_instance_node_3d->set_mesh(array_mesh);
 				mesh_instance_node_3d->set_skin(importer_mesh_3d->get_skin());
 				mesh_instance_node_3d->set_skeleton_path(importer_mesh_3d->get_skeleton_path());
+				mesh_instance_node_3d->set_visible(importer_mesh_3d->is_visible());
 				node->replace_by(mesh_instance_node_3d);
 				_copy_meta(importer_mesh_3d, mesh_instance_node_3d);
 				_copy_meta(mesh.ptr(), array_mesh.ptr());

@@ -35,12 +35,18 @@
 #include "betsy_bc1.h"
 
 #include "bc1.glsl.gen.h"
+#include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "servers/display_server.h"
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;
 
 void BetsyCompressor::_init() {
+	if (!DisplayServer::can_create_rendering_device()) {
+		return;
+	}
+
 	// Create local RD.
 	RenderingContextDriver *rcd = nullptr;
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
@@ -165,6 +171,10 @@ static String get_shader_name(BetsyFormat p_format) {
 		case BETSY_FORMAT_BC3:
 			return "BC3";
 
+		case BETSY_FORMAT_BC4_SIGNED:
+		case BETSY_FORMAT_BC4_UNSIGNED:
+			return "BC4";
+
 		case BETSY_FORMAT_BC6_SIGNED:
 		case BETSY_FORMAT_BC6_UNSIGNED:
 			return "BC6";
@@ -176,6 +186,11 @@ static String get_shader_name(BetsyFormat p_format) {
 
 Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
+	// Return an error so that the compression can fall back to cpu compression
+	if (compress_rd == nullptr) {
+		return ERR_CANT_CREATE;
+	}
 
 	if (r_img->is_compressed()) {
 		return ERR_INVALID_DATA;
@@ -200,6 +215,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			version = "dithered";
 			dst_rd_format = RD::DATA_FORMAT_R32G32_UINT;
 			dest_format = Image::FORMAT_DXT1;
+			break;
+
+		case BETSY_FORMAT_BC4_UNSIGNED:
+			version = "unsigned";
+			dst_rd_format = RD::DATA_FORMAT_R32G32_UINT;
+			dest_format = Image::FORMAT_RGTC_R;
 			break;
 
 		case BETSY_FORMAT_BC6_SIGNED:
@@ -235,8 +256,13 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 				err = source->parse_versions_from_text(bc1_shader_glsl);
 				break;
 
-			case BETSY_FORMAT_BC6_UNSIGNED:
+			case BETSY_FORMAT_BC4_SIGNED:
+			case BETSY_FORMAT_BC4_UNSIGNED:
+				err = source->parse_versions_from_text(bc4_shader_glsl);
+				break;
+
 			case BETSY_FORMAT_BC6_SIGNED:
+			case BETSY_FORMAT_BC6_UNSIGNED:
 				err = source->parse_versions_from_text(bc6h_shader_glsl);
 				break;
 
@@ -430,26 +456,45 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		compress_rd->compute_list_bind_compute_pipeline(compute_list, shader.pipeline);
 		compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 
-		if (dest_format == Image::FORMAT_BPTC_RGBFU || dest_format == Image::FORMAT_BPTC_RGBF) {
-			BC6PushConstant push_constant;
-			push_constant.sizeX = 1.0f / width;
-			push_constant.sizeY = 1.0f / height;
-			push_constant.padding[0] = 0;
-			push_constant.padding[1] = 0;
+		switch (dest_format) {
+			case Image::FORMAT_BPTC_RGBFU:
+			case Image::FORMAT_BPTC_RGBF: {
+				BC6PushConstant push_constant;
+				push_constant.sizeX = 1.0f / width;
+				push_constant.sizeY = 1.0f / height;
+				push_constant.padding[0] = 0;
+				push_constant.padding[1] = 0;
 
-			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC6PushConstant));
+				compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC6PushConstant));
+				compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+			} break;
 
-		} else {
-			BC1PushConstant push_constant;
-			push_constant.num_refines = 2;
-			push_constant.padding[0] = 0;
-			push_constant.padding[1] = 0;
-			push_constant.padding[2] = 0;
+			case Image::FORMAT_DXT1: {
+				BC1PushConstant push_constant;
+				push_constant.num_refines = 2;
+				push_constant.padding[0] = 0;
+				push_constant.padding[1] = 0;
+				push_constant.padding[2] = 0;
 
-			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC1PushConstant));
+				compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC1PushConstant));
+				compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+			} break;
+
+			case Image::FORMAT_RGTC_R: {
+				BC4PushConstant push_constant;
+				push_constant.channel_idx = 0;
+				push_constant.padding[0] = 0;
+				push_constant.padding[1] = 0;
+				push_constant.padding[2] = 0;
+
+				compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
+				compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+			} break;
+
+			default: {
+			} break;
 		}
 
-		compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
 		compress_rd->compute_list_end();
 
 		compress_rd->submit();
@@ -511,11 +556,12 @@ Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels) {
 
 	switch (p_channels) {
 		case Image::USED_CHANNELS_RGB:
-			result = betsy->compress(BETSY_FORMAT_BC1_DITHER, r_img);
-			break;
-
 		case Image::USED_CHANNELS_L:
 			result = betsy->compress(BETSY_FORMAT_BC1, r_img);
+			break;
+
+		case Image::USED_CHANNELS_R:
+			result = betsy->compress(BETSY_FORMAT_BC4_UNSIGNED, r_img);
 			break;
 
 		default:

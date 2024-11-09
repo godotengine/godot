@@ -52,7 +52,10 @@ public:
 	};
 
 private:
-	RID shader;
+	mutable RID shader_rid;
+	mutable String preprocessed_code;
+	mutable Mutex shader_rid_mutex;
+
 	Mode mode = MODE_SPATIAL;
 	HashSet<Ref<ShaderInclude>> include_dependencies;
 	String code;
@@ -60,6 +63,7 @@ private:
 
 	HashMap<StringName, HashMap<int, Ref<Texture>>> default_textures;
 
+	void _check_shader_rid() const;
 	void _dependency_changed();
 	void _recompile();
 	virtual void _update_shader() const; //used for visual shader
@@ -83,6 +87,8 @@ public:
 
 	void set_code(const String &p_code);
 	String get_code() const;
+
+	void inspect_native_shader_code();
 
 	void get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
 

@@ -358,7 +358,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}

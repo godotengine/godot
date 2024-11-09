@@ -364,7 +364,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 					Variant ret;
 					op.callable.callp(nullptr, 0, ret, ce);
 					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, nullptr, 0, ce));
+						ERR_PRINT(vformat("Error calling UndoRedo method operation '%s': %s.", String(op.name), Variant::get_call_error_text(obj, op.name, nullptr, 0, ce)));
 					}
 #ifdef TOOLS_ENABLED
 					Resource *res = Object::cast_to<Resource>(obj);

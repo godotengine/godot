@@ -2348,9 +2348,17 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	int method_bind_count = 0;
 	for (const MethodInterface &imethod : itype.methods) {
-		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output);
+		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output, false);
 		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
 				"Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'.");
+		if (imethod.is_internal) {
+			// No need to generate span overloads for internal methods.
+			continue;
+		}
+
+		method_err = _generate_cs_method(itype, imethod, method_bind_count, output, true);
+		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+				"Failed to generate span overload method '" + imethod.name + "' for class '" + itype.name + "'.");
 	}
 
 	// Signals
@@ -2776,7 +2784,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	return OK;
 }
 
-Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
+Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span) {
 	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
 	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_imethod.return_type.cname + "' was not found.");
 
@@ -2787,6 +2795,35 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		ERR_FAIL_COND_V_MSG(return_type->api_type == ClassDB::API_EDITOR, ERR_BUG,
 				"Method '" + p_itype.name + "." + p_imethod.name + "' has return type '" + return_type->name +
 						"' from the editor API. Core API cannot have dependencies on the editor API.");
+	}
+
+	if (p_imethod.is_virtual && p_use_span) {
+		return OK;
+	}
+
+	bool has_span_argument = false;
+
+	if (p_use_span) {
+		if (p_imethod.is_vararg) {
+			has_span_argument = true;
+		} else {
+			for (const ArgumentInterface &iarg : p_imethod.arguments) {
+				const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
+				ERR_FAIL_NULL_V_MSG(arg_type, ERR_BUG, "Argument type '" + iarg.type.cname + "' was not found.");
+
+				if (arg_type->is_span_compatible) {
+					has_span_argument = true;
+					break;
+				}
+			}
+		}
+
+		if (has_span_argument) {
+			// Span overloads use the same method bind as the array overloads.
+			// Since both overloads are generated one after the other, we can decrease the count here
+			// to ensure the span overload uses the same method bind.
+			p_method_bind_count--;
+		}
 	}
 
 	String method_bind_field = CS_STATIC_FIELD_METHOD_BIND_PREFIX + itos(p_method_bind_count);
@@ -2835,6 +2872,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
 
+		bool use_span_for_arg = p_use_span && arg_type->is_span_compatible;
+
 		// Add the current arguments to the signature
 		// If the argument has a default value which is not a constant, we will make it Nullable
 		{
@@ -2846,7 +2885,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				arguments_sig += "Nullable<";
 			}
 
-			arguments_sig += arg_cs_type;
+			if (use_span_for_arg) {
+				arguments_sig += arg_type->c_type_in;
+			} else {
+				arguments_sig += arg_cs_type;
+			}
 
 			if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
 				arguments_sig += "> ";
@@ -2856,7 +2899,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			arguments_sig += iarg.name;
 
-			if (!p_imethod.is_compat && iarg.default_argument.size()) {
+			if (!p_use_span && !p_imethod.is_compat && iarg.default_argument.size()) {
 				if (iarg.def_param_mode != ArgumentInterface::CONSTANT) {
 					arguments_sig += " = null";
 				} else {
@@ -2867,7 +2910,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		icall_params += ", ";
 
-		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT) {
+		if (iarg.default_argument.size() && iarg.def_param_mode != ArgumentInterface::CONSTANT && !use_span_for_arg) {
 			// The default value of an argument must be constant. Otherwise we make it Nullable and do the following:
 			// Type arg_in = arg.HasValue ? arg.Value : <non-const default value>;
 			String arg_or_defval_local = iarg.name;
@@ -2927,6 +2970,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		cs_in_expr_is_unsafe |= arg_type->cs_in_expr_is_unsafe;
 	}
 
+	if (p_use_span && !has_span_argument) {
+		return OK;
+	}
+
 	// Collect caller name for MethodBind
 	if (p_imethod.is_vararg) {
 		icall_params += ", (godot_string_name)MethodName." + p_imethod.proxy_name + ".NativeValue";
@@ -2934,7 +2981,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	// Generate method
 	{
-		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
+		if (!p_imethod.is_virtual && !p_imethod.requires_object_call && !p_use_span) {
 			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
 					 << INDENT1 "private static readonly IntPtr " << method_bind_field << " = ";
 
@@ -3228,10 +3275,10 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		p_output.append(CLOSE_BLOCK_L1);
 
-		// Generate On{EventName} method to raise the event.
+		// Generate EmitSignal{EventName} method to raise the event.
 		if (!p_itype.is_singleton) {
 			p_output.append(MEMBER_BEGIN "protected void ");
-			p_output << "On" << p_isignal.proxy_name;
+			p_output << "EmitSignal" << p_isignal.proxy_name;
 			if (is_parameterless) {
 				p_output.append("()\n" OPEN_BLOCK_L1 INDENT2);
 				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ");\n";
@@ -4325,9 +4372,45 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 	return true;
 }
 
+static String _get_vector2_cs_ctor_args(const Vector2 &p_vec2) {
+	return String::num_real(p_vec2.x, true) + "f, " +
+			String::num_real(p_vec2.y, true) + "f";
+}
+
+static String _get_vector3_cs_ctor_args(const Vector3 &p_vec3) {
+	return String::num_real(p_vec3.x, true) + "f, " +
+			String::num_real(p_vec3.y, true) + "f, " +
+			String::num_real(p_vec3.z, true) + "f";
+}
+
+static String _get_vector4_cs_ctor_args(const Vector4 &p_vec4) {
+	return String::num_real(p_vec4.x, true) + "f, " +
+			String::num_real(p_vec4.y, true) + "f, " +
+			String::num_real(p_vec4.z, true) + "f, " +
+			String::num_real(p_vec4.w, true) + "f";
+}
+
+static String _get_vector2i_cs_ctor_args(const Vector2i &p_vec2i) {
+	return itos(p_vec2i.x) + ", " + itos(p_vec2i.y);
+}
+
+static String _get_vector3i_cs_ctor_args(const Vector3i &p_vec3i) {
+	return itos(p_vec3i.x) + ", " + itos(p_vec3i.y) + ", " + itos(p_vec3i.z);
+}
+
+static String _get_vector4i_cs_ctor_args(const Vector4i &p_vec4i) {
+	return itos(p_vec4i.x) + ", " + itos(p_vec4i.y) + ", " + itos(p_vec4i.z) + ", " + itos(p_vec4i.w);
+}
+
+static String _get_color_cs_ctor_args(const Color &p_color) {
+	return String::num(p_color.r, 4) + "f, " +
+			String::num(p_color.g, 4) + "f, " +
+			String::num(p_color.b, 4) + "f, " +
+			String::num(p_color.a, 4) + "f";
+}
+
 bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, ArgumentInterface &r_iarg) {
 	r_iarg.def_param_value = p_val;
-	r_iarg.default_argument = p_val.operator String();
 
 	switch (p_val.get_type()) {
 		case Variant::NIL:
@@ -4340,10 +4423,14 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::INT:
 			if (r_iarg.type.cname != name_cache.type_int) {
-				r_iarg.default_argument = "(%s)(" + r_iarg.default_argument + ")";
+				r_iarg.default_argument = "(%s)(" + p_val.operator String() + ")";
+			} else {
+				r_iarg.default_argument = p_val.operator String();
 			}
 			break;
 		case Variant::FLOAT:
+			r_iarg.default_argument = p_val.operator String();
+
 			if (r_iarg.type.cname == name_cache.type_float) {
 				r_iarg.default_argument += "f";
 			}
@@ -4353,7 +4440,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::NODE_PATH:
 			if (r_iarg.type.cname == name_cache.type_StringName || r_iarg.type.cname == name_cache.type_NodePath) {
 				if (r_iarg.default_argument.length() > 0) {
-					r_iarg.default_argument = "(%s)\"" + r_iarg.default_argument + "\"";
+					r_iarg.default_argument = "(%s)\"" + p_val.operator String() + "\"";
 					r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 				} else {
 					// No need for a special `in` statement to change `null` to `""`. Marshaling takes care of this already.
@@ -4361,40 +4448,62 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				}
 			} else {
 				CRASH_COND(r_iarg.type.cname != name_cache.type_String);
-				r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
+				r_iarg.default_argument = "\"" + p_val.operator String() + "\"";
 			}
 			break;
 		case Variant::PLANE: {
 			Plane plane = p_val.operator Plane();
-			r_iarg.default_argument = "new Plane(new Vector3" + plane.normal.operator String() + ", " + rtos(plane.d) + ")";
+			r_iarg.default_argument = "new Plane(new Vector3(" +
+					_get_vector3_cs_ctor_args(plane.normal) + "), " + rtos(plane.d) + "f)";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_val.operator ::AABB();
-			r_iarg.default_argument = "new Aabb(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
+			r_iarg.default_argument = "new Aabb(new Vector3(" +
+					_get_vector3_cs_ctor_args(aabb.position) + "), new Vector3(" +
+					_get_vector3_cs_ctor_args(aabb.size) + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2: {
 			Rect2 rect = p_val.operator Rect2();
-			r_iarg.default_argument = "new Rect2(new Vector2" + rect.position.operator String() + ", new Vector2" + rect.size.operator String() + ")";
+			r_iarg.default_argument = "new Rect2(new Vector2(" +
+					_get_vector2_cs_ctor_args(rect.position) + "), new Vector2(" +
+					_get_vector2_cs_ctor_args(rect.size) + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
-			r_iarg.default_argument = "new Rect2I(new Vector2I" + rect.position.operator String() + ", new Vector2I" + rect.size.operator String() + ")";
+			r_iarg.default_argument = "new Rect2I(new Vector2I(" +
+					_get_vector2i_cs_ctor_args(rect.position) + "), new Vector2I(" +
+					_get_vector2i_cs_ctor_args(rect.size) + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::COLOR:
+			r_iarg.default_argument = "new Color(" + _get_color_cs_ctor_args(p_val.operator Color()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR2:
+			r_iarg.default_argument = "new Vector2(" + _get_vector2_cs_ctor_args(p_val.operator Vector2()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR2I:
+			r_iarg.default_argument = "new Vector2I(" + _get_vector2i_cs_ctor_args(p_val.operator Vector2i()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR3:
+			r_iarg.default_argument = "new Vector3(" + _get_vector3_cs_ctor_args(p_val.operator Vector3()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR3I:
-			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
+			r_iarg.default_argument = "new Vector3I(" + _get_vector3i_cs_ctor_args(p_val.operator Vector3i()) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::VECTOR4:
+			r_iarg.default_argument = "new Vector4(" + _get_vector4_cs_ctor_args(p_val.operator Vector4()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR4I:
-			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
+			r_iarg.default_argument = "new Vector4I(" + _get_vector4i_cs_ctor_args(p_val.operator Vector4i()) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::OBJECT:
@@ -4444,7 +4553,10 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (transform == Transform2D()) {
 				r_iarg.default_argument = "Transform2D.Identity";
 			} else {
-				r_iarg.default_argument = "new Transform2D(new Vector2" + transform.columns[0].operator String() + ", new Vector2" + transform.columns[1].operator String() + ", new Vector2" + transform.columns[2].operator String() + ")";
+				r_iarg.default_argument = "new Transform2D(new Vector2(" +
+						_get_vector2_cs_ctor_args(transform.columns[0]) + "), new Vector2(" +
+						_get_vector2_cs_ctor_args(transform.columns[1]) + "), new Vector2(" +
+						_get_vector2_cs_ctor_args(transform.columns[2]) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4454,7 +4566,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				r_iarg.default_argument = "Transform3D.Identity";
 			} else {
 				Basis basis = transform.basis;
-				r_iarg.default_argument = "new Transform3D(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
+				r_iarg.default_argument = "new Transform3D(new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(0)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(1)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(2)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(transform.origin) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4463,7 +4579,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (projection == Projection()) {
 				r_iarg.default_argument = "Projection.Identity";
 			} else {
-				r_iarg.default_argument = "new Projection(new Vector4" + projection.columns[0].operator String() + ", new Vector4" + projection.columns[1].operator String() + ", new Vector4" + projection.columns[2].operator String() + ", new Vector4" + projection.columns[3].operator String() + ")";
+				r_iarg.default_argument = "new Projection(new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[0]) + "), new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[1]) + "), new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[2]) + "), new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[3]) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4472,7 +4592,10 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (basis == Basis()) {
 				r_iarg.default_argument = "Basis.Identity";
 			} else {
-				r_iarg.default_argument = "new Basis(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ")";
+				r_iarg.default_argument = "new Basis(new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(0)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(1)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(2)) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4481,7 +4604,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (quaternion == Quaternion()) {
 				r_iarg.default_argument = "Quaternion.Identity";
 			} else {
-				r_iarg.default_argument = "new Quaternion" + quaternion.operator String();
+				r_iarg.default_argument = "new Quaternion(" +
+						String::num_real(quaternion.x, false) + "f, " +
+						String::num_real(quaternion.y, false) + "f, " +
+						String::num_real(quaternion.z, false) + "f, " +
+						String::num_real(quaternion.w, false) + "f)";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4734,13 +4861,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "VarArg";
 	itype.cname = itype.name;
-	itype.proxy_name = "Variant[]";
+	itype.proxy_name = "ReadOnlySpan<Variant>";
 	itype.cs_type = "params Variant[]";
-	itype.cs_in_expr = "%0 ?? Array.Empty<Variant>()";
+	itype.cs_in_expr = "%0";
 	// c_type, c_in and c_arg_in are hard-coded in the generator.
 	// c_out and c_type_out are not applicable to VarArg.
 	itype.c_arg_in = "&%s_in";
-	itype.c_type_in = "Variant[]";
+	itype.c_type_in = "ReadOnlySpan<Variant>";
+	itype.is_span_compatible = true;
 	builtin_types.insert(itype.cname, itype);
 
 #define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t)                \
@@ -4754,9 +4882,10 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n";        \
 		itype.c_arg_in = "&%s_in";                                                  \
 		itype.c_type = #m_managed_type;                                             \
-		itype.c_type_in = itype.proxy_name;                                         \
+		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">";                           \
 		itype.c_type_out = itype.proxy_name;                                        \
 		itype.c_type_is_disposable_struct = true;                                   \
+		itype.is_span_compatible = true;                                            \
 		builtin_types.insert(itype.name, itype);                                    \
 	}
 

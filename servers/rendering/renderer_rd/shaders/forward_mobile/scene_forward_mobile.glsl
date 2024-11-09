@@ -77,10 +77,6 @@ void axis_angle_to_tbn(vec3 axis, float angle, out vec3 tangent, out vec3 binorm
 	normal = omc_axis.zzz * axis + vec3(-s_axis.y, s_axis.x, c);
 }
 
-/* Spec Constants */
-
-layout(constant_id = 17) const bool sc_is_multimesh = false;
-
 /* Varyings */
 
 layout(location = 0) highp out vec3 vertex_interp;
@@ -108,10 +104,6 @@ layout(location = 6) mediump out vec3 binormal_interp;
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 layout(location = 7) highp out vec4 diffuse_light_interp;
 layout(location = 8) highp out vec4 specular_light_interp;
-
-layout(constant_id = 9) const bool sc_disable_omni_lights = false;
-layout(constant_id = 10) const bool sc_disable_spot_lights = false;
-layout(constant_id = 12) const bool sc_disable_directional_lights = false;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
@@ -186,6 +178,13 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 }
 #endif
 
+uint multimesh_stride() {
+	uint stride = sc_multimesh_format_2d() ? 2 : 3;
+	stride += sc_multimesh_has_color() ? 1 : 0;
+	stride += sc_multimesh_has_custom_data() ? 1 : 0;
+	return stride;
+}
+
 void main() {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
@@ -216,7 +215,7 @@ void main() {
 	mat4 matrix;
 	mat4 read_model_matrix = model_matrix;
 
-	if (sc_is_multimesh) {
+	if (sc_multimesh()) {
 		//multimesh, instances are for it
 
 #ifdef USE_PARTICLE_TRAILS
@@ -264,25 +263,10 @@ void main() {
 #endif
 
 #else
-		uint stride = 0;
-		{
-			//TODO implement a small lookup table for the stride
-			if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
-				stride += 2;
-			} else {
-				stride += 3;
-			}
-			if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
-				stride += 1;
-			}
-			if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
-				stride += 1;
-			}
-		}
-
+		uint stride = multimesh_stride();
 		uint offset = stride * gl_InstanceIndex;
 
-		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
+		if (sc_multimesh_format_2d()) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
 		} else {
@@ -290,14 +274,14 @@ void main() {
 			offset += 3;
 		}
 
-		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
+		if (sc_multimesh_has_color()) {
 #ifdef COLOR_USED
 			color_interp *= transforms.data[offset];
 #endif
 			offset += 1;
 		}
 
-		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
+		if (sc_multimesh_has_custom_data()) {
 			instance_custom = transforms.data[offset];
 		}
 
@@ -412,7 +396,7 @@ void main() {
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
-	if (sc_is_multimesh) {
+	if (sc_multimesh()) {
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
@@ -469,50 +453,24 @@ void main() {
 	diffuse_light_interp = vec4(0.0);
 	specular_light_interp = vec4(0.0);
 
-	if (!sc_disable_omni_lights) {
-		uint light_indices = instances.data[draw_call.instance_index].omni_lights.x;
-		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
-			if (i == 3) {
-				light_indices = instances.data[draw_call.instance_index].omni_lights.y;
-			} else {
-				light_indices = light_indices >> 8;
-			}
-
-			if (light_index == 0xFF) {
-				break;
-			}
-
-			light_process_omni_vertex(light_index, vertex, view, normal, roughness,
-					diffuse_light_interp.rgb, specular_light_interp.rgb);
-		}
+	uvec2 omni_light_indices = instances.data[draw_call.instance_index].omni_lights;
+	for (uint i = 0; i < sc_omni_lights(); i++) {
+		uint light_index = (i > 3) ? ((omni_light_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_light_indices.x >> (i * 8)) & 0xFF);
+		light_process_omni_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
-	if (!sc_disable_spot_lights) {
-		uint light_indices = instances.data[draw_call.instance_index].spot_lights.x;
-		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
-			if (i == 3) {
-				light_indices = instances.data[draw_call.instance_index].spot_lights.y;
-			} else {
-				light_indices = light_indices >> 8;
-			}
-
-			if (light_index == 0xFF) {
-				break;
-			}
-
-			light_process_spot_vertex(light_index, vertex, view, normal, roughness,
-					diffuse_light_interp.rgb, specular_light_interp.rgb);
-		}
+	uvec2 spot_light_indices = instances.data[draw_call.instance_index].spot_lights;
+	for (uint i = 0; i < sc_spot_lights(); i++) {
+		uint light_index = (i > 3) ? ((spot_light_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_light_indices.x >> (i * 8)) & 0xFF);
+		light_process_spot_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
-	if (!sc_disable_directional_lights) {
+	if (sc_directional_lights() > 0) {
 		// We process the first directional light separately as it may have shadows.
 		vec3 directional_diffuse = vec3(0.0);
 		vec3 directional_specular = vec3(0.0);
 
-		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+		for (uint i = 0; i < sc_directional_lights(); i++) {
 			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
 				continue; // Not masked, skip.
 			}
@@ -611,41 +569,6 @@ void main() {
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
-
-/* Specialization Constants */
-
-#if !defined(MODE_RENDER_DEPTH)
-
-#if !defined(MODE_UNSHADED)
-
-layout(constant_id = 0) const bool sc_use_light_projector = false;
-layout(constant_id = 1) const bool sc_use_light_soft_shadows = false;
-layout(constant_id = 2) const bool sc_use_directional_soft_shadows = false;
-
-layout(constant_id = 3) const uint sc_soft_shadow_samples = 4;
-layout(constant_id = 4) const uint sc_penumbra_shadow_samples = 4;
-
-layout(constant_id = 5) const uint sc_directional_soft_shadow_samples = 4;
-layout(constant_id = 6) const uint sc_directional_penumbra_shadow_samples = 4;
-
-layout(constant_id = 8) const bool sc_projector_use_mipmaps = true;
-
-layout(constant_id = 9) const bool sc_disable_omni_lights = false;
-layout(constant_id = 10) const bool sc_disable_spot_lights = false;
-layout(constant_id = 11) const bool sc_disable_reflection_probes = false;
-layout(constant_id = 12) const bool sc_disable_directional_lights = false;
-layout(constant_id = 18) const bool sc_use_lightmap_bicubic_filter = false;
-
-#endif //!MODE_UNSHADED
-
-layout(constant_id = 7) const bool sc_decal_use_mipmaps = true;
-layout(constant_id = 13) const bool sc_disable_decals = false;
-layout(constant_id = 14) const bool sc_disable_fog = false;
-layout(constant_id = 16) const bool sc_use_depth_fog = false;
-
-#endif //!MODE_RENDER_DEPTH
-
-layout(constant_id = 15) const float sc_luminance_multiplier = 2.0;
 
 /* Include our forward mobile UBOs definitions etc. */
 #include "scene_forward_mobile_inc.glsl"
@@ -866,7 +789,7 @@ vec4 fog_process(vec3 vertex) {
 		float sun_total = 0.0;
 		vec3 view = normalize(vertex);
 
-		for (uint i = 0; i < scene_data_block.data.directional_light_count; i++) {
+		for (uint i = 0; i < sc_directional_lights(); i++) {
 			vec3 light_color = directional_lights.data[i].color * directional_lights.data[i].energy;
 			float light_amount = pow(max(dot(view, directional_lights.data[i].direction), 0.0), 8.0);
 			fog_color += light_color * light_amount * scene_data_block.data.fog_sun_scatter;
@@ -875,7 +798,7 @@ vec4 fog_process(vec3 vertex) {
 
 	float fog_amount = 0.0;
 
-	if (sc_use_depth_fog) {
+	if (sc_use_depth_fog()) {
 		float fog_z = smoothstep(scene_data_block.data.fog_depth_begin, scene_data_block.data.fog_depth_end, length(vertex));
 		float fog_quad_amount = pow(fog_z, scene_data_block.data.fog_depth_curve) * scene_data_block.data.fog_density;
 		fog_amount = fog_quad_amount;
@@ -901,6 +824,14 @@ vec4 fog_process(vec3 vertex) {
 #define scene_data scene_data_block.data
 
 void main() {
+#ifdef UBERSHADER
+	bool front_facing = gl_FrontFacing;
+	if (uc_cull_mode() == POLYGON_CULL_BACK && !front_facing) {
+		discard;
+	} else if (uc_cull_mode() == POLYGON_CULL_FRONT && front_facing) {
+		discard;
+	}
+#endif
 #ifdef MODE_DUAL_PARABOLOID
 
 	if (dp_clip > 0.0)
@@ -1126,7 +1057,7 @@ void main() {
 	// to maximize VGPR usage
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 
-	if (!sc_disable_fog && scene_data.fog_enabled) {
+	if (!sc_disable_fog() && scene_data.fog_enabled) {
 		fog = fog_process(vertex);
 	}
 
@@ -1145,97 +1076,83 @@ void main() {
 	vec3 vertex_ddx = dFdx(vertex);
 	vec3 vertex_ddy = dFdy(vertex);
 
-	if (!sc_disable_decals) { //Decals
-		// must implement
+	uvec2 decal_indices = instances.data[draw_call.instance_index].decals;
+	for (uint i = 0; i < sc_decals(); i++) {
+		uint decal_index = (i > 3) ? ((decal_indices.y >> ((i - 4) * 8)) & 0xFF) : ((decal_indices.x >> (i * 8)) & 0xFF);
+		if (!bool(decals.data[decal_index].mask & instances.data[draw_call.instance_index].layer_mask)) {
+			continue; //not masked
+		}
 
-		uint decal_indices = instances.data[draw_call.instance_index].decals.x;
-		for (uint i = 0; i < 8; i++) {
-			uint decal_index = decal_indices & 0xFF;
-			if (i == 3) {
-				decal_indices = instances.data[draw_call.instance_index].decals.y;
+		vec3 uv_local = (decals.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
+		if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
+			continue; //out of decal
+		}
+
+		float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
+
+		if (decals.data[decal_index].normal_fade > 0.0) {
+			fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
+		}
+
+		//we need ddx/ddy for mipmaps, so simulate them
+		vec2 ddx = (decals.data[decal_index].xform * vec4(vertex_ddx, 0.0)).xz;
+		vec2 ddy = (decals.data[decal_index].xform * vec4(vertex_ddy, 0.0)).xz;
+
+		if (decals.data[decal_index].albedo_rect != vec4(0.0)) {
+			//has albedo
+			vec4 decal_albedo;
+			if (sc_decal_use_mipmaps()) {
+				decal_albedo = textureGrad(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, ddx * decals.data[decal_index].albedo_rect.zw, ddy * decals.data[decal_index].albedo_rect.zw);
 			} else {
-				decal_indices = decal_indices >> 8;
+				decal_albedo = textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, 0.0);
 			}
+			decal_albedo *= decals.data[decal_index].modulate;
+			decal_albedo.a *= fade;
+			albedo = mix(albedo, decal_albedo.rgb, decal_albedo.a * decals.data[decal_index].albedo_mix);
 
-			if (decal_index == 0xFF) {
-				break;
-			}
-
-			if (!bool(decals.data[decal_index].mask & instances.data[draw_call.instance_index].layer_mask)) {
-				continue; //not masked
-			}
-
-			vec3 uv_local = (decals.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
-			if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
-				continue; //out of decal
-			}
-
-			float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
-
-			if (decals.data[decal_index].normal_fade > 0.0) {
-				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
-			}
-
-			//we need ddx/ddy for mipmaps, so simulate them
-			vec2 ddx = (decals.data[decal_index].xform * vec4(vertex_ddx, 0.0)).xz;
-			vec2 ddy = (decals.data[decal_index].xform * vec4(vertex_ddy, 0.0)).xz;
-
-			if (decals.data[decal_index].albedo_rect != vec4(0.0)) {
-				//has albedo
-				vec4 decal_albedo;
-				if (sc_decal_use_mipmaps) {
-					decal_albedo = textureGrad(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, ddx * decals.data[decal_index].albedo_rect.zw, ddy * decals.data[decal_index].albedo_rect.zw);
+			if (decals.data[decal_index].normal_rect != vec4(0.0)) {
+				vec3 decal_normal;
+				if (sc_decal_use_mipmaps()) {
+					decal_normal = textureGrad(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, ddx * decals.data[decal_index].normal_rect.zw, ddy * decals.data[decal_index].normal_rect.zw).xyz;
 				} else {
-					decal_albedo = textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, 0.0);
+					decal_normal = textureLod(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, 0.0).xyz;
 				}
-				decal_albedo *= decals.data[decal_index].modulate;
-				decal_albedo.a *= fade;
-				albedo = mix(albedo, decal_albedo.rgb, decal_albedo.a * decals.data[decal_index].albedo_mix);
+				decal_normal.xy = decal_normal.xy * vec2(2.0, -2.0) - vec2(1.0, -1.0); //users prefer flipped y normal maps in most authoring software
+				decal_normal.z = sqrt(max(0.0, 1.0 - dot(decal_normal.xy, decal_normal.xy)));
+				//convert to view space, use xzy because y is up
+				decal_normal = (decals.data[decal_index].normal_xform * decal_normal.xzy).xyz;
 
-				if (decals.data[decal_index].normal_rect != vec4(0.0)) {
-					vec3 decal_normal;
-					if (sc_decal_use_mipmaps) {
-						decal_normal = textureGrad(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, ddx * decals.data[decal_index].normal_rect.zw, ddy * decals.data[decal_index].normal_rect.zw).xyz;
-					} else {
-						decal_normal = textureLod(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, 0.0).xyz;
-					}
-					decal_normal.xy = decal_normal.xy * vec2(2.0, -2.0) - vec2(1.0, -1.0); //users prefer flipped y normal maps in most authoring software
-					decal_normal.z = sqrt(max(0.0, 1.0 - dot(decal_normal.xy, decal_normal.xy)));
-					//convert to view space, use xzy because y is up
-					decal_normal = (decals.data[decal_index].normal_xform * decal_normal.xzy).xyz;
-
-					normal = normalize(mix(normal, decal_normal, decal_albedo.a));
-				}
-
-				if (decals.data[decal_index].orm_rect != vec4(0.0)) {
-					vec3 decal_orm;
-					if (sc_decal_use_mipmaps) {
-						decal_orm = textureGrad(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, ddx * decals.data[decal_index].orm_rect.zw, ddy * decals.data[decal_index].orm_rect.zw).xyz;
-					} else {
-						decal_orm = textureLod(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, 0.0).xyz;
-					}
-					ao = mix(ao, decal_orm.r, decal_albedo.a);
-					roughness = mix(roughness, decal_orm.g, decal_albedo.a);
-					metallic = mix(metallic, decal_orm.b, decal_albedo.a);
-				}
+				normal = normalize(mix(normal, decal_normal, decal_albedo.a));
 			}
 
-			if (decals.data[decal_index].emission_rect != vec4(0.0)) {
-				//emission is additive, so its independent from albedo
-				if (sc_decal_use_mipmaps) {
-					emission += textureGrad(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, ddx * decals.data[decal_index].emission_rect.zw, ddy * decals.data[decal_index].emission_rect.zw).xyz * decals.data[decal_index].emission_energy * fade;
+			if (decals.data[decal_index].orm_rect != vec4(0.0)) {
+				vec3 decal_orm;
+				if (sc_decal_use_mipmaps()) {
+					decal_orm = textureGrad(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, ddx * decals.data[decal_index].orm_rect.zw, ddy * decals.data[decal_index].orm_rect.zw).xyz;
 				} else {
-					emission += textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, 0.0).xyz * decals.data[decal_index].emission_energy * fade;
+					decal_orm = textureLod(sampler2D(decal_atlas, decal_sampler), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, 0.0).xyz;
 				}
+				ao = mix(ao, decal_orm.r, decal_albedo.a);
+				roughness = mix(roughness, decal_orm.g, decal_albedo.a);
+				metallic = mix(metallic, decal_orm.b, decal_albedo.a);
 			}
 		}
-	} //Decals
+
+		if (decals.data[decal_index].emission_rect != vec4(0.0)) {
+			//emission is additive, so its independent from albedo
+			if (sc_decal_use_mipmaps()) {
+				emission += textureGrad(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, ddx * decals.data[decal_index].emission_rect.zw, ddy * decals.data[decal_index].emission_rect.zw).xyz * decals.data[decal_index].emission_energy * fade;
+			} else {
+				emission += textureLod(sampler2D(decal_atlas_srgb, decal_sampler), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, 0.0).xyz * decals.data[decal_index].emission_energy * fade;
+			}
+		}
+	}
 #endif //!MODE_RENDER_DEPTH
 
 	/////////////////////// LIGHTING //////////////////////////////
 
 #ifdef NORMAL_USED
-	if (scene_data.roughness_limiter_enabled) {
+	if (sc_scene_roughness_limiter_enabled()) {
 		//https://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 		float roughness2 = roughness * roughness;
 		vec3 dndu = dFdx(normal), dndv = dFdy(normal);
@@ -1260,7 +1177,7 @@ void main() {
 
 #ifndef AMBIENT_LIGHT_DISABLED
 
-	if (scene_data.use_reflection_cubemap) {
+	if (sc_scene_use_reflection_cubemap()) {
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
@@ -1286,7 +1203,7 @@ void main() {
 		specular_light = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_vec, sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb;
 
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-		specular_light *= sc_luminance_multiplier;
+		specular_light *= sc_luminance_multiplier();
 		specular_light *= scene_data.IBL_exposure_normalization;
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;
@@ -1301,14 +1218,14 @@ void main() {
 	if (scene_data.use_ambient_light) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
 
-		if (scene_data.use_ambient_cubemap) {
+		if (sc_scene_use_ambient_cubemap()) {
 			vec3 ambient_dir = scene_data.radiance_inverse_xform * normal;
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 			vec3 cubemap_ambient = texture(samplerCubeArray(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(ambient_dir, MAX_ROUGHNESS_LOD)).rgb;
 #else
 			vec3 cubemap_ambient = textureLod(samplerCube(radiance_cubemap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ambient_dir, MAX_ROUGHNESS_LOD).rgb;
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-			cubemap_ambient *= sc_luminance_multiplier;
+			cubemap_ambient *= sc_luminance_multiplier();
 			cubemap_ambient *= scene_data.IBL_exposure_normalization;
 			ambient_light = mix(ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix);
 		}
@@ -1320,7 +1237,7 @@ void main() {
 #endif // CUSTOM_IRRADIANCE_USED
 #ifdef LIGHT_CLEARCOAT_USED
 
-	if (scene_data.use_reflection_cubemap) {
+	if (sc_scene_use_reflection_cubemap()) {
 		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
 		float NoV = max(dot(n, view), 0.0001);
 		vec3 ref_vec = reflect(-view, n);
@@ -1394,7 +1311,7 @@ void main() {
 			vec3 lm_light_l1_0;
 			vec3 lm_light_l1p1;
 
-			if (sc_use_lightmap_bicubic_filter) {
+			if (sc_use_lightmap_bicubic_filter()) {
 				lm_light_l0 = textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 0.0), lightmaps.data[ofs].light_texture_size).rgb;
 				lm_light_l1n1 = (textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 1.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0;
 				lm_light_l1_0 = (textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 2.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0;
@@ -1414,7 +1331,7 @@ void main() {
 			ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * exposure_normalization * 4.0);
 			ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * exposure_normalization * 4.0);
 		} else {
-			if (sc_use_lightmap_bicubic_filter) {
+			if (sc_use_lightmap_bicubic_filter()) {
 				ambient_light += textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization;
 			} else {
 				ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization;
@@ -1428,11 +1345,9 @@ void main() {
 
 	// skipping ssao, do we remove ssao totally?
 
-	if (!sc_disable_reflection_probes) { //Reflection probes
+	if (sc_reflection_probes() > 0) {
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
-
-		uint reflection_indices = instances.data[draw_call.instance_index].reflection_probes.x;
 
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
@@ -1446,18 +1361,9 @@ void main() {
 		vec3 ref_vec = normalize(reflect(-view, bent_normal));
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 
-		for (uint i = 0; i < 8; i++) {
-			uint reflection_index = reflection_indices & 0xFF;
-			if (i == 3) {
-				reflection_indices = instances.data[draw_call.instance_index].reflection_probes.y;
-			} else {
-				reflection_indices = reflection_indices >> 8;
-			}
-
-			if (reflection_index == 0xFF) {
-				break;
-			}
-
+		uvec2 reflection_indices = instances.data[draw_call.instance_index].reflection_probes;
+		for (uint i = 0; i < sc_reflection_probes(); i++) {
+			uint reflection_index = (i > 3) ? ((reflection_indices.y >> ((i - 4) * 8)) & 0xFF) : ((reflection_indices.x >> (i * 8)) & 0xFF);
 			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 		}
 
@@ -1522,7 +1428,7 @@ void main() {
 	specular_light += specular_light_interp.rgb * f0;
 #endif
 
-	if (!sc_disable_directional_lights) { //directional light
+	if (sc_directional_lights() > 0) {
 #ifndef SHADOWS_DISABLED
 		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
@@ -1532,7 +1438,7 @@ void main() {
 		// Only process the first light's shadow for vertex lighting.
 		for (uint i = 0; i < 1; i++) {
 #else
-		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+		for (uint i = 0; i < sc_directional_lights(); i++) {
 #endif
 
 			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
@@ -1637,7 +1543,6 @@ void main() {
 #endif
 #undef BIAS_FUNC
 			}
-#endif
 
 			if (i < 4) {
 				shadow0 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << (i * 8);
@@ -1645,9 +1550,10 @@ void main() {
 				shadow1 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << ((i - 4) * 8);
 			}
 		}
+#endif // SHADOWS_DISABLED
 
 #ifndef USE_VERTEX_LIGHTING
-		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+		for (uint i = 0; i < sc_directional_lights(); i++) {
 			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
 				continue; //not masked
 			}
@@ -1681,7 +1587,7 @@ void main() {
 			shadow = 1.0;
 #endif
 
-			float size_A = sc_use_light_soft_shadows ? directional_lights.data[i].size : 0.0;
+			float size_A = sc_use_light_soft_shadows() ? directional_lights.data[i].size : 0.0;
 
 			light_compute(normal, directional_lights.data[i].direction, view, size_A,
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
@@ -1713,95 +1619,72 @@ void main() {
 	} //directional light
 
 #ifndef USE_VERTEX_LIGHTING
-	if (!sc_disable_omni_lights) { //omni lights
-		uint light_indices = instances.data[draw_call.instance_index].omni_lights.x;
-		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
-			if (i == 3) {
-				light_indices = instances.data[draw_call.instance_index].omni_lights.y;
-			} else {
-				light_indices = light_indices >> 8;
-			}
+	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
+	for (uint i = 0; i < sc_omni_lights(); i++) {
+		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
 
-			if (light_index == 0xFF) {
-				break;
-			}
+		float shadow = light_process_omni_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
 
-			float shadow = light_process_omni_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
+		shadow = blur_shadow(shadow);
 
-			shadow = blur_shadow(shadow);
-
-			// Fragment lighting
-			light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+		// Fragment lighting
+		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+				backlight,
 #endif
 /*
 #ifdef LIGHT_TRANSMITTANCE_USED
-					transmittance_color,
-					transmittance_depth,
-					transmittance_boost,
+				transmittance_color,
+				transmittance_depth,
+				transmittance_boost,
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim,
-					rim_tint,
+				rim,
+				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+				clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					tangent,
-					binormal, anisotropy,
+				tangent,
+				binormal, anisotropy,
 #endif
-					diffuse_light, specular_light);
-		}
-	} //omni lights
+				diffuse_light, specular_light);
+	}
 
-	if (!sc_disable_spot_lights) { //spot lights
+	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
+	for (uint i = 0; i < sc_spot_lights(); i++) {
+		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
 
-		uint light_indices = instances.data[draw_call.instance_index].spot_lights.x;
-		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
-			if (i == 3) {
-				light_indices = instances.data[draw_call.instance_index].spot_lights.y;
-			} else {
-				light_indices = light_indices >> 8;
-			}
+		float shadow = light_process_spot_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
 
-			if (light_index == 0xFF) {
-				break;
-			}
+		shadow = blur_shadow(shadow);
 
-			float shadow = light_process_spot_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-			shadow = blur_shadow(shadow);
-
-			light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+				backlight,
 #endif
 /*
 #ifdef LIGHT_TRANSMITTANCE_USED
-					transmittance_color,
-					transmittance_depth,
-					transmittance_boost,
+				transmittance_color,
+				transmittance_depth,
+				transmittance_boost,
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim,
-					rim_tint,
+				rim,
+				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+				clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					tangent,
-					binormal, anisotropy,
+				tangent,
+				binormal, anisotropy,
 #endif
-					diffuse_light, specular_light);
-		}
-	} //spot lights
+				diffuse_light, specular_light);
+	}
 #endif // !VERTEX_LIGHTING
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
@@ -1894,7 +1777,7 @@ void main() {
 
 	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
 	// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
-	frag_color.rgb = frag_color.rgb / sc_luminance_multiplier;
+	frag_color.rgb = frag_color.rgb / sc_luminance_multiplier();
 #ifdef PREMUL_ALPHA_USED
 	frag_color.rgb *= premul_alpha;
 #endif

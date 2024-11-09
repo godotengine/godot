@@ -212,12 +212,12 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
-						preview_images[i].button->set_icon(ImageTexture::create_from_image(thumbnail));
+						preview_images[i].button->set_button_icon(ImageTexture::create_from_image(thumbnail));
 
 						// Make it clearer that clicking it will open an external link
 						preview_images[i].button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 					} else {
-						preview_images[i].button->set_icon(p_image);
+						preview_images[i].button->set_button_icon(p_image);
 					}
 					break;
 				}
@@ -302,7 +302,7 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	new_preview.video_link = p_url;
 	new_preview.is_video = p_video;
 	new_preview.button = memnew(Button);
-	new_preview.button->set_icon(previews->get_editor_theme_icon(SNAME("ThumbnailWait")));
+	new_preview.button->set_button_icon(previews->get_editor_theme_icon(SNAME("ThumbnailWait")));
 	new_preview.button->set_toggle_mode(true);
 	new_preview.button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click).bind(p_id));
 	preview_hb->add_child(new_preview.button);
@@ -993,7 +993,8 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, String p
 		String url_host;
 		int url_port;
 		String url_path;
-		Error err = trimmed_url.parse_url(url_scheme, url_host, url_port, url_path);
+		String url_fragment;
+		Error err = trimmed_url.parse_url(url_scheme, url_host, url_port, url_path, url_fragment);
 		if (err != OK) {
 			if (is_print_verbose_enabled()) {
 				ERR_PRINT(vformat("Asset Library: Invalid image URL '%s' for asset # %d.", trimmed_url, p_asset_id));

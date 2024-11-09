@@ -368,6 +368,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->set_transform(src_mesh_node->get_transform());
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+		mesh_node->set_visible(src_mesh_node->is_visible());
 		if (src_mesh_node->get_mesh().is_valid()) {
 			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
@@ -1019,11 +1020,11 @@ void SceneImportSettingsDialog::_play_animation() {
 	if (animation_player->has_animation(id)) {
 		if (animation_player->is_playing()) {
 			animation_player->pause();
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			set_process(false);
 		} else {
 			animation_player->play(id);
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			set_process(true);
 		}
 	}
@@ -1032,7 +1033,7 @@ void SceneImportSettingsDialog::_play_animation() {
 void SceneImportSettingsDialog::_stop_current_animation() {
 	animation_pingpong = false;
 	animation_player->stop();
-	animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	animation_slider->set_value_no_signal(0.0);
 	set_process(false);
 }
@@ -1044,7 +1045,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		if (animation_player != nullptr && animation_player->is_playing()) {
 			animation_player->stop();
 		}
-		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 
 		_reset_bone_transforms();
 		set_process(false);
@@ -1066,7 +1067,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 			animation_player->play(p_animation_name);
 		} else {
 			animation_player->stop(true);
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_player->set_assigned_animation(p_animation_name);
 			animation_player->seek(0.0, true);
 			animation_slider->set_value_no_signal(0.0);
@@ -1081,7 +1082,7 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 	}
 	if (animation_player->is_playing()) {
 		animation_player->stop();
-		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	}
 	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
@@ -1097,7 +1098,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 
 	switch (loop_mode) {
 		case Animation::LOOP_NONE: {
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_slider->set_value_no_signal(1.0);
 			set_process(false);
 		} break;
@@ -1318,17 +1319,17 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
-				animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {
-				animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			}
-			animation_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			animation_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
-			light_1_switch->set_icon(theme_cache.light_1_icon);
-			light_2_switch->set_icon(theme_cache.light_2_icon);
-			light_rotate_switch->set_icon(theme_cache.rotate_icon);
+			light_1_switch->set_button_icon(theme_cache.light_1_icon);
+			light_2_switch->set_button_icon(theme_cache.light_2_icon);
+			light_rotate_switch->set_button_icon(theme_cache.rotate_icon);
 
-			animation_toggle_skeleton_visibility->set_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
+			animation_toggle_skeleton_visibility->set_button_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {

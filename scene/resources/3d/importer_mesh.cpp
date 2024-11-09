@@ -33,107 +33,9 @@
 #include "core/io/marshalls.h"
 #include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
-#include "core/math/static_raycaster.h"
-#include "scene/resources/animation_library.h"
 #include "scene/resources/surface_tool.h"
 
 #include <cstdint>
-
-void ImporterMesh::Surface::split_normals(const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
-	_split_normals(arrays, p_indices, p_normals);
-
-	for (BlendShape &blend_shape : blend_shape_data) {
-		_split_normals(blend_shape.arrays, p_indices, p_normals);
-	}
-}
-
-void ImporterMesh::Surface::_split_normals(Array &r_arrays, const LocalVector<int> &p_indices, const LocalVector<Vector3> &p_normals) {
-	ERR_FAIL_COND(r_arrays.size() != RS::ARRAY_MAX);
-
-	const PackedVector3Array &vertices = r_arrays[RS::ARRAY_VERTEX];
-	int current_vertex_count = vertices.size();
-	int new_vertex_count = p_indices.size();
-	int final_vertex_count = current_vertex_count + new_vertex_count;
-	const int *indices_ptr = p_indices.ptr();
-
-	for (int i = 0; i < r_arrays.size(); i++) {
-		if (i == RS::ARRAY_INDEX) {
-			continue;
-		}
-
-		if (r_arrays[i].get_type() == Variant::NIL) {
-			continue;
-		}
-
-		switch (r_arrays[i].get_type()) {
-			case Variant::PACKED_VECTOR3_ARRAY: {
-				PackedVector3Array data = r_arrays[i];
-				data.resize(final_vertex_count);
-				Vector3 *data_ptr = data.ptrw();
-				if (i == RS::ARRAY_NORMAL) {
-					const Vector3 *normals_ptr = p_normals.ptr();
-					memcpy(&data_ptr[current_vertex_count], normals_ptr, sizeof(Vector3) * new_vertex_count);
-				} else {
-					for (int j = 0; j < new_vertex_count; j++) {
-						data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
-					}
-				}
-				r_arrays[i] = data;
-			} break;
-			case Variant::PACKED_VECTOR2_ARRAY: {
-				PackedVector2Array data = r_arrays[i];
-				data.resize(final_vertex_count);
-				Vector2 *data_ptr = data.ptrw();
-				for (int j = 0; j < new_vertex_count; j++) {
-					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
-				}
-				r_arrays[i] = data;
-			} break;
-			case Variant::PACKED_FLOAT32_ARRAY: {
-				PackedFloat32Array data = r_arrays[i];
-				int elements = data.size() / current_vertex_count;
-				data.resize(final_vertex_count * elements);
-				float *data_ptr = data.ptrw();
-				for (int j = 0; j < new_vertex_count; j++) {
-					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(float) * elements);
-				}
-				r_arrays[i] = data;
-			} break;
-			case Variant::PACKED_INT32_ARRAY: {
-				PackedInt32Array data = r_arrays[i];
-				int elements = data.size() / current_vertex_count;
-				data.resize(final_vertex_count * elements);
-				int32_t *data_ptr = data.ptrw();
-				for (int j = 0; j < new_vertex_count; j++) {
-					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(int32_t) * elements);
-				}
-				r_arrays[i] = data;
-			} break;
-			case Variant::PACKED_BYTE_ARRAY: {
-				PackedByteArray data = r_arrays[i];
-				int elements = data.size() / current_vertex_count;
-				data.resize(final_vertex_count * elements);
-				uint8_t *data_ptr = data.ptrw();
-				for (int j = 0; j < new_vertex_count; j++) {
-					memcpy(&data_ptr[(current_vertex_count + j) * elements], &data_ptr[indices_ptr[j] * elements], sizeof(uint8_t) * elements);
-				}
-				r_arrays[i] = data;
-			} break;
-			case Variant::PACKED_COLOR_ARRAY: {
-				PackedColorArray data = r_arrays[i];
-				data.resize(final_vertex_count);
-				Color *data_ptr = data.ptrw();
-				for (int j = 0; j < new_vertex_count; j++) {
-					data_ptr[current_vertex_count + j] = data_ptr[indices_ptr[j]];
-				}
-				r_arrays[i] = data;
-			} break;
-			default: {
-				ERR_FAIL_MSG("Unhandled array type.");
-			} break;
-		}
-	}
-}
 
 String ImporterMesh::validate_blend_shape_name(const String &p_name) {
 	String name = p_name;
@@ -266,8 +168,54 @@ void ImporterMesh::set_surface_material(int p_surface, const Ref<Material> &p_ma
 	mesh.unref();
 }
 
-void ImporterMesh::optimize_indices_for_cache() {
+template <typename T>
+static Vector<T> _remap_array(Vector<T> p_array, const Vector<uint32_t> &p_remap, uint32_t p_vertex_count) {
+	ERR_FAIL_COND_V(p_array.size() % p_remap.size() != 0, p_array);
+	int num_elements = p_array.size() / p_remap.size();
+	T *data = p_array.ptrw();
+	SurfaceTool::remap_vertex_func(data, data, p_remap.size(), sizeof(T) * num_elements, p_remap.ptr());
+	p_array.resize(p_vertex_count * num_elements);
+	return p_array;
+}
+
+static void _remap_arrays(Array &r_arrays, const Vector<uint32_t> &p_remap, uint32_t p_vertex_count) {
+	for (int i = 0; i < r_arrays.size(); i++) {
+		if (i == RS::ARRAY_INDEX) {
+			continue;
+		}
+
+		switch (r_arrays[i].get_type()) {
+			case Variant::NIL:
+				break;
+			case Variant::PACKED_VECTOR3_ARRAY:
+				r_arrays[i] = _remap_array<Vector3>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_VECTOR2_ARRAY:
+				r_arrays[i] = _remap_array<Vector2>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_FLOAT32_ARRAY:
+				r_arrays[i] = _remap_array<float>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_INT32_ARRAY:
+				r_arrays[i] = _remap_array<int32_t>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_BYTE_ARRAY:
+				r_arrays[i] = _remap_array<uint8_t>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			case Variant::PACKED_COLOR_ARRAY:
+				r_arrays[i] = _remap_array<Color>(r_arrays[i], p_remap, p_vertex_count);
+				break;
+			default:
+				ERR_FAIL_MSG("Unhandled array type.");
+		}
+	}
+}
+
+void ImporterMesh::optimize_indices() {
 	if (!SurfaceTool::optimize_vertex_cache_func) {
+		return;
+	}
+	if (!SurfaceTool::optimize_vertex_fetch_remap_func || !SurfaceTool::remap_vertex_func || !SurfaceTool::remap_index_func) {
 		return;
 	}
 
@@ -286,10 +234,48 @@ void ImporterMesh::optimize_indices_for_cache() {
 			continue;
 		}
 
+		// Optimize indices for vertex cache to establish final triangle order.
 		int *indices_ptr = indices.ptrw();
 		SurfaceTool::optimize_vertex_cache_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, vertex_count);
-
 		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+
+		for (int j = 0; j < surfaces[i].lods.size(); ++j) {
+			Surface::LOD &lod = surfaces.write[i].lods.write[j];
+			int *lod_indices_ptr = lod.indices.ptrw();
+			SurfaceTool::optimize_vertex_cache_func((unsigned int *)lod_indices_ptr, (const unsigned int *)lod_indices_ptr, lod.indices.size(), vertex_count);
+		}
+
+		// Concatenate indices for all LODs in the order of coarse->fine; this establishes the effective order of vertices,
+		// and is important to optimize for vertex fetch (all GPUs) and shading (Mali GPUs)
+		PackedInt32Array merged_indices;
+		for (int j = surfaces[i].lods.size() - 1; j >= 0; --j) {
+			merged_indices.append_array(surfaces[i].lods[j].indices);
+		}
+		merged_indices.append_array(indices);
+
+		// Generate remap array that establishes optimal vertex order according to the order of indices above.
+		Vector<uint32_t> remap;
+		remap.resize(vertex_count);
+		unsigned int new_vertex_count = SurfaceTool::optimize_vertex_fetch_remap_func(remap.ptrw(), (const unsigned int *)merged_indices.ptr(), merged_indices.size(), vertex_count);
+
+		// We need to remap all vertex and index arrays in lockstep according to the remap.
+		SurfaceTool::remap_index_func((unsigned int *)indices_ptr, (const unsigned int *)indices_ptr, index_count, remap.ptr());
+		surfaces.write[i].arrays[RS::ARRAY_INDEX] = indices;
+
+		for (int j = 0; j < surfaces[i].lods.size(); ++j) {
+			Surface::LOD &lod = surfaces.write[i].lods.write[j];
+			int *lod_indices_ptr = lod.indices.ptrw();
+			SurfaceTool::remap_index_func((unsigned int *)lod_indices_ptr, (const unsigned int *)lod_indices_ptr, lod.indices.size(), remap.ptr());
+		}
+
+		_remap_arrays(surfaces.write[i].arrays, remap, new_vertex_count);
+		for (int j = 0; j < surfaces[i].blend_shape_data.size(); j++) {
+			_remap_arrays(surfaces.write[i].blend_shape_data.write[j].arrays, remap, new_vertex_count);
+		}
+	}
+
+	if (shadow_mesh.is_valid()) {
+		shadow_mesh->optimize_indices();
 	}
 }
 
@@ -306,14 +292,11 @@ void ImporterMesh::optimize_indices_for_cache() {
 	}                                                                                                              \
 	write_array[vert_idx] = transformed_vert;
 
-void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_split_angle, Array p_bone_transform_array, bool p_raycast_normals) {
+void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transform_array) {
 	if (!SurfaceTool::simplify_scale_func) {
 		return;
 	}
 	if (!SurfaceTool::simplify_with_attrib_func) {
-		return;
-	}
-	if (!SurfaceTool::optimize_vertex_cache_func) {
 		return;
 	}
 
@@ -379,8 +362,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		}
 
 		float normal_merge_threshold = Math::cos(Math::deg_to_rad(p_normal_merge_angle));
-		float normal_pre_split_threshold = Math::cos(Math::deg_to_rad(MIN(180.0f, p_normal_split_angle * 2.0f)));
-		float normal_split_threshold = Math::cos(Math::deg_to_rad(p_normal_split_angle));
 		const Vector3 *normals_ptr = normals.ptr();
 
 		HashMap<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
@@ -469,22 +450,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
-		// Only used for normal raycasting
-		int split_vertex_count = vertex_count;
-		LocalVector<Vector3> split_vertex_normals;
-		LocalVector<int> split_vertex_indices;
-		split_vertex_normals.reserve(index_count / 3);
-		split_vertex_indices.reserve(index_count / 3);
-
-		RandomPCG pcg;
-		pcg.seed(123456789); // Keep seed constant across imports
-
-		Ref<StaticRaycaster> raycaster = p_raycast_normals ? StaticRaycaster::create() : Ref<StaticRaycaster>();
-		if (raycaster.is_valid()) {
-			raycaster->add_mesh(vertices, indices, 0);
-			raycaster->commit();
-		}
-
 		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
 		float mesh_error = 0.0f;
 
@@ -503,6 +468,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					merged_normals_f32.ptr(),
 					sizeof(float) * 3, // Attribute stride
 					normal_weights, 3,
+					nullptr, // Vertex lock
 					index_target,
 					max_mesh_error,
 					simplify_options,
@@ -533,173 +499,6 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				}
 			}
 
-			if (raycaster.is_valid()) {
-				LocalVector<LocalVector<int>> vertex_corners;
-				vertex_corners.resize(vertex_count);
-
-				int *ptrw = new_indices.ptrw();
-				for (unsigned int j = 0; j < new_index_count; j++) {
-					vertex_corners[ptrw[j]].push_back(j);
-				}
-
-				float error_factor = 1.0f / (scale * MAX(mesh_error, 0.15));
-				const float ray_bias = 0.05;
-				float ray_length = ray_bias + mesh_error * scale * 3.0f;
-
-				Vector<StaticRaycaster::Ray> rays;
-				LocalVector<Vector2> ray_uvs;
-
-				int32_t *new_indices_ptr = new_indices.ptrw();
-
-				int current_ray_count = 0;
-				for (unsigned int j = 0; j < new_index_count; j += 3) {
-					const Vector3 &v0 = vertices_ptr[new_indices_ptr[j + 0]];
-					const Vector3 &v1 = vertices_ptr[new_indices_ptr[j + 1]];
-					const Vector3 &v2 = vertices_ptr[new_indices_ptr[j + 2]];
-					Vector3 face_normal = vec3_cross(v0 - v2, v0 - v1);
-					float face_area = face_normal.length(); // Actually twice the face area, since it's the same error_factor on all faces, we don't care
-					if (!Math::is_finite(face_area) || face_area == 0) {
-						WARN_PRINT_ONCE("Ignoring face with non-finite normal in LOD generation.");
-						continue;
-					}
-
-					Vector3 dir = face_normal / face_area;
-					int ray_count = CLAMP(5.0 * face_area * error_factor, 16, 64);
-
-					rays.resize(current_ray_count + ray_count);
-					StaticRaycaster::Ray *rays_ptr = rays.ptrw();
-
-					ray_uvs.resize(current_ray_count + ray_count);
-					Vector2 *ray_uvs_ptr = ray_uvs.ptr();
-
-					for (int k = 0; k < ray_count; k++) {
-						float u = pcg.randf();
-						float v = pcg.randf();
-
-						if (u + v >= 1.0f) {
-							u = 1.0f - u;
-							v = 1.0f - v;
-						}
-
-						u = 0.9f * u + 0.05f / 3.0f; // Give barycentric coordinates some padding, we don't want to sample right on the edge
-						v = 0.9f * v + 0.05f / 3.0f; // v = (v - one_third) * 0.95f + one_third;
-						float w = 1.0f - u - v;
-
-						Vector3 org = v0 * w + v1 * u + v2 * v;
-						org -= dir * ray_bias;
-						rays_ptr[current_ray_count + k] = StaticRaycaster::Ray(org, dir, 0.0f, ray_length);
-						rays_ptr[current_ray_count + k].id = j / 3;
-						ray_uvs_ptr[current_ray_count + k] = Vector2(u, v);
-					}
-
-					current_ray_count += ray_count;
-				}
-
-				raycaster->intersect(rays);
-
-				LocalVector<Vector3> ray_normals;
-				LocalVector<real_t> ray_normal_weights;
-
-				ray_normals.resize(new_index_count);
-				ray_normal_weights.resize(new_index_count);
-
-				for (unsigned int j = 0; j < new_index_count; j++) {
-					ray_normal_weights[j] = 0.0f;
-				}
-
-				const StaticRaycaster::Ray *rp = rays.ptr();
-				for (int j = 0; j < rays.size(); j++) {
-					if (rp[j].geomID != 0) { // Ray missed
-						continue;
-					}
-
-					if (rp[j].normal.normalized().dot(rp[j].dir) > 0.0f) { // Hit a back face.
-						continue;
-					}
-
-					const float &u = rp[j].u;
-					const float &v = rp[j].v;
-					const float w = 1.0f - u - v;
-
-					const unsigned int &hit_tri_id = rp[j].primID;
-					const unsigned int &orig_tri_id = rp[j].id;
-
-					const Vector3 &n0 = normals_ptr[indices_ptr[hit_tri_id * 3 + 0]];
-					const Vector3 &n1 = normals_ptr[indices_ptr[hit_tri_id * 3 + 1]];
-					const Vector3 &n2 = normals_ptr[indices_ptr[hit_tri_id * 3 + 2]];
-					Vector3 normal = n0 * w + n1 * u + n2 * v;
-
-					Vector2 orig_uv = ray_uvs[j];
-					const real_t orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
-					for (int k = 0; k < 3; k++) {
-						int idx = orig_tri_id * 3 + k;
-						real_t weight = orig_bary[k];
-						ray_normals[idx] += normal * weight;
-						ray_normal_weights[idx] += weight;
-					}
-				}
-
-				for (unsigned int j = 0; j < new_index_count; j++) {
-					if (ray_normal_weights[j] < 1.0f) { // Not enough data, the new normal would be just a bad guess
-						ray_normals[j] = Vector3();
-					} else {
-						ray_normals[j] /= ray_normal_weights[j];
-					}
-				}
-
-				LocalVector<LocalVector<int>> normal_group_indices;
-				LocalVector<Vector3> normal_group_averages;
-				normal_group_indices.reserve(24);
-				normal_group_averages.reserve(24);
-
-				for (unsigned int j = 0; j < vertex_count; j++) {
-					const LocalVector<int> &corners = vertex_corners[j];
-					const Vector3 &vertex_normal = normals_ptr[j];
-
-					for (const int &corner_idx : corners) {
-						const Vector3 &ray_normal = ray_normals[corner_idx];
-
-						if (ray_normal.length_squared() < CMP_EPSILON2) {
-							continue;
-						}
-
-						bool found = false;
-						for (unsigned int l = 0; l < normal_group_indices.size(); l++) {
-							LocalVector<int> &group_indices = normal_group_indices[l];
-							Vector3 n = normal_group_averages[l] / group_indices.size();
-							if (n.dot(ray_normal) > normal_pre_split_threshold) {
-								found = true;
-								group_indices.push_back(corner_idx);
-								normal_group_averages[l] += ray_normal;
-								break;
-							}
-						}
-
-						if (!found) {
-							normal_group_indices.push_back({ corner_idx });
-							normal_group_averages.push_back(ray_normal);
-						}
-					}
-
-					for (unsigned int k = 0; k < normal_group_indices.size(); k++) {
-						LocalVector<int> &group_indices = normal_group_indices[k];
-						Vector3 n = normal_group_averages[k] / group_indices.size();
-
-						if (vertex_normal.dot(n) < normal_split_threshold) {
-							split_vertex_indices.push_back(j);
-							split_vertex_normals.push_back(n);
-							int new_idx = split_vertex_count++;
-							for (const int &index : group_indices) {
-								new_indices_ptr[index] = new_idx;
-							}
-						}
-					}
-
-					normal_group_indices.clear();
-					normal_group_averages.clear();
-				}
-			}
-
 			Surface::LOD lod;
 			lod.distance = MAX(mesh_error * scale, CMP_EPSILON2);
 			lod.indices = new_indices;
@@ -712,22 +511,13 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		if (raycaster.is_valid()) {
-			surfaces.write[i].split_normals(split_vertex_indices, split_vertex_normals);
-		}
-
 		surfaces.write[i].lods.sort_custom<Surface::LODComparator>();
-
-		for (int j = 0; j < surfaces.write[i].lods.size(); j++) {
-			Surface::LOD &lod = surfaces.write[i].lods.write[j];
-			unsigned int *lod_indices_ptr = (unsigned int *)lod.indices.ptrw();
-			SurfaceTool::optimize_vertex_cache_func(lod_indices_ptr, lod_indices_ptr, lod.indices.size(), split_vertex_count);
-		}
 	}
 }
 
 void ImporterMesh::_generate_lods_bind(float p_normal_merge_angle, float p_normal_split_angle, Array p_skin_pose_transform_array) {
-	generate_lods(p_normal_merge_angle, p_normal_split_angle, p_skin_pose_transform_array);
+	// p_normal_split_angle is unused, but kept for compatibility
+	generate_lods(p_normal_merge_angle, p_skin_pose_transform_array);
 }
 
 bool ImporterMesh::has_mesh() const {
@@ -859,10 +649,6 @@ void ImporterMesh::create_shadow_mesh() {
 				index_wptr[j] = vertex_remap[index];
 			}
 
-			if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
-				SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
-			}
-
 			new_surface[RS::ARRAY_INDEX] = new_indices;
 
 			// Make sure the same LODs as the full version are used.
@@ -879,10 +665,6 @@ void ImporterMesh::create_shadow_mesh() {
 					int index = index_rptr[k];
 					ERR_FAIL_INDEX(index, vertex_count);
 					index_wptr[k] = vertex_remap[index];
-				}
-
-				if (SurfaceTool::optimize_vertex_cache_func && surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
-					SurfaceTool::optimize_vertex_cache_func((unsigned int *)index_wptr, (const unsigned int *)index_wptr, index_count, new_vertices.size());
 				}
 
 				lods[surfaces[i].lods[j].distance] = new_indices;

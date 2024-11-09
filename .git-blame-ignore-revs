@@ -57,3 +57,9 @@ df61dc4b2bd54a5a40c515493c76f5a458e5b541
 
 # Style: Apply new `clang-format` fixes
 b37fc1014abf7adda70dc30b0822d775b3a4433f
+
+# Set clang-format `RemoveSemicolon` rule to `true`
+0d350e71086fffce0553811739aae9f6ad66136c
+
+# Style: Apply clang-tidy fixes (superficial)
+bb5f390fb9b466be35a5df7651323d7e66afca31

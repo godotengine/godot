@@ -8,7 +8,7 @@
 		- When the [LineEdit] control is focused using the keyboard arrow keys, it will only gain focus and not enter edit mode.
 		- To enter edit mode, click on the control with the mouse or press the [code]ui_text_submit[/code] action (by default [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
 		- To exit edit mode, press [code]ui_text_submit[/code] or [code]ui_cancel[/code] (by default [kbd]Escape[/kbd]) actions.
-		- Check [method is_editing] and [signal editing_toggled] for more information.
+		- Check [method edit], [method unedit], [method is_editing], and [signal editing_toggled] for more information.
 		[b]Important:[/b]
 		- Focusing the [LineEdit] with [code]ui_focus_next[/code] (by default [kbd]Tab[/kbd]) or [code]ui_focus_prev[/code] (by default [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
 		[LineEdit] features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
@@ -33,6 +33,7 @@
 		- [kbd]Cmd + E[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
 		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
+		[b]Note:[/b] Caret movement shortcuts listed above are not affected by [member shortcut_keys_enabled].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -73,6 +74,13 @@
 			<return type="void" />
 			<description>
 				Clears the current selection.
+			</description>
+		</method>
+		<method name="edit">
+			<return type="void" />
+			<description>
+				Allows entering edit mode whether the [LineEdit] is focused or not.
+				Use [method Callable.call_deferred] if you want to enter edit mode on [signal text_submitted].
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -223,6 +231,12 @@
 				Selects the whole [String].
 			</description>
 		</method>
+		<method name="unedit">
+			<return type="void" />
+			<description>
+				Allows exiting edit mode while preserving focus.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
@@ -321,7 +335,7 @@
 			If [code]false[/code], it's impossible to select the text using mouse nor keyboard.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
-			If [code]false[/code], using shortcuts will be disabled.
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.

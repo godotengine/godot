@@ -319,6 +319,8 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		state->set_import_as_skeleton_bones(true);
 	}
 	state->set_scene_name(blend_basename);
+	state->set_extract_path(p_path.get_base_dir());
+	state->set_extract_prefix(blend_basename);
 	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
 		if (r_err) {
@@ -503,7 +505,7 @@ void EditorFileSystemImportFormatSupportQueryBlend::_browse_install() {
 }
 
 void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
-	blender_path_browse->set_icon(blender_path_browse->get_editor_theme_icon(SNAME("FolderBrowse")));
+	blender_path_browse->set_button_icon(blender_path_browse->get_editor_theme_icon(SNAME("FolderBrowse")));
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {

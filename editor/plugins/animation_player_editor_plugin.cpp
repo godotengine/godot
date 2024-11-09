@@ -41,6 +41,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
@@ -112,7 +113,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-				stop->set_icon(stop_icon);
+				stop->set_button_icon(stop_icon);
 			}
 
 			last_active = player->is_playing();
@@ -144,16 +145,16 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			stop_icon = get_editor_theme_icon(SNAME("Stop"));
 			pause_icon = get_editor_theme_icon(SNAME("Pause"));
 			if (player && player->is_playing()) {
-				stop->set_icon(pause_icon);
+				stop->set_button_icon(pause_icon);
 			} else {
-				stop->set_icon(stop_icon);
+				stop->set_button_icon(stop_icon);
 			}
 
-			autoplay->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
-			play->set_icon(get_editor_theme_icon(SNAME("PlayStart")));
-			play_from->set_icon(get_editor_theme_icon(SNAME("Play")));
-			play_bw->set_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
-			play_bw_from->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
+			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
+			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
+			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
+			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
+			play_bw_from->set_button_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 
 			autoplay_icon = get_editor_theme_icon(SNAME("AutoPlay"));
 			reset_icon = get_editor_theme_icon(SNAME("Reload"));
@@ -167,10 +168,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				autoplay_reset_icon = ImageTexture::create_from_image(autoplay_reset_img);
 			}
 
-			onion_toggle->set_icon(get_editor_theme_icon(SNAME("Onion")));
-			onion_skinning->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			onion_toggle->set_button_icon(get_editor_theme_icon(SNAME("Onion")));
+			onion_skinning->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
+			pin->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 
 			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
@@ -295,11 +296,18 @@ void AnimationPlayerEditor::_play_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers(current, start_marker, end_marker);
+		} else {
+			player->play(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_play_from_pressed() {
@@ -312,11 +320,18 @@ void AnimationPlayerEditor::_play_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
-		player->play(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers(current, start_marker, end_marker);
+		} else {
+			player->play(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 String AnimationPlayerEditor::_get_current() const {
@@ -333,11 +348,18 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play_backwards(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers_backwards(current, start_marker, end_marker);
+		} else {
+			player->play_backwards(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_play_bw_from_pressed() {
@@ -350,11 +372,18 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
-		player->play_backwards(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers_backwards(current, start_marker, end_marker);
+		} else {
+			player->play_backwards(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_stop_pressed() {
@@ -371,7 +400,7 @@ void AnimationPlayerEditor::_stop_pressed() {
 		frame->set_value(0);
 		track_editor->set_anim_pos(0);
 	}
-	stop->set_icon(stop_icon);
+	stop->set_button_icon(stop_icon);
 }
 
 void AnimationPlayerEditor::_animation_selected(int p_which) {
@@ -930,9 +959,9 @@ void AnimationPlayerEditor::_update_animation() {
 	updating = true;
 
 	if (player->is_playing()) {
-		stop->set_icon(pause_icon);
+		stop->set_button_icon(pause_icon);
 	} else {
-		stop->set_icon(stop_icon);
+		stop->set_button_icon(stop_icon);
 	}
 
 	scale->set_text(String::num(player->get_speed_scale(), 2));
@@ -1368,7 +1397,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	}
 
 	track_editor->set_anim_pos(pos);
-};
+}
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	_update_player();
@@ -1977,30 +2006,34 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 
+	HBoxContainer *playback_container = memnew(HBoxContainer);
+	playback_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
+	hb->add_child(playback_container);
+
 	play_bw_from = memnew(Button);
 	play_bw_from->set_theme_type_variation("FlatButton");
 	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
-	hb->add_child(play_bw_from);
+	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_theme_type_variation("FlatButton");
 	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
-	hb->add_child(play_bw);
+	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_theme_type_variation("FlatButton");
 	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
-	hb->add_child(stop);
+	playback_container->add_child(stop);
 
 	play = memnew(Button);
 	play->set_theme_type_variation("FlatButton");
 	play->set_tooltip_text(TTR("Play Animation from Start"));
-	hb->add_child(play);
+	playback_container->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_theme_type_variation("FlatButton");
 	play_from->set_tooltip_text(TTR("Play Animation"));
-	hb->add_child(play_from);
+	playback_container->add_child(play_from);
 
 	frame = memnew(SpinBox);
 	hb->add_child(frame);
@@ -2396,4 +2429,25 @@ AnimationTrackKeyEditEditorPlugin::AnimationTrackKeyEditEditorPlugin() {
 
 bool AnimationTrackKeyEditEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("AnimationTrackKeyEdit");
+}
+
+bool EditorInspectorPluginAnimationMarkerKeyEdit::can_handle(Object *p_object) {
+	return Object::cast_to<AnimationMarkerKeyEdit>(p_object) != nullptr;
+}
+
+void EditorInspectorPluginAnimationMarkerKeyEdit::parse_begin(Object *p_object) {
+	AnimationMarkerKeyEdit *amk = Object::cast_to<AnimationMarkerKeyEdit>(p_object);
+	ERR_FAIL_NULL(amk);
+
+	amk_editor = memnew(AnimationMarkerKeyEditEditor(amk->animation, amk->marker_name, amk->use_fps));
+	add_custom_control(amk_editor);
+}
+
+AnimationMarkerKeyEditEditorPlugin::AnimationMarkerKeyEditEditorPlugin() {
+	amk_plugin = memnew(EditorInspectorPluginAnimationMarkerKeyEdit);
+	EditorInspector::add_inspector_plugin(amk_plugin);
+}
+
+bool AnimationMarkerKeyEditEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("AnimationMarkerKeyEdit");
 }

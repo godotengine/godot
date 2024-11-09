@@ -6,6 +6,6 @@ GDTEST_OK
 >> WARNING
 >> Line: 5
 >> SHADOWED_VARIABLE
->> The local variable "a" is shadowing an already-declared variable at line 1.
+>> The local variable "a" is shadowing an already-declared variable at line 1 in the current class.
 1
 2

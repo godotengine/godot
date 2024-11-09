@@ -576,12 +576,12 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			tool_blend->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
-			tool_select->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_create->set_icon(get_editor_theme_icon(SNAME("EditKey")));
-			tool_erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
-			snap->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
-			open_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
+			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+			tool_create->set_button_icon(get_editor_theme_icon(SNAME("EditKey")));
+			tool_erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			snap->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			open_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			interpolation->clear();
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);

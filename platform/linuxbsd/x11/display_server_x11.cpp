@@ -129,6 +129,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_ICON:
 #ifdef DBUS_ENABLED
 		case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 #endif
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_DIALOG_INPUT:
@@ -1861,6 +1862,18 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 			}
 			return 0;
 		}
+		case EGL_DISPLAY: {
+			if (gl_manager_egl) {
+				return (int64_t)gl_manager_egl->get_display(p_window);
+			}
+			return 0;
+		}
+		case EGL_CONFIG: {
+			if (gl_manager_egl) {
+				return (int64_t)gl_manager_egl->get_config(p_window);
+			}
+			return 0;
+		}
 #endif
 		default: {
 			return 0;
@@ -2055,7 +2068,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 		return;
 	}
 
-	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
+	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN || window_get_mode(p_window) == WINDOW_MODE_MAXIMIZED) {
 		Point2i position = screen_get_position(p_screen);
 		Size2i size = screen_get_size(p_screen);
 
@@ -6156,13 +6169,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (rendering_context->initialize() != OK) {
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+#if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your video card drivers seem not to support the required Vulkan version, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else {
+			} else
+#endif // GLES3_ENABLED
+			{
 				r_error = ERR_CANT_CREATE;
 
 				if (p_rendering_driver == "vulkan") {

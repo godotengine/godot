@@ -576,8 +576,8 @@ public:
 
 	/* SHADER API */
 
-	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); };
-	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); };
+	Shader *get_shader(RID p_rid) { return shader_owner.get_or_null(p_rid); }
+	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
 
 	void _shader_make_dirty(Shader *p_shader);
 
@@ -598,8 +598,8 @@ public:
 
 	/* MATERIAL API */
 
-	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); };
-	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); };
+	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); }
+	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); }
 
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();

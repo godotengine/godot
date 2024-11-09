@@ -62,6 +62,7 @@ public:
 		FLAG_POPUP = DisplayServer::WINDOW_FLAG_POPUP,
 		FLAG_EXTEND_TO_TITLE = DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE,
 		FLAG_MOUSE_PASSTHROUGH = DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH,
+		FLAG_SHARP_CORNERS = DisplayServer::WINDOW_FLAG_SHARP_CORNERS,
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
@@ -86,9 +87,14 @@ public:
 
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
-		LAYOUT_DIRECTION_LOCALE,
+		LAYOUT_DIRECTION_APPLICATION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
-		LAYOUT_DIRECTION_RTL
+		LAYOUT_DIRECTION_RTL,
+		LAYOUT_DIRECTION_SYSTEM_LOCALE,
+		LAYOUT_DIRECTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		LAYOUT_DIRECTION_LOCALE = LAYOUT_DIRECTION_APPLICATION_LOCALE,
+#endif // DISABLE_DEPRECATED
 	};
 
 	enum {
@@ -368,7 +374,7 @@ public:
 	bool is_wrapping_controls() const;
 	void child_controls_changed();
 
-	Window *get_exclusive_child() const { return exclusive_child; };
+	Window *get_exclusive_child() const { return exclusive_child; }
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
 

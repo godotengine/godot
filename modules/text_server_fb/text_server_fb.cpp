@@ -156,11 +156,11 @@ bool TextServerFallback::_has(const RID &p_rid) {
 
 String TextServerFallback::_get_support_data_filename() const {
 	return "";
-};
+}
 
 String TextServerFallback::_get_support_data_info() const {
 	return "Not supported";
-};
+}
 
 bool TextServerFallback::_load_support_data(const String &p_filename) {
 	return false; // No extra data used.
@@ -791,7 +791,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 	return false;
 }
 
-_FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size) const {
+_FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent) const {
 	ERR_FAIL_COND_V(p_size.x <= 0, false);
 
 	HashMap<Vector2i, FontForSizeFallback *>::Iterator E = p_font_data->cache.find(p_size);
@@ -813,7 +813,11 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 				error = FT_Init_FreeType(&ft_library);
 				if (error != 0) {
 					memdelete(fd);
-					ERR_FAIL_V_MSG(false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+					if (p_silent) {
+						return false;
+					} else {
+						ERR_FAIL_V_MSG(false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+					}
 				}
 #ifdef MODULE_SVG_ENABLED
 				FT_Property_Set(ft_library, "ot-svg", "svg-hooks", get_tvg_svg_in_ot_hooks());
@@ -847,7 +851,11 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 				FT_Done_Face(fd->face);
 				fd->face = nullptr;
 				memdelete(fd);
-				ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
+				if (p_silent) {
+					return false;
+				} else {
+					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
+				}
 			}
 		}
 
@@ -980,13 +988,27 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		}
 #else
 		memdelete(fd);
-		ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
+		if (p_silent) {
+			return false;
+		} else {
+			ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
+		}
 #endif
 	}
 
 	p_font_data->cache.insert(p_size, fd);
 	r_cache_for_size = fd;
 	return true;
+}
+
+_FORCE_INLINE_ bool TextServerFallback::_font_validate(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	FontForSizeFallback *ffsd = nullptr;
+	return _ensure_cache_for_size(fd, size, ffsd, true);
 }
 
 _FORCE_INLINE_ void TextServerFallback::_font_clear_cache(FontFallback *p_font_data) {
@@ -3920,6 +3942,10 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				SystemFontCacheRec sysf;
 				sysf.rid = _create_font();
 				_font_set_data_ptr(sysf.rid, font_data.ptr(), font_data.size());
+				if (!_font_validate(sysf.rid)) {
+					_free_rid(sysf.rid);
+					continue;
+				}
 
 				Dictionary var = dvar;
 				// Select matching style from collection.
@@ -4051,42 +4077,44 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	// Find usable fonts, if fonts from the last glyph do not have required chars.
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-	if (!_font_has_char(dot_gl_font_rid, sd->el_char)) {
-		const Array &fonts = spans[spans.size() - 1].fonts;
-		for (int i = 0; i < fonts.size(); i++) {
-			if (_font_has_char(fonts[i], sd->el_char)) {
-				dot_gl_font_rid = fonts[i];
-				found_el_char = true;
-				break;
-			}
-		}
-		if (!found_el_char && OS::get_singleton()->has_feature("system_fonts") && fonts.size() > 0 && _font_is_allow_system_fallback(fonts[0])) {
-			const char32_t u32str[] = { sd->el_char, 0 };
-			RID rid = _find_sys_font_for_text(fonts[0], String(), spans[spans.size() - 1].language, u32str);
-			if (rid.is_valid()) {
-				dot_gl_font_rid = rid;
-				found_el_char = true;
-			}
-		}
-	} else {
-		found_el_char = true;
-	}
-	if (!found_el_char) {
-		bool found_dot_char = false;
-		dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-		if (!_font_has_char(dot_gl_font_rid, '.')) {
+	if (add_ellipsis || enforce_ellipsis) {
+		if (!_font_has_char(dot_gl_font_rid, sd->el_char)) {
 			const Array &fonts = spans[spans.size() - 1].fonts;
 			for (int i = 0; i < fonts.size(); i++) {
-				if (_font_has_char(fonts[i], '.')) {
+				if (_font_has_char(fonts[i], sd->el_char)) {
 					dot_gl_font_rid = fonts[i];
-					found_dot_char = true;
+					found_el_char = true;
 					break;
 				}
 			}
-			if (!found_dot_char && OS::get_singleton()->has_feature("system_fonts") && fonts.size() > 0 && _font_is_allow_system_fallback(fonts[0])) {
-				RID rid = _find_sys_font_for_text(fonts[0], String(), spans[spans.size() - 1].language, ".");
+			if (!found_el_char && OS::get_singleton()->has_feature("system_fonts") && fonts.size() > 0 && _font_is_allow_system_fallback(fonts[0])) {
+				const char32_t u32str[] = { sd->el_char, 0 };
+				RID rid = _find_sys_font_for_text(fonts[0], String(), spans[spans.size() - 1].language, u32str);
 				if (rid.is_valid()) {
 					dot_gl_font_rid = rid;
+					found_el_char = true;
+				}
+			}
+		} else {
+			found_el_char = true;
+		}
+		if (!found_el_char) {
+			bool found_dot_char = false;
+			dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
+			if (!_font_has_char(dot_gl_font_rid, '.')) {
+				const Array &fonts = spans[spans.size() - 1].fonts;
+				for (int i = 0; i < fonts.size(); i++) {
+					if (_font_has_char(fonts[i], '.')) {
+						dot_gl_font_rid = fonts[i];
+						found_dot_char = true;
+						break;
+					}
+				}
+				if (!found_dot_char && OS::get_singleton()->has_feature("system_fonts") && fonts.size() > 0 && _font_is_allow_system_fallback(fonts[0])) {
+					RID rid = _find_sys_font_for_text(fonts[0], String(), spans[spans.size() - 1].language, ".");
+					if (rid.is_valid()) {
+						dot_gl_font_rid = rid;
+					}
 				}
 			}
 		}
@@ -4102,8 +4130,8 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 		}
 	}
 
-	int32_t dot_gl_idx = dot_gl_font_rid.is_valid() ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
-	Vector2 dot_adv = dot_gl_font_rid.is_valid() ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
+	int32_t dot_gl_idx = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
+	Vector2 dot_adv = ((add_ellipsis || enforce_ellipsis) && dot_gl_font_rid.is_valid()) ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
 	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ', 0) : -1;
 	Vector2 whitespace_adv = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_advance(whitespace_gl_font_rid, last_gl_font_size, whitespace_gl_idx) : Vector2();
 
@@ -4702,7 +4730,7 @@ void TextServerFallback::_update_settings() {
 TextServerFallback::TextServerFallback() {
 	_insert_feature_sets();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerFallback::_update_settings));
-};
+}
 
 void TextServerFallback::_cleanup() {
 	for (const KeyValue<SystemFontKey, SystemFontCache> &E : system_fonts) {
@@ -4721,4 +4749,4 @@ TextServerFallback::~TextServerFallback() {
 		FT_Done_FreeType(ft_library);
 	}
 #endif
-};
+}

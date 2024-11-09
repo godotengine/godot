@@ -65,7 +65,7 @@
 				[csharp]
 				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; dict.AsGodotDictionary().ContainsKey("color");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("color");
 				}
 
 				public override void _DropData(Vector2 atPosition, Variant data)
@@ -1059,7 +1059,7 @@
 		</member>
 		<member name="tooltip_auto_translate_mode" type="int" setter="set_tooltip_auto_translate_mode" getter="get_tooltip_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
 			Defines if tooltip text should automatically change to its translated version depending on the current locale. Uses the same auto translate mode as this control when set to [constant Node.AUTO_TRANSLATE_MODE_INHERIT].
-			[b]Note:[/b] When the tooltip is customized using [method _make_custom_tooltip], this auto translate mode is applied automatically to the returned control.
+			[b]Note:[/b] Tooltips customized using [method _make_custom_tooltip] do not use this auto translate mode automatically.
 		</member>
 		<member name="tooltip_text" type="String" setter="set_tooltip_text" getter="get_tooltip_text" default="&quot;&quot;">
 			The default tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. The time required for the tooltip to appear can be changed with the [member ProjectSettings.gui/timers/tooltip_delay_sec] option. See also [method get_tooltip].
@@ -1365,7 +1365,7 @@
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent control layout direction.
 		</constant>
-		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection">
+		<constant name="LAYOUT_DIRECTION_APPLICATION_LOCALE" value="1" enum="LayoutDirection">
 			Automatic layout direction, determined from the current locale.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
@@ -1373,6 +1373,14 @@
 		</constant>
 		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
 			Right-to-left layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
+			Automatic layout direction, determined from the system locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
+			Represents the size of the [enum LayoutDirection] enum.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection" deprecated="Use [constant LAYOUT_DIRECTION_APPLICATION_LOCALE] instead.">
 		</constant>
 		<constant name="TEXT_DIRECTION_INHERITED" value="3" enum="TextDirection">
 			Text writing direction is the same as layout direction.

@@ -2234,7 +2234,7 @@ void EditorInspectorArray::_setup() {
 
 			if (element_position > 0) {
 				ae.move_up = memnew(Button);
-				ae.move_up->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
+				ae.move_up->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 				ae.move_up->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position - 1));
 				move_vbox->add_child(ae.move_up);
 			}
@@ -2250,7 +2250,7 @@ void EditorInspectorArray::_setup() {
 
 			if (element_position < count - 1) {
 				ae.move_down = memnew(Button);
-				ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
+				ae.move_down->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				ae.move_down->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_move_element).bind(element_position, element_position + 2));
 				move_vbox->add_child(ae.move_down);
 			}
@@ -2273,7 +2273,7 @@ void EditorInspectorArray::_setup() {
 		ae.hbox->add_child(ae.vbox);
 
 		ae.erase = memnew(Button);
-		ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
+		ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
 		ae.erase->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
 		ae.hbox->add_child(ae.erase);
@@ -2355,10 +2355,10 @@ void EditorInspectorArray::_notification(int p_what) {
 					ae.move_texture_rect->set_texture(get_editor_theme_icon(SNAME("TripleBar")));
 				}
 				if (ae.move_up) {
-					ae.move_up->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
+					ae.move_up->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 				}
 				if (ae.move_down) {
-					ae.move_down->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
+					ae.move_down->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
 				}
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
 				ae.margin->begin_bulk_theme_override();
@@ -2369,11 +2369,11 @@ void EditorInspectorArray::_notification(int p_what) {
 				ae.margin->end_bulk_theme_override();
 
 				if (ae.erase) {
-					ae.erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
+					ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 				}
 			}
 
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			update_minimum_size();
 		} break;
 
@@ -2542,10 +2542,10 @@ void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			first_page_button->set_icon(get_editor_theme_icon(SNAME("PageFirst")));
-			prev_page_button->set_icon(get_editor_theme_icon(SNAME("PagePrevious")));
-			next_page_button->set_icon(get_editor_theme_icon(SNAME("PageNext")));
-			last_page_button->set_icon(get_editor_theme_icon(SNAME("PageLast")));
+			first_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageFirst")));
+			prev_page_button->set_button_icon(get_editor_theme_icon(SNAME("PagePrevious")));
+			next_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageNext")));
+			last_page_button->set_button_icon(get_editor_theme_icon(SNAME("PageLast")));
 		} break;
 	}
 }
@@ -2763,8 +2763,9 @@ void EditorInspector::update_tree() {
 	// TODO: Can be useful to store more context for the focusable, such as the caret position in LineEdit.
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
-	// Temporarily disable focus following to avoid jumping while the inspector is updating.
-	set_follow_focus(false);
+
+	// Temporarily disable focus following on the root inspector to avoid jumping while the inspector is updating.
+	get_root_inspector()->set_follow_focus(false);
 
 	if (property_focusable != -1) {
 		// Check that focusable is actually focusable.
@@ -2792,6 +2793,7 @@ void EditorInspector::update_tree() {
 	_clear(!object);
 
 	if (!object) {
+		get_root_inspector()->set_follow_focus(true);
 		return;
 	}
 
@@ -3511,7 +3513,7 @@ void EditorInspector::update_tree() {
 		main_vbox->add_child(spacer);
 
 		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
-		add_md->set_icon(get_editor_theme_icon(SNAME("Add")));
+		add_md->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		add_md->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
 		main_vbox->add_child(add_md);
 		if (all_read_only) {
@@ -3529,7 +3531,8 @@ void EditorInspector::update_tree() {
 		// Updating inspector might invalidate some editing owners.
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
-	set_follow_focus(true);
+
+	get_root_inspector()->set_follow_focus(true);
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -3774,11 +3777,10 @@ void EditorInspector::set_use_wide_editors(bool p_enable) {
 	wide_editors = p_enable;
 }
 
-void EditorInspector::set_sub_inspector(bool p_enable) {
-	sub_inspector = p_enable;
-	if (!is_inside_tree()) {
-		return;
-	}
+void EditorInspector::set_root_inspector(EditorInspector *p_root_inspector) {
+	root_inspector = p_root_inspector;
+	// Only the root inspector should follow focus.
+	set_follow_focus(false);
 }
 
 void EditorInspector::set_use_deletable_properties(bool p_enabled) {
@@ -4096,13 +4098,13 @@ void EditorInspector::_notification(int p_what) {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			if (!sub_inspector) {
+			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			if (!sub_inspector && is_inside_tree()) {
+			if (!is_sub_inspector() && is_inside_tree()) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 			edit(nullptr);
@@ -4161,7 +4163,7 @@ void EditorInspector::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			bool needs_update = false;
-			if (EditorThemeManager::is_generated_theme_outdated() && !sub_inspector) {
+			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			}
 

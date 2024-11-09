@@ -49,7 +49,7 @@ public:
 	}
 
 	unsigned function1_calls{ 0 };
-	Variant function1_latest_arg0{};
+	Variant function1_latest_arg0;
 };
 
 static inline Array build_array() {

@@ -426,26 +426,42 @@ void NavMap::sync() {
 
 		_new_pm_polygon_count = polygon_count;
 
+		struct ConnectionPair {
+			gd::Edge::Connection connections[2];
+			int size = 0;
+		};
+
 		// Group all edges per key.
-		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
+		HashMap<gd::EdgeKey, ConnectionPair, gd::EdgeKey> connection_pairs_map;
+		connection_pairs_map.reserve(polygons.size());
+		int free_edges_count = 0; // How many ConnectionPairs have only one Connection.
+
 		for (gd::Polygon &poly : polygons) {
 			for (uint32_t p = 0; p < poly.points.size(); p++) {
-				int next_point = (p + 1) % poly.points.size();
-				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
+				const int next_point = (p + 1) % poly.points.size();
+				const gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
 
-				HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);
-				if (!connection) {
-					connections[ek] = Vector<gd::Edge::Connection>();
+				HashMap<gd::EdgeKey, ConnectionPair, gd::EdgeKey>::Iterator pair_it = connection_pairs_map.find(ek);
+				if (!pair_it) {
+					pair_it = connection_pairs_map.insert(ek, ConnectionPair());
 					_new_pm_edge_count += 1;
+					++free_edges_count;
 				}
-				if (connections[ek].size() <= 1) {
+				ConnectionPair &pair = pair_it->value;
+				if (pair.size < 2) {
 					// Add the polygon/edge tuple to this key.
 					gd::Edge::Connection new_connection;
 					new_connection.polygon = &poly;
 					new_connection.edge = p;
 					new_connection.pathway_start = poly.points[p].pos;
 					new_connection.pathway_end = poly.points[next_point].pos;
-					connections[ek].push_back(new_connection);
+
+					pair.connections[pair.size] = new_connection;
+					++pair.size;
+					if (pair.size == 2) {
+						--free_edges_count;
+					}
+
 				} else {
 					// The edge is already connected with another edge, skip.
 					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'. If you're certain none of above is the case, change 'navigation/3d/merge_rasterizer_cell_scale' to 0.001.");
@@ -453,20 +469,23 @@ void NavMap::sync() {
 			}
 		}
 
-		Vector<gd::Edge::Connection> free_edges;
-		for (KeyValue<gd::EdgeKey, Vector<gd::Edge::Connection>> &E : connections) {
-			if (E.value.size() == 2) {
+		LocalVector<gd::Edge::Connection> free_edges;
+		free_edges.reserve(free_edges_count);
+
+		for (const KeyValue<gd::EdgeKey, ConnectionPair> &pair_it : connection_pairs_map) {
+			const ConnectionPair &pair = pair_it.value;
+			if (pair.size == 2) {
 				// Connect edge that are shared in different polygons.
-				gd::Edge::Connection &c1 = E.value.write[0];
-				gd::Edge::Connection &c2 = E.value.write[1];
+				const gd::Edge::Connection &c1 = pair.connections[0];
+				const gd::Edge::Connection &c2 = pair.connections[1];
 				c1.polygon->edges[c1.edge].connections.push_back(c2);
 				c2.polygon->edges[c2.edge].connections.push_back(c1);
 				// Note: The pathway_start/end are full for those connection and do not need to be modified.
 				_new_pm_edge_merge_count += 1;
 			} else {
-				CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
-				if (use_edge_connections && E.value[0].polygon->owner->get_use_edge_connections()) {
-					free_edges.push_back(E.value[0]);
+				CRASH_COND_MSG(pair.size != 1, vformat("Number of connection != 1. Found: %d", pair.size));
+				if (use_edge_connections && pair.connections[0].polygon->owner->get_use_edge_connections()) {
+					free_edges.push_back(pair.connections[0]);
 				}
 			}
 		}
@@ -480,12 +499,14 @@ void NavMap::sync() {
 		// connection, integration and path finding.
 		_new_pm_edge_free_count = free_edges.size();
 
-		for (int i = 0; i < free_edges.size(); i++) {
+		const real_t edge_connection_margin_squared = edge_connection_margin * edge_connection_margin;
+
+		for (uint32_t i = 0; i < free_edges.size(); i++) {
 			const gd::Edge::Connection &free_edge = free_edges[i];
 			Vector3 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
 			Vector3 edge_p2 = free_edge.polygon->points[(free_edge.edge + 1) % free_edge.polygon->points.size()].pos;
 
-			for (int j = 0; j < free_edges.size(); j++) {
+			for (uint32_t j = 0; j < free_edges.size(); j++) {
 				const gd::Edge::Connection &other_edge = free_edges[j];
 				if (i == j || free_edge.polygon->owner == other_edge.polygon->owner) {
 					continue;
@@ -510,7 +531,7 @@ void NavMap::sync() {
 				} else {
 					other1 = other_edge_p1.lerp(other_edge_p2, (1.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if (other1.distance_to(self1) > edge_connection_margin) {
+				if (other1.distance_squared_to(self1) > edge_connection_margin_squared) {
 					continue;
 				}
 
@@ -521,7 +542,7 @@ void NavMap::sync() {
 				} else {
 					other2 = other_edge_p1.lerp(other_edge_p2, (0.0 - projected_p1_ratio) / (projected_p2_ratio - projected_p1_ratio));
 				}
-				if (other2.distance_to(self2) > edge_connection_margin) {
+				if (other2.distance_squared_to(self2) > edge_connection_margin_squared) {
 					continue;
 				}
 
@@ -549,11 +570,11 @@ void NavMap::sync() {
 			const Vector3 end = link->get_end_position();
 
 			gd::Polygon *closest_start_polygon = nullptr;
-			real_t closest_start_distance = link_connection_radius;
+			real_t closest_start_sqr_dist = link_connection_radius * link_connection_radius;
 			Vector3 closest_start_point;
 
 			gd::Polygon *closest_end_polygon = nullptr;
-			real_t closest_end_distance = link_connection_radius;
+			real_t closest_end_sqr_dist = link_connection_radius * link_connection_radius;
 			Vector3 closest_end_point;
 
 			// Create link to any polygons within the search radius of the start point.
@@ -564,11 +585,11 @@ void NavMap::sync() {
 				for (uint32_t start_point_id = 2; start_point_id < start_poly.points.size(); start_point_id += 1) {
 					const Face3 start_face(start_poly.points[0].pos, start_poly.points[start_point_id - 1].pos, start_poly.points[start_point_id].pos);
 					const Vector3 start_point = start_face.get_closest_point_to(start);
-					const real_t start_distance = start_point.distance_to(start);
+					const real_t sqr_dist = start_point.distance_squared_to(start);
 
 					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
-					if (start_distance <= link_connection_radius && start_distance < closest_start_distance) {
-						closest_start_distance = start_distance;
+					if (sqr_dist < closest_start_sqr_dist) {
+						closest_start_sqr_dist = sqr_dist;
 						closest_start_point = start_point;
 						closest_start_polygon = &start_poly;
 					}
@@ -581,11 +602,11 @@ void NavMap::sync() {
 				for (uint32_t end_point_id = 2; end_point_id < end_poly.points.size(); end_point_id += 1) {
 					const Face3 end_face(end_poly.points[0].pos, end_poly.points[end_point_id - 1].pos, end_poly.points[end_point_id].pos);
 					const Vector3 end_point = end_face.get_closest_point_to(end);
-					const real_t end_distance = end_point.distance_to(end);
+					const real_t sqr_dist = end_point.distance_squared_to(end);
 
 					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
-					if (end_distance <= link_connection_radius && end_distance < closest_end_distance) {
-						closest_end_distance = end_distance;
+					if (sqr_dist < closest_end_sqr_dist) {
+						closest_end_sqr_dist = sqr_dist;
 						closest_end_point = end_point;
 						closest_end_polygon = &end_poly;
 					}

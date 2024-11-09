@@ -71,7 +71,7 @@ void NavigationMeshSourceGeometryData3D::append_arrays(const Vector<float> &p_ve
 bool NavigationMeshSourceGeometryData3D::has_data() {
 	RWLockRead read_lock(geometry_rwlock);
 	return vertices.size() && indices.size();
-};
+}
 
 void NavigationMeshSourceGeometryData3D::clear() {
 	RWLockWrite write_lock(geometry_rwlock);

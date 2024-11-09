@@ -149,12 +149,10 @@ env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
     env["ENV"]["TERM"] = os.environ["TERM"]
 
-env.disabled_modules = []
+env.disabled_modules = set()
 env.module_version_string = ""
 env.msvc = False
 env.scons_version = env._get_major_minor_revision(scons_raw_version)
-
-env.__class__.disable_module = methods.disable_module
 
 env.__class__.add_module_version_string = methods.add_module_version_string
 
@@ -229,6 +227,7 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("swappy", "Use Swappy Frame Pacing Library in Android builds.", False))
 
 # Advanced options
 opts.Add(
@@ -611,6 +610,8 @@ if env["dev_mode"]:
 if env["production"]:
     env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
     env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+    if platform_arg == "android":
+        env["swappy"] = methods.get_cmdline_bool("swappy", True)
     # LTO "auto" means we handle the preferred option in each platform detect.py.
     env["lto"] = ARGUMENTS.get("lto", "auto")
 
@@ -799,8 +800,8 @@ if env["lto"] != "none":
 # This needs to come after `configure`, otherwise we don't have env.msvc.
 if not env.msvc:
     # Specifying GNU extensions support explicitly, which are supported by
-    # both GCC and Clang. Both currently default to gnu11 and gnu++17.
-    env.Prepend(CFLAGS=["-std=gnu11"])
+    # both GCC and Clang. Both currently default to gnu17 and gnu++17.
+    env.Prepend(CFLAGS=["-std=gnu17"])
     env.Prepend(CXXFLAGS=["-std=gnu++17"])
 else:
     # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
@@ -809,7 +810,7 @@ else:
     if cc_version_major < 16:
         print_warning("Visual Studio 2017 cannot specify a C-Standard.")
     else:
-        env.Prepend(CFLAGS=["/std:c11"])
+        env.Prepend(CFLAGS=["/std:c17"])
     # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.

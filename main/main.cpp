@@ -42,6 +42,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
+#include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
@@ -245,6 +246,7 @@ static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
+static bool editor_pseudolocalization = false;
 static bool dump_gdextension_interface = false;
 static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
@@ -628,6 +630,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information. This allows source-level shader debugging with RenderDoc.\n");
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
+	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
 #endif
 	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
@@ -649,6 +652,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--fixed-fps <fps>", "Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
 	print_help_option("--delta-smoothing <enable>", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].\n");
 	print_help_option("--print-fps", "Print the frames per second to the stdout.\n");
+#ifdef TOOLS_ENABLED
+	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n");
+#endif
 
 	print_help_title("Standalone tools");
 	print_help_option("-s, --script <script>", "Run a script.\n");
@@ -1231,8 +1237,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (arg == "--generate-spirv-debug-info") {
 			Engine::singleton->generate_spirv_debug_info = true;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		} else if (arg == "--extra-gpu-memory-tracking") {
 			Engine::singleton->extra_gpu_memory_tracking = true;
+		} else if (arg == "--accurate-breadcrumbs") {
+			Engine::singleton->accurate_breadcrumbs = true;
+#endif
 		} else if (arg == "--tablet-driver") {
 			if (N) {
 				tablet_driver = N->get();
@@ -1716,6 +1726,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			disable_vsync = true;
 		} else if (arg == "--print-fps") {
 			print_fps = true;
+#ifdef TOOLS_ENABLED
+		} else if (arg == "--editor-pseudolocalization") {
+			editor_pseudolocalization = true;
+#endif // TOOLS_ENABLED
 		} else if (arg == "--profile-gpu") {
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
@@ -2404,6 +2418,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (bool(GLOBAL_GET("display/window/size/no_focus"))) {
 			window_flags |= DisplayServer::WINDOW_FLAG_NO_FOCUS_BIT;
 		}
+		if (bool(GLOBAL_GET("display/window/size/sharp_corners"))) {
+			window_flags |= DisplayServer::WINDOW_FLAG_SHARP_CORNERS_BIT;
+		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
 		if (initial_position_type == 0) { // Absolute.
@@ -2487,7 +2504,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
-		audio_driver = GLOBAL_GET("audio/driver/driver");
+		if (project_manager) {
+			// The project manager doesn't need to play sound (TTS audio output is not emitted by Godot, but by the system itself).
+			// Disable audio output so it doesn't appear in the list of applications outputting sound in the OS.
+			// On macOS, this also prevents the project manager from inhibiting suspend.
+			audio_driver = "Dummy";
+		} else {
+			audio_driver = GLOBAL_GET("audio/driver/driver");
+		}
 	}
 
 	// Make sure that dummy is the last one, which it is assumed to be by design.
@@ -2755,7 +2779,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool prefer_wayland_found = false;
 					bool prefer_wayland = false;
-					bool remember_window_size_and_position_found = false;
 
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
@@ -2771,7 +2794,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found || !remember_window_size_and_position_found) {
+					while (!screen_found || !prefer_wayland_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2785,16 +2808,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 							if (!screen_found && assign == screen_property) {
 								init_screen = value;
 								screen_found = true;
+
+								if (editor) {
+									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+								}
 							}
 
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
-							}
-
-							if (!remember_window_size_and_position_found && assign == "interface/editor/remember_window_size_and_position") {
-								restore_editor_window_layout = value;
-								remember_window_size_and_position_found = true;
 							}
 						}
 					}
@@ -3191,6 +3213,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 
 			id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
+
+			if (editor) {
+				id->set_emulate_mouse_from_touch(true);
+			}
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
@@ -4008,6 +4034,11 @@ int Main::start() {
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 			editor_node = memnew(EditorNode);
+
+			if (editor_pseudolocalization) {
+				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
+			}
+
 			sml->get_root()->add_child(editor_node);
 
 			if (!_export_preset.is_empty()) {
@@ -4095,8 +4126,7 @@ int Main::start() {
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
-			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting(
-					"interface/editor/remember_window_size_and_position");
+			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
@@ -4203,6 +4233,11 @@ int Main::start() {
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
+
+			if (editor_pseudolocalization) {
+				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
+			}
+
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->benchmark_end_measure("Startup", "Project Manager");
 		}

@@ -1102,6 +1102,9 @@ public:
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const;
 
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation);
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
+
 	_FORCE_INLINE_ void _update_instance(Instance *p_instance);
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);
 	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
@@ -1118,6 +1121,7 @@ public:
 	struct Cull {
 		struct Shadow {
 			RID light_instance;
+			uint32_t caster_mask;
 			struct Cascade {
 				Frustum frustum;
 
@@ -1252,6 +1256,7 @@ public:
 	PASS3(environment_set_bg_energy, RID, float, float)
 	PASS2(environment_set_canvas_max_layer, RID, int)
 	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
+	PASS2(environment_set_camera_feed_id, RID, int)
 
 	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
 	PASS1RC(RID, environment_get_sky, RID)

@@ -244,7 +244,7 @@ void GDScriptParser::apply_pending_warnings() {
 
 	pending_warnings.clear();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void GDScriptParser::override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument) {
 	if (!for_completion) {
@@ -1624,15 +1624,17 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		valid = false;
 	}
 
-	annotation->info = &valid_annotations[annotation->name];
+	if (valid) {
+		annotation->info = &valid_annotations[annotation->name];
 
-	if (!annotation->applies_to(p_valid_targets)) {
-		if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
-			push_error(vformat(R"(Annotation "%s" must be at the top of the script, before "extends" and "class_name".)", annotation->name));
-		} else {
-			push_error(vformat(R"(Annotation "%s" is not allowed in this level.)", annotation->name));
+		if (!annotation->applies_to(p_valid_targets)) {
+			if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
+				push_error(vformat(R"(Annotation "%s" must be at the top of the script, before "extends" and "class_name".)", annotation->name));
+			} else {
+				push_error(vformat(R"(Annotation "%s" is not allowed in this level.)", annotation->name));
+			}
+			valid = false;
 		}
-		valid = false;
 	}
 
 	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
@@ -1640,23 +1642,29 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		advance();
 		// Arguments.
 		push_completion_call(annotation);
-		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0);
 		int argument_index = 0;
 		do {
+			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index);
+			set_last_completion_call_arg(argument_index);
 			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 				// Allow for trailing comma.
 				break;
 			}
 
-			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index);
-			set_last_completion_call_arg(argument_index++);
 			ExpressionNode *argument = parse_expression(false);
+
 			if (argument == nullptr) {
 				push_error("Expected expression as the annotation argument.");
 				valid = false;
-				continue;
+			} else {
+				annotation->arguments.push_back(argument);
+
+				if (argument->type == Node::LITERAL) {
+					override_completion_context(argument, COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index);
+				}
 			}
-			annotation->arguments.push_back(argument);
+
+			argument_index++;
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
 
 		pop_multiline();

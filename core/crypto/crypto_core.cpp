@@ -70,7 +70,7 @@ int CryptoCore::RandomGenerator::_entropy_poll(void *p_data, unsigned char *r_bu
 Error CryptoCore::RandomGenerator::init() {
 	int ret = mbedtls_ctr_drbg_seed((mbedtls_ctr_drbg_context *)ctx, mbedtls_entropy_func, (mbedtls_entropy_context *)entropy, nullptr, 0);
 	if (ret) {
-		ERR_FAIL_COND_V_MSG(ret, FAILED, " failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+		ERR_FAIL_COND_V_MSG(ret, FAILED, vformat(" failed\n  ! mbedtls_ctr_drbg_seed returned an error %d.", ret));
 	}
 	return OK;
 }
@@ -78,7 +78,7 @@ Error CryptoCore::RandomGenerator::init() {
 Error CryptoCore::RandomGenerator::get_random_bytes(uint8_t *r_buffer, size_t p_bytes) {
 	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	int ret = mbedtls_ctr_drbg_random((mbedtls_ctr_drbg_context *)ctx, r_buffer, p_bytes);
-	ERR_FAIL_COND_V_MSG(ret, FAILED, " failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret, FAILED, vformat(" failed\n  ! mbedtls_ctr_drbg_seed returned an error %d.", ret));
 	return OK;
 }
 
