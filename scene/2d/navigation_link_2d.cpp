@@ -132,7 +132,7 @@ void NavigationLink2D::_notification(int p_what) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 NavigationLink2D::_edit_get_rect() const {
 	if (!is_inside_tree()) {
 		return Rect2();
@@ -152,7 +152,7 @@ bool NavigationLink2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, segment);
 	return p_point.distance_to(closest_point) < p_tolerance;
 }
-#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 RID NavigationLink2D::get_rid() const {
 	return link;

@@ -397,8 +397,27 @@ String GLTFState::get_base_path() {
 	return base_path;
 }
 
-void GLTFState::set_base_path(String p_base_path) {
+void GLTFState::set_base_path(const String &p_base_path) {
 	base_path = p_base_path;
+	if (extract_path.is_empty()) {
+		extract_path = p_base_path;
+	}
+}
+
+String GLTFState::get_extract_path() {
+	return extract_path;
+}
+
+void GLTFState::set_extract_path(const String &p_extract_path) {
+	extract_path = p_extract_path;
+}
+
+String GLTFState::get_extract_prefix() {
+	return extract_prefix;
+}
+
+void GLTFState::set_extract_prefix(const String &p_extract_prefix) {
+	extract_prefix = p_extract_prefix;
 }
 
 String GLTFState::get_filename() const {
@@ -407,6 +426,9 @@ String GLTFState::get_filename() const {
 
 void GLTFState::set_filename(const String &p_filename) {
 	filename = p_filename;
+	if (extract_prefix.is_empty()) {
+		extract_prefix = p_filename.get_basename();
+	}
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) {

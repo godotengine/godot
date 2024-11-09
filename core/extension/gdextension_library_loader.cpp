@@ -219,7 +219,7 @@ Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
-		ERR_PRINT("GDExtension entry point '" + entry_symbol + "' not found in library " + library_path);
+		ERR_PRINT(vformat("GDExtension entry point '%s' not found in library %s.", entry_symbol, library_path));
 		return err;
 	}
 
@@ -230,7 +230,7 @@ Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_
 	if (ret) {
 		return OK;
 	} else {
-		ERR_PRINT("GDExtension initialization function '" + entry_symbol + "' returned an error.");
+		ERR_PRINT(vformat("GDExtension initialization function '%s' returned an error.", entry_symbol));
 		return FAILED;
 	}
 }
@@ -272,12 +272,12 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 	Error err = config->load(p_path);
 
 	if (err != OK) {
-		ERR_PRINT("Error loading GDExtension configuration file: " + p_path);
+		ERR_PRINT(vformat("Error loading GDExtension configuration file: '%s'.", p_path));
 		return err;
 	}
 
 	if (!config->has_section_key("configuration", "entry_symbol")) {
-		ERR_PRINT("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: " + p_path);
+		ERR_PRINT(vformat("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: '%s'.", p_path));
 		return ERR_INVALID_DATA;
 	}
 
@@ -296,7 +296,7 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 			}
 		}
 	} else {
-		ERR_PRINT("GDExtension configuration file must contain a \"configuration/compatibility_minimum\" key: " + p_path);
+		ERR_PRINT(vformat("GDExtension configuration file must contain a \"configuration/compatibility_minimum\" key: '%s'.", p_path));
 		return ERR_INVALID_DATA;
 	}
 

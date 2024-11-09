@@ -174,13 +174,13 @@ void TileMapPattern::set_size(const Size2i &p_size) {
 
 bool TileMapPattern::is_empty() const {
 	return pattern.is_empty();
-};
+}
 
 void TileMapPattern::clear() {
 	size = Size2i();
 	pattern.clear();
 	emit_changed();
-};
+}
 
 bool TileMapPattern::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "tile_data") {
@@ -571,11 +571,11 @@ void TileSet::set_uv_clipping(bool p_uv_clipping) {
 
 bool TileSet::is_uv_clipping() const {
 	return uv_clipping;
-};
+}
 
 int TileSet::get_occlusion_layers_count() const {
 	return occlusion_layers.size();
-};
+}
 
 void TileSet::add_occlusion_layer(int p_index) {
 	if (p_index < 0) {
@@ -3691,7 +3691,7 @@ Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool 
 			return cannot_convert_array;
 			break;
 	}
-};
+}
 
 #endif // DISABLE_DEPRECATED
 
@@ -4220,10 +4220,10 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Tile Proxies.
 	// Note: proxies need to be set after sources are set.
-	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Tile Proxies", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/source_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/coords_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/alternative_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "Tile Proxies", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/source_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/coords_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/alternative_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 	// Patterns.
 	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
@@ -4432,7 +4432,7 @@ TileSet *TileSetSource::get_tile_set() const {
 
 void TileSetSource::reset_state() {
 	tile_set = nullptr;
-};
+}
 
 void TileSetSource::_bind_methods() {
 	// Base tiles
@@ -4931,10 +4931,13 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (const KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
+			const String formatted_key = itos(E_alternative.key);
+
 			// Add a dummy property to show the alternative exists.
-			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			tile_property_list.push_back(PropertyInfo(Variant::INT, formatted_key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 			// Get the alternative tile's properties and append them to the list of properties.
+			const String alternative_property_info_prefix = formatted_key + '/';
 			List<PropertyInfo> alternative_property_list;
 			E_alternative.value->get_property_list(&alternative_property_list);
 			for (PropertyInfo &alternative_property_info : alternative_property_list) {
@@ -4943,14 +4946,15 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					alternative_property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
-				alternative_property_info.name = vformat("%s/%s", vformat("%d", E_alternative.key), alternative_property_info.name);
+				alternative_property_info.name = alternative_property_info_prefix + alternative_property_info.name;
 				tile_property_list.push_back(alternative_property_info);
 			}
 		}
 
 		// Add all alternative.
+		const String property_info_prefix = vformat("%d:%d/", E_tile.key.x, E_tile.key.y);
 		for (PropertyInfo &tile_property_info : tile_property_list) {
-			tile_property_info.name = vformat("%s/%s", vformat("%d:%d", E_tile.key.x, E_tile.key.y), tile_property_info.name);
+			tile_property_info.name = property_info_prefix + tile_property_info.name;
 			p_list->push_back(tile_property_info);
 		}
 	}

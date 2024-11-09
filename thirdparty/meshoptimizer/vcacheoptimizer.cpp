@@ -195,9 +195,8 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 	TriangleAdjacency adjacency = {};
 	buildTriangleAdjacency(adjacency, indices, index_count, vertex_count, allocator);
 
-	// live triangle counts
-	unsigned int* live_triangles = allocator.allocate<unsigned int>(vertex_count);
-	memcpy(live_triangles, adjacency.counts, vertex_count * sizeof(unsigned int));
+	// live triangle counts; note, we alias adjacency.counts as we remove triangles after emitting them so the counts always match
+	unsigned int* live_triangles = adjacency.counts;
 
 	// emitted flags
 	unsigned char* emitted_flags = allocator.allocate<unsigned char>(face_count);
@@ -261,20 +260,16 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 			unsigned int index = cache[i];
 
 			cache_new[cache_write] = index;
-			cache_write += (index != a && index != b && index != c);
+			cache_write += (index != a) & (index != b) & (index != c);
 		}
 
 		unsigned int* cache_temp = cache;
 		cache = cache_new, cache_new = cache_temp;
 		cache_count = cache_write > cache_size ? cache_size : cache_write;
 
-		// update live triangle counts
-		live_triangles[a]--;
-		live_triangles[b]--;
-		live_triangles[c]--;
-
 		// remove emitted triangle from adjacency data
 		// this makes sure that we spend less time traversing these lists on subsequent iterations
+		// live triangle counts are updated as a byproduct of these adjustments
 		for (size_t k = 0; k < 3; ++k)
 		{
 			unsigned int index = indices[current_triangle * 3 + k];

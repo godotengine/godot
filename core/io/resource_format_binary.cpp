@@ -411,7 +411,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 					//always use internal cache for loading internal resources
 					if (!internal_index_cache.has(path)) {
-						WARN_PRINT(String("Couldn't load resource (no cache): " + path).utf8().get_data());
+						WARN_PRINT(vformat("Couldn't load resource (no cache): %s.", path));
 						r_v = Variant();
 					} else {
 						r_v = internal_index_cache[path];
@@ -435,7 +435,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					Ref<Resource> res = ResourceLoader::load(path, exttype, cache_mode_for_external);
 
 					if (res.is_null()) {
-						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
+						WARN_PRINT(vformat("Couldn't load resource: %s.", path));
 					}
 					r_v = res;
 
@@ -458,7 +458,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 										ResourceLoader::notify_dependency_error(local_path, external_resources[erindex].path, external_resources[erindex].type);
 									} else {
 										error = ERR_FILE_MISSING_DEPENDENCIES;
-										ERR_FAIL_V_MSG(error, "Can't load dependency: " + external_resources[erindex].path + ".");
+										ERR_FAIL_V_MSG(error, vformat("Can't load dependency: '%s'.", external_resources[erindex].path));
 									}
 								}
 							} else {
@@ -704,7 +704,7 @@ Error ResourceLoaderBinary::load() {
 				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
 			} else {
 				error = ERR_FILE_MISSING_DEPENDENCIES;
-				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
+				ERR_FAIL_V_MSG(error, vformat("Can't load dependency: '%s'.", path));
 			}
 		}
 	}
@@ -780,7 +780,7 @@ Error ResourceLoaderBinary::load() {
 						obj = missing_resource;
 					} else {
 						error = ERR_FILE_CORRUPT;
-						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t));
 					}
 				}
 
@@ -789,7 +789,7 @@ Error ResourceLoaderBinary::load() {
 					String obj_class = obj->get_class();
 					error = ERR_FILE_CORRUPT;
 					memdelete(obj); //bye
-					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource type in resource field not a resource, type is: %s.", local_path, obj_class));
 				}
 
 				res = Ref<Resource>(r);
@@ -999,7 +999,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		error = fac->open_after_magic(f);
 		if (error != OK) {
 			f.unref();
-			ERR_FAIL_MSG("Failed to open binary resource file: " + local_path + ".");
+			ERR_FAIL_MSG(vformat("Failed to open binary resource file: '%s'.", local_path));
 		}
 		f = fac;
 
@@ -1007,7 +1007,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
 		f.unref();
-		ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
+		ERR_FAIL_MSG(vformat("Unrecognized binary resource file: '%s'.", local_path));
 	}
 
 	bool big_endian = f->get_32();
@@ -1093,10 +1093,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 #ifdef TOOLS_ENABLED
 					// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
 					if (ResourceLoader::get_resource_uid(res_path) != er.uid) {
-						WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+						WARN_PRINT(vformat("'%s': In external resource #%d, invalid UID: '%s' - using text path instead: '%s'.", res_path, i, ResourceUID::get_singleton()->id_to_text(er.uid), er.path));
 					}
 #else
-					WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+					WARN_PRINT(vformat("'%s': In external resource #%d, invalid UID: '%s' - using text path instead: '%s'.", res_path, i, ResourceUID::get_singleton()->id_to_text(er.uid), er.path));
 #endif
 				}
 			}
@@ -1120,7 +1120,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	if (f->eof_reached()) {
 		error = ERR_FILE_CORRUPT;
 		f.unref();
-		ERR_FAIL_MSG("Premature end of file (EOF): " + local_path + ".");
+		ERR_FAIL_MSG(vformat("Premature end of file (EOF): '%s'.", local_path));
 	}
 }
 
@@ -1224,7 +1224,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), vformat("Cannot open file '%s'.", p_path));
 
 	ResourceLoaderBinary loader;
 	switch (p_cache_mode) {
@@ -1301,7 +1301,7 @@ bool ResourceFormatLoaderBinary::handles_type(const String &p_type) const {
 
 void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_MSG(f.is_null(), vformat("Cannot open file '%s'.", p_path));
 
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1311,7 +1311,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 
 Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
 	Ref<FileAccess> fw;
 
@@ -1324,23 +1324,23 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
 		Error err = fac->open_after_magic(f);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
 		f = fac;
 
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
 		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Cannot create file '" + p_path + ".depren'.");
+		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.depren'.", p_path));
 
 		fw = facw;
 
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
 		// Not normal.
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file '" + local_path + "'.");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Unrecognized binary resource file '%s'.", local_path));
 	} else {
 		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + ".depren'.");
+		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.depren'.", p_path));
 
 		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
 		fw->store_buffer(magic, 4);
@@ -1372,12 +1372,12 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		// Use the old approach.
 
-		WARN_PRINT("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
+		WARN_PRINT(vformat("This file is old, so it can't refactor dependencies, opening and resaving '%s'.", p_path));
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, "Cannot open file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
 		ResourceLoaderBinary loader;
 		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1523,7 +1523,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_MSG(f.is_null(), vformat("Cannot open file '%s'.", p_path));
 
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -2027,7 +2027,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
 				if (res->get_path() == path) {
-					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					ERR_PRINT(vformat("Circular reference to resource being saved found: '%s' will be null next time it's loaded.", local_path));
 					return;
 				}
 				int idx = external_resources.size();
@@ -2153,7 +2153,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	}
 
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create file '%s'.", p_path));
 
 	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
@@ -2384,7 +2384,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
 	Ref<FileAccess> fw;
 
@@ -2397,14 +2397,14 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
 		Error err = fac->open_after_magic(f);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
 		f = fac;
 
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
 		err = facw->open_internal(p_path + ".uidren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Cannot create file '" + p_path + ".uidren'.");
+		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		fw = facw;
 
@@ -2413,7 +2413,7 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		return ERR_FILE_UNRECOGNIZED;
 	} else {
 		fw = FileAccess::open(p_path + ".uidren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + ".uidren'.");
+		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		uint8_t magich[4] = { 'R', 'S', 'R', 'C' };
 		fw->store_buffer(magich, 4);
@@ -2444,7 +2444,7 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 		// Use the old approach.
 
-		WARN_PRINT("This file is old, so it does not support UIDs, opening and resaving '" + p_path + "'.");
+		WARN_PRINT(vformat("This file is old, so it does not support UIDs, opening and resaving '%s'.", p_path));
 		return ERR_UNAVAILABLE;
 	}
 

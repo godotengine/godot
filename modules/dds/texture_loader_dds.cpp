@@ -46,7 +46,12 @@ enum {
 	DDPF_ALPHAONLY = 0x00000002,
 	DDPF_FOURCC = 0x00000004,
 	DDPF_RGB = 0x00000040,
-	DDPF_RG_SNORM = 0x00080000
+	DDPF_RG_SNORM = 0x00080000,
+	DDSC2_CUBEMAP = 0x200,
+	DDSC2_VOLUME = 0x200000,
+	DX10D_1D = 2,
+	DX10D_2D = 3,
+	DX10D_3D = 4,
 };
 
 enum DDSFourCC {
@@ -139,6 +144,15 @@ enum DDSFormat {
 	DDS_MAX
 };
 
+enum DDSType {
+	DDST_2D = 1,
+	DDST_CUBEMAP,
+	DDST_3D,
+
+	DDST_TYPE_MASK = 0x7F,
+	DDST_ARRAY = 0x80,
+};
+
 struct DDSFormatInfo {
 	const char *name = nullptr;
 	bool compressed = false;
@@ -180,7 +194,7 @@ static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 	{ "GRAYSCALE_ALPHA_4", false, 1, 1, Image::FORMAT_LA8 }
 };
 
-static DDSFormat dxgi_to_dds_format(uint32_t p_dxgi_format) {
+inline DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 	switch (p_dxgi_format) {
 		case DXGI_R32G32B32A32_FLOAT: {
 			return DDS_RGBA32F;
@@ -267,210 +281,23 @@ static DDSFormat dxgi_to_dds_format(uint32_t p_dxgi_format) {
 	}
 }
 
-Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_CANT_OPEN;
-	}
+static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format, uint32_t p_width, uint32_t p_height, uint32_t p_mipmaps, uint32_t p_pitch, uint32_t p_flags, Vector<uint8_t> &r_src_data) {
+	const DDSFormatInfo &info = dds_format_info[p_dds_format];
 
-	Error err;
-	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (f.is_null()) {
-		return Ref<Resource>();
-	}
-
-	Ref<FileAccess> fref(f);
-	if (r_error) {
-		*r_error = ERR_FILE_CORRUPT;
-	}
-
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Unable to open DDS texture file '" + p_path + "'.");
-
-	uint32_t magic = f->get_32();
-	uint32_t hsize = f->get_32();
-	uint32_t flags = f->get_32();
-	uint32_t height = f->get_32();
-	uint32_t width = f->get_32();
-	uint32_t pitch = f->get_32();
-	/* uint32_t depth = */ f->get_32();
-	uint32_t mipmaps = f->get_32();
-
-	// Skip reserved.
-	for (int i = 0; i < 11; i++) {
-		f->get_32();
-	}
-
-	// Validate.
-	// We don't check DDSD_CAPS or DDSD_PIXELFORMAT, as they're mandatory when writing,
-	// but non-mandatory when reading (as some writers don't set them).
-	if (magic != DDS_MAGIC || hsize != 124) {
-		ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
-	}
-
-	/* uint32_t format_size = */ f->get_32();
-	uint32_t format_flags = f->get_32();
-	uint32_t format_fourcc = f->get_32();
-	uint32_t format_rgb_bits = f->get_32();
-	uint32_t format_red_mask = f->get_32();
-	uint32_t format_green_mask = f->get_32();
-	uint32_t format_blue_mask = f->get_32();
-	uint32_t format_alpha_mask = f->get_32();
-
-	/* uint32_t caps_1 = */ f->get_32();
-	/* uint32_t caps_2 = */ f->get_32();
-	/* uint32_t caps_3 = */ f->get_32();
-	/* uint32_t caps_4 = */ f->get_32();
-
-	// Skip reserved.
-	f->get_32();
-
-	if (f->get_position() < 128) {
-		f->seek(128);
-	}
-
-	DDSFormat dds_format = DDS_MAX;
-
-	if (format_flags & DDPF_FOURCC) {
-		// FourCC formats.
-		switch (format_fourcc) {
-			case DDFCC_DXT1: {
-				dds_format = DDS_DXT1;
-			} break;
-			case DDFCC_DXT2:
-			case DDFCC_DXT3: {
-				dds_format = DDS_DXT3;
-			} break;
-			case DDFCC_DXT4:
-			case DDFCC_DXT5: {
-				dds_format = DDS_DXT5;
-			} break;
-			case DDFCC_ATI1:
-			case DDFCC_BC4U: {
-				dds_format = DDS_ATI1;
-			} break;
-			case DDFCC_ATI2:
-			case DDFCC_BC5U:
-			case DDFCC_A2XY: {
-				dds_format = DDS_ATI2;
-			} break;
-			case DDFCC_R16F: {
-				dds_format = DDS_R16F;
-			} break;
-			case DDFCC_RG16F: {
-				dds_format = DDS_RG16F;
-			} break;
-			case DDFCC_RGBA16F: {
-				dds_format = DDS_RGBA16F;
-			} break;
-			case DDFCC_R32F: {
-				dds_format = DDS_R32F;
-			} break;
-			case DDFCC_RG32F: {
-				dds_format = DDS_RG32F;
-			} break;
-			case DDFCC_RGBA32F: {
-				dds_format = DDS_RGBA32F;
-			} break;
-			case DDFCC_DX10: {
-				uint32_t dxgi_format = f->get_32();
-				/* uint32_t dimension = */ f->get_32();
-				/* uint32_t misc_flags_1 = */ f->get_32();
-				/* uint32_t array_size = */ f->get_32();
-				/* uint32_t misc_flags_2 = */ f->get_32();
-
-				dds_format = dxgi_to_dds_format(dxgi_format);
-			} break;
-
-			default: {
-				ERR_FAIL_V_MSG(Ref<Resource>(), "Unrecognized or unsupported FourCC in DDS '" + p_path + "'.");
-			}
-		}
-
-	} else if (format_flags & DDPF_RGB) {
-		// Channel-bitmasked formats.
-		if (format_flags & DDPF_ALPHAPIXELS) {
-			// With alpha.
-			if (format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff && format_alpha_mask == 0xff000000) {
-				dds_format = DDS_BGRA8;
-			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000 && format_alpha_mask == 0xff000000) {
-				dds_format = DDS_RGBA8;
-			} else if (format_rgb_bits == 16 && format_red_mask == 0x00007c00 && format_green_mask == 0x000003e0 && format_blue_mask == 0x0000001f && format_alpha_mask == 0x00008000) {
-				dds_format = DDS_BGR5A1;
-			} else if (format_rgb_bits == 32 && format_red_mask == 0x3ff00000 && format_green_mask == 0xffc00 && format_blue_mask == 0x3ff && format_alpha_mask == 0xc0000000) {
-				dds_format = DDS_BGR10A2;
-			} else if (format_rgb_bits == 32 && format_red_mask == 0x3ff && format_green_mask == 0xffc00 && format_blue_mask == 0x3ff00000 && format_alpha_mask == 0xc0000000) {
-				dds_format = DDS_RGB10A2;
-			} else if (format_rgb_bits == 16 && format_red_mask == 0xf00 && format_green_mask == 0xf0 && format_blue_mask == 0xf && format_alpha_mask == 0xf000) {
-				dds_format = DDS_BGRA4;
-			} else if (format_rgb_bits == 16 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3 && format_alpha_mask == 0xff00) {
-				dds_format = DDS_B2GR3A8;
-			}
-
-		} else {
-			// Without alpha.
-			if (format_rgb_bits == 24 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff) {
-				dds_format = DDS_BGR8;
-			} else if (format_rgb_bits == 24 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
-				dds_format = DDS_RGB8;
-			} else if (format_rgb_bits == 16 && format_red_mask == 0x0000f800 && format_green_mask == 0x000007e0 && format_blue_mask == 0x0000001f) {
-				dds_format = DDS_BGR565;
-			} else if (format_rgb_bits == 8 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3) {
-				dds_format = DDS_B2GR3;
-			}
-		}
-
-	} else {
-		// Other formats.
-		if (format_flags & DDPF_ALPHAONLY && format_rgb_bits == 8 && format_alpha_mask == 0xff) {
-			// Alpha only.
-			dds_format = DDS_LUMINANCE;
-		}
-	}
-
-	// Depending on the writer, luminance formats may or may not have the DDPF_RGB or DDPF_LUMINANCE flags defined,
-	// so we check for these formats after everything else failed.
-	if (dds_format == DDS_MAX) {
-		if (format_flags & DDPF_ALPHAPIXELS) {
-			// With alpha.
-			if (format_rgb_bits == 16 && format_red_mask == 0xff && format_alpha_mask == 0xff00) {
-				dds_format = DDS_LUMINANCE_ALPHA;
-			} else if (format_rgb_bits == 8 && format_red_mask == 0xf && format_alpha_mask == 0xf0) {
-				dds_format = DDS_LUMINANCE_ALPHA_4;
-			}
-
-		} else {
-			// Without alpha.
-			if (format_rgb_bits == 8 && format_red_mask == 0xff) {
-				dds_format = DDS_LUMINANCE;
-			}
-		}
-	}
-
-	// No format detected, error.
-	if (dds_format == DDS_MAX) {
-		ERR_FAIL_V_MSG(Ref<Resource>(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
-	}
-
-	if (!(flags & DDSD_MIPMAPCOUNT)) {
-		mipmaps = 1;
-	}
-
-	Vector<uint8_t> src_data;
-
-	const DDSFormatInfo &info = dds_format_info[dds_format];
-	uint32_t w = width;
-	uint32_t h = height;
+	uint32_t w = p_width;
+	uint32_t h = p_height;
 
 	if (info.compressed) {
 		// BC compressed.
 		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
 
-		if (flags & DDSD_LINEARSIZE) {
-			ERR_FAIL_COND_V_MSG(size != pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
+		if (p_flags & DDSD_LINEARSIZE) {
+			ERR_FAIL_COND_V_MSG(size != p_pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
 		} else {
-			ERR_FAIL_COND_V_MSG(pitch != 0, Ref<Resource>(), "DDS header flags specify that no linear size will given for the top-level image, but a non-zero linear size value is present in the header.");
+			ERR_FAIL_COND_V_MSG(p_pitch != 0, Ref<Resource>(), "DDS header flags specify that no linear size will given for the top-level image, but a non-zero linear size value is present in the header.");
 		}
 
-		for (uint32_t i = 1; i < mipmaps; i++) {
+		for (uint32_t i = 1; i < p_mipmaps; i++) {
 			w = MAX(1u, w >> 1);
 			h = MAX(1u, h >> 1);
 
@@ -478,22 +305,22 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 			size += bsize;
 		}
 
-		src_data.resize(size);
-		uint8_t *wb = src_data.ptrw();
-		f->get_buffer(wb, size);
+		r_src_data.resize(size);
+		uint8_t *wb = r_src_data.ptrw();
+		p_file->get_buffer(wb, size);
 
 	} else {
 		// Generic uncompressed.
-		uint32_t size = width * height * info.block_size;
+		uint32_t size = p_width * p_height * info.block_size;
 
-		for (uint32_t i = 1; i < mipmaps; i++) {
+		for (uint32_t i = 1; i < p_mipmaps; i++) {
 			w = (w + 1) >> 1;
 			h = (h + 1) >> 1;
 			size += w * h * info.block_size;
 		}
 
 		// Calculate the space these formats will take up after decoding.
-		switch (dds_format) {
+		switch (p_dds_format) {
 			case DDS_BGR565:
 				size = size * 3 / 2;
 				break;
@@ -513,12 +340,11 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 				break;
 		}
 
-		src_data.resize(size);
-		uint8_t *wb = src_data.ptrw();
-		f->get_buffer(wb, size);
+		r_src_data.resize(size);
+		uint8_t *wb = r_src_data.ptrw();
+		p_file->get_buffer(wb, size);
 
-		// Decode nonstandard formats.
-		switch (dds_format) {
+		switch (p_dds_format) {
 			case DDS_BGR5A1: {
 				// To RGBA8.
 				int colcount = size / 4;
@@ -705,14 +531,282 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 		}
 	}
 
-	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, info.format, src_data));
-	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
+	return memnew(Image(p_width, p_height, p_mipmaps > 1, info.format, r_src_data));
+}
 
+Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
-		*r_error = OK;
+		*r_error = ERR_CANT_OPEN;
 	}
 
-	return texture;
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (f.is_null()) {
+		return Ref<Resource>();
+	}
+
+	Ref<FileAccess> fref(f);
+	if (r_error) {
+		*r_error = ERR_FILE_CORRUPT;
+	}
+
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), vformat("Unable to open DDS texture file '%s'.", p_path));
+
+	uint32_t magic = f->get_32();
+	uint32_t hsize = f->get_32();
+	uint32_t flags = f->get_32();
+	uint32_t height = f->get_32();
+	uint32_t width = f->get_32();
+	uint32_t pitch = f->get_32();
+	uint32_t depth = f->get_32();
+	uint32_t mipmaps = f->get_32();
+
+	// Skip reserved.
+	for (int i = 0; i < 11; i++) {
+		f->get_32();
+	}
+
+	// Validate.
+	// We don't check DDSD_CAPS or DDSD_PIXELFORMAT, as they're mandatory when writing,
+	// but non-mandatory when reading (as some writers don't set them).
+	if (magic != DDS_MAGIC || hsize != 124) {
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Invalid or unsupported DDS texture file '%s'.", p_path));
+	}
+
+	/* uint32_t format_size = */ f->get_32();
+	uint32_t format_flags = f->get_32();
+	uint32_t format_fourcc = f->get_32();
+	uint32_t format_rgb_bits = f->get_32();
+	uint32_t format_red_mask = f->get_32();
+	uint32_t format_green_mask = f->get_32();
+	uint32_t format_blue_mask = f->get_32();
+	uint32_t format_alpha_mask = f->get_32();
+
+	/* uint32_t caps_1 = */ f->get_32();
+	uint32_t caps_2 = f->get_32();
+	/* uint32_t caps_3 = */ f->get_32();
+	/* uint32_t caps_4 = */ f->get_32();
+
+	// Skip reserved.
+	f->get_32();
+
+	if (f->get_position() < 128) {
+		f->seek(128);
+	}
+
+	uint32_t layer_count = 1;
+	uint32_t dds_type = DDST_2D;
+
+	if (caps_2 & DDSC2_CUBEMAP) {
+		dds_type = DDST_CUBEMAP;
+		layer_count *= 6;
+
+	} else if (caps_2 & DDSC2_VOLUME) {
+		dds_type = DDST_3D;
+		layer_count = depth;
+	}
+
+	DDSFormat dds_format = DDS_MAX;
+
+	if (format_flags & DDPF_FOURCC) {
+		// FourCC formats.
+		switch (format_fourcc) {
+			case DDFCC_DXT1: {
+				dds_format = DDS_DXT1;
+			} break;
+			case DDFCC_DXT2:
+			case DDFCC_DXT3: {
+				dds_format = DDS_DXT3;
+			} break;
+			case DDFCC_DXT4:
+			case DDFCC_DXT5: {
+				dds_format = DDS_DXT5;
+			} break;
+			case DDFCC_ATI1:
+			case DDFCC_BC4U: {
+				dds_format = DDS_ATI1;
+			} break;
+			case DDFCC_ATI2:
+			case DDFCC_BC5U:
+			case DDFCC_A2XY: {
+				dds_format = DDS_ATI2;
+			} break;
+			case DDFCC_R16F: {
+				dds_format = DDS_R16F;
+			} break;
+			case DDFCC_RG16F: {
+				dds_format = DDS_RG16F;
+			} break;
+			case DDFCC_RGBA16F: {
+				dds_format = DDS_RGBA16F;
+			} break;
+			case DDFCC_R32F: {
+				dds_format = DDS_R32F;
+			} break;
+			case DDFCC_RG32F: {
+				dds_format = DDS_RG32F;
+			} break;
+			case DDFCC_RGBA32F: {
+				dds_format = DDS_RGBA32F;
+			} break;
+			case DDFCC_DX10: {
+				uint32_t dxgi_format = f->get_32();
+				uint32_t dimension = f->get_32();
+				/* uint32_t misc_flags_1 = */ f->get_32();
+				uint32_t array_size = f->get_32();
+				/* uint32_t misc_flags_2 = */ f->get_32();
+
+				if (dimension == DX10D_3D) {
+					dds_type = DDST_3D;
+					layer_count = depth;
+				}
+
+				if (array_size > 1) {
+					layer_count *= array_size;
+					dds_type |= DDST_ARRAY;
+				}
+
+				dds_format = _dxgi_to_dds_format(dxgi_format);
+			} break;
+
+			default: {
+				ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Unrecognized or unsupported FourCC in DDS '%s'.", p_path));
+			}
+		}
+
+	} else if (format_flags & DDPF_RGB) {
+		// Channel-bitmasked formats.
+		if (format_flags & DDPF_ALPHAPIXELS) {
+			// With alpha.
+			if (format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff && format_alpha_mask == 0xff000000) {
+				dds_format = DDS_BGRA8;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000 && format_alpha_mask == 0xff000000) {
+				dds_format = DDS_RGBA8;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0x00007c00 && format_green_mask == 0x000003e0 && format_blue_mask == 0x0000001f && format_alpha_mask == 0x00008000) {
+				dds_format = DDS_BGR5A1;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0x3ff00000 && format_green_mask == 0xffc00 && format_blue_mask == 0x3ff && format_alpha_mask == 0xc0000000) {
+				dds_format = DDS_BGR10A2;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0x3ff && format_green_mask == 0xffc00 && format_blue_mask == 0x3ff00000 && format_alpha_mask == 0xc0000000) {
+				dds_format = DDS_RGB10A2;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xf00 && format_green_mask == 0xf0 && format_blue_mask == 0xf && format_alpha_mask == 0xf000) {
+				dds_format = DDS_BGRA4;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3 && format_alpha_mask == 0xff00) {
+				dds_format = DDS_B2GR3A8;
+			}
+
+		} else {
+			// Without alpha.
+			if (format_rgb_bits == 24 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff) {
+				dds_format = DDS_BGR8;
+			} else if (format_rgb_bits == 24 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
+				dds_format = DDS_RGB8;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0x0000f800 && format_green_mask == 0x000007e0 && format_blue_mask == 0x0000001f) {
+				dds_format = DDS_BGR565;
+			} else if (format_rgb_bits == 8 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3) {
+				dds_format = DDS_B2GR3;
+			}
+		}
+
+	} else {
+		// Other formats.
+		if (format_flags & DDPF_ALPHAONLY && format_rgb_bits == 8 && format_alpha_mask == 0xff) {
+			// Alpha only.
+			dds_format = DDS_LUMINANCE;
+		}
+	}
+
+	// Depending on the writer, luminance formats may or may not have the DDPF_RGB or DDPF_LUMINANCE flags defined,
+	// so we check for these formats after everything else failed.
+	if (dds_format == DDS_MAX) {
+		if (format_flags & DDPF_ALPHAPIXELS) {
+			// With alpha.
+			if (format_rgb_bits == 16 && format_red_mask == 0xff && format_alpha_mask == 0xff00) {
+				dds_format = DDS_LUMINANCE_ALPHA;
+			} else if (format_rgb_bits == 8 && format_red_mask == 0xf && format_alpha_mask == 0xf0) {
+				dds_format = DDS_LUMINANCE_ALPHA_4;
+			}
+
+		} else {
+			// Without alpha.
+			if (format_rgb_bits == 8 && format_red_mask == 0xff) {
+				dds_format = DDS_LUMINANCE;
+			}
+		}
+	}
+
+	// No format detected, error.
+	if (dds_format == DDS_MAX) {
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Unrecognized or unsupported color layout in DDS '%s'.", p_path));
+	}
+
+	if (!(flags & DDSD_MIPMAPCOUNT)) {
+		mipmaps = 1;
+	}
+
+	Vector<uint8_t> src_data;
+
+	Vector<Ref<Image>> images;
+	images.resize(layer_count);
+
+	for (uint32_t i = 0; i < layer_count; i++) {
+		images.write[i] = _dds_load_layer(f, dds_format, width, height, mipmaps, pitch, flags, src_data);
+	}
+
+	if ((dds_type & DDST_TYPE_MASK) == DDST_2D) {
+		if (dds_type & DDST_ARRAY) {
+			Ref<Texture2DArray> texture = memnew(Texture2DArray());
+			texture->create_from_images(images);
+
+			if (r_error) {
+				*r_error = OK;
+			}
+
+			return texture;
+
+		} else {
+			if (r_error) {
+				*r_error = OK;
+			}
+
+			return ImageTexture::create_from_image(images[0]);
+		}
+
+	} else if ((dds_type & DDST_TYPE_MASK) == DDST_CUBEMAP) {
+		ERR_FAIL_COND_V(layer_count % 6 != 0, Ref<Resource>());
+
+		if (dds_type & DDST_ARRAY) {
+			Ref<CubemapArray> texture = memnew(CubemapArray());
+			texture->create_from_images(images);
+
+			if (r_error) {
+				*r_error = OK;
+			}
+
+			return texture;
+
+		} else {
+			Ref<Cubemap> texture = memnew(Cubemap());
+			texture->create_from_images(images);
+
+			if (r_error) {
+				*r_error = OK;
+			}
+
+			return texture;
+		}
+
+	} else if ((dds_type & DDST_TYPE_MASK) == DDST_3D) {
+		Ref<ImageTexture3D> texture = memnew(ImageTexture3D());
+		texture->create(images[0]->get_format(), width, height, layer_count, mipmaps > 1, images);
+
+		if (r_error) {
+			*r_error = OK;
+		}
+
+		return texture;
+	}
+
+	return Ref<Resource>();
 }
 
 void ResourceFormatDDS::get_recognized_extensions(List<String> *p_extensions) const {
@@ -720,12 +814,12 @@ void ResourceFormatDDS::get_recognized_extensions(List<String> *p_extensions) co
 }
 
 bool ResourceFormatDDS::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture2D");
+	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
 String ResourceFormatDDS::get_resource_type(const String &p_path) const {
 	if (p_path.get_extension().to_lower() == "dds") {
-		return "ImageTexture";
+		return "Texture";
 	}
 	return "";
 }

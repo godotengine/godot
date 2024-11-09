@@ -63,7 +63,7 @@
 				When inheriting from [AnimationRootNode], implement this virtual method to return whether the [param parameter] is read-only. Parameters are custom local memory used for your animation nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
-		<method name="_process" qualifiers="virtual const" deprecated="Currently this is mostly useless as there is a lack of many APIs to extend AnimationNode by GDScript. It is planned that a more flexible API using structures will be provided in the future.">
+		<method name="_process" qualifiers="virtual" deprecated="Currently this is mostly useless as there is a lack of many APIs to extend AnimationNode by GDScript. It is planned that a more flexible API using structures will be provided in the future.">
 			<return type="float" />
 			<param index="0" name="time" type="float" />
 			<param index="1" name="seek" type="bool" />

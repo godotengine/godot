@@ -1862,14 +1862,14 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 }
 
 void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
-	Variant property = (Dictionary)p_property;
-	const Variant *args[1] = { &property };
-
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		if (likely(sptr->valid)) {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
 			if (E) {
+				Variant property = (Dictionary)p_property;
+				const Variant *args[1] = { &property };
+
 				Callable::CallError err;
 				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {

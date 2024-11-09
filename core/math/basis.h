@@ -223,7 +223,7 @@ struct [[nodiscard]] Basis {
 
 	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0), bool p_use_model_front = false);
 
-	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
+	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); }
 	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
 
 	Basis(const Vector3 &p_axis, real_t p_angle) { set_axis_angle(p_axis, p_angle); }

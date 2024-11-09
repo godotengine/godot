@@ -390,10 +390,10 @@ void EditorProfiler::_update_frame() {
 
 void EditorProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
+		activate->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+		activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 }
@@ -428,8 +428,8 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
-			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
+			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 
 			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 			theme_cache.seek_line_color.a = 0.8;

@@ -62,44 +62,44 @@ func test():
 	untyped_basic[430.0] = 34.0
 	inferred_basic[263.0] = 362.0
 	typed_basic[518.0] = 815.0
-	Utils.check(str(empty_floats) == '{ 705: 507, 430: 34, 263: 362, 518: 815 }')
-	Utils.check(str(untyped_basic) == '{ 705: 507, 430: 34, 263: 362, 518: 815 }')
-	Utils.check(str(inferred_basic) == '{ 705: 507, 430: 34, 263: 362, 518: 815 }')
-	Utils.check(str(typed_basic) == '{ 705: 507, 430: 34, 263: 362, 518: 815 }')
+	Utils.check(str(empty_floats) == '{ 705.0: 507.0, 430.0: 34.0, 263.0: 362.0, 518.0: 815.0 }')
+	Utils.check(str(untyped_basic) == '{ 705.0: 507.0, 430.0: 34.0, 263.0: 362.0, 518.0: 815.0 }')
+	Utils.check(str(inferred_basic) == '{ 705.0: 507.0, 430.0: 34.0, 263.0: 362.0, 518.0: 815.0 }')
+	Utils.check(str(typed_basic) == '{ 705.0: 507.0, 430.0: 34.0, 263.0: 362.0, 518.0: 815.0 }')
 
 
 	const constant_float := 950.0
 	const constant_int := 170
 	var typed_float := 954.0
 	var filled_floats: Dictionary[float, float] = { constant_float: constant_int, typed_float: empty_floats[430.0] + empty_floats[263.0] }
-	Utils.check(str(filled_floats) == '{ 950: 170, 954: 396 }')
+	Utils.check(str(filled_floats) == '{ 950.0: 170.0, 954.0: 396.0 }')
 	Utils.check(filled_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(filled_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
 	var casted_floats := { empty_floats[263.0] * 2: empty_floats[263.0] / 2 } as Dictionary[float, float]
-	Utils.check(str(casted_floats) == '{ 724: 181 }')
+	Utils.check(str(casted_floats) == '{ 724.0: 181.0 }')
 	Utils.check(casted_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(casted_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
 	var returned_floats = (func () -> Dictionary[float, float]: return { 554: 455 }).call()
-	Utils.check(str(returned_floats) == '{ 554: 455 }')
+	Utils.check(str(returned_floats) == '{ 554.0: 455.0 }')
 	Utils.check(returned_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(returned_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
 	var passed_floats = floats_identity({ 663.0 if randf() > 0.5 else 663.0: 366.0 if randf() <= 0.5 else 366.0 })
-	Utils.check(str(passed_floats) == '{ 663: 366 }')
+	Utils.check(str(passed_floats) == '{ 663.0: 366.0 }')
 	Utils.check(passed_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(passed_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
 	var default_floats = (func (floats: Dictionary[float, float] = { 364.0: 463.0 }): return floats).call()
-	Utils.check(str(default_floats) == '{ 364: 463 }')
+	Utils.check(str(default_floats) == '{ 364.0: 463.0 }')
 	Utils.check(default_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(default_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
 	var typed_int := 556
 	var converted_floats: Dictionary[float, float] = { typed_int: typed_int }
 	converted_floats[498.0] = 894
-	Utils.check(str(converted_floats) == '{ 556: 556, 498: 894 }')
+	Utils.check(str(converted_floats) == '{ 556.0: 556.0, 498.0: 894.0 }')
 	Utils.check(converted_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(converted_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
@@ -110,7 +110,7 @@ func test():
 	Utils.check(constant_basic.get_typed_value_builtin() == TYPE_NIL)
 
 	const constant_floats: Dictionary[float, float] = { constant_float - constant_basic[228] - constant_int: constant_float + constant_basic[228] + constant_int }
-	Utils.check(str(constant_floats) == '{ -42: 1942 }')
+	Utils.check(str(constant_floats) == '{ -42.0: 1942.0 }')
 	Utils.check(constant_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(constant_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
@@ -119,9 +119,9 @@ func test():
 	untyped_basic = source_floats
 	var destination_floats: Dictionary[float, float] = untyped_basic
 	destination_floats[999.74] -= 0.999
-	Utils.check(str(source_floats) == '{ 999.74: 47 }')
-	Utils.check(str(untyped_basic) == '{ 999.74: 47 }')
-	Utils.check(str(destination_floats) == '{ 999.74: 47 }')
+	Utils.check(str(source_floats) == '{ 999.74: 47.0 }')
+	Utils.check(str(untyped_basic) == '{ 999.74: 47.0 }')
+	Utils.check(str(destination_floats) == '{ 999.74: 47.0 }')
 	Utils.check(destination_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(destination_floats.get_typed_value_builtin() == TYPE_FLOAT)
 
@@ -131,7 +131,7 @@ func test():
 	duplicated_floats.erase(430.0)
 	duplicated_floats.erase(518.0)
 	duplicated_floats[263.0] *= 3
-	Utils.check(str(duplicated_floats) == '{ 263: 1086 }')
+	Utils.check(str(duplicated_floats) == '{ 263.0: 1086.0 }')
 	Utils.check(duplicated_floats.get_typed_key_builtin() == TYPE_FLOAT)
 	Utils.check(duplicated_floats.get_typed_value_builtin() == TYPE_FLOAT)
 

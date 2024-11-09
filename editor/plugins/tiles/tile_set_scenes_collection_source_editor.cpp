@@ -367,8 +367,8 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			scene_tile_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
-			scene_tile_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			scene_tile_add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			scene_tile_delete_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			_update_scenes_list();
 		} break;
 

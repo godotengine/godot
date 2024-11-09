@@ -247,7 +247,8 @@ private:
 		ParticleEmissionBuffer *emission_buffer = nullptr;
 		RID emission_storage_buffer;
 
-		RID unused_storage_buffer;
+		RID unused_emission_storage_buffer;
+		RID unused_trail_storage_buffer;
 
 		HashSet<RID> collisions;
 
@@ -265,7 +266,8 @@ private:
 
 	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
-	void _particles_ensure_unused_buffer(Particles *particles);
+	void _particles_ensure_unused_emission_buffer(Particles *particles);
+	void _particles_ensure_unused_trail_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
 
@@ -509,7 +511,7 @@ public:
 
 	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_NULL_V(particles, 0);
+		ERR_FAIL_NULL_V(particles, false);
 
 		return particles->has_collision_cache;
 	}

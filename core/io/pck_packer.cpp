@@ -84,7 +84,7 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 	enc_dir = p_encrypt_directory;
 
 	file = FileAccess::open(p_pck_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_CREATE, "Can't open file to write: " + String(p_pck_path) + ".");
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_CREATE, vformat("Can't open file to write: '%s'.", String(p_pck_path)));
 
 	alignment = p_alignment;
 

@@ -560,7 +560,7 @@ void Sprite2DEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
+			options->set_button_icon(get_editor_theme_icon(SNAME("Sprite2D")));
 
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));

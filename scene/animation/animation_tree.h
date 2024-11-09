@@ -186,7 +186,7 @@ protected:
 	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
 	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
 	GDVIRTUAL1RC(bool, _is_parameter_read_only, StringName)
-	GDVIRTUAL4RC(double, _process, double, bool, bool, bool)
+	GDVIRTUAL4R(double, _process, double, bool, bool, bool)
 	GDVIRTUAL0RC(String, _get_caption)
 	GDVIRTUAL0RC(bool, _has_filter)
 

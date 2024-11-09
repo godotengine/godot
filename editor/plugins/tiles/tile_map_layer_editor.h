@@ -63,9 +63,9 @@ public:
 
 	virtual Vector<TabData> get_tabs() const {
 		return Vector<TabData>();
-	};
+	}
 
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; };
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; }
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) {}
 	virtual void tile_set_changed() {}
 	virtual void edit(ObjectID p_tile_map_layer_id) {}

@@ -44,6 +44,7 @@ import android.os.*
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
+import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -56,6 +57,7 @@ import com.google.android.vending.expansion.downloader.*
 import org.godotengine.godot.error.Error
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.input.GodotInputHandler
+import org.godotengine.godot.io.FilePicker
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.AndroidRuntimePlugin
@@ -80,6 +82,7 @@ import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+
 
 /**
  * Core component used to interface with the native layer of the engine.
@@ -477,12 +480,17 @@ class Godot(private val context: Context) {
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
 			renderView = if (usesVulkan()) {
-				if (!meetsVulkanRequirements(activity.packageManager)) {
+				if (meetsVulkanRequirements(activity.packageManager)) {
+					GodotVulkanRenderView(host, this, godotInputHandler)
+				} else if (canFallbackToOpenGL()) {
+					// Fallback to OpenGl.
+					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+				} else {
 					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
 				}
-				GodotVulkanRenderView(host, this, godotInputHandler)
+
 			} else {
-				// Fallback to openGl
+				// Fallback to OpenGl.
 				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
 			}
 
@@ -670,6 +678,9 @@ class Godot(private val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
+		}
 	}
 
 	/**
@@ -772,7 +783,7 @@ class Godot(private val context: Context) {
 			val builder = AlertDialog.Builder(activity)
 			builder.setMessage(message).setTitle(title)
 			builder.setPositiveButton(
-				"OK"
+				R.string.dialog_ok
 			) { dialog: DialogInterface, id: Int ->
 				okCallback?.run()
 				dialog.cancel()
@@ -814,6 +825,13 @@ class Godot(private val context: Context) {
 		val renderer = GodotLib.getGlobal("rendering/renderer/rendering_method")
 		val renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver")
 		return ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
+	}
+
+	/**
+	 * Returns true if can fallback to OpenGL.
+	 */
+	private fun canFallbackToOpenGL(): Boolean {
+		return java.lang.Boolean.parseBoolean(GodotLib.getGlobal("rendering/rendering_device/fallback_to_opengl3"))
 	}
 
 	/**
@@ -874,6 +892,44 @@ class Godot(private val context: Context) {
 	fun setClipboard(text: String?) {
 		val clip = ClipData.newPlainText("myLabel", text)
 		mClipboard.setPrimaryClip(clip)
+	}
+
+	@Keep
+	private fun showFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
+		}
+	}
+
+	/**
+	 * Popup a dialog to input text.
+	 */
+	@Keep
+	private fun showInputDialog(title: String, message: String, existingText: String) {
+		val activity: Activity = getActivity() ?: return
+		val inputField = EditText(activity)
+		val paddingHorizontal = activity.resources.getDimensionPixelSize(R.dimen.input_dialog_padding_horizontal)
+		val paddingVertical = activity.resources.getDimensionPixelSize(R.dimen.input_dialog_padding_vertical)
+		inputField.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical)
+		inputField.setText(existingText)
+		runOnUiThread {
+			val builder = AlertDialog.Builder(activity)
+			builder.setMessage(message).setTitle(title).setView(inputField)
+			builder.setPositiveButton(R.string.dialog_ok) {
+				dialog: DialogInterface, id: Int ->
+				GodotLib.inputDialogCallback(inputField.text.toString())
+				dialog.dismiss()
+			}
+			val dialog = builder.create()
+			dialog.show()
+		}
+	}
+
+	@Keep
+	private fun getAccentColor(): Int {
+		val value = TypedValue()
+		context.theme.resolveAttribute(android.R.attr.colorAccent, value, true)
+		return value.data
 	}
 
 	/**

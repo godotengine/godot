@@ -31,6 +31,7 @@
 #ifndef RENDERER_CANVAS_RENDER_RD_H
 #define RENDERER_CANVAS_RENDER_RD_H
 
+#include "core/templates/lru.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
@@ -50,6 +51,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	const int SAMPLERS_BINDING_FIRST_INDEX = 10;
+	// The size of the ring buffer to store GPU buffers. Triple-buffering the max expected frames in flight.
+	static const uint32_t BATCH_DATA_BUFFER_COUNT = 3;
 
 	enum ShaderVariant {
 		SHADER_VARIANT_QUAD,
@@ -339,7 +342,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct InstanceData {
 		float world[6];
 		uint32_t flags;
-		uint32_t specular_shininess;
+		uint32_t pad1;
 		union {
 			//rect
 			struct {
@@ -366,8 +369,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct PushConstant {
 		uint32_t base_instance_index;
 		ShaderSpecialization shader_specialization;
-		uint32_t pad2;
-		uint32_t pad3;
+		uint32_t specular_shininess;
+		uint32_t pad;
 	};
 
 	// TextureState is used to determine when a new batch is required due to a change of texture state.
@@ -398,42 +401,83 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 					(((uint32_t)p_use_linear_colors & LINEAR_COLORS_MASK) << LINEAR_COLORS_SHIFT);
 		}
 
-		_FORCE_INLINE_ RS::CanvasItemTextureFilter texture_filter() const {
+		_ALWAYS_INLINE_ RS::CanvasItemTextureFilter texture_filter() const {
 			return (RS::CanvasItemTextureFilter)((other >> FILTER_SHIFT) & FILTER_MASK);
 		}
 
-		_FORCE_INLINE_ RS::CanvasItemTextureRepeat texture_repeat() const {
+		_ALWAYS_INLINE_ RS::CanvasItemTextureRepeat texture_repeat() const {
 			return (RS::CanvasItemTextureRepeat)((other >> REPEAT_SHIFT) & REPEAT_MASK);
 		}
 
-		_FORCE_INLINE_ bool linear_colors() const {
+		_ALWAYS_INLINE_ bool linear_colors() const {
 			return (other >> LINEAR_COLORS_SHIFT) & LINEAR_COLORS_MASK;
 		}
 
-		_FORCE_INLINE_ bool texture_is_data() const {
+		_ALWAYS_INLINE_ bool texture_is_data() const {
 			return (other >> TEXTURE_IS_DATA_SHIFT) & TEXTURE_IS_DATA_MASK;
 		}
 
-		bool operator==(const TextureState &p_val) const {
+		_ALWAYS_INLINE_ bool operator==(const TextureState &p_val) const {
 			return (texture == p_val.texture) && (other == p_val.other);
 		}
 
-		bool operator!=(const TextureState &p_val) const {
+		_ALWAYS_INLINE_ bool operator!=(const TextureState &p_val) const {
 			return (texture != p_val.texture) || (other != p_val.other);
+		}
+
+		_ALWAYS_INLINE_ bool is_valid() const { return texture.is_valid(); }
+		_ALWAYS_INLINE_ bool is_null() const { return texture.is_null(); }
+
+		uint32_t hash() const {
+			uint32_t hash = hash_murmur3_one_64(texture.get_id());
+			return hash_murmur3_one_32(other, hash);
 		}
 	};
 
 	struct TextureInfo {
 		TextureState state;
-		uint32_t specular_shininess = 0;
-		uint32_t flags = 0;
-		Vector2 texpixel_size;
-
 		RID diffuse;
 		RID normal;
 		RID specular;
 		RID sampler;
+		Vector2 texpixel_size;
+		uint32_t specular_shininess = 0;
+		uint32_t flags = 0;
 	};
+
+	/// A key used to uniquely identify a distinct BATCH_UNIFORM_SET
+	struct RIDSetKey {
+		TextureState state;
+		RID instance_data;
+
+		RIDSetKey() {
+		}
+
+		RIDSetKey(TextureState p_state, RID p_instance_data) :
+				state(p_state),
+				instance_data(p_instance_data) {
+		}
+
+		_ALWAYS_INLINE_ bool operator==(const RIDSetKey &p_val) const {
+			return state == p_val.state && instance_data == p_val.instance_data;
+		}
+
+		_ALWAYS_INLINE_ bool operator!=(const RIDSetKey &p_val) const {
+			return !(*this == p_val);
+		}
+
+		_ALWAYS_INLINE_ uint32_t hash() const {
+			uint32_t h = state.hash();
+			h = hash_murmur3_one_64(instance_data.get_id(), h);
+			return hash_fmix32(h);
+		}
+	};
+
+	static void _before_evict(RendererCanvasRenderRD::RIDSetKey &p_key, RID &p_rid);
+	static void _uniform_set_invalidation_callback(void *p_userdata);
+
+	typedef LRUCache<RIDSetKey, RID, HashableHasher<RIDSetKey>, HashMapComparatorDefault<RIDSetKey>, _before_evict> RIDCache;
+	RIDCache rid_set_to_uniform_set;
 
 	struct Batch {
 		// Position in the UBO measured in bytes
@@ -441,7 +485,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t instance_count = 0;
 		uint32_t instance_buffer_index = 0;
 
-		TextureInfo tex_info;
+		TextureInfo *tex_info;
 
 		Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 
@@ -466,6 +510,9 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		bool has_blend = false;
 	};
 
+	HashMap<TextureState, TextureInfo, HashableHasher<TextureState>> texture_info_map;
+
+	// per-frame buffers
 	struct DataBuffer {
 		LocalVector<RID> instance_buffers;
 	};
@@ -492,7 +539,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			uint32_t pad2;
 		};
 
-		LocalVector<DataBuffer> canvas_instance_data_buffers;
+		DataBuffer canvas_instance_data_buffers[BATCH_DATA_BUFFER_COUNT];
 		LocalVector<Batch> canvas_instance_batches;
 		uint32_t current_data_buffer_index = 0;
 		uint32_t current_instance_buffer_index = 0;
@@ -503,6 +550,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t max_instances_per_buffer = 16384;
 		uint32_t max_instance_buffer_size = 16384 * sizeof(InstanceData);
 
+		Vector<RD::Uniform> batch_texture_uniforms;
 		RID current_batch_uniform_set;
 
 		LightUniform *light_uniforms = nullptr;
@@ -518,7 +566,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID default_transforms_uniform_set;
 
 		uint32_t max_lights_per_render;
-		uint32_t max_lights_per_item;
 
 		double time;
 
@@ -558,7 +605,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	void _render_batch_items(RenderTarget p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void _record_item_commands(const Item *p_item, RenderTarget p_render_target, const Transform2D &p_base_transform, Item *&r_current_clip, Light *p_lights, uint32_t &r_index, bool &r_batch_broken, bool &r_sdf_used, Batch *&r_current_batch);
 	void _render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingMethod::RenderInfo *r_render_info = nullptr);
-	void _prepare_batch_texture_info(Batch *p_current_batch, RID p_texture) const;
+	void _prepare_batch_texture_info(RID p_texture, TextureState &p_state, TextureInfo *p_info);
+	InstanceData *new_instance_data(float *p_world, uint32_t *p_lights, uint32_t p_base_flags, uint32_t p_index, TextureInfo *p_info);
 	[[nodiscard]] Batch *_new_batch(bool &r_batch_broken);
 	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken, Batch *&r_current_batch);
 	void _allocate_instance_buffer();

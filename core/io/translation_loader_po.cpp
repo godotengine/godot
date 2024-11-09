@@ -169,14 +169,14 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			// If we reached last line and it's not a content line, break, otherwise let processing that last loop
 			if (is_eof && l.is_empty()) {
 				if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
-					ERR_FAIL_V_MSG(Ref<Resource>(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));
+					ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Unexpected EOF while reading PO file at: %s:%d.", path, line));
 				} else {
 					break;
 				}
 			}
 
 			if (l.begins_with("msgctxt")) {
-				ERR_FAIL_COND_V_MSG(status != STATUS_READING_STRING && status != STATUS_READING_PLURAL, Ref<Resource>(), "Unexpected 'msgctxt', was expecting 'msgid_plural' or 'msgstr' before 'msgctxt' while parsing: " + path + ":" + itos(line));
+				ERR_FAIL_COND_V_MSG(status != STATUS_READING_STRING && status != STATUS_READING_PLURAL, Ref<Resource>(), vformat("Unexpected 'msgctxt', was expecting 'msgid_plural' or 'msgstr' before 'msgctxt' while parsing: %s:%d.", path, line));
 
 				// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
 				// and set "entered_context" to true to prevent adding twice.
@@ -184,7 +184,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					if (status == STATUS_READING_STRING) {
 						translation->add_message(msg_id, msg_str, msg_context);
 					} else if (status == STATUS_READING_PLURAL) {
-						ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
+						ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), vformat("Number of 'msgstr[]' doesn't match with number of plural forms: %s:%d.", path, line));
 						translation->add_plural_message(msg_id, msgs_plural, msg_context);
 					}
 				}
@@ -196,9 +196,9 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 			if (l.begins_with("msgid_plural")) {
 				if (plural_forms == 0) {
-					ERR_FAIL_V_MSG(Ref<Resource>(), "PO file uses 'msgid_plural' but 'Plural-Forms' is invalid or missing in header: " + path + ":" + itos(line));
+					ERR_FAIL_V_MSG(Ref<Resource>(), vformat("PO file uses 'msgid_plural' but 'Plural-Forms' is invalid or missing in header: %s:%d.", path, line));
 				} else if (status != STATUS_READING_ID) {
-					ERR_FAIL_V_MSG(Ref<Resource>(), "Unexpected 'msgid_plural', was expecting 'msgid' before 'msgid_plural' while parsing: " + path + ":" + itos(line));
+					ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Unexpected 'msgid_plural', was expecting 'msgid' before 'msgid_plural' while parsing: %s:%d.", path, line));
 				}
 				// We don't record the message in "msgid_plural" itself as tr_n(), TTRN(), RTRN() interfaces provide the plural string already.
 				// We just have to reset variables related to plurals for "msgstr[]" later on.
@@ -208,14 +208,14 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				msgs_plural.resize(plural_forms);
 				status = STATUS_READING_PLURAL;
 			} else if (l.begins_with("msgid")) {
-				ERR_FAIL_COND_V_MSG(status == STATUS_READING_ID, Ref<Resource>(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
+				ERR_FAIL_COND_V_MSG(status == STATUS_READING_ID, Ref<Resource>(), vformat("Unexpected 'msgid', was expecting 'msgstr' while parsing: %s:%d.", path, line));
 
 				if (!msg_id.is_empty()) {
 					if (!skip_this && !entered_context) {
 						if (status == STATUS_READING_STRING) {
 							translation->add_message(msg_id, msg_str, msg_context);
 						} else if (status == STATUS_READING_PLURAL) {
-							ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
+							ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), vformat("Number of 'msgstr[]' doesn't match with number of plural forms: %s:%d.", path, line));
 							translation->add_plural_message(msg_id, msgs_plural, msg_context);
 						}
 					}
@@ -244,11 +244,11 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			}
 
 			if (l.begins_with("msgstr[")) {
-				ERR_FAIL_COND_V_MSG(status != STATUS_READING_PLURAL, Ref<Resource>(), "Unexpected 'msgstr[]', was expecting 'msgid_plural' before 'msgstr[]' while parsing: " + path + ":" + itos(line));
+				ERR_FAIL_COND_V_MSG(status != STATUS_READING_PLURAL, Ref<Resource>(), vformat("Unexpected 'msgstr[]', was expecting 'msgid_plural' before 'msgstr[]' while parsing: %s:%d.", path, line));
 				plural_index++; // Increment to add to the next slot in vector msgs_plural.
 				l = l.substr(9, l.length()).strip_edges();
 			} else if (l.begins_with("msgstr")) {
-				ERR_FAIL_COND_V_MSG(status != STATUS_READING_ID, Ref<Resource>(), "Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: " + path + ":" + itos(line));
+				ERR_FAIL_COND_V_MSG(status != STATUS_READING_ID, Ref<Resource>(), vformat("Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: %s:%d.", path, line));
 				l = l.substr(6, l.length()).strip_edges();
 				status = STATUS_READING_STRING;
 			}
@@ -261,7 +261,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				continue; // Nothing to read or comment.
 			}
 
-			ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, Ref<Resource>(), "Invalid line '" + l + "' while parsing: " + path + ":" + itos(line));
+			ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, Ref<Resource>(), vformat("Invalid line '%s' while parsing: %s:%d.", l, path, line));
 
 			l = l.substr(1, l.length());
 			// Find final quote, ignoring escaped ones (\").
@@ -283,7 +283,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				escape_next = false;
 			}
 
-			ERR_FAIL_COND_V_MSG(end_pos == -1, Ref<Resource>(), "Expected '\"' at end of message while parsing: " + path + ":" + itos(line));
+			ERR_FAIL_COND_V_MSG(end_pos == -1, Ref<Resource>(), vformat("Expected '\"' at end of message while parsing: %s:%d.", path, line));
 
 			l = l.substr(0, end_pos);
 			l = l.c_unescape();
@@ -295,7 +295,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			} else if (status == STATUS_READING_CONTEXT) {
 				msg_context += l;
 			} else if (status == STATUS_READING_PLURAL && plural_index >= 0) {
-				ERR_FAIL_COND_V_MSG(plural_index >= plural_forms, Ref<Resource>(), "Unexpected plural form while parsing: " + path + ":" + itos(line));
+				ERR_FAIL_COND_V_MSG(plural_index >= plural_forms, Ref<Resource>(), vformat("Unexpected plural form while parsing: %s:%d.", path, line));
 				msgs_plural.write[plural_index] = msgs_plural[plural_index] + l;
 			}
 
@@ -313,13 +313,13 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			}
 		} else if (status == STATUS_READING_PLURAL) {
 			if (!skip_this && !msg_id.is_empty()) {
-				ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
+				ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), vformat("Number of 'msgstr[]' doesn't match with number of plural forms: %s:%d.", path, line));
 				translation->add_plural_message(msg_id, msgs_plural, msg_context);
 			}
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(config.is_empty(), Ref<Resource>(), "No config found in file: " + path + ".");
+	ERR_FAIL_COND_V_MSG(config.is_empty(), Ref<Resource>(), vformat("No config found in file: '%s'.", path));
 
 	Vector<String> configs = config.split("\n");
 	for (int i = 0; i < configs.size(); i++) {
@@ -349,7 +349,7 @@ Ref<Resource> TranslationLoaderPO::load(const String &p_path, const String &p_or
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), Ref<Resource>(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), Ref<Resource>(), vformat("Cannot open file '%s'.", p_path));
 
 	return load_translation(f, r_error);
 }

@@ -104,6 +104,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 #endif // DEBUG_ENABLED
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (!can_process()) {
 				map_before_pause = map_current;
@@ -114,6 +115,13 @@ void NavigationObstacle2D::_notification(int p_what) {
 			}
 			NavigationServer2D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
+
+		case NOTIFICATION_UNSUSPENDED: {
+			if (get_tree()->is_paused()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 
 		case NOTIFICATION_UNPAUSED: {
 			if (!can_process()) {

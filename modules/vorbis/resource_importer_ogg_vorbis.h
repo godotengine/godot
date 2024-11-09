@@ -65,6 +65,8 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
+	virtual bool can_import_threaded() const override { return true; }
+
 	ResourceImporterOggVorbis();
 };
 

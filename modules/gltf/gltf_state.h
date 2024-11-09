@@ -38,6 +38,7 @@
 #include "structures/gltf_camera.h"
 #include "structures/gltf_mesh.h"
 #include "structures/gltf_node.h"
+#include "structures/gltf_object_model_property.h"
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
@@ -48,9 +49,12 @@
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
+	friend class GLTFNode;
 
 protected:
 	String base_path;
+	String extract_path;
+	String extract_prefix;
 	String filename;
 	Dictionary json;
 	int major_version = 0;
@@ -100,6 +104,7 @@ protected:
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
 	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
+	HashMap<String, Ref<GLTFObjectModelProperty>> object_model_properties;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
@@ -186,7 +191,13 @@ public:
 	void set_scene_name(String p_scene_name);
 
 	String get_base_path();
-	void set_base_path(String p_base_path);
+	void set_base_path(const String &p_base_path);
+
+	String get_extract_path();
+	void set_extract_path(const String &p_extract_path);
+
+	String get_extract_prefix();
+	void set_extract_prefix(const String &p_extract_prefix);
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);

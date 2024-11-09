@@ -1590,7 +1590,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			node_shortcuts_toggle = memnew(Button);
 			node_shortcuts_toggle->set_flat(true);
-			node_shortcuts_toggle->set_icon(get_editor_theme_icon(SNAME("Favorites")));
+			node_shortcuts_toggle->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
 			node_shortcuts_toggle->set_toggle_mode(true);
 			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
@@ -1615,19 +1615,19 @@ void SceneTreeDock::_notification(int p_what) {
 			button_2d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_2d);
 			button_2d->set_text(TTR("2D Scene"));
-			button_2d->set_icon(get_editor_theme_icon(SNAME("Node2D")));
+			button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
 			button_2d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_2D_SCENE, false));
 
 			button_3d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_3d);
 			button_3d->set_text(TTR("3D Scene"));
-			button_3d->set_icon(get_editor_theme_icon(SNAME("Node3D")));
+			button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 			button_3d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_3D_SCENE, false));
 
 			button_ui = memnew(Button);
 			beginner_node_shortcuts->add_child(button_ui);
 			button_ui->set_text(TTR("User Interface"));
-			button_ui->set_icon(get_editor_theme_icon(SNAME("Control")));
+			button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			button_ui->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
 
 			favorite_node_shortcuts = memnew(VBoxContainer);
@@ -1636,13 +1636,13 @@ void SceneTreeDock::_notification(int p_what) {
 			button_custom = memnew(Button);
 			node_shortcuts->add_child(button_custom);
 			button_custom->set_text(TTR("Other Node"));
-			button_custom->set_icon(get_editor_theme_icon(SNAME("Add")));
+			button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 
 			button_clipboard = memnew(Button);
 			node_shortcuts->add_child(button_clipboard);
 			button_clipboard->set_text(TTR("Paste From Clipboard"));
-			button_clipboard->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+			button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
 			_update_create_root_dialog(true);
@@ -1664,12 +1664,12 @@ void SceneTreeDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
-			button_instance->set_icon(get_editor_theme_icon(SNAME("Instance")));
-			button_create_script->set_icon(get_editor_theme_icon(SNAME("ScriptCreate")));
-			button_detach_script->set_icon(get_editor_theme_icon(SNAME("ScriptRemove")));
-			button_extend_script->set_icon(get_editor_theme_icon(SNAME("ScriptExtend")));
-			button_tree_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			button_add->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			button_instance->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
+			button_create_script->set_button_icon(get_editor_theme_icon(SNAME("ScriptCreate")));
+			button_detach_script->set_button_icon(get_editor_theme_icon(SNAME("ScriptRemove")));
+			button_extend_script->set_button_icon(get_editor_theme_icon(SNAME("ScriptExtend")));
+			button_tree_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
@@ -1680,19 +1680,19 @@ void SceneTreeDock::_notification(int p_what) {
 
 			// These buttons are created on READY, because reasons...
 			if (button_2d) {
-				button_2d->set_icon(get_editor_theme_icon(SNAME("Node2D")));
+				button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
 			}
 			if (button_3d) {
-				button_3d->set_icon(get_editor_theme_icon(SNAME("Node3D")));
+				button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 			}
 			if (button_ui) {
-				button_ui->set_icon(get_editor_theme_icon(SNAME("Control")));
+				button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			}
 			if (button_custom) {
-				button_custom->set_icon(get_editor_theme_icon(SNAME("Add")));
+				button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 			if (button_clipboard) {
-				button_clipboard->set_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+				button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			}
 
 			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
@@ -4337,7 +4337,7 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 					if (ScriptServer::is_global_class(name)) {
 						name = ScriptServer::get_global_class_native_base(name);
 					}
-					button->set_icon(EditorNode::get_singleton()->get_class_icon(name));
+					button->set_button_icon(EditorNode::get_singleton()->get_class_icon(name));
 					button->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_favorite_root_selected).bind(l));
 				}
 			}

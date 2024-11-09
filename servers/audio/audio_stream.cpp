@@ -281,7 +281,7 @@ double AudioStream::get_bpm() const {
 }
 
 bool AudioStream::has_loop() const {
-	bool ret = 0;
+	bool ret = false;
 	GDVIRTUAL_CALL(_has_loop, ret);
 	return ret;
 }
@@ -390,7 +390,7 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
-	int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
+	int mix_rate = AudioDriver::get_singleton()->get_input_mix_rate();
 	unsigned int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
 #ifdef DEBUG_ENABLED
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
@@ -441,7 +441,7 @@ int AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale,
 }
 
 float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
-	return AudioDriver::get_singleton()->get_mix_rate();
+	return AudioDriver::get_singleton()->get_input_mix_rate();
 }
 
 void AudioStreamPlaybackMicrophone::start(double p_from_pos) {

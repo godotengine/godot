@@ -825,9 +825,9 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 void ProjectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			create_dir->set_icon(get_editor_theme_icon(SNAME("FolderCreate")));
-			project_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
-			install_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			create_dir->set_button_icon(get_editor_theme_icon(SNAME("FolderCreate")));
+			project_browse->set_button_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			install_browse->set_button_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
 		} break;
 		case NOTIFICATION_READY: {
 			fdialog_project = memnew(EditorFileDialog);

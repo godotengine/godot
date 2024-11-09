@@ -550,7 +550,7 @@ DisplayServer::ScreenOrientation DisplayServer::screen_get_orientation(int p_scr
 
 float DisplayServer::screen_get_scale(int p_screen) const {
 	return 1.0f;
-};
+}
 
 bool DisplayServer::is_touchscreen_available() const {
 	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
@@ -1056,6 +1056,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_INPUT);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_EXTRA);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);

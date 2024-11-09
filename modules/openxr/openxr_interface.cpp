@@ -160,11 +160,11 @@ void OpenXRInterface::_bind_methods() {
 
 StringName OpenXRInterface::get_name() const {
 	return StringName("OpenXR");
-};
+}
 
 uint32_t OpenXRInterface::get_capabilities() const {
 	return XRInterface::XR_VR + XRInterface::XR_STEREO;
-};
+}
 
 PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 	// These are hardcoded in OpenXR, note that they will only be available if added to our action map
@@ -611,7 +611,7 @@ bool OpenXRInterface::initialize_on_startup() const {
 
 bool OpenXRInterface::is_initialized() const {
 	return initialized;
-};
+}
 
 bool OpenXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();

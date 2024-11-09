@@ -225,7 +225,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx) {
-		set_icon(p_icon);
+		set_button_icon(p_icon);
 	}
 	_queue_update_size_cache();
 }
@@ -381,7 +381,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = NONE_SELECTED;
 		set_text("");
-		set_icon(nullptr);
+		set_button_icon(nullptr);
 	} else {
 		ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
@@ -391,7 +391,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = p_which;
 		set_text(popup->get_item_text(current));
-		set_icon(popup->get_item_icon(current));
+		set_button_icon(popup->get_item_icon(current));
 	}
 
 	if (is_inside_tree() && p_emit) {

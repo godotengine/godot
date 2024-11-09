@@ -158,7 +158,7 @@ Size2 NativeMenuWindows::get_size(const RID &p_rid) const {
 	int count = GetMenuItemCount(md->menu);
 	for (int i = 0; i < count; i++) {
 		RECT rect;
-		if (GetMenuItemRect(NULL, md->menu, i, &rect)) {
+		if (GetMenuItemRect(nullptr, md->menu, i, &rect)) {
 			size.x = MAX(size.x, rect.right - rect.left);
 			size.y += rect.bottom - rect.top;
 		}
@@ -992,7 +992,7 @@ void NativeMenuWindows::set_item_submenu(const RID &p_rid, int p_idx, const RID 
 		if (p_submenu_rid.is_valid()) {
 			item.hSubMenu = md_sub->menu;
 		} else {
-			item.hSubMenu = 0;
+			item.hSubMenu = nullptr;
 		}
 		SetMenuItemInfoW(md->menu, p_idx, true, &item);
 	}
@@ -1095,7 +1095,7 @@ void NativeMenuWindows::set_item_icon(const RID &p_rid, int p_idx, const Ref<Tex
 				item_data->bmp = _make_bitmap(item_data->img);
 			} else {
 				item_data->img = Ref<Image>();
-				item_data->bmp = 0;
+				item_data->bmp = nullptr;
 			}
 			item.hbmpItem = item_data->bmp;
 			SetMenuItemInfoW(md->menu, p_idx, true, &item);

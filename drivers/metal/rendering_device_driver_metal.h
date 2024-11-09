@@ -410,7 +410,7 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
-	virtual String get_api_name() const override final { return "Metal"; };
+	virtual String get_api_name() const override final { return "Metal"; }
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;

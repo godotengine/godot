@@ -454,8 +454,15 @@ public:
 	// Retrieve the render pass that can be used to draw on the swap chain's framebuffers.
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) = 0;
 
+	// Retrieve the rotation in degrees to apply as a pre-transform. Usually 0 on PC. May be 0, 90, 180 & 270 on Android.
+	virtual int swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) { return 0; }
+
 	// Retrieve the format used by the swap chain's framebuffers.
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) = 0;
+
+	// Tells the swapchain the max_fps so it can use the proper frame pacing.
+	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
+	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {}
 
 	// Wait until all rendering associated to the swap chain is finished before deleting it.
 	virtual void swap_chain_free(SwapChainID p_swap_chain) = 0;
@@ -752,6 +759,7 @@ public:
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
 		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
+		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
 	};
 
 	enum ShaderChangeInvalidation {

@@ -371,10 +371,14 @@ void AudioServer::_mix_step() {
 			bus->soloed = false;
 		}
 	}
+	// This is legacy code from 3.x that allows video players and other audio sources that do not implement AudioStreamPlayback to output audio.
 	for (CallbackItem *ci : mix_callback_list) {
 		ci->callback(ci->userdata);
 	}
 
+	// Main mixing loop for audio streams.
+	// The basic idea here is to copy the samples returned by the AudioStreamPlayback's mix function into the audio buffers,
+	//  while always maintaining a lookahead buffer of size LOOKAHEAD_BUFFER_SIZE to allow fade-outs for sudden stoppages.
 	for (AudioStreamPlaybackListNode *playback : playback_list) {
 		// Paused streams are no-ops. Don't even mix audio from the stream playback.
 		if (playback->state.load() == AudioStreamPlaybackListNode::PAUSED) {
@@ -385,22 +389,26 @@ void AudioServer::_mix_step() {
 			continue;
 		}
 
+		// If `fading_out` is true, we're in the process of fading out the stream playback.
+		// TODO: Currently this sets the volume of the stream to 0 which creates a linear interpolation between its previous volume and silence.
+		//  A more punchy option for fading out could be to just use the lookahead buffer.
 		bool fading_out = playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION || playback->state.load() == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
 
 		AudioFrame *buf = mix_buffer.ptrw();
 
-		// Copy the lookeahead buffer into the mix buffer.
+		// Copy the old contents of the lookahead buffer into the beginning of the mix buffer.
 		for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
 			buf[i] = playback->lookahead[i];
 		}
 
-		// Mix the audio stream
+		// Mix the audio stream.
 		unsigned int mixed_frames = playback->stream_playback->mix(&buf[LOOKAHEAD_BUFFER_SIZE], playback->pitch_scale.get(), buffer_size);
 
 		if (tag_used_audio_streams && playback->stream_playback->is_playing()) {
 			playback->stream_playback->tag_used_streams();
 		}
 
+		// Check to see if the stream has run out of samples.
 		if (mixed_frames != buffer_size) {
 			// We know we have at least the size of our lookahead buffer for fade-out purposes.
 
@@ -416,42 +424,52 @@ void AudioServer::_mix_step() {
 			new_state = AudioStreamPlaybackListNode::AWAITING_DELETION;
 			playback->state.store(new_state);
 		} else {
-			// Move the last little bit of what we just mixed into our lookahead buffer.
+			// Move the last little bit of what we just mixed into our lookahead buffer for the next call to _mix_step.
 			for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
 				playback->lookahead[i] = buf[buffer_size + i];
 			}
 		}
 
-		AudioStreamPlaybackBusDetails *ptr = playback->bus_details.load();
-		ERR_FAIL_NULL(ptr);
-		// By putting null into the bus details pointers, we're taking ownership of their memory for the duration of this mix.
-		AudioStreamPlaybackBusDetails bus_details = *ptr;
+		// Get the bus details for this playback. This contains information about which buses the playback is assigned to and the volume of the playback on each bus.
+		AudioStreamPlaybackBusDetails *bus_details_ptr = playback->bus_details.load();
+		ERR_FAIL_NULL(bus_details_ptr);
+		// Make a copy of the bus details so we can modify it without worrying about other threads.
+		AudioStreamPlaybackBusDetails bus_details = *bus_details_ptr;
 
 		// Mix to any active buses.
 		for (int idx = 0; idx < MAX_BUSES_PER_PLAYBACK; idx++) {
 			if (!bus_details.bus_active[idx]) {
 				continue;
 			}
+			// This is the AudioServer-internal index of the bus we're mixing to in this step of the loop. Not to be confused with `idx` which is an index into `AudioStreamPlaybackBusDetails` member var arrays.
 			int bus_idx = thread_find_bus_index(bus_details.bus[idx]);
 
+			// It's important to know whether or not this bus was active in the previous mix step of this stream. If it was, we need to perform volume interpolation to avoid pops.
 			int prev_bus_idx = -1;
 			for (int search_idx = 0; search_idx < MAX_BUSES_PER_PLAYBACK; search_idx++) {
 				if (!playback->prev_bus_details->bus_active[search_idx]) {
 					continue;
 				}
+				// If the StringNames of the buses match, we've found the previous bus index. This indicates that this playback mixed to `prev_bus_details->bus[prev_bus_index]` in the previous mix step, which gives us a way to look up the playback's previous volume.
 				if (playback->prev_bus_details->bus[search_idx].hash() == bus_details.bus[idx].hash()) {
 					prev_bus_idx = search_idx;
+					break;
 				}
 			}
 
+			// It's now time to mix to the bus. We do this by going through each channel of the bus and mixing to it.
+			//  The channels correspond to output channels of the audio device, e.g. stereo or 5.1. To reduce needless nesting, this is done with a helper method named `_mix_step_for_channel`.
 			for (int channel_idx = 0; channel_idx < channel_count; channel_idx++) {
 				AudioFrame *channel_buf = thread_get_channel_mix_buffer(bus_idx, channel_idx);
+				// TODO: This `fading_out` check could be replaced with with an exponential fadeout of the samples from the lookahead buffer for more punchy results.
 				if (fading_out) {
 					bus_details.volume[idx][channel_idx] = AudioFrame(0, 0);
 				}
 				AudioFrame channel_vol = bus_details.volume[idx][channel_idx];
 
-				AudioFrame prev_channel_vol = AudioFrame(0, 0);
+				// If this bus was not active in the previous mix step, we want to start playback at the full volume to avoid crushing transients.
+				AudioFrame prev_channel_vol = channel_vol;
+				// If this bus was active in the previous mix step, we need to interpolate between the previous volume and the current volume to avoid pops. Set `prev_channel_volume` accordingly.
 				if (prev_bus_idx != -1) {
 					prev_channel_vol = playback->prev_bus_details->volume[prev_bus_idx][channel_idx];
 				}
@@ -480,7 +498,7 @@ void AudioServer::_mix_step() {
 			for (int channel_idx = 0; channel_idx < channel_count; channel_idx++) {
 				AudioFrame *channel_buf = thread_get_channel_mix_buffer(bus_idx, channel_idx);
 				AudioFrame prev_channel_vol = playback->prev_bus_details->volume[idx][channel_idx];
-				// Fade out to silence
+				// Fade out to silence. This could be replaced with an exponential fadeout of the samples from the lookahead buffer for more punchy results.
 				_mix_step_for_channel(channel_buf, buf, prev_channel_vol, AudioFrame(0, 0), playback->attenuation_filter_cutoff_hz.get(), playback->highshelf_gain.get(), &playback->filter_process[channel_idx * 2], &playback->filter_process[channel_idx * 2 + 1]);
 			}
 		}
@@ -501,15 +519,12 @@ void AudioServer::_mix_step() {
 		switch (playback->state.load()) {
 			case AudioStreamPlaybackListNode::AWAITING_DELETION:
 			case AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION:
+				// Remove the playback from the list.
 				_delete_stream_playback_list_node(playback);
 				break;
 			case AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE: {
 				// Pause the stream.
-				AudioStreamPlaybackListNode::PlaybackState old_state, new_state;
-				do {
-					old_state = playback->state.load();
-					new_state = AudioStreamPlaybackListNode::PAUSED;
-				} while (!playback->state.compare_exchange_strong(/* expected= */ old_state, new_state));
+				playback->state.store(AudioStreamPlaybackListNode::PAUSED);
 			} break;
 			case AudioStreamPlaybackListNode::PLAYING:
 			case AudioStreamPlaybackListNode::PAUSED:
@@ -518,13 +533,13 @@ void AudioServer::_mix_step() {
 		}
 	}
 
+	// Now that all of the buses have their audio sources mixed into them, we can process the effects and bus sends.
 	for (int i = buses.size() - 1; i >= 0; i--) {
-		//go bus by bus
 		Bus *bus = buses[i];
 
 		for (int k = 0; k < bus->channels.size(); k++) {
 			if (bus->channels[k].active && !bus->channels[k].used) {
-				//buffer was not used, but it's still active, so it must be cleaned
+				// Buffer was not used, but it's still active, so it must be cleaned.
 				AudioFrame *buf = bus->channels.write[k].buffer.ptrw();
 
 				for (uint32_t j = 0; j < buffer_size; j++) {
@@ -533,7 +548,7 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		//process effects
+		// Process effects.
 		if (!bus->bypass) {
 			for (int j = 0; j < bus->effects.size(); j++) {
 				if (!bus->effects[j].enabled) {
@@ -551,7 +566,7 @@ void AudioServer::_mix_step() {
 					bus->channels.write[k].effect_instances.write[j]->process(bus->channels[k].buffer.ptr(), temp_buffer.write[k].ptrw(), buffer_size);
 				}
 
-				//swap buffers, so internal buffer always has the right data
+				// Swap buffers, so internal buffer always has the right data.
 				for (int k = 0; k < bus->channels.size(); k++) {
 					if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
 						continue;
@@ -565,17 +580,17 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		//process send
+		// Process send.
 
 		Bus *send = nullptr;
 
 		if (i > 0) {
-			//everything has a send save for master bus
+			// Everything has a send except for the master bus.
 			if (!bus_map.has(bus->send)) {
 				send = buses[0];
 			} else {
 				send = bus_map[bus->send];
-				if (send->index_cache >= bus->index_cache) { //invalid, send to master
+				if (send->index_cache >= bus->index_cache) { // Invalid, send to master.
 					send = buses[0];
 				}
 			}
@@ -603,7 +618,7 @@ void AudioServer::_mix_step() {
 				}
 			}
 
-			//apply volume and compute peak
+			// Apply volume and compute peak.
 			for (uint32_t j = 0; j < buffer_size; j++) {
 				buf[j] *= volume;
 
@@ -620,7 +635,7 @@ void AudioServer::_mix_step() {
 			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.left + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.right + AUDIO_PEAK_OFFSET));
 
 			if (!bus->channels[k].used) {
-				//see if any audio is contained, because channel was not used
+				// See if any audio is contained, because channel was not used.
 
 				if (MAX(peak.right, peak.left) > Math::db_to_linear(channel_disable_threshold_db)) {
 					bus->channels.write[k].last_mix_with_audio = mix_frames;
@@ -631,7 +646,7 @@ void AudioServer::_mix_step() {
 			}
 
 			if (send) {
-				//if not master bus, send
+				// If not master bus, send.
 				AudioFrame *target_buf = thread_get_channel_mix_buffer(send->index_cache, k);
 
 				for (uint32_t j = 0; j < buffer_size; j++) {
@@ -646,6 +661,7 @@ void AudioServer::_mix_step() {
 }
 
 void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_source_buf, AudioFrame p_vol_start, AudioFrame p_vol_final, float p_attenuation_filter_cutoff_hz, float p_highshelf_gain, AudioFilterSW::Processor *p_processor_l, AudioFilterSW::Processor *p_processor_r) {
+	// TODO: In the future it could be nice to replace all of these hardcoded effects with something a bit cleaner and more flexible, but for now this is what we do to support 3D audio players.
 	if (p_highshelf_gain != 0) {
 		AudioFilterSW filter;
 		filter.set_mode(AudioFilterSW::HIGHSHELF);
@@ -665,7 +681,7 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 		p_processor_r->update_coeffs(buffer_size);
 
 		for (unsigned int frame_idx = 0; frame_idx < buffer_size; frame_idx++) {
-			// Make this buffer size invariant if buffer_size ever becomes a project setting.
+			// TODO: Make lerp speed buffer-size-invariant if buffer_size ever becomes a project setting to avoid very small buffer sizes causing pops due to too-fast lerps.
 			float lerp_param = (float)frame_idx / buffer_size;
 			AudioFrame vol = p_vol_final * lerp_param + (1 - lerp_param) * p_vol_start;
 			AudioFrame mixed = vol * p_source_buf[frame_idx];
@@ -676,7 +692,7 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 
 	} else {
 		for (unsigned int frame_idx = 0; frame_idx < buffer_size; frame_idx++) {
-			// Make this buffer size invariant if buffer_size ever becomes a project setting.
+			// TODO: Make lerp speed buffer-size-invariant if buffer_size ever becomes a project setting to avoid very small buffer sizes causing pops due to too-fast lerps.
 			float lerp_param = (float)frame_idx / buffer_size;
 			p_out_buf[frame_idx] += (p_vol_final * lerp_param + (1 - lerp_param) * p_vol_start) * p_source_buf[frame_idx];
 		}
@@ -701,6 +717,7 @@ void AudioServer::_delete_stream_playback(Ref<AudioStreamPlayback> p_playback) {
 }
 
 void AudioServer::_delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_playback_node) {
+	// Remove the playback from the list, registering a destructor to be run on the main thread.
 	playback_list.erase(p_playback_node, [](AudioStreamPlaybackListNode *p) {
 		delete p->prev_bus_details;
 		delete p->bus_details.load();
@@ -1471,7 +1488,9 @@ void AudioServer::init_channels_and_buffers() {
 void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
-	buffer_size = 512; //hardcoded for now
+	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
+	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
+	buffer_size = 512;
 
 	init_channels_and_buffers();
 
@@ -1616,6 +1635,10 @@ AudioServer::SpeakerMode AudioServer::get_speaker_mode() const {
 
 float AudioServer::get_mix_rate() const {
 	return AudioDriver::get_singleton()->get_mix_rate();
+}
+
+float AudioServer::get_input_mix_rate() const {
+	return AudioDriver::get_singleton()->get_input_mix_rate();
 }
 
 float AudioServer::read_output_peak_db() const {
@@ -1950,6 +1973,7 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_speaker_mode"), &AudioServer::get_speaker_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioServer::get_mix_rate);
+	ClassDB::bind_method(D_METHOD("get_input_mix_rate"), &AudioServer::get_input_mix_rate);
 
 	ClassDB::bind_method(D_METHOD("get_driver_name"), &AudioServer::get_driver_name);
 

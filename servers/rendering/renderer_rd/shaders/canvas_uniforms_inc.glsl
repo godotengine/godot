@@ -37,7 +37,7 @@ struct InstanceData {
 	vec2 world_y;
 	vec2 world_ofs;
 	uint flags;
-	uint specular_shininess;
+	uint pad2;
 #ifdef USE_PRIMITIVE
 	vec2 points[3];
 	vec2 uvs[3];
@@ -57,8 +57,8 @@ struct InstanceData {
 layout(push_constant, std430) uniform Params {
 	uint base_instance_index; // base index to instance data
 	uint sc_packed_0;
-	uint pad2;
-	uint pad3;
+	uint specular_shininess;
+	uint pad;
 }
 params;
 
@@ -68,7 +68,7 @@ params;
 
 // Pull the constants from the draw call's push constants.
 uint sc_packed_0() {
-	return draw_call.sc_packed_0;
+	return params.sc_packed_0;
 }
 
 #else

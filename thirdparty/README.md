@@ -99,8 +99,13 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (c5a419971b1bec220368c619aaafd0b818aa119f, 2024)
+- Version: git (4d3fe6683f651d96be1bbef316b201e9b33b274d, 2024),
+  generated from mozilla-release changeset b8ea2342548b8571e58f9176d9555ccdb5ec199f
 - License: MPL 2.0
+
+Files extracted from upstream source:
+
+- `ca-bundle.crt` renamed to `ca-certificates.crt`
 
 
 ## clipper2
@@ -403,7 +408,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 75.1 (7750081bda4b3bc1768ae03849ec70f67ea10625, 2024)
+- Version: 76.1 (8eca245c7484ac6cc179e3e5f7c1ea7680810f39, 2024)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -415,7 +420,7 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- The `icudt75l.dat` built with the provided `godot_data.json` config file (see
+- The `icudt76l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
@@ -425,7 +430,7 @@ Files generated from upstream source:
 3. Reconfigure ICU with custom data config:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
-5. Copy `source/data/out/icudt75l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt75l.dat`
+5. Copy `source/data/out/icudt76l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt76l.dat`
 
 
 ## jpeg-compressor
@@ -565,7 +570,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 0.20 (c21d3be6ddf627f8ca852ba4b6db9903b0557858, 2023)
+- Version: 0.22 (4affad044571506a5724c9a6f15424f43e86f731, 2024)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -709,7 +714,7 @@ Collection of single-file libraries used in Godot components.
   * Modifications: use `const char*` instead of `char*` for input string
 - `smolv.{cpp,h}`
   * Upstream: https://github.com/aras-p/smol-v
-  * Version: git (4b52c165c13763051a18e80ffbc2ee436314ceb2, 2020)
+  * Version: git (9dd54c379ac29fa148cb1b829bb939ba7381d8f4, 2024)
   * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb

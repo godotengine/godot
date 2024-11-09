@@ -60,7 +60,7 @@ PhysicalBone3DEditor::PhysicalBone3DEditor() {
 	button_transform_joint->set_text(TTR("Move Joint"));
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
-	button_transform_joint->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("PhysicalBone3D"), EditorStringName(EditorIcons)));
+	button_transform_joint->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("PhysicalBone3D"), EditorStringName(EditorIcons)));
 	button_transform_joint->set_toggle_mode(true);
 	button_transform_joint->connect(SceneStringName(toggled), callable_mp(this, &PhysicalBone3DEditor::_on_toggle_button_transform_joint));
 

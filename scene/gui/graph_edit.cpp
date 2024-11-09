@@ -733,14 +733,14 @@ void GraphEdit::_update_theme_item_cache() {
 void GraphEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			zoom_minus_button->set_icon(theme_cache.zoom_out);
-			zoom_reset_button->set_icon(theme_cache.zoom_reset);
-			zoom_plus_button->set_icon(theme_cache.zoom_in);
+			zoom_minus_button->set_button_icon(theme_cache.zoom_out);
+			zoom_reset_button->set_button_icon(theme_cache.zoom_reset);
+			zoom_plus_button->set_button_icon(theme_cache.zoom_in);
 
-			toggle_snapping_button->set_icon(theme_cache.snapping_toggle);
-			toggle_grid_button->set_icon(theme_cache.grid_toggle);
-			minimap_button->set_icon(theme_cache.minimap_toggle);
-			arrange_button->set_icon(theme_cache.layout);
+			toggle_snapping_button->set_button_icon(theme_cache.snapping_toggle);
+			toggle_grid_button->set_button_icon(theme_cache.grid_toggle);
+			minimap_button->set_button_icon(theme_cache.minimap_toggle);
+			arrange_button->set_button_icon(theme_cache.layout);
 
 			zoom_label->set_custom_minimum_size(Size2(48, 0) * theme_cache.base_scale);
 

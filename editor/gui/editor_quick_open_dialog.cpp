@@ -613,10 +613,10 @@ void QuickOpenResultContainer::_set_display_mode(QuickOpenDisplayMode p_display_
 	_update_result_items(num_visible_results, selection_index);
 
 	if (content_display_mode == QuickOpenDisplayMode::LIST) {
-		display_mode_toggle->set_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
+		display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
 		display_mode_toggle->set_tooltip_text(TTR("Grid view"));
 	} else {
-		display_mode_toggle->set_icon(get_editor_theme_icon(SNAME("FileList")));
+		display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 		display_mode_toggle->set_tooltip_text(TTR("List view"));
 	}
 }
@@ -649,8 +649,9 @@ QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const V
 
 	for (const StringName &type : grid_preferred_types) {
 		for (const StringName &base_type : p_base_types) {
-			if (base_type == type || ClassDB::is_parent_class(base_type, type))
+			if (base_type == type || ClassDB::is_parent_class(base_type, type)) {
 				return QuickOpenDisplayMode::GRID;
+			}
 		}
 	}
 
@@ -712,9 +713,9 @@ void QuickOpenResultContainer::_notification(int p_what) {
 			panel_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 
 			if (content_display_mode == QuickOpenDisplayMode::LIST) {
-				display_mode_toggle->set_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
+				display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
 			} else {
-				display_mode_toggle->set_icon(get_editor_theme_icon(SNAME("FileList")));
+				display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 			}
 		} break;
 	}

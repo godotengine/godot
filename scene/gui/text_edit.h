@@ -139,7 +139,7 @@ private:
 			Variant metadata;
 			bool clickable = false;
 
-			Ref<Texture2D> icon = Ref<Texture2D>();
+			Ref<Texture2D> icon;
 			String text = "";
 			Color color = Color(1, 1, 1);
 		};
@@ -693,9 +693,9 @@ protected:
 	void _set_symbol_lookup_word(const String &p_symbol);
 
 	// Theme items.
-	virtual Color _get_brace_mismatch_color() const { return Color(); };
-	virtual Color _get_code_folding_color() const { return Color(); };
-	virtual Ref<Texture2D> _get_folded_eol_icon() const { return Ref<Texture2D>(); };
+	virtual Color _get_brace_mismatch_color() const { return Color(); }
+	virtual Color _get_code_folding_color() const { return Color(); }
+	virtual Ref<Texture2D> _get_folded_eol_icon() const { return Ref<Texture2D>(); }
 
 	/* Text manipulation */
 
