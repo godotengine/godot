@@ -52,7 +52,7 @@
 			<param index="2" name="view_name" type="StringName" />
 			<param index="3" name="view" type="RDTextureView" />
 			<description>
-				Create a new texture view for an existing texture and cache this under the given view_name. Will return the existing teture view if it already exists. Will error if the source texture doesn't exist.
+				Create a new texture view for an existing texture and cache this under the given [param view_name]. Will return the existing texture view if it already exists. Will error if the source texture doesn't exist.
 			</description>
 		</method>
 		<method name="get_color_layer">
