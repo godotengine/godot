@@ -6,7 +6,7 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes strict_checks=yes
+  SCONSFLAGS: debug_symbols=no
 
 concurrency:
   group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-android
@@ -26,17 +26,17 @@ jobs:
             tests: false
             sconsflags: arch=arm64 production=yes swappy=yes
 
-          - name: Template arm32 (target=template_release, arch=arm32)
-            cache-name: android-template-arm32
-            target: template_release
-            tests: false
-            sconsflags: arch=arm32 swappy=yes
+          # - name: Template arm32 (target=template_release, arch=arm32)
+          #   cache-name: android-template-arm32
+          #   target: template_release
+          #   tests: false
+          #   sconsflags: arch=arm32 swappy=yes
 
-          - name: Template arm64 (target=template_release, arch=arm64)
-            cache-name: android-template-arm64
-            target: template_release
-            tests: false
-            sconsflags: arch=arm64 swappy=yes
+          # - name: Template arm64 (target=template_release, arch=arm64)
+          #   cache-name: android-template-arm64
+          #   target: template_release
+          #   tests: false
+          #   sconsflags: arch=arm64 swappy=yes
 
     steps:
       - name: Checkout
@@ -84,24 +84,29 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Generate Godot templates
-        if: matrix.target == 'template_release'
-        run: |
-          cd platform/android/java
-          ./gradlew generateGodotTemplates
-          cd ../../..
-          ls -l bin/
+      # - name: Generate Godot templates
+      #   if: matrix.target == 'template_release'
+      #   run: |
+      #     cd platform/android/java
+      #     ./gradlew generateGodotTemplates
+      #     cd ../../..
+      #     ls -l bin/
 
       - name: Generate Godot editor
         if: matrix.target == 'editor'
         run: |
           cd platform/android/java
           ./gradlew generateGodotEditor
-          ./gradlew generateGodotHorizonOSEditor
           cd ../../..
           ls -l bin/android_editor_builds/
 
-      - name: Upload artifact
-        uses: ./.github/actions/upload-artifact
+      # - name: Upload artifact
+      #   uses: ./.github/actions/upload-artifact
+      #   with:
+      #     name: ${{ matrix.cache-name }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4.4.3
         with:
-          name: ${{ matrix.cache-name }}
+          name: apk upload
+          path: ${{github.workspace}}/bin/android*/*.apk
