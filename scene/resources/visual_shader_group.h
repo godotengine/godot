@@ -1,6 +1,7 @@
 #ifndef VISUAL_SHADER_GROUP_H
 #define VISUAL_SHADER_GROUP_H
 
+#include "scene/gui/dialogs.h"
 #include "scene/resources/visual_shader.h"
 
 class VisualShaderGroup : public Resource {
@@ -38,12 +39,16 @@ public:
 	String get_group_name() const;
 
 	void add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
+	void set_input_port_name(int p_id, const String &p_name);
+	void set_input_port_type(int p_id, VisualShaderNode::PortType p_type);
 	Port get_input_port(int p_id) const;
 	// TODO: Maybe replace this method with get_input_port_count(...)
 	Vector<Port> get_input_ports() const;
 	void remove_input_port(int p_id);
 
 	void add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
+	void set_output_port_name(int p_id, const String &p_name);
+	void set_output_port_type(int p_id, VisualShaderNode::PortType p_type);
 	Port get_output_port(int p_id) const;
 	// TODO: Maybe replace this method with get_output_port_count(...)
 	Vector<Port> get_output_ports() const;
@@ -216,6 +221,40 @@ public:
 	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
 
 	VisualShaderNodeGroupOutput();
+};
+
+class Button;
+class ItemList;
+class OptionButton;
+class LineEdit;
+
+class VisualShaderGroupPortsDialog : public AcceptDialog {
+	GDCLASS(VisualShaderGroupPortsDialog, AcceptDialog);
+
+	VisualShaderGroup *group = nullptr;
+	bool edit_inputs = false; // Determines whether the dialog is used for input or output ports.
+
+	Button *add_port_btn = nullptr;
+	Button *remove_port_btn = nullptr;
+
+	ItemList *port_item_list = nullptr;
+
+	LineEdit *name_edit = nullptr;
+	OptionButton *port_type_optbtn = nullptr;
+
+	void _add_port();
+	void _remove_port(int p_idx);
+
+	void _on_port_selected(int p_idx);
+	void _on_port_name_changed(const String &p_name);
+	void _on_port_type_changed(int p_idx);
+
+	// TODO: Update graph on exit.
+public:
+	void set_dialog_mode(bool p_edit_inputs);
+	void set_group(VisualShaderGroup *p_group);
+
+	VisualShaderGroupPortsDialog();
 };
 
 #endif // VISUAL_SHADER_GROUP_H

@@ -1,5 +1,10 @@
 #include "visual_shader_group.h"
 
+#include "scene/gui/box_container.h"
+#include "scene/gui/item_list.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+
 void VisualShaderGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_group_name", "name"), &VisualShaderGroup::set_group_name);
 	ClassDB::bind_method(D_METHOD("get_group_name"), &VisualShaderGroup::get_group_name);
@@ -66,6 +71,16 @@ void VisualShaderGroup::add_input_port(int p_id, VisualShaderNode::PortType p_ty
 	emit_changed();
 }
 
+void VisualShaderGroup::set_input_port_name(int p_id, const String &p_name) {
+	input_ports[p_id].name = p_name;
+	emit_changed();
+}
+
+void VisualShaderGroup::set_input_port_type(int p_id, VisualShaderNode::PortType p_type) {
+	input_ports[p_id].type = p_type;
+	emit_changed();
+}
+
 VisualShaderGroup::Port VisualShaderGroup::get_input_port(int p_id) const {
 	return input_ports[p_id];
 }
@@ -85,6 +100,16 @@ void VisualShaderGroup::remove_input_port(int p_id) {
 
 void VisualShaderGroup::add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name) {
 	output_ports[p_id] = Port{ p_type, p_name };
+	emit_changed();
+}
+
+void VisualShaderGroup::set_output_port_name(int p_id, const String &p_name) {
+	output_ports[p_id].name = p_name;
+	emit_changed();
+}
+
+void VisualShaderGroup::set_output_port_type(int p_id, VisualShaderNode::PortType p_type) {
+	output_ports[p_id].type = p_type;
 	emit_changed();
 }
 
@@ -437,4 +462,145 @@ String VisualShaderNodeGroupOutput::generate_code(Shader::Mode p_mode, VisualSha
 }
 
 VisualShaderNodeGroupOutput::VisualShaderNodeGroupOutput() {
+}
+
+void VisualShaderGroupPortsDialog::_add_port() {
+	ERR_FAIL_NULL(group);
+
+	// Add a new port to the group.
+	VisualShaderNode::PortType port_type = VisualShaderNode::PORT_TYPE_SCALAR;
+	String port_name = "new_port";
+	if (edit_inputs) {
+		group->add_input_port(group->get_input_ports().size(), port_type, port_name);
+	} else {
+		group->add_output_port(group->get_output_ports().size(), port_type, port_name);
+	}
+
+	// Update the item list.
+	Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+	port_item_list->add_item(port_name, port_icon);
+	// TODO: Use the actual port type color here. (can be modified by theme)
+	port_item_list->set_item_icon_modulate(port_item_list->get_item_count() - 1, Color(1, 1, 1, 1));
+
+	// Select the new port.
+	port_item_list->select(port_item_list->get_item_count() - 1);
+}
+
+void VisualShaderGroupPortsDialog::_remove_port(int p_idx) {
+	ERR_FAIL_NULL(group);
+
+	// Remove the port from the group.
+	if (edit_inputs) {
+		group->remove_input_port(p_idx);
+	} else {
+		group->remove_output_port(p_idx);
+	}
+
+	// Update the item list.
+	port_item_list->remove_item(p_idx);
+
+	// Select the next port.
+	if (p_idx < port_item_list->get_item_count()) {
+		port_item_list->select(p_idx);
+	}
+}
+
+void VisualShaderGroupPortsDialog::_on_port_selected(int p_index) {
+	ERR_FAIL_NULL(group);
+
+	// Update the controls in the editor area of the dialog.
+	VisualShaderGroup::Port port = edit_inputs ? group->get_input_port(p_index) : group->get_output_port(p_index);
+
+	name_edit->set_text(port.name);
+	port_type_optbtn->select(port.type);
+}
+
+void VisualShaderGroupPortsDialog::_on_port_name_changed(const String &p_name) {
+	ERR_FAIL_NULL(group);
+
+	// Update the port name in the group.
+	int port_idx = port_item_list->get_selected_items()[0];
+	if (edit_inputs) {
+		group->set_input_port_name(port_idx, p_name);
+	} else {
+		group->set_output_port_name(port_idx, p_name);
+	}
+
+	// Update the item list.
+	port_item_list->set_item_text(port_idx, p_name);
+}
+
+void VisualShaderGroupPortsDialog::_on_port_type_changed(int p_idx) {
+	ERR_FAIL_NULL(group);
+
+	// Update the port type in the group.
+	int port_idx = port_item_list->get_selected_items()[0];
+	if (edit_inputs) {
+		group->set_input_port_type(port_idx, VisualShaderNode::PortType(p_idx));
+	} else {
+		group->set_output_port_type(port_idx, VisualShaderNode::PortType(p_idx));
+	}
+}
+
+void VisualShaderGroupPortsDialog::set_dialog_mode(bool p_edit_inputs) {
+	edit_inputs = p_edit_inputs;
+}
+
+void VisualShaderGroupPortsDialog::set_group(VisualShaderGroup *p_group) {
+	ERR_FAIL_NULL(p_group);
+	group = p_group;
+
+	// Update the item list.
+	port_item_list->clear();
+	Vector<VisualShaderGroup::Port> ports = edit_inputs ? group->get_input_ports() : group->get_output_ports();
+
+	Ref<Texture2D> port_icon = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
+	for (int i = 0; i < ports.size(); i++) {
+		port_item_list->add_item(ports[i].name, port_icon);
+		// TODO: Use the actual port type color here. (can be modified by theme)
+		port_item_list->set_item_icon_modulate(i, Color(1, 1, 1, 1));
+	}
+}
+
+VisualShaderGroupPortsDialog::VisualShaderGroupPortsDialog() {
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
+
+	HBoxContainer *hbc = memnew(HBoxContainer);
+	vbc->add_child(hbc);
+
+	add_port_btn = memnew(Button);
+	add_port_btn->set_text("Add port");
+	add_port_btn->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderGroupPortsDialog::_add_port));
+	hbc->add_child(add_port_btn);
+
+	remove_port_btn = memnew(Button);
+	remove_port_btn->set_text("Remove port");
+	remove_port_btn->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderGroupPortsDialog::_remove_port));
+	hbc->add_child(remove_port_btn);
+
+	port_item_list = memnew(ItemList);
+	port_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	port_item_list->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderGroupPortsDialog::_on_port_selected));
+	vbc->add_child(port_item_list);
+
+	name_edit = memnew(LineEdit);
+	name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	name_edit->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderGroupPortsDialog::_on_port_name_changed));
+	vbc->add_child(name_edit);
+
+	port_type_optbtn = memnew(OptionButton);
+	// TODO: Refactor this to use a global get_port_types() function.
+	port_type_optbtn->add_item(TTR("Float"));
+	port_type_optbtn->add_item(TTR("Int"));
+	port_type_optbtn->add_item(TTR("UInt"));
+	port_type_optbtn->add_item(TTR("Vector2"));
+	port_type_optbtn->add_item(TTR("Vector3"));
+	port_type_optbtn->add_item(TTR("Vector4"));
+	port_type_optbtn->add_item(TTR("Boolean"));
+	port_type_optbtn->add_item(TTR("Transform"));
+	port_type_optbtn->add_item(TTR("Sampler"));
+	port_type_optbtn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	port_type_optbtn->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderGroupPortsDialog::_on_port_type_changed));
+	vbc->add_child(port_type_optbtn);
 }

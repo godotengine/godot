@@ -1464,21 +1464,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	Ref<VisualShaderNodeGroupInput> group_input = vsnode;
 	Ref<VisualShaderNodeGroupOutput> group_output = vsnode;
-	if (group_input.is_valid()) {
-		Button *add_input_btn = memnew(Button);
-		add_input_btn->set_text(TTR("Add Input"));
-		add_input_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_group_input_pressed).bind(p_id));
-		add_input_btn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		node->add_child(add_input_btn);
-	}
-	if (group_output.is_valid()) {
+	if (group_input.is_valid() || group_output.is_valid()) {
 		Button *add_output_btn = memnew(Button);
-		add_output_btn->set_text(TTR("Add Output"));
-		add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_add_group_output_pressed).bind(p_id));
+		add_output_btn->set_text(TTR("Edit ports"));
+		add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_group_ports_pressed).bind(p_id, add_output_btn));
 		add_output_btn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		node->add_child(add_output_btn);
-	}
-	if (group_input.is_valid() || group_output.is_valid()) {
+
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
 		node->add_child(spacer);
@@ -2649,15 +2641,23 @@ void VisualShaderEditor::_exit_group() {
 	_update_graph();
 }
 
-
 void VisualShaderEditor::_update_group_node(int p_idx) {
 	graph_plugin->update_node(get_current_shader_type(), p_idx);
 }
 
-void VisualShaderEditor::_add_group_input_pressed(int p_group_input_node_id) {
-}
+void VisualShaderEditor::_edit_group_ports_pressed(int p_group_input_node_id, Button *p_button) {
+	ERR_FAIL_NULL(p_button);
+	Ref<VisualShaderNodeGroupInput> group_input = editing_shader_graph->get_node(p_group_input_node_id);
+	Ref<VisualShaderNodeGroupOutput> group_output = editing_shader_graph->get_node(p_group_input_node_id);
+	ERR_FAIL_COND(group_input.is_null() && group_output.is_null());
+	bool is_input = group_input.is_valid();
+	VisualShaderGroup *group = is_input ? group_input->get_group() : group_output->get_group();
+	ERR_FAIL_COND(group == nullptr);
 
-void VisualShaderEditor::_add_group_output_pressed(int p_group_input_node_id) {
+	group_ports_dialog->set_dialog_mode(is_input);
+	group_ports_dialog->set_group(group);
+	group_ports_dialog->set_position(p_button->get_global_position());
+	group_ports_dialog->popup();
 }
 
 Size2 VisualShaderEditor::get_minimum_size() const {
@@ -7890,6 +7890,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	property_editor_popup = memnew(PopupPanel);
 	property_editor_popup->set_min_size(Size2(360, 0) * EDSCALE);
 	add_child(property_editor_popup);
+
+	group_ports_dialog = memnew(VisualShaderGroupPortsDialog);
+	group_ports_dialog->set_min_size(Size2(250, 400));
+	add_child(group_ports_dialog);
 
 	edited_property_holder.instantiate();
 

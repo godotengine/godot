@@ -298,6 +298,7 @@ class VisualShaderEditor : public ShaderEditor {
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
 
+	VisualShaderGroupPortsDialog *group_ports_dialog = nullptr;
 	List<Ref<VisualShaderGroup>> group_edit_stack;
 
 	enum ShaderModeFlags {
@@ -459,8 +460,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _edit_group_in_graph(int p_idx);
 	void _exit_group();
 	void _update_group_node(int p_idx);
-	void _add_group_input_pressed(int p_group_input_node_id);
-	void _add_group_output_pressed(int p_group_input_node_id);
+	void _edit_group_ports_pressed(int p_group_input_node_id, Button *p_button);
 
 	void _show_preview_text();
 	void _preview_close_requested();
