@@ -1570,6 +1570,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
 
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/viewport/default_canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), 0xFFFFFFFF);
+
 	GLOBAL_DEF("collada/use_ambient", false);
 
 	// Input settings

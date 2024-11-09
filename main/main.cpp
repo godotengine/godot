@@ -4116,6 +4116,9 @@ int Main::start() {
 					Viewport::DefaultCanvasItemTextureFilter(texture_filter));
 			sml->get_root()->set_default_canvas_item_texture_repeat(
 					Viewport::DefaultCanvasItemTextureRepeat(texture_repeat));
+
+			int default_canvas_cull_mask = GLOBAL_GET("rendering/viewport/default_canvas_cull_mask");
+			sml->get_root()->set_canvas_cull_mask(default_canvas_cull_mask);
 		}
 
 #ifdef TOOLS_ENABLED
