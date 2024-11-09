@@ -1,6 +1,7 @@
 #include "body_main.h"
 #include "character_manager.h"
 #include "scene/resources/animation.h"
+#include "message_manager.h"
 
 CharacterManager* CharacterManager::singleton = nullptr;
 static float time_delta = 0.0f;
@@ -38,6 +39,10 @@ void CharacterManager::pre_tick(float delta) {
 }
 void CharacterManager::tick(float delta)
 {
+    if(MessageManager::get_singleton()) {
+        MessageManager::get_singleton()->process();
+    }
+
     update_ai();
 
     update_animator();
