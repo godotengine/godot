@@ -779,7 +779,9 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
-    if os.name != "nt":
+    # If env["platform_tools"] is true, this will be handled by env.Tool("mingw").
+    # Otherwise we need to set it here.
+    if not env["platform_tools"] and os.name != "nt":
         env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
 
     if env["arch"] == "x86_32":
