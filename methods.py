@@ -621,23 +621,6 @@ def glob_recursive(pattern, node="."):
     return results
 
 
-def add_to_vs_project(env, sources):
-    for x in sources:
-        fname = env.File(x).path if isinstance(x, str) else env.File(x)[0].path
-        pieces = fname.split(".")
-        if len(pieces) > 0:
-            basename = pieces[0]
-            basename = basename.replace("\\\\", "/")
-            if os.path.isfile(basename + ".h"):
-                env.vs_incs += [basename + ".h"]
-            elif os.path.isfile(basename + ".hpp"):
-                env.vs_incs += [basename + ".hpp"]
-            if os.path.isfile(basename + ".c"):
-                env.vs_srcs += [basename + ".c"]
-            elif os.path.isfile(basename + ".cpp"):
-                env.vs_srcs += [basename + ".cpp"]
-
-
 def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
     env.Precious(program)
@@ -1016,25 +999,12 @@ def dump(env):
 # To generate AND build from the command line:
 #   scons vsproj=yes vsproj_gen_only=no
 def generate_vs_project(env, original_args, project_name="godot"):
-    # Augmented glob_recursive that also fills the dirs argument with traversed directories that have content.
-    def glob_recursive_2(pattern, dirs, node="."):
-        from SCons import Node
-        from SCons.Script import Glob
-
-        results = []
-        for f in Glob(str(node) + "/*", source=True):
-            if type(f) is Node.FS.Dir:
-                results += glob_recursive_2(pattern, dirs, f)
-        r = Glob(str(node) + "/" + pattern, source=True)
-        if len(r) > 0 and str(node) not in dirs:
-            d = ""
-            for part in str(node).split("\\"):
-                d += part
-                if d not in dirs:
-                    dirs.append(d)
-                d += "\\"
-        results += r
-        return results
+    # Augmented glob_recursive that also fills the dirs argument with traversed directories that have
+    # content and replaces "/" in paths with "\\"
+    def glob_recursive_2(pattern, files: list, dirs: set):
+        for f in glob_recursive(pattern):
+            files.append(str(f).replace("/", "\\"))
+            dirs.add(str(f.dir))
 
     def get_bool(args, option, default):
         from SCons.Variables.BoolVariable import _text2bool
@@ -1115,34 +1085,26 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.modules.pop("msvs")
 
     headers = []
-    headers_dirs = []
-    for file in glob_recursive_2("*.h", headers_dirs):
-        headers.append(str(file).replace("/", "\\"))
-    for file in glob_recursive_2("*.hpp", headers_dirs):
-        headers.append(str(file).replace("/", "\\"))
+    headers_dirs = set()
+    glob_recursive_2("*.h", headers, headers_dirs)
+    glob_recursive_2("*.hpp", headers, headers_dirs)
 
     sources = []
-    sources_dirs = []
-    for file in glob_recursive_2("*.cpp", sources_dirs):
-        sources.append(str(file).replace("/", "\\"))
-    for file in glob_recursive_2("*.c", sources_dirs):
-        sources.append(str(file).replace("/", "\\"))
+    sources_dirs = set()
+    glob_recursive_2("*.cpp", sources, sources_dirs)
+    glob_recursive_2("*.c", sources, sources_dirs)
 
     others = []
-    others_dirs = []
-    for file in glob_recursive_2("*.natvis", others_dirs):
-        others.append(str(file).replace("/", "\\"))
-    for file in glob_recursive_2("*.glsl", others_dirs):
-        others.append(str(file).replace("/", "\\"))
+    others_dirs = set()
+    glob_recursive_2("*.natvis", others, others_dirs)
+    glob_recursive_2("*.glsl", others, others_dirs)
 
     skip_filters = False
     import hashlib
     import json
 
     md5 = hashlib.md5(
-        json.dumps(headers + headers_dirs + sources + sources_dirs + others + others_dirs, sort_keys=True).encode(
-            "utf-8"
-        )
+        json.dumps(sorted([*headers, *headers_dirs, *sources, *sources_dirs, *others, *others_dirs])).encode("utf-8")
     ).hexdigest()
 
     if os.path.exists(f"{project_name}.vcxproj.filters"):
