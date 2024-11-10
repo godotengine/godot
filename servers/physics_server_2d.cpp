@@ -380,6 +380,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_shape(const Ref<Phy
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
 	int rc = intersect_shape(p_shape_query->get_parameters(), sr.ptrw(), sr.size());
+	print_line("Intersect shape was called");
 	TypedArray<Dictionary> ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
@@ -642,9 +643,9 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_space", "area", "space"), &PhysicsServer2D::area_set_space);
 	ClassDB::bind_method(D_METHOD("area_get_space", "area"), &PhysicsServer2D::area_get_space);
 
-	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &PhysicsServer2D::area_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled", "top_level"), &PhysicsServer2D::area_add_shape, DEFVAL(Transform2D()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("area_set_shape", "area", "shape_idx", "shape"), &PhysicsServer2D::area_set_shape);
-	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform"), &PhysicsServer2D::area_set_shape_transform);
+	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform", "top_level"), &PhysicsServer2D::area_set_shape_transform, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("area_set_shape_disabled", "area", "shape_idx", "disabled"), &PhysicsServer2D::area_set_shape_disabled);
 
 	ClassDB::bind_method(D_METHOD("area_get_shape_count", "area"), &PhysicsServer2D::area_get_shape_count);

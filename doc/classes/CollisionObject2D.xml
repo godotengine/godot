@@ -134,8 +134,9 @@
 			<return type="void" />
 			<param index="0" name="owner_id" type="int" />
 			<param index="1" name="shape" type="Shape2D" />
+			<param index="2" name="top_level" type="bool" default="false" />
 			<description>
-				Adds a [Shape2D] to the shape owner.
+				Adds a [Shape2D] to the shape owner. The [param top_level] parameter is only used if the [CollisionObject2D] owning the shape owner is an [Area2D]. If it is [code]true[/code], it makes the shape owner's transform independent from the collision object's transform.
 			</description>
 		</method>
 		<method name="shape_owner_clear_shapes">
@@ -218,8 +219,10 @@
 			<return type="void" />
 			<param index="0" name="owner_id" type="int" />
 			<param index="1" name="transform" type="Transform2D" />
+			<param index="2" name="top_level" type="bool" default="false" />
 			<description>
-				Sets the [Transform2D] of the given shape owner.
+				Sets the [Transform2D] of the given shape owner. The [param top_level] parameter is only used if the [CollisionObject2D] owning the shape owner is an [Area2D]. If it is [code]true[/code], it makes the shape owner's transform independent from the collision object's transform.
+				[b]Note:[/b] [param top_level] has a default value of [code]false[/code], you must pass it [code]true[/code] every time you call this function otherwise your shape owner will revert to being NOT top-level.
 			</description>
 		</method>
 	</methods>

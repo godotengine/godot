@@ -391,7 +391,7 @@ PackedInt32Array CollisionObject2D::_get_shape_owners() {
 	return ret;
 }
 
-void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform) {
+void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform, bool p_indpdt_xform) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
@@ -399,7 +399,7 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 	sd.xform = p_transform;
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
-			PhysicsServer2D::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
+			PhysicsServer2D::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, sd.xform, p_indpdt_xform);
 		} else {
 			PhysicsServer2D::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
 		}
@@ -418,7 +418,7 @@ Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
-void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape) {
+void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape, bool p_shape_indpdt_xform) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_COND(p_shape.is_null());
 
@@ -427,7 +427,7 @@ void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2
 	s.index = total_subshapes;
 	s.shape = p_shape;
 	if (area) {
-		PhysicsServer2D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer2D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled, p_shape_indpdt_xform);
 	} else {
 		PhysicsServer2D::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
 	}
@@ -610,7 +610,7 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_shape_owner", "owner"), &CollisionObject2D::create_shape_owner);
 	ClassDB::bind_method(D_METHOD("remove_shape_owner", "owner_id"), &CollisionObject2D::remove_shape_owner);
 	ClassDB::bind_method(D_METHOD("get_shape_owners"), &CollisionObject2D::_get_shape_owners);
-	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform"), &CollisionObject2D::shape_owner_set_transform);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform", "top_level"), &CollisionObject2D::shape_owner_set_transform, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("shape_owner_get_transform", "owner_id"), &CollisionObject2D::shape_owner_get_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject2D::shape_owner_get_owner);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject2D::shape_owner_set_disabled);
@@ -619,7 +619,7 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_shape_owner_one_way_collision_enabled", "owner_id"), &CollisionObject2D::is_shape_owner_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_margin", "owner_id", "margin"), &CollisionObject2D::shape_owner_set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_shape_owner_one_way_collision_margin", "owner_id"), &CollisionObject2D::get_shape_owner_one_way_collision_margin);
-	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject2D::shape_owner_add_shape);
+	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape", "top_level"), &CollisionObject2D::shape_owner_add_shape, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject2D::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject2D::shape_owner_get_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_index", "owner_id", "shape_id"), &CollisionObject2D::shape_owner_get_shape_index);
