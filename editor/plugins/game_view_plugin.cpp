@@ -30,6 +30,7 @@
 
 #include "game_view_plugin.h"
 
+#include "core/debugger/debugger_marshalls.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -40,7 +41,15 @@
 #include "scene/gui/separator.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
-	p_session->send_message("scene:runtime_node_select_setup", Array());
+	Array setup_data;
+	Dictionary settings;
+	settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
+	settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
+	settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
+	settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
+	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
+	setup_data.append(settings);
+	p_session->send_message("scene:runtime_node_select_setup", setup_data);
 
 	Array type;
 	type.append(node_type);

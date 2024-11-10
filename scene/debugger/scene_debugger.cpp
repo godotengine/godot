@@ -30,6 +30,7 @@
 
 #include "scene_debugger.h"
 
+#include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
@@ -93,6 +94,13 @@ void SceneDebugger::deinitialize() {
 }
 
 #ifdef DEBUG_ENABLED
+void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("request_quit", Array());
+	}
+}
+
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree) {
@@ -109,7 +117,10 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	}
 
 	r_captured = true;
-	if (p_msg == "request_scene_tree") { // Scene tree
+	if (p_msg == "setup_scene") {
+		SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
+
+	} else if (p_msg == "request_scene_tree") { // Scene tree
 		live_editor->_send_tree();
 
 	} else if (p_msg == "save_node") { // Save node.
@@ -271,7 +282,8 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 	} else if (p_msg.begins_with("runtime_node_select_")) { /// Runtime Node Selection
 		if (p_msg == "runtime_node_select_setup") {
-			runtime_node_select->_setup();
+			ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
+			runtime_node_select->_setup(p_args[0]);
 
 		} else if (p_msg == "runtime_node_select_set_type") {
 			ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
@@ -1221,7 +1233,7 @@ RuntimeNodeSelect::~RuntimeNodeSelect() {
 #endif // _3D_DISABLED
 }
 
-void RuntimeNodeSelect::_setup() {
+void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	Window *root = SceneTree::get_singleton()->get_root();
 	ERR_FAIL_COND(root->is_connected(SceneStringName(window_input), callable_mp(this, &RuntimeNodeSelect::_root_window_input)));
 
@@ -1237,6 +1249,14 @@ void RuntimeNodeSelect::_setup() {
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &RuntimeNodeSelect::_pan_callback), callable_mp(this, &RuntimeNodeSelect::_zoom_callback));
+
+	ViewPanner::ControlScheme panning_scheme = (ViewPanner::ControlScheme)p_settings.get("editors/panning/2d_editor_panning_scheme", 0).operator int();
+	bool simple_panning = p_settings.get("editors/panning/simple_panning", false);
+	int pan_speed = p_settings.get("editors/panning/2d_editor_pan_speed", 20);
+	Array keys = p_settings.get("canvas_item_editor/pan_view", Array()).operator Array();
+	panner->setup(panning_scheme, DebuggerMarshalls::deserialize_key_shortcut(keys), simple_panning);
+	panner->set_scroll_speed(pan_speed);
+	warped_panning = p_settings.get("editors/panning/warped_mouse_panning", false);
 
 	/// 2D Selection Box Generation
 
@@ -1347,7 +1367,7 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 
 	if (camera_override) {
 		if (node_select_type == NODE_TYPE_2D) {
-			if (panner->gui_input(p_event, Rect2(Vector2(), root->get_size()))) {
+			if (panner->gui_input(p_event, warped_panning ? Rect2(Vector2(), root->get_size()) : Rect2())) {
 				return;
 			}
 		} else if (node_select_type == NODE_TYPE_3D) {
