@@ -34,161 +34,64 @@
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
-
-void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
-	Array setup_data;
-	Dictionary settings;
-	settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
-	settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
-	settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
-	settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
-	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
-	setup_data.append(settings);
-	p_session->send_message("scene:runtime_node_select_setup", setup_data);
-
-	Array type;
-	type.append(node_type);
-	p_session->send_message("scene:runtime_node_select_set_type", type);
-	Array visible;
-	visible.append(selection_visible);
-	p_session->send_message("scene:runtime_node_select_set_visible", visible);
-	Array mode;
-	mode.append(select_mode);
-	p_session->send_message("scene:runtime_node_select_set_mode", mode);
-
-	emit_signal(SNAME("session_started"));
-}
-
-void GameViewDebugger::_session_stopped() {
-	emit_signal(SNAME("session_stopped"));
-}
-
-void GameViewDebugger::set_suspend(bool p_enabled) {
-	Array message;
-	message.append(p_enabled);
-
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:suspend_changed", message);
-		}
-	}
-}
-
-void GameViewDebugger::next_frame() {
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:next_frame", Array());
-		}
-	}
-}
-
-void GameViewDebugger::set_node_type(int p_type) {
-	node_type = p_type;
-
-	Array message;
-	message.append(p_type);
-
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:runtime_node_select_set_type", message);
-		}
-	}
-}
-
-void GameViewDebugger::set_selection_visible(bool p_visible) {
-	selection_visible = p_visible;
-
-	Array message;
-	message.append(p_visible);
-
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:runtime_node_select_set_visible", message);
-		}
-	}
-}
-
-void GameViewDebugger::set_select_mode(int p_mode) {
-	select_mode = p_mode;
-
-	Array message;
-	message.append(p_mode);
-
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:runtime_node_select_set_mode", message);
-		}
-	}
-}
-
-void GameViewDebugger::set_camera_override(bool p_enabled) {
-	EditorDebuggerNode::get_singleton()->set_camera_override(p_enabled ? camera_override_mode : EditorDebuggerNode::OVERRIDE_NONE);
-}
-
-void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode) {
-	camera_override_mode = p_mode;
-
-	if (EditorDebuggerNode::get_singleton()->get_camera_override() != EditorDebuggerNode::OVERRIDE_NONE) {
-		set_camera_override(true);
-	}
-}
-
-void GameViewDebugger::reset_camera_2d_position() {
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:runtime_node_select_reset_camera_2d", Array());
-		}
-	}
-}
-
-void GameViewDebugger::reset_camera_3d_position() {
-	for (Ref<EditorDebuggerSession> &I : sessions) {
-		if (I->is_active()) {
-			I->send_message("scene:runtime_node_select_reset_camera_3d", Array());
-		}
-	}
-}
 
 void GameViewDebugger::setup_session(int p_session_id) {
 	Ref<EditorDebuggerSession> session = get_session(p_session_id);
 	ERR_FAIL_COND(session.is_null());
 
-	sessions.append(session);
+	GameTab *tab = memnew(GameTab(session));
+	session->add_session_tab(tab);
 
-	session->connect("started", callable_mp(this, &GameViewDebugger::_session_started).bind(session));
-	session->connect("stopped", callable_mp(this, &GameViewDebugger::_session_stopped));
+	tabs[p_session_id] = tab;
 }
 
-void GameViewDebugger::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("session_started"));
-	ADD_SIGNAL(MethodInfo("session_stopped"));
+bool GameViewDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
+	ERR_FAIL_COND_V(!tabs.has(p_session), false);
+	GameTab *tab = tabs[p_session];
+
+	if (p_message == "scene:click_ctrl") {
+		ERR_FAIL_COND_V(p_data.size() < 2, false);
+		tab->on_click_ctrl(p_data[0], p_data[1]);
+	}
+	return true;
+}
+
+bool GameViewDebugger::has_capture(const String &p_capture) const {
+	return p_capture == "scene";
+}
+
+void GameViewDebugger::set_state(const Dictionary &p_state) {
+	for (const KeyValue<int, GameTab *> &E : tabs) {
+		if (p_state.has(E.key)) {
+			E.value->set_state(p_state[E.key]);
+		}
+	}
+}
+
+Dictionary GameViewDebugger::get_state() const {
+	Dictionary d;
+	for (const KeyValue<int, GameTab *> &E : tabs) {
+		d[E.key] = E.value->get_state();
+	}
+	return d;
 }
 
 ///////
 
-void GameView::_sessions_changed() {
-	// The debugger session's `session_started/stopped` signal can be unreliable, so count it manually.
-	active_sessions = 0;
-	Array sessions = debugger->get_sessions();
-	for (int i = 0; i < sessions.size(); i++) {
-		if (Object::cast_to<EditorDebuggerSession>(sessions[i])->is_active()) {
-			active_sessions++;
-		}
-	}
-
-	_update_debugger_buttons();
-}
-
-void GameView::_update_debugger_buttons() {
-	bool empty = active_sessions == 0;
+void GameTab::_update_debugger_buttons() {
+	bool empty = !session->is_active();
 
 	suspend_button->set_disabled(empty);
 	camera_override_button->set_disabled(empty);
+
+	const Tree *editor_remote_tree = session->get_editor_remote_tree();
+	live_edit_set_button->set_disabled(empty || !editor_remote_tree || !editor_remote_tree->get_selected());
+	live_edit_clear_button->set_disabled(empty);
 
 	PopupMenu *menu = camera_override_menu->get_popup();
 
@@ -203,45 +106,57 @@ void GameView::_update_debugger_buttons() {
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
 }
 
-void GameView::_suspend_button_toggled(bool p_pressed) {
+void GameTab::_suspend_button_toggled(bool p_pressed) {
 	_update_debugger_buttons();
 
-	debugger->set_suspend(p_pressed);
+	Array message;
+	message.append(p_pressed);
+	session->send_message("scene:suspend_changed", message);
 }
 
-void GameView::_node_type_pressed(int p_option) {
-	RuntimeNodeSelect::NodeType type = (RuntimeNodeSelect::NodeType)p_option;
+void GameTab::_next_frame_button_pressed() {
+	session->send_message("scene:next_frame", Array());
+}
+
+void GameTab::_node_type_pressed(int p_option) {
+	node_type = (RuntimeNodeSelect::NodeType)p_option;
 	for (int i = 0; i < RuntimeNodeSelect::NODE_TYPE_MAX; i++) {
-		node_type_button[i]->set_pressed_no_signal(i == type);
+		node_type_button[i]->set_pressed_no_signal(i == node_type);
 	}
 
 	_update_debugger_buttons();
 
-	debugger->set_node_type(type);
+	Array message;
+	message.append(node_type);
+	session->send_message("scene:runtime_node_select_set_type", message);
 }
 
-void GameView::_select_mode_pressed(int p_option) {
-	RuntimeNodeSelect::SelectMode mode = (RuntimeNodeSelect::SelectMode)p_option;
+void GameTab::_select_mode_pressed(int p_option) {
+	select_mode = (RuntimeNodeSelect::SelectMode)p_option;
 	for (int i = 0; i < RuntimeNodeSelect::SELECT_MODE_MAX; i++) {
-		select_mode_button[i]->set_pressed_no_signal(i == mode);
+		select_mode_button[i]->set_pressed_no_signal(i == select_mode);
 	}
 
-	debugger->set_select_mode(mode);
+	Array message;
+	message.append(select_mode);
+	session->send_message("scene:runtime_node_select_set_mode", message);
 }
 
-void GameView::_hide_selection_toggled(bool p_pressed) {
+void GameTab::_hide_selection_toggled(bool p_pressed) {
 	hide_selection->set_button_icon(get_editor_theme_icon(p_pressed ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
+	selection_visible = !p_pressed;
 
-	debugger->set_selection_visible(!p_pressed);
+	Array message;
+	message.append(selection_visible);
+	session->send_message("scene:runtime_node_select_set_visible", message);
 }
 
-void GameView::_camera_override_button_toggled(bool p_pressed) {
+void GameTab::_camera_override_button_toggled(bool p_pressed) {
 	_update_debugger_buttons();
-
-	debugger->set_camera_override(p_pressed);
+	session->set_camera_override(p_pressed ? camera_override_mode : ScriptEditorDebugger::OVERRIDE_NONE);
 }
 
-void GameView::_camera_override_menu_id_pressed(int p_id) {
+void GameTab::_camera_override_menu_id_pressed(int p_id) {
 	PopupMenu *menu = camera_override_menu->get_popup();
 	if (p_id != CAMERA_RESET_2D && p_id != CAMERA_RESET_3D) {
 		for (int i = 0; i < menu->get_item_count(); i++) {
@@ -251,27 +166,110 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 
 	switch (p_id) {
 		case CAMERA_RESET_2D: {
-			debugger->reset_camera_2d_position();
+			session->send_message("scene:runtime_node_select_reset_camera_2d", Array());
 		} break;
-		case CAMERA_RESET_3D: {
-			debugger->reset_camera_3d_position();
-		} break;
-		case CAMERA_MODE_INGAME: {
-			debugger->set_camera_manipulate_mode(EditorDebuggerNode::OVERRIDE_INGAME);
-			menu->set_item_checked(menu->get_item_index(p_id), true);
 
+		case CAMERA_RESET_3D: {
+			session->send_message("scene:runtime_node_select_reset_camera_3d", Array());
+		} break;
+
+		case CAMERA_MODE_INGAME: {
+			camera_override_mode = ScriptEditorDebugger::OVERRIDE_INGAME;
+			if (session->get_camera_override() != ScriptEditorDebugger::OVERRIDE_NONE) {
+				session->set_camera_override(camera_override_mode);
+			}
+			menu->set_item_checked(menu->get_item_index(p_id), true);
 			_update_debugger_buttons();
 		} break;
-		case CAMERA_MODE_EDITORS: {
-			debugger->set_camera_manipulate_mode(EditorDebuggerNode::OVERRIDE_EDITORS);
-			menu->set_item_checked(menu->get_item_index(p_id), true);
 
+		case CAMERA_MODE_EDITORS: {
+			camera_override_mode = ScriptEditorDebugger::OVERRIDE_EDITORS;
+			if (session->get_camera_override() != ScriptEditorDebugger::OVERRIDE_NONE) {
+				session->set_camera_override(camera_override_mode);
+			}
+			menu->set_item_checked(menu->get_item_index(p_id), true);
 			_update_debugger_buttons();
 		} break;
 	}
 }
 
-void GameView::_notification(int p_what) {
+void GameTab::_live_edit_set_button_pressed() {
+	if (!session->is_active()) {
+		return;
+	}
+	const Tree *editor_remote_tree = session->get_editor_remote_tree();
+	if (!editor_remote_tree) {
+		return;
+	}
+
+	TreeItem *ti = editor_remote_tree->get_selected();
+	if (!ti) {
+		return;
+	}
+
+	String path;
+
+	while (ti) {
+		String lp = ti->get_text(0);
+		path = "/" + lp + path;
+		ti = ti->get_parent();
+	}
+
+	NodePath np = path;
+
+	EditorNode::get_editor_data().set_edited_scene_live_edit_root(np);
+
+	session->update_live_edit_root();
+	live_edit_root->set_text(EditorNode::get_editor_data().get_edited_scene_live_edit_root());
+}
+
+void GameTab::_live_edit_clear_button_pressed() {
+	NodePath np = NodePath("/root");
+	EditorNode::get_editor_data().set_edited_scene_live_edit_root(np);
+
+	session->update_live_edit_root();
+	live_edit_root->set_text(EditorNode::get_editor_data().get_edited_scene_live_edit_root());
+}
+
+void GameTab::_on_start() {
+	{
+		Array params;
+		Dictionary settings;
+		settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
+		settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
+		settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
+		settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
+		settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
+		params.append(settings);
+		session->send_message("scene:runtime_node_select_setup", params);
+	}
+	{
+		Array params;
+		params.append(node_type);
+		session->send_message("scene:runtime_node_select_set_type", params);
+	}
+	{
+		Array params;
+		params.append(selection_visible);
+		session->send_message("scene:runtime_node_select_set_visible", params);
+	}
+	{
+		Array params;
+		params.append(select_mode);
+		session->send_message("scene:runtime_node_select_set_mode", params);
+	}
+
+	_update_debugger_buttons();
+
+	clicked_ctrl->set_text(String());
+	clicked_ctrl_type->set_text(String());
+}
+
+void GameTab::_on_stop() {
+	_update_debugger_buttons();
+}
+
+void GameTab::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			suspend_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
@@ -294,7 +292,7 @@ void GameView::_notification(int p_what) {
 	}
 }
 
-void GameView::set_state(const Dictionary &p_state) {
+void GameTab::set_state(const Dictionary &p_state) {
 	if (p_state.has("hide_selection")) {
 		hide_selection->set_pressed(p_state["hide_selection"]);
 		_hide_selection_toggled(hide_selection->is_pressed());
@@ -307,7 +305,7 @@ void GameView::set_state(const Dictionary &p_state) {
 	}
 }
 
-Dictionary GameView::get_state() const {
+Dictionary GameTab::get_state() const {
 	Dictionary d;
 	d["hide_selection"] = hide_selection->is_pressed();
 
@@ -329,108 +327,108 @@ Dictionary GameView::get_state() const {
 	return d;
 }
 
-GameView::GameView(Ref<GameViewDebugger> p_debugger) {
-	debugger = p_debugger;
+void GameTab::on_click_ctrl(const String &p_ctrl, const String &p_ctrl_type) {
+	clicked_ctrl->set_text(p_ctrl);
+	clicked_ctrl_type->set_text(p_ctrl_type);
+}
 
-	// Add some margin to the sides for better aesthetics.
-	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
-	// which looks ugly.
-	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	add_child(toolbar_margin);
+GameTab::GameTab(Ref<EditorDebuggerSession> p_session) {
+	set_name(TTR("Game"));
 
-	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
-	toolbar_margin->add_child(main_menu_hbox);
+	session = p_session;
+
+	session->connect("started", callable_mp(this, &GameTab::_on_start));
+	session->connect("stopped", callable_mp(this, &GameTab::_on_stop));
+
+	HBoxContainer *toolbar = memnew(HBoxContainer);
+	add_child(toolbar);
 
 	suspend_button = memnew(Button);
-	main_menu_hbox->add_child(suspend_button);
+	suspend_button->set_tooltip_text(TTR("Suspend"));
 	suspend_button->set_toggle_mode(true);
 	suspend_button->set_theme_type_variation(SceneStringName(FlatButton));
-	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
-	suspend_button->set_tooltip_text(TTR("Suspend"));
+	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameTab::_suspend_button_toggled));
+	toolbar->add_child(suspend_button);
 
 	next_frame_button = memnew(Button);
-	main_menu_hbox->add_child(next_frame_button);
-	next_frame_button->set_theme_type_variation(SceneStringName(FlatButton));
-	next_frame_button->connect(SceneStringName(pressed), callable_mp(*debugger, &GameViewDebugger::next_frame));
 	next_frame_button->set_tooltip_text(TTR("Next Frame"));
+	next_frame_button->set_theme_type_variation("FlatButton");
+	next_frame_button->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_next_frame_button_pressed));
+	toolbar->add_child(next_frame_button);
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	toolbar->add_child(memnew(VSeparator));
+	toolbar->add_child(memnew(Label(TTR("Picking:"))));
 
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE] = memnew(Button);
-	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]);
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_text(TTR("Input"));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE] = memnew(Button(TTRC("Off")));
+	toolbar->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_pressed(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_theme_type_variation(SceneStringName(FlatButton));
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_NONE));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_NONE));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_tooltip_text(TTR("Allow game input."));
 
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D] = memnew(Button);
-	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_text(TTR("2D"));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D] = memnew(Button(TTRC("2D")));
+	toolbar->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_theme_type_variation(SceneStringName(FlatButton));
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTR("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
 
 #ifndef _3D_DISABLED
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button);
-	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_text(TTR("3D"));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button(TTRC("3D")));
+	toolbar->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_toggle_mode(true);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation(SceneStringName(FlatButton));
-	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTR("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
 #endif // _3D_DISABLED
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	toolbar->add_child(memnew(VSeparator));
 
 	hide_selection = memnew(Button);
-	main_menu_hbox->add_child(hide_selection);
+	toolbar->add_child(hide_selection);
 	hide_selection->set_toggle_mode(true);
 	hide_selection->set_theme_type_variation(SceneStringName(FlatButton));
-	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameView::_hide_selection_toggled));
+	hide_selection->connect(SceneStringName(toggled), callable_mp(this, &GameTab::_hide_selection_toggled));
 	hide_selection->set_tooltip_text(TTR("Toggle Selection Visibility"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	toolbar->add_child(memnew(VSeparator));
 
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE] = memnew(Button);
-	main_menu_hbox->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]);
+	toolbar->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_toggle_mode(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_pressed(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_theme_type_variation(SceneStringName(FlatButton));
-	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_SINGLE));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_SINGLE));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), Key::Q));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut_context(this);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+RMB: Show list of all nodes at position clicked."));
 
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST] = memnew(Button);
-	main_menu_hbox->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]);
+	toolbar->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_toggle_mode(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_theme_type_variation(SceneStringName(FlatButton));
-	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_LIST));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_LIST));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	toolbar->add_child(memnew(VSeparator));
 
 	camera_override_button = memnew(Button);
-	main_menu_hbox->add_child(camera_override_button);
+	toolbar->add_child(camera_override_button);
 	camera_override_button->set_toggle_mode(true);
 	camera_override_button->set_theme_type_variation(SceneStringName(FlatButton));
-	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_camera_override_button_toggled));
+	camera_override_button->connect(SceneStringName(toggled), callable_mp(this, &GameTab::_camera_override_button_toggled));
 	camera_override_button->set_tooltip_text(TTR("Override the in-game camera."));
 
 	camera_override_menu = memnew(MenuButton);
-	main_menu_hbox->add_child(camera_override_menu);
+	toolbar->add_child(camera_override_menu);
 	camera_override_menu->set_flat(false);
 	camera_override_menu->set_theme_type_variation("FlatMenuButton");
 	camera_override_menu->set_h_size_flags(SIZE_SHRINK_END);
 	camera_override_menu->set_tooltip_text(TTR("Camera Override Options"));
 
 	PopupMenu *menu = camera_override_menu->get_popup();
-	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameTab::_camera_override_menu_id_pressed));
 	menu->add_item(TTR("Reset 2D Camera"), CAMERA_RESET_2D);
 	menu->add_item(TTR("Reset 3D Camera"), CAMERA_RESET_3D);
 	menu->add_separator();
@@ -438,15 +436,51 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger) {
 	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);
 	menu->add_radio_check_item(TTR("Manipulate From Editors"), CAMERA_MODE_EDITORS);
 
-	_update_debugger_buttons();
+	add_child(memnew(HSeparator));
 
+	GridContainer *grid = memnew(GridContainer);
+	grid->set_columns(2);
+	add_child(grid);
+
+	grid->add_child(memnew(Label(TTRC("Clicked Control:"))));
+	clicked_ctrl = memnew(LineEdit);
+	clicked_ctrl->set_editable(false);
+	clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
+	grid->add_child(clicked_ctrl);
+
+	grid->add_child(memnew(Label(TTRC("Clicked Control Type:"))));
+	clicked_ctrl_type = memnew(LineEdit);
+	clicked_ctrl_type->set_editable(false);
+	grid->add_child(clicked_ctrl_type);
+
+	grid->add_child(memnew(Label(TTRC("Live Edit Root:"))));
+
+	HBoxContainer *lehb = memnew(HBoxContainer);
+	grid->add_child(lehb);
+
+	live_edit_root = memnew(LineEdit);
+	live_edit_root->set_editable(false);
+	live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
+	lehb->add_child(live_edit_root);
+
+	live_edit_set_button = memnew(Button(TTR("Set From Tree")));
+	lehb->add_child(live_edit_set_button);
+	live_edit_set_button->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_live_edit_set_button_pressed));
+
+	live_edit_clear_button = memnew(Button(TTR("Clear")));
+	lehb->add_child(live_edit_clear_button);
+	live_edit_clear_button->connect(SceneStringName(pressed), callable_mp(this, &GameTab::_live_edit_clear_button_pressed));
+
+	_update_debugger_buttons();
+}
+
+///////
+
+GameView::GameView(Ref<GameViewDebugger> p_debugger) {
 	panel = memnew(Panel);
 	add_child(panel);
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	p_debugger->connect("session_started", callable_mp(this, &GameView::_sessions_changed));
-	p_debugger->connect("session_stopped", callable_mp(this, &GameView::_sessions_changed));
 }
 
 ///////
@@ -456,11 +490,11 @@ void GameViewPlugin::make_visible(bool p_visible) {
 }
 
 void GameViewPlugin::set_state(const Dictionary &p_state) {
-	game_view->set_state(p_state);
+	debugger->set_state(p_state);
 }
 
 Dictionary GameViewPlugin::get_state() const {
-	return game_view->get_state();
+	return debugger->get_state();
 }
 
 void GameViewPlugin::_notification(int p_what) {

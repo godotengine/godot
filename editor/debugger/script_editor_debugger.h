@@ -35,7 +35,6 @@
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/debugger/editor_debugger_server.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
@@ -65,6 +64,13 @@ class ScriptEditorDebugger : public MarginContainer {
 	friend class DebugAdapterProtocol;
 	friend class DebugAdapterParser;
 
+public:
+	enum CameraOverride {
+		OVERRIDE_NONE,
+		OVERRIDE_INGAME,
+		OVERRIDE_EDITORS,
+	};
+
 private:
 	enum MessageType {
 		MESSAGE_ERROR,
@@ -87,13 +93,6 @@ private:
 
 	AcceptDialog *msgdialog = nullptr;
 
-	LineEdit *clicked_ctrl = nullptr;
-	LineEdit *clicked_ctrl_type = nullptr;
-	LineEdit *live_edit_root = nullptr;
-	Button *le_set = nullptr;
-	Button *le_clear = nullptr;
-	Button *export_csv = nullptr;
-
 	VBoxContainer *errors_tab = nullptr;
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
@@ -105,11 +104,6 @@ private:
 	PopupMenu *breakpoints_menu = nullptr;
 
 	EditorFileDialog *file_dialog = nullptr;
-	enum FileDialogPurpose {
-		SAVE_MONITORS_CSV,
-		SAVE_VRAM_CSV,
-	};
-	FileDialogPurpose file_dialog_purpose;
 
 	int error_count;
 	int warning_count;
@@ -183,7 +177,7 @@ private:
 
 	void _select_thread(int p_index);
 
-	EditorDebuggerNode::CameraOverride camera_override;
+	CameraOverride camera_override;
 
 	void _stack_dump_frame_selected();
 
@@ -203,9 +197,6 @@ private:
 	int _get_node_path_cache(const NodePath &p_path);
 
 	int _get_res_path_cache(const String &p_path);
-
-	void _live_edit_set();
-	void _live_edit_clear();
 
 	void _method_changed(Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
@@ -227,7 +218,6 @@ private:
 	void _tab_changed(int p_tab);
 
 	void _put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id = Thread::MAIN_ID);
-	void _export_csv();
 
 	void _clear_execution();
 	void _stop_and_notify();
@@ -252,6 +242,7 @@ public:
 
 	// Needed by _live_edit_set, buttons state.
 	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
+	const Tree *get_editor_remote_tree() const { return editor_remote_tree; }
 
 	void request_remote_tree();
 	const SceneDebuggerTree *get_remote_tree();
@@ -299,8 +290,8 @@ public:
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
 
-	EditorDebuggerNode::CameraOverride get_camera_override() const;
-	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
+	CameraOverride get_camera_override() const;
+	void set_camera_override(CameraOverride p_override);
 
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 

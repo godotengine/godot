@@ -30,8 +30,6 @@
 
 #include "editor_debugger_plugin.h"
 
-#include "editor/debugger/script_editor_debugger.h"
-
 void EditorDebuggerSession::_breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump) {
 	if (p_really_did) {
 		emit_signal(SNAME("breaked"), p_can_debug);
@@ -104,6 +102,26 @@ bool EditorDebuggerSession::is_active() {
 void EditorDebuggerSession::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
 	ERR_FAIL_NULL_MSG(debugger, "Plugin is not attached to debugger.");
 	debugger->set_breakpoint(p_path, p_line, p_enabled);
+}
+
+ScriptEditorDebugger::CameraOverride EditorDebuggerSession::get_camera_override() const {
+	ERR_FAIL_NULL_V_MSG(debugger, ScriptEditorDebugger::OVERRIDE_NONE, "Plugin is not attached to debugger.");
+	return debugger->get_camera_override();
+}
+
+void EditorDebuggerSession::set_camera_override(ScriptEditorDebugger::CameraOverride p_override) {
+	ERR_FAIL_NULL_MSG(debugger, "Plugin is not attached to debugger.");
+	debugger->set_camera_override(p_override);
+}
+
+const Tree *EditorDebuggerSession::get_editor_remote_tree() const {
+	ERR_FAIL_NULL_V_MSG(debugger, nullptr, "Plugin is not attached to debugger.");
+	return debugger->get_editor_remote_tree();
+}
+
+void EditorDebuggerSession::update_live_edit_root() {
+	ERR_FAIL_NULL_MSG(debugger, "Plugin is not attached to debugger.");
+	debugger->update_live_edit_root();
 }
 
 void EditorDebuggerSession::detach_debugger() {

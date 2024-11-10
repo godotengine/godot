@@ -30,13 +30,10 @@
 
 #include "script_editor_debugger.h"
 
-#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
-#include "core/io/marshalls.h"
 #include "core/string/ustring.h"
 #include "core/version.h"
-#include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
 #include "editor/debugger/editor_expression_evaluator.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
@@ -50,28 +47,21 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/packed_scene.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display_server.h"
-
-using CameraOverride = EditorDebuggerNode::CameraOverride;
 
 void ScriptEditorDebugger::_put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id) {
 	ERR_FAIL_COND(p_thread_id == Thread::UNASSIGNED_ID);
@@ -166,82 +156,33 @@ void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
 }
 
 void ScriptEditorDebugger::_file_selected(const String &p_file) {
-	switch (file_dialog_purpose) {
-		case SAVE_MONITORS_CSV: {
-			Error err;
-			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-			if (err != OK) {
-				ERR_PRINT("Failed to open " + p_file);
-				return;
-			}
-			Vector<String> line;
-			line.resize(Performance::MONITOR_MAX);
+	if (err != OK) {
+		ERR_PRINT("Failed to open " + p_file);
+		return;
+	}
 
-			// signatures
-			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-				line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
-			}
-			file->store_csv_line(line);
+	Vector<String> headers;
+	headers.resize(vmem_tree->get_columns());
+	for (int i = 0; i < vmem_tree->get_columns(); ++i) {
+		headers.write[i] = vmem_tree->get_column_title(i);
+	}
+	file->store_csv_line(headers);
 
-			// values
-			Vector<List<float>::Element *> iterators;
-			iterators.resize(Performance::MONITOR_MAX);
-			bool continue_iteration = false;
-			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-				iterators.write[i] = performance_profiler->get_monitor_data(Performance::get_singleton()->get_monitor_name(Performance::Monitor(i)))->back();
-				continue_iteration = continue_iteration || iterators[i];
-			}
-			while (continue_iteration) {
-				continue_iteration = false;
-				for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-					if (iterators[i]) {
-						line.write[i] = String::num_real(iterators[i]->get());
-						iterators.write[i] = iterators[i]->prev();
-					} else {
-						line.write[i] = "";
-					}
-					continue_iteration = continue_iteration || iterators[i];
-				}
-				file->store_csv_line(line);
-			}
-			file->store_string("\n");
-
-			Vector<Vector<String>> profiler_data = profiler->get_data_as_csv();
-			for (int i = 0; i < profiler_data.size(); i++) {
-				file->store_csv_line(profiler_data[i]);
-			}
-		} break;
-		case SAVE_VRAM_CSV: {
-			Error err;
-			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
-
-			if (err != OK) {
-				ERR_PRINT("Failed to open " + p_file);
-				return;
-			}
-
-			Vector<String> headers;
-			headers.resize(vmem_tree->get_columns());
+	if (vmem_tree->get_root()) {
+		TreeItem *ti = vmem_tree->get_root()->get_first_child();
+		while (ti) {
+			Vector<String> values;
+			values.resize(vmem_tree->get_columns());
 			for (int i = 0; i < vmem_tree->get_columns(); ++i) {
-				headers.write[i] = vmem_tree->get_column_title(i);
+				values.write[i] = ti->get_text(i);
 			}
-			file->store_csv_line(headers);
+			file->store_csv_line(values);
 
-			if (vmem_tree->get_root()) {
-				TreeItem *ti = vmem_tree->get_root()->get_first_child();
-				while (ti) {
-					Vector<String> values;
-					values.resize(vmem_tree->get_columns());
-					for (int i = 0; i < vmem_tree->get_columns(); ++i) {
-						values.write[i] = ti->get_text(i);
-					}
-					file->store_csv_line(values);
-
-					ti = ti->get_next();
-				}
-			}
-		} break;
+			ti = ti->get_next();
+		}
 	}
 }
 
@@ -300,7 +241,6 @@ void ScriptEditorDebugger::_video_mem_export() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog->clear_filters();
-	file_dialog_purpose = SAVE_VRAM_CSV;
 	file_dialog->popup_file_dialog();
 }
 
@@ -397,10 +337,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "set_pid") {
 		ERR_FAIL_COND(p_data.is_empty());
 		remote_pid = p_data[0];
-	} else if (p_msg == "scene:click_ctrl") {
-		ERR_FAIL_COND(p_data.size() < 2);
-		clicked_ctrl->set_text(p_data[0]);
-		clicked_ctrl_type->set_text(p_data[1]);
 	} else if (p_msg == "scene:scene_tree") {
 		scene_tree->nodes.clear();
 		scene_tree->deserialize(p_data);
@@ -867,8 +803,6 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
-			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
@@ -1051,15 +985,12 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 
 void ScriptEditorDebugger::_update_buttons_state() {
 	const bool active = is_session_active();
-	const bool has_editor_tree = active && editor_remote_tree && editor_remote_tree->get_selected();
 	vmem_refresh->set_disabled(!active);
 	step->set_disabled(!active || !is_breaked() || !is_debuggable());
 	next->set_disabled(!active || !is_breaked() || !is_debuggable());
 	copy->set_disabled(!active || !is_breaked());
 	docontinue->set_disabled(!active || !is_breaked());
 	dobreak->set_disabled(!active || is_breaked());
-	le_clear->set_disabled(!active);
-	le_set->set_disabled(!has_editor_tree);
 
 	thread_list_updating = true;
 	LocalVector<ThreadDebugged *> threadss;
@@ -1162,13 +1093,6 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	if (!request_stack_dump(frame)) {
 		inspector->edit(nullptr);
 	}
-}
-
-void ScriptEditorDebugger::_export_csv() {
-	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	file_dialog_purpose = SAVE_MONITORS_CSV;
-	file_dialog->popup_file_dialog();
 }
 
 String ScriptEditorDebugger::get_var_value(const String &p_var) const {
@@ -1374,38 +1298,6 @@ void ScriptEditorDebugger::set_live_debugging(bool p_enable) {
 	live_debug = p_enable;
 }
 
-void ScriptEditorDebugger::_live_edit_set() {
-	if (!is_session_active() || !editor_remote_tree) {
-		return;
-	}
-
-	TreeItem *ti = editor_remote_tree->get_selected();
-	if (!ti) {
-		return;
-	}
-
-	String path;
-
-	while (ti) {
-		String lp = ti->get_text(0);
-		path = "/" + lp + path;
-		ti = ti->get_parent();
-	}
-
-	NodePath np = path;
-
-	EditorNode::get_editor_data().set_edited_scene_live_edit_root(np);
-
-	update_live_edit_root();
-}
-
-void ScriptEditorDebugger::_live_edit_clear() {
-	NodePath np = NodePath("/root");
-	EditorNode::get_editor_data().set_edited_scene_live_edit_root(np);
-
-	update_live_edit_root();
-}
-
 void ScriptEditorDebugger::update_live_edit_root() {
 	NodePath np = EditorNode::get_editor_data().get_edited_scene_live_edit_root();
 
@@ -1417,7 +1309,6 @@ void ScriptEditorDebugger::update_live_edit_root() {
 		msg.push_back("");
 	}
 	_put_msg("scene:live_set_root", msg);
-	live_edit_root->set_text(np);
 }
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
@@ -1487,7 +1378,7 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 	}
 }
 
-CameraOverride ScriptEditorDebugger::get_camera_override() const {
+ScriptEditorDebugger::CameraOverride ScriptEditorDebugger::get_camera_override() const {
 	return camera_override;
 }
 
@@ -2116,51 +2007,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		tabs->add_child(vmem_vb);
 	}
 
-	{ // misc
-		VBoxContainer *misc = memnew(VBoxContainer);
-		misc->set_name(TTR("Misc"));
-		tabs->add_child(misc);
-
-		GridContainer *info_left = memnew(GridContainer);
-		info_left->set_columns(2);
-		misc->add_child(info_left);
-		clicked_ctrl = memnew(LineEdit);
-		clicked_ctrl->set_editable(false);
-		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
-		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
-		info_left->add_child(clicked_ctrl);
-		clicked_ctrl_type = memnew(LineEdit);
-		clicked_ctrl_type->set_editable(false);
-		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
-		info_left->add_child(clicked_ctrl_type);
-
-		scene_tree = memnew(SceneDebuggerTree);
-		live_edit_root = memnew(LineEdit);
-		live_edit_root->set_editable(false);
-		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
-
-		{
-			HBoxContainer *lehb = memnew(HBoxContainer);
-			Label *l = memnew(Label(TTR("Live Edit Root:")));
-			info_left->add_child(l);
-			lehb->add_child(live_edit_root);
-			le_set = memnew(Button(TTR("Set From Tree")));
-			lehb->add_child(le_set);
-			le_clear = memnew(Button(TTR("Clear")));
-			lehb->add_child(le_clear);
-			info_left->add_child(lehb);
-		}
-
-		misc->add_child(memnew(VSeparator));
-
-		HBoxContainer *buttons = memnew(HBoxContainer);
-
-		export_csv = memnew(Button(TTR("Export measures as CSV")));
-		export_csv->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_export_csv));
-		buttons->add_child(export_csv);
-
-		misc->add_child(buttons);
-	}
+	scene_tree = memnew(SceneDebuggerTree);
 
 	msgdialog = memnew(AcceptDialog);
 	add_child(msgdialog);

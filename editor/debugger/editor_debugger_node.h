@@ -48,13 +48,6 @@ class UndoRedo;
 class EditorDebuggerNode : public MarginContainer {
 	GDCLASS(EditorDebuggerNode, MarginContainer);
 
-public:
-	enum CameraOverride {
-		OVERRIDE_NONE,
-		OVERRIDE_INGAME,
-		OVERRIDE_EDITORS,
-	};
-
 private:
 	enum Options {
 		DEBUG_NEXT,
@@ -111,7 +104,6 @@ private:
 	bool keep_open = false;
 	String current_uri;
 
-	CameraOverride camera_override = OVERRIDE_NONE;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
@@ -204,9 +196,6 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
-
-	void set_camera_override(CameraOverride p_override);
-	CameraOverride get_camera_override();
 
 	String get_server_uri() const;
 

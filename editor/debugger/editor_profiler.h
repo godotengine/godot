@@ -31,17 +31,17 @@
 #ifndef EDITOR_PROFILER_H
 #define EDITOR_PROFILER_H
 
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
+class Button;
+class CheckButton;
+class HSplitContainer;
 class ImageTexture;
+class OptionButton;
+class SpinBox;
+class TextureRect;
+class Tree;
 
 class EditorProfiler : public VBoxContainer {
 	GDCLASS(EditorProfiler, VBoxContainer);
@@ -121,6 +121,9 @@ private:
 
 	SpinBox *cursor_metric_edit = nullptr;
 
+	EditorFileDialog *file_dialog = nullptr;
+	Button *export_csv_button = nullptr;
+
 	Vector<Metric> frame_metrics;
 	int total_metrics = 0;
 	int last_metric = -1;
@@ -168,6 +171,8 @@ private:
 
 	Metric _get_frame_metric(int index);
 
+	void _export_csv(const String &p_path) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -181,8 +186,6 @@ public:
 	void disable_seeking();
 
 	void clear();
-
-	Vector<Vector<String>> get_data_as_csv() const;
 
 	EditorProfiler();
 };

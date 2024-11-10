@@ -31,9 +31,8 @@
 #ifndef EDITOR_DEBUGGER_PLUGIN_H
 #define EDITOR_DEBUGGER_PLUGIN_H
 
+#include "editor/debugger/script_editor_debugger.h"
 #include "scene/gui/control.h"
-
-class ScriptEditorDebugger;
 
 class EditorDebuggerSession : public RefCounted {
 	GDCLASS(EditorDebuggerSession, RefCounted);
@@ -63,6 +62,12 @@ public:
 	bool is_active();
 
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
+
+	ScriptEditorDebugger::CameraOverride get_camera_override() const;
+	void set_camera_override(ScriptEditorDebugger::CameraOverride p_override);
+
+	const Tree *get_editor_remote_tree() const;
+	void update_live_edit_root();
 
 	EditorDebuggerSession(ScriptEditorDebugger *p_debugger);
 	~EditorDebuggerSession();

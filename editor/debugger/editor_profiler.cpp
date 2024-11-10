@@ -31,12 +31,18 @@
 #include "editor_profiler.h"
 
 #include "core/io/image.h"
-#include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
-#include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
@@ -440,6 +446,7 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+			export_csv_button->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 
 			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 			theme_cache.seek_line_color.a = 0.8;
@@ -587,12 +594,15 @@ bool EditorProfiler::is_profiling() {
 	return activate->is_pressed();
 }
 
-Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
-	Vector<Vector<String>> res;
+void EditorProfiler::_export_csv(const String &p_path) const {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(file.is_null(), "Failed to open file: " + p_path);
 
 	if (frame_metrics.is_empty()) {
-		return res;
+		return;
 	}
+
+	Vector<Vector<String>> res;
 
 	// Different metrics may contain different number of categories.
 	HashSet<StringName> possible_signatures;
@@ -653,7 +663,9 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 		res.push_back(values);
 	}
 
-	return res;
+	for (int i = 0; i < res.size(); i++) {
+		file->store_csv_line(res[i]);
+	}
 }
 
 EditorProfiler::EditorProfiler() {
@@ -717,6 +729,18 @@ EditorProfiler::EditorProfiler() {
 	cursor_metric_edit->set_editable(false);
 	hb->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorProfiler::_cursor_metric_changed));
+
+	file_dialog = memnew(EditorFileDialog);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorProfiler::_export_csv));
+	hb->add_child(file_dialog);
+
+	export_csv_button = memnew(Button);
+	export_csv_button->set_theme_type_variation("FlatButton");
+	export_csv_button->set_tooltip_text(TTR("Export list to a CSV file"));
+	export_csv_button->connect(SceneStringName(pressed), callable_mp(file_dialog, &EditorFileDialog::popup_file_dialog));
+	hb->add_child(export_csv_button);
 
 	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 

@@ -32,12 +32,13 @@
 #define EDITOR_PERFORMANCE_PROFILER_H
 
 #include "core/templates/hash_map.h"
-#include "core/templates/rb_map.h"
 #include "main/performance.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
-#include "scene/gui/tree.h"
+
+class Button;
+class EditorFileDialog;
+class Tree;
+class TreeItem;
 
 class EditorPerformanceProfiler : public HSplitContainer {
 	GDCLASS(EditorPerformanceProfiler, HSplitContainer);
@@ -63,6 +64,9 @@ private:
 
 	HashMap<StringName, TreeItem *> base_map;
 	Tree *monitor_tree = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
+	Button *export_csv_button = nullptr;
+	Button *deselect_all_button = nullptr;
 	Control *monitor_draw = nullptr;
 	Label *info_message = nullptr;
 	StringName marker_key;
@@ -79,6 +83,10 @@ private:
 	TreeItem *_create_monitor_item(const StringName &p_monitor_name, TreeItem *p_base);
 	void _marker_input(const Ref<InputEvent> &p_event);
 
+	List<float> *_get_monitor_data(const StringName &p_name);
+	void _export_csv(const String &p_path);
+	void _deselect_all();
+
 protected:
 	void _notification(int p_what);
 
@@ -86,7 +94,6 @@ public:
 	void reset();
 	void update_monitors(const Vector<StringName> &p_names);
 	void add_profile_frame(const Vector<float> &p_values);
-	List<float> *get_monitor_data(const StringName &p_name);
 	EditorPerformanceProfiler();
 };
 
