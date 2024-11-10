@@ -823,6 +823,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 					Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
 					uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(tile_set_physics_layer);
 					uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(tile_set_physics_layer);
+					real_t physics_priority = tile_set->get_physics_layer_collision_priority(tile_set_physics_layer);
 
 					RID body = r_cell_data.bodies[tile_set_physics_layer];
 					if (tile_data->get_collision_polygons_count(tile_set_physics_layer) == 0) {
@@ -849,6 +850,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 						ps->body_attach_object_instance_id(body, tile_map_node ? tile_map_node->get_instance_id() : get_instance_id());
 						ps->body_set_collision_layer(body, physics_layer);
 						ps->body_set_collision_mask(body, physics_mask);
+						ps->body_set_collision_priority(body, physics_priority);
 						ps->body_set_pickable(body, false);
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, tile_data->get_constant_linear_velocity(tile_set_physics_layer));
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, tile_data->get_constant_angular_velocity(tile_set_physics_layer));

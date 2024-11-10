@@ -218,6 +218,13 @@
 				Returns the collision mask of bodies on the given TileSet's physics layer.
 			</description>
 		</method>
+		<method name="get_physics_layer_collision_priority" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the collision priority of bodies on the given TileSet's physics layer.
+			</description>
+		</method>
 		<method name="get_physics_layer_physics_material" qualifiers="const">
 			<return type="PhysicsMaterial" />
 			<param index="0" name="layer_index" type="int" />
@@ -547,7 +554,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="layer" type="int" />
 			<description>
-				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
+				Sets the collision layer (as in the physics server) for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_mask">
@@ -555,7 +562,15 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="mask" type="int" />
 			<description>
-				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
+				Sets the collision mask for bodies in the given TileSet physics layer.
+			</description>
+		</method>
+		<method name="set_physics_layer_collision_priority">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="priority" type="float" />
+			<description>
+				Sets the collision priority for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_physics_material">
