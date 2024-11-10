@@ -851,6 +851,7 @@ if env.msvc and not methods.using_clang(env):  # MSVC
                 "/wd4245",
                 "/wd4267",
                 "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
+                "/wd4324",  # C4820 (structure was padded due to alignment specifier)
                 "/wd4514",  # C4514 (unreferenced inline function has been removed)
                 "/wd4714",  # C4714 (function marked as __forceinline not inlined)
                 "/wd4820",  # C4820 (padding added after construct)
