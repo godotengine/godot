@@ -1170,6 +1170,12 @@ String ScriptEditorDebugger::get_var_value(const String &p_var) const {
 	return inspector->get_stack_variable(p_var);
 }
 
+void ScriptEditorDebugger::_resources_reimported(const PackedStringArray &p_resources) {
+	Array msg;
+	msg.push_back(p_resources);
+	_put_msg("scene:reload_cached_files", msg);
+}
+
 int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 	const int *r = node_path_cache.getptr(p_path);
 	if (r) {
@@ -1818,6 +1824,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
+	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &ScriptEditorDebugger::_resources_reimported));
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
