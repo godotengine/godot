@@ -337,6 +337,10 @@ bool VisualShaderNode::is_show_prop_names() const {
 	return false;
 }
 
+bool VisualShaderNode::is_show_prop_name(int p_prop_index) const {
+	return true;
+}
+
 bool VisualShaderNode::is_use_prop_slots() const {
 	return false;
 }

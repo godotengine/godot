@@ -668,6 +668,263 @@ void VisualShaderNodeTransformConstant::_bind_methods() {
 VisualShaderNodeTransformConstant::VisualShaderNodeTransformConstant() {
 }
 
+////////////// Texture Parameter
+
+int VisualShaderNodeTextureParameter::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeTextureParameter::PortType VisualShaderNodeTextureParameter::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeTextureParameter::get_input_port_name(int p_port) const {
+	return "";
+}
+
+int VisualShaderNodeTextureParameter::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeTextureParameter::PortType VisualShaderNodeTextureParameter::get_output_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_SAMPLER;
+		default:
+			return PORT_TYPE_SCALAR;
+	}
+}
+
+String VisualShaderNodeTextureParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "";
+}
+
+void VisualShaderNodeTextureParameter::set_texture_type(TextureType p_texture_type) {
+	ERR_FAIL_INDEX(int(p_texture_type), int(TYPE_MAX));
+	if (texture_type == p_texture_type) {
+		return;
+	}
+	texture_type = p_texture_type;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::TextureType VisualShaderNodeTextureParameter::get_texture_type() const {
+	return texture_type;
+}
+
+void VisualShaderNodeTextureParameter::set_color_default(ColorDefault p_color_default) {
+	ERR_FAIL_INDEX(int(p_color_default), int(COLOR_DEFAULT_MAX));
+	if (color_default == p_color_default) {
+		return;
+	}
+	color_default = p_color_default;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::ColorDefault VisualShaderNodeTextureParameter::get_color_default() const {
+	return color_default;
+}
+
+void VisualShaderNodeTextureParameter::set_texture_filter(TextureFilter p_filter) {
+	ERR_FAIL_INDEX(int(p_filter), int(FILTER_MAX));
+	if (texture_filter == p_filter) {
+		return;
+	}
+	texture_filter = p_filter;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::TextureFilter VisualShaderNodeTextureParameter::get_texture_filter() const {
+	return texture_filter;
+}
+
+void VisualShaderNodeTextureParameter::set_texture_repeat(TextureRepeat p_repeat) {
+	ERR_FAIL_INDEX(int(p_repeat), int(REPEAT_MAX));
+	if (texture_repeat == p_repeat) {
+		return;
+	}
+	texture_repeat = p_repeat;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::TextureRepeat VisualShaderNodeTextureParameter::get_texture_repeat() const {
+	return texture_repeat;
+}
+
+void VisualShaderNodeTextureParameter::set_texture_source(TextureSource p_source) {
+	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
+	if (texture_source == p_source) {
+		return;
+	}
+	texture_source = p_source;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::TextureSource VisualShaderNodeTextureParameter::get_texture_source() const {
+	return texture_source;
+}
+
+Vector<StringName> VisualShaderNodeTextureParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
+	props.push_back("texture_type");
+	if (texture_type == TYPE_DATA || texture_type == TYPE_COLOR) {
+		props.push_back("color_default");
+	}
+	props.push_back("texture_filter");
+	props.push_back("texture_repeat");
+	props.push_back("texture_source");
+	return props;
+}
+
+bool VisualShaderNodeTextureParameter::is_show_prop_names() const {
+	return true;
+}
+
+String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	String warning = VisualShaderNodeParameter::get_warning(p_mode, p_type);
+
+	if (texture_source != SOURCE_NONE) {
+		String texture_source_str;
+
+		switch (texture_source) {
+			case SOURCE_SCREEN: {
+				texture_source_str = "Screen";
+			} break;
+			case SOURCE_DEPTH: {
+				texture_source_str = "Depth";
+			} break;
+			case SOURCE_NORMAL_ROUGHNESS: {
+				texture_source_str = "NormalRoughness";
+			} break;
+			default:
+				break;
+		}
+
+		if (texture_type == TYPE_NORMAL_MAP || texture_type == TYPE_ANISOTROPY) {
+			String texture_type_str;
+
+			switch (texture_type) {
+				case TYPE_NORMAL_MAP: {
+					texture_type_str = "Normal Map";
+				} break;
+				case TYPE_ANISOTROPY: {
+					texture_type_str = "Anisotropic";
+				} break;
+				default:
+					break;
+			}
+			if (!warning.is_empty()) {
+				warning += "\n";
+			}
+			warning += vformat(RTR("'%s' type is incompatible with '%s' source."), texture_type_str, texture_source_str);
+		} else if (color_default != COLOR_DEFAULT_WHITE) {
+			String color_default_str;
+
+			switch (color_default) {
+				case COLOR_DEFAULT_BLACK: {
+					color_default_str = "Black";
+				} break;
+				case COLOR_DEFAULT_TRANSPARENT: {
+					color_default_str = "Transparent";
+				} break;
+				default:
+					break;
+			}
+			if (!warning.is_empty()) {
+				warning += "\n";
+			}
+			warning += vformat(RTR("'%s' default color is incompatible with '%s' source."), color_default_str, texture_source_str);
+		}
+	}
+
+	return warning;
+}
+
+HashMap<StringName, String> VisualShaderNodeTextureParameter::get_editable_properties_names() const {
+	HashMap<StringName, String> names;
+	names.insert("texture_type", RTR("Type"));
+	names.insert("color_default", RTR("Default Color"));
+	names.insert("texture_filter", RTR("Filter"));
+	names.insert("texture_repeat", RTR("Repeat"));
+	names.insert("texture_source", RTR("Source"));
+	return names;
+}
+
+void VisualShaderNodeTextureParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture_type", "type"), &VisualShaderNodeTextureParameter::set_texture_type);
+	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTextureParameter::get_texture_type);
+
+	ClassDB::bind_method(D_METHOD("set_color_default", "color"), &VisualShaderNodeTextureParameter::set_color_default);
+	ClassDB::bind_method(D_METHOD("get_color_default"), &VisualShaderNodeTextureParameter::get_color_default);
+
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &VisualShaderNodeTextureParameter::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &VisualShaderNodeTextureParameter::get_texture_filter);
+
+	ClassDB::bind_method(D_METHOD("set_texture_repeat", "repeat"), &VisualShaderNodeTextureParameter::set_texture_repeat);
+	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureParameter::get_texture_repeat);
+
+	ClassDB::bind_method(D_METHOD("set_texture_source", "source"), &VisualShaderNodeTextureParameter::set_texture_source);
+	ClassDB::bind_method(D_METHOD("get_texture_source"), &VisualShaderNodeTextureParameter::get_texture_source);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_source", PROPERTY_HINT_ENUM, "None,Screen,Depth,NormalRoughness"), "set_texture_source", "get_texture_source");
+
+	BIND_ENUM_CONSTANT(TYPE_DATA);
+	BIND_ENUM_CONSTANT(TYPE_COLOR);
+	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
+	BIND_ENUM_CONSTANT(TYPE_ANISOTROPY);
+	BIND_ENUM_CONSTANT(TYPE_MAX);
+
+	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
+	BIND_ENUM_CONSTANT(COLOR_DEFAULT_BLACK);
+	BIND_ENUM_CONSTANT(COLOR_DEFAULT_TRANSPARENT);
+	BIND_ENUM_CONSTANT(COLOR_DEFAULT_MAX);
+
+	BIND_ENUM_CONSTANT(FILTER_DEFAULT);
+	BIND_ENUM_CONSTANT(FILTER_NEAREST);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR);
+	BIND_ENUM_CONSTANT(FILTER_NEAREST_MIPMAP);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR_MIPMAP);
+	BIND_ENUM_CONSTANT(FILTER_NEAREST_MIPMAP_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(FILTER_LINEAR_MIPMAP_ANISOTROPIC);
+	BIND_ENUM_CONSTANT(FILTER_MAX);
+
+	BIND_ENUM_CONSTANT(REPEAT_DEFAULT);
+	BIND_ENUM_CONSTANT(REPEAT_ENABLED);
+	BIND_ENUM_CONSTANT(REPEAT_DISABLED);
+	BIND_ENUM_CONSTANT(REPEAT_MAX);
+
+	BIND_ENUM_CONSTANT(SOURCE_NONE);
+	BIND_ENUM_CONSTANT(SOURCE_SCREEN);
+	BIND_ENUM_CONSTANT(SOURCE_DEPTH);
+	BIND_ENUM_CONSTANT(SOURCE_NORMAL_ROUGHNESS);
+	BIND_ENUM_CONSTANT(SOURCE_MAX);
+}
+
+bool VisualShaderNodeTextureParameter::is_qualifier_supported(Qualifier p_qual) const {
+	switch (p_qual) {
+		case Qualifier::QUAL_NONE:
+			return true;
+		case Qualifier::QUAL_GLOBAL:
+			return true;
+		case Qualifier::QUAL_INSTANCE:
+			return false;
+		default:
+			break;
+	}
+	return false;
+}
+
+bool VisualShaderNodeTextureParameter::is_convertible_to_constant() const {
+	return false; // conversion is not allowed
+}
+
+VisualShaderNodeTextureParameter::VisualShaderNodeTextureParameter() {
+}
+
 ////////////// Texture
 
 String VisualShaderNodeTexture::get_caption() const {
@@ -739,29 +996,156 @@ Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture::get_default_t
 	return ret;
 }
 
+String get_sampler_hint(VisualShaderNodeTexture::TextureType p_texture_type, VisualShaderNodeTextureParameter::ColorDefault p_color_default, VisualShaderNodeTextureParameter::TextureFilter p_texture_filter, VisualShaderNodeTextureParameter::TextureRepeat p_texture_repeat, VisualShaderNodeTexture::Source p_texture_source) {
+	String code;
+	bool has_colon = false;
+
+	// type
+	{
+		String type_code;
+
+		switch (p_texture_type) {
+			case VisualShaderNodeTexture::TYPE_DATA:
+				if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_BLACK) {
+					type_code = "hint_default_black";
+				} else if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_TRANSPARENT) {
+					type_code = "hint_default_transparent";
+				}
+				break;
+			case VisualShaderNodeTexture::TYPE_COLOR:
+				type_code = "source_color";
+				if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_BLACK) {
+					type_code += ", hint_default_black";
+				} else if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_TRANSPARENT) {
+					type_code += ", hint_default_transparent";
+				}
+				break;
+			case VisualShaderNodeTexture::TYPE_NORMAL_MAP:
+				type_code = "hint_normal";
+				break;
+			case VisualShaderNodeTexture::TYPE_ANISOTROPY:
+				type_code = "hint_anisotropy";
+				break;
+			default:
+				break;
+		}
+
+		if (!type_code.is_empty()) {
+			code += " : " + type_code;
+			has_colon = true;
+		}
+	}
+
+	// filter
+	{
+		String filter_code;
+
+		switch (p_texture_filter) {
+			case VisualShaderNodeTextureParameter::FILTER_NEAREST:
+				filter_code = "filter_nearest";
+				break;
+			case VisualShaderNodeTextureParameter::FILTER_LINEAR:
+				filter_code = "filter_linear";
+				break;
+			case VisualShaderNodeTextureParameter::FILTER_NEAREST_MIPMAP:
+				filter_code = "filter_nearest_mipmap";
+				break;
+			case VisualShaderNodeTextureParameter::FILTER_LINEAR_MIPMAP:
+				filter_code = "filter_linear_mipmap";
+				break;
+			case VisualShaderNodeTextureParameter::FILTER_NEAREST_MIPMAP_ANISOTROPIC:
+				filter_code = "filter_nearest_mipmap_anisotropic";
+				break;
+			case VisualShaderNodeTextureParameter::FILTER_LINEAR_MIPMAP_ANISOTROPIC:
+				filter_code = "filter_linear_mipmap_anisotropic";
+				break;
+			default:
+				break;
+		}
+
+		if (!filter_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+				has_colon = true;
+			} else {
+				code += ", ";
+			}
+			code += filter_code;
+		}
+	}
+
+	// repeat
+	{
+		String repeat_code;
+
+		switch (p_texture_repeat) {
+			case VisualShaderNodeTextureParameter::REPEAT_ENABLED:
+				repeat_code = "repeat_enable";
+				break;
+			case VisualShaderNodeTextureParameter::REPEAT_DISABLED:
+				repeat_code = "repeat_disable";
+				break;
+			default:
+				break;
+		}
+
+		if (!repeat_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+				has_colon = true;
+			} else {
+				code += ", ";
+			}
+			code += repeat_code;
+		}
+	}
+
+	// source
+	{
+		String source_code;
+
+		switch (p_texture_source) {
+			case VisualShaderNodeTexture::SOURCE_SCREEN:
+				source_code = "hint_screen_texture";
+				break;
+			case VisualShaderNodeTexture::SOURCE_DEPTH:
+				source_code = "hint_depth_texture";
+				break;
+			case VisualShaderNodeTexture::SOURCE_3D_NORMAL:
+			case VisualShaderNodeTexture::SOURCE_ROUGHNESS:
+				source_code = "hint_normal_roughness_texture";
+				break;
+			default:
+				break;
+		}
+
+		if (!source_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+			} else {
+				code += ", ";
+			}
+			code += source_code;
+		}
+	}
+
+	return code;
+}
+
 String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code;
 
 	switch (source) {
 		case SOURCE_TEXTURE: {
 			code += "uniform sampler2D " + make_unique_id(p_type, p_id, "tex");
-			switch (texture_type) {
-				case TYPE_DATA: {
-				} break;
-				case TYPE_COLOR: {
-					code += " : source_color";
-				} break;
-				case TYPE_NORMAL_MAP: {
-					code += " : hint_normal";
-				} break;
-				default: {
-				} break;
-			}
+			code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat, source);
 			code += ";\n";
 		} break;
 		case SOURCE_SCREEN: {
 			if ((p_mode == Shader::MODE_SPATIAL || p_mode == Shader::MODE_CANVAS_ITEM) && p_type == VisualShader::TYPE_FRAGMENT) {
-				code += "uniform sampler2D " + make_unique_id(p_type, p_id, "screen_tex") + " : hint_screen_texture;\n";
+				code += "uniform sampler2D " + make_unique_id(p_type, p_id, "screen_tex");
+				code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat, source);
+				code += ";\n";
 			}
 		} break;
 		case SOURCE_DEPTH:
@@ -769,15 +1153,14 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 		case SOURCE_ROUGHNESS: {
 			if (p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
 				String sampler_name = "";
-				String hint = " : ";
 				if (source == SOURCE_DEPTH) {
 					sampler_name = "depth_tex";
-					hint += "hint_depth_texture;\n";
 				} else {
 					sampler_name = source == SOURCE_ROUGHNESS ? "roughness_tex" : "normal_roughness_tex";
-					hint += "hint_normal_roughness_texture;\n";
 				}
-				code += "uniform sampler2D " + make_unique_id(p_type, p_id, sampler_name) + hint;
+				code += "uniform sampler2D " + make_unique_id(p_type, p_id, sampler_name);
+				code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat, source);
+				code += ";\n";
 			}
 		} break;
 		default: {
@@ -897,6 +1280,17 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	return code;
 }
 
+bool VisualShaderNodeTexture::is_show_prop_names() const {
+	return true;
+}
+
+bool VisualShaderNodeTexture::is_show_prop_name(int p_prop_index) const {
+	if (source == SOURCE_TEXTURE) {
+		return p_prop_index > 1;
+	}
+	return p_prop_index > 0;
+}
+
 void VisualShaderNodeTexture::set_source(Source p_source) {
 	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
 	if (source == p_source) {
@@ -960,52 +1354,172 @@ VisualShaderNodeTexture::TextureType VisualShaderNodeTexture::get_texture_type()
 	return texture_type;
 }
 
+void VisualShaderNodeTexture::set_color_default(VisualShaderNodeTextureParameter::ColorDefault p_color_default) {
+	ERR_FAIL_INDEX(int(p_color_default), int(VisualShaderNodeTextureParameter::COLOR_DEFAULT_MAX));
+	if (color_default == p_color_default) {
+		return;
+	}
+	color_default = p_color_default;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::ColorDefault VisualShaderNodeTexture::get_color_default() const {
+	return color_default;
+}
+
+void VisualShaderNodeTexture::set_texture_filter(VisualShaderNodeTextureParameter::TextureFilter p_filter) {
+	ERR_FAIL_INDEX(int(p_filter), int(VisualShaderNodeTextureParameter::FILTER_MAX));
+	if (texture_filter == p_filter) {
+		return;
+	}
+	texture_filter = p_filter;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::TextureFilter VisualShaderNodeTexture::get_texture_filter() const {
+	return texture_filter;
+}
+
+void VisualShaderNodeTexture::set_texture_repeat(VisualShaderNodeTextureParameter::TextureRepeat p_repeat) {
+	ERR_FAIL_INDEX(int(p_repeat), int(VisualShaderNodeTextureParameter::REPEAT_MAX));
+	if (texture_repeat == p_repeat) {
+		return;
+	}
+	texture_repeat = p_repeat;
+	emit_changed();
+}
+
+VisualShaderNodeTextureParameter::TextureRepeat VisualShaderNodeTexture::get_texture_repeat() const {
+	return texture_repeat;
+}
+
 Vector<StringName> VisualShaderNodeTexture::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("source");
 	if (source == SOURCE_TEXTURE) {
 		props.push_back("texture");
 		props.push_back("texture_type");
+		if (texture_type == TYPE_DATA || texture_type == TYPE_COLOR) {
+			props.push_back("color_default");
+		}
+	}
+	if (source != SOURCE_PORT) {
+		props.push_back("texture_filter");
+		props.push_back("texture_repeat");
 	}
 	return props;
 }
 
+HashMap<StringName, String> VisualShaderNodeTexture::get_editable_properties_names() const {
+	HashMap<StringName, String> names;
+	names.insert("texture_type", RTR("Type"));
+	names.insert("color_default", RTR("Default Color"));
+	names.insert("texture_filter", RTR("Filter"));
+	names.insert("texture_repeat", RTR("Repeat"));
+	return names;
+}
+
 String VisualShaderNodeTexture::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	String warning;
 	if (is_input_port_connected(2) && source != SOURCE_PORT) {
-		return RTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+		warning += RTR("The sampler port is connected but not used. Consider changing the source to 'SamplerPort'.");
+	}
+
+	if (source != SOURCE_TEXTURE && source != SOURCE_PORT) {
+		String texture_source_str;
+
+		switch (source) {
+			case SOURCE_SCREEN: {
+				texture_source_str = "Screen";
+			} break;
+			case SOURCE_DEPTH: {
+				texture_source_str = "Depth";
+			} break;
+			case SOURCE_3D_NORMAL:
+			case SOURCE_ROUGHNESS: {
+				texture_source_str = "NormalRoughness";
+			} break;
+			default:
+				break;
+		}
+
+		if (texture_type == TYPE_NORMAL_MAP || texture_type == TYPE_ANISOTROPY) {
+			String texture_type_str;
+
+			switch (texture_type) {
+				case TYPE_NORMAL_MAP: {
+					texture_type_str = "Normal Map";
+				} break;
+				case TYPE_ANISOTROPY: {
+					texture_type_str = "Anisotropic";
+				} break;
+				default:
+					break;
+			}
+
+			if (!warning.is_empty()) {
+				warning += "\n";
+			}
+			warning += vformat(RTR("'%s' type is incompatible with '%s' source."), texture_type_str, texture_source_str);
+		} else if (color_default != VisualShaderNodeTextureParameter::COLOR_DEFAULT_WHITE) {
+			String color_default_str;
+
+			switch (color_default) {
+				case VisualShaderNodeTextureParameter::COLOR_DEFAULT_BLACK: {
+					color_default_str = "Black";
+				} break;
+				case VisualShaderNodeTextureParameter::COLOR_DEFAULT_TRANSPARENT: {
+					color_default_str = "Transparent";
+				} break;
+				default:
+					break;
+			}
+
+			if (!warning.is_empty()) {
+				warning += "\n";
+			}
+			warning += vformat(RTR("'%s' default color is incompatible with '%s' source."), color_default_str, texture_source_str);
+		}
 	}
 
 	switch (source) {
 		case SOURCE_TEXTURE:
 		case SOURCE_PORT: {
-			return String(); // All good.
+			return warning;
 		} break;
 		case SOURCE_SCREEN: {
 			if ((p_mode == Shader::MODE_SPATIAL || p_mode == Shader::MODE_CANVAS_ITEM) && p_type == VisualShader::TYPE_FRAGMENT) {
-				return String(); // All good.
+				return warning;
 			}
 		} break;
 		case SOURCE_2D_NORMAL:
 		case SOURCE_2D_TEXTURE: {
 			if (p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
-				return String(); // All good.
+				return warning;
 			}
 		} break;
 		case SOURCE_3D_NORMAL:
 		case SOURCE_ROUGHNESS:
 		case SOURCE_DEPTH: {
 			if (p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
-				if (get_output_port_for_preview() == 0) { // Not supported in preview(canvas_item) shader.
-					return RTR("Invalid source for preview.");
+				if (!warning.is_empty()) {
+					warning += "\n";
 				}
-				return String(); // All good.
+				if (get_output_port_for_preview() == 0) { // Not supported in preview(canvas_item) shader.
+					warning += RTR("Invalid source for preview.");
+				}
+				return warning;
 			}
 		} break;
 		default: {
 		} break;
 	}
 
-	return RTR("Invalid source for shader.");
+	if (!warning.is_empty()) {
+		warning += "\n";
+	}
+	warning += RTR("Invalid source for shader.");
+	return warning;
 }
 
 void VisualShaderNodeTexture::_bind_methods() {
@@ -1018,9 +1532,21 @@ void VisualShaderNodeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_type", "value"), &VisualShaderNodeTexture::set_texture_type);
 	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTexture::get_texture_type);
 
+	ClassDB::bind_method(D_METHOD("set_color_default", "color"), &VisualShaderNodeTexture::set_color_default);
+	ClassDB::bind_method(D_METHOD("get_color_default"), &VisualShaderNodeTexture::get_color_default);
+
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &VisualShaderNodeTexture::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &VisualShaderNodeTexture::get_texture_filter);
+
+	ClassDB::bind_method(D_METHOD("set_texture_repeat", "repeat"), &VisualShaderNodeTexture::set_texture_repeat);
+	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTexture::get_texture_repeat);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "source", PROPERTY_HINT_ENUM, "Texture,Screen,Texture2D,NormalMap2D,Depth,SamplerPort,Normal3D,Roughness"), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map"), "set_texture_type", "get_texture_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
 
 	BIND_ENUM_CONSTANT(SOURCE_TEXTURE);
 	BIND_ENUM_CONSTANT(SOURCE_SCREEN);
@@ -1035,6 +1561,7 @@ void VisualShaderNodeTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_DATA);
 	BIND_ENUM_CONSTANT(TYPE_COLOR);
 	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
+	BIND_ENUM_CONSTANT(TYPE_ANISOTROPY);
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 }
 
@@ -6418,263 +6945,6 @@ String get_sampler_hint(VisualShaderNodeTextureParameter::TextureType p_texture_
 	}
 
 	return code;
-}
-
-////////////// Texture Parameter
-
-int VisualShaderNodeTextureParameter::get_input_port_count() const {
-	return 0;
-}
-
-VisualShaderNodeTextureParameter::PortType VisualShaderNodeTextureParameter::get_input_port_type(int p_port) const {
-	return PORT_TYPE_SCALAR;
-}
-
-String VisualShaderNodeTextureParameter::get_input_port_name(int p_port) const {
-	return "";
-}
-
-int VisualShaderNodeTextureParameter::get_output_port_count() const {
-	return 1;
-}
-
-VisualShaderNodeTextureParameter::PortType VisualShaderNodeTextureParameter::get_output_port_type(int p_port) const {
-	switch (p_port) {
-		case 0:
-			return PORT_TYPE_SAMPLER;
-		default:
-			return PORT_TYPE_SCALAR;
-	}
-}
-
-String VisualShaderNodeTextureParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "";
-}
-
-void VisualShaderNodeTextureParameter::set_texture_type(TextureType p_texture_type) {
-	ERR_FAIL_INDEX(int(p_texture_type), int(TYPE_MAX));
-	if (texture_type == p_texture_type) {
-		return;
-	}
-	texture_type = p_texture_type;
-	emit_changed();
-}
-
-VisualShaderNodeTextureParameter::TextureType VisualShaderNodeTextureParameter::get_texture_type() const {
-	return texture_type;
-}
-
-void VisualShaderNodeTextureParameter::set_color_default(ColorDefault p_color_default) {
-	ERR_FAIL_INDEX(int(p_color_default), int(COLOR_DEFAULT_MAX));
-	if (color_default == p_color_default) {
-		return;
-	}
-	color_default = p_color_default;
-	emit_changed();
-}
-
-VisualShaderNodeTextureParameter::ColorDefault VisualShaderNodeTextureParameter::get_color_default() const {
-	return color_default;
-}
-
-void VisualShaderNodeTextureParameter::set_texture_filter(TextureFilter p_filter) {
-	ERR_FAIL_INDEX(int(p_filter), int(FILTER_MAX));
-	if (texture_filter == p_filter) {
-		return;
-	}
-	texture_filter = p_filter;
-	emit_changed();
-}
-
-VisualShaderNodeTextureParameter::TextureFilter VisualShaderNodeTextureParameter::get_texture_filter() const {
-	return texture_filter;
-}
-
-void VisualShaderNodeTextureParameter::set_texture_repeat(TextureRepeat p_repeat) {
-	ERR_FAIL_INDEX(int(p_repeat), int(REPEAT_MAX));
-	if (texture_repeat == p_repeat) {
-		return;
-	}
-	texture_repeat = p_repeat;
-	emit_changed();
-}
-
-VisualShaderNodeTextureParameter::TextureRepeat VisualShaderNodeTextureParameter::get_texture_repeat() const {
-	return texture_repeat;
-}
-
-void VisualShaderNodeTextureParameter::set_texture_source(TextureSource p_source) {
-	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
-	if (texture_source == p_source) {
-		return;
-	}
-	texture_source = p_source;
-	emit_changed();
-}
-
-VisualShaderNodeTextureParameter::TextureSource VisualShaderNodeTextureParameter::get_texture_source() const {
-	return texture_source;
-}
-
-Vector<StringName> VisualShaderNodeTextureParameter::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
-	props.push_back("texture_type");
-	if (texture_type == TYPE_DATA || texture_type == TYPE_COLOR) {
-		props.push_back("color_default");
-	}
-	props.push_back("texture_filter");
-	props.push_back("texture_repeat");
-	props.push_back("texture_source");
-	return props;
-}
-
-bool VisualShaderNodeTextureParameter::is_show_prop_names() const {
-	return true;
-}
-
-String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
-	String warning = VisualShaderNodeParameter::get_warning(p_mode, p_type);
-
-	if (texture_source != SOURCE_NONE) {
-		String texture_source_str;
-
-		switch (texture_source) {
-			case SOURCE_SCREEN: {
-				texture_source_str = "Screen";
-			} break;
-			case SOURCE_DEPTH: {
-				texture_source_str = "Depth";
-			} break;
-			case SOURCE_NORMAL_ROUGHNESS: {
-				texture_source_str = "NormalRoughness";
-			} break;
-			default:
-				break;
-		}
-
-		if (texture_type == TYPE_NORMAL_MAP || texture_type == TYPE_ANISOTROPY) {
-			String texture_type_str;
-
-			switch (texture_type) {
-				case TYPE_NORMAL_MAP: {
-					texture_type_str = "Normal Map";
-				} break;
-				case TYPE_ANISOTROPY: {
-					texture_type_str = "Anisotropic";
-				} break;
-				default:
-					break;
-			}
-			if (!warning.is_empty()) {
-				warning += "\n";
-			}
-			warning += vformat(RTR("'%s' type is incompatible with '%s' source."), texture_type_str, texture_source_str);
-		} else if (color_default != COLOR_DEFAULT_WHITE) {
-			String color_default_str;
-
-			switch (color_default) {
-				case COLOR_DEFAULT_BLACK: {
-					color_default_str = "Black";
-				} break;
-				case COLOR_DEFAULT_TRANSPARENT: {
-					color_default_str = "Transparent";
-				} break;
-				default:
-					break;
-			}
-			if (!warning.is_empty()) {
-				warning += "\n";
-			}
-			warning += vformat(RTR("'%s' default color is incompatible with '%s' source."), color_default_str, texture_source_str);
-		}
-	}
-
-	return warning;
-}
-
-HashMap<StringName, String> VisualShaderNodeTextureParameter::get_editable_properties_names() const {
-	HashMap<StringName, String> names;
-	names.insert("texture_type", RTR("Type"));
-	names.insert("color_default", RTR("Default Color"));
-	names.insert("texture_filter", RTR("Filter"));
-	names.insert("texture_repeat", RTR("Repeat"));
-	names.insert("texture_source", RTR("Source"));
-	return names;
-}
-
-void VisualShaderNodeTextureParameter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_texture_type", "type"), &VisualShaderNodeTextureParameter::set_texture_type);
-	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTextureParameter::get_texture_type);
-
-	ClassDB::bind_method(D_METHOD("set_color_default", "color"), &VisualShaderNodeTextureParameter::set_color_default);
-	ClassDB::bind_method(D_METHOD("get_color_default"), &VisualShaderNodeTextureParameter::get_color_default);
-
-	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &VisualShaderNodeTextureParameter::set_texture_filter);
-	ClassDB::bind_method(D_METHOD("get_texture_filter"), &VisualShaderNodeTextureParameter::get_texture_filter);
-
-	ClassDB::bind_method(D_METHOD("set_texture_repeat", "repeat"), &VisualShaderNodeTextureParameter::set_texture_repeat);
-	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureParameter::get_texture_repeat);
-
-	ClassDB::bind_method(D_METHOD("set_texture_source", "source"), &VisualShaderNodeTextureParameter::set_texture_source);
-	ClassDB::bind_method(D_METHOD("get_texture_source"), &VisualShaderNodeTextureParameter::get_texture_source);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled"), "set_texture_repeat", "get_texture_repeat");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_source", PROPERTY_HINT_ENUM, "None,Screen,Depth,NormalRoughness"), "set_texture_source", "get_texture_source");
-
-	BIND_ENUM_CONSTANT(TYPE_DATA);
-	BIND_ENUM_CONSTANT(TYPE_COLOR);
-	BIND_ENUM_CONSTANT(TYPE_NORMAL_MAP);
-	BIND_ENUM_CONSTANT(TYPE_ANISOTROPY);
-	BIND_ENUM_CONSTANT(TYPE_MAX);
-
-	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
-	BIND_ENUM_CONSTANT(COLOR_DEFAULT_BLACK);
-	BIND_ENUM_CONSTANT(COLOR_DEFAULT_TRANSPARENT);
-	BIND_ENUM_CONSTANT(COLOR_DEFAULT_MAX);
-
-	BIND_ENUM_CONSTANT(FILTER_DEFAULT);
-	BIND_ENUM_CONSTANT(FILTER_NEAREST);
-	BIND_ENUM_CONSTANT(FILTER_LINEAR);
-	BIND_ENUM_CONSTANT(FILTER_NEAREST_MIPMAP);
-	BIND_ENUM_CONSTANT(FILTER_LINEAR_MIPMAP);
-	BIND_ENUM_CONSTANT(FILTER_NEAREST_MIPMAP_ANISOTROPIC);
-	BIND_ENUM_CONSTANT(FILTER_LINEAR_MIPMAP_ANISOTROPIC);
-	BIND_ENUM_CONSTANT(FILTER_MAX);
-
-	BIND_ENUM_CONSTANT(REPEAT_DEFAULT);
-	BIND_ENUM_CONSTANT(REPEAT_ENABLED);
-	BIND_ENUM_CONSTANT(REPEAT_DISABLED);
-	BIND_ENUM_CONSTANT(REPEAT_MAX);
-
-	BIND_ENUM_CONSTANT(SOURCE_NONE);
-	BIND_ENUM_CONSTANT(SOURCE_SCREEN);
-	BIND_ENUM_CONSTANT(SOURCE_DEPTH);
-	BIND_ENUM_CONSTANT(SOURCE_NORMAL_ROUGHNESS);
-	BIND_ENUM_CONSTANT(SOURCE_MAX);
-}
-
-bool VisualShaderNodeTextureParameter::is_qualifier_supported(Qualifier p_qual) const {
-	switch (p_qual) {
-		case Qualifier::QUAL_NONE:
-			return true;
-		case Qualifier::QUAL_GLOBAL:
-			return true;
-		case Qualifier::QUAL_INSTANCE:
-			return false;
-		default:
-			break;
-	}
-	return false;
-}
-
-bool VisualShaderNodeTextureParameter::is_convertible_to_constant() const {
-	return false; // conversion is not allowed
-}
-
-VisualShaderNodeTextureParameter::VisualShaderNodeTextureParameter() {
 }
 
 ////////////// Texture2D Parameter

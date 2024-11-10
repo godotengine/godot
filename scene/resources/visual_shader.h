@@ -359,6 +359,7 @@ public:
 
 	virtual bool is_code_generated() const;
 	virtual bool is_show_prop_names() const;
+	virtual bool is_show_prop_name(int p_prop_index) const;
 	virtual bool is_use_prop_slots() const;
 
 	bool is_disabled() const;

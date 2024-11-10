@@ -381,6 +381,106 @@ public:
 /// TEXTURES
 ///////////////////////////////////////
 
+class VisualShaderNodeTextureParameter : public VisualShaderNodeParameter {
+	GDCLASS(VisualShaderNodeTextureParameter, VisualShaderNodeParameter);
+
+public:
+	enum TextureType {
+		TYPE_DATA,
+		TYPE_COLOR,
+		TYPE_NORMAL_MAP,
+		TYPE_ANISOTROPY,
+		TYPE_MAX,
+	};
+
+	enum ColorDefault {
+		COLOR_DEFAULT_WHITE,
+		COLOR_DEFAULT_BLACK,
+		COLOR_DEFAULT_TRANSPARENT,
+		COLOR_DEFAULT_MAX,
+	};
+
+	enum TextureFilter {
+		FILTER_DEFAULT,
+		FILTER_NEAREST,
+		FILTER_LINEAR,
+		FILTER_NEAREST_MIPMAP,
+		FILTER_LINEAR_MIPMAP,
+		FILTER_NEAREST_MIPMAP_ANISOTROPIC,
+		FILTER_LINEAR_MIPMAP_ANISOTROPIC,
+		FILTER_MAX,
+	};
+
+	enum TextureRepeat {
+		REPEAT_DEFAULT,
+		REPEAT_ENABLED,
+		REPEAT_DISABLED,
+		REPEAT_MAX,
+	};
+
+	enum TextureSource {
+		SOURCE_NONE,
+		SOURCE_SCREEN,
+		SOURCE_DEPTH,
+		SOURCE_NORMAL_ROUGHNESS,
+		SOURCE_MAX,
+	};
+
+protected:
+	TextureType texture_type = TYPE_DATA;
+	ColorDefault color_default = COLOR_DEFAULT_WHITE;
+	TextureFilter texture_filter = FILTER_DEFAULT;
+	TextureRepeat texture_repeat = REPEAT_DEFAULT;
+	TextureSource texture_source = SOURCE_NONE;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_input_port_count() const override;
+	virtual PortType get_input_port_type(int p_port) const override;
+	virtual String get_input_port_name(int p_port) const override;
+
+	virtual int get_output_port_count() const override;
+	virtual PortType get_output_port_type(int p_port) const override;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual HashMap<StringName, String> get_editable_properties_names() const override;
+	virtual bool is_show_prop_names() const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
+
+	Vector<StringName> get_editable_properties() const override;
+
+	void set_texture_type(TextureType p_type);
+	TextureType get_texture_type() const;
+
+	void set_color_default(ColorDefault p_default);
+	ColorDefault get_color_default() const;
+
+	void set_texture_filter(TextureFilter p_filter);
+	TextureFilter get_texture_filter() const;
+
+	void set_texture_repeat(TextureRepeat p_repeat);
+	TextureRepeat get_texture_repeat() const;
+
+	void set_texture_source(TextureSource p_source);
+	TextureSource get_texture_source() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const override;
+	bool is_convertible_to_constant() const override;
+
+	VisualShaderNodeTextureParameter();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureType)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::ColorDefault)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureFilter)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureRepeat)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureSource)
+
+///////////////////////////////////////
+
 class VisualShaderNodeTexture : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTexture, VisualShaderNode);
 	Ref<Texture2D> texture;
@@ -402,12 +502,16 @@ public:
 		TYPE_DATA,
 		TYPE_COLOR,
 		TYPE_NORMAL_MAP,
+		TYPE_ANISOTROPY,
 		TYPE_MAX,
 	};
 
 private:
 	Source source = SOURCE_TEXTURE;
 	TextureType texture_type = TYPE_DATA;
+	VisualShaderNodeTextureParameter::ColorDefault color_default = VisualShaderNodeTextureParameter::COLOR_DEFAULT_WHITE;
+	VisualShaderNodeTextureParameter::TextureFilter texture_filter = VisualShaderNodeTextureParameter::FILTER_DEFAULT;
+	VisualShaderNodeTextureParameter::TextureRepeat texture_repeat = VisualShaderNodeTextureParameter::REPEAT_DEFAULT;
 
 protected:
 	static void _bind_methods();
@@ -429,6 +533,9 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
+	virtual bool is_show_prop_names() const override;
+	virtual bool is_show_prop_name(int p_prop_index) const override;
+
 	void set_source(Source p_source);
 	Source get_source() const;
 
@@ -438,8 +545,17 @@ public:
 	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
 
-	virtual Vector<StringName> get_editable_properties() const override;
+	void set_color_default(VisualShaderNodeTextureParameter::ColorDefault p_default);
+	VisualShaderNodeTextureParameter::ColorDefault get_color_default() const;
 
+	void set_texture_filter(VisualShaderNodeTextureParameter::TextureFilter p_filter);
+	VisualShaderNodeTextureParameter::TextureFilter get_texture_filter() const;
+
+	void set_texture_repeat(VisualShaderNodeTextureParameter::TextureRepeat p_repeat);
+	VisualShaderNodeTextureParameter::TextureRepeat get_texture_repeat() const;
+
+	virtual Vector<StringName> get_editable_properties() const override;
+	virtual HashMap<StringName, String> get_editable_properties_names() const override;
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
@@ -2491,106 +2607,6 @@ public:
 
 	VisualShaderNodeTransformParameter();
 };
-
-///////////////////////////////////////
-
-class VisualShaderNodeTextureParameter : public VisualShaderNodeParameter {
-	GDCLASS(VisualShaderNodeTextureParameter, VisualShaderNodeParameter);
-
-public:
-	enum TextureType {
-		TYPE_DATA,
-		TYPE_COLOR,
-		TYPE_NORMAL_MAP,
-		TYPE_ANISOTROPY,
-		TYPE_MAX,
-	};
-
-	enum ColorDefault {
-		COLOR_DEFAULT_WHITE,
-		COLOR_DEFAULT_BLACK,
-		COLOR_DEFAULT_TRANSPARENT,
-		COLOR_DEFAULT_MAX,
-	};
-
-	enum TextureFilter {
-		FILTER_DEFAULT,
-		FILTER_NEAREST,
-		FILTER_LINEAR,
-		FILTER_NEAREST_MIPMAP,
-		FILTER_LINEAR_MIPMAP,
-		FILTER_NEAREST_MIPMAP_ANISOTROPIC,
-		FILTER_LINEAR_MIPMAP_ANISOTROPIC,
-		FILTER_MAX,
-	};
-
-	enum TextureRepeat {
-		REPEAT_DEFAULT,
-		REPEAT_ENABLED,
-		REPEAT_DISABLED,
-		REPEAT_MAX,
-	};
-
-	enum TextureSource {
-		SOURCE_NONE,
-		SOURCE_SCREEN,
-		SOURCE_DEPTH,
-		SOURCE_NORMAL_ROUGHNESS,
-		SOURCE_MAX,
-	};
-
-protected:
-	TextureType texture_type = TYPE_DATA;
-	ColorDefault color_default = COLOR_DEFAULT_WHITE;
-	TextureFilter texture_filter = FILTER_DEFAULT;
-	TextureRepeat texture_repeat = REPEAT_DEFAULT;
-	TextureSource texture_source = SOURCE_NONE;
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual int get_input_port_count() const override;
-	virtual PortType get_input_port_type(int p_port) const override;
-	virtual String get_input_port_name(int p_port) const override;
-
-	virtual int get_output_port_count() const override;
-	virtual PortType get_output_port_type(int p_port) const override;
-
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	virtual HashMap<StringName, String> get_editable_properties_names() const override;
-	virtual bool is_show_prop_names() const override;
-	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
-
-	Vector<StringName> get_editable_properties() const override;
-
-	void set_texture_type(TextureType p_type);
-	TextureType get_texture_type() const;
-
-	void set_color_default(ColorDefault p_default);
-	ColorDefault get_color_default() const;
-
-	void set_texture_filter(TextureFilter p_filter);
-	TextureFilter get_texture_filter() const;
-
-	void set_texture_repeat(TextureRepeat p_repeat);
-	TextureRepeat get_texture_repeat() const;
-
-	void set_texture_source(TextureSource p_source);
-	TextureSource get_texture_source() const;
-
-	bool is_qualifier_supported(Qualifier p_qual) const override;
-	bool is_convertible_to_constant() const override;
-
-	VisualShaderNodeTextureParameter();
-};
-
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureType)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::ColorDefault)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureFilter)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureRepeat)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureSource)
 
 ///////////////////////////////////////
 

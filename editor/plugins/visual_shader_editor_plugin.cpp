@@ -843,7 +843,16 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		vsnode->remove_meta("shader_type");
 		if (custom_editor) {
 			if (vsnode->is_show_prop_names()) {
-				custom_editor->call_deferred(SNAME("_show_prop_names"), true);
+				int prop_count = vsnode->get_editable_properties().size();
+				Vector<int> indexes;
+
+				for (int j = 0; j < prop_count; j++) {
+					if (vsnode->is_show_prop_name(j)) {
+						indexes.push_back(j);
+					}
+				}
+
+				custom_editor->call_deferred(SNAME("_show_prop_names"), indexes, true);
 			}
 			break;
 		}
@@ -7736,9 +7745,10 @@ public:
 	Vector<EditorProperty *> properties;
 	Vector<Label *> prop_names;
 
-	void _show_prop_names(bool p_show) {
-		for (int i = 0; i < prop_names.size(); i++) {
-			prop_names[i]->set_visible(p_show);
+	void _show_prop_names(Vector<int> p_indexes, bool p_show) {
+		for (const int E : p_indexes) {
+			ERR_FAIL_INDEX(E, prop_names.size());
+			prop_names[E]->set_visible(p_show);
 		}
 	}
 
@@ -7787,8 +7797,8 @@ public:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector); // Used by UndoRedo.
-		ClassDB::bind_method("_show_prop_names", &VisualShaderNodePluginDefaultEditor::_show_prop_names); // Used with call_deferred.
+		ClassDB::bind_method(D_METHOD("_open_inspector", "resource"), &VisualShaderNodePluginDefaultEditor::_open_inspector); // Used by UndoRedo.
+		ClassDB::bind_method(D_METHOD("_show_prop_names", "indexes", "show"), &VisualShaderNodePluginDefaultEditor::_show_prop_names); // Used with call_deferred.
 	}
 };
 
