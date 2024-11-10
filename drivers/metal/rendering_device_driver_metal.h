@@ -239,7 +239,13 @@ private:
 	friend struct PushConstantData;
 
 private:
-	Error _reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
+	/// Contains additional metadata about the shader.
+	struct ShaderMeta {
+		/// Indicates whether the shader uses multiview.
+		bool has_multiview = false;
+	};
+
+	Error _reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta);
 
 public:
 	virtual String shader_get_binary_cache_key() override final;

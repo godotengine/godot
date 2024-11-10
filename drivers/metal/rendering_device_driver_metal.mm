@@ -1026,7 +1026,7 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 
 #pragma mark - Shader
 
-const uint32_t SHADER_BINARY_VERSION = 1;
+const uint32_t SHADER_BINARY_VERSION = 2;
 
 // region Serialization
 
@@ -1503,6 +1503,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 	uint32_t fragment_output_mask = UINT32_MAX;
 	uint32_t spirv_specialization_constants_ids_mask = UINT32_MAX;
 	uint32_t is_compute = UINT32_MAX;
+	uint32_t needs_view_mask_buffer = UINT32_MAX;
 	ComputeSize compute_local_size;
 	PushConstantData push_constant;
 	LocalVector<ShaderStageData> stages;
@@ -1523,6 +1524,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 		size += sizeof(uint32_t); // fragment_output_mask
 		size += sizeof(uint32_t); // spirv_specialization_constants_ids_mask
 		size += sizeof(uint32_t); // is_compute
+		size += sizeof(uint32_t); // needs_view_mask_buffer
 		size += compute_local_size.serialize_size(); // compute_local_size
 		size += push_constant.serialize_size(); // push_constant
 		size += sizeof(uint32_t); // stages.size()
@@ -1547,6 +1549,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 		p_writer.write(fragment_output_mask);
 		p_writer.write(spirv_specialization_constants_ids_mask);
 		p_writer.write(is_compute);
+		p_writer.write(needs_view_mask_buffer);
 		p_writer.write(compute_local_size);
 		p_writer.write(push_constant);
 		p_writer.write(VectorView(stages));
@@ -1561,6 +1564,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 		p_reader.read(fragment_output_mask);
 		p_reader.read(spirv_specialization_constants_ids_mask);
 		p_reader.read(is_compute);
+		p_reader.read(needs_view_mask_buffer);
 		p_reader.read(compute_local_size);
 		p_reader.read(push_constant);
 		p_reader.read(stages);
@@ -1572,14 +1576,16 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 // endregion
 
 String RenderingDeviceDriverMetal::shader_get_binary_cache_key() {
-	return "Metal-SV" + uitos(SHADER_BINARY_VERSION);
+	static const String cache_key = "Metal-SV" + uitos(SHADER_BINARY_VERSION);
+	return cache_key;
 }
 
-Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection) {
+Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta) {
 	using namespace spirv_cross;
 	using spirv_cross::Resource;
 
 	r_reflection = {};
+	r_shader_meta = {};
 
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		ShaderStageSPIRVData const &v = p_spirv[i];
@@ -1811,6 +1817,20 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 			}
 		}
 
+		for (const BuiltInResource &res : resources.builtin_inputs) {
+			if (res.builtin == spv::BuiltInViewIndex || res.builtin == spv::BuiltInViewportIndex) {
+				r_shader_meta.has_multiview = true;
+			}
+		}
+
+		if (!r_shader_meta.has_multiview) {
+			for (const BuiltInResource &res : resources.builtin_outputs) {
+				if (res.builtin == spv::BuiltInViewIndex || res.builtin == spv::BuiltInViewportIndex) {
+					r_shader_meta.has_multiview = true;
+				}
+			}
+		}
+
 		// Specialization constants.
 		for (SpecializationConstant const &constant : compiler.get_specialization_constants()) {
 			int32_t existing = -1;
@@ -1874,7 +1894,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 	using spirv_cross::Resource;
 
 	ShaderReflection spirv_data;
-	ERR_FAIL_COND_V(_reflect_spirv16(p_spirv, spirv_data), Result());
+	ShaderMeta shader_meta;
+	ERR_FAIL_COND_V(_reflect_spirv16(p_spirv, spirv_data, shader_meta), Result());
 
 	ShaderBinaryData bin_data{};
 	if (!p_shader_name.is_empty()) {
@@ -1893,6 +1914,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 	bin_data.is_compute = spirv_data.is_compute;
 	bin_data.push_constant.size = spirv_data.push_constant_size;
 	bin_data.push_constant.stages = (ShaderStageUsage)(uint8_t)spirv_data.push_constant_stages;
+	bin_data.needs_view_mask_buffer = shader_meta.has_multiview ? 1 : 0;
 
 	for (uint32_t i = 0; i < spirv_data.uniform_sets.size(); i++) {
 		const ::Vector<ShaderUniform> &spirv_set = spirv_data.uniform_sets[i];
@@ -1947,6 +1969,11 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 	msl_options.pad_fragment_output_components = true;
 	msl_options.r32ui_alignment_constant_id = R32UI_ALIGNMENT_CONSTANT_ID;
 	msl_options.agx_manual_cube_grad_fixup = true;
+	if (shader_meta.has_multiview) {
+		msl_options.multiview = true;
+		msl_options.multiview_layered_rendering = true;
+		msl_options.view_mask_buffer_index = VIEW_MASK_BUFFER_INDEX;
+	}
 
 	CompilerGLSL::Options options{};
 	options.vertex.flip_vert_y = true;
@@ -2448,7 +2475,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 #endif
 		shader = cs;
 	} else {
-		MDRenderShader *rs = new MDRenderShader(binary_data.shader_name, uniform_sets, libraries[ShaderStage::SHADER_STAGE_VERTEX], libraries[ShaderStage::SHADER_STAGE_FRAGMENT]);
+		MDRenderShader *rs = new MDRenderShader(binary_data.shader_name, (bool)binary_data.needs_view_mask_buffer, uniform_sets, libraries[ShaderStage::SHADER_STAGE_VERTEX], libraries[ShaderStage::SHADER_STAGE_FRAGMENT]);
 
 		uint32_t *vert_binding = binary_data.push_constant.msl_binding.getptr(SHADER_STAGE_VERTEX);
 		if (vert_binding) {
@@ -2956,6 +2983,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 	for (uint32_t i = 0; i < subpass_count; i++) {
 		MDSubpass &subpass = subpasses.write[i];
 		subpass.subpass_index = i;
+		subpass.view_count = p_view_count;
 		subpass.input_references = p_subpasses[i].input_references;
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
@@ -3675,8 +3703,7 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p_type, ID p_driver_id) {
 	switch (p_type) {
 		case DRIVER_RESOURCE_LOGICAL_DEVICE: {
-			uintptr_t devicePtr = (uintptr_t)(__bridge void *)device;
-			return (uint64_t)devicePtr;
+			return (uint64_t)(uintptr_t)(__bridge void *)device;
 		}
 		case DRIVER_RESOURCE_PHYSICAL_DEVICE: {
 			return 0;
@@ -3685,7 +3712,7 @@ uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p
 			return 0;
 		}
 		case DRIVER_RESOURCE_COMMAND_QUEUE: {
-			return 0;
+			return (uint64_t)(uintptr_t)(__bridge void *)device_queue;
 		}
 		case DRIVER_RESOURCE_QUEUE_FAMILY: {
 			return 0;
@@ -3702,15 +3729,20 @@ uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p
 		case DRIVER_RESOURCE_SAMPLER: {
 			return p_driver_id.id;
 		}
-		case DRIVER_RESOURCE_UNIFORM_SET:
+		case DRIVER_RESOURCE_UNIFORM_SET: {
 			return 0;
+		}
 		case DRIVER_RESOURCE_BUFFER: {
 			return p_driver_id.id;
 		}
-		case DRIVER_RESOURCE_COMPUTE_PIPELINE:
-			return 0;
-		case DRIVER_RESOURCE_RENDER_PIPELINE:
-			return 0;
+		case DRIVER_RESOURCE_COMPUTE_PIPELINE: {
+			MDComputePipeline *pipeline = (MDComputePipeline *)(p_driver_id.id);
+			return (uint64_t)(uintptr_t)(__bridge void *)pipeline->state;
+		}
+		case DRIVER_RESOURCE_RENDER_PIPELINE: {
+			MDRenderPipeline *pipeline = (MDRenderPipeline *)(p_driver_id.id);
+			return (uint64_t)(uintptr_t)(__bridge void *)pipeline->state;
+		}
 		default: {
 			return 0;
 		}
@@ -3842,7 +3874,7 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
 		case SUPPORTS_MULTIVIEW:
-			return false;
+			return multiview_capabilities.is_supported;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return true;
 		case SUPPORTS_ATTACHMENT_VRS:
@@ -3951,6 +3983,18 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 
 	metal_device_properties = memnew(MetalDeviceProperties(device));
 	pixel_formats = memnew(PixelFormats(device));
+	if (metal_device_properties->features.layeredRendering) {
+		multiview_capabilities.is_supported = true;
+		multiview_capabilities.max_view_count = metal_device_properties->limits.maxViewports;
+		// NOTE: I'm not sure what the limit is as I don't see it referenced anywhere
+		multiview_capabilities.max_instance_count = UINT32_MAX;
+
+		print_verbose("- Metal multiview supported:");
+		print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));
+		print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
+	} else {
+		print_verbose("- Metal multiview not supported");
+	}
 
 	// Check required features and abort if any of them is missing.
 	if (!metal_device_properties->features.imageCubeArray) {
