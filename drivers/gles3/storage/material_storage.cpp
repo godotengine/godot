@@ -2427,8 +2427,11 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 
 	if (p_value.get_type() == Variant::NIL) {
 		material->params.erase(p_param);
+	} else if (p_value.get_type() == Variant::OBJECT) {
+		Ref<::Texture> tex = p_value; // Use the global namespace to avoid conflict with GLES3::Texture
+		ERR_FAIL_COND_MSG(tex.is_null(), "Invalid object, only texture based objects are allowed.");
+		material->params[p_param] = p_value;
 	} else {
-		ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT); //object not allowed
 		material->params[p_param] = p_value;
 	}
 
