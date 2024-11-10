@@ -3,6 +3,13 @@
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17"
+    },
+
+    "ghcr.io/nordcominc/devcontainer-features/android-sdk:1": {
+      "platform": "34",
+      "build_tools": "34.0.0",
+      "extra_packages": "ndk;23.3.8568313, cmdline-tools;latest"
+      
     }
   }
 }
