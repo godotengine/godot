@@ -120,9 +120,9 @@ struct VersatileResourceTemplate {
 class RenderingDeviceDriver : public RenderingDeviceCommons {
 public:
 	struct ID {
-		size_t id = 0;
+		uint64_t id = 0;
 		_ALWAYS_INLINE_ ID() = default;
-		_ALWAYS_INLINE_ ID(size_t p_id) :
+		_ALWAYS_INLINE_ ID(uint64_t p_id) :
 				id(p_id) {}
 	};
 
@@ -138,11 +138,9 @@ public:
 		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { return id != p_other.id; } \
 		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {}                     \
 		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}                            \
-		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((size_t)p_ptr) {}                       \
+		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {}                     \
 		_ALWAYS_INLINE_ m_name##ID() = default;                                                       \
-	};                                                                                                \
-	/* Ensure type-punnable to pointer. Makes some things easier.*/                                   \
-	static_assert(sizeof(m_name##ID) == sizeof(void *));
+	};
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
 	DEFINE_ID(Buffer);
