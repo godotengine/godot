@@ -26,6 +26,14 @@ public:
 	/// Create box from 2 points
 	static AABox	sFromTwoPoints(Vec3Arg inP1, Vec3Arg inP2)			{ return AABox(Vec3::sMin(inP1, inP2), Vec3::sMax(inP1, inP2)); }
 
+	/// Create box from indexed triangle
+	static AABox	sFromTriangle(const VertexList &inVertices, const IndexedTriangle &inTriangle)
+	{
+		AABox box = sFromTwoPoints(Vec3(inVertices[inTriangle.mIdx[0]]), Vec3(inVertices[inTriangle.mIdx[1]]));
+		box.Encapsulate(Vec3(inVertices[inTriangle.mIdx[2]]));
+		return box;
+	}
+
 	/// Get bounding box of size 2 * FLT_MAX
 	static AABox	sBiggest()
 	{

@@ -200,15 +200,12 @@ MeshShape::MeshShape(const MeshShapeSettings &inSettings, ShapeResult &outResult
 	// Convert to buffer
 	AABBTreeToBuffer<TriangleCodec, NodeCodec> buffer;
 	const char *error = nullptr;
-	if (!buffer.Convert(inSettings.mTriangleVertices, root, inSettings.mPerTriangleUserData, error))
+	if (!buffer.Convert(builder.GetTriangles(), builder.GetNodes(), inSettings.mTriangleVertices, root, inSettings.mPerTriangleUserData, error))
 	{
 		outResult.SetError(error);
 		delete root;
 		return;
 	}
-
-	// Kill tree
-	delete root;
 
 	// Move data to this class
 	mTree.swap(buffer.GetBuffer());

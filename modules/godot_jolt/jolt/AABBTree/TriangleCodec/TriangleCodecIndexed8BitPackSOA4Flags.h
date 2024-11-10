@@ -149,20 +149,21 @@ public:
 
 		/// Pack the triangles in inContainer to ioBuffer. This stores the mMaterialIndex of a triangle in the 8 bit flags.
 		/// Returns uint(-1) on error.
-		uint						Pack(const IndexedTriangleList &inTriangles, bool inStoreUserData, ByteBuffer &ioBuffer, const char *&outError)
+		uint						Pack(const IndexedTriangle *inTriangles, uint inNumTriangles, bool inStoreUserData, ByteBuffer &ioBuffer, const char *&outError)
 		{
+			JPH_ASSERT(inNumTriangles > 0);
+
 			// Determine position of triangles start
 			uint offset = (uint)ioBuffer.size();
 
 			// Update stats
-			uint tri_count = (uint)inTriangles.size();
-			mNumTriangles += tri_count;
+			mNumTriangles += inNumTriangles;
 
 			// Allocate triangle block header
 			TriangleBlockHeader *header = ioBuffer.Allocate<TriangleBlockHeader>();
 
 			// Compute first vertex that this batch will use (ensuring there's enough room if none of the vertices are shared)
-			uint start_vertex = Clamp((int)mVertices.size() - 256 + (int)tri_count * 3, 0, (int)mVertices.size());
+			uint start_vertex = Clamp((int)mVertices.size() - 256 + (int)inNumTriangles * 3, 0, (int)mVertices.size());
 
 			// Store the start vertex offset, this will later be patched to give the delta offset relative to the triangle block
 			mOffsetsToPatch.push_back(uint((uint8 *)&header->mFlags - &ioBuffer[0]));
@@ -170,7 +171,7 @@ public:
 			JPH_ASSERT(header->mFlags <= OFFSET_TO_VERTICES_MASK, "Offset to vertices doesn't fit");
 
 			// When we store user data we need to store the offset to the user data in TriangleBlocks
-			uint padded_triangle_count = AlignUp(tri_count, 4);
+			uint padded_triangle_count = AlignUp(inNumTriangles, 4);
 			if (inStoreUserData)
 			{
 				uint32 num_blocks = padded_triangle_count >> 2;
@@ -186,8 +187,8 @@ public:
 					for (uint block_tri_idx = 0; block_tri_idx < 4; ++block_tri_idx)
 					{
 						// Fetch vertex index. Create degenerate triangles for padding triangles.
-						bool triangle_available = t + block_tri_idx < tri_count;
-						uint32 src_vertex_index = triangle_available? inTriangles[t + block_tri_idx].mIdx[vertex_nr] : inTriangles[tri_count - 1].mIdx[0];
+						bool triangle_available = t + block_tri_idx < inNumTriangles;
+						uint32 src_vertex_index = triangle_available? inTriangles[t + block_tri_idx].mIdx[vertex_nr] : inTriangles[inNumTriangles - 1].mIdx[0];
 
 						// Check if we've seen this vertex before and if it is in the range that we can encode
 						uint32 &vertex_index = mVertexMap[src_vertex_index];
@@ -221,8 +222,8 @@ public:
 			// Store user data
 			if (inStoreUserData)
 			{
-				uint32 *user_data = ioBuffer.Allocate<uint32>(tri_count);
-				for (uint t = 0; t < tri_count; ++t)
+				uint32 *user_data = ioBuffer.Allocate<uint32>(inNumTriangles);
+				for (uint t = 0; t < inNumTriangles; ++t)
 					user_data[t] = inTriangles[t].mUserData;
 			}
 

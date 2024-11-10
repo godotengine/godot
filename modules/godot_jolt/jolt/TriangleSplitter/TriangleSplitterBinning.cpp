@@ -14,7 +14,7 @@ TriangleSplitterBinning::TriangleSplitterBinning(const VertexList &inVertices, c
 	mMaxNumBins(inMaxNumBins),
 	mNumTrianglesPerBin(inNumTrianglesPerBin)
 {
-	mBins.resize(mMaxNumBins);
+	mBins.resize(mMaxNumBins * 3); // mMaxNumBins per dimension
 }
 
 bool TriangleSplitterBinning::Split(const Range &inTriangles, Range &outLeft, Range &outRight)
@@ -24,51 +24,75 @@ bool TriangleSplitterBinning::Split(const Range &inTriangles, Range &outLeft, Ra
 	for (uint t = inTriangles.mBegin; t < inTriangles.mEnd; ++t)
 		centroid_bounds.Encapsulate(Vec3(mCentroids[mSortedTriangleIdx[t]]));
 
+	// Convert bounds to min coordinate and size
+	// Prevent division by zero if one of the dimensions is zero
+	constexpr float cMinSize = 1.0e-5f;
+	Vec3 bounds_min = centroid_bounds.mMin;
+	Vec3 bounds_size = Vec3::sMax(centroid_bounds.mMax - bounds_min, Vec3::sReplicate(cMinSize));
+
 	float best_cp = FLT_MAX;
 	uint best_dim = 0xffffffff;
 	float best_split = 0;
 
 	// Bin in all dimensions
 	uint num_bins = Clamp(inTriangles.Count() / mNumTrianglesPerBin, mMinNumBins, mMaxNumBins);
+
+	// Initialize bins
 	for (uint dim = 0; dim < 3; ++dim)
 	{
-		float bounds_min = centroid_bounds.mMin[dim];
-		float bounds_size = centroid_bounds.mMax[dim] - bounds_min;
+		// Get bounding box size for this dimension
+		float bounds_min_dim = bounds_min[dim];
+		float bounds_size_dim = bounds_size[dim];
 
-		// Skip axis if too small
-		if (bounds_size < 1.0e-5f)
-			continue;
+		// Get the bins for this dimension
+		Bin *bins_dim = &mBins[num_bins * dim];
 
-		// Initialize bins
 		for (uint b = 0; b < num_bins; ++b)
 		{
-			Bin &bin = mBins[b];
+			Bin &bin = bins_dim[b];
 			bin.mBounds.SetEmpty();
-			bin.mMinCentroid = bounds_min + bounds_size * (b + 1) / num_bins;
+			bin.mMinCentroid = bounds_min_dim + bounds_size_dim * (b + 1) / num_bins;
 			bin.mNumTriangles = 0;
 		}
+	}
 
-		// Bin all triangles
-		for (uint t = inTriangles.mBegin; t < inTriangles.mEnd; ++t)
+	// Bin all triangles in all dimensions at once
+	for (uint t = inTriangles.mBegin; t < inTriangles.mEnd; ++t)
+	{
+		Vec3 centroid_pos(mCentroids[mSortedTriangleIdx[t]]);
+
+		AABox triangle_bounds = AABox::sFromTriangle(mVertices, GetTriangle(t));
+
+		Vec3 bin_no_f = (centroid_pos - bounds_min) / bounds_size * float(num_bins);
+		UVec4 bin_no = UVec4::sMin(bin_no_f.ToInt(), UVec4::sReplicate(num_bins - 1));
+
+		for (uint dim = 0; dim < 3; ++dim)
 		{
-			float centroid_pos = mCentroids[mSortedTriangleIdx[t]][dim];
-
 			// Select bin
-			uint bin_no = min(uint((centroid_pos - bounds_min) / bounds_size * num_bins), num_bins - 1);
-			Bin &bin = mBins[bin_no];
+			Bin &bin = mBins[num_bins * dim + bin_no[dim]];
 
 			// Accumulate triangle in bin
-			bin.mBounds.Encapsulate(mVertices, GetTriangle(t));
-			bin.mMinCentroid = min(bin.mMinCentroid, centroid_pos);
+			bin.mBounds.Encapsulate(triangle_bounds);
+			bin.mMinCentroid = min(bin.mMinCentroid, centroid_pos[dim]);
 			bin.mNumTriangles++;
 		}
+	}
+
+	for (uint dim = 0; dim < 3; ++dim)
+	{
+		// Skip axis if too small
+		if (bounds_size[dim] <= cMinSize)
+			continue;
+
+		// Get the bins for this dimension
+		Bin *bins_dim = &mBins[num_bins * dim];
 
 		// Calculate totals left to right
 		AABox prev_bounds;
 		int prev_triangles = 0;
 		for (uint b = 0; b < num_bins; ++b)
 		{
-			Bin &bin = mBins[b];
+			Bin &bin = bins_dim[b];
 			bin.mBoundsAccumulatedLeft = prev_bounds; // Don't include this node as we'll take a split on the left side of the bin
 			bin.mNumTrianglesAccumulatedLeft = prev_triangles;
 			prev_bounds.Encapsulate(bin.mBounds);
@@ -80,7 +104,7 @@ bool TriangleSplitterBinning::Split(const Range &inTriangles, Range &outLeft, Ra
 		prev_triangles = 0;
 		for (int b = num_bins - 1; b >= 0; --b)
 		{
-			Bin &bin = mBins[b];
+			Bin &bin = bins_dim[b];
 			prev_bounds.Encapsulate(bin.mBounds);
 			prev_triangles += bin.mNumTriangles;
 			bin.mBoundsAccumulatedRight = prev_bounds;
@@ -91,7 +115,7 @@ bool TriangleSplitterBinning::Split(const Range &inTriangles, Range &outLeft, Ra
 		for (uint b = 1; b < num_bins; ++b) // Start at 1 since selecting bin 0 would result in everything ending up on the right side
 		{
 			// Calculate surface area heuristic and see if it is better than the current best
-			const Bin &bin = mBins[b];
+			const Bin &bin = bins_dim[b];
 			float cp = bin.mBoundsAccumulatedLeft.GetSurfaceArea() * bin.mNumTrianglesAccumulatedLeft + bin.mBoundsAccumulatedRight.GetSurfaceArea() * bin.mNumTrianglesAccumulatedRight;
 			if (cp < best_cp)
 			{

@@ -216,6 +216,14 @@ public:
 	/// If you want the body to wake up when it is sleeping, use BodyInterface::MoveKinematic instead.
 	void					MoveKinematic(RVec3Arg inTargetPosition, QuatArg inTargetRotation, float inDeltaTime);
 
+	/// Gets the properties needed to do buoyancy calculations
+	/// @param inSurfacePosition Position of the fluid surface in world space
+	/// @param inSurfaceNormal Normal of the fluid surface (should point up)
+	/// @param outTotalVolume On return this contains the total volume of the shape
+	/// @param outSubmergedVolume On return this contains the submerged volume of the shape
+	/// @param outRelativeCenterOfBuoyancy On return this contains the center of mass of the submerged volume relative to the center of mass of the body
+	void					GetSubmergedVolume(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float &outTotalVolume, float &outSubmergedVolume, Vec3 &outRelativeCenterOfBuoyancy) const;
+
 	/// Applies an impulse to the body that simulates fluid buoyancy and drag.
 	/// If you want the body to wake up when it is sleeping, use BodyInterface::ApplyBuoyancyImpulse instead.
 	/// @param inSurfacePosition Position of the fluid surface in world space
@@ -228,6 +236,20 @@ public:
 	/// @param inDeltaTime Delta time of the next simulation step (in s)
 	/// @return true if an impulse was applied, false if the body was not in the fluid
 	bool					ApplyBuoyancyImpulse(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime);
+
+	/// Applies an impulse to the body that simulates fluid buoyancy and drag.
+	/// If you want the body to wake up when it is sleeping, use BodyInterface::ApplyBuoyancyImpulse instead.
+	/// @param inTotalVolume Total volume of the shape of this body (m^3)
+	/// @param inSubmergedVolume Submerged volume of the shape of this body (m^3)
+	/// @param inRelativeCenterOfBuoyancy The center of mass of the submerged volume relative to the center of mass of the body
+	/// @param inBuoyancy The buoyancy factor for the body. 1 = neutral body, < 1 sinks, > 1 floats. Note that we don't use the fluid density since it is harder to configure than a simple number between [0, 2]
+	/// @param inLinearDrag Linear drag factor that slows down the body when in the fluid (approx. 0.5)
+	/// @param inAngularDrag Angular drag factor that slows down rotation when the body is in the fluid (approx. 0.01)
+	/// @param inFluidVelocity The average velocity of the fluid (in m/s) in which the body resides
+	/// @param inGravity The gravity vector (pointing down)
+	/// @param inDeltaTime Delta time of the next simulation step (in s)
+	/// @return true if an impulse was applied, false if the body was not in the fluid
+	bool					ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Vec3Arg inRelativeCenterOfBuoyancy, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime);
 
 	/// Check if this body has been added to the physics system
 	inline bool				IsInBroadPhase() const											{ return (mFlags.load(memory_order_relaxed) & uint8(EFlags::IsInBroadPhase)) != 0; }

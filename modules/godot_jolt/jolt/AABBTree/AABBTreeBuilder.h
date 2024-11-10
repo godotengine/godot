@@ -36,62 +36,62 @@ class JPH_EXPORT AABBTreeBuilder
 {
 public:
 	/// A node in the tree, contains the AABox for the tree and any child nodes or triangles
-	class Node : public NonCopyable
+	class Node
 	{
 	public:
 		JPH_OVERRIDE_NEW_DELETE
 
-		/// Constructor
-							Node();
-							~Node();
+		/// Indicates that there is no child
+		static constexpr uint cInvalidNodeIndex = ~uint(0);
 
 		/// Get number of triangles in this node
-		inline uint			GetTriangleCount() const				{ return uint(mTriangles.size()); }
+		inline uint			GetTriangleCount() const				{ return mNumTriangles; }
 
 		/// Check if this node has any children
-		inline bool			HasChildren() const						{ return mChild[0] != nullptr || mChild[1] != nullptr; }
+		inline bool			HasChildren() const						{ return mChild[0] != cInvalidNodeIndex || mChild[1] != cInvalidNodeIndex; }
 
 		/// Min depth of tree
-		uint				GetMinDepth() const;
+		uint				GetMinDepth(const Array<Node> &inNodes) const;
 
 		/// Max depth of tree
-		uint				GetMaxDepth() const;
+		uint				GetMaxDepth(const Array<Node> &inNodes) const;
 
 		/// Number of nodes in tree
-		uint				GetNodeCount() const;
+		uint				GetNodeCount(const Array<Node> &inNodes) const;
 
 		/// Number of leaf nodes in tree
-		uint				GetLeafNodeCount() const;
+		uint				GetLeafNodeCount(const Array<Node> &inNodes) const;
 
 		/// Get triangle count in tree
-		uint				GetTriangleCountInTree() const;
+		uint				GetTriangleCountInTree(const Array<Node> &inNodes) const;
 
 		/// Calculate min and max triangles per node
-		void				GetTriangleCountPerNode(float &outAverage, uint &outMin, uint &outMax) const;
+		void				GetTriangleCountPerNode(const Array<Node> &inNodes, float &outAverage, uint &outMin, uint &outMax) const;
 
 		/// Calculate the total cost of the tree using the surface area heuristic
-		float				CalculateSAHCost(float inCostTraversal, float inCostLeaf) const;
+		float				CalculateSAHCost(const Array<Node> &inNodes, float inCostTraversal, float inCostLeaf) const;
 
 		/// Recursively get children (breadth first) to get in total inN children (or less if there are no more)
-		void				GetNChildren(uint inN, Array<const Node *> &outChildren) const;
+		void				GetNChildren(const Array<Node> &inNodes, uint inN, Array<const Node *> &outChildren) const;
 
 		/// Bounding box
 		AABox				mBounds;
 
 		/// Triangles (if no child nodes)
-		IndexedTriangleList mTriangles;
+		uint				mTrianglesBegin; // Index into mTriangles
+		uint				mNumTriangles = 0;
 
-		/// Child nodes (if no triangles)
-		Node *				mChild[2];
+		/// Child node indices (if no triangles)
+		uint				mChild[2] = { cInvalidNodeIndex, cInvalidNodeIndex };
 
 	private:
 		friend class AABBTreeBuilder;
 
 		/// Recursive helper function to calculate cost of the tree
-		float				CalculateSAHCostInternal(float inCostTraversalDivSurfaceArea, float inCostLeafDivSurfaceArea) const;
+		float				CalculateSAHCostInternal(const Array<Node> &inNodes, float inCostTraversalDivSurfaceArea, float inCostLeafDivSurfaceArea) const;
 
 		/// Recursive helper function to calculate min and max triangles per node
-		void				GetTriangleCountPerNodeInternal(float &outAverage, uint &outAverageDivisor, uint &outMin, uint &outMax) const;
+		void				GetTriangleCountPerNodeInternal(const Array<Node> &inNodes, float &outAverage, uint &outAverageDivisor, uint &outMin, uint &outMax) const;
 	};
 
 	/// Constructor
@@ -100,11 +100,19 @@ public:
 	/// Recursively build tree, returns the root node of the tree
 	Node *					Build(AABBTreeBuilderStats &outStats);
 
+	/// Get all nodes
+	const Array<Node> &		GetNodes() const						{ return mNodes; }
+
+	/// Get all triangles
+	const Array<IndexedTriangle> &GetTriangles() const				{ return mTriangles; }
+
 private:
-	Node *					BuildInternal(const TriangleSplitter::Range &inTriangles);
+	uint					BuildInternal(const TriangleSplitter::Range &inTriangles);
 
 	TriangleSplitter &		mTriangleSplitter;
 	const uint				mMaxTrianglesPerLeaf;
+	Array<Node>				mNodes;
+	Array<IndexedTriangle>	mTriangles;
 };
 
 JPH_NAMESPACE_END

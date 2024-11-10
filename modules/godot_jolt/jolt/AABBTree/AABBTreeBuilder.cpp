@@ -8,84 +8,72 @@
 
 JPH_NAMESPACE_BEGIN
 
-AABBTreeBuilder::Node::Node()
-{
-	mChild[0] = nullptr;
-	mChild[1] = nullptr;
-}
-
-AABBTreeBuilder::Node::~Node()
-{
-	delete mChild[0];
-	delete mChild[1];
-}
-
-uint AABBTreeBuilder::Node::GetMinDepth() const
+uint AABBTreeBuilder::Node::GetMinDepth(const Array<Node> &inNodes) const
 {
 	if (HasChildren())
 	{
-		uint left = mChild[0]->GetMinDepth();
-		uint right = mChild[1]->GetMinDepth();
+		uint left = inNodes[mChild[0]].GetMinDepth(inNodes);
+		uint right = inNodes[mChild[1]].GetMinDepth(inNodes);
 		return min(left, right) + 1;
 	}
 	else
 		return 1;
 }
 
-uint AABBTreeBuilder::Node::GetMaxDepth() const
+uint AABBTreeBuilder::Node::GetMaxDepth(const Array<Node> &inNodes) const
 {
 	if (HasChildren())
 	{
-		uint left = mChild[0]->GetMaxDepth();
-		uint right = mChild[1]->GetMaxDepth();
+		uint left = inNodes[mChild[0]].GetMaxDepth(inNodes);
+		uint right = inNodes[mChild[1]].GetMaxDepth(inNodes);
 		return max(left, right) + 1;
 	}
 	else
 		return 1;
 }
 
-uint AABBTreeBuilder::Node::GetNodeCount() const
+uint AABBTreeBuilder::Node::GetNodeCount(const Array<Node> &inNodes) const
 {
 	if (HasChildren())
-		return mChild[0]->GetNodeCount() + mChild[1]->GetNodeCount() + 1;
+		return inNodes[mChild[0]].GetNodeCount(inNodes) + inNodes[mChild[1]].GetNodeCount(inNodes) + 1;
 	else
 		return 1;
 }
 
-uint AABBTreeBuilder::Node::GetLeafNodeCount() const
+uint AABBTreeBuilder::Node::GetLeafNodeCount(const Array<Node> &inNodes) const
 {
 	if (HasChildren())
-		return mChild[0]->GetLeafNodeCount() + mChild[1]->GetLeafNodeCount();
+		return inNodes[mChild[0]].GetLeafNodeCount(inNodes) + inNodes[mChild[1]].GetLeafNodeCount(inNodes);
 	else
 		return 1;
 }
 
-uint AABBTreeBuilder::Node::GetTriangleCountInTree() const
+uint AABBTreeBuilder::Node::GetTriangleCountInTree(const Array<Node> &inNodes) const
 {
 	if (HasChildren())
-		return mChild[0]->GetTriangleCountInTree() + mChild[1]->GetTriangleCountInTree();
+		return inNodes[mChild[0]].GetTriangleCountInTree(inNodes) + inNodes[mChild[1]].GetTriangleCountInTree(inNodes);
 	else
 		return GetTriangleCount();
 }
 
-void AABBTreeBuilder::Node::GetTriangleCountPerNode(float &outAverage, uint &outMin, uint &outMax) const
+void AABBTreeBuilder::Node::GetTriangleCountPerNode(const Array<Node> &inNodes, float &outAverage, uint &outMin, uint &outMax) const
 {
 	outMin = INT_MAX;
 	outMax = 0;
 	outAverage = 0;
 	uint avg_divisor = 0;
-	GetTriangleCountPerNodeInternal(outAverage, avg_divisor, outMin, outMax);
+	GetTriangleCountPerNodeInternal(inNodes, outAverage, avg_divisor, outMin, outMax);
 	if (avg_divisor > 0)
 		outAverage /= avg_divisor;
 }
 
-float AABBTreeBuilder::Node::CalculateSAHCost(float inCostTraversal, float inCostLeaf) const
+float AABBTreeBuilder::Node::CalculateSAHCost(const Array<Node> &inNodes, float inCostTraversal, float inCostLeaf) const
 {
 	float surface_area = mBounds.GetSurfaceArea();
-	return surface_area > 0.0f? CalculateSAHCostInternal(inCostTraversal / surface_area, inCostLeaf / surface_area) : 0.0f;
+	return surface_area > 0.0f? CalculateSAHCostInternal(inNodes, inCostTraversal / surface_area, inCostLeaf / surface_area) : 0.0f;
 }
 
-void AABBTreeBuilder::Node::GetNChildren(uint inN, Array<const Node *> &outChildren) const
+void AABBTreeBuilder::Node::GetNChildren(const Array<Node> &inNodes, uint inN, Array<const Node*> &outChildren) const
 {
 	JPH_ASSERT(outChildren.empty());
 
@@ -94,8 +82,8 @@ void AABBTreeBuilder::Node::GetNChildren(uint inN, Array<const Node *> &outChild
 		return;
 
 	// Start with the children of this node
-	outChildren.push_back(mChild[0]);
-	outChildren.push_back(mChild[1]);
+	outChildren.push_back(&inNodes[mChild[0]]);
+	outChildren.push_back(&inNodes[mChild[1]]);
 
 	size_t next = 0;
 	bool all_triangles = true;
@@ -116,8 +104,8 @@ void AABBTreeBuilder::Node::GetNChildren(uint inN, Array<const Node *> &outChild
 		if (to_expand->HasChildren())
 		{
 			outChildren.erase(outChildren.begin() + next);
-			outChildren.push_back(to_expand->mChild[0]);
-			outChildren.push_back(to_expand->mChild[1]);
+			outChildren.push_back(&inNodes[to_expand->mChild[0]]);
+			outChildren.push_back(&inNodes[to_expand->mChild[1]]);
 			all_triangles = false;
 		}
 		else
@@ -127,22 +115,22 @@ void AABBTreeBuilder::Node::GetNChildren(uint inN, Array<const Node *> &outChild
 	}
 }
 
-float AABBTreeBuilder::Node::CalculateSAHCostInternal(float inCostTraversalDivSurfaceArea, float inCostLeafDivSurfaceArea) const
+float AABBTreeBuilder::Node::CalculateSAHCostInternal(const Array<Node> &inNodes, float inCostTraversalDivSurfaceArea, float inCostLeafDivSurfaceArea) const
 {
 	if (HasChildren())
 		return inCostTraversalDivSurfaceArea * mBounds.GetSurfaceArea()
-			+ mChild[0]->CalculateSAHCostInternal(inCostTraversalDivSurfaceArea, inCostLeafDivSurfaceArea)
-			+ mChild[1]->CalculateSAHCostInternal(inCostTraversalDivSurfaceArea, inCostLeafDivSurfaceArea);
+			+ inNodes[mChild[0]].CalculateSAHCostInternal(inNodes, inCostTraversalDivSurfaceArea, inCostLeafDivSurfaceArea)
+			+ inNodes[mChild[1]].CalculateSAHCostInternal(inNodes, inCostTraversalDivSurfaceArea, inCostLeafDivSurfaceArea);
 	else
 		return inCostLeafDivSurfaceArea * mBounds.GetSurfaceArea() * GetTriangleCount();
 }
 
-void AABBTreeBuilder::Node::GetTriangleCountPerNodeInternal(float &outAverage, uint &outAverageDivisor, uint &outMin, uint &outMax) const
+void AABBTreeBuilder::Node::GetTriangleCountPerNodeInternal(const Array<Node> &inNodes, float &outAverage, uint &outAverageDivisor, uint &outMin, uint &outMax) const
 {
 	if (HasChildren())
 	{
-		mChild[0]->GetTriangleCountPerNodeInternal(outAverage, outAverageDivisor, outMin, outMax);
-		mChild[1]->GetTriangleCountPerNodeInternal(outAverage, outAverageDivisor, outMin, outMax);
+		inNodes[mChild[0]].GetTriangleCountPerNodeInternal(inNodes, outAverage, outAverageDivisor, outMin, outMax);
+		inNodes[mChild[1]].GetTriangleCountPerNodeInternal(inNodes, outAverage, outAverageDivisor, outMin, outMax);
 	}
 	else
 	{
@@ -162,28 +150,36 @@ AABBTreeBuilder::AABBTreeBuilder(TriangleSplitter &inSplitter, uint inMaxTriangl
 AABBTreeBuilder::Node *AABBTreeBuilder::Build(AABBTreeBuilderStats &outStats)
 {
 	TriangleSplitter::Range initial = mTriangleSplitter.GetInitialRange();
-	Node *root = BuildInternal(initial);
 
+	// Worst case for number of nodes: 1 leaf node per triangle. At each level above, the number of nodes is half that of the level below.
+	// This means that at most we'll be allocating 2x the number of triangles in nodes.
+	mNodes.reserve(2 * initial.Count());
+	mTriangles.reserve(initial.Count());
+
+	// Build the tree
+	Node &root = mNodes[BuildInternal(initial)];
+
+	// Collect stats
 	float avg_triangles_per_leaf;
 	uint min_triangles_per_leaf, max_triangles_per_leaf;
-	root->GetTriangleCountPerNode(avg_triangles_per_leaf, min_triangles_per_leaf, max_triangles_per_leaf);
+	root.GetTriangleCountPerNode(mNodes, avg_triangles_per_leaf, min_triangles_per_leaf, max_triangles_per_leaf);
 
 	mTriangleSplitter.GetStats(outStats.mSplitterStats);
 
-	outStats.mSAHCost = root->CalculateSAHCost(1.0f, 1.0f);
-	outStats.mMinDepth = root->GetMinDepth();
-	outStats.mMaxDepth = root->GetMaxDepth();
-	outStats.mNodeCount = root->GetNodeCount();
-	outStats.mLeafNodeCount = root->GetLeafNodeCount();
+	outStats.mSAHCost = root.CalculateSAHCost(mNodes, 1.0f, 1.0f);
+	outStats.mMinDepth = root.GetMinDepth(mNodes);
+	outStats.mMaxDepth = root.GetMaxDepth(mNodes);
+	outStats.mNodeCount = root.GetNodeCount(mNodes);
+	outStats.mLeafNodeCount = root.GetLeafNodeCount(mNodes);
 	outStats.mMaxTrianglesPerLeaf = mMaxTrianglesPerLeaf;
 	outStats.mTreeMinTrianglesPerLeaf = min_triangles_per_leaf;
 	outStats.mTreeMaxTrianglesPerLeaf = max_triangles_per_leaf;
 	outStats.mTreeAvgTrianglesPerLeaf = avg_triangles_per_leaf;
 
-	return root;
+	return &root;
 }
 
-AABBTreeBuilder::Node *AABBTreeBuilder::BuildInternal(const TriangleSplitter::Range &inTriangles)
+uint AABBTreeBuilder::BuildInternal(const TriangleSplitter::Range &inTriangles)
 {
 	// Check if there are too many triangles left
 	if (inTriangles.Count() > mMaxTrianglesPerLeaf)
@@ -214,26 +210,33 @@ AABBTreeBuilder::Node *AABBTreeBuilder::BuildInternal(const TriangleSplitter::Ra
 		}
 
 		// Recursively build
-		Node *node = new Node();
-		node->mChild[0] = BuildInternal(left);
-		node->mChild[1] = BuildInternal(right);
-		node->mBounds = node->mChild[0]->mBounds;
-		node->mBounds.Encapsulate(node->mChild[1]->mBounds);
-		return node;
+		const uint node_index = (uint)mNodes.size();
+		mNodes.push_back(Node());
+		uint left_index = BuildInternal(left);
+		uint right_index = BuildInternal(right);
+		Node &node = mNodes[node_index];
+		node.mChild[0] = left_index;
+		node.mChild[1] = right_index;
+		node.mBounds = mNodes[node.mChild[0]].mBounds;
+		node.mBounds.Encapsulate(mNodes[node.mChild[1]].mBounds);
+		return node_index;
 	}
 
 	// Create leaf node
-	Node *node = new Node();
-	node->mTriangles.reserve(inTriangles.Count());
+	const uint node_index = (uint)mNodes.size();
+	mNodes.push_back(Node());
+	Node &node = mNodes.back();
+	node.mTrianglesBegin = (uint)mTriangles.size();
+	node.mNumTriangles = inTriangles.mEnd - inTriangles.mBegin;
+	const VertexList &v = mTriangleSplitter.GetVertices();
 	for (uint i = inTriangles.mBegin; i < inTriangles.mEnd; ++i)
 	{
 		const IndexedTriangle &t = mTriangleSplitter.GetTriangle(i);
-		const VertexList &v = mTriangleSplitter.GetVertices();
-		node->mTriangles.push_back(t);
-		node->mBounds.Encapsulate(v, t);
+		mTriangles.push_back(t);
+		node.mBounds.Encapsulate(v, t);
 	}
 
-	return node;
+	return node_index;
 }
 
 JPH_NAMESPACE_END

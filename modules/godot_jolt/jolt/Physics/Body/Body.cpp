@@ -183,51 +183,50 @@ ECanSleep Body::UpdateSleepStateInternal(float inDeltaTime, float inMaxMovement,
 	return mMotionProperties->AccumulateSleepTime(inDeltaTime, inTimeBeforeSleep);
 }
 
-bool Body::ApplyBuoyancyImpulse(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime)
+void Body::GetSubmergedVolume(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float &outTotalVolume, float &outSubmergedVolume, Vec3 &outRelativeCenterOfBuoyancy) const
 {
-	JPH_PROFILE_FUNCTION();
-
-	JPH_ASSERT(IsRigidBody()); // Only implemented for rigid bodies currently
-
-	// We follow the approach from 'Game Programming Gems 6' 2.5 Exact Buoyancy for Polyhedra
-	// All quantities below are in world space
-
 	// For GetSubmergedVolume we transform the surface relative to the body position for increased precision
 	Mat44 rotation = Mat44::sRotation(mRotation);
 	Plane surface_relative_to_body = Plane::sFromPointAndNormal(inSurfacePosition - mPosition, inSurfaceNormal);
 
 	// Calculate amount of volume that is submerged and what the center of buoyancy is
-	float total_volume, submerged_volume;
-	Vec3 relative_center_of_buoyancy;
-	mShape->GetSubmergedVolume(rotation, Vec3::sReplicate(1.0f), surface_relative_to_body, total_volume, submerged_volume, relative_center_of_buoyancy JPH_IF_DEBUG_RENDERER(, mPosition));
+	mShape->GetSubmergedVolume(rotation, Vec3::sReplicate(1.0f), surface_relative_to_body, outTotalVolume, outSubmergedVolume, outRelativeCenterOfBuoyancy JPH_IF_DEBUG_RENDERER(, mPosition));
+}
+
+bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Vec3Arg inRelativeCenterOfBuoyancy, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime)
+{
+	JPH_ASSERT(IsRigidBody()); // Only implemented for rigid bodies currently
+
+	// We follow the approach from 'Game Programming Gems 6' 2.5 Exact Buoyancy for Polyhedra
+	// All quantities below are in world space
 
 	// If we're not submerged, there's no point in doing the rest of the calculations
-	if (submerged_volume > 0.0f)
+	if (inSubmergedVolume > 0.0f)
 	{
 	#ifdef JPH_DEBUG_RENDERER
 		// Draw submerged volume properties
 		if (Shape::sDrawSubmergedVolumes)
 		{
-			RVec3 center_of_buoyancy = mPosition + relative_center_of_buoyancy;
+			RVec3 center_of_buoyancy = mPosition + inRelativeCenterOfBuoyancy;
 			DebugRenderer::sInstance->DrawMarker(center_of_buoyancy, Color::sWhite, 2.0f);
-			DebugRenderer::sInstance->DrawText3D(center_of_buoyancy, StringFormat("%.3f / %.3f", (double)submerged_volume, (double)total_volume));
+			DebugRenderer::sInstance->DrawText3D(center_of_buoyancy, StringFormat("%.3f / %.3f", (double)inSubmergedVolume, (double)inTotalVolume));
 		}
 	#endif // JPH_DEBUG_RENDERER
 
 		// When buoyancy is 1 we want neutral buoyancy, this means that the density of the liquid is the same as the density of the body at that point.
 		// Buoyancy > 1 should make the object float, < 1 should make it sink.
 		float inverse_mass = mMotionProperties->GetInverseMass();
-		float fluid_density = inBuoyancy / (total_volume * inverse_mass);
+		float fluid_density = inBuoyancy / (inTotalVolume * inverse_mass);
 
 		// Buoyancy force = Density of Fluid * Submerged volume * Magnitude of gravity * Up direction (eq 2.5.1)
 		// Impulse = Force * Delta time
 		// We should apply this at the center of buoyancy (= center of mass of submerged volume)
-		Vec3 buoyancy_impulse = -fluid_density * submerged_volume * mMotionProperties->GetGravityFactor() * inGravity * inDeltaTime;
+		Vec3 buoyancy_impulse = -fluid_density * inSubmergedVolume * mMotionProperties->GetGravityFactor() * inGravity * inDeltaTime;
 
 		// Calculate the velocity of the center of buoyancy relative to the fluid
 		Vec3 linear_velocity = mMotionProperties->GetLinearVelocity();
 		Vec3 angular_velocity = mMotionProperties->GetAngularVelocity();
-		Vec3 center_of_buoyancy_velocity = linear_velocity + angular_velocity.Cross(relative_center_of_buoyancy);
+		Vec3 center_of_buoyancy_velocity = linear_velocity + angular_velocity.Cross(inRelativeCenterOfBuoyancy);
 		Vec3 relative_center_of_buoyancy_velocity = inFluidVelocity - center_of_buoyancy_velocity;
 
 		// Here we deviate from the article, instead of eq 2.5.14 we use a quadratic drag formula: https://en.wikipedia.org/wiki/Drag_%28physics%29
@@ -264,7 +263,7 @@ bool Body::ApplyBuoyancyImpulse(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNor
 		float l = (size.GetX() + size.GetY() + size.GetZ()) / 3.0f;
 
 		// Drag torque = -Angular Drag * Mass * Submerged volume / Total volume * (Average width of body)^2 * Angular velocity (eq 2.5.15)
-		Vec3 drag_angular_impulse = (-inAngularDrag * submerged_volume / total_volume * inDeltaTime * Square(l) / inverse_mass) * angular_velocity;
+		Vec3 drag_angular_impulse = (-inAngularDrag * inSubmergedVolume / inTotalVolume * inDeltaTime * Square(l) / inverse_mass) * angular_velocity;
 		Mat44 inv_inertia = GetInverseInertia();
 		Vec3 drag_delta_angular_velocity = inv_inertia * drag_angular_impulse;
 
@@ -275,12 +274,23 @@ bool Body::ApplyBuoyancyImpulse(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNor
 			drag_delta_angular_velocity *= sqrt(angular_velocity_len_sq / drag_delta_angular_velocity_len_sq);
 
 		// Calculate total delta angular velocity due to drag and buoyancy
-		Vec3 delta_angular_velocity = drag_delta_angular_velocity + inv_inertia * relative_center_of_buoyancy.Cross(buoyancy_impulse + drag_impulse);
+		Vec3 delta_angular_velocity = drag_delta_angular_velocity + inv_inertia * inRelativeCenterOfBuoyancy.Cross(buoyancy_impulse + drag_impulse);
 		mMotionProperties->AddAngularVelocityStep(delta_angular_velocity);
 		return true;
 	}
 
 	return false;
+}
+
+bool Body::ApplyBuoyancyImpulse(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNormal, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime)
+{
+	JPH_PROFILE_FUNCTION();
+
+	float total_volume, submerged_volume;
+	Vec3 relative_center_of_buoyancy;
+	GetSubmergedVolume(inSurfacePosition, inSurfaceNormal, total_volume, submerged_volume, relative_center_of_buoyancy);
+
+	return ApplyBuoyancyImpulse(total_volume, submerged_volume, relative_center_of_buoyancy, inBuoyancy, inLinearDrag, inAngularDrag, inFluidVelocity, inGravity, inDeltaTime);
 }
 
 void Body::SaveState(StateRecorder &inStream) const
