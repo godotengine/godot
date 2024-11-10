@@ -230,7 +230,7 @@
 			If [code]true[/code], when a node is deleted with animation tracks referencing it, a confirmation dialog appears before the tracks are deleted. The dialog will appear even when using the "Delete (No Confirm)" shortcut.
 		</member>
 		<member name="docks/scene_tree/ask_before_revoking_unique_name" type="bool" setter="" getter="">
-			If [code]true[/code], displays a confirmation dialog before left-clicking the "percent" icon next to a node name in the Scene tree dock. When clicked, this icon revokes the node's scene-unique name, which can impact the behavior of scripts that rely on this scene-unique name due to identifiers not being found anymore.
+			If [code]true[/code], displays a confirmation dialog after left-clicking the "percent" icon next to a node name in the Scene tree dock. When clicked, this icon revokes the node's scene-unique name, which can impact the behavior of scripts that rely on this scene-unique name due to identifiers not being found anymore.
 		</member>
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
