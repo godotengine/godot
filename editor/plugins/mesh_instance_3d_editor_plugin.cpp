@@ -40,6 +40,7 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
@@ -445,10 +446,43 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 	}
 
 	debug_uv->set_clip_contents(true);
-	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
+	debug_uv->draw_rect(
+			Rect2(Vector2(), debug_uv->get_size()),
+			get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
+
+	// Draw an outline to represent the UV2's beginning and end area (useful on Black OLED theme).
+	// Top-left coordinate needs to be `(1, 1)` to prevent `clip_contents` from clipping the top and left lines.
+	debug_uv->draw_rect(
+			Rect2(Vector2(1, 1), debug_uv->get_size() - Vector2(1, 1)),
+			get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.125),
+			false,
+			Math::round(EDSCALE));
+
+	for (int x = 1; x <= 7; x++) {
+		debug_uv->draw_line(
+				Vector2(debug_uv->get_size().x * 0.125 * x, 0),
+				Vector2(debug_uv->get_size().x * 0.125 * x, debug_uv->get_size().y),
+				get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.125),
+				Math::round(EDSCALE));
+	}
+
+	for (int y = 1; y <= 7; y++) {
+		debug_uv->draw_line(
+				Vector2(0, debug_uv->get_size().y * 0.125 * y),
+				Vector2(debug_uv->get_size().x, debug_uv->get_size().y * 0.125 * y),
+				get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.125),
+				Math::round(EDSCALE));
+	}
+
 	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
+
 	// Use a translucent color to allow overlapping triangles to be visible.
-	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.5));
+	// Divide line width by the drawing scale set above, so that line width is consistent regardless of dialog size.
+	// Aspect ratio is preserved by the parent AspectRatioContainer, so we only need to check the X size which is always equal to Y.
+	debug_uv->draw_multiline(
+			uv_lines,
+			get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.5),
+			Math::round(EDSCALE) / debug_uv->get_size().x);
 }
 
 void MeshInstance3DEditor::_create_navigation_mesh() {
@@ -613,10 +647,14 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	debug_uv_dialog = memnew(AcceptDialog);
 	debug_uv_dialog->set_title(TTR("UV Channel Debug"));
 	add_child(debug_uv_dialog);
+
+	debug_uv_arc = memnew(AspectRatioContainer);
+	debug_uv_dialog->add_child(debug_uv_arc);
+
 	debug_uv = memnew(Control);
 	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
 	debug_uv->connect(SceneStringName(draw), callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
-	debug_uv_dialog->add_child(debug_uv);
+	debug_uv_arc->add_child(debug_uv);
 
 	navigation_mesh_dialog = memnew(ConfirmationDialog);
 	navigation_mesh_dialog->set_title(TTR("Create NavigationMesh"));
