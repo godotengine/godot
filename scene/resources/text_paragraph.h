@@ -51,6 +51,7 @@ private:
 
 	bool lines_dirty = true;
 
+	float line_spacing = 0.0;
 	float width = -1.0;
 	int max_lines_visible = -1;
 
@@ -121,6 +122,9 @@ public:
 
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
+
+	void set_line_spacing(float p_spacing);
+	float get_line_spacing() const;
 
 	Size2 get_non_wrapped_size() const;
 
