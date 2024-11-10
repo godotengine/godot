@@ -1574,7 +1574,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 	const TreeItem::Cell &cell = cells[p_column];
 
-	if (cell.cached_minimum_size_dirty) {
+	if (cell.cached_minimum_size_dirty || cell.text_buf->is_dirty() || cell.dirty) {
 		Size2 size = Size2(
 				parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right,
 				parent_tree->theme_cache.inner_item_margin_top + parent_tree->theme_cache.inner_item_margin_bottom);
@@ -1593,7 +1593,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 		// Icon.
 		if (cell.mode == CELL_MODE_CHECK) {
-			size.width += parent_tree->theme_cache.checked->get_width() + parent_tree->theme_cache.h_separation;
+			Size2i check_size = parent_tree->theme_cache.checked->get_size();
+			size.width += check_size.width + parent_tree->theme_cache.h_separation;
+			size.height = MAX(size.height, check_size.height);
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = parent_tree->_get_cell_icon_size(cell);
@@ -1605,7 +1607,8 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		for (int i = 0; i < cell.buttons.size(); i++) {
 			Ref<Texture2D> texture = cell.buttons[i].texture;
 			if (texture.is_valid()) {
-				Size2 button_size = texture->get_size() + parent_tree->theme_cache.button_pressed->get_minimum_size();
+				Size2 button_size = texture->get_size();
+				button_size.width += parent_tree->theme_cache.button_pressed->get_minimum_size().width;
 				size.width += button_size.width + parent_tree->theme_cache.button_margin;
 				size.height = MAX(size.height, button_size.height);
 			}
@@ -1889,44 +1892,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 	int height = 0;
 
 	for (int i = 0; i < columns.size(); i++) {
-		if (p_item->cells[i].dirty) {
-			const_cast<Tree *>(this)->update_item_cell(p_item, i);
-		}
-		height = MAX(height, p_item->cells[i].text_buf->get_size().y);
-		for (int j = 0; j < p_item->cells[i].buttons.size(); j++) {
-			Size2i s; // = cache.button_pressed->get_minimum_size();
-			s += p_item->cells[i].buttons[j].texture->get_size();
-			if (s.height > height) {
-				height = s.height;
-			}
-		}
-
-		switch (p_item->cells[i].mode) {
-			case TreeItem::CELL_MODE_CHECK: {
-				int check_icon_h = theme_cache.checked->get_height();
-				if (height < check_icon_h) {
-					height = check_icon_h;
-				}
-				[[fallthrough]];
-			}
-			case TreeItem::CELL_MODE_STRING:
-			case TreeItem::CELL_MODE_CUSTOM:
-			case TreeItem::CELL_MODE_ICON: {
-				Ref<Texture2D> icon = p_item->cells[i].icon;
-				if (!icon.is_null()) {
-					Size2i s = _get_cell_icon_size(p_item->cells[i]);
-					if (s.height > height) {
-						height = s.height;
-					}
-				}
-				if (p_item->cells[i].mode == TreeItem::CELL_MODE_CUSTOM && p_item->cells[i].custom_button) {
-					height += theme_cache.custom_button->get_minimum_size().height;
-				}
-
-			} break;
-			default: {
-			}
-		}
+		height = MAX(height, p_item->get_minimum_size(i).y);
 	}
 	int item_min_height = MAX(theme_cache.font->get_height(theme_cache.font_size), p_item->get_custom_minimum_height());
 	if (height < item_min_height) {
@@ -4702,6 +4668,7 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 	edited_col = p_column;
 	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
 		edited_item->cells.write[p_column].dirty = true;
+		edited_item->cells.write[p_column].cached_minimum_size_dirty = true;
 	}
 	emit_signal(SNAME("item_edited"));
 	if (p_custom_mouse_index != MouseButton::NONE) {
