@@ -30,8 +30,8 @@
 
 #include "game_view_plugin.h"
 
-#include "core/debugger/debugger_marshalls.h"
 #include "core/config/project_settings.h"
+#include "core/debugger/debugger_marshalls.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
