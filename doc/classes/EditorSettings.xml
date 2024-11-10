@@ -1395,7 +1395,7 @@
 			The script editor's documentation comment color. In GDScript, this is used for comments starting with [code]##[/code]. In C#, this is used for comments starting with [code]///[/code] or [code]/**[/code].
 		</member>
 		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
-			The script editor's engine type color ([Vector2], [Vector3], [Color], ...).
+			The script editor's engine type color ([Object], [Mesh], [Node], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
