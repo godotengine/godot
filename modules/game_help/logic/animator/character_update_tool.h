@@ -161,7 +161,7 @@ protected:
     void process_anim(const AnimationMixer::AnimationInstance& ai);
     void process_human_anim() ;
 protected:
-    Ref<HumanConfig> human_config;
+    Ref<HumanBoneConfig> human_config;
     HumanAnim::HumanSkeleton temp_anim_skeleton;
     HumanAnim::HumanSkeleton human_skeleton;
 

@@ -45,6 +45,30 @@ void Light3D::set_param(Param p_param, real_t p_value) {
 			update_configuration_warnings();
 		}
 	}
+
+	if(p_param == PARAM_SHADOW_SPLIT_1_OFFSET) {
+		param[PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET] = param[PARAM_SHADOW_MAX_DISTANCE] * p_value;
+	}
+	else if(p_param == PARAM_SHADOW_SPLIT_2_OFFSET) {
+		param[PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET] = param[PARAM_SHADOW_MAX_DISTANCE] * p_value;
+	}
+	else if(p_param == PARAM_SHADOW_SPLIT_3_OFFSET) {
+		param[PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET] = param[PARAM_SHADOW_MAX_DISTANCE] * p_value;
+	}
+	else if(p_param == PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET) {
+		param[PARAM_SHADOW_SPLIT_1_OFFSET] = p_value / param[PARAM_SHADOW_MAX_DISTANCE];
+	}
+	else if(p_param == PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET) {
+		param[PARAM_SHADOW_SPLIT_2_OFFSET] = p_value / param[PARAM_SHADOW_MAX_DISTANCE];
+	}
+	else if(p_param == PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET) {
+		param[PARAM_SHADOW_SPLIT_3_OFFSET] = p_value / param[PARAM_SHADOW_MAX_DISTANCE];
+	}
+	else if(p_param == PARAM_SHADOW_MAX_DISTANCE) {
+		param[PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET] = param[PARAM_SHADOW_MAX_DISTANCE] * param[PARAM_SHADOW_SPLIT_1_OFFSET];
+		param[PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET] = param[PARAM_SHADOW_MAX_DISTANCE] * param[PARAM_SHADOW_SPLIT_2_OFFSET];
+		param[PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET] = param[PARAM_SHADOW_MAX_DISTANCE] * param[PARAM_SHADOW_SPLIT_3_OFFSET];
+	}
 }
 
 real_t Light3D::get_param(Param p_param) const {
@@ -535,12 +559,12 @@ DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
 }
 
 void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
-	if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
+	if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits" || p_property.name == "directional_shadow_split_distance_1" )) {
 		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3")) {
+	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3" || p_property.name == "directional_shadow_split_distance_2" || p_property.name == "directional_shadow_split_distance_3" )) {
 		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -572,6 +596,10 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_1", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_1_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_2", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_2_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
+
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_distance_1"), "set_param", "get_param", PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_distance_2"), "set_param", "get_param", PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_distance_3"), "set_param", "get_param", PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
@@ -590,7 +618,7 @@ void DirectionalLight3D::_bind_methods() {
 
 DirectionalLight3D::DirectionalLight3D() :
 		Light3D(RenderingServer::LIGHT_DIRECTIONAL) {
-	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
+	set_param(PARAM_SHADOW_MAX_DISTANCE, 600);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
 	// Increase the default shadow normal bias to better suit most scenes.
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 2.0);

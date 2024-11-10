@@ -355,6 +355,9 @@ void EditorPropertyTextEnum::cb_update_options(OptionButton* p_ob)
 			options.append(options_array[i]);
 			p_ob->add_item(options_array[i], i);
 		}
+		String current_value = get_edited_property_value();
+		int default_option = options.find(current_value);
+		option_button->select(default_option);
 	}
 }
 

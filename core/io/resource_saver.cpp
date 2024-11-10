@@ -122,7 +122,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 		String local_path = ProjectSettings::get_singleton()->localize_path(path);
 
 		if (p_flags & FLAG_CHANGE_PATH) {
-			p_resource->set_path(local_path);
+			p_resource->set_path(local_path,true);
 		}
 
 		err = saver[i]->save(p_resource, path, p_flags);

@@ -233,7 +233,9 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     const Vector<Animation::Track*> tracks = a->get_tracks();
     Animation::Track* const* tracks_ptr = tracks.ptr();
     real_t a_length = a->get_length();
-	temp_anim_skeleton.rest(*human_config.ptr());
+	if (human_config.is_valid()) {
+		temp_anim_skeleton.rest(*human_config.ptr());
+	}
 
     double blend = ai.playback_info.weight;
     int count = tracks.size();
@@ -247,6 +249,10 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             StringName name = animation_track->path.get_name(0);
 			if (name.begins_with("hm."))
 			{
+
+				if (human_config.is_null()) {
+					continue;
+				}
                 if(name.begins_with("hm.v.")) {
                     temp_anim_skeleton.set_root_lookat(a,name, i, time, delta);
                 }
@@ -533,7 +539,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         }
 
     }
-    if(is_human) {
+    if(is_human && human_config.ptr()) {
 		HumanAnim::HumanAnimmation::retarget(*human_config.ptr(), temp_anim_skeleton);
         human_skeleton.blend(temp_anim_skeleton, blend);
     }

@@ -162,6 +162,30 @@ void LightStorage::light_set_param(RID p_light, RS::LightParam p_param, float p_
 	}
 
 	light->param[p_param] = p_value;
+
+	if(p_param == RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET] = RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE * p_value;
+	}
+	else if(p_param == RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET] = RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE * p_value;
+	}
+	else if(p_param == RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET] = RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE * p_value;
+	}
+	else if(p_param == RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = p_value / light->param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE];
+	}
+	else if(p_param == RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = p_value / light->param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE];
+	}
+	else if(p_param == RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = p_value / light->param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE];
+	}
+	else if(p_param == RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE) {
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_1_OFFSET] = light->param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] * light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET];
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_2_OFFSET] = light->param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] * light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET];
+		light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_DISTANCE_3_OFFSET] = light->param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] * light->param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET];
+	}
 }
 
 void LightStorage::light_set_shadow(RID p_light, bool p_enabled) {

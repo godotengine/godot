@@ -24,7 +24,7 @@ namespace HumanAnim
         HashMap<StringName, Vector3> root_global_move_add;
         HashMap<StringName, Basis> root_global_rotation_add;
 
-        void rest(HumanConfig& p_config) {
+        void rest(HumanBoneConfig& p_config) {
 			clear();
             for(auto& it : p_config.virtual_pose) {
                 real_local_pose[it.key] = it.value.rotation;
@@ -261,7 +261,7 @@ namespace HumanAnim
         Hip骨骼的世界朝向应用到角色的朝向,Hip的世界位置应用到角色的位置
         */
         // 构建虚拟姿势
-        static void build_virtual_pose(Skeleton3D *p_skeleton,HumanConfig& p_config,HashMap<String, String>& p_human_bone_label) {
+        static void build_virtual_pose(Skeleton3D *p_skeleton,HumanBoneConfig& p_config,HashMap<String, String>& p_human_bone_label) {
             Vector<int> root_bones = p_skeleton->get_root_bones();
             p_skeleton->_update_bones_nested_set();
 			p_skeleton->force_update_all_bone_transforms(false);
@@ -304,6 +304,9 @@ namespace HumanAnim
 					continue;
 				}
                 int parent = p_skeleton->get_bone_parent(i);
+				if (parent < 0) {
+					continue;
+				}
 				String parent_bone_name = p_skeleton->get_bone_name(parent);
 				if (!p_config.virtual_pose.has(parent_bone_name)) {
 					continue;
@@ -328,7 +331,7 @@ namespace HumanAnim
 
         }
 
-        static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map) {            
+        static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map) {            
             int key_count = p_animation->get_length() * 100 + 1;
             Vector3 loc,scale;
             Quaternion rot;
@@ -497,7 +500,7 @@ namespace HumanAnim
 
 
         // 重定向根骨骼朝向
-        static void retarget_root_motion(HumanConfig& p_config,HumanSkeleton& p_skeleton_config) {
+        static void retarget_root_motion(HumanBoneConfig& p_config,HumanSkeleton& p_skeleton_config) {
             for(auto& it : p_config.root_bone) {
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
@@ -518,7 +521,7 @@ namespace HumanAnim
         }
 
         // 重定向骨骼
-        static void retarget(HumanConfig& p_config,HumanSkeleton& p_skeleton_config) {
+        static void retarget(HumanBoneConfig& p_config,HumanSkeleton& p_skeleton_config) {
             for(auto& it : p_config.root_bone) {
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
@@ -634,7 +637,7 @@ namespace HumanAnim
             }
         };
 
-        static void build_virtual_pose(HumanConfig& p_config,Skeleton3D* p_skeleton,Transform3D parent_trans,  int bone_index,HashMap<String, String>& p_human_bone_label) {
+        static void build_virtual_pose(HumanBoneConfig& p_config,Skeleton3D* p_skeleton,Transform3D parent_trans,  int bone_index,HashMap<String, String>& p_human_bone_label) {
             
             //Vector<int> child_bones = p_skeleton->get_bone_children(bone_index);
             //for(int i=0; i < child_bones.size(); i++)
@@ -670,7 +673,7 @@ namespace HumanAnim
             
         }
 		// 构建真实姿势
-		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanConfig& p_config, HumanSkeleton& p_skeleton_config) {
+		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config) {
 			p_skeleton->_update_bones_nested_set();
 			p_skeleton->force_update_all_bone_transforms(false);
 
@@ -700,7 +703,7 @@ namespace HumanAnim
 				build_skeleton_global_lookat(p_config, pose,local_trans, p_skeleton_config);
 			}
 		}
-        static void build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanConfig& p_config,BonePose& parent_pose, Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {
+        static void build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,BonePose& parent_pose, Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {
             for(auto& it : parent_pose.child_bones) {
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
@@ -713,7 +716,7 @@ namespace HumanAnim
             }
         }
 
-        static void build_skeleton_global_lookat(HumanConfig& p_config, BonePose& bone_pose,Transform3D& parent_pose,HumanSkeleton& p_skeleton_config) {
+        static void build_skeleton_global_lookat(HumanBoneConfig& p_config, BonePose& bone_pose,Transform3D& parent_pose,HumanSkeleton& p_skeleton_config) {
 
             for(auto& it : bone_pose.child_bones) {
 				BonePose& child_pose = p_config.virtual_pose[it];
@@ -731,7 +734,7 @@ namespace HumanAnim
             }
             
         }
-        static void retarget(HumanConfig& p_config,BonePose& pose,Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {
+        static void retarget(HumanBoneConfig& p_config,BonePose& pose,Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {
 
             // 重定向骨骼的世界坐标
             Quaternion rot;

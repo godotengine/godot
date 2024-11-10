@@ -6073,13 +6073,22 @@ msgid "Directional Shadow"
 msgstr "方向阴影"
 
 msgid "Split 1"
-msgstr "拆分 1"
+msgstr "拆分比值(%) 1"
 
 msgid "Split 2"
-msgstr "拆分 2"
+msgstr "拆分比值(%) 2"
 
 msgid "Split 3"
-msgstr "拆分 3"
+msgstr "拆分比值(%) 3"
+
+msgid "Split Distance 1"
+msgstr "拆分距离(米) 1"
+
+msgid "Split Distance 2"
+msgstr "拆分距离(米) 2"
+
+msgid "Split Distance 3"
+msgstr "拆分距离(米) 3"
 
 msgid "Blend Splits"
 msgstr "混合拆分"

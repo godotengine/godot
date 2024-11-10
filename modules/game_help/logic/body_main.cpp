@@ -171,6 +171,9 @@ void CharacterBodyMain::_process_ik()
 
 void CharacterBodyMain::_process_move()
 {
+	if (animator.is_null()) {
+		return;
+	}
     // 处理角色移动
     bool is_walk = get_blackboard()->get_var("move/using_navigation_target",false);
     Vector3 _velocity = Vector3();
@@ -489,7 +492,6 @@ void CharacterBodyMain::_bind_methods()
     ADD_MEMBER_BUTTON(editor_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
 
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_track_target", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), "set_track_target", "get_track_target");
 
 
 
@@ -792,7 +794,7 @@ Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path
 		bone_map = skeleton->get_human_bone_mapping();
         Vector<String> bone_names = skeleton->get_bone_names();
         
-        Ref<HumanConfig> config;
+        Ref<HumanBoneConfig> config;
 
 		skeleton->set_human_bone_mapping(bone_map);
         
@@ -982,7 +984,7 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 	HashMap<String, int> human_bone_name_index;
 	Dictionary bone_map;
 	Vector<String> bone_names;
-	Ref<HumanConfig> animation_human_config;
+	Ref<HumanBoneConfig> animation_human_config;
 	if (skeleton == nullptr) {
 		is_node_skeleton = true;
 

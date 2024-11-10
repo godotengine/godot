@@ -90,13 +90,13 @@ struct BonePose {
 
 };
 
-class HumanConfig : public Resource {
-	GDCLASS(HumanConfig, Resource);
+class HumanBoneConfig : public Resource {
+	GDCLASS(HumanBoneConfig, Resource);
 
 	static void _bind_methods() {
 
-		ClassDB::bind_method(D_METHOD("set_data", "data"), &HumanConfig::set_data);
-		ClassDB::bind_method(D_METHOD("get_data"), &HumanConfig::get_data);
+		ClassDB::bind_method(D_METHOD("set_data", "data"), &HumanBoneConfig::set_data);
+		ClassDB::bind_method(D_METHOD("get_data"), &HumanBoneConfig::get_data);
 
 		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 
@@ -328,7 +328,7 @@ public:
 	// To process modifiers.
 	ModifierCallbackModeProcess modifier_callback_mode_process = MODIFIER_CALLBACK_MODE_PROCESS_IDLE;
 	LocalVector<ObjectID> modifiers;
-	Ref<HumanConfig> human_config;
+	Ref<HumanBoneConfig> human_config;
 	bool modifiers_dirty = false;
 	void _find_modifiers();
 	void _process_modifiers();
@@ -449,8 +449,8 @@ public:
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
 
-	void set_human_config(const Ref<HumanConfig> &p_human_config);
-	Ref<HumanConfig> get_human_config() const;
+	void set_human_config(const Ref<HumanBoneConfig> &p_human_config);
+	Ref<HumanBoneConfig> get_human_config() const;
 
 
 #ifndef DISABLE_DEPRECATED
