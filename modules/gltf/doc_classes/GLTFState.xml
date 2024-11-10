@@ -17,7 +17,7 @@
 			<param index="0" name="extension_name" type="String" />
 			<param index="1" name="required" type="bool" />
 			<description>
-				Appends an extension to the list of extensions used by this glTF file during serialization. If [param required] is true, the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
+				Appends an extension to the list of extensions used by this glTF file during serialization. If [param required] is [code]true[/code], the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
 			</description>
 		</method>
 		<method name="append_data_to_buffers">
@@ -25,7 +25,7 @@
 			<param index="0" name="data" type="PackedByteArray" />
 			<param index="1" name="deduplication" type="bool" />
 			<description>
-				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is true, the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
+				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is [code]true[/code], the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
 			</description>
 		</method>
 		<method name="append_gltf_node">
@@ -35,7 +35,7 @@
 			<param index="2" name="parent_node_index" type="int" />
 			<description>
 				Append the given [GLTFNode] to the state, and return its new index. This can be used to export one Godot node as multiple glTF nodes, or inject new glTF nodes at import time. On import, this must be called before [method GLTFDocumentExtension._generate_scene_node] finishes for the parent node. On export, this must be called before [method GLTFDocumentExtension._export_node] runs for the parent node.
-				The [param godot_scene_node] parameter is the Godot scene node that corresponds to this glTF node. This is highly recommended to be set to a valid node, but may be null if there is no corresponding Godot scene node. One Godot scene node may be used for multiple glTF nodes, so if exporting multiple glTF nodes for one Godot scene node, use the same Godot scene node for each.
+				The [param godot_scene_node] parameter is the Godot scene node that corresponds to this glTF node. This is highly recommended to be set to a valid node, but may be [code]null[/code] if there is no corresponding Godot scene node. One Godot scene node may be used for multiple glTF nodes, so if exporting multiple glTF nodes for one Godot scene node, use the same Godot scene node for each.
 				The [param parent_node_index] parameter is the index of the parent [GLTFNode] in the state. If [code]-1[/code], the node will be a root node, otherwise the new node will be added to the parent's list of children. The index will also be written to the [member GLTFNode.parent] property of the new node.
 			</description>
 		</method>
@@ -49,7 +49,7 @@
 			<param index="0" name="extension_name" type="StringName" />
 			<description>
 				Gets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
-				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is null.
+				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is [code]null[/code].
 			</description>
 		</method>
 		<method name="get_animation_player">
