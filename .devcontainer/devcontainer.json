@@ -3,6 +3,7 @@
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17"
-    }
+    },
+    "ghcr.io/nordcominc/devcontainer-features/android-sdk:1": {}
   }
 }
