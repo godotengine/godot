@@ -2611,7 +2611,10 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		// it'll lead to very low performance in Android by entering an endless loop where it'll always resize the swap chain
 		// every frame.
 
-		ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR, FAILED);
+		ERR_FAIL_COND_V_MSG(
+				err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR,
+				FAILED,
+				"QueuePresentKHR failed with error: " + get_vulkan_result(err));
 	}
 
 	return OK;
@@ -5432,6 +5435,23 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	}
 #endif
 	on_device_lost();
+}
+
+inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
+		return "VK_ERROR_OUT_OF_HOST_MEMORY";
+	} else if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		return "VK_ERROR_OUT_OF_DEVICE_MEMORY";
+	} else if (err == VK_ERROR_DEVICE_LOST) {
+		return "VK_ERROR_DEVICE_LOST";
+	} else if (err == VK_ERROR_SURFACE_LOST_KHR) {
+		return "VK_ERROR_SURFACE_LOST_KHR";
+	} else if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
+		return "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT";
+	}
+#endif
+	return itos(err);
 }
 
 /********************/

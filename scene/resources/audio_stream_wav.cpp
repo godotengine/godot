@@ -624,7 +624,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	}
 
 	String file_path = p_path;
-	if (!(file_path.substr(file_path.length() - 4, 4) == ".wav")) {
+	if (file_path.substr(file_path.length() - 4, 4).to_lower() != ".wav") {
 		file_path += ".wav";
 	}
 

@@ -224,7 +224,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="ignore" type="bool" />
 			<description>
-				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to false.
+				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to [code]false[/code].
 			</description>
 		</method>
 		<method name="canvas_item_add_lcd_texture_rect_region">
@@ -2957,7 +2957,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="emitting" type="bool" />
 			<description>
-				If [code]true[/code], particles will emit over time. Setting to false does not reset the particles, but only stops their emission. Equivalent to [member GPUParticles3D.emitting].
+				If [code]true[/code], particles will emit over time. Setting to [code]false[/code] does not reset the particles, but only stops their emission. Equivalent to [member GPUParticles3D.emitting].
 			</description>
 		</method>
 		<method name="particles_set_explosiveness_ratio">

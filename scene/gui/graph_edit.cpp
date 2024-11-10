@@ -317,7 +317,7 @@ bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, con
 void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 
-	for (const List<Ref<Connection>>::Element *E = connections.front(); E; E = E->next()) {
+	for (List<Ref<Connection>>::Element *E = connections.front(); E; E = E->next()) {
 		if (E->get()->from_node == p_from && E->get()->from_port == p_from_port && E->get()->to_node == p_to && E->get()->to_port == p_to_port) {
 			connection_map[p_from].erase(E->get());
 			connection_map[p_to].erase(E->get());

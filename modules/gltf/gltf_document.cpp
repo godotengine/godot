@@ -3482,6 +3482,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
+				flags |= Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
 			}
 
 			if (!indices.is_empty()) {

@@ -3387,7 +3387,7 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
-int String::find_char(const char32_t &p_char, int p_from) const {
+int String::find_char(char32_t p_char, int p_from) const {
 	return _cowdata.find(p_char, p_from);
 }
 
@@ -3624,6 +3624,10 @@ int String::rfind(const char *p_str, int p_from) const {
 	return -1;
 }
 
+int String::rfind_char(char32_t p_char, int p_from) const {
+	return _cowdata.rfind(p_char, p_from);
+}
+
 int String::rfindn(const String &p_str, int p_from) const {
 	// establish a limit
 	int limit = length() - p_str.length();
@@ -3835,6 +3839,15 @@ bool String::is_subsequence_ofn(const String &p_string) const {
 
 bool String::is_quoted() const {
 	return is_enclosed_in("\"") || is_enclosed_in("'");
+}
+
+bool String::is_lowercase() const {
+	for (const char32_t *str = &operator[](0); *str; str++) {
+		if (is_unicode_upper_case(*str)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {

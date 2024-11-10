@@ -90,18 +90,11 @@ void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D
 	td.camera_dir = -p_cam_transform.basis.get_column(2);
 	td.camera_orthogonal = p_cam_orthogonal;
 
-	Projection inv_camera_matrix = p_cam_projection.inverse();
-	Vector3 camera_corner_proj = Vector3(-1.0f, -1.0f, -1.0f);
-	Vector3 camera_corner_view = inv_camera_matrix.xform(camera_corner_proj);
-	td.pixel_corner = p_cam_transform.xform(camera_corner_view);
-
-	Vector3 top_corner_proj = Vector3(-1.0f, 1.0f, -1.0f);
-	Vector3 top_corner_view = inv_camera_matrix.xform(top_corner_proj);
-	Vector3 top_corner_world = p_cam_transform.xform(top_corner_view);
-
-	Vector3 left_corner_proj = Vector3(1.0f, -1.0f, -1.0f);
-	Vector3 left_corner_view = inv_camera_matrix.xform(left_corner_proj);
-	Vector3 left_corner_world = p_cam_transform.xform(left_corner_view);
+	// Calculate the world coordinates of the viewport.
+	Vector2 viewport_half = p_cam_projection.get_viewport_half_extents();
+	td.pixel_corner = p_cam_transform.xform(Vector3(-viewport_half.x, -viewport_half.y, -p_cam_projection.get_z_near()));
+	Vector3 top_corner_world = p_cam_transform.xform(Vector3(-viewport_half.x, viewport_half.y, -p_cam_projection.get_z_near()));
+	Vector3 left_corner_world = p_cam_transform.xform(Vector3(viewport_half.x, -viewport_half.y, -p_cam_projection.get_z_near()));
 
 	td.pixel_u_interp = left_corner_world - td.pixel_corner;
 	td.pixel_v_interp = top_corner_world - td.pixel_corner;
