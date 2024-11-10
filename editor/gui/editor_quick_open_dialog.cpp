@@ -489,6 +489,10 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 }
 
 void QuickOpenResultContainer::_move_selection_index(Key p_key) {
+	// Don't move selection if there are no results.
+	if (num_visible_results <= 0) {
+		return;
+	}
 	const int max_index = num_visible_results - 1;
 
 	int idx = selection_index;
