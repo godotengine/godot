@@ -1787,6 +1787,9 @@ public:
 	virtual bool is_on_render_thread() = 0;
 	virtual void call_on_render_thread(const Callable &p_callable) = 0;
 
+	String get_current_rendering_driver_name() const;
+	String get_current_rendering_method() const;
+
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
