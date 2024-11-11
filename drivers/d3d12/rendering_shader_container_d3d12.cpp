@@ -562,7 +562,7 @@ bool RenderingShaderContainerD3D12::_generate_root_signature(BitField<RenderingD
 
 	// NIR-DXIL runtime data.
 	if (reflection_data_d3d12.nir_runtime_data_root_param_idx == 1) { // Set above to 1 when discovering runtime data is needed.
-		DEV_ASSERT(!reflection_data.is_compute); // Could be supported if needed, but it's pointless as of now.
+		DEV_ASSERT(reflection_data.pipeline_type != RDC::PIPELINE_TYPE_COMPUTE); // Could be supported if needed, but it's pointless as of now.
 		reflection_data_d3d12.nir_runtime_data_root_param_idx = root_params.size();
 		CD3DX12_ROOT_PARAMETER1 nir_runtime_data;
 		nir_runtime_data.InitAsConstants(
