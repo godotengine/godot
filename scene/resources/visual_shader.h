@@ -73,6 +73,8 @@ public:
 
 	RBMap<int, Node> nodes; // TODO: Does order really matter here? Maybe for serialization?
 	List<Connection> connections; // TODO: Evaluate whether this should be a LocalVector.
+
+	void _node_changed();
 protected:
 	static void _bind_methods();
 

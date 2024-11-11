@@ -1926,7 +1926,7 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 								int to_idx = E.to_port;
 
 								if (to_idx >= input_port_count) {
-									editing_shader_graph->disconnect_nodes( from, from_idx, to, to_idx);
+									editing_shader_graph->disconnect_nodes(from, from_idx, to, to_idx);
 									graph_plugin->disconnect_nodes(type, from, from_idx, to, to_idx);
 								}
 							}
@@ -4016,8 +4016,14 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 	} else {
 		id_to_use += p_node_idx;
 	}
-	undo_redo->add_do_method(editing_shader_graph.ptr(), "add_node", vsnode, position, id_to_use);
-	undo_redo->add_undo_method(editing_shader_graph.ptr(), "remove_node", id_to_use);
+
+	if (visual_shader.is_valid() && group_edit_stack.is_empty()) {
+		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, vsnode, position, id_to_use);
+		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_to_use);
+	} else {
+		undo_redo->add_do_method(editing_shader_graph.ptr(), "add_node", vsnode, position, id_to_use);
+		undo_redo->add_undo_method(editing_shader_graph.ptr(), "remove_node", id_to_use);
+	}
 	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_to_use, false, true);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use, false);
 
@@ -4624,7 +4630,11 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 	// The VS nodes need to be added before attaching them to frames.
 	for (const int &F : p_nodes) {
 		Ref<VisualShaderNode> node = editing_shader_graph->get_node(F);
-		undo_redo->add_undo_method(editing_shader_graph.ptr(), "add_node", node, editing_shader_graph->get_node_position(F), F);
+		if (visual_shader.is_valid() && group_edit_stack.is_empty()) {
+			undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, editing_shader_graph->get_node_position(F));
+		} else {
+			undo_redo->add_undo_method(editing_shader_graph.ptr(), "add_node", node, editing_shader_graph->get_node_position(F), F);
+		}
 		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F, false, false);
 	}
 
@@ -5684,7 +5694,11 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 			undo_redo->add_do_method(node.ptr(), "set_expression", item.expression);
 		}
 
-		undo_redo->add_do_method(editing_shader_graph.ptr(), "add_node", node, item.position + p_offset, id_from);
+		if (visual_shader.is_valid() && group_edit_stack.is_empty()) {
+			undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, node, item.position + p_offset, id_from);
+		} else {
+			undo_redo->add_do_method(editing_shader_graph.ptr(), "add_node", node, item.position + p_offset, id_from);
+		}
 		undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_from, false, false);
 
 		added_set.insert(id_from);
@@ -6308,8 +6322,8 @@ void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
 		case ConnectionMenuOptions::DISCONNECT: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Disconnect"));
-			undo_redo->add_do_method(editing_shader_graph.ptr(), "disconnect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
-			undo_redo->add_undo_method(editing_shader_graph.ptr(), "connect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
+			undo_redo->add_do_method(editing_shader_graph.ptr(), "disconnect_nodes", String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
+			undo_redo->add_undo_method(editing_shader_graph.ptr(), "connect_nodes", String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
 			undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
 			undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", get_current_shader_type(), String(clicked_connection->from_node).to_int(), clicked_connection->from_port, String(clicked_connection->to_node).to_int(), clicked_connection->to_port);
 			undo_redo->commit_action();
