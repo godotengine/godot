@@ -699,6 +699,17 @@ uint32_t TileSet::get_physics_layer_collision_mask(int p_layer_index) const {
 	return physics_layers[p_layer_index].collision_mask;
 }
 
+void TileSet::set_physics_layer_collision_priority(int p_layer_index, real_t p_priority) {
+	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
+	physics_layers.write[p_layer_index].collision_priority = p_priority;
+	emit_changed();
+}
+
+real_t TileSet::get_physics_layer_collision_priority(int p_layer_index) const {
+	ERR_FAIL_INDEX_V(p_layer_index, physics_layers.size(), 0);
+	return physics_layers[p_layer_index].collision_priority;
+}
+
 void TileSet::set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material) {
 	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
 	physics_layers.write[p_layer_index].physics_material = p_physics_material;
@@ -3900,6 +3911,13 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 				set_physics_layer_collision_mask(index, p_value);
 				return true;
+			} else if (components[1] == "collision_priority") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::FLOAT, false);
+				while (index >= physics_layers.size()) {
+					add_physics_layer();
+				}
+				set_physics_layer_collision_priority(index, p_value);
+				return true;
 			} else if (components[1] == "physics_material") {
 				Ref<PhysicsMaterial> physics_material = p_value;
 				while (index >= physics_layers.size()) {
@@ -4051,6 +4069,9 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "collision_mask") {
 			r_ret = get_physics_layer_collision_mask(index);
 			return true;
+		} else if (components[1] == "collision_priority") {
+			r_ret = get_physics_layer_collision_priority(index);
+			return true;
 		} else if (components[1] == "physics_material") {
 			r_ret = get_physics_layer_physics_material(index);
 			return true;
@@ -4176,6 +4197,13 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 		p_list->push_back(property_info);
 
+		// physics_layer_%d/collision_priority
+		property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/collision_priority", i));
+		if (physics_layers[i].collision_priority == 1.0) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		p_list->push_back(property_info);
+
 		// physics_layer_%d/physics_material
 		property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial");
 		if (!physics_layers[i].physics_material.is_valid()) {
@@ -4287,6 +4315,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_layer", "layer_index"), &TileSet::get_physics_layer_collision_layer);
 	ClassDB::bind_method(D_METHOD("set_physics_layer_collision_mask", "layer_index", "mask"), &TileSet::set_physics_layer_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_mask", "layer_index"), &TileSet::get_physics_layer_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_physics_layer_collision_priority", "layer_index", "priority"), &TileSet::set_physics_layer_collision_priority);
+	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_priority", "layer_index"), &TileSet::get_physics_layer_collision_priority);
 	ClassDB::bind_method(D_METHOD("set_physics_layer_physics_material", "layer_index", "physics_material"), &TileSet::set_physics_layer_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_layer_physics_material", "layer_index"), &TileSet::get_physics_layer_physics_material);
 

@@ -51,6 +51,10 @@ class FileAccessUnix : public FileAccess {
 
 	void _close();
 
+#if defined(TOOLS_ENABLED)
+	String get_real_path() const; // Returns the resolved real path for the current open file.
+#endif
+
 public:
 	static CloseNotificationFunc close_notification_func;
 

@@ -48,7 +48,7 @@
 		<method name="get_camera_2d" qualifiers="const">
 			<return type="Camera2D" />
 			<description>
-				Returns the currently active 2D camera. Returns null if there are no active cameras.
+				Returns the currently active 2D camera. Returns [code]null[/code] if there are no active cameras.
 			</description>
 		</method>
 		<method name="get_camera_3d" qualifiers="const">
@@ -144,13 +144,13 @@
 		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
 			<description>
-				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
+				Returns the currently focused [Control] within this viewport. If no [Control] is focused, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="gui_get_hovered_control" qualifiers="const">
 			<return type="Control" />
 			<description>
-				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns null.
+				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns [code]null[/code].
 				Typically the leaf [Control] node or deepest level of the subtree which claims hover. This is very useful when used together with [method Node.is_ancestor_of] to find if the mouse is within a control tree.
 			</description>
 		</method>

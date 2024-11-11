@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debugger_marshalls.h                                                  */
+/*  test_fuzzy_search.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUGGER_MARSHALLS_H
-#define DEBUGGER_MARSHALLS_H
+#ifndef TEST_FUZZY_SEARCH_H
+#define TEST_FUZZY_SEARCH_H
 
-#include "core/input/shortcut.h"
-#include "core/object/script_language.h"
+#include "core/string/fuzzy_search.h"
+#include "tests/test_macros.h"
 
-struct DebuggerMarshalls {
-	struct ScriptStackVariable {
-		String name;
-		Variant value;
-		int type = -1;
-		int var_type = -1;
+namespace TestFuzzySearch {
 
-		Array serialize(int max_size = 1 << 20); // 1 MiB default.
-		bool deserialize(const Array &p_arr);
-	};
-
-	struct ScriptStackDump {
-		List<ScriptLanguage::StackInfo> frames;
-		ScriptStackDump() {}
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
-	struct OutputError {
-		int hr = -1;
-		int min = -1;
-		int sec = -1;
-		int msec = -1;
-		String source_file;
-		String source_func;
-		int source_line = -1;
-		String error;
-		String error_descr;
-		bool warning = false;
-		Vector<ScriptLanguage::StackInfo> callstack;
-
-		Array serialize();
-		bool deserialize(const Array &p_arr);
-	};
-
-	static Array serialize_key_shortcut(const Ref<Shortcut> &p_shortcut);
-	static Ref<Shortcut> deserialize_key_shortcut(const Array &p_keys);
+struct FuzzySearchTestCase {
+	String query;
+	String expected;
 };
 
-#endif // DEBUGGER_MARSHALLS_H
+// Ideally each of these test queries should represent a different aspect, and potentially bottleneck, of the search process.
+const FuzzySearchTestCase test_cases[] = {
+	// Short query, many matches, few adjacent characters
+	{ "///gd", "./menu/hud/hud.gd" },
+	// Filename match with typo
+	{ "sm.png", "./entity/blood_sword/sam.png" },
+	// Multipart filename word matches
+	{ "ham ", "./entity/game_trap/ha_missed_me.wav" },
+	// Single word token matches
+	{ "push background", "./entity/background_zone1/background/push.png" },
+	// Long token matches
+	{ "background_freighter background png", "./entity/background_freighter/background/background.png" },
+	// Many matches, many short tokens
+	{ "menu menu characters wav", "./menu/menu/characters/smoker/0.wav" },
+	// Maximize total matches
+	{ "entity gd", "./entity/entity_man.gd" }
+};
+
+Vector<String> load_test_data() {
+	Ref<FileAccess> fp = FileAccess::open(TestUtils::get_data_path("fuzzy_search/project_dir_tree.txt"), FileAccess::READ);
+	REQUIRE(fp.is_valid());
+	return fp->get_as_utf8_string().split("\n");
+}
+
+TEST_CASE("[FuzzySearch] Test fuzzy search results") {
+	FuzzySearch search;
+	Vector<FuzzySearchResult> results;
+	Vector<String> targets = load_test_data();
+
+	for (FuzzySearchTestCase test_case : test_cases) {
+		search.set_query(test_case.query);
+		search.search_all(targets, results);
+		CHECK_GT(results.size(), 0);
+		CHECK_EQ(results[0].target, test_case.expected);
+	}
+}
+
+} //namespace TestFuzzySearch
+
+#endif // TEST_FUZZY_SEARCH_H

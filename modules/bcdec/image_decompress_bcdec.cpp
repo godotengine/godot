@@ -47,7 +47,6 @@ inline void bcdec_bc6h_half_u(const void *compressedBlock, void *decompressedBlo
 static void decompress_image(BCdecFormat format, const void *src, void *dst, const uint64_t width, const uint64_t height) {
 	const uint8_t *src_blocks = reinterpret_cast<const uint8_t *>(src);
 	uint8_t *dec_blocks = reinterpret_cast<uint8_t *>(dst);
-	uint64_t src_pos = 0, dst_pos = 0;
 
 #define DECOMPRESS_LOOP(func, block_size, color_bytesize, color_components)            \
 	for (uint64_t y = 0; y < height; y += 4) {                                         \
@@ -59,34 +58,96 @@ static void decompress_image(BCdecFormat format, const void *src, void *dst, con
 		dst_pos += 3 * width * color_bytesize;                                         \
 	}
 
-	switch (format) {
-		case BCdec_BC1: {
-			DECOMPRESS_LOOP(bcdec_bc1, BCDEC_BC1_BLOCK_SIZE, 4, 4)
-		} break;
-		case BCdec_BC2: {
-			DECOMPRESS_LOOP(bcdec_bc2, BCDEC_BC2_BLOCK_SIZE, 4, 4)
-		} break;
-		case BCdec_BC3: {
-			DECOMPRESS_LOOP(bcdec_bc3, BCDEC_BC3_BLOCK_SIZE, 4, 4)
-		} break;
-		case BCdec_BC4: {
-			DECOMPRESS_LOOP(bcdec_bc4, BCDEC_BC4_BLOCK_SIZE, 1, 1)
-		} break;
-		case BCdec_BC5: {
-			DECOMPRESS_LOOP(bcdec_bc5, BCDEC_BC5_BLOCK_SIZE, 2, 2)
-		} break;
-		case BCdec_BC6U: {
-			DECOMPRESS_LOOP(bcdec_bc6h_half_u, BCDEC_BC6H_BLOCK_SIZE, 6, 3)
-		} break;
-		case BCdec_BC6S: {
-			DECOMPRESS_LOOP(bcdec_bc6h_half_s, BCDEC_BC6H_BLOCK_SIZE, 6, 3)
-		} break;
-		case BCdec_BC7: {
-			DECOMPRESS_LOOP(bcdec_bc7, BCDEC_BC7_BLOCK_SIZE, 4, 4)
-		} break;
+#define DECOMPRESS_LOOP_SAFE(func, block_size, color_bytesize, color_components, output)                                                              \
+	for (uint64_t y = 0; y < height; y += 4) {                                                                                                        \
+		for (uint64_t x = 0; x < width; x += 4) {                                                                                                     \
+			const uint32_t yblock = MIN(height - y, 4ul);                                                                                             \
+			const uint32_t xblock = MIN(width - x, 4ul);                                                                                              \
+                                                                                                                                                      \
+			const bool incomplete = yblock < 4 && xblock < 4;                                                                                         \
+			uint8_t *dec_out = incomplete ? output : &dec_blocks[y * 4 * width + x * color_bytesize];                                                 \
+                                                                                                                                                      \
+			func(&src_blocks[src_pos], dec_out, 4 * color_components);                                                                                \
+			src_pos += block_size;                                                                                                                    \
+                                                                                                                                                      \
+			if (incomplete) {                                                                                                                         \
+				for (uint32_t cy = 0; cy < yblock; cy++) {                                                                                            \
+					for (uint32_t cx = 0; cx < xblock; cx++) {                                                                                        \
+						memcpy(&dec_blocks[(y + cy) * 4 * width + (x + cx) * color_bytesize], &output[cy * 4 + cx * color_bytesize], color_bytesize); \
+					}                                                                                                                                 \
+				}                                                                                                                                     \
+			}                                                                                                                                         \
+		}                                                                                                                                             \
+	}
+
+	if (width % 4 != 0 || height % 4 != 0) {
+		uint64_t src_pos = 0;
+
+		uint8_t r8_output[4 * 4];
+		uint8_t rg8_output[4 * 4 * 2];
+		uint8_t rgba8_output[4 * 4 * 4];
+		uint8_t rgbh_output[4 * 4 * 6];
+
+		switch (format) {
+			case BCdec_BC1: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc1, BCDEC_BC1_BLOCK_SIZE, 4, 4, rgba8_output)
+			} break;
+			case BCdec_BC2: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc2, BCDEC_BC2_BLOCK_SIZE, 4, 4, rgba8_output)
+			} break;
+			case BCdec_BC3: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc3, BCDEC_BC3_BLOCK_SIZE, 4, 4, rgba8_output)
+			} break;
+			case BCdec_BC4: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc4, BCDEC_BC4_BLOCK_SIZE, 1, 1, r8_output)
+			} break;
+			case BCdec_BC5: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc5, BCDEC_BC5_BLOCK_SIZE, 2, 2, rg8_output)
+			} break;
+			case BCdec_BC6U: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc6h_half_u, BCDEC_BC6H_BLOCK_SIZE, 6, 3, rgbh_output)
+			} break;
+			case BCdec_BC6S: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc6h_half_s, BCDEC_BC6H_BLOCK_SIZE, 6, 3, rgbh_output)
+			} break;
+			case BCdec_BC7: {
+				DECOMPRESS_LOOP_SAFE(bcdec_bc7, BCDEC_BC7_BLOCK_SIZE, 4, 4, rgba8_output)
+			} break;
+		}
+
+	} else {
+		uint64_t src_pos = 0, dst_pos = 0;
+
+		switch (format) {
+			case BCdec_BC1: {
+				DECOMPRESS_LOOP(bcdec_bc1, BCDEC_BC1_BLOCK_SIZE, 4, 4)
+			} break;
+			case BCdec_BC2: {
+				DECOMPRESS_LOOP(bcdec_bc2, BCDEC_BC2_BLOCK_SIZE, 4, 4)
+			} break;
+			case BCdec_BC3: {
+				DECOMPRESS_LOOP(bcdec_bc3, BCDEC_BC3_BLOCK_SIZE, 4, 4)
+			} break;
+			case BCdec_BC4: {
+				DECOMPRESS_LOOP(bcdec_bc4, BCDEC_BC4_BLOCK_SIZE, 1, 1)
+			} break;
+			case BCdec_BC5: {
+				DECOMPRESS_LOOP(bcdec_bc5, BCDEC_BC5_BLOCK_SIZE, 2, 2)
+			} break;
+			case BCdec_BC6U: {
+				DECOMPRESS_LOOP(bcdec_bc6h_half_u, BCDEC_BC6H_BLOCK_SIZE, 6, 3)
+			} break;
+			case BCdec_BC6S: {
+				DECOMPRESS_LOOP(bcdec_bc6h_half_s, BCDEC_BC6H_BLOCK_SIZE, 6, 3)
+			} break;
+			case BCdec_BC7: {
+				DECOMPRESS_LOOP(bcdec_bc7, BCDEC_BC7_BLOCK_SIZE, 4, 4)
+			} break;
+		}
 	}
 
 #undef DECOMPRESS_LOOP
+#undef DECOMPRESS_LOOP_SAFE
 }
 
 void image_decompress_bcdec(Image *p_image) {
