@@ -1947,7 +1947,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 		return proj_err;
 	}
 
-	_log("The Godot API sources were successfully generated\n");
+	_log("The Blazium API sources were successfully generated\n");
 
 	return OK;
 }

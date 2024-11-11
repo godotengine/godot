@@ -10,7 +10,7 @@ namespace GodotTools.ProjectEditor
 {
     public static class ProjectGenerator
     {
-        public static string GodotSdkAttrValue => $"Godot.NET.Sdk/{GeneratedGodotNupkgsVersions.GodotNETSdk}";
+        public static string GodotSdkAttrValue => $"Blazium.NET.Sdk/{GeneratedGodotNupkgsVersions.GodotNETSdk}";
 
         public static ProjectRootElement GenGameProject(string name)
         {
