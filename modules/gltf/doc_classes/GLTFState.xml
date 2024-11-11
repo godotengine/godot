@@ -306,7 +306,7 @@
 			The binary buffer attached to a .glb file.
 		</member>
 		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">
-			True to force all GLTFNodes in the document to be bones of a single Skeleton3D godot node.
+			If [code]true[/code], forces all GLTFNodes in the document to be bones of a single [Skeleton3D] Godot node.
 		</member>
 		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
 			The original raw JSON document corresponding to this GLTFState.
