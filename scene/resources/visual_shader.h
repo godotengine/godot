@@ -197,7 +197,7 @@ private:
 	// TODO: Make this a Vector and add graphs dynamically (maybe using a HM)
 	// Refactor idea: Make this Vector<ShaderGraph> with ShaderGraph containing type and graph.
 	// Keep access in constant time!
-	ShaderGraph graph[TYPE_MAX];
+	Ref<ShaderGraph> graph[TYPE_MAX];
 
 	Shader::Mode shader_mode = Shader::MODE_SPATIAL;
 	mutable String previous_code;
@@ -256,7 +256,7 @@ protected:
 
 	// TODO: Internal methods?
 public: // internal methods
-	ShaderGraph *get_graph(int p_type);
+	Ref<ShaderGraph> get_graph(int p_type);
 
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_vsnode, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
@@ -282,13 +282,13 @@ public: // internal methods
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
 
 	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(Type p_type, int p_id) const {
-		return graph[p_type].nodes[p_id].node;
+		return graph[p_type]->nodes[p_id].node;
 	}
 	_FORCE_INLINE_ const LocalVector<int> &get_next_connected_nodes(Type p_type, int p_id) const {
-		return graph[p_type].nodes[p_id].next_connected_nodes;
+		return graph[p_type]->nodes[p_id].next_connected_nodes;
 	}
 	_FORCE_INLINE_ const LocalVector<int> &get_prev_connected_nodes(Type p_type, int p_id) const {
-		return graph[p_type].nodes[p_id].prev_connected_nodes;
+		return graph[p_type]->nodes[p_id].prev_connected_nodes;
 	}
 
 	Vector<int> get_node_list(Type p_type) const;
