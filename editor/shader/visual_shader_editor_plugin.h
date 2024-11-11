@@ -141,6 +141,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Vector<Color> get_connection_type_colors();
+
 	void set_editor(VisualShaderEditor *p_editor);
 	void register_shader(VisualShader *p_visual_shader);
 	void set_connections(const List<ShaderGraph::Connection> &p_connections);
@@ -459,7 +461,7 @@ class VisualShaderEditor : public ShaderEditor {
 
 	void _edit_group_in_graph(int p_idx);
 	void _exit_group();
-	void _update_group_node(int p_idx);
+	void _update_group_related_nodes(const Ref<VisualShaderGroup> &p_group);
 	void _edit_group_ports_pressed(int p_group_input_node_id, Button *p_button);
 
 	void _show_preview_text();

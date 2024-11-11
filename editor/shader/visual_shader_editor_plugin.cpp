@@ -213,6 +213,21 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame_autoshrink_enabled", "type", "id", "enabled"), &VisualShaderGraphPlugin::set_frame_autoshrink_enabled);
 }
 
+Vector<Color> VisualShaderGraphPlugin::get_connection_type_colors() {
+	const Vector<Color> type_color = {
+		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/vector2_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/vector3_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/vector4_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/boolean_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/transform_color"),
+		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
+	};
+	return type_color;
+}
+
 void VisualShaderGraphPlugin::set_editor(VisualShaderEditor *p_editor) {
 	editor = p_editor;
 }
@@ -278,6 +293,12 @@ void VisualShaderGraphPlugin::update_node_deferred(VisualShader::Type p_type, in
 }
 
 void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_id) {
+	// TODO: Adjust this check to node groups.
+	print_line("update_node: " + itos(p_node_id) + " has links: " + (links.has(p_node_id) ? "true" : "false"));
+	// Print all links.
+	for (const KeyValue<int, Link> &E : links) {
+		print_line("Link: " + itos(E.key));
+	}
 	if (p_type != editor->get_current_shader_type() || !links.has(p_node_id)) {
 		return;
 	}
@@ -621,17 +642,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	Control *offset;
 
-	const Color type_color[] = {
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector2_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector3_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector4_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/boolean_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/transform_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
-	};
+	const Vector<Color> type_color = get_connection_type_colors();
 
 	// Keep in sync with VisualShaderNode::Category.
 	const Color category_color[VisualShaderNode::Category::CATEGORY_MAX] = {
@@ -709,7 +720,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			// Update title and inputs/outputs on changes.
 			Ref<VisualShaderGroup> group = group_node->get_group();
 			if (group.is_valid()) {
-				group->connect_changed(callable_mp(editor, &VisualShaderEditor::_update_group_node).bind(p_id));
+				group->connect_changed(callable_mp(editor, &VisualShaderEditor::_update_group_related_nodes).bind(group));
 			}
 		}
 	}
@@ -1465,15 +1476,20 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	Ref<VisualShaderNodeGroupInput> group_input = vsnode;
 	Ref<VisualShaderNodeGroupOutput> group_output = vsnode;
 	if (group_input.is_valid() || group_output.is_valid()) {
-		Button *add_output_btn = memnew(Button);
-		add_output_btn->set_text(TTR("Edit ports"));
-		add_output_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_group_ports_pressed).bind(p_id, add_output_btn));
-		add_output_btn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		node->add_child(add_output_btn);
+		Button *edit_ports_btn = memnew(Button);
+		edit_ports_btn->set_text(TTR("Edit ports"));
+		edit_ports_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_group_ports_pressed).bind(p_id, edit_ports_btn));
+		edit_ports_btn->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		node->add_child(edit_ports_btn);
 
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
 		node->add_child(spacer);
+
+		VisualShaderGroup *group = group_input.is_valid() ? group_input->get_group() : group_output->get_group();
+		if (group) {
+			group->connect_changed(callable_mp(editor, &VisualShaderEditor::_update_group_related_nodes));
+		}
 	}
 }
 
@@ -1910,7 +1926,7 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 								int to_idx = E.to_port;
 
 								if (to_idx >= input_port_count) {
-									visual_shader->disconnect_nodes(type, from, from_idx, to, to_idx);
+									editing_shader_graph->disconnect_nodes( from, from_idx, to, to_idx);
 									graph_plugin->disconnect_nodes(type, from, from_idx, to, to_idx);
 								}
 							}
@@ -2641,8 +2657,27 @@ void VisualShaderEditor::_exit_group() {
 	_update_graph();
 }
 
-void VisualShaderEditor::_update_group_node(int p_idx) {
-	graph_plugin->update_node(get_current_shader_type(), p_idx);
+void VisualShaderEditor::_update_group_related_nodes(const Ref<VisualShaderGroup> &p_group) {
+	// Update all nodes related to a specific group (group instance, input/output).
+	List<int> nodes_to_update;
+	for (const int idx : editing_shader_graph->get_node_ids()) {
+		Ref<VisualShaderNodeGroup> group_node = editing_shader_graph->get_node(idx);
+		if (group_node.is_valid() && group_node->get_group() == p_group) {
+			nodes_to_update.push_back(idx);
+		}
+		Ref<VisualShaderNodeGroupInput> group_input = editing_shader_graph->get_node(idx);
+		if (group_input.is_valid() && group_input->get_group() == p_group.ptr()) {
+			nodes_to_update.push_back(idx);
+		}
+		Ref<VisualShaderNodeGroupOutput> group_output = editing_shader_graph->get_node(idx);
+		if (group_output.is_valid() && group_output->get_group() == p_group.ptr()) {
+			nodes_to_update.push_back(idx);
+		}
+	}
+
+	for (const int node_to_update : nodes_to_update) {
+		graph_plugin->update_node(get_current_shader_type(), node_to_update);
+	}
 }
 
 void VisualShaderEditor::_edit_group_ports_pressed(int p_group_input_node_id, Button *p_button) {

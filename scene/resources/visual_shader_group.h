@@ -243,9 +243,10 @@ class VisualShaderGroupPortsDialog : public AcceptDialog {
 	OptionButton *port_type_optbtn = nullptr;
 
 	void _add_port();
-	void _remove_port(int p_idx);
+	void _update_editor_for_port(int p_idx);
+	void _remove_port();
 
-	void _on_port_selected(int p_idx);
+	void _on_port_item_selected(int p_idx);
 	void _on_port_name_changed(const String &p_name);
 	void _on_port_type_changed(int p_idx);
 
