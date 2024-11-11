@@ -301,6 +301,15 @@
 				See also [method Window.set_unparent_when_invisible].
 			</description>
 		</method>
+		<method name="popup_method_selector">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="current_value" type="String" default="&quot;&quot;" />
+			<description>
+				Pops up an editor dialog for selecting a method from [param object]. The [param callback] must take a single argument of type [String] which will contain the name of the selected method or be empty if the dialog is canceled. If [param current_value] is provided, the method will be selected automatically in the method list, if it exists.
+			</description>
+		</method>
 		<method name="popup_node_selector">
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />
