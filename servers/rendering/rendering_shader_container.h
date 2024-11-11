@@ -59,7 +59,7 @@ protected:
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
 		uint32_t specialization_constants_count = 0;
-		uint32_t is_compute = 0;
+		RDC::PipelineType pipeline_type = RDC::PIPELINE_TYPE_RASTERIZATION;
 		uint32_t has_multiview = 0;
 		uint32_t has_dynamic_buffers = 0;
 		uint32_t compute_local_size[3] = {};
@@ -232,6 +232,7 @@ protected:
 		uint32_t push_constant_size = 0;
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
+		RDC::PipelineType pipeline_type = RDC::PIPELINE_TYPE_RASTERIZATION;
 
 		LocalVector<ReflectShaderStage> shader_stages;
 		LocalVector<ReflectDescriptorSet> uniform_sets;
