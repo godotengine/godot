@@ -2973,10 +2973,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 
-		// Store this in a globally accessible place, so we can retrieve the rendering drivers
-		// list from the display driver for the editor UI.
-		OS::get_singleton()->set_display_driver_id(display_driver_idx);
-
 		Vector2i *window_position = nullptr;
 		Vector2i position = init_custom_pos;
 		if (init_use_custom_pos) {
