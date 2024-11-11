@@ -34,8 +34,11 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/plugins/embedded_process.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/separator.h"
 
 class GameViewDebugger : public EditorDebuggerPlugin {
 	GDCLASS(GameViewDebugger, EditorDebuggerPlugin);
@@ -84,15 +87,21 @@ class GameView : public VBoxContainer {
 		CAMERA_MODE_EDITORS,
 	};
 
+	static GameView *singleton;
 	Ref<GameViewDebugger> debugger;
 
 	int active_sessions = 0;
+	int screen_index_before_start = -1;
 
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
 
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
+	VSeparator *embedding_separator;
+	Button *embedded_button;
+	Button *auto_focus_button;
+	Button *keep_aspect_button;
 
 	Button *hide_selection = nullptr;
 
@@ -100,6 +109,8 @@ class GameView : public VBoxContainer {
 	MenuButton *camera_override_menu = nullptr;
 
 	Panel *panel = nullptr;
+	EmbeddedProcess *embedded_process = nullptr;
+	Label *state_label = nullptr;
 
 	void _sessions_changed();
 
@@ -109,6 +120,20 @@ class GameView : public VBoxContainer {
 
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
+	void _embedded_button_pressed();
+	void _auto_focus_button_pressed();
+	void _keep_aspect_button_pressed();
+
+	void _play_pressed();
+	void _instance_starting(int p_idx, Array p_arguments);
+	void _stop_pressed();
+	void _embedding_completed();
+	void _embedding_failed();
+	void _project_settings_changed();
+
+	void _update_ui();
+	void _update_embed_window_size();
+	void _update_arguments_for_instance(int p_idx, Array p_arguments);
 
 	void _hide_selection_toggled(bool p_pressed);
 
@@ -122,7 +147,10 @@ public:
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 
+	static GameView *get_singleton();
+
 	GameView(Ref<GameViewDebugger> p_debugger);
+	~GameView();
 };
 
 class GameViewPlugin : public EditorPlugin {

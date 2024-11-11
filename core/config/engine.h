@@ -87,6 +87,7 @@ private:
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
+	bool embedded = false;
 
 	bool _print_header = true;
 
@@ -201,6 +202,8 @@ public:
 	bool notify_frame_server_synced();
 
 	void set_freeze_time_scale(bool p_frozen);
+	void set_embedded(bool p_enabled);
+	bool is_embedded() const;
 
 	Engine();
 	virtual ~Engine();
