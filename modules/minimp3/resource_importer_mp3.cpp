@@ -115,7 +115,7 @@ Ref<AudioStreamMP3> ResourceImporterMP3::import_mp3(const String &p_path) {
 	return mp3_stream;
 }
 
-Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterMP3::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
 	double bpm = p_options["bpm"];

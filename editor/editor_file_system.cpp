@@ -2749,13 +2749,17 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
+	if (uid == ResourceUID::INVALID_ID) {
+		uid = ResourceUID::get_singleton()->create_id();
+	}
+
 	//finally, perform import!!
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_file);
 
 	List<String> import_variants;
 	List<String> gen_files;
 	Variant meta;
-	Error err = importer->import(p_file, base_path, params, &import_variants, &gen_files, &meta);
+	Error err = importer->import(uid, p_file, base_path, params, &import_variants, &gen_files, &meta);
 
 	// As import is complete, save the .import file.
 
@@ -2774,10 +2778,6 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 		if (!importer->get_resource_type().is_empty()) {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
-		}
-
-		if (uid == ResourceUID::INVALID_ID) {
-			uid = ResourceUID::get_singleton()->create_id();
 		}
 
 		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.

@@ -72,7 +72,7 @@ void ResourceImporterCSVTranslation::get_import_options(const String &p_path, Li
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab"), 0));
 }
 
-Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool compress = p_options["compress"];
 
 	String delimiter;
@@ -147,6 +147,9 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		if (r_gen_files) {
 			r_gen_files->push_back(save_path);
 		}
+
+		ResourceUID::ID save_id = hash64_murmur3_64(translations[i]->get_locale().hash64(), p_source_id);
+		ResourceSaver::set_uid(save_path, save_id);
 	}
 
 	return OK;

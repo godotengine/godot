@@ -141,7 +141,7 @@ void ResourceImporterDynamicFont::show_advanced_options(const String &p_path) {
 	DynamicFontImportSettingsDialog::get_singleton()->open_settings(p_path);
 }
 
-Error ResourceImporterDynamicFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing dynamic font from: " + p_source_file);
 
 	int antialiasing = p_options["antialiasing"];
