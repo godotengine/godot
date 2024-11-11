@@ -564,7 +564,7 @@ Vector3i Fog::_point_get_position_in_froxel_volume(const Vector3 &p_point, float
 	return Vector3i(fog_position);
 }
 
-void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const Frustum &p_cam_frustum, bool p_cam_is_orthogonal, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -580,15 +580,15 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		VolumetricFogShader::VolumeUBO params;
 
-		Vector2 frustum_near_size = p_cam_projection.get_viewport_half_extents();
-		Vector2 frustum_far_size = p_cam_projection.get_far_plane_half_extents();
-		float z_near = p_cam_projection.get_z_near();
-		float z_far = p_cam_projection.get_z_far();
+		Vector2 frustum_near_size = p_cam_frustum.get_viewport_half_extents();
+		Vector2 frustum_far_size = p_cam_frustum.get_far_plane_half_extents();
+		float z_near = p_cam_frustum.get_z_near();
+		float z_far = p_cam_frustum.get_z_far();
 		float fog_end = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);
 
 		Vector2 fog_far_size = frustum_near_size.lerp(frustum_far_size, (fog_end - z_near) / (z_far - z_near));
 		Vector2 fog_near_size;
-		if (p_cam_projection.is_orthogonal()) {
+		if (p_cam_is_orthogonal) {
 			fog_near_size = fog_far_size;
 		} else {
 			fog_near_size = frustum_near_size.maxf(0.001);
@@ -1044,15 +1044,15 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	VolumetricFogShader::ParamsUBO params;
 
-	Vector2 frustum_near_size = p_cam_projection.get_viewport_half_extents();
-	Vector2 frustum_far_size = p_cam_projection.get_far_plane_half_extents();
-	float z_near = p_cam_projection.get_z_near();
-	float z_far = p_cam_projection.get_z_far();
+	Vector2 frustum_near_size = p_cam_frustum.get_viewport_half_extents();
+	Vector2 frustum_far_size = p_cam_frustum.get_far_plane_half_extents();
+	float z_near = p_cam_frustum.get_z_near();
+	float z_far = p_cam_frustum.get_z_far();
 	float fog_end = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_length(p_settings.env);
 
 	Vector2 fog_far_size = frustum_near_size.lerp(frustum_far_size, (fog_end - z_near) / (z_far - z_near));
 	Vector2 fog_near_size;
-	if (p_cam_projection.is_orthogonal()) {
+	if (p_cam_is_orthogonal) {
 		fog_near_size = fog_far_size;
 	} else {
 		fog_near_size = frustum_near_size.maxf(0.001);
