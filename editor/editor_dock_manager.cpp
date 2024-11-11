@@ -717,7 +717,7 @@ void EditorDockManager::focus_dock(Control *p_dock) {
 	}
 
 	if (all_docks[p_dock].at_bottom) {
-		EditorNode::get_bottom_panel()->make_item_visible(p_dock);
+		EditorNode::get_bottom_panel()->make_item_visible(p_dock, true, true);
 		return;
 	}
 
