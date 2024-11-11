@@ -1460,6 +1460,24 @@ void TileMapLayer::_clear_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 	}
 }
 
+void TileMapLayer::_update_cells_callback(bool p_force_cleanup) {
+	if (!GDVIRTUAL_IS_OVERRIDDEN(_update_cells)) {
+		return;
+	}
+
+	// Check if we should cleanup everything.
+	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
+
+	// List all the dirty cell's positions to notify script of cell updates.
+	TypedArray<Vector2i> dirty_cell_positions;
+	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
+		CellData &cell_data = *cell_data_list_element->self();
+		dirty_cell_positions.push_back(cell_data.coords);
+	}
+
+	GDVIRTUAL_CALL(_update_cells, dirty_cell_positions, forced_cleanup);
+}
+
 TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const {
 	if (tile_set.is_null()) {
 		return TileSet::TerrainsPattern();
@@ -1673,6 +1691,10 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 	// This may add cells to the dirty list if a runtime modification has been notified.
 	_build_runtime_update_tile_data(p_force_cleanup);
 
+	// Callback for implementing custom subsystems.
+	// This may add to the dirty list if some cells are changed inside _update_cells.
+	_update_cells_callback(p_force_cleanup);
+
 	// Update all subsystems.
 	_rendering_update(p_force_cleanup);
 	_physics_update(p_force_cleanup);
@@ -1861,6 +1883,7 @@ void TileMapLayer::_bind_methods() {
 
 	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "coords");
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "coords", "tile_data");
+	GDVIRTUAL_BIND(_update_cells, "coords", "forced_cleanup");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "tile_map_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tile_map_data_from_array", "get_tile_map_data_as_array");
 
