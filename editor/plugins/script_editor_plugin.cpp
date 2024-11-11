@@ -751,6 +751,17 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 	tab_container->set_current_tab(p_idx);
 
+	ScriptSortBy sort_by = (ScriptSortBy)(int)EDITOR_GET("text_editor/script_list/sort_scripts_by");
+	if (sort_by == ScriptSortBy::SORT_BY_LAST_OPENED) {
+		int ignore_threshold = EDITOR_GET("text_editor/script_list/last_opened_script_threshold");
+		if (p_idx >= ignore_threshold) {
+			tab_container->move_child(c, 0);
+			// Needed, to rebuild the script list
+			_update_script_names();
+			p_idx = 0;
+		}
+	}
+
 	c = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<ScriptEditorBase>(c)) {
@@ -1000,7 +1011,7 @@ void ScriptEditor::_close_other_tabs() {
 	int current_idx = tab_container->get_current_tab();
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
 		if (i != current_idx) {
-			script_close_queue.push_back(i);
+			script_close_queue.push_back(tab_container->get_tab_control(i));
 		}
 	}
 	_queue_close_tabs();
@@ -1008,18 +1019,18 @@ void ScriptEditor::_close_other_tabs() {
 
 void ScriptEditor::_close_all_tabs() {
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
-		script_close_queue.push_back(i);
+		script_close_queue.push_back(tab_container->get_tab_control(i));
 	}
 	_queue_close_tabs();
 }
 
 void ScriptEditor::_queue_close_tabs() {
 	while (!script_close_queue.is_empty()) {
-		int idx = script_close_queue.front()->get();
+		Control *c = script_close_queue.front()->get();
 		script_close_queue.pop_front();
 
-		tab_container->set_current_tab(idx);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(idx));
+		tab_container->set_current_tab(tab_container->get_tab_idx_from_control(c));
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(c);
 		if (se) {
 			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
@@ -2259,6 +2270,9 @@ void ScriptEditor::_update_script_names() {
 				case SORT_BY_NONE: {
 					sd.sort_key = "";
 				} break;
+				case SORT_BY_LAST_OPENED: {
+					sd.sort_key = "";
+				} break;
 			}
 
 			switch (display_as) {
@@ -2333,7 +2347,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	if (_sort_list_on_update && !sedata.is_empty()) {
+	if (_sort_list_on_update && !sedata.is_empty() && sort_by != SORT_BY_NONE && sort_by != SORT_BY_LAST_OPENED) {
 		sedata.sort();
 
 		// change actual order of tab_container so that the order can be rearranged by user
@@ -2361,6 +2375,7 @@ void ScriptEditor::_update_script_names() {
 		lock_history = false;
 		_sort_list_on_update = false;
 	}
+	lock_history = false;
 
 	Vector<_ScriptEditorItemData> sedata_filtered;
 	for (int i = 0; i < sedata.size(); i++) {
@@ -3618,13 +3633,15 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 		return;
 	}
 
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
+	if (!restoring_layout) {
+		for (int i = 0; i < tab_container->get_tab_count(); i++) {
+			EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 
-		if (eh && eh->get_class() == p_class) {
-			_go_to_tab(i);
-			_update_script_names();
-			return;
+			if (eh && eh->get_class() == p_class) {
+				_go_to_tab(i);
+				_update_script_names();
+				return;
+			}
 		}
 	}
 
@@ -3632,11 +3649,13 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 
 	eh->set_name(p_class);
 	tab_container->add_child(eh);
-	_go_to_tab(tab_container->get_tab_count() - 1);
+	if (!restoring_layout) {
+		_go_to_tab(tab_container->get_tab_count() - 1);
+		_add_recent_script(p_class);
+	}
 	eh->go_to_class(p_class);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	eh->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
-	_add_recent_script(p_class);
 	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
