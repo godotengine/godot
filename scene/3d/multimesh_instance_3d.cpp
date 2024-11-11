@@ -97,6 +97,27 @@ Array MultiMeshInstance3D::get_meshes() const {
 	return results;
 }
 
+Array MultiMeshInstance3D::get_bake_meshes() {
+	ERR_FAIL_COND_V(multimesh.is_null() || multimesh->get_mesh().is_null(), Array());
+	ERR_FAIL_COND_V(multimesh->get_transform_format() != MultiMesh::TransformFormat::TRANSFORM_3D, Array());
+
+	Ref<Mesh> mesh = multimesh->get_mesh();
+	ERR_FAIL_COND_V(mesh.is_null(), Array());
+
+	int count = multimesh->get_visible_instance_count();
+	if (count == -1) {
+		count = multimesh->get_instance_count();
+	}
+
+	Array results;
+	for (int i = 0; i < count; i++) {
+		results.push_back(mesh);
+		results.push_back(this->get_global_transform() * multimesh->get_instance_transform(i));
+	}
+
+	return results;
+}
+
 AABB MultiMeshInstance3D::get_aabb() const {
 	if (multimesh.is_null()) {
 		return AABB();
