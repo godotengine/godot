@@ -30,8 +30,6 @@
 
 #include "web_tools_editor_plugin.h"
 
-#if defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -155,5 +153,3 @@ void WebToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zip
 		cur = dir->get_next();
 	}
 }
-
-#endif // TOOLS_ENABLED && WEB_ENABLED

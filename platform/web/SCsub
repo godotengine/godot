@@ -27,8 +27,10 @@ web_files = [
     "javascript_bridge_singleton.cpp",
     "web_main.cpp",
     "os_web.cpp",
-    "api/web_tools_editor_plugin.cpp",
 ]
+
+if env["target"] == "editor":
+    env.add_source_files(web_files, "editor/*.cpp")
 
 sys_env = env.Clone()
 sys_env.AddJSLibraries(

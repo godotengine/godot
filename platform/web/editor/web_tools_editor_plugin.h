@@ -31,8 +31,6 @@
 #ifndef WEB_TOOLS_EDITOR_PLUGIN_H
 #define WEB_TOOLS_EDITOR_PLUGIN_H
 
-#if defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
-
 #include "core/io/zip_io.h"
 #include "editor/plugins/editor_plugin.h"
 
@@ -56,7 +54,5 @@ class WebToolsEditorPlugin {
 public:
 	static void initialize() {}
 };
-
-#endif // TOOLS_ENABLED && WEB_ENABLED
 
 #endif // WEB_TOOLS_EDITOR_PLUGIN_H
