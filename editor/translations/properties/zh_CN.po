@@ -11032,6 +11032,9 @@ msgstr "播放动画"
 msgid "Play Animation Speed"
 msgstr "播放动画速度"
 
+msgid "Convert Animations Path"
+msgstr "转换动作路径"
+
 msgid "Prefab"
 msgstr "预制体"
 
