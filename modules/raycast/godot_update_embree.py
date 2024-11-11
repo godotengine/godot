@@ -148,7 +148,7 @@ with open(os.path.join(dest_dir, "kernels/hash.h"), "w", encoding="utf-8", newli
 for config_file in config_files:
     os.rename(os.path.join(dest_dir, config_file), os.path.join(dest_dir, config_file[:-3]))
 
-with open("CMakeLists.txt", "r", encoding="utf-8") as cmake_file:
+with open("CMakeLists.txt", encoding="utf-8") as cmake_file:
     cmake_content = cmake_file.read()
     major_version = int(re.compile(r"EMBREE_VERSION_MAJOR\s(\d+)").findall(cmake_content)[0])
     minor_version = int(re.compile(r"EMBREE_VERSION_MINOR\s(\d+)").findall(cmake_content)[0])

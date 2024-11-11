@@ -20,8 +20,10 @@ target-version = "py37"
 
 [tool.ruff.lint]
 extend-select = [
-	"I", # isort
+	"I",  # isort
+	"UP", # pyupgrade
 ]
+extend-safe-fixes = ["UP"]
 
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [

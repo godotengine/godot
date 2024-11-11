@@ -251,13 +251,14 @@ def setup_msvc_manual(env: "SConsEnvironment"):
     env_arch = detect_build_env_arch()
     if env["arch"] != env_arch:
         print_error(
-            "Arch argument (%s) is not matching Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings) that is being used to run SCons (%s).\n"
-            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you."
-            % (env["arch"], env_arch)
+            "Arch argument ({}) is not matching Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings) that is being used to run SCons ({}).\n"
+            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you.".format(
+                env["arch"], env_arch
+            )
         )
         sys.exit(255)
 
-    print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
+    print(f"Using VCVARS-determined MSVC, arch {env_arch}")
 
 
 def setup_msvc_auto(env: "SConsEnvironment"):
@@ -299,7 +300,7 @@ def setup_msvc_auto(env: "SConsEnvironment"):
     env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
 
     # Note: actual compiler version can be found in env['MSVC_VERSION'], e.g. "14.1" for VS2015
-    print("Using SCons-detected MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
+    print("Using SCons-detected MSVC version {}, arch {}".format(env["MSVC_VERSION"], env["arch"]))
 
 
 def setup_mingw(env: "SConsEnvironment"):
@@ -314,9 +315,10 @@ def setup_mingw(env: "SConsEnvironment"):
 
     if env_arch != "" and env["arch"] != env_arch:
         print_error(
-            "Arch argument (%s) is not matching MSYS2 console/environment that is being used to run SCons (%s).\n"
-            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you."
-            % (env["arch"], env_arch)
+            "Arch argument ({}) is not matching MSYS2 console/environment that is being used to run SCons ({}).\n"
+            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you.".format(
+                env["arch"], env_arch
+            )
         )
         sys.exit(255)
 
@@ -330,7 +332,7 @@ def setup_mingw(env: "SConsEnvironment"):
     env.AppendUnique(CCFLAGS=env.get("ccflags", "").split())
     env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
 
-    print("Using MinGW, arch %s" % (env["arch"]))
+    print("Using MinGW, arch {}".format(env["arch"]))
 
 
 def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
@@ -364,7 +366,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
         # Ensure we have a location to write captured output to, in case of false positives.
         capture_path = methods.base_folder_path + "platform/windows/msvc_capture.log"
-        with open(capture_path, "wt", encoding="utf-8"):
+        with open(capture_path, "w", encoding="utf-8"):
             pass
 
         old_spawn = env["SPAWN"]
@@ -388,7 +390,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             ret = old_spawn(sh, escape, cmd, args, env)
 
             try:
-                with open(tmp_stdout_name, "r", encoding=sys.stdout.encoding, errors="replace") as tmp_stdout:
+                with open(tmp_stdout_name, encoding=sys.stdout.encoding, errors="replace") as tmp_stdout:
                     lines = tmp_stdout.read().splitlines()
                 os.remove(tmp_stdout_name)
             except OSError:
@@ -461,8 +463,8 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "WINVER=%s" % env["target_win_version"],
-            "_WIN32_WINNT=%s" % env["target_win_version"],
+            "WINVER={}".format(env["target_win_version"]),
+            "_WIN32_WINNT={}".format(env["target_win_version"]),
         ]
     )
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros

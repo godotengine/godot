@@ -21,7 +21,7 @@ def make_doc_header(target, source, env):
             src = str(src)
             if not src.endswith(".xml"):
                 continue
-            with open(src, "r", encoding="utf-8") as f:
+            with open(src, encoding="utf-8") as f:
                 content = f.read()
             buf += content
 
@@ -51,8 +51,8 @@ def make_translations_header(target, source, env, category):
 
     with open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
-        g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
+        g.write(f"#ifndef _{category.upper()}_TRANSLATIONS_H\n")
+        g.write(f"#define _{category.upper()}_TRANSLATIONS_H\n")
 
         sorted_paths = sorted([str(x) for x in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
 
@@ -74,8 +74,7 @@ def make_translations_header(target, source, env, category):
                         buf = f.read()
                 except OSError as e:
                     print_warning(
-                        "msgfmt execution failed, using .po file instead of .mo: path=%r; [%s] %s"
-                        % (sorted_paths[i], e.__class__.__name__, e)
+                        f"msgfmt execution failed, using .po file instead of .mo: path={sorted_paths[i]!r}; [{e.__class__.__name__}] {e}"
                     )
                     with open(sorted_paths[i], "rb") as f:
                         buf = f.read()
@@ -85,7 +84,7 @@ def make_translations_header(target, source, env, category):
                     except OSError as e:
                         # Do not fail the entire build if it cannot delete a temporary file.
                         print_warning(
-                            "Could not delete temporary .mo file: path=%r; [%s] %s" % (mo_path, e.__class__.__name__, e)
+                            f"Could not delete temporary .mo file: path={mo_path!r}; [{e.__class__.__name__}] {e}"
                         )
             else:
                 with open(sorted_paths[i], "rb") as f:
@@ -99,7 +98,7 @@ def make_translations_header(target, source, env, category):
             # (at the cost of initial build times).
             buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
 
-            g.write("static const unsigned char _{}_translation_{}_compressed[] = {{\n".format(category, name))
+            g.write(f"static const unsigned char _{category}_translation_{name}_compressed[] = {{\n")
             for j in range(len(buf)):
                 g.write("\t" + str(buf[j]) + ",\n")
 
@@ -107,19 +106,15 @@ def make_translations_header(target, source, env, category):
 
             xl_names.append([name, len(buf), str(decomp_size)])
 
-        g.write("struct {}TranslationList {{\n".format(category.capitalize()))
+        g.write(f"struct {category.capitalize()}TranslationList {{\n")
         g.write("\tconst char* lang;\n")
         g.write("\tint comp_size;\n")
         g.write("\tint uncomp_size;\n")
         g.write("\tconst unsigned char* data;\n")
         g.write("};\n\n")
-        g.write("static {}TranslationList _{}_translations[] = {{\n".format(category.capitalize(), category))
+        g.write(f"static {category.capitalize()}TranslationList _{category}_translations[] = {{\n")
         for x in xl_names:
-            g.write(
-                '\t{{ "{}", {}, {}, _{}_translation_{}_compressed }},\n'.format(
-                    x[0], str(x[1]), str(x[2]), category, x[0]
-                )
-            )
+            g.write(f'\t{{ "{x[0]}", {x[1]}, {x[2]}, _{category}_translation_{x[0]}_compressed }},\n')
         g.write("\t{nullptr, 0, 0, nullptr}\n")
         g.write("};\n")
 

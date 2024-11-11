@@ -27,7 +27,9 @@ def generate_bundle(target, source, env):
         target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
 
         # Assemble .app bundle and update version info.
-        app_dir = Dir("#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app").abspath
+        app_dir = Dir(
+            "#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app"
+        ).abspath
         templ = Dir("#misc/dist/macos_tools.app").abspath
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
@@ -40,8 +42,8 @@ def generate_bundle(target, source, env):
             shutil.copytree(Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
         version = get_build_version(False)
         short_version = get_build_version(True)
-        with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
-            with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
+        with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", encoding="utf-8") as fin:
+            with open(app_dir + "/Contents/Info.plist", "w", encoding="utf-8", newline="\n") as fout:
                 for line in fin:
                     line = line.replace("$version", version)
                     line = line.replace("$short_version", short_version)
