@@ -70,9 +70,7 @@ class EditorInterface : public Object {
 	SceneTreeDialog *node_selector = nullptr;
 
 	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
-	void _node_selection_canceled(const Callable &p_callback);
 	void _property_selected(const String &p_property_name, const Callable &p_callback);
-	void _property_selection_canceled(const Callable &p_callback);
 	void _method_selected(const String &p_property_name, const Callable &p_callback);
 	void _quick_open(const String &p_file_path, const Callable &p_callback);
 	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
