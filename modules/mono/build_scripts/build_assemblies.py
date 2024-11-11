@@ -285,6 +285,8 @@ def generate_sdk_package_versions():
             version_status = version_status[:pos] + "." + version_status[pos:]
         version_str += "-" + version_status
 
+    external_version_str = "{external_major}.{external_minor}.{external_patch}-{external_status}".format(**version_info)
+
     import version
 
     version_defines = (
@@ -306,7 +308,7 @@ def generate_sdk_package_versions():
     <GodotVersionConstants>{1}</GodotVersionConstants>
   </PropertyGroup>
 </Project>
-""".format(version_str, ";".join(version_defines))
+""".format(external_version_str, ";".join(version_defines))
 
     # We write in ../SdkPackageVersions.props.
     with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:

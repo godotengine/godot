@@ -7,3 +7,7 @@ status = "stable"
 module_config = ""
 website = "https://blazium.app"
 docs = "4.3"
+external_major = 0
+external_minor = 1
+external_patch = 0
+external_status = "nightly"
