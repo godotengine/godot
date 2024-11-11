@@ -734,6 +734,19 @@ public:
 	Animation();
 	~Animation();
 };
+class HumanAnimationBoneNameMapping {
+	static HumanAnimationBoneNameMapping* singleton;
+
+public:
+	static HumanAnimationBoneNameMapping* get_singleton();
+	void MapAnimationBoneName(const Ref<Animation> &p_animation);
+	void UnmapAnimationBoneName(Animation* p_animation) ;
+	StringName get_bone_name(const StringName &p_bone);
+protected:
+	HashMap<StringName, StringName> mapping;
+	HashSet<int64_t> cache_animation;
+	Mutex mutex;
+};
 
 VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);

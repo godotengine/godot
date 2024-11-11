@@ -6,16 +6,15 @@
 
 namespace HumanAnim
 {
-    
- // 骨骼配置
+	// 骨骼配置
     struct HumanSkeleton {
         
-        AHashMap<StringName, Quaternion> real_local_pose; 
-        AHashMap<StringName, Transform3D> real_pose; 
+        HashMap<StringName, Quaternion> real_local_pose; 
+        HashMap<StringName, Transform3D> real_pose; 
 
-        AHashMap<StringName,Node3D*> bones;
+        HashMap<StringName,Node3D*> bones;
 
-        AHashMap<StringName, Vector3> bone_lookat;
+        HashMap<StringName, Vector3> bone_lookat;
 		HashMap<StringName, Vector3> root_position;
 
 
@@ -108,7 +107,15 @@ namespace HumanAnim
                 }
 
             }
-            String name = p_bone.substr(5);
+            StringName name;
+            
+            HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+            if(mapping != nullptr) {
+                name = mapping->get_bone_name(p_bone);
+            }
+            else {
+                name = p_bone.substr(5);
+            }
 			root_global_rotation_add[name] = q;
             Vector3 loc;
             p_animation->try_position_track_interpolate(track_index, time, &loc);
@@ -138,7 +145,15 @@ namespace HumanAnim
                 }
 
             }
-            String name = p_bone.substr(5);
+            StringName name;
+            
+            HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+            if(mapping != nullptr) {
+                name = mapping->get_bone_name(p_bone);
+            }
+            else {
+                name = p_bone.substr(5);
+            }
 			root_global_move_add[name] = q;
             Vector3 loc;
             p_animation->try_position_track_interpolate(track_index, time, &loc);

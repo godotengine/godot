@@ -36,6 +36,7 @@
 #include "scene/scene_string_names.h"
 #include "scene/3d/skeleton_3d.h"
 Animation::pf_get_animation_group_names Animation::get_animation_group_names_func = nullptr;
+HumanAnimationBoneNameMapping* HumanAnimationBoneNameMapping::singleton = nullptr;
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -6600,7 +6601,71 @@ Animation::Animation() {
 }
 
 Animation::~Animation() {
+	HumanAnimationBoneNameMapping* mapping = HumanAnimationBoneNameMapping::get_singleton();
+	if(mapping != nullptr) {
+		mapping->UnmapAnimationBoneName(this);
+	}
 	for (int i = 0; i < tracks.size(); i++) {
 		memdelete(tracks[i]);
 	}
 }
+
+
+/********************************************************HumanAnimationBoneNameMapping***********************************************************/
+HumanAnimationBoneNameMapping* HumanAnimationBoneNameMapping::get_singleton() {
+	if(singleton == nullptr) {
+		singleton = memnew(HumanAnimationBoneNameMapping);
+	}
+	return singleton;
+}
+void HumanAnimationBoneNameMapping::MapAnimationBoneName(const Ref<Animation> &p_animation) {
+	MutexLock lock(mutex);
+	ObjectID anim_id = p_animation->get_instance_id();
+	if(cache_animation.has(anim_id)) {
+		return;
+	}
+	cache_animation.insert(anim_id);
+	for(int i = 0; i < p_animation->get_track_count(); i++) {
+		NodePath path = p_animation->track_get_path(i);
+		Animation::TrackType track_src_type = p_animation->track_get_type(i);
+		if(track_src_type == Animation::TYPE_POSITION_3D) {
+			
+			StringName bone_name = path.get_name(0);
+			if(mapping.has(bone_name)) {
+				continue;
+			}
+			if(bone_name.begins_with("hm.p.")) {					
+				String name = bone_name.substr(5);
+				mapping[bone_name] = name;
+			}
+			else if(bone_name.begins_with("hm.v.")) {				
+				String name = bone_name.substr(5);
+				mapping[bone_name] = name;					
+			}
+		}
+	}
+}
+void HumanAnimationBoneNameMapping::UnmapAnimationBoneName(Animation* p_animation) {
+	MutexLock lock(mutex);
+	ObjectID anim_id = p_animation->get_instance_id();
+	if(cache_animation.has(anim_id)) {
+		cache_animation.erase(anim_id);
+	}
+	
+}
+StringName HumanAnimationBoneNameMapping::get_bone_name(const StringName &p_bone) {
+	if(mapping.has(p_bone)) {
+		return mapping[p_bone];
+	}
+	return p_bone;
+}
+
+
+
+
+
+
+
+
+
+

@@ -31,6 +31,10 @@ void CharacterAnimationUpdateTool::clear_cache(Skeleton3D* t_skeleton,Node* p_pa
 void CharacterAnimationUpdateTool::add_animation_instance(AnimationMixer::AnimationInstance& ai) {
     animation_instances.push_back(ai);
     Ref<Animation> a = ai.animation_data.animation;
+    HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+    if(mapping) {
+        mapping->MapAnimationBoneName(a);
+    }
     add_animation_cache(ai.animation_data.bone_map, a);
 }
 

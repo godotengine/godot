@@ -122,11 +122,10 @@ public:
 
 	void save(Dictionary& aDict) {
 		Dictionary pose;
-		auto keys = pose.keys();
-		for (auto& it : keys) {
-			Dictionary dict = pose.get(it, Dictionary());
-			virtual_pose[it].save(dict);
-			pose[it] = dict;
+		for (auto& it : virtual_pose) {
+			Dictionary dict;
+			it.value.save(dict);
+			pose[it.key] = dict;
 		}
 		aDict["virtual_pose"] = pose;
 		Vector<String> root;
