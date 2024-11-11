@@ -45,7 +45,7 @@ class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
-	NavigationRegion2D *node = nullptr;
+	NavigationRegion2D *target_region = nullptr;
 
 	Ref<NavigationPolygon> _ensure_navpoly() const;
 
@@ -68,8 +68,8 @@ class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 protected:
 	void _notification(int p_what);
 
-	virtual Node2D *_get_node() const override;
-	virtual void _set_node(Node *p_polygon) override;
+	virtual Node2D *_get_target_node() const override;
+	virtual void _set_target_node(Node2D *p_node) override;
 
 	virtual int _get_polygon_count() const override;
 	virtual Variant _get_polygon(int p_idx) const override;

@@ -30,12 +30,12 @@
 
 #include "collision_polygon_2d_editor_plugin.h"
 
-Node2D *CollisionPolygon2DEditor::_get_node() const {
-	return node;
+Node2D *CollisionPolygon2DEditor::_get_target_node() const {
+	return target_polygon;
 }
 
-void CollisionPolygon2DEditor::_set_node(Node *p_polygon) {
-	node = Object::cast_to<CollisionPolygon2D>(p_polygon);
+void CollisionPolygon2DEditor::_set_target_node(Node2D *p_node) {
+	target_polygon = Object::cast_to<CollisionPolygon2D>(p_node);
 }
 
 CollisionPolygon2DEditor::CollisionPolygon2DEditor() {}

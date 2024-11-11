@@ -37,11 +37,11 @@
 class Line2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Line2DEditor, AbstractPolygon2DEditor);
 
-	Line2D *node = nullptr;
+	Line2D *target_line = nullptr;
 
 protected:
-	virtual Node2D *_get_node() const override;
-	virtual void _set_node(Node *p_line) override;
+	virtual Node2D *_get_target_node() const override;
+	virtual void _set_target_node(Node2D *p_node) override;
 
 	virtual bool _is_line() const override;
 	virtual Variant _get_polygon(int p_idx) const override;

@@ -37,22 +37,22 @@
 #include "scene/gui/dialogs.h"
 
 Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
-	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
+	Ref<NavigationPolygon> navpoly = target_region->get_navigation_polygon();
 	if (!navpoly.is_valid()) {
 		navpoly = Ref<NavigationPolygon>(memnew(NavigationPolygon));
-		node->set_navigation_polygon(navpoly);
+		target_region->set_navigation_polygon(navpoly);
 	}
 	return navpoly;
 }
 
-Node2D *NavigationPolygonEditor::_get_node() const {
-	return node;
+Node2D *NavigationPolygonEditor::_get_target_node() const {
+	return target_region;
 }
 
-void NavigationPolygonEditor::_set_node(Node *p_polygon) {
-	node = Object::cast_to<NavigationRegion2D>(p_polygon);
-	if (node) {
-		Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
+void NavigationPolygonEditor::_set_target_node(Node2D *p_node) {
+	target_region = Object::cast_to<NavigationRegion2D>(p_node);
+	if (target_region) {
+		Ref<NavigationPolygon> navpoly = target_region->get_navigation_polygon();
 		if (navpoly.is_valid() && navpoly->get_outline_count() > 0 && navpoly->get_polygon_count() == 0) {
 			// We have outlines drawn / added by the user but no polygons were created for this navmesh yet so let's bake once immediately.
 			_rebake_timer_timeout();
@@ -61,7 +61,7 @@ void NavigationPolygonEditor::_set_node(Node *p_polygon) {
 }
 
 int NavigationPolygonEditor::_get_polygon_count() const {
-	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
+	Ref<NavigationPolygon> navpoly = target_region->get_navigation_polygon();
 	if (navpoly.is_valid()) {
 		return navpoly->get_outline_count();
 	} else {
@@ -70,7 +70,7 @@ int NavigationPolygonEditor::_get_polygon_count() const {
 }
 
 Variant NavigationPolygonEditor::_get_polygon(int p_idx) const {
-	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
+	Ref<NavigationPolygon> navpoly = target_region->get_navigation_polygon();
 	if (navpoly.is_valid()) {
 		return navpoly->get_outline(p_idx);
 	} else {
@@ -121,18 +121,18 @@ void NavigationPolygonEditor::_action_set_polygon(int p_idx, const Variant &p_pr
 }
 
 bool NavigationPolygonEditor::_has_resource() const {
-	return node && node->get_navigation_polygon().is_valid();
+	return target_region && target_region->get_navigation_polygon().is_valid();
 }
 
 void NavigationPolygonEditor::_create_resource() {
-	if (!node) {
+	if (!target_region) {
 		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Navigation Polygon"));
-	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
-	undo_redo->add_undo_method(node, "set_navigation_polygon", Variant(Ref<RefCounted>()));
+	undo_redo->add_do_method(target_region, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));
+	undo_redo->add_undo_method(target_region, "set_navigation_polygon", Variant(Ref<RefCounted>()));
 	undo_redo->commit_action();
 
 	_menu_option(MODE_CREATE);
@@ -171,7 +171,7 @@ NavigationPolygonEditor::NavigationPolygonEditor() {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
-	node = nullptr;
+	target_region = nullptr;
 }
 
 void NavigationPolygonEditor::_notification(int p_what) {
@@ -197,45 +197,45 @@ void NavigationPolygonEditor::_bake_pressed() {
 	}
 	button_bake->set_pressed(false);
 
-	ERR_FAIL_NULL(node);
-	Ref<NavigationPolygon> navigation_polygon = node->get_navigation_polygon();
+	ERR_FAIL_NULL(target_region);
+	Ref<NavigationPolygon> navigation_polygon = target_region->get_navigation_polygon();
 	if (navigation_polygon.is_null()) {
 		err_dialog->set_text(TTR("A NavigationPolygon resource must be set or created for this node to work."));
 		err_dialog->popup_centered();
 		return;
 	}
 
-	node->bake_navigation_polygon(true);
+	target_region->bake_navigation_polygon(true);
 
-	node->queue_redraw();
+	target_region->queue_redraw();
 }
 
 void NavigationPolygonEditor::_clear_pressed() {
 	if (rebake_timer) {
 		rebake_timer->stop();
 	}
-	if (node) {
-		if (node->get_navigation_polygon().is_valid()) {
-			node->get_navigation_polygon()->clear();
+	if (target_region) {
+		if (target_region->get_navigation_polygon().is_valid()) {
+			target_region->get_navigation_polygon()->clear();
 			// Needed to update all the region internals.
-			node->set_navigation_polygon(node->get_navigation_polygon());
+			target_region->set_navigation_polygon(target_region->get_navigation_polygon());
 		}
 	}
 
 	button_bake->set_pressed(false);
 	bake_info->set_text("");
 
-	if (node) {
-		node->queue_redraw();
+	if (target_region) {
+		target_region->queue_redraw();
 	}
 }
 
 void NavigationPolygonEditor::_update_polygon_editing_state() {
-	if (!_get_node()) {
+	if (!target_region) {
 		return;
 	}
 
-	if (node != nullptr && node->get_navigation_polygon().is_valid()) {
+	if (target_region != nullptr && target_region->get_navigation_polygon().is_valid()) {
 		bake_hbox->show();
 	} else {
 		bake_hbox->hide();
@@ -243,16 +243,16 @@ void NavigationPolygonEditor::_update_polygon_editing_state() {
 }
 
 void NavigationPolygonEditor::_rebake_timer_timeout() {
-	if (!node) {
+	if (!target_region) {
 		return;
 	}
-	Ref<NavigationPolygon> navigation_polygon = node->get_navigation_polygon();
+	Ref<NavigationPolygon> navigation_polygon = target_region->get_navigation_polygon();
 	if (!navigation_polygon.is_valid()) {
 		return;
 	}
 
-	node->bake_navigation_polygon(true);
-	node->queue_redraw();
+	target_region->bake_navigation_polygon(true);
+	target_region->queue_redraw();
 }
 
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin() :
