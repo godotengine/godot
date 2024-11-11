@@ -1091,9 +1091,11 @@
 		</member>
 		<member name="run/bottom_panel/action_on_play" type="int" setter="" getter="">
 			The action to execute on the bottom panel when running the project.
+			[b]Note:[/b] This option won't do anything if the bottom panel switching is locked using the pin button in the corner of the bottom panel.
 		</member>
 		<member name="run/bottom_panel/action_on_stop" type="int" setter="" getter="">
 			The action to execute on the bottom panel when stopping the project.
+			[b]Note:[/b] This option won't do anything if the bottom panel switching is locked using the pin button in the corner of the bottom panel.
 		</member>
 		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will clear the Output panel when running the project.
