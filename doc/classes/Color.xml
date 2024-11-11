@@ -19,7 +19,7 @@
 			<return type="Color" />
 			<description>
 				Constructs a default [Color] from opaque black. This is the same as [constant BLACK].
-				[b]Note:[/b] in C#, constructs an empty color with all of its components set to [code]0.0[/code] (transparent black).
+				[b]Note:[/b] In C#, this constructs a [Color] with all of its components set to [code]0.0[/code] (transparent black).
 			</description>
 		</constructor>
 		<constructor name="Color">
