@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
@@ -40,6 +41,7 @@
 #include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
 #include "servers/rendering_server.h"
 
@@ -1472,6 +1474,60 @@ void ResourceLoader::remove_custom_loaders() {
 bool ResourceLoader::is_cleaning_tasks() {
 	MutexLock lock(thread_load_mutex);
 	return cleaning_tasks;
+}
+
+Vector<String> ResourceLoader::list_directory(const String &p_directory) {
+	RBSet<String> files_found;
+	Ref<DirAccess> dir = DirAccess::open(p_directory);
+	if (dir.is_null()) {
+		return Vector<String>();
+	}
+
+	Error err = dir->list_dir_begin();
+	if (err != OK) {
+		return Vector<String>();
+	}
+
+	String d = dir->get_next();
+	while (!d.is_empty()) {
+		bool recognized = false;
+		if (dir->current_is_dir()) {
+			if (d != "." && d != "..") {
+				d += "/";
+				recognized = true;
+			}
+		} else {
+			if (d.ends_with(".import") || d.ends_with(".remap") || d.ends_with(".uid")) {
+				d = d.substr(0, d.rfind("."));
+			}
+
+			if (d.ends_with(".gdc")) {
+				d = d.substr(0, d.rfind("."));
+				d += ".gd";
+			}
+
+			const String full_path = p_directory.path_join(d);
+			// Try all loaders and pick the first match for the type hint.
+			for (int i = 0; i < loader_count; i++) {
+				if (loader[i]->recognize_path(full_path)) {
+					recognized = true;
+					break;
+				}
+			}
+		}
+
+		if (recognized) {
+			files_found.insert(d);
+		}
+		d = dir->get_next();
+	}
+
+	Vector<String> ret;
+	for (const String &f : files_found) {
+		ret.push_back(f);
+	}
+
+	return ret;
 }
 
 void ResourceLoader::initialize() {}

@@ -74,6 +74,13 @@
 				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
 			</description>
 		</method>
+		<method name="list_directory">
+			<return type="PackedStringArray" />
+			<param index="0" name="directory_path" type="String" />
+			<description>
+				Lists a directory (as example: "res://assets/enemies"), returning all resources contained within. The resource files are the original file names as visible in the editor before exporting.
+			</description>
+		</method>
 		<method name="load">
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />

@@ -304,6 +304,8 @@ public:
 
 	static bool is_cleaning_tasks();
 
+	static Vector<String> list_directory(const String &p_directory);
+
 	static void initialize();
 	static void finalize();
 };
