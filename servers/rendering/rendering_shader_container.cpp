@@ -134,17 +134,20 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 
 	for (uint32_t i = 0; i < spirv_size; i++) {
 		RDC::ShaderStage stage = p_spirv[i].shader_stage;
-		RDC::ShaderStage stage_flag = (RDC::ShaderStage)(1 << p_spirv[i].shader_stage);
-		r_refl[i].shader_stage = p_spirv[i].shader_stage;
+		RDC::ShaderStage stage_flag = (RDC::ShaderStage)(1 << stage);
+		r_refl[i].shader_stage = stage;
 		r_refl[i]._spirv_data = p_spirv[i].spirv;
 
-		if (p_spirv[i].shader_stage == RDC::SHADER_STAGE_COMPUTE) {
-			reflection.is_compute = true;
+		if (stage == RDC::SHADER_STAGE_COMPUTE) {
+			reflection.pipeline_type = RDC::PIPELINE_TYPE_COMPUTE;
 			ERR_FAIL_COND_V_MSG(spirv_size != 1, FAILED,
 					"Compute shaders can only receive one stage, dedicated to compute.");
 		}
+		if (stage == RDC::SHADER_STAGE_RAYGEN || stage == RDC::SHADER_STAGE_ANY_HIT || stage == RDC::SHADER_STAGE_CLOSEST_HIT || stage == RDC::SHADER_STAGE_MISS || stage == RDC::SHADER_STAGE_INTERSECTION) {
+			reflection.pipeline_type = RDC::PIPELINE_TYPE_RAYTRACING;
+		}
 		ERR_FAIL_COND_V_MSG(reflection.stages_bits.has_flag(stage_flag), FAILED,
-				"Stage " + String(RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + " submitted more than once.");
+				"Stage " + String(RDC::SHADER_STAGE_NAMES[stage]) + " submitted more than once.");
 
 		{
 			SpvReflectShaderModule &module = *r_refl.ptr()[i]._module;
@@ -160,7 +163,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 				}
 			}
 
-			if (reflection.is_compute) {
+			if (reflection.pipeline_type == RDC::PIPELINE_TYPE_COMPUTE) {
 				reflection.compute_local_size[0] = module.entry_points->local_size.x;
 				reflection.compute_local_size[1] = module.entry_points->local_size.y;
 				reflection.compute_local_size[2] = module.entry_points->local_size.z;
@@ -238,8 +241,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 							need_array_dimensions = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: {
-							ERR_PRINT("Acceleration structure not supported.");
-							continue;
+							uniform.type = RDC::UNIFORM_TYPE_ACCELERATION_STRUCTURE;
 						} break;
 					}
 
@@ -484,7 +486,7 @@ void RenderingShaderContainer::set_from_shader_reflection(const RenderingDeviceC
 	reflection_data.vertex_input_mask = p_reflection.vertex_input_mask;
 	reflection_data.fragment_output_mask = p_reflection.fragment_output_mask;
 	reflection_data.specialization_constants_count = p_reflection.specialization_constants.size();
-	reflection_data.is_compute = p_reflection.is_compute;
+	reflection_data.pipeline_type = p_reflection.pipeline_type;
 	reflection_data.has_multiview = p_reflection.has_multiview;
 	reflection_data.compute_local_size[0] = p_reflection.compute_local_size[0];
 	reflection_data.compute_local_size[1] = p_reflection.compute_local_size[1];
@@ -540,7 +542,7 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 	shader_refl.push_constant_stages = reflection_data.push_constant_stages_mask;
 	shader_refl.vertex_input_mask = reflection_data.vertex_input_mask;
 	shader_refl.fragment_output_mask = reflection_data.fragment_output_mask;
-	shader_refl.is_compute = reflection_data.is_compute;
+	shader_refl.pipeline_type = reflection_data.pipeline_type;
 	shader_refl.has_multiview = reflection_data.has_multiview;
 	shader_refl.compute_local_size[0] = reflection_data.compute_local_size[0];
 	shader_refl.compute_local_size[1] = reflection_data.compute_local_size[1];
