@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot
+package app.blazium.godot
 
 import android.app.Activity
 import android.content.Intent
@@ -38,8 +38,8 @@ import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.FragmentActivity
-import org.godotengine.godot.utils.PermissionsUtil
-import org.godotengine.godot.utils.ProcessPhoenix
+import app.blazium.godot.utils.PermissionsUtil
+import app.blazium.godot.utils.ProcessPhoenix
 
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.

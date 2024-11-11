@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.file
+package app.blazium.godot.io.file
 
 import android.content.Context
 import android.content.res.AssetManager
 import android.util.Log
-import org.godotengine.godot.error.Error
-import org.godotengine.godot.io.directory.AssetsDirectoryAccess
+import app.blazium.godot.error.Error
+import app.blazium.godot.io.directory.AssetsDirectoryAccess
 import java.io.IOException
 import java.io.InputStream
 import java.lang.UnsupportedOperationException

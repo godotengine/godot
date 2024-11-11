@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
-import org.godotengine.godot.input.GodotEditText;
+import app.blazium.godot.input.GodotEditText;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;

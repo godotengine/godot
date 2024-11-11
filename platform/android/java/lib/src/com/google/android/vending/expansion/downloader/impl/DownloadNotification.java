@@ -18,7 +18,7 @@ package com.google.android.vending.expansion.downloader.impl;
 
 // -- BLAZIUM start --
 //import com.android.vending.expansion.downloader.R;
-import org.godotengine.godot.R;
+import app.blazium.godot.R;
 // -- BLAZIUM end --
 
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;

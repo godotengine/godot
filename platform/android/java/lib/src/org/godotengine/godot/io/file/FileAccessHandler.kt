@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.file
+package app.blazium.godot.io.file
 
 import android.content.Context
 import android.util.Log
 import android.util.SparseArray
-import org.godotengine.godot.error.Error
-import org.godotengine.godot.io.StorageScope
+import app.blazium.godot.error.Error
+import app.blazium.godot.io.StorageScope
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.lang.UnsupportedOperationException

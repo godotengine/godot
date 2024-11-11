@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.vulkan.VkRenderer;
-import org.godotengine.godot.vulkan.VkSurfaceView;
+import app.blazium.godot.input.GodotInputHandler;
+import app.blazium.godot.vulkan.VkRenderer;
+import app.blazium.godot.vulkan.VkSurfaceView;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;

@@ -30,16 +30,16 @@
 
 @file:JvmName("BenchmarkUtils")
 
-package org.godotengine.godot.utils
+package app.blazium.godot.utils
 
 import android.os.Build
 import android.os.SystemClock
 import android.os.Trace
 import android.util.Log
-import org.godotengine.godot.BuildConfig
-import org.godotengine.godot.error.Error
-import org.godotengine.godot.io.file.FileAccessFlags
-import org.godotengine.godot.io.file.FileAccessHandler
+import app.blazium.godot.BuildConfig
+import app.blazium.godot.error.Error
+import app.blazium.godot.io.file.FileAccessFlags
+import app.blazium.godot.io.file.FileAccessHandler
 import org.json.JSONObject
 import java.nio.ByteBuffer
 import java.util.Collections

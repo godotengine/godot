@@ -30,7 +30,7 @@
 
 package com.godot.game;
 
-import org.godotengine.godot.GodotActivity;
+import app.blazium.godot.GodotActivity;
 
 import android.os.Bundle;
 

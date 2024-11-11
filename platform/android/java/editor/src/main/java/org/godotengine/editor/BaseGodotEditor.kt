@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.editor
+package app.blazium.editor
 
 import android.Manifest
 import android.app.ActivityManager
@@ -45,15 +45,15 @@ import android.widget.Toast
 import androidx.annotation.CallSuper
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.window.layout.WindowMetricsCalculator
-import org.godotengine.editor.utils.signApk
-import org.godotengine.editor.utils.verifyApk
-import org.godotengine.godot.GodotActivity
-import org.godotengine.godot.GodotLib
-import org.godotengine.godot.error.Error
-import org.godotengine.godot.utils.PermissionsUtil
-import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.godot.utils.isHorizonOSDevice
-import org.godotengine.godot.utils.isNativeXRDevice
+import app.blazium.editor.utils.signApk
+import app.blazium.editor.utils.verifyApk
+import app.blazium.godot.GodotActivity
+import app.blazium.godot.GodotLib
+import app.blazium.godot.error.Error
+import app.blazium.godot.utils.PermissionsUtil
+import app.blazium.godot.utils.ProcessPhoenix
+import app.blazium.godot.utils.isHorizonOSDevice
+import app.blazium.godot.utils.isNativeXRDevice
 import java.util.*
 import kotlin.math.min
 

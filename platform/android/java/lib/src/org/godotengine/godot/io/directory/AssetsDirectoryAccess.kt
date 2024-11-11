@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.directory
+package app.blazium.godot.io.directory
 
 import android.content.Context
 import android.util.Log
 import android.util.SparseArray
-import org.godotengine.godot.io.StorageScope
-import org.godotengine.godot.io.directory.DirectoryAccessHandler.Companion.INVALID_DIR_ID
-import org.godotengine.godot.io.directory.DirectoryAccessHandler.Companion.STARTING_DIR_ID
-import org.godotengine.godot.io.file.AssetData
+import app.blazium.godot.io.StorageScope
+import app.blazium.godot.io.directory.DirectoryAccessHandler.Companion.INVALID_DIR_ID
+import app.blazium.godot.io.directory.DirectoryAccessHandler.Companion.STARTING_DIR_ID
+import app.blazium.godot.io.file.AssetData
 import java.io.File
 import java.io.IOException
 

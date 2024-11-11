@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.

@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
-import org.godotengine.godot.error.Error;
-import org.godotengine.godot.plugin.GodotPlugin;
+import app.blazium.godot.error.Error;
+import app.blazium.godot.plugin.GodotPlugin;
 
 import android.app.Activity;
 

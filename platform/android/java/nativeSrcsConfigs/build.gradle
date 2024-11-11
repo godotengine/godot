@@ -9,7 +9,7 @@ android {
     buildToolsVersion versions.buildTools
     ndkVersion versions.ndkVersion
 
-    namespace = "org.godotengine.godot"
+    namespace = "app.blazium.godot"
 
     defaultConfig {
         minSdkVersion versions.minSdk

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
 import android.content.Context;
 import android.content.SharedPreferences;

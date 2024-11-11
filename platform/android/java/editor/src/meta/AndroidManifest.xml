@@ -85,8 +85,8 @@
         manager and editor windows.
          -->
         <meta-data
-            android:name="org.godotengine.plugin.v2.GodotOpenXRMeta"
-            android:value="org.godotengine.openxr.vendors.meta.GodotOpenXRMeta"
+            android:name="app.blazium.plugin.v2.GodotOpenXRMeta"
+            android:value="app.blazium.openxr.vendors.meta.GodotOpenXRMeta"
             tools:node="remove" />
 
         <!-- Enable system splash screen -->

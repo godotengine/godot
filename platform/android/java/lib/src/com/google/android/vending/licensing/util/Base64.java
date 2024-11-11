@@ -32,7 +32,7 @@ package com.google.android.vending.licensing.util;
  */
 
 // -- BLAZIUM start --
-import org.godotengine.godot.BuildConfig;
+import app.blazium.godot.BuildConfig;
 // -- BLAZIUM end --
 
 /**

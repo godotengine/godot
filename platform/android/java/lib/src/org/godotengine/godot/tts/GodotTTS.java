@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.tts;
+package app.blazium.godot.tts;
 
-import org.godotengine.godot.GodotLib;
+import app.blazium.godot.GodotLib;
 
 import android.app.Activity;
 import android.content.Context;

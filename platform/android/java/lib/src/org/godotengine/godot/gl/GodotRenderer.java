@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.gl;
+package app.blazium.godot.gl;
 
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.plugin.GodotPluginRegistry;
+import app.blazium.godot.GodotLib;
+import app.blazium.godot.plugin.GodotPlugin;
+import app.blazium.godot.plugin.GodotPluginRegistry;
 
 import android.util.Log;
 

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.utils
+package app.blazium.godot.utils
 
 import org.junit.Test
 import org.junit.runner.RunWith

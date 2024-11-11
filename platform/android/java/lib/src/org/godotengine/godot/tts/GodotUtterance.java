@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.tts;
+package app.blazium.godot.tts;
 
 /**
  * A speech request for GodotTTS.
