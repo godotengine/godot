@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 
 void RenderSceneData::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_cam_frustum_plane", "plane"), &RenderSceneData::get_cam_frustum_plane);
 	ClassDB::bind_method(D_METHOD("get_cam_transform"), &RenderSceneData::get_cam_transform);
 	ClassDB::bind_method(D_METHOD("get_cam_projection"), &RenderSceneData::get_cam_projection);
 

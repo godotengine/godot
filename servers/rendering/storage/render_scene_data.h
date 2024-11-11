@@ -39,6 +39,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Plane get_cam_frustum_plane(Projection::Planes p_plane) const = 0;
 	virtual Transform3D get_cam_transform() const = 0;
 	virtual Projection get_cam_projection() const = 0;
 
