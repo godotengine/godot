@@ -350,7 +350,6 @@
 		</member>
 		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
 			Sets whether the shading takes place, per-pixel, per-vertex or unshaded. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel. Unshaded rendering is the fastest, but disables all interactions with lights.
-			[b]Note:[/b] Setting the shading mode vertex shading currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
@@ -553,7 +552,7 @@
 			The object will be shaded per pixel. Useful for realistic shading effects.
 		</constant>
 		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
-			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality. Not implemented yet (this mode will act like [constant SHADING_MODE_PER_PIXEL]).
+			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
 		</constant>
 		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
 			Represents the size of the [enum ShadingMode] enum.

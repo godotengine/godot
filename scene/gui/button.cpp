@@ -561,6 +561,7 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 	}
 	autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
 	p_paragraph->set_break_flags(autowrap_flags);
+	p_paragraph->set_line_spacing(theme_cache.line_spacing);
 
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 		p_paragraph->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -833,6 +834,7 @@ void Button::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, align_to_largest_stylebox);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, line_spacing);
 }
 
 Button::Button(const String &p_text) {

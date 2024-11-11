@@ -61,10 +61,13 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The signal "%s" is declared but never explicitly used in the class.)", symbols[0]);
 		case SHADOWED_VARIABLE:
 			CHECK_SYMBOLS(4);
-			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s.)", symbols[0], symbols[1], symbols[2], symbols[3]);
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s in the current class.)", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case SHADOWED_VARIABLE_BASE_CLASS:
 			CHECK_SYMBOLS(4);
-			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
+			if (symbols.size() > 4) {
+				return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s in the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
+			}
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s in the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case SHADOWED_GLOBAL_IDENTIFIER:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(The %s "%s" has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);

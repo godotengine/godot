@@ -128,6 +128,14 @@ class NavMap : public NavRid {
 
 	HashMap<NavRegion *, LocalVector<gd::Edge::Connection>> region_external_connections;
 
+	struct ConnectionPair {
+		gd::Edge::Connection connections[2];
+		int size = 0;
+	};
+
+	HashMap<gd::EdgeKey, ConnectionPair, gd::EdgeKey> connection_pairs_map;
+	LocalVector<gd::Edge::Connection> free_edges;
+
 public:
 	NavMap();
 	~NavMap();

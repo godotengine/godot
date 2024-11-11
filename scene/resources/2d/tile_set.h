@@ -327,6 +327,7 @@ private:
 	struct PhysicsLayer {
 		uint32_t collision_layer = 1;
 		uint32_t collision_mask = 1;
+		real_t collision_priority = 1.0;
 		Ref<PhysicsMaterial> physics_material;
 	};
 	Vector<PhysicsLayer> physics_layers;
@@ -448,6 +449,8 @@ public:
 	uint32_t get_physics_layer_collision_layer(int p_layer_index) const;
 	void set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mask);
 	uint32_t get_physics_layer_collision_mask(int p_layer_index) const;
+	void set_physics_layer_collision_priority(int p_layer_index, real_t p_priority);
+	real_t get_physics_layer_collision_priority(int p_layer_index) const;
 	void set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material);
 	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
 

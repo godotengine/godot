@@ -60,7 +60,7 @@ register_platform_apis = env.CommandNoCache(
 )
 env.add_source_files(env.platform_sources, register_platform_apis)
 for platform in env.platform_apis:
-    env.add_source_files(env.platform_sources, f"{platform}/api/api.cpp")
+    env.add_source_files(env.platform_sources, f"{platform}/api/*.cpp")
 
 lib = env.add_library("platform", env.platform_sources)
 env.Prepend(LIBS=[lib])

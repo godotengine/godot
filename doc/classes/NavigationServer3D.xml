@@ -147,7 +147,7 @@
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
 			<description>
-				Returns true if the map got changed the previous frame.
+				Returns [code]true[/code] if the map got changed the previous frame.
 			</description>
 		</method>
 		<method name="agent_set_avoidance_callback">
@@ -237,7 +237,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+				If [param paused] is [code]true[/code] the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -645,14 +645,14 @@
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns true if the navigation [param map] allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+				Returns [code]true[/code] if the navigation [param map] allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns true if the map is active.
+				Returns [code]true[/code] if the map is active.
 			</description>
 		</method>
 		<method name="map_set_active">
@@ -832,7 +832,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">
@@ -1023,7 +1023,7 @@
 			<return type="bool" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns true if the navigation [param region] is set to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+				Returns [code]true[/code] if the navigation [param region] is set to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
 		<method name="region_owns_point" qualifiers="const">

@@ -367,7 +367,6 @@ private:
 	};
 
 	void _swap_chain_release(SwapChain *p_swap_chain);
-	VkExtent2D native_display_size;
 
 public:
 	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override final;
@@ -656,6 +655,7 @@ public:
 	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
 	void print_lost_device_info();
 	void on_device_lost() const;
+	static String get_vulkan_result(VkResult err);
 
 	/********************/
 	/**** SUBMISSION ****/

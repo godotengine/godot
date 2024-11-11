@@ -213,9 +213,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				frames = remaining_bytes;
 			}
 
-			if (format_channels == 0) {
-				ERR_FAIL_COND_V(format_channels == 0, ERR_INVALID_DATA);
-			}
+			ERR_FAIL_COND_V(format_channels == 0, ERR_INVALID_DATA);
 			frames /= format_channels;
 			frames /= (format_bits >> 3);
 

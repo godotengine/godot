@@ -30,7 +30,7 @@
 			<param index="3" name="node" type="Node" />
 			<description>
 				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _export_post]. If this [GLTFDocumentExtension] is used for exporting images, this runs after [method _serialize_texture_json].
-				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [param node] is also provided if available. The node may be null if not available, such as when exporting glTF data not generated from a Godot scene.
+				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [Node] is also provided if available. [param node] may be [code]null[/code] if not available, such as when exporting glTF data not generated from a Godot scene.
 			</description>
 		</method>
 		<method name="_export_object_model_property" qualifiers="virtual">
@@ -43,7 +43,7 @@
 			<param index="5" name="target_depth" type="int" />
 			<description>
 				Part of the export process. Allows GLTFDocumentExtension classes to provide mappings for properties of nodes in the Godot scene tree, to JSON pointers to glTF properties, as defined by the glTF object model.
-				Returns a [GLTFObjectModelProperty] instance that defines how the property should be mapped. If your extension can't handle the property, return null, or an instance without any JSON pointers (see [method GLTFObjectModelProperty.has_json_pointers]). You should use [method GLTFObjectModelProperty.set_types] to set the types, and set the JSON pointer(s) using the [member GLTFObjectModelProperty.json_pointers] property.
+				Returns a [GLTFObjectModelProperty] instance that defines how the property should be mapped. If your extension can't handle the property, return [code]null[/code] or an instance without any JSON pointers (see [method GLTFObjectModelProperty.has_json_pointers]). You should use [method GLTFObjectModelProperty.set_types] to set the types, and set the JSON pointer(s) using the [member GLTFObjectModelProperty.json_pointers] property.
 				The parameters provide context for the property, including the NodePath, the Godot node, the GLTF node index, and the target object. The [param target_object] will be equal to [param godot_node] if no sub-object can be found, otherwise it will point to a sub-object. For example, if the path is [code]^"A/B/C/MeshInstance3D:mesh:surface_0/material:emission_intensity"[/code], it will get the node, then the mesh, and then the material, so [param target_object] will be the [Material] resource, and [param target_depth] will be 2 because 2 levels were traversed to get to the target.
 			</description>
 		</method>
@@ -89,7 +89,7 @@
 			<description>
 				Part of the import process. This method is run after [method _import_pre_generate] and before [method _import_node].
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
-				[b]Note:[/b] The [param scene_parent] parameter may be null if this is the single root node.
+				[b]Note:[/b] The [param scene_parent] parameter may be [code]null[/code] if this is the single root node.
 			</description>
 		</method>
 		<method name="_get_image_file_extension" qualifiers="virtual">
@@ -130,7 +130,7 @@
 			<param index="2" name="partial_paths" type="NodePath[]" />
 			<description>
 				Part of the import process. Allows GLTFDocumentExtension classes to provide mappings for JSON pointers to glTF properties, as defined by the glTF object model, to properties of nodes in the Godot scene tree.
-				Returns a [GLTFObjectModelProperty] instance that defines how the property should be mapped. If your extension can't handle the property, return null, or an instance without any NodePaths (see [method GLTFObjectModelProperty.has_node_paths]). You should use [method GLTFObjectModelProperty.set_types] to set the types, and [method GLTFObjectModelProperty.append_path_to_property] function is useful for most simple cases.
+				Returns a [GLTFObjectModelProperty] instance that defines how the property should be mapped. If your extension can't handle the property, return [code]null[/code] or an instance without any NodePaths (see [method GLTFObjectModelProperty.has_node_paths]). You should use [method GLTFObjectModelProperty.set_types] to set the types, and [method GLTFObjectModelProperty.append_path_to_property] function is useful for most simple cases.
 				In many cases, [param partial_paths] will contain the start of a path, allowing the extension to complete the path. For example, for [code]/nodes/3/extensions/MY_ext/prop[/code], Godot will pass you a NodePath that leads to node 3, so the GLTFDocumentExtension class only needs to resolve the last [code]MY_ext/prop[/code] part of the path. In this example, the extension should check [code]split.size() &gt; 4 and split[0] == "nodes" and split[2] == "extensions" and split[3] == "MY_ext"[/code] at the start of the function to check if this JSON pointer applies to it, then it can use [param partial_paths] and handle [code]split[4][/code].
 			</description>
 		</method>

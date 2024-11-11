@@ -469,10 +469,10 @@
 			If the [code]--log-file &lt;file&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used, log rotation is always disabled.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to false.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]false[/code].
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to true.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to [code]true[/code].
 		</member>
 		<member name="debug/gdscript/warnings/confusable_capture_reassignment" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable captured by a lambda is reassigned, since this does not modify the outer local variable.
@@ -561,10 +561,10 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable that would shadow a member variable that the class defines.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable or local constant shadows a member declared in the current class.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or subclass member variable that would shadow a variable that is inherited from a parent class.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable or local constant shadows a member declared in a base class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
@@ -3014,7 +3014,7 @@
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
 		</member>
 		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
-			If true and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
+			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
 			[b]Note:[/b] Only works on the Compatibility rendering method.
 		</member>
 		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">

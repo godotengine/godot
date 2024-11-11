@@ -152,7 +152,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="update_current" type="bool" />
 			<description>
-				Sets the initial value of the setting specified by [param name] to [param value]. This is used to provide a value for the Revert button in the Editor Settings. If [param update_current] is true, the current value of the setting will be set to [param value] as well.
+				Sets the initial value of the setting specified by [param name] to [param value]. This is used to provide a value for the Revert button in the Editor Settings. If [param update_current] is [code]true[/code], the setting is reset to [param value] as well.
 			</description>
 		</method>
 		<method name="set_project_metadata">
@@ -230,7 +230,7 @@
 			If [code]true[/code], when a node is deleted with animation tracks referencing it, a confirmation dialog appears before the tracks are deleted. The dialog will appear even when using the "Delete (No Confirm)" shortcut.
 		</member>
 		<member name="docks/scene_tree/ask_before_revoking_unique_name" type="bool" setter="" getter="">
-			If [code]true[/code], displays a confirmation dialog before left-clicking the "percent" icon next to a node name in the Scene tree dock. When clicked, this icon revokes the node's scene-unique name, which can impact the behavior of scripts that rely on this scene-unique name due to identifiers not being found anymore.
+			If [code]true[/code], displays a confirmation dialog after left-clicking the "percent" icon next to a node name in the Scene tree dock. When clicked, this icon revokes the node's scene-unique name, which can impact the behavior of scripts that rely on this scene-unique name due to identifiers not being found anymore.
 		</member>
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
@@ -717,8 +717,20 @@
 		<member name="filesystem/quick_open_dialog/default_display_mode" type="int" setter="" getter="">
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
+		<member name="filesystem/quick_open_dialog/enable_fuzzy_matching" type="bool" setter="" getter="">
+			If [code]true[/code], fuzzy matching of search tokens is allowed.
+		</member>
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
+		</member>
+		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
+			The number of allowed missed query characters in a match, if fuzzy matching is enabled. For example, with the default value of 2, [code]foobar[/code] would match [code]foobur[/code] and [code]foob[/code] but not [code]foo[/code].
+		</member>
+		<member name="filesystem/quick_open_dialog/max_results" type="int" setter="" getter="">
+			Maximum number of matches to show in dialog.
+		</member>
+		<member name="filesystem/quick_open_dialog/show_search_highlight" type="bool" setter="" getter="">
+			If [code]true[/code], results will be highlighted with their search matches.
 		</member>
 		<member name="filesystem/tools/oidn/oidn_denoise_path" type="String" setter="" getter="">
 			The path to the directory containing the Open Image Denoise (OIDN) executable, used optionally for denoising lightmaps. It can be downloaded from [url=https://www.openimagedenoise.org/downloads.html]openimagedenoise.org[/url].
@@ -1395,7 +1407,7 @@
 			The script editor's documentation comment color. In GDScript, this is used for comments starting with [code]##[/code]. In C#, this is used for comments starting with [code]///[/code] or [code]/**[/code].
 		</member>
 		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
-			The script editor's engine type color ([Vector2], [Vector3], [Color], ...).
+			The script editor's engine type color ([Object], [Mesh], [Node], ...).
 		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
