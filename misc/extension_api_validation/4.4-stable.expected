@@ -328,3 +328,10 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and SVGTexture. Compatibility method registered.
+
+
+GH-97755
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instance_geometry_set_lightmap/arguments': size changed value in new API, from 4 to 5.
+
+Optional argument added to allow specifying lightmap slice and scale for multimesh instances.
