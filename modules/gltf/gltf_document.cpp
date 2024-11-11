@@ -8560,7 +8560,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
-	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat(R"(Can't open file at path "%s")", p_path));
 	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
 	if (base_path.is_empty()) {
