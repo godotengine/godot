@@ -69,9 +69,6 @@ class OS {
 	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
-	// for the user interface we keep a record of the current display driver
-	// so we can retrieve the rendering drivers available
-	int _display_driver_id = -1;
 	String _current_rendering_driver_name;
 	String _current_rendering_method;
 	bool _is_gles_over_gl = false;
@@ -119,8 +116,6 @@ protected:
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
 
-	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
-
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
 
@@ -143,8 +138,6 @@ public:
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
 	String get_current_rendering_method() const { return _current_rendering_method; }
 	bool get_gles_over_gl() const { return _is_gles_over_gl; }
-
-	int get_display_driver_id() const { return _display_driver_id; }
 
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
 	virtual bool get_user_prefers_integrated_gpu() const { return false; }
