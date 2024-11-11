@@ -1181,7 +1181,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 	correction.add_jitter_offset(p_render_data->scene_data->taa_jitter);
 
 	Projection projection = p_render_data->scene_data->cam_projection;
-	if (p_render_data->scene_data->cam_frustum) {
+	if (p_render_data->scene_data->cam_is_frustum) {
 		// We don't use a full projection matrix for the sky, this is enough to make up for it.
 		projection[2].y = -projection[2].y;
 	}
@@ -1207,7 +1207,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		sky_scene_state.ubo.view_eye_offsets[i][3] = 0.0;
 	}
 
-	sky_scene_state.ubo.z_far = p_render_data->scene_data->view_projection[0].get_z_far(); // Should be the same for all projection.
+	sky_scene_state.ubo.z_far = p_render_data->scene_data->z_far;
 	sky_scene_state.ubo.fog_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment);
 	sky_scene_state.ubo.fog_density = RendererSceneRenderRD::get_singleton()->environment_get_fog_density(p_render_data->environment);
 	sky_scene_state.ubo.fog_aerial_perspective = RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_render_data->environment);
@@ -1456,11 +1456,7 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 
 	if (custom_fov && sky_scene_state.view_count == 1) {
 		// With custom fov we don't support stereo...
-		float near_plane = projection.get_z_near();
-		float far_plane = projection.get_z_far();
-		float aspect = projection.get_aspect();
-
-		projection.set_perspective(custom_fov, aspect, near_plane, far_plane);
+		projection.adjust_perspective_fov(custom_fov);
 	}
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
@@ -1557,11 +1553,7 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 
 	if (custom_fov && sky_scene_state.view_count == 1) {
 		// With custom fov we don't support stereo...
-		float near_plane = projection.get_z_near();
-		float far_plane = projection.get_z_far();
-		float aspect = projection.get_aspect();
-
-		projection.set_perspective(custom_fov, aspect, near_plane, far_plane);
+		projection.adjust_perspective_fov(custom_fov);
 	}
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;

@@ -178,7 +178,7 @@ DebugEffects::~DebugEffects() {
 	motion_vectors.shader.version_free(motion_vectors.shader_version);
 }
 
-void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
+void DebugEffects::draw_shadow_frustum(RID p_light, const Frustum &p_cam_frustum, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	RID base = light_storage->light_instance_get_base_light(p_light);
@@ -202,17 +202,17 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	}
 
 	// Setup our camera info (this is mostly a duplicate of the logic found in RendererSceneCull::_light_instance_setup_directional_shadow).
-	bool is_orthogonal = p_cam_projection.is_orthogonal();
-	real_t aspect = p_cam_projection.get_aspect();
+	bool is_orthogonal = p_cam_frustum.is_orthogonal();
+	real_t aspect = p_cam_frustum.get_aspect();
 	real_t fov = 0.0;
 	Vector2 vp_he;
 	if (is_orthogonal) {
-		vp_he = p_cam_projection.get_viewport_half_extents();
+		vp_he = p_cam_frustum.get_viewport_half_extents();
 	} else {
-		fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
+		fov = p_cam_frustum.get_fov(); //this is actually yfov, because set aspect tries to keep it
 	}
-	real_t min_distance = p_cam_projection.get_z_near();
-	real_t max_distance = p_cam_projection.get_z_far();
+	real_t min_distance = p_cam_frustum.get_z_near();
+	real_t max_distance = p_cam_frustum.get_z_far();
 	real_t shadow_max = RSG::light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 	if (shadow_max > 0 && !is_orthogonal) {
 		max_distance = MIN(shadow_max, max_distance);

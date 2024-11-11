@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debug_effects.h                                                       */
+/*  frustum.h                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,74 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_EFFECTS_RD_H
-#define DEBUG_EFFECTS_RD_H
+#ifndef FRUSTUM_H
+#define FRUSTUM_H
 
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/effects/motion_vectors.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/shadow_frustum.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
+#include "core/math/plane.h"
 
-#include "servers/rendering_server.h"
+struct Transform3D;
 
-namespace RendererRD {
+struct Frustum {
+	/*
+	Planes are stored in the order defined in struct Projection :
 
-class DebugEffects {
-private:
-	struct {
-		RD::VertexFormatID vertex_format;
-		RID vertex_buffer;
-		RID vertex_array;
-
-		RID index_buffer;
-		RID index_array;
-
-		RID lines_buffer;
-		RID lines_array;
-	} frustum;
-
-	struct ShadowFrustumPushConstant {
-		float mvp[16];
-		float color[4];
+	enum Projection::Planes {
+		PLANE_NEAR,
+		PLANE_FAR,
+		PLANE_LEFT,
+		PLANE_TOP,
+		PLANE_RIGHT,
+		PLANE_BOTTOM
 	};
+	*/
 
-	enum ShadowFrustumPipelines {
-		SFP_TRANSPARENT,
-		SFP_WIREFRAME,
-		SFP_MAX
-	};
+	Plane planes[6];
 
-	struct {
-		ShadowFrustumShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[SFP_MAX];
-	} shadow_frustum;
+	_FORCE_INLINE_ Plane &operator[](int p_index) { return planes[p_index]; }
+	_FORCE_INLINE_ const Plane &operator[](int p_index) const { return planes[p_index]; }
 
-	struct MotionVectorsPushConstant {
-		float reprojection_matrix[16];
-		float resolution[2];
-		uint32_t force_derive_from_depth;
-		float pad;
-	};
+	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
+	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist);
+	void set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_dist, real_t p_display_width, real_t p_display_to_lens, real_t p_oversample, real_t p_z_near, real_t p_z_far);
+	void set_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar);
+	void set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear, real_t p_zfar, bool p_flip_fov = false);
+	void set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far);
+	void set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
 
-	struct {
-		MotionVectorsShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipeline;
-		MotionVectorsPushConstant push_constant;
-	} motion_vectors;
+	Vector<Plane> get_projection_planes(const Transform3D &p_transform) const;
 
-	void _create_frustum_arrays();
+	bool is_orthogonal() const;
+	bool get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const;
+	Vector2 get_viewport_half_extents() const;
+	Vector2 get_far_plane_half_extents() const;
+	real_t get_lod_multiplier() const;
+	real_t get_fov() const;
+	real_t get_z_near() const;
+	real_t get_z_far() const;
+	real_t get_aspect() const;
 
-protected:
-public:
-	DebugEffects();
-	~DebugEffects();
+	static real_t get_fovy(real_t p_fovx, real_t p_aspect) {
+		return Math::rad_to_deg(Math::atan(p_aspect * Math::tan(Math::deg_to_rad(p_fovx) * 0.5)) * 2.0);
+	}
 
-	void draw_shadow_frustum(RID p_light, const Frustum &p_cam_frustum, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect);
-	void draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_fb, const Projection &p_current_projection, const Transform3D &p_current_transform, const Projection &p_previous_projection, const Transform3D &p_previous_transform, Size2i p_resolution);
+	Frustum() = default;
+	Frustum(const Vector<Plane> &p_planes);
 };
 
-} // namespace RendererRD
-
-#endif // DEBUG_EFFECTS_RD_H
+#endif // FRUSTUM_H

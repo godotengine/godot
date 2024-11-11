@@ -680,7 +680,7 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 	p_render_data->shadows.clear();
 	p_render_data->directional_shadows.clear();
 
-	float lod_distance_multiplier = p_render_data->scene_data->cam_projection.get_lod_multiplier();
+	float lod_distance_multiplier = p_render_data->scene_data->cam_frustum.get_lod_multiplier();
 	{
 		for (int i = 0; i < p_render_data->render_shadow_count; i++) {
 			RID li = p_render_data->render_shadows[i].light;
@@ -1417,6 +1417,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	RenderSceneDataRD scene_data;
 	scene_data.flip_y = !p_flip_y; // Q: Why is this inverted? Do we assume flip in shadow logic?
 	scene_data.cam_projection = p_projection;
+	scene_data.cam_frustum = p_projection.get_projection_planes(Transform3D());
 	scene_data.cam_transform = p_transform;
 	scene_data.view_projection[0] = p_projection;
 	scene_data.z_near = 0.0;
@@ -1498,7 +1499,7 @@ void RenderForwardMobile::_render_shadow_end() {
 
 /* */
 
-void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
+void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Frustum &p_cam_frustum, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
@@ -1507,6 +1508,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	RenderSceneDataRD scene_data;
 	scene_data.cam_projection = p_cam_projection;
+	scene_data.cam_frustum = p_cam_frustum;
 	scene_data.cam_transform = p_cam_transform;
 	scene_data.view_projection[0] = p_cam_projection;
 	scene_data.dual_paraboloid_side = 0;
@@ -1634,6 +1636,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	RenderSceneDataRD scene_data;
 	scene_data.flip_y = true;
 	scene_data.cam_projection = p_cam_projection;
+	scene_data.cam_frustum = p_cam_projection.get_projection_planes(Transform3D());
 	scene_data.cam_transform = p_cam_transform;
 	scene_data.view_projection[0] = p_cam_projection;
 	scene_data.z_near = 0.0;
@@ -1897,8 +1900,8 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	uint32_t lightmap_captures_used = 0;
 
 	Plane near_plane(-p_render_data->scene_data->cam_transform.basis.get_column(Vector3::AXIS_Z), p_render_data->scene_data->cam_transform.origin);
-	near_plane.d += p_render_data->scene_data->cam_projection.get_z_near();
-	float z_max = p_render_data->scene_data->cam_projection.get_z_far() - p_render_data->scene_data->cam_projection.get_z_near();
+	near_plane.d += p_render_data->scene_data->z_near;
+	float z_max = p_render_data->scene_data->z_far - p_render_data->scene_data->z_near;
 
 	RenderList *rl = &render_list[p_render_list];
 
@@ -1918,7 +1921,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 		GeometryInstanceForwardMobile *inst = static_cast<GeometryInstanceForwardMobile *>((*p_render_data->instances)[i]);
 
 		Vector3 center = inst->transform.origin;
-		if (p_render_data->scene_data->cam_orthogonal) {
+		if (p_render_data->scene_data->cam_is_orthogonal) {
 			if (inst->use_aabb_center) {
 				center = inst->transformed_aabb.get_support(-near_plane.normal);
 			}
@@ -1984,7 +1987,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 		float lod_distance = 0.0;
 
-		if (p_render_data->scene_data->cam_orthogonal) {
+		if (p_render_data->scene_data->cam_is_orthogonal) {
 			lod_distance = 1.0;
 		} else {
 			Vector3 aabb_min = inst->transformed_aabb.position;

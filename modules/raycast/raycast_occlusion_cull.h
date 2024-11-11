@@ -32,6 +32,7 @@
 #define RAYCAST_OCCLUSION_CULL_H
 
 #include "core/io/image.h"
+#include "core/math/frustum.h"
 #include "core/math/projection.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
@@ -185,7 +186,7 @@ public:
 	virtual HZBuffer *buffer_get_ptr(RID p_buffer) override;
 	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) override;
 	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) override;
-	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) override;
+	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Frustum &p_cam_frustum, bool p_cam_orthogonal) override;
 
 	virtual RID buffer_get_debug_texture(RID p_buffer) override;
 
