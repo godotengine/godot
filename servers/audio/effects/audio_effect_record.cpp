@@ -30,11 +30,6 @@
 
 #include "audio_effect_record.h"
 
-#ifdef TOOLS_ENABLED
-// FIXME: This file shouldn't depend on editor stuff.
-#include "editor/import/resource_importer_wav.h"
-#endif
-
 void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	if (!is_recording) {
 		for (int i = 0; i < p_frame_count; i++) {
@@ -241,12 +236,8 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 		Vector<uint8_t> bleft;
 		Vector<uint8_t> bright;
 
-#ifdef TOOLS_ENABLED
-		ResourceImporterWAV::_compress_ima_adpcm(left, bleft);
-		ResourceImporterWAV::_compress_ima_adpcm(right, bright);
-#else
-		ERR_PRINT("AudioEffectRecord cannot do IMA ADPCM compression at runtime.");
-#endif
+		AudioStreamWAV::_compress_ima_adpcm(left, bleft);
+		AudioStreamWAV::_compress_ima_adpcm(right, bright);
 
 		int dl = bleft.size();
 		dst_data.resize(dl * 2);
