@@ -59,7 +59,7 @@ import glsl_builders
 import methods
 import scu_builders
 from methods import print_error, print_warning
-from platform_methods import architecture_aliases, architectures
+from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -350,27 +350,16 @@ if env["platform"] == "":
     if env["platform"] != "":
         print(f'Automatically detected platform: {env["platform"]}')
 
-if env["platform"] == "osx":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    env["platform"] = "macos"
+# Deprecated aliases kept for compatibility.
+if env["platform"] in compatibility_platform_aliases:
+    alias = env["platform"]
+    platform = compatibility_platform_aliases[alias]
+    print_warning(f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".')
+    env["platform"] = platform
 
-if env["platform"] == "iphone":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    env["platform"] = "ios"
-
-if env["platform"] in ["linux", "bsd", "x11"]:
-    if env["platform"] == "x11":
-        # Deprecated alias kept for compatibility.
-        print_warning('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
-    # Alias for convenience.
+# Alias for convenience.
+if env["platform"] in ["linux", "bsd"]:
     env["platform"] = "linuxbsd"
-
-if env["platform"] == "javascript":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
-    env["platform"] = "web"
 
 if env["platform"] not in platform_list:
     text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
