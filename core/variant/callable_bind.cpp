@@ -43,7 +43,7 @@ bool CallableCustomBind::_equal_func(const CallableCustom *p_a, const CallableCu
 	const CallableCustomBind *a = static_cast<const CallableCustomBind *>(p_a);
 	const CallableCustomBind *b = static_cast<const CallableCustomBind *>(p_b);
 
-	if (!(a->callable != b->callable)) {
+	if (a->callable != b->callable) {
 		return false;
 	}
 
@@ -185,7 +185,7 @@ bool CallableCustomUnbind::_equal_func(const CallableCustom *p_a, const Callable
 	const CallableCustomUnbind *a = static_cast<const CallableCustomUnbind *>(p_a);
 	const CallableCustomUnbind *b = static_cast<const CallableCustomUnbind *>(p_b);
 
-	if (!(a->callable != b->callable)) {
+	if (a->callable != b->callable) {
 		return false;
 	}
 
