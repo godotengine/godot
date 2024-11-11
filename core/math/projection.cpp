@@ -93,13 +93,23 @@ Vector4 Projection::xform_inv(const Vector4 &p_vec4) const {
 			columns[3][0] * p_vec4.x + columns[3][1] * p_vec4.y + columns[3][2] * p_vec4.z + columns[3][3] * p_vec4.w);
 }
 
-void Projection::adjust_perspective_znear(real_t p_new_znear) {
-	real_t zfar = get_z_far();
-	real_t znear = p_new_znear;
+void Projection::adjust_perspective_znear_zfar(real_t p_new_znear, real_t p_new_zfar) {
+	real_t delta_z = p_new_zfar - p_new_znear;
+	columns[2][2] = -(p_new_zfar + p_new_znear) / delta_z;
+	columns[3][2] = -2 * p_new_znear * p_new_zfar / delta_z;
+}
 
-	real_t deltaZ = zfar - znear;
-	columns[2][2] = -(zfar + znear) / deltaZ;
-	columns[3][2] = -2 * znear * zfar / deltaZ;
+void Projection::adjust_perspective_fov(real_t p_new_fovy_degrees) {
+	real_t sine, cotangent, aspect;
+	real_t radians = Math::deg_to_rad(p_new_fovy_degrees / 2.0);
+
+	sine = Math::sin(radians);
+
+	cotangent = Math::cos(radians) / sine;
+	aspect = columns[1][1] / columns[0][0];
+
+	columns[0][0] = cotangent / aspect;
+	columns[1][1] = cotangent;
 }
 
 Projection Projection::create_depth_correction(bool p_flip_y) {
@@ -164,7 +174,14 @@ Projection Projection::create_fit_aabb(const AABB &p_aabb) {
 
 Projection Projection::perspective_znear_adjusted(real_t p_new_znear) const {
 	Projection proj = *this;
-	proj.adjust_perspective_znear(p_new_znear);
+	real_t zfar = proj.get_z_far();
+	proj.adjust_perspective_znear_zfar(p_new_znear, zfar);
+	return proj;
+}
+
+Projection Projection::perspective_fov_adjusted(real_t p_new_fovy_degrees) const {
+	Projection proj = *this;
+	proj.adjust_perspective_fov(p_new_fovy_degrees);
 	return proj;
 }
 
