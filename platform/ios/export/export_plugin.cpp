@@ -328,10 +328,15 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	plugins_changed.clear();
 	plugins = found_plugins;
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/increased_memory_limit"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/game_center"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/push_notifications", PROPERTY_HINT_ENUM, "Disabled,Production,Development"), "Disabled"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/push_notifications"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_a12"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "capabilities/additional"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_files_app"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_itunes_sharing"), false));
@@ -518,9 +523,20 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
 		} else if (lines[i].contains("$docs_sharing")) {
 			strnew += lines[i].replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].contains("$entitlements_push_notifications")) {
-			bool is_on = p_preset->get("capabilities/push_notifications");
-			strnew += lines[i].replace("$entitlements_push_notifications", is_on ? "<key>aps-environment</key><string>development</string>" : "") + "\n";
+		} else if (lines[i].contains("$entitlements_full")) {
+			String entitlements;
+			if ((String)p_preset->get("entitlements/push_notifications") != "Disabled") {
+				entitlements += "<key>aps-environment</key>\n<string>" + p_preset->get("entitlements/push_notifications").operator String().to_lower() + "</string>" + "\n";
+			}
+			if ((bool)p_preset->get("entitlements/game_center")) {
+				entitlements += "<key>com.apple.developer.game-center</key>\n<true/>\n";
+			}
+			if ((bool)p_preset->get("entitlements/increased_memory_limit")) {
+				entitlements += "<key>com.apple.developer.kernel.increased-memory-limit</key>\n<true/>\n";
+			}
+			entitlements += p_preset->get("entitlements/additional").operator String() + "\n";
+
+			strnew += lines[i].replace("$entitlements_full", entitlements);
 		} else if (lines[i].contains("$required_device_capabilities")) {
 			String capabilities;
 
@@ -540,6 +556,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 			for (int idx = 0; idx < capabilities_list.size(); idx++) {
 				capabilities += "<string>" + capabilities_list[idx] + "</string>\n";
+			}
+			for (const String &cap : p_preset->get("capabilities/additional").operator PackedStringArray()) {
+				capabilities += "<string>" + cap + "</string>\n";
 			}
 
 			strnew += lines[i].replace("$required_device_capabilities", capabilities);
