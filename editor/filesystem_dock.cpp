@@ -1641,21 +1641,27 @@ String FileSystemDock::_get_unique_name(const FileOrFolder &p_entry, const Strin
 	return new_path;
 }
 
-void FileSystemDock::_update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const {
-	Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
-	Vector<String> new_favorites;
-
-	for (const String &old_path : favorites_list) {
+void FileSystemDock::_update_favorites_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const {
+	Vector<String> favorite_files = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> new_favorite_files;
+	for (const String &old_path : favorite_files) {
 		if (p_folders_renames.has(old_path)) {
-			new_favorites.push_back(p_folders_renames[old_path]);
+			new_favorite_files.push_back(p_folders_renames[old_path]);
 		} else if (p_files_renames.has(old_path)) {
-			new_favorites.push_back(p_files_renames[old_path]);
+			new_favorite_files.push_back(p_files_renames[old_path]);
 		} else {
-			new_favorites.push_back(old_path);
+			new_favorite_files.push_back(old_path);
 		}
 	}
+	EditorSettings::get_singleton()->set_favorites(new_favorite_files);
 
-	EditorSettings::get_singleton()->set_favorites(new_favorites);
+	HashMap<String, PackedStringArray> favorite_properties = EditorSettings::get_singleton()->get_favorite_properties();
+	for (const KeyValue<String, String> &KV : p_files_renames) {
+		if (favorite_properties.has(KV.key)) {
+			favorite_properties.replace_key(KV.key, KV.value);
+		}
+	}
+	EditorSettings::get_singleton()->set_favorite_properties(favorite_properties);
 }
 
 void FileSystemDock::_make_scene_confirm() {
@@ -1798,7 +1804,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_update_resource_paths_after_move(file_renames, uids);
 	_update_dependencies_after_move(file_renames, file_owners);
 	_update_project_settings_after_move(file_renames, folder_renames);
-	_update_favorites_list_after_move(file_renames, folder_renames);
+	_update_favorites_after_move(file_renames, folder_renames);
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
@@ -1959,7 +1965,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			_update_resource_paths_after_move(file_renames, uids);
 			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
-			_update_favorites_list_after_move(file_renames, folder_renames);
+			_update_favorites_after_move(file_renames, folder_renames);
 
 			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 

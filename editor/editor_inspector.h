@@ -41,6 +41,7 @@ class Button;
 class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
+class HSeparator;
 class LineEdit;
 class MarginContainer;
 class OptionButton;
@@ -64,6 +65,7 @@ public:
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
 		MENU_COPY_PROPERTY_PATH,
+		MENU_FAVORITE_PROPERTY,
 		MENU_PIN_VALUE,
 		MENU_OPEN_DOCUMENTATION,
 	};
@@ -112,6 +114,9 @@ private:
 	bool pin_hidden = false;
 	bool pinned = false;
 
+	bool can_favorite = false;
+	bool favorited = false;
+
 	bool use_folding = false;
 	bool draw_top_bg = true;
 
@@ -134,7 +139,7 @@ private:
 	GDVIRTUAL0(_update_property)
 	GDVIRTUAL1(_set_read_only, bool)
 
-	void _update_pin_flags();
+	void _update_flags();
 
 protected:
 	bool has_borders = false;
@@ -218,6 +223,9 @@ public:
 	void set_name_split_ratio(float p_ratio);
 	float get_name_split_ratio() const;
 
+	void set_favoritable(bool p_favoritable);
+	bool is_favoritable() const;
+
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
@@ -285,6 +293,7 @@ class EditorInspectorCategory : public Control {
 	String label;
 	String doc_class_name;
 	PopupMenu *menu = nullptr;
+	bool is_favorite = false;
 
 	void _handle_menu_option(int p_option);
 
@@ -293,10 +302,10 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	void set_as_favorite(EditorInspector *p_for_inspector);
+
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
-
-	EditorInspectorCategory();
 };
 
 class EditorInspectorSection : public Container {
@@ -331,6 +340,7 @@ public:
 	virtual Size2 get_minimum_size() const override;
 
 	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
+	String get_section() const;
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
@@ -480,13 +490,31 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
+	friend class EditorInspectorCategory;
+
 	enum {
 		MAX_PLUGINS = 1024
 	};
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
 	static int inspector_plugin_count;
 
+	// Right-click context menu options.
+	enum ClassMenuOption {
+		MENU_UNFAVORITE_ALL,
+	};
+
+	bool can_favorite = false;
+	PackedStringArray current_favorites;
+	VBoxContainer *favorites_section = nullptr;
+	EditorInspectorCategory *favorites_category = nullptr;
+	VBoxContainer *favorites_vbox = nullptr;
+	VBoxContainer *favorites_groups_vbox = nullptr;
+	HSeparator *favorites_separator = nullptr;
+
 	EditorInspector *root_inspector = nullptr;
+
+	VBoxContainer *base_vbox = nullptr;
+	VBoxContainer *begin_vbox = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 
 	// Map used to cache the instantiated editors.
@@ -557,6 +585,10 @@ class EditorInspector : public ScrollContainer {
 	void _property_selected(const String &p_path, int p_focusable);
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
+	void _update_current_favorites();
+	void _set_property_favorited(const String &p_path, bool p_favorited);
+	void _clear_current_favorites();
+
 	void _node_removed(Node *p_node);
 
 	HashMap<StringName, int> per_array_page;
@@ -583,6 +615,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
+
+	void _handle_menu_option(int p_option);
 
 protected:
 	static void _bind_methods();
