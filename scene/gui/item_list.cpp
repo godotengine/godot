@@ -1166,6 +1166,8 @@ void ItemList::_notification(int p_what) {
 				first_item_visible = lo;
 			}
 
+			Rect2 cursor_rcache; // Place to save the position of the cursor and draw it after everything else.
+
 			// Draw visible items.
 			for (int i = first_item_visible; i < items.size(); i++) {
 				Rect2 rcache = items[i].rect_cache;
@@ -1182,11 +1184,12 @@ void ItemList::_notification(int p_what) {
 					rcache.size.width = width - rcache.position.x;
 				}
 
-				bool should_draw_selected_bg = items[i].selected;
+				bool should_draw_selected_bg = items[i].selected && hovered != i;
+				bool should_draw_hovered_selected_bg = items[i].selected && hovered == i;
 				bool should_draw_hovered_bg = hovered == i && !items[i].selected;
 				bool should_draw_custom_bg = items[i].custom_bg.a > 0.001;
 
-				if (should_draw_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
+				if (should_draw_selected_bg || should_draw_hovered_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
 
@@ -1196,6 +1199,13 @@ void ItemList::_notification(int p_what) {
 
 					if (should_draw_selected_bg) {
 						draw_style_box(sbsel, r);
+					}
+					if (should_draw_hovered_selected_bg) {
+						if (has_focus()) {
+							draw_style_box(theme_cache.hovered_selected_focus_style, r);
+						} else {
+							draw_style_box(theme_cache.hovered_selected_style, r);
+						}
 					}
 					if (should_draw_hovered_bg) {
 						draw_style_box(theme_cache.hovered_style, r);
@@ -1294,7 +1304,9 @@ void ItemList::_notification(int p_what) {
 					}
 
 					Color txt_modulate;
-					if (items[i].selected) {
+					if (items[i].selected && hovered == i) {
+						txt_modulate = theme_cache.font_hovered_selected_color;
+					} else if (items[i].selected) {
 						txt_modulate = theme_cache.font_selected_color;
 					} else if (hovered == i) {
 						txt_modulate = theme_cache.font_hovered_color;
@@ -1366,15 +1378,17 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (i == current && (select_mode == SELECT_MULTI || select_mode == SELECT_TOGGLE)) {
-					Rect2 r = rcache;
-					r.position += base_ofs;
-
-					if (rtl) {
-						r.position.x = size.width - r.position.x - r.size.x;
-					}
-
-					draw_style_box(cursor, r);
+					cursor_rcache = rcache;
 				}
+			}
+			if (cursor_rcache.size != Size2()) { // Draw cursor last, so border isn't cut off.
+				cursor_rcache.position += base_ofs;
+
+				if (rtl) {
+					cursor_rcache.position.x = size.width - cursor_rcache.position.x - cursor_rcache.size.x;
+				}
+
+				draw_style_box(cursor, cursor_rcache);
 			}
 		} break;
 	}
@@ -1966,6 +1980,7 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, ItemList, font_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_hovered_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_selected_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ItemList, font_outline_size, "outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_outline_color);
@@ -1973,6 +1988,8 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, line_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, icon_margin);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, hovered_style, "hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, hovered_selected_style, "hovered_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, hovered_selected_focus_style, "hovered_selected_focus");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_style, "selected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_focus_style, "selected_focus");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
