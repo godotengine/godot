@@ -10,6 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_cam_frustum_plane" qualifiers="const">
+			<return type="Plane" />
+			<param index="0" name="plane" type="int" enum="Projection.Planes" />
+			<description>
+				Returns the plane whose index is given by [param plane] from the frustum used to cull this frame.
+				[param plane] should be equal to one of [constant Projection.PLANE_NEAR], [constant Projection.PLANE_FAR], [constant Projection.PLANE_LEFT], [constant Projection.PLANE_TOP], [constant Projection.PLANE_RIGHT], or [constant Projection.PLANE_BOTTOM].
+			</description>
+		</method>
 		<method name="get_cam_projection" qualifiers="const">
 			<return type="Projection" />
 			<description>
