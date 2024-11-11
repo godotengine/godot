@@ -116,7 +116,7 @@
 				# Rotating the Transform2D in any way preserves its scale.
 				my_transform = my_transform.rotated(TAU / 2)
 
-				print(my_transform.get_scale()) # Prints (2, 4)
+				print(my_transform.get_scale()) # Prints (2.0, 4.0)
 				[/gdscript]
 				[csharp]
 				var myTransform = new Transform2D(
