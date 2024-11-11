@@ -176,13 +176,19 @@ void NavigationObstacle3D::_notification(int p_what) {
 				}
 #ifdef DEBUG_ENABLED
 				if (fake_agent_radius_debug_instance.is_valid() && radius > 0.0) {
-					Transform3D debug_transform;
-					debug_transform.origin = get_global_position();
+					// Prevent non-positive scaling.
+					const Vector3 safe_scale = get_global_basis().get_scale().abs().maxf(0.001);
+					// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
+					const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+					const Vector3 uniform_max_scale = Vector3(scaling_max_value, scaling_max_value, scaling_max_value);
+					const Transform3D debug_transform = Transform3D(Basis().scaled(uniform_max_scale), get_global_position());
 					RS::get_singleton()->instance_set_transform(fake_agent_radius_debug_instance, debug_transform);
 				}
 				if (static_obstacle_debug_instance.is_valid() && get_vertices().size() > 0) {
-					Transform3D debug_transform;
-					debug_transform.origin = get_global_position();
+					// Prevent non-positive scaling.
+					const Vector3 safe_scale = get_global_basis().get_scale().abs().maxf(0.001);
+					// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
+					const Transform3D debug_transform = Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), get_global_rotation().y), get_global_position());
 					RS::get_singleton()->instance_set_transform(static_obstacle_debug_instance, debug_transform);
 				}
 #endif // DEBUG_ENABLED
@@ -352,6 +358,25 @@ void NavigationObstacle3D::set_carve_navigation_mesh(bool p_enabled) {
 
 bool NavigationObstacle3D::get_carve_navigation_mesh() const {
 	return carve_navigation_mesh;
+}
+
+PackedStringArray NavigationObstacle3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
+
+	if (get_global_rotation().x != 0.0 || get_global_rotation().z != 0.0) {
+		warnings.push_back(RTR("NavigationObstacle3D only takes global rotation around the y-axis into account. Rotations around the x-axis or z-axis might lead to unexpected results."));
+	}
+
+	const Vector3 global_scale = get_global_basis().get_scale();
+	if (global_scale.x < 0.001 || global_scale.y < 0.001 || global_scale.z < 0.001) {
+		warnings.push_back(RTR("NavigationObstacle3D does not support negative or zero scaling."));
+	}
+
+	if (radius > 0.0 && !get_global_basis().is_conformal()) {
+		warnings.push_back(RTR("The agent radius can only be scaled uniformly. The largest scale value along the three axes will be used."));
+	}
+
+	return warnings;
 }
 
 void NavigationObstacle3D::_update_map(RID p_map) {
