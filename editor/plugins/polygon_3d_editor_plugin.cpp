@@ -554,7 +554,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	imgeom->set_mesh(imesh);
 	imgeom->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 
-	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	line_material.instantiate();
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
@@ -562,7 +562,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
-	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	handle_material.instantiate();
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);

@@ -1213,7 +1213,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		}
 	} else {
 		WARN_PRINT("Invalid world_2d");
-		world_2d = Ref<World2D>(memnew(World2D));
+		world_2d.instantiate();
 	}
 
 	world_2d->register_viewport(this);
@@ -4386,7 +4386,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
-			own_world_3d = Ref<World3D>(memnew(World3D));
+			own_world_3d.instantiate();
 		}
 	}
 
@@ -4437,7 +4437,7 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
-			own_world_3d = Ref<World3D>(memnew(World3D));
+			own_world_3d.instantiate();
 		}
 	} else {
 		own_world_3d = Ref<World3D>();
@@ -4963,7 +4963,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 }
 
 Viewport::Viewport() {
-	world_2d = Ref<World2D>(memnew(World2D));
+	world_2d.instantiate();
 	world_2d->register_viewport(this);
 
 	viewport = RenderingServer::get_singleton()->viewport_create();
