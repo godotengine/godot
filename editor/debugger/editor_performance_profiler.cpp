@@ -81,6 +81,9 @@ void EditorPerformanceProfiler::Monitor::reset() {
 
 String EditorPerformanceProfiler::_create_label(float p_value, Performance::MonitorType p_type) {
 	switch (p_type) {
+		case Performance::MONITOR_TYPE_QUANTITY: {
+			return TS->format_number(itos(p_value));
+		}
 		case Performance::MONITOR_TYPE_MEMORY: {
 			return String::humanize_size(p_value);
 		}
