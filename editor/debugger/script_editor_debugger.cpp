@@ -513,6 +513,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			frame_data.write[i] = p_data[i];
 		}
 		performance_profiler->add_profile_frame(frame_data);
+	} else if (p_msg == "visual:hardware_info") {
+		const String cpu_name = p_data[0];
+		const String gpu_name = p_data[1];
+		visual_profiler->set_hardware_info(cpu_name, gpu_name);
 	} else if (p_msg == "visual:profile_frame") {
 		ServersDebugger::VisualProfilerFrame frame;
 		frame.deserialize(p_data);
