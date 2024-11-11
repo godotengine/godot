@@ -1061,7 +1061,7 @@
 			Determines whether online features are enabled in the editor, such as the Asset Library or update checks. Disabling these online features helps alleviate privacy concerns by preventing the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
-			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
+			The address to listen to when starting the remote debugger. This can be set to this device's local IP address to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
 		</member>
 		<member name="network/debug/remote_port" type="int" setter="" getter="">
 			The port to listen to when starting the remote debugger. Godot will try to use port numbers above the configured number if the configured number is already taken by another application.
