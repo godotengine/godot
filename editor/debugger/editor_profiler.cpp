@@ -288,6 +288,14 @@ void EditorProfiler::_update_plot() {
 					column[j * 4 + 1] += Math::fast_ftoi(CLAMP(col.g * 255, 0, 255));
 					column[j * 4 + 2] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
 					column[j * 4 + 3] += 1;
+
+					if (EDSCALE > (1.5 - CMP_EPSILON)) {
+						// Make the line thicker for hiDPI displays.
+						column[j * 4 + 4] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
+						column[j * 4 + 5] += Math::fast_ftoi(CLAMP(col.g * 255, 0, 255));
+						column[j * 4 + 6] += Math::fast_ftoi(CLAMP(col.b * 255, 0, 255));
+						column[j * 4 + 7] += 1;
+					}
 				}
 			}
 
@@ -450,11 +458,11 @@ void EditorProfiler::_graph_tex_draw() {
 	if (seeking) {
 		int frame = cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number;
 		int cur_x = (2 * frame + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_color);
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_color, Math::round(EDSCALE));
 	}
 	if (hover_metric > -1 && hover_metric < total_metrics) {
 		int cur_x = (2 * hover_metric + 1) * graph->get_size().x / (2 * frame_metrics.size()) + 1;
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_hover_color);
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), theme_cache.seek_line_hover_color, Math::round(EDSCALE));
 	}
 }
 

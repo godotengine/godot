@@ -453,6 +453,10 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	const Color color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
+	const int half_width = graph->get_size().x / 2;
+	// Draw a line in the middle to separate the CPU graph from the GPU graph.
+	graph->draw_line(Vector2(half_width, 0), Vector2(half_width, graph->get_size().y), color * Color(1, 1, 1, 0.3), Math::round(EDSCALE));
+
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -460,37 +464,46 @@ void EditorVisualProfiler::_graph_tex_draw() {
 			frame = 0;
 		}
 
-		int half_width = graph->get_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
 
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color(1, 1, 1));
-		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color(1, 1, 1));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color(1, 1, 1), Math::round(EDSCALE));
+		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color(1, 1, 1), Math::round(EDSCALE));
 	}
 
 	if (graph_height_cpu > 0) {
 		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_cpu - 1;
 
-		int half_width = graph->get_size().x / 2;
-
-		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), color * Color(1, 1, 1, 0.5));
+		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), color * Color(1, 1, 1, 0.3), Math::round(EDSCALE));
 
 		const String limit_str = String::num(graph_limit, 2) + " ms";
-		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
+		graph->draw_string(
+				font,
+				Vector2(half_width - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - Math::round(6 * EDSCALE), frame_y - Math::round(6 * EDSCALE)),
+				limit_str,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1,
+				font_size,
+				color * Color(1, 1, 1, 0.3));
 	}
 
 	if (graph_height_gpu > 0) {
 		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_gpu - 1;
 
-		int half_width = graph->get_size().x / 2;
-
-		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), color * Color(1, 1, 1, 0.5));
+		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), color * Color(1, 1, 1, 0.3), Math::round(EDSCALE));
 
 		const String limit_str = String::num(graph_limit, 2) + " ms";
-		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
+		graph->draw_string(
+				font,
+				Vector2(half_width * 2 - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - Math::round(6 * EDSCALE), frame_y - Math::round(6 * EDSCALE)),
+				limit_str,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1,
+				font_size,
+				color * Color(1, 1, 1, 0.3));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
-	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font->get_ascent(font_size) + Math::round(6 * EDSCALE)), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + Math::round(6 * EDSCALE)), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
