@@ -3730,6 +3730,12 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 #endif
 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
+	if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->is_in_low_processor_usage_mode()) {
+		// This is needed to make sure that background work does not starve the main thread.
+		// This is only setting the priority of this thread, not the whole process.
+		pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+	}
 }
 
 DisplayServerMacOS::~DisplayServerMacOS() {
