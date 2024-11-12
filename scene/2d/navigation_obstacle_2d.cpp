@@ -167,8 +167,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 				if (is_debug_enabled) {
 					RS::get_singleton()->canvas_item_clear(debug_canvas_item);
-					Transform2D debug_transform = Transform2D(0.0, get_global_position());
-					RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, debug_transform);
+					RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, Transform2D());
 					_update_fake_agent_radius_debug();
 					_update_static_obstacle_debug();
 				}
@@ -311,6 +310,25 @@ bool NavigationObstacle2D::get_carve_navigation_mesh() const {
 	return carve_navigation_mesh;
 }
 
+PackedStringArray NavigationObstacle2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	const Vector2 global_scale = get_global_scale();
+	if (global_scale.x < 0.001 || global_scale.y < 0.001) {
+		warnings.push_back(RTR("NavigationObstacle2D does not support negative or zero scaling."));
+	}
+
+	if (radius > 0.0 && !get_global_transform().is_conformal()) {
+		warnings.push_back(RTR("The agent radius can only be scaled uniformly. The largest value along the two axes of the global scale will be used to scale the radius. This value may change in unexpected ways when the node is rotated."));
+	}
+
+	if (radius > 0.0 && get_global_skew() != 0.0) {
+		warnings.push_back(RTR("Skew has no effect on the agent radius."));
+	}
+
+	return warnings;
+}
+
 void NavigationObstacle2D::_update_map(RID p_map) {
 	map_current = p_map;
 	NavigationServer2D::get_singleton()->obstacle_set_map(obstacle, p_map);
@@ -327,8 +345,11 @@ void NavigationObstacle2D::_update_position(const Vector2 p_position) {
 void NavigationObstacle2D::_update_fake_agent_radius_debug() {
 	if (radius > 0.0 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
 		Color debug_radius_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
-
-		RS::get_singleton()->canvas_item_add_circle(debug_canvas_item, Vector2(), radius, debug_radius_color);
+		// Prevent non-positive scaling.
+		const Vector2 safe_scale = get_global_scale().abs().maxf(0.001);
+		// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
+		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+		RS::get_singleton()->canvas_item_add_circle(debug_canvas_item, get_global_position(), scaling_max_value * radius, debug_radius_color);
 	}
 }
 #endif // DEBUG_ENABLED
@@ -370,7 +391,8 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 		debug_obstacle_line_colors.resize(debug_obstacle_line_vertices.size());
 		debug_obstacle_line_colors.fill(debug_static_obstacle_edge_color);
 
-		RS::get_singleton()->canvas_item_add_polyline(debug_canvas_item, debug_obstacle_line_vertices, debug_obstacle_line_colors, 4.0);
+		// Transforming the vertices directly instead of the canvas item in order to not affect the circle shape by non-uniform scales.
+		RS::get_singleton()->canvas_item_add_polyline(debug_canvas_item, get_global_transform().xform(debug_obstacle_line_vertices), debug_obstacle_line_colors, 4.0);
 	}
 }
 #endif // DEBUG_ENABLED
