@@ -105,6 +105,19 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 		return ERR_UNAVAILABLE;
 	}
 
+/* Bogus GCC warning here:
+ * In member function 'int RingBuffer<T>::read(T*, int, bool) [with T = unsigned char]',
+ *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:112:9,
+ *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:99:7:
+ * Error: ./core/ring_buffer.h:68:46: error: writing 1 byte into a region of size 0 [-Werror=stringop-overflow=]
+ *   68 |                                 p_buf[dst++] = read[pos + i];
+ *      |                                 ~~~~~~~~~~~~~^~~~~~~
+ */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wstringop-overflow=0"
+#endif
+
 	uint32_t size = 0;
 	uint8_t ipv6[16] = {};
 	rb.read(ipv6, 16, true);
@@ -115,6 +128,11 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	--queue_count;
 	*r_buffer = packet_buffer;
 	r_buffer_size = size;
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 	return OK;
 }
 

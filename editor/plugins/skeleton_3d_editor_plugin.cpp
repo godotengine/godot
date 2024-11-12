@@ -1186,8 +1186,8 @@ Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skel
 	singleton = this;
 
 	// Handle.
-	handle_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
-	handle_shader = Ref<Shader>(memnew(Shader));
+	handle_material.instantiate();
+	handle_shader.instantiate();
 	handle_shader->set_code(R"(
 // Skeleton 3D gizmo handle shader.
 

@@ -8,7 +8,6 @@
 	</description>
 	<tutorials>
 		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
-		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)" keywords="colour">

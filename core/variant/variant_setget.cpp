@@ -141,6 +141,10 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Color, h);
 	REGISTER_MEMBER(Color, s);
 	REGISTER_MEMBER(Color, v);
+
+	REGISTER_MEMBER(Color, ok_hsl_h);
+	REGISTER_MEMBER(Color, ok_hsl_s);
+	REGISTER_MEMBER(Color, ok_hsl_l);
 }
 
 void unregister_named_setters_getters() {

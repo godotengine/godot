@@ -2153,7 +2153,7 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 			if (ml.is_null()) {
-				ml = Ref<MeshLibrary>(memnew(MeshLibrary));
+				ml.instantiate();
 			}
 
 			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(), ml, merge_with_existing_library, apply_mesh_instance_transforms);
