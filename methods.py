@@ -409,8 +409,7 @@ def use_windows_spawn_fix(self, platform=None):
             "shell": False,
             "env": env,
         }
-        if sys.version_info >= (3, 7, 0):
-            popen_args["text"] = True
+        popen_args["text"] = True
         proc = subprocess.Popen(cmdline, **popen_args)
         _, err = proc.communicate()
         rv = proc.wait()
