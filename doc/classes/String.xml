@@ -270,12 +270,12 @@
 				print("Visible {visible}, position {position}".format(node))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
-				[b]Note:[/b] The replacement of placeholders is not done all at once, instead each placeholder is replaced in the order they are passed, this means that if one of the replacement strings contains a key it will also be replaced. This can be very powerful, but can also cause unexpected results if you are not careful. If you do not need to perform replacement in the replacement strings, make sure your replacements do not contain placeholders to ensure reliable results.
+				[b]Note:[/b] Each replacement is done sequentially for each element of [param values], [b]not[/b] all at once. This means that if any element is inserted and it contains another placeholder, it may be changed by the next replacement. While this can be very useful, it often causes unexpected results. If not necessary, make sure [param values]'s elements do not contain placeholders.
 				[codeblock]
-				print("{0} {1}".format(["{1}", "x"]))                       # Prints "x x".
-				print("{0} {1}".format(["x", "{0}"]))                       # Prints "x {0}".
-				print("{foo} {bar}".format({"foo": "{bar}", "bar": "baz"})) # Prints "baz baz".
-				print("{foo} {bar}".format({"bar": "baz", "foo": "{bar}"})) # Prints "{bar} baz".
+				print("{0} {1}".format(["{1}", "x"]))           # Prints "x x".
+				print("{0} {1}".format(["x", "{0}"]))           # Prints "x {0}".
+				print("{a} {b}".format({"a": "{b}", "b": "c"})) # Prints "c c".
+				print("{a} {b}".format({"b": "c", "a": "{b}"})) # Prints "{b} c".
 				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
@@ -887,7 +887,7 @@
 			<return type="float" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sørensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
 				[codeblock]
 				print("ABC123".similarity("ABC123")) # Prints 1.0
 				print("ABC123".similarity("XYZ456")) # Prints 0.0
