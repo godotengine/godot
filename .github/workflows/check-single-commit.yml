@@ -1,0 +1,21 @@
+name: ⓵ Is single-commit PR
+on:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-single-commit
+  cancel-in-progress: true
+
+jobs:
+  static-checks:
+    name: Is single-commit PR
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 'Is single-commit PR'
+        env:
+          COMMIT_COUNT: ${{ github.event.pull_request.commits }}
+        run: |
+          if [ "$COMMIT_COUNT" -ne 1 ]; then
+            echo "Please squash your PR into a single commit. See: https://docs.godotengine.org/en/stable/contributing/workflow/pr_workflow.html"
+            exit 1
+          fi
