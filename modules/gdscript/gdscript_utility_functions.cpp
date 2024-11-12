@@ -120,8 +120,17 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void _char(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
-		char32_t result[2] = { *p_args[0], 0 };
-		*r_ret = String(result);
+		const int64_t code = *p_args[0];
+		VALIDATE_ARG_CUSTOM(0, Variant::INT, code < 0 || code > UINT32_MAX, RTR("Expected an integer between 0 and 2^32 - 1."));
+		*r_ret = String::chr(code);
+	}
+
+	static inline void ord(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		DEBUG_VALIDATE_ARG_COUNT(1, 1);
+		DEBUG_VALIDATE_ARG_TYPE(0, Variant::STRING);
+		const String string = *p_args[0];
+		VALIDATE_ARG_CUSTOM(0, Variant::STRING, string.length() != 1, RTR("Expected a string of length 1 (a character)."));
+		*r_ret = string.get(0);
 	}
 
 	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -575,7 +584,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC( convert,        true,  RETVAR,             ARGS( ARGVAR("what"), ARGTYPE("type") ), false, varray(     ));
 #endif // DISABLE_DEPRECATED
 	REGISTER_FUNC( type_exists,    true,  RET(BOOL),          ARGS( ARG("type", STRING_NAME)        ), false, varray(     ));
-	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("char", INT)                ), false, varray(     ));
+	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("code", INT)                ), false, varray(     ));
+	REGISTER_FUNC( ord,            true,  RET(INT),           ARGS( ARG("char", STRING)             ), false, varray(     ));
 	REGISTER_FUNC( range,          false, RET(ARRAY),         NOARGS,                                  true,  varray(     ));
 	REGISTER_FUNC( load,           false, RETCLS("Resource"), ARGS( ARG("path", STRING)             ), false, varray(     ));
 #ifndef DISABLE_DEPRECATED
