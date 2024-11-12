@@ -918,15 +918,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	sa.lpSecurityDescriptor = nullptr;
 
 	ERR_FAIL_COND_V(!CreatePipe(&pipe_in[0], &pipe_in[1], &sa, 0), ret);
-	if (!SetHandleInformation(pipe_in[1], HANDLE_FLAG_INHERIT, 0)) {
-		CLEAN_PIPES
-		ERR_FAIL_V(ret);
-	}
 	if (!CreatePipe(&pipe_out[0], &pipe_out[1], &sa, 0)) {
-		CLEAN_PIPES
-		ERR_FAIL_V(ret);
-	}
-	if (!SetHandleInformation(pipe_out[0], HANDLE_FLAG_INHERIT, 0)) {
 		CLEAN_PIPES
 		ERR_FAIL_V(ret);
 	}
@@ -939,16 +931,37 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	// Create process.
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
-	pi.si.dwFlags |= STARTF_USESTDHANDLES;
-	pi.si.hStdInput = pipe_in[0];
-	pi.si.hStdOutput = pipe_out[1];
-	pi.si.hStdError = pipe_err[1];
+	pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+	pi.si.StartupInfo.hStdInput = pipe_in[0];
+	pi.si.StartupInfo.hStdOutput = pipe_out[1];
+	pi.si.StartupInfo.hStdError = pipe_err[1];
 
-	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW;
+	size_t attr_list_size = 0;
+	InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
+	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+	if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	HANDLE handles_to_inherit[] = { pipe_in[0], pipe_out[1], pipe_err[1] };
+	if (!UpdateProcThreadAttribute(
+				pi.si.lpAttributeList,
+				0,
+				PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+				handles_to_inherit,
+				sizeof(handles_to_inherit),
+				nullptr,
+				nullptr)) {
+		CLEAN_PIPES
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+		ERR_FAIL_V(ret);
+	}
+
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT;
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
@@ -964,11 +977,13 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi)) {
 		CLEAN_PIPES
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 		ERR_FAIL_V_MSG(ret, "Could not create child process: " + command);
 	}
 	CloseHandle(pipe_in[0]);
 	CloseHandle(pipe_out[1]);
 	CloseHandle(pipe_err[1]);
+	DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 
 	ProcessID pid = pi.pi.dwProcessId;
 	process_map_mutex.lock();
@@ -1000,9 +1015,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	bool inherit_handles = false;
 	HANDLE pipe[2] = { nullptr, nullptr };
@@ -1014,16 +1029,40 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		sa.lpSecurityDescriptor = nullptr;
 
 		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
-		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
 
-		pi.si.dwFlags |= STARTF_USESTDHANDLES;
-		pi.si.hStdOutput = pipe[1];
+		pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.StartupInfo.hStdOutput = pipe[1];
 		if (read_stderr) {
-			pi.si.hStdError = pipe[1];
+			pi.si.StartupInfo.hStdError = pipe[1];
+		}
+
+		size_t attr_list_size = 0;
+		InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
+		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+		if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
+			CloseHandle(pipe[0]); // Cleanup pipe handles.
+			CloseHandle(pipe[1]);
+			ERR_FAIL_V(ERR_CANT_FORK);
+		}
+		if (!UpdateProcThreadAttribute(
+					pi.si.lpAttributeList,
+					0,
+					PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+					&pipe[1],
+					sizeof(HANDLE),
+					nullptr,
+					nullptr)) {
+			CloseHandle(pipe[0]); // Cleanup pipe handles.
+			CloseHandle(pipe[1]);
+			DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+			ERR_FAIL_V(ERR_CANT_FORK);
 		}
 		inherit_handles = true;
 	}
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
+	if (inherit_handles) {
+		creation_flags |= EXTENDED_STARTUPINFO_PRESENT;
+	}
 	if (p_open_console) {
 		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
@@ -1046,6 +1085,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 	}
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
@@ -1101,6 +1141,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	CloseHandle(pi.pi.hProcess);
 	CloseHandle(pi.pi.hThread);
+	if (r_pipe) {
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+	}
 
 	return OK;
 }
@@ -1114,9 +1157,9 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si.StartupInfo);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
