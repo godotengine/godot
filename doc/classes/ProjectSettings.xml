@@ -2474,10 +2474,10 @@
 			Number of blur passes to use when computing screen-space ambient occlusion. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
 		</member>
 		<member name="rendering/environment/ssao/fadeout_from" type="float" setter="" getter="" default="50.0">
-			Distance at which the screen-space ambient occlusion effect starts to fade out. Use this hide ambient occlusion at great distances.
+			Distance at which the screen-space ambient occlusion effect starts to fade out. Use this hide ambient occlusion from far away.
 		</member>
 		<member name="rendering/environment/ssao/fadeout_to" type="float" setter="" getter="" default="300.0">
-			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion at great distances.
+			Distance at which the screen-space ambient occlusion is fully faded out. Use this hide ambient occlusion from far away.
 		</member>
 		<member name="rendering/environment/ssao/half_size" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details. If [code]false[/code], screen-space ambient occlusion will be rendered at full size.
@@ -2492,10 +2492,10 @@
 			Number of blur passes to use when computing screen-space indirect lighting. A higher number will result in a smoother look, but will be slower to compute and will have less high-frequency detail.
 		</member>
 		<member name="rendering/environment/ssil/fadeout_from" type="float" setter="" getter="" default="50.0">
-			Distance at which the screen-space indirect lighting effect starts to fade out. Use this hide screen-space indirect lighting at great distances.
+			Distance at which the screen-space indirect lighting effect starts to fade out. Use this to hide screen-space indirect lighting from far away.
 		</member>
 		<member name="rendering/environment/ssil/fadeout_to" type="float" setter="" getter="" default="300.0">
-			Distance at which the screen-space indirect lighting is fully faded out. Use this hide screen-space indirect lighting at great distances.
+			Distance at which the screen-space indirect lighting is fully faded out. Use this to hide screen-space indirect lighting from far away.
 		</member>
 		<member name="rendering/environment/ssil/half_size" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], screen-space indirect lighting will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details and may result in some objects appearing to glow at their edges.
