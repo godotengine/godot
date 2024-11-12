@@ -145,9 +145,9 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		}
 
 		if (p_rationale && p_rationale[0]) {
-			logf_error("(%s:%i)\n", p_file, p_line);
+			logf_error("%s : (%i)\n", p_file, p_line);
 		} else {
-			logf_error("%s (%s:%i)\n", p_function, p_file, p_line);
+			logf_error("%s:(%i) : %s \n", p_function, p_file, p_line);
 		}
 
 		SetConsoleTextAttribute(hCon, sbi.wAttributes);

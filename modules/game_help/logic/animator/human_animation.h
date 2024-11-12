@@ -351,7 +351,7 @@ namespace HumanAnim
             Vector3 loc,scale;
             Quaternion rot;
             HumanSkeleton skeleton_config;
-            Vector<AHashMap<StringName, Vector3>> animation_lookat;
+            Vector<HashMap<StringName, Vector3>> animation_lookat;
 
             //  根节点的位置
             Vector<HashMap<StringName, Vector3>> animation_root_position;

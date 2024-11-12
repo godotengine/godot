@@ -185,7 +185,7 @@ static void _error_handler(void *p_self, const char *p_func, const char *p_file,
 	if (p_errorexp && p_errorexp[0]) {
 		err_str = String::utf8(p_errorexp) + "\n";
 	} else {
-		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error) + "\n";
+		err_str = String::utf8(p_file) + "(" + itos(p_line) + "): - " + String::utf8(p_error) + "\n";
 	}
 
 	OutputDebugStringW((LPCWSTR)err_str.utf16().ptr());

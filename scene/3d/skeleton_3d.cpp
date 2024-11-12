@@ -2155,7 +2155,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 			neck = -1;
 			p_bone_map["Head"] = StringName(skeleton->get_bone_name(head)); // p_bone_map->_set_skeleton_bone_name("Head", skeleton->get_bone_name(head));
 		} else {
-			WARN_PRINT("Auto Mapping couldn't guess Neck or Head."); // Continued for guessing on the other bones. But abort when guessing spines step.
+			//WARN_PRINT("Auto Mapping couldn't guess Neck or Head."); // Continued for guessing on the other bones. But abort when guessing spines step.
 		}
 	} else {
 		p_bone_map["Neck"] = StringName(skeleton->get_bone_name(neck)); // p_bone_map->_set_skeleton_bone_name("Neck", skeleton->get_bone_name(neck));
@@ -2170,14 +2170,14 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 		picklist.push_back("eye(?!.*(brow|lash|lid))");
 		bone_idx = search_bone_by_name(skeleton, picklist,true, BONE_SEGREGATION_LEFT, neck_or_head);
 		if (bone_idx == -1) {
-			WARN_PRINT("Auto Mapping couldn't guess LeftEye.");
+			//WARN_PRINT("Auto Mapping couldn't guess LeftEye.");
 		} else {
 			p_bone_map[("LeftEye")] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
 		}
 
 		bone_idx = search_bone_by_name(skeleton, picklist,true, BONE_SEGREGATION_RIGHT, neck_or_head);
 		if (bone_idx == -1) {
-			WARN_PRINT("Auto Mapping couldn't guess RightEye.");
+			//WARN_PRINT("Auto Mapping couldn't guess RightEye.");
 		} else {
 			p_bone_map[("RightEye")] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
 		}
@@ -2187,7 +2187,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 		picklist.push_back("jaw");
 		bone_idx = search_bone_by_name(skeleton, picklist,false, BONE_SEGREGATION_NONE, neck_or_head);
 		if (bone_idx == -1) {
-			WARN_PRINT("Auto Mapping couldn't guess Jaw.");
+			//WARN_PRINT("Auto Mapping couldn't guess Jaw.");
 		} else {
 			p_bone_map[("Jaw")] = StringName(skeleton->get_bone_name(bone_idx)); // p_bone_map->_set_skeleton_bone_name("Jaw", skeleton->get_bone_name(bone_idx));
 		}
@@ -2357,7 +2357,7 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 
 	}
 
-	WARN_PRINT("Finish auto mapping.");
+	//WARN_PRINT("Finish auto mapping.");
 }
 
 void Skeleton3D::change_to_human_bone(int p_bone) {	

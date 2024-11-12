@@ -281,7 +281,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
 		const char *err_details = (p_message && *p_message) ? p_message : p_error;
-		fprintf(stderr, "ERROR: %s\n   at: %s (%s:%i)\n", err_details, p_function, p_file, p_line);
+		fprintf(stderr, "%s(%i): ERROR: %s\n   at: %s \n", p_file, p_line, err_details, p_function);
 	}
 
 	_global_lock();

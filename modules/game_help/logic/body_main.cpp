@@ -999,7 +999,7 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 		for (int i = 0; i < p_node->get_child_count(); ++i) {
 			Node3D* child = Object::cast_to<Node3D>(p_node->get_child(i));
 			if (child != nullptr) {
-				if (node_name.has(child->get_name()) && child->get_child_count() > 0) {
+				if (child->get_child_count() > 0) {
 					node_to_bone_skeleton(bone_map_skeleton, child, -1);
 					break;
 				}
