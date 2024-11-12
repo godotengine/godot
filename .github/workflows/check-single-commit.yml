@@ -10,6 +10,9 @@ jobs:
   single-commit:
     name: Is single-commit PR
     runs-on: ubuntu-24.04
+    permissions:
+      checks: write
+      pull-requests: read
     steps:
       - name: Determine commit count conclusion
         id: determine_conclusion
