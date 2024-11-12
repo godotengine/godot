@@ -1328,6 +1328,9 @@
 		<member name="text_editor/script_list/group_help_pages" type="bool" setter="" getter="">
 			If [code]true[/code], class reference pages are grouped together at the bottom of the Script Editor's script list.
 		</member>
+		<member name="text_editor/script_list/highlight_scene_scripts" type="bool" setter="" getter="">
+			If [code]true[/code], the scripts that are used by the current scene are highlighted in the Script Editor's script list.
+		</member>
 		<member name="text_editor/script_list/list_script_names_as" type="int" setter="" getter="">
 			Specifies how script paths should be displayed in Script Editor's script list. If using the "Name" option and some scripts share the same file name, more parts of their paths are revealed to avoid conflicts.
 		</member>
