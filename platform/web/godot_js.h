@@ -45,6 +45,9 @@ extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
 extern void godot_js_config_canvas_id_get(char *p_ptr, int p_ptr_max);
 
 // OS
+extern void godot_js_os_print(const char *p_str);
+extern void godot_js_os_print_error(const char *p_str);
+extern void godot_js_os_print_warning(const char *p_str);
 extern void godot_js_os_finish_async(void (*p_callback)());
 extern void godot_js_os_request_quit_cb(void (*p_callback)());
 extern int godot_js_os_fs_is_persistent();

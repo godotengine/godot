@@ -31,6 +31,7 @@
 #include "os_web.h"
 
 #include "api/javascript_bridge_singleton.h"
+#include "console_logger_web.h"
 #include "display_server_web.h"
 #include "godot_js.h"
 
@@ -283,7 +284,7 @@ OS_Web::OS_Web() {
 	idb_available = godot_js_os_fs_is_persistent();
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(StdLogger));
+	loggers.push_back(memnew(ConsoleLoggerWeb));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	FileAccessUnix::close_notification_func = file_access_close_callback;

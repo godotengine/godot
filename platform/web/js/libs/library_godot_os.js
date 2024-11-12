@@ -72,6 +72,9 @@ const GodotConfig = {
 			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
+			GodotConfig.on_print = p_opts['onPrint'];
+			GodotConfig.on_print_error = p_opts['onPrintError'];
+			GodotConfig.on_print_warn = p_opts['onPrintWarn'];
 			if (p_opts['focusCanvas']) {
 				GodotConfig.canvas.focus();
 			}
@@ -88,6 +91,9 @@ const GodotConfig = {
 			GodotConfig.persistent_drops = false;
 			GodotConfig.on_execute = null;
 			GodotConfig.on_exit = null;
+			GodotConfig.on_print = null;
+			GodotConfig.on_print_error = null;
+			GodotConfig.on_print_warn = null;
 		},
 	},
 
@@ -266,6 +272,27 @@ const GodotOS = {
 				}, 0);
 			});
 		},
+	},
+
+	godot_js_os_print__proxy: 'sync',
+	godot_js_os_print__sig: 'vi',
+	godot_js_os_print: function (p_str) {
+		const str = GodotRuntime.parseString(p_str);
+		GodotConfig.on_print(str);
+	},
+
+	godot_js_os_print_error__proxy: 'sync',
+	godot_js_os_print_error__sig: 'vi',
+	godot_js_os_print_error: function (p_str) {
+		const str = GodotRuntime.parseString(p_str);
+		GodotConfig.on_print_error(str);
+	},
+
+	godot_js_os_print_warning__proxy: 'sync',
+	godot_js_os_print_warning__sig: 'vi',
+	godot_js_os_print_warning: function (p_str) {
+		const str = GodotRuntime.parseString(p_str);
+		GodotConfig.on_print_warn(str);
 	},
 
 	godot_js_os_finish_async__proxy: 'sync',
