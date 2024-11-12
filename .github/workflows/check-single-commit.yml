@@ -1,0 +1,27 @@
+name: ⓵ Is single-commit PR
+on:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-single-commit
+  cancel-in-progress: true
+
+jobs:
+  single-commit:
+    name: Is single-commit PR
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Determine commit count conclusion
+        id: determine_conclusion
+        run: |
+          if [ "${{ github.event.pull_request.commits }}" -eq 1 ]; then
+            echo "conclusion=success" >> $GITHUB_ENV
+          else
+            echo "conclusion=neutral" >> $GITHUB_ENV
+
+      - name: Set PR Commit Check Result
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Is single-commit PR?
+          conclusion: ${{ env.conclusion }}

@@ -13,6 +13,11 @@ jobs:
     name: 📊 Static checks
     uses: ./.github/workflows/static_checks.yml
 
+  single-commit:
+    if: ${{ github.event_name == 'pull_request' }}
+    name: ⓵ Is single-commit PR
+    uses: ./.github/workflows/check-single-commit.yml
+
   # Second stage: Run all the builds and some of the tests.
 
   android-build:
