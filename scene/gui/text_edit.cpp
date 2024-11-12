@@ -7310,6 +7310,10 @@ void TextEdit::_paste_internal(int p_caret) {
 	}
 
 	String clipboard = DisplayServer::get_singleton()->clipboard_get();
+	if (clipboard.is_empty()) {
+		// Nothing to paste.
+		return;
+	}
 
 	// Paste a full line. Ignore '\r' characters that may have been added to the clipboard by the OS.
 	if (get_caret_count() == 1 && !has_selection(0) && !cut_copy_line.is_empty() && cut_copy_line == clipboard.replace("\r", "")) {
