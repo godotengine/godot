@@ -235,7 +235,7 @@
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when interogating OpenXR system abilities.
+				Adds additional data structures when querying OpenXR system abilities.
 			</description>
 		</method>
 		<method name="_set_viewport_composition_layer_and_get_next_pointer" qualifiers="virtual">
