@@ -616,6 +616,9 @@
 		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
 		</member>
+		<member name="debug/gdscript/warnings/unused_protected_class_variable" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a protected member variable is never used.
+		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
 		</member>
