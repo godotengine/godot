@@ -2775,6 +2775,8 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
 	} else {
+		XRServer *xr_server = XRServer::get_singleton();
+
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
 		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -2785,13 +2787,21 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 
-		Transform3D world_origin = XRServer::get_singleton()->get_world_origin();
+		Transform3D world_origin = xr_server->get_world_origin();
 
 		// We ignore our camera position, it will have been positioned with a slightly old tracking position.
 		// Instead we take our origin point and have our XR interface add fresh tracking data! Whoohoo!
 		for (uint32_t v = 0; v < view_count; v++) {
 			transforms[v] = p_xr_interface->get_transform_for_view(v, world_origin);
 			projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
+		}
+
+		// If requested, we move the views to be rendered as if the HMD is at the XROrigin.
+		if (unlikely(xr_server->is_camera_locked_to_origin())) {
+			Transform3D camera_reset = p_xr_interface->get_camera_transform().affine_inverse() * xr_server->get_reference_frame().affine_inverse();
+			for (uint32_t v = 0; v < view_count; v++) {
+				transforms[v] *= camera_reset;
+			}
 		}
 
 		if (view_count == 1) {
