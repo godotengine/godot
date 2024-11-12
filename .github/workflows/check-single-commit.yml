@@ -18,6 +18,7 @@ jobs:
             echo "conclusion=success" >> $GITHUB_ENV
           else
             echo "conclusion=neutral" >> $GITHUB_ENV
+          fi
 
       - name: Set PR Commit Check Result
         uses: LouisBrunner/checks-action@v2.0.0
