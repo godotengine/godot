@@ -111,7 +111,7 @@ protected:
 	friend int test_main(int argc, char *argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
-	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
+	bool _separate_thread_render = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
@@ -274,7 +274,7 @@ public:
 	virtual uint64_t get_static_memory_peak_usage() const;
 	virtual Dictionary get_memory_info() const;
 
-	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
