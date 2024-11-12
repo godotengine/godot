@@ -116,6 +116,7 @@
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
+#include "tests/scene/test_fontfile.h"
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_gradient_texture.h"
 #include "tests/scene/test_image_texture.h"
