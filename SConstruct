@@ -1055,10 +1055,6 @@ if scons_cache_path is not None:
     CacheDir(scons_cache_path)
     print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
-if env["vsproj"]:
-    env.vs_incs = []
-    env.vs_srcs = []
-
 if env["compiledb"]:
     if env.scons_version < (4, 0, 0):
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
