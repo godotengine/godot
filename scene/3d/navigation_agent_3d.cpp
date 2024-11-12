@@ -1081,8 +1081,8 @@ void NavigationAgent3D::_update_debug_path() {
 		debug_path_instance = RenderingServer::get_singleton()->instance_create();
 	}
 
-	if (!debug_path_mesh.is_valid()) {
-		debug_path_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_path_mesh.is_null()) {
+		debug_path_mesh.instantiate();
 	}
 
 	debug_path_mesh->clear_surfaces();

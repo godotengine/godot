@@ -102,6 +102,7 @@ private:
 	HashMap<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
 	Vector<String> favorites;
+	HashMap<String, PackedStringArray> favorite_properties;
 	Vector<String> recent_dirs;
 
 	bool save_changed_setting = true;
@@ -176,6 +177,8 @@ public:
 
 	void set_favorites(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
+	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
+	HashMap<String, PackedStringArray> get_favorite_properties() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
 	void load_favorites_and_recent_dirs();

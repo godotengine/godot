@@ -22,6 +22,21 @@
 				[b]Note:[/b] If the properties of [param tile_data] object should change over time, use [method notify_runtime_tile_data_update] to notify the [TileMapLayer] it needs an update.
 			</description>
 		</method>
+		<method name="_update_cells" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i[]" />
+			<param index="1" name="forced_cleanup" type="bool" />
+			<description>
+				Called when this [TileMapLayer]'s cells need an internal update. This update may be caused from individual cells being modified or by a change in the [member tile_set] (causing all cells to be queued for an update). The first call to this function is always for initializing all the [TileMapLayer]'s cells. [param coords] contains the coordinates of all modified cells, roughly in the order they were modified. [param forced_cleanup] is [code]true[/code] when the [TileMapLayer]'s internals should be fully cleaned up. This is the case when:
+				- The layer is disabled;
+				- The layer is not visible;
+				- [member tile_set] is set to [code]null[/code];
+				- The node is removed from the tree;
+				- The node is freed.
+				Note that any internal update happening while one of these conditions is verified is considered to be a "cleanup". See also [method update_internals].
+				[b]Warning:[/b] Implementing this method may degrade the [TileMapLayer]'s performance.
+			</description>
+		</method>
 		<method name="_use_tile_data_runtime_update" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="coords" type="Vector2i" />

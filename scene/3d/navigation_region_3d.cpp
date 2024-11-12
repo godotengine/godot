@@ -492,8 +492,8 @@ void NavigationRegion3D::_update_debug_mesh() {
 		debug_instance = RenderingServer::get_singleton()->instance_create();
 	}
 
-	if (!debug_mesh.is_valid()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_mesh.is_null()) {
+		debug_mesh.instantiate();
 	}
 
 	debug_mesh->clear_surfaces();
@@ -669,8 +669,8 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 		debug_edge_connections_instance = RenderingServer::get_singleton()->instance_create();
 	}
 
-	if (!debug_edge_connections_mesh.is_valid()) {
-		debug_edge_connections_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_edge_connections_mesh.is_null()) {
+		debug_edge_connections_mesh.instantiate();
 	}
 
 	debug_edge_connections_mesh->clear_surfaces();

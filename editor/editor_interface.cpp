@@ -337,6 +337,19 @@ void EditorInterface::popup_property_selector(Object *p_object, const Callable &
 	property_selector->connect(SNAME("canceled"), canceled_callback, CONNECT_DEFERRED);
 }
 
+void EditorInterface::popup_method_selector(Object *p_object, const Callable &p_callback, const String &p_current_value) {
+	if (!method_selector) {
+		method_selector = memnew(PropertySelector);
+		get_base_control()->add_child(method_selector);
+	}
+
+	method_selector->select_method_from_instance(p_object, p_current_value);
+
+	const Callable callback = callable_mp(this, &EditorInterface::_method_selected);
+	method_selector->connect(SNAME("selected"), callback.bind(p_callback), CONNECT_DEFERRED);
+	method_selector->connect(SNAME("canceled"), callback.bind(String(), p_callback), CONNECT_DEFERRED);
+}
+
 void EditorInterface::popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types) {
 	StringName required_type = SNAME("Resource");
 	Vector<StringName> base_types;
@@ -370,6 +383,18 @@ void EditorInterface::_property_selected(const String &p_property_name, const Ca
 
 void EditorInterface::_property_selection_canceled(const Callable &p_callback) {
 	_call_dialog_callback(p_callback, NodePath(), "property selection canceled");
+}
+
+void EditorInterface::_method_selected(const String &p_method_name, const Callable &p_callback) {
+	const Callable callback = callable_mp(this, &EditorInterface::_method_selected);
+	method_selector->disconnect(SNAME("selected"), callback);
+	method_selector->disconnect(SNAME("canceled"), callback);
+
+	if (p_method_name.is_empty()) {
+		_call_dialog_callback(p_callback, p_method_name, "method selection canceled");
+	} else {
+		_call_dialog_callback(p_callback, p_method_name, "method selected");
+	}
 }
 
 void EditorInterface::_quick_open(const String &p_file_path, const Callable &p_callback) {
@@ -593,6 +618,7 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types", "current_value"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
 
 	// Editor docks.

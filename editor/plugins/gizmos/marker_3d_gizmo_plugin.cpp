@@ -36,7 +36,7 @@
 #include "scene/3d/marker_3d.h"
 
 Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
-	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	pos3d_mesh.instantiate();
 
 	Vector<Vector3> cursor_points;
 	Vector<Color> cursor_colors;

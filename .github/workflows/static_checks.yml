@@ -9,7 +9,7 @@ concurrency:
 jobs:
   static-checks:
     name: Code style, file formatting, and docs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

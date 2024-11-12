@@ -57,6 +57,7 @@
 			<return type="int" />
 			<param index="0" name="path" type="String" />
 			<description>
+				Should return the unique ID for the resource associated with the given path. If this method is not overridden, a [code].uid[/code] file is generated along with the resource file, containing the unique ID.
 			</description>
 		</method>
 		<method name="_handles_type" qualifiers="virtual const">

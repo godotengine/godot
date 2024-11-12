@@ -22,6 +22,7 @@
 			<return type="Quaternion" />
 			<description>
 				Constructs a [Quaternion] identical to the [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Quaternion] with all of its components set to [code]0.0[/code].
 			</description>
 		</constructor>
 		<constructor name="Quaternion">
