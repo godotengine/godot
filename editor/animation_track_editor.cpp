@@ -7383,16 +7383,17 @@ void AnimationTrackEditor::_update_snap_unit() {
 
 float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 	if (is_snap_keys_enabled()) {
+		double current_snap = snap_unit;
 		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			// Use more precise snapping when holding Shift.
-			snap_unit *= 0.25;
+			current_snap *= 0.25;
 		}
 
 		if (p_relative) {
-			double rel = Math::fmod(timeline->get_value(), snap_unit);
-			p_value = Math::snapped(p_value + rel, snap_unit) - rel;
+			double rel = Math::fmod(timeline->get_value(), current_snap);
+			p_value = Math::snapped(p_value + rel, current_snap) - rel;
 		} else {
-			p_value = Math::snapped(p_value, snap_unit);
+			p_value = Math::snapped(p_value, current_snap);
 		}
 	}
 
