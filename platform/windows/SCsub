@@ -60,6 +60,9 @@ sources += res_obj
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
 
+if env.msvc:
+    env.Depends(prog, "godot.natvis")
+
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
     env_wrap = env.Clone()
