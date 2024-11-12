@@ -239,7 +239,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _inspect_hovered_node();
 	void _reset_hovering_timer();
 	Timer *inspect_hovered_node_delay = nullptr;
-	TreeItem *tree_item_inspected = nullptr;
+	Node *node_inspected = nullptr;
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
 	bool select_node_hovered_at_end_of_drag = false;

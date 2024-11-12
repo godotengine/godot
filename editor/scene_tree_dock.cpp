@@ -83,11 +83,12 @@ void SceneTreeDock::_inspect_hovered_node() {
 	Tree *tree = scene_tree->get_scene_tree();
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 	if (item) {
-		if (tree_item_inspected) {
+		if (node_inspected) {
+			TreeItem *tree_item_inspected = tree->get_item_with_metadata(node_inspected->get_path());
 			tree_item_inspected->clear_custom_color(0);
 		}
-		tree_item_inspected = item;
-		tree_item_inspected->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		node_inspected = get_node_or_null(item->get_metadata(0));
 	}
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	editor_history->add_object(node_hovered_now->get_instance_id());
@@ -1715,9 +1716,11 @@ void SceneTreeDock::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			_reset_hovering_timer();
-			if (tree_item_inspected) {
+			if (node_inspected) {
+				Tree *tree = scene_tree->get_scene_tree();
+				TreeItem *tree_item_inspected = tree->get_item_with_metadata(node_inspected->get_path());
 				tree_item_inspected->clear_custom_color(0);
-				tree_item_inspected = nullptr;
+				node_inspected = nullptr;
 			} else {
 				return;
 			}
@@ -1732,11 +1735,11 @@ void SceneTreeDock::_notification(int p_what) {
 					return;
 				}
 				if (select_node_hovered_at_end_of_drag) {
-					Node *node_inspected = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
-					if (node_inspected) {
+					Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+					if (node_edited) {
 						editor_selection->clear();
-						editor_selection->add_node(node_inspected);
-						scene_tree->set_selected(node_inspected);
+						editor_selection->add_node(node_edited);
+						scene_tree->set_selected(node_edited);
 						select_node_hovered_at_end_of_drag = false;
 					}
 				}
