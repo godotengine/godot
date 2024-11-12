@@ -3584,12 +3584,11 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					continue;
 				}
 
-				Transform3D xform;
+				Transform3D xform = camera_transform;
 				if (orthogonal) {
-					xform = sp->get_global_transform();
-					xform.basis = Basis::from_euler(camera_transform.basis.get_euler());
+					Vector3 offset = camera_transform.basis.xform(Vector3(0, 0, cursor.distance));
+					xform.origin = cursor.pos + offset;
 				} else {
-					xform = camera_transform;
 					xform.scale_basis(sp->get_scale());
 				}
 
