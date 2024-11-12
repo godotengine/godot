@@ -396,10 +396,14 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	set_split_offset(340 * EDSCALE);
 
 	monitor_tree = memnew(Tree);
+	monitor_tree->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	monitor_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	monitor_tree->set_columns(2);
 	monitor_tree->set_column_title(0, TTR("Monitor"));
+	monitor_tree->set_column_expand(0, true);
 	monitor_tree->set_column_title(1, TTR("Value"));
+	monitor_tree->set_column_custom_minimum_width(1, 100 * EDSCALE);
+	monitor_tree->set_column_expand(1, false);
 	monitor_tree->set_column_titles_visible(true);
 	monitor_tree->connect("item_edited", callable_mp(this, &EditorPerformanceProfiler::_monitor_select));
 	monitor_tree->create_item();
@@ -408,6 +412,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	add_child(monitor_tree);
 
 	monitor_draw = memnew(Control);
+	monitor_draw->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	monitor_draw->set_clip_contents(true);
 	monitor_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
 	monitor_draw->connect(SceneStringName(gui_input), callable_mp(this, &EditorPerformanceProfiler::_marker_input));

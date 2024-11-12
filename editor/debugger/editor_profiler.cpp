@@ -748,6 +748,7 @@ EditorProfiler::EditorProfiler() {
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);
+	graph->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect(SceneStringName(draw), callable_mp(this, &EditorProfiler::_graph_tex_draw));
