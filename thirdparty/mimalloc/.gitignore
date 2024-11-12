@@ -1,0 +1,11 @@
+ide/vs20??/*.db
+ide/vs20??/*.opendb
+ide/vs20??/*.user
+ide/vs20??/*.vcxproj.filters
+ide/vs20??/.vs
+ide/vs20??/VTune*
+out/
+docs/
+*.zip
+*.tar
+*.gz

@@ -1,0 +1,197 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - master
+    - dev
+    - dev-slice
+  tags:
+    include:
+    - v*
+
+jobs:
+- job:
+  displayName: Windows
+  pool:
+    vmImage:
+      windows-2022
+  strategy:
+    matrix:
+      Debug:
+        BuildType: debug
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON
+        MSBuildConfiguration: Debug
+      Release:
+        BuildType: release
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release
+        MSBuildConfiguration: Release
+      Secure:
+        BuildType: secure
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release -DMI_SECURE=ON
+        MSBuildConfiguration: Release
+  steps:
+  - task: CMake@1
+    inputs:
+      workingDirectory: $(BuildType)
+      cmakeArgs: .. $(cmakeExtraArgs)
+  - task: MSBuild@1
+    inputs:
+      solution: $(BuildType)/libmimalloc.sln
+      configuration: '$(MSBuildConfiguration)'
+      msbuildArguments: -m
+  - script: ctest --verbose --timeout 120 -C $(MSBuildConfiguration)
+    workingDirectory: $(BuildType)
+    displayName: CTest
+  #- script: $(BuildType)\$(BuildType)\mimalloc-test-stress
+  #  displayName: TestStress
+  #- upload: $(Build.SourcesDirectory)/$(BuildType)
+  #  artifact: mimalloc-windows-$(BuildType)
+
+- job:
+  displayName: Linux
+  pool:
+    vmImage:
+     ubuntu-22.04
+  strategy:
+    matrix:
+      Debug:
+        CC: gcc
+        CXX: g++
+        BuildType: debug
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON
+      Release:
+        CC: gcc
+        CXX: g++
+        BuildType: release
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release
+      Secure:
+        CC: gcc
+        CXX: g++
+        BuildType: secure
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release -DMI_SECURE=ON
+      Debug++:
+        CC: gcc
+        CXX: g++
+        BuildType: debug-cxx
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON -DMI_USE_CXX=ON
+      Debug Clang:
+        CC: clang
+        CXX: clang++
+        BuildType: debug-clang
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON
+      Release Clang:
+        CC: clang
+        CXX: clang++
+        BuildType: release-clang
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release
+      Secure Clang:
+        CC: clang
+        CXX: clang++
+        BuildType: secure-clang
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release -DMI_SECURE=ON
+      Debug++ Clang:
+        CC: clang
+        CXX: clang++
+        BuildType: debug-clang-cxx
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON -DMI_USE_CXX=ON
+      Debug ASAN Clang:
+        CC: clang
+        CXX: clang++
+        BuildType: debug-asan-clang
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON -DMI_TRACK_ASAN=ON
+      Debug UBSAN Clang:
+        CC: clang
+        CXX: clang++
+        BuildType: debug-ubsan-clang
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON -DMI_DEBUG_UBSAN=ON
+      Debug TSAN Clang++:
+        CC: clang
+        CXX: clang++
+        BuildType: debug-tsan-clang-cxx
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_USE_CXX=ON -DMI_DEBUG_TSAN=ON
+      
+  steps:
+  - task: CMake@1
+    inputs:
+      workingDirectory: $(BuildType)
+      cmakeArgs: .. $(cmakeExtraArgs)
+  - script: make -j$(nproc) -C $(BuildType)
+    displayName: Make
+  - script: ctest --verbose --timeout 180
+    workingDirectory: $(BuildType)
+    displayName: CTest
+#  - upload: $(Build.SourcesDirectory)/$(BuildType)
+#    artifact: mimalloc-ubuntu-$(BuildType)
+
+- job:
+  displayName: macOS
+  pool:
+    vmImage:
+      macOS-latest
+  strategy:
+    matrix:
+      Debug:
+        BuildType: debug
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON
+      Release:
+        BuildType: release
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release
+      Secure:
+        BuildType: secure
+        cmakeExtraArgs: -DCMAKE_BUILD_TYPE=Release -DMI_SECURE=ON
+  steps:
+  - task: CMake@1
+    inputs:
+      workingDirectory: $(BuildType)
+      cmakeArgs: .. $(cmakeExtraArgs)
+  - script: make -j$(sysctl -n hw.ncpu) -C $(BuildType)
+    displayName: Make
+  # - script: MIMALLOC_VERBOSE=1 ./mimalloc-test-api
+  #   workingDirectory: $(BuildType)
+  #   displayName: TestAPI
+  # - script: MIMALLOC_VERBOSE=1 ./mimalloc-test-stress
+  #   workingDirectory: $(BuildType)
+  #   displayName: TestStress    
+  - script: ctest --verbose --timeout 120
+    workingDirectory: $(BuildType)
+    displayName: CTest
+    
+#  - upload: $(Build.SourcesDirectory)/$(BuildType)
+#    artifact: mimalloc-macos-$(BuildType)
+
+# - job:
+#   displayName: Windows-2017
+#   pool:
+#     vmImage:
+#       vs2017-win2016
+#   strategy:
+#     matrix:
+#       Debug:
+#         BuildType: debug
+#         cmakeExtraArgs: -A x64 -DCMAKE_BUILD_TYPE=Debug -DMI_DEBUG_FULL=ON
+#         MSBuildConfiguration: Debug
+#       Release:
+#         BuildType: release
+#         cmakeExtraArgs: -A x64 -DCMAKE_BUILD_TYPE=Release
+#         MSBuildConfiguration: Release
+#       Secure:
+#         BuildType: secure
+#         cmakeExtraArgs: -A x64 -DCMAKE_BUILD_TYPE=Release -DMI_SECURE=ON
+#         MSBuildConfiguration: Release
+#   steps:
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: $(BuildType)
+#       cmakeArgs: .. $(cmakeExtraArgs)
+#   - task: MSBuild@1
+#     inputs:
+#       solution: $(BuildType)/libmimalloc.sln
+#       configuration: '$(MSBuildConfiguration)'
+#   - script: |
+#       cd $(BuildType)
+#       ctest --verbose --timeout 120
+#     displayName: CTest

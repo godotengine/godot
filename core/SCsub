@@ -154,6 +154,11 @@ if env["builtin_zstd"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
+thirdparty_mimalloc_dir = "#thirdparty/mimalloc/"
+thirdparty_mimalloc_sources = ["src/static.c"]
+thirdparty_mimalloc_sources = [thirdparty_mimalloc_dir + file for file in thirdparty_mimalloc_sources]
+env_thirdparty.Prepend(CPPPATH=[thirdparty_mimalloc_dir + "include"])
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_mimalloc_sources)
 
 env.core_sources += thirdparty_obj
 
