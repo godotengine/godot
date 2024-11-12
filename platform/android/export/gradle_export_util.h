@@ -55,6 +55,7 @@ static const int APP_CATEGORY_NEWS = 5;
 static const int APP_CATEGORY_PRODUCTIVITY = 6;
 static const int APP_CATEGORY_SOCIAL = 7;
 static const int APP_CATEGORY_VIDEO = 8;
+static const int APP_CATEGORY_UNDEFINED = 9;
 
 // Supported XR modes.
 // This should match the entries in 'platform/android/java/lib/src/org/godotengine/godot/xr/XRMode.java'
