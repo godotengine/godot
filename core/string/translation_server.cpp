@@ -411,8 +411,6 @@ StringName TranslationServer::translate_plural(const StringName &p_message, cons
 	return main_domain->translate_plural(p_message, p_message_plural, p_n, p_context);
 }
 
-TranslationServer *TranslationServer::singleton = nullptr;
-
 bool TranslationServer::_load_translations(const String &p_from) {
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
 		const Vector<String> &translation_names = GLOBAL_GET(p_from);

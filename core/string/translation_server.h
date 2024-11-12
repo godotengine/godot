@@ -50,7 +50,7 @@ class TranslationServer : public Object {
 
 	bool enabled = true;
 
-	static TranslationServer *singleton;
+	static inline TranslationServer *singleton = nullptr;
 	bool _load_translations(const String &p_from);
 	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
 
