@@ -103,7 +103,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
-				[b]Example:[/b]	If the setting override [code]"application/config/name.windows"[/code] exists, and the following code is executed on a [i]Windows[/i] operating system, the overridden setting is printed instead:
+				[b]Example:[/b] If the setting override [code]"application/config/name.windows"[/code] exists, and the following code is executed on a [i]Windows[/i] operating system, the overridden setting is printed instead:
 				[codeblocks]
 				[gdscript]
 				print(ProjectSettings.get_setting_with_override("application/config/name"))

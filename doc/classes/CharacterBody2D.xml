@@ -69,7 +69,7 @@
 			<param index="0" name="slide_idx" type="int" />
 			<description>
 				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
-				[b]Example usage:[/b]
+				[b]Example:[/b] Iterate through the collisions with a [code]for[/code] loop:
 				[codeblocks]
 				[gdscript]
 				for i in get_slide_collision_count():

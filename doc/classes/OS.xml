@@ -53,7 +53,7 @@
 				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
 				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
-				For example, running another instance of the project:
+				[b]Example:[/b] Run another instance of the project:
 				[codeblocks]
 				[gdscript]
 				var pid = OS.create_process(OS.get_executable_path(), [])
@@ -184,7 +184,7 @@
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
-				Here's a minimal example on how to parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
+				[b]Example:[/b] Parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
 				[codeblocks]
 				[gdscript]
 				var arguments = {}

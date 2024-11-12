@@ -120,8 +120,8 @@
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
-				[b]Example usage for clicking a control:[/b]
+				Virtual method to be implemented by the user. Override this method to handle and accept inputs on UI elements. See also [method accept_event].
+				[b]Example:[/b] Click on the control to print a message:
 				[codeblocks]
 				[gdscript]
 				func _gui_input(event):
@@ -142,13 +142,13 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				The event won't trigger if:
-				* clicking outside the control (see [method _has_point]);
-				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
-				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
-				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside the parent's rectangle and the parent has either [member clip_contents] enabled.
-				[b]Note:[/b] Event position is relative to the control origin.
+				If the [param event] inherits [InputEventMouse], this method will [b]not[/b] be called when:
+				- the control's [member mouse_filter] is set to [constant MOUSE_FILTER_IGNORE];
+				- the control is obstructed by another control on top, that doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
+				- the control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
+				- the control's parent has [member clip_contents] enabled and the [param event]'s position is outside the parent's rectangle;
+				- the [param event]'s position is outside the control (see [method _has_point]).
+				[b]Note:[/b] The [param event]'s position is relative to this control's origin.
 			</description>
 		</method>
 		<method name="_has_point" qualifiers="virtual const">
@@ -169,7 +169,7 @@
 				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member tooltip_text] for an example).
 				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member custom_minimum_size] to some non-zero value.
 				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise, the viewport that instantiates it will not be able to calculate its minimum size reliably.
-				[b]Example of usage with a custom-constructed node:[/b]
+				[b]Example:[/b] Use a constructed node as a tooltip:
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
@@ -186,7 +186,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Example of usage with a custom scene instance:[/b]
+				[b]Example:[/b] Usa a scene instance as a tooltip:
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
@@ -228,7 +228,7 @@
 			<description>
 				Creates a local override for a theme [Color] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
 				See also [method get_theme_color].
-				[b]Example of overriding a label's color and resetting it later:[/b]
+				[b]Example:[/b] Override a [Label]'s color and reset it later:
 				[codeblocks]
 				[gdscript]
 				# Given the child Label node "MyLabel", override its font color with a custom value.
@@ -292,10 +292,10 @@
 			<description>
 				Creates a local override for a theme [StyleBox] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
 				See also [method get_theme_stylebox].
-				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
+				[b]Example:[/b] Modify a property in a [StyleBox] by duplicating it:
 				[codeblocks]
 				[gdscript]
-				# The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
+				# The snippet below assumes the child node "MyButton" has a StyleBoxFlat assigned.
 				# Resources are shared across instances, so we need to duplicate it
 				# to avoid modifying the appearance of all other buttons.
 				var new_stylebox_normal = $MyButton.get_theme_stylebox("normal").duplicate()
@@ -306,7 +306,7 @@
 				$MyButton.remove_theme_stylebox_override("normal")
 				[/gdscript]
 				[csharp]
-				// The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
+				// The snippet below assumes the child node "MyButton" has a StyleBoxFlat assigned.
 				// Resources are shared across instances, so we need to duplicate it
 				// to avoid modifying the appearance of all other buttons.
 				StyleBoxFlat newStyleboxNormal = GetNode&lt;Button&gt;("MyButton").GetThemeStylebox("normal").Duplicate() as StyleBoxFlat;
@@ -446,7 +446,7 @@
 			<description>
 				Returns the position of this [Control] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
 				Equals to [member global_position] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
-				[b]Example usage for showing a popup:[/b]
+				[b]Example:[/b] Show a popup at the mouse position:
 				[codeblock]
 				popup_menu.position = get_screen_position() + get_local_mouse_position()
 				popup_menu.reset_size()
