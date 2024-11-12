@@ -2724,7 +2724,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 	for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 
-		if (ep && current_favorites.has(F.properties[0])) {
+		if (ep && !F.properties.is_empty() && current_favorites.has(F.properties[0])) {
 			ep->favorited = true;
 			favorites_vbox->add_child(F.property_editor);
 		} else {
