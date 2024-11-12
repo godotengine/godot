@@ -66,12 +66,14 @@ class EditorInterface : public Object {
 	// Editor dialogs.
 
 	PropertySelector *property_selector = nullptr;
+	PropertySelector *method_selector = nullptr;
 	SceneTreeDialog *node_selector = nullptr;
 
 	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
 	void _node_selection_canceled(const Callable &p_callback);
 	void _property_selected(const String &p_property_name, const Callable &p_callback);
 	void _property_selection_canceled(const Callable &p_callback);
+	void _method_selected(const String &p_property_name, const Callable &p_callback);
 	void _quick_open(const String &p_file_path, const Callable &p_callback);
 	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
 
@@ -139,6 +141,7 @@ public:
 	void popup_node_selector(const Callable &p_callback, const TypedArray<StringName> &p_valid_types = TypedArray<StringName>(), Node *p_current_value = nullptr);
 	// Must use Vector<int> because exposing Vector<Variant::Type> is not supported.
 	void popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array(), const String &p_current_value = String());
+	void popup_method_selector(Object *p_object, const Callable &p_callback, const String &p_current_value = String());
 	void popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types = TypedArray<StringName>());
 
 	// Editor docks.

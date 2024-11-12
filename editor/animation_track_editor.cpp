@@ -63,7 +63,6 @@
 
 constexpr double FPS_DECIMAL = 1.0;
 constexpr double SECOND_DECIMAL = 0.0001;
-constexpr double FPS_STEP_FRACTION = 0.0625;
 
 void AnimationTrackKeyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationTrackKeyEdit::_update_obj);
@@ -3776,6 +3775,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(false);
 		snap_keys->set_disabled(false);
 		snap_timeline->set_disabled(false);
+		fps_compat->set_disabled(false);
 		snap_mode->set_disabled(false);
 		auto_fit->set_disabled(false);
 		auto_fit_bezier->set_disabled(false);
@@ -3798,6 +3798,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(true);
 		snap_keys->set_disabled(true);
 		snap_timeline->set_disabled(true);
+		fps_compat->set_disabled(true);
 		snap_mode->set_disabled(true);
 		bezier_edit_icon->set_disabled(true);
 		auto_fit->set_disabled(true);
@@ -5029,7 +5030,12 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 	}
 	marker_edit->set_use_fps(use_fps);
 	// To ensure that the conversion results are consistent between serialization and load, the value is snapped with 0.0625 to be a rational number when FPS mode is used.
-	step->set_step(use_fps ? FPS_STEP_FRACTION : SECOND_DECIMAL);
+	step->set_step(use_fps ? FPS_DECIMAL : SECOND_DECIMAL);
+	if (use_fps) {
+		fps_compat->hide();
+	} else {
+		fps_compat->show();
+	}
 	_update_step_spinbox();
 }
 
@@ -5045,13 +5051,26 @@ void AnimationTrackEditor::_update_step_spinbox() {
 		} else {
 			step->set_value(1.0 / animation->get_step());
 		}
-
 	} else {
 		step->set_value(animation->get_step());
 	}
 
 	step->set_block_signals(false);
 	_update_snap_unit();
+}
+
+void AnimationTrackEditor::_update_fps_compat_mode(bool p_enabled) {
+	_update_snap_unit();
+}
+
+void AnimationTrackEditor::_update_nearest_fps_label() {
+	bool is_fps_invalid = nearest_fps == 0;
+	if (is_fps_invalid) {
+		nearest_fps_label->hide();
+	} else {
+		nearest_fps_label->show();
+		nearest_fps_label->set_text("Nearest FPS: " + itos(nearest_fps));
+	}
 }
 
 void AnimationTrackEditor::_animation_update() {
@@ -5115,6 +5134,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			bezier_edit_icon->set_button_icon(get_editor_theme_icon(SNAME("EditBezier")));
 			snap_timeline->set_button_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
 			snap_keys->set_button_icon(get_editor_theme_icon(SNAME("SnapKeys")));
+			fps_compat->set_button_icon(get_editor_theme_icon(SNAME("FPS")));
 			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			selected_filter->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			imported_anim_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
@@ -5160,9 +5180,8 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 	double step_value = p_new_step;
 	if (timeline->is_using_fps()) {
 		if (step_value != 0.0) {
-			// step_value must also be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
+			// A step_value should be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
 			step_value = 1.0 / MIN(1000.0, p_new_step);
-			;
 		}
 		timeline->queue_redraw();
 	}
@@ -7336,19 +7355,30 @@ void AnimationTrackEditor::_selection_changed() {
 }
 
 void AnimationTrackEditor::_update_snap_unit() {
+	nearest_fps = 0;
+
 	if (step->get_value() <= 0) {
 		snap_unit = 0;
+		_update_nearest_fps_label();
 		return; // Avoid zero div.
 	}
 
 	if (timeline->is_using_fps()) {
+		_clear_selection(true); // Needs to recreate a spinbox of the KeyEdit.
 		snap_unit = 1.0 / step->get_value();
 	} else {
-		double integer;
-		double fraction = Math::modf(step->get_value(), &integer);
-		fraction = 1.0 / Math::round(1.0 / fraction);
-		snap_unit = integer + fraction;
+		if (fps_compat->is_pressed()) {
+			snap_unit = CLAMP(step->get_value(), 0.0, 1.0);
+			if (!Math::is_zero_approx(snap_unit)) {
+				real_t fps = Math::round(1.0 / snap_unit);
+				nearest_fps = int(fps);
+				snap_unit = 1.0 / fps;
+			}
+		} else {
+			snap_unit = step->get_value();
+		}
 	}
+	_update_nearest_fps_label();
 }
 
 float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
@@ -7367,6 +7397,10 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 	}
 
 	return p_value;
+}
+
+float AnimationTrackEditor::get_snap_unit() {
+	return snap_unit;
 }
 
 void AnimationTrackEditor::_show_imported_anim_warning() {
@@ -7621,6 +7655,18 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_keys->set_toggle_mode(true);
 	snap_keys->set_pressed(true);
 	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
+
+	fps_compat = memnew(Button);
+	fps_compat->set_flat(true);
+	bottom_hb->add_child(fps_compat);
+	fps_compat->set_disabled(true);
+	fps_compat->set_toggle_mode(true);
+	fps_compat->set_pressed(true);
+	fps_compat->set_tooltip_text(TTR("Apply snapping to the nearest integer FPS."));
+	fps_compat->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_update_fps_compat_mode));
+
+	nearest_fps_label = memnew(Label);
+	bottom_hb->add_child(nearest_fps_label);
 
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);

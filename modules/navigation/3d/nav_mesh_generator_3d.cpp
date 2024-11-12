@@ -595,11 +595,17 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 		return;
 	}
 
-	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis(), obstacle->get_global_position());
-
+	const float elevation = obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y;
+	// Prevent non-positive scaling.
+	const Vector3 safe_scale = obstacle->get_global_basis().get_scale().abs().maxf(0.001);
 	const float obstacle_radius = obstacle->get_radius();
 
 	if (obstacle_radius > 0.0) {
+		// Radius defined obstacle should be uniformly scaled from obstacle basis max scale axis.
+		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+		const Vector3 uniform_max_scale = Vector3(scaling_max_value, scaling_max_value, scaling_max_value);
+		const Transform3D obstacle_circle_transform = p_source_geometry_data->root_node_transform * Transform3D(Basis().scaled(uniform_max_scale), obstacle->get_global_position());
+
 		Vector<Vector3> obstruction_circle_vertices;
 
 		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
@@ -613,11 +619,14 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 
 		for (int i = 0; i < circle_points; i++) {
 			const float angle = i * circle_point_step;
-			circle_vertices_ptrw[i] = node_xform.xform(Vector3(Math::cos(angle) * obstacle_radius, 0.0, Math::sin(angle) * obstacle_radius));
+			circle_vertices_ptrw[i] = obstacle_circle_transform.xform(Vector3(Math::cos(angle) * obstacle_radius, 0.0, Math::sin(angle) * obstacle_radius));
 		}
 
-		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y - obstacle_radius, obstacle_radius, obstacle->get_carve_navigation_mesh());
+		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, elevation - obstacle_radius, scaling_max_value * obstacle_radius, obstacle->get_carve_navigation_mesh());
 	}
+
+	// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
+	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), obstacle->get_global_rotation().y), obstacle->get_global_position());
 
 	const Vector<Vector3> &obstacle_vertices = obstacle->get_vertices();
 
@@ -635,7 +644,7 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
 		obstruction_shape_vertices_ptrw[i].y = 0.0;
 	}
-	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y, obstacle->get_height(), obstacle->get_carve_navigation_mesh());
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, elevation, safe_scale.y * obstacle->get_height(), obstacle->get_carve_navigation_mesh());
 }
 
 void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node) {

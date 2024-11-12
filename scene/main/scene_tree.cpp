@@ -899,7 +899,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 		return debug_contact_mesh;
 	}
 
-	debug_contact_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	debug_contact_mesh.instantiate();
 
 	Ref<StandardMaterial3D> mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

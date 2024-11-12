@@ -44,6 +44,9 @@
 class ConfirmationDialog;
 class MenuButton;
 class Node3DEditorPlugin;
+class ButtonGroup;
+class EditorZoomWidget;
+class BaseButton;
 
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
@@ -54,6 +57,7 @@ class GridMapEditor : public VBoxContainer {
 
 	enum InputAction {
 		INPUT_NONE,
+		INPUT_TRANSFORM,
 		INPUT_PAINT,
 		INPUT_ERASE,
 		INPUT_PICK,
@@ -71,11 +75,31 @@ class GridMapEditor : public VBoxContainer {
 	MenuButton *options = nullptr;
 	SpinBox *floor = nullptr;
 	double accumulated_floor_delta = 0.0;
+
+	HBoxContainer *toolbar = nullptr;
+	List<BaseButton *> viewport_shortcut_buttons;
+	Ref<ButtonGroup> mode_buttons_group;
+	// mode
+	Button *transform_mode_button = nullptr;
+	Button *select_mode_button = nullptr;
+	Button *erase_mode_button = nullptr;
+	Button *paint_mode_button = nullptr;
+	Button *pick_mode_button = nullptr;
+	// action
+	Button *fill_action_button = nullptr;
+	Button *move_action_button = nullptr;
+	Button *duplicate_action_button = nullptr;
+	Button *delete_action_button = nullptr;
+	// rotation
+	Button *rotate_x_button = nullptr;
+	Button *rotate_y_button = nullptr;
+	Button *rotate_z_button = nullptr;
+
+	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
 	Button *mode_list = nullptr;
 	LineEdit *search_box = nullptr;
 	HSlider *size_slider = nullptr;
-	HBoxContainer *spatial_editor_hb = nullptr;
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
 	SpinBox *settings_pick_distance = nullptr;
@@ -102,6 +126,7 @@ class GridMapEditor : public VBoxContainer {
 
 	RID grid[3];
 	RID grid_instance[3];
+	RID cursor_mesh;
 	RID cursor_instance;
 	RID selection_mesh;
 	RID selection_instance;
@@ -119,7 +144,12 @@ class GridMapEditor : public VBoxContainer {
 
 	List<ClipboardItem> clipboard_items;
 
+	Color default_color;
+	Color erase_color;
+	Color pick_color;
 	Ref<StandardMaterial3D> indicator_mat;
+	Ref<StandardMaterial3D> cursor_inner_mat;
+	Ref<StandardMaterial3D> cursor_outer_mat;
 	Ref<StandardMaterial3D> inner_mat;
 	Ref<StandardMaterial3D> outer_mat;
 	Ref<StandardMaterial3D> selection_floor_mat;
@@ -196,6 +226,7 @@ class GridMapEditor : public VBoxContainer {
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
+	void _on_tool_mode_changed();
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
@@ -208,6 +239,7 @@ class GridMapEditor : public VBoxContainer {
 	void _set_clipboard_data();
 	void _update_paste_indicator();
 	void _do_paste();
+	void _show_viewports_transform_gizmo(bool p_value);
 	void _update_selection_transform();
 	void _validate_selection();
 	void _set_selection(bool p_active, const Vector3 &p_begin = Vector3(), const Vector3 &p_end = Vector3());
@@ -238,9 +270,7 @@ class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor = nullptr;
-
-protected:
-	void _notification(int p_what);
+	Button *panel_button = nullptr;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }

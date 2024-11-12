@@ -760,16 +760,14 @@ void NavMeshGenerator2D::generator_parse_source_geometry_data(Ref<NavigationPoly
 static void generator_recursive_process_polytree_items(List<TPPLPoly> &p_tppl_in_polygon, const Clipper2Lib::PolyPathD *p_polypath_item) {
 	using namespace Clipper2Lib;
 
-	Vector<Vector2> polygon_vertices;
-
-	for (const PointD &polypath_point : p_polypath_item->Polygon()) {
-		polygon_vertices.push_back(Vector2(static_cast<real_t>(polypath_point.x), static_cast<real_t>(polypath_point.y)));
-	}
-
 	TPPLPoly tp;
-	tp.Init(polygon_vertices.size());
-	for (int j = 0; j < polygon_vertices.size(); j++) {
-		tp[j] = polygon_vertices[j];
+	int size = p_polypath_item->Polygon().size();
+	tp.Init(size);
+
+	int j = 0;
+	for (const PointD &polypath_point : p_polypath_item->Polygon()) {
+		tp[j] = Vector2(static_cast<real_t>(polypath_point.x), static_cast<real_t>(polypath_point.y));
+		++j;
 	}
 
 	if (p_polypath_item->IsHole()) {
@@ -842,87 +840,79 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	if (p_navigation_mesh->get_outline_count() == 0 && !p_source_geometry_data->has_data()) {
-		return;
-	}
-
-	int outline_count = p_navigation_mesh->get_outline_count();
-
-	Vector<Vector<Vector2>> traversable_outlines;
-	Vector<Vector<Vector2>> obstruction_outlines;
-	Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> projected_obstructions;
-
-	p_source_geometry_data->get_data(
-			traversable_outlines,
-			obstruction_outlines,
-			projected_obstructions);
-
-	if (outline_count == 0 && traversable_outlines.size() == 0) {
-		return;
-	}
-
 	using namespace Clipper2Lib;
-
 	PathsD traversable_polygon_paths;
 	PathsD obstruction_polygon_paths;
+	int obstruction_polygon_path_size = 0;
+	{
+		RWLockRead read_lock(p_source_geometry_data->geometry_rwlock);
 
-	traversable_polygon_paths.reserve(outline_count + traversable_outlines.size());
-	obstruction_polygon_paths.reserve(obstruction_outlines.size());
+		const Vector<Vector<Vector2>> &traversable_outlines = p_source_geometry_data->traversable_outlines;
+		int outline_count = p_navigation_mesh->get_outline_count();
 
-	for (int i = 0; i < outline_count; i++) {
-		const Vector<Vector2> &traversable_outline = p_navigation_mesh->get_outline(i);
-		PathD subject_path;
-		subject_path.reserve(traversable_outline.size());
-		for (const Vector2 &traversable_point : traversable_outline) {
-			const PointD &point = PointD(traversable_point.x, traversable_point.y);
-			subject_path.push_back(point);
+		if (outline_count == 0 && (!p_source_geometry_data->has_data() || (traversable_outlines.is_empty()))) {
+			return;
 		}
-		traversable_polygon_paths.push_back(subject_path);
-	}
 
-	for (const Vector<Vector2> &traversable_outline : traversable_outlines) {
-		PathD subject_path;
-		subject_path.reserve(traversable_outline.size());
-		for (const Vector2 &traversable_point : traversable_outline) {
-			const PointD &point = PointD(traversable_point.x, traversable_point.y);
-			subject_path.push_back(point);
-		}
-		traversable_polygon_paths.push_back(subject_path);
-	}
+		const Vector<Vector<Vector2>> &obstruction_outlines = p_source_geometry_data->obstruction_outlines;
+		const Vector<NavigationMeshSourceGeometryData2D::ProjectedObstruction> &projected_obstructions = p_source_geometry_data->_projected_obstructions;
 
-	for (const Vector<Vector2> &obstruction_outline : obstruction_outlines) {
-		PathD clip_path;
-		clip_path.reserve(obstruction_outline.size());
-		for (const Vector2 &obstruction_point : obstruction_outline) {
-			const PointD &point = PointD(obstruction_point.x, obstruction_point.y);
-			clip_path.push_back(point);
-		}
-		obstruction_polygon_paths.push_back(clip_path);
-	}
+		traversable_polygon_paths.reserve(outline_count + traversable_outlines.size());
+		obstruction_polygon_paths.reserve(obstruction_outlines.size());
 
-	if (!projected_obstructions.is_empty()) {
-		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
-			if (projected_obstruction.carve) {
-				continue;
+		for (int i = 0; i < outline_count; i++) {
+			const Vector<Vector2> &traversable_outline = p_navigation_mesh->get_outline(i);
+			PathD subject_path;
+			subject_path.reserve(traversable_outline.size());
+			for (const Vector2 &traversable_point : traversable_outline) {
+				subject_path.emplace_back(traversable_point.x, traversable_point.y);
 			}
-			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 2 != 0) {
-				continue;
-			}
+			traversable_polygon_paths.push_back(std::move(subject_path));
+		}
 
+		for (const Vector<Vector2> &traversable_outline : traversable_outlines) {
+			PathD subject_path;
+			subject_path.reserve(traversable_outline.size());
+			for (const Vector2 &traversable_point : traversable_outline) {
+				subject_path.emplace_back(traversable_point.x, traversable_point.y);
+			}
+			traversable_polygon_paths.push_back(std::move(subject_path));
+		}
+
+		if (!projected_obstructions.is_empty()) {
+			for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
+				if (projected_obstruction.carve) {
+					continue;
+				}
+				if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 2 != 0) {
+					continue;
+				}
+
+				PathD clip_path;
+				clip_path.reserve(projected_obstruction.vertices.size() / 2);
+				for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
+					clip_path.emplace_back(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
+				}
+				if (!IsPositive(clip_path)) {
+					std::reverse(clip_path.begin(), clip_path.end());
+				}
+				obstruction_polygon_paths.push_back(std::move(clip_path));
+			}
+		}
+
+		obstruction_polygon_path_size = obstruction_polygon_paths.size();
+		for (const Vector<Vector2> &obstruction_outline : obstruction_outlines) {
 			PathD clip_path;
-			clip_path.reserve(projected_obstruction.vertices.size() / 2);
-			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
-				const PointD &point = PointD(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
-				clip_path.push_back(point);
+			clip_path.reserve(obstruction_outline.size());
+			for (const Vector2 &obstruction_point : obstruction_outline) {
+				clip_path.emplace_back(obstruction_point.x, obstruction_point.y);
 			}
-			if (!IsPositive(clip_path)) {
-				std::reverse(clip_path.begin(), clip_path.end());
-			}
-			obstruction_polygon_paths.push_back(clip_path);
+			obstruction_polygon_paths.push_back(std::move(clip_path));
 		}
 	}
 
 	Rect2 baking_rect = p_navigation_mesh->get_baking_rect();
+	PathsD area_obstruction_polygon_paths;
 	if (baking_rect.has_area()) {
 		Vector2 baking_rect_offset = p_navigation_mesh->get_baking_rect_offset();
 
@@ -934,48 +924,27 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		RectD clipper_rect = RectD(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
 
 		traversable_polygon_paths = RectClip(clipper_rect, traversable_polygon_paths);
-		obstruction_polygon_paths = RectClip(clipper_rect, obstruction_polygon_paths);
+		area_obstruction_polygon_paths = RectClip(clipper_rect, obstruction_polygon_paths);
+	} else {
+		area_obstruction_polygon_paths = obstruction_polygon_paths;
 	}
-
-	PathsD path_solution;
 
 	// first merge all traversable polygons according to user specified fill rule
 	PathsD dummy_clip_path;
 	traversable_polygon_paths = Union(traversable_polygon_paths, dummy_clip_path, FillRule::NonZero);
 	// merge all obstruction polygons, don't allow holes for what is considered "solid" 2D geometry
-	obstruction_polygon_paths = Union(obstruction_polygon_paths, dummy_clip_path, FillRule::NonZero);
+	area_obstruction_polygon_paths = Union(area_obstruction_polygon_paths, dummy_clip_path, FillRule::NonZero);
 
-	path_solution = Difference(traversable_polygon_paths, obstruction_polygon_paths, FillRule::NonZero);
+	PathsD path_solution = Difference(traversable_polygon_paths, area_obstruction_polygon_paths, FillRule::NonZero);
 
 	real_t agent_radius_offset = p_navigation_mesh->get_agent_radius();
 	if (agent_radius_offset > 0.0) {
 		path_solution = InflatePaths(path_solution, -agent_radius_offset, JoinType::Miter, EndType::Polygon);
 	}
 
-	if (!projected_obstructions.is_empty()) {
-		obstruction_polygon_paths.resize(0);
-		for (const NavigationMeshSourceGeometryData2D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
-			if (!projected_obstruction.carve) {
-				continue;
-			}
-			if (projected_obstruction.vertices.is_empty() || projected_obstruction.vertices.size() % 2 != 0) {
-				continue;
-			}
-
-			PathD clip_path;
-			clip_path.reserve(projected_obstruction.vertices.size() / 2);
-			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
-				const PointD &point = PointD(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
-				clip_path.push_back(point);
-			}
-			if (!IsPositive(clip_path)) {
-				std::reverse(clip_path.begin(), clip_path.end());
-			}
-			obstruction_polygon_paths.push_back(clip_path);
-		}
-		if (obstruction_polygon_paths.size() > 0) {
-			path_solution = Difference(path_solution, obstruction_polygon_paths, FillRule::NonZero);
-		}
+	if (obstruction_polygon_path_size > 0) {
+		obstruction_polygon_paths.resize(obstruction_polygon_path_size);
+		path_solution = Difference(path_solution, obstruction_polygon_paths, FillRule::NonZero);
 	}
 
 	//path_solution = RamerDouglasPeucker(path_solution, 0.025); //
@@ -994,31 +963,9 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		path_solution = RectClip(clipper_rect, path_solution);
 	}
 
-	Vector<Vector<Vector2>> new_baked_outlines;
-
-	for (const PathD &scaled_path : path_solution) {
-		Vector<Vector2> polypath;
-		for (const PointD &scaled_point : scaled_path) {
-			polypath.push_back(Vector2(static_cast<real_t>(scaled_point.x), static_cast<real_t>(scaled_point.y)));
-		}
-		new_baked_outlines.push_back(polypath);
-	}
-
-	if (new_baked_outlines.size() == 0) {
+	if (path_solution.size() == 0) {
 		p_navigation_mesh->clear();
 		return;
-	}
-
-	PathsD polygon_paths;
-	polygon_paths.reserve(new_baked_outlines.size());
-
-	for (const Vector<Vector2> &baked_outline : new_baked_outlines) {
-		PathD polygon_path;
-		for (const Vector2 &baked_outline_point : baked_outline) {
-			const PointD &point = PointD(baked_outline_point.x, baked_outline_point.y);
-			polygon_path.push_back(point);
-		}
-		polygon_paths.push_back(polygon_path);
 	}
 
 	ClipType clipper_cliptype = ClipType::Union;
@@ -1028,7 +975,7 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	PolyTreeD polytree;
 	ClipperD clipper_D;
 
-	clipper_D.AddSubject(polygon_paths);
+	clipper_D.AddSubject(path_solution);
 	clipper_D.Execute(clipper_cliptype, FillRule::NonZero, polytree);
 
 	for (size_t i = 0; i < polytree.Count(); i++) {

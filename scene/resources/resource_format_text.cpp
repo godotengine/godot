@@ -1526,6 +1526,10 @@ ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path)
 	return loader.get_uid(f);
 }
 
+bool ResourceFormatLoaderText::has_custom_uid_support() const {
+	return true;
+}
+
 void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
