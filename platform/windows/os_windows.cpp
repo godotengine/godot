@@ -1740,6 +1740,34 @@ String OS_Windows::get_locale() const {
 	return "en";
 }
 
+String OS_Windows::get_model_name() const {
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Hardware\\Description\\System\\BIOS", 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		return OS::get_model_name();
+	}
+
+	String sys_name;
+	String board_name;
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"SystemProductName", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+		sys_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	}
+	buffer_len = 256;
+	if (RegQueryValueExW(hkey, L"BaseBoardProduct", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+		board_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	}
+	RegCloseKey(hkey);
+	if (!sys_name.is_empty() && sys_name.to_lower() != "system product name") {
+		return sys_name;
+	}
+	if (!board_name.is_empty() && board_name.to_lower() != "base board product") {
+		return board_name;
+	}
+	return OS::get_model_name();
+}
+
 String OS_Windows::get_processor_name() const {
 	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
 
