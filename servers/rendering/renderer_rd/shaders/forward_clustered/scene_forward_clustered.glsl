@@ -2369,11 +2369,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				float shadow = light_process_omni_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-				shadow = blur_shadow(shadow);
-
-				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha, screen_uv,
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2441,11 +2437,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				float shadow = light_process_spot_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-				shadow = blur_shadow(shadow);
-
-				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha, screen_uv,
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif

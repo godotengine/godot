@@ -1624,13 +1624,7 @@ void main() {
 	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
 	for (uint i = 0; i < sc_omni_lights(); i++) {
 		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
-
-		float shadow = light_process_omni_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-		shadow = blur_shadow(shadow);
-
-		// Fragment lighting
-		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha, screen_uv,
+		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1658,12 +1652,7 @@ void main() {
 	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
 	for (uint i = 0; i < sc_spot_lights(); i++) {
 		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
-
-		float shadow = light_process_spot_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-		shadow = blur_shadow(shadow);
-
-		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha, screen_uv,
+		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
