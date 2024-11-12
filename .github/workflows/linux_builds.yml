@@ -17,7 +17,8 @@ concurrency:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    # If unspecified, stay one LTS before latest to increase portability of Linux artifacts.
+    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -60,6 +61,8 @@ jobs:
             artifact: false
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
+            # Python 3.6 unavailable on 22.04.
+            os: ubuntu-20.04
 
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -100,7 +103,7 @@ jobs:
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu focal main"
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu ${{ matrix.os == 'ubuntu-20.04' && 'focal' || 'jammy' }} main"
           sudo apt-get install -qq mesa-vulkan-drivers
 
       # TODO: Figure out somehow how to embed this one.

@@ -387,6 +387,10 @@ ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) c
 	return pat.uid;
 }
 
+bool ResourceFormatImporter::has_custom_uid_support() const {
+	return true;
+}
+
 Error ResourceFormatImporter::get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);

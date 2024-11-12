@@ -61,7 +61,7 @@
 			<param index="1" name="msaa" type="bool" default="false" />
 			<description>
 				Returns the specified layer from the color texture we are rendering 3D content to.
-				If [param msaa] is [b]true[/b] and MSAA is enabled, this returns the MSAA variant of the buffer.
+				If [param msaa] is [code]true[/code] and MSAA is enabled, this returns the MSAA variant of the buffer.
 			</description>
 		</method>
 		<method name="get_color_texture">
@@ -69,7 +69,7 @@
 			<param index="0" name="msaa" type="bool" default="false" />
 			<description>
 				Returns the color texture we are rendering 3D content to. If multiview is used this will be a texture array with all views.
-				If [param msaa] is [b]true[/b] and MSAA is enabled, this returns the MSAA variant of the buffer.
+				If [param msaa] is [code]true[/code] and MSAA is enabled, this returns the MSAA variant of the buffer.
 			</description>
 		</method>
 		<method name="get_depth_layer">
@@ -78,7 +78,7 @@
 			<param index="1" name="msaa" type="bool" default="false" />
 			<description>
 				Returns the specified layer from the depth texture we are rendering 3D content to.
-				If [param msaa] is [b]true[/b] and MSAA is enabled, this returns the MSAA variant of the buffer.
+				If [param msaa] is [code]true[/code] and MSAA is enabled, this returns the MSAA variant of the buffer.
 			</description>
 		</method>
 		<method name="get_depth_texture">
@@ -86,7 +86,7 @@
 			<param index="0" name="msaa" type="bool" default="false" />
 			<description>
 				Returns the depth texture we are rendering 3D content to. If multiview is used this will be a texture array with all views.
-				If [param msaa] is [b]true[/b] and MSAA is enabled, this returns the MSAA variant of the buffer.
+				If [param msaa] is [code]true[/code] and MSAA is enabled, this returns the MSAA variant of the buffer.
 			</description>
 		</method>
 		<method name="get_fsr_sharpness" qualifiers="const">

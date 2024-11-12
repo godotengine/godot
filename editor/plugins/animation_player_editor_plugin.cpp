@@ -580,8 +580,10 @@ float AnimationPlayerEditor::_get_editor_step() const {
 	const Ref<Animation> anim = player->get_animation(current);
 	ERR_FAIL_COND_V(anim.is_null(), 0.0);
 
+	float step = track_editor->get_snap_unit();
+
 	// Use more precise snapping when holding Shift
-	return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+	return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? step * 0.25 : step;
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {

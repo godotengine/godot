@@ -5620,7 +5620,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	snap_dialog->connect(SceneStringName(confirmed), callable_mp(this, &CanvasItemEditor::_snap_changed));
 	add_child(snap_dialog);
 
-	select_sb = Ref<StyleBoxTexture>(memnew(StyleBoxTexture));
+	select_sb.instantiate();
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);

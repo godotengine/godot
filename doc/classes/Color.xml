@@ -19,7 +19,7 @@
 			<return type="Color" />
 			<description>
 				Constructs a default [Color] from opaque black. This is the same as [constant BLACK].
-				[b]Note:[/b] in C#, constructs an empty color with all of its components set to [code]0.0[/code] (transparent black).
+				[b]Note:[/b] In C#, this constructs a [Color] with all of its components set to [code]0.0[/code] (transparent black).
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -494,6 +494,15 @@
 		</member>
 		<member name="h" type="float" setter="" getter="" default="0.0">
 			The HSV hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_h" type="float" setter="" getter="" default="0.0">
+			The OKHSL hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_l" type="float" setter="" getter="" default="0.0">
+			The OKHSL lightness of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_s" type="float" setter="" getter="" default="0.0">
+			The OKHSL saturation of this color, on the range 0 to 1.
 		</member>
 		<member name="r" type="float" setter="" getter="" default="0.0">
 			The color's red component, typically on the range of 0 to 1.

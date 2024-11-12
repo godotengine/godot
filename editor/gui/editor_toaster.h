@@ -115,6 +115,7 @@ public:
 	Control *popup(Control *p_control, Severity p_severity = SEVERITY_INFO, double p_time = 0.0, const String &p_tooltip = String());
 	void popup_str(const String &p_message, Severity p_severity = SEVERITY_INFO, const String &p_tooltip = String());
 	void close(Control *p_control);
+	void instant_close(Control *p_control);
 
 	EditorToaster();
 	~EditorToaster();
