@@ -156,6 +156,52 @@ void RedirectIOToConsole() {
 	}
 }
 
+bool OS_Windows::is_using_con_wrapper() const {
+	static String exe_renames[] = {
+		".console.exe",
+		"_console.exe",
+		" console.exe",
+		"console.exe",
+		String(),
+	};
+
+	bool found_exe = false;
+	bool found_conwrap_exe = false;
+	String exe_name = get_executable_path().to_lower();
+	String exe_dir = exe_name.get_base_dir();
+	String exe_fname = exe_name.get_file().get_basename();
+
+	DWORD pids[256];
+	DWORD count = GetConsoleProcessList(&pids[0], 256);
+	for (DWORD i = 0; i < count; i++) {
+		HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pids[i]);
+		if (process != NULL) {
+			WCHAR proc_name[MAX_PATH];
+			DWORD len = MAX_PATH;
+			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
+				String name = String::utf16((const char16_t *)&proc_name[0], len).replace("\\", "/").to_lower();
+				if (name == exe_name) {
+					found_exe = true;
+				}
+				for (int j = 0; !exe_renames[j].is_empty(); j++) {
+					if (name == exe_dir.path_join(exe_fname + exe_renames[j])) {
+						found_conwrap_exe = true;
+					}
+				}
+			}
+			CloseHandle(process);
+			if (found_conwrap_exe && found_exe) {
+				break;
+			}
+		}
+	}
+	if (!found_exe) {
+		return true; // Unable to read console info, assume true.
+	}
+
+	return found_conwrap_exe;
+}
+
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	if (!EngineDebugger::is_active()) {
 		return FALSE;
@@ -1682,14 +1728,113 @@ void OS_Windows::unset_environment(const String &p_var) const {
 	SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr); // Null to delete.
 }
 
-String OS_Windows::get_stdin_string() {
-	char buff[1024];
+String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
+	if (get_stdin_type() == STD_HANDLE_INVALID) {
+		return String();
+	}
+
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
 	DWORD count = 0;
-	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
-		return String::utf8((const char *)buff, count);
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
+		return String::utf8((const char *)data.ptr(), count);
 	}
 
 	return String();
+}
+
+PackedByteArray OS_Windows::get_stdin_buffer(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	DWORD count = 0;
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
+		return data;
+	}
+
+	return PackedByteArray();
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
+	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+			if (!is_using_con_wrapper()) {
+				return STD_HANDLE_INVALID; // Window app can't read stdin input without werapper.
+			}
+#endif
+			return STD_HANDLE_CONSOLE;
+		}
+	}
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+			return STD_HANDLE_CONSOLE;
+		}
+	}
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stderr_type() const {
+	HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+			return STD_HANDLE_CONSOLE;
+		}
+	}
 }
 
 Error OS_Windows::shell_open(const String &p_uri) {
