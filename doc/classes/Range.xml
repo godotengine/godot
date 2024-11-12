@@ -54,7 +54,7 @@
 			Minimum value. Range is clamped if [member value] is less than [member min_value].
 		</member>
 		<member name="page" type="float" setter="set_page" getter="get_page" default="0.0">
-			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [member page] over the difference between [member min_value] and [member max_value].
+			Page size. Used mainly for [ScrollBar]. ScrollBar's grabber length is ScrollBar's size multiplied by [member page] over the difference between [member min_value] and [member max_value].
 		</member>
 		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio">
 			The value mapped between 0 and 1.
