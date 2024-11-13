@@ -1082,6 +1082,12 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="get_support_data" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns default TextServer database (e.g. ICU break iterators and dictionaries).
+			</description>
+		</method>
 		<method name="get_support_data_filename" qualifiers="const">
 			<return type="String" />
 			<description>

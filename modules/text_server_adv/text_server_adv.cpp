@@ -500,6 +500,20 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 #endif
 }
 
+PackedByteArray TextServerAdvanced::_get_support_data() const {
+	_THREAD_SAFE_METHOD_
+#ifdef ICU_STATIC_DATA
+
+	PackedByteArray icu_data_static;
+	icu_data_static.resize(U_ICUDATA_SIZE);
+	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
+
+	return icu_data_static;
+#else
+	return icu_data;
+#endif
+}
+
 bool TextServerAdvanced::_is_locale_right_to_left(const String &p_locale) const {
 	String l = p_locale.get_slicec('_', 0);
 	if ((l == "ar") || (l == "dv") || (l == "he") || (l == "fa") || (l == "ff") || (l == "ku") || (l == "ur")) {

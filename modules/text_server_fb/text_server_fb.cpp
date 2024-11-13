@@ -170,6 +170,10 @@ bool TextServerFallback::_save_support_data(const String &p_filename) const {
 	return false; // No extra data used.
 }
 
+PackedByteArray TextServerFallback::_get_support_data() const {
+	return PackedByteArray(); // No extra data used.
+}
+
 bool TextServerFallback::_is_locale_right_to_left(const String &p_locale) const {
 	return false; // No RTL support.
 }

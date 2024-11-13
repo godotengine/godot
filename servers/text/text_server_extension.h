@@ -63,9 +63,11 @@ public:
 	virtual String get_support_data_filename() const override;
 	virtual String get_support_data_info() const override;
 	virtual bool save_support_data(const String &p_filename) const override;
+	virtual PackedByteArray get_support_data() const override;
 	GDVIRTUAL0RC(String, _get_support_data_filename);
 	GDVIRTUAL0RC(String, _get_support_data_info);
 	GDVIRTUAL1RC(bool, _save_support_data, const String &);
+	GDVIRTUAL0RC(PackedByteArray, _get_support_data);
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const override;
 	GDVIRTUAL1RC(bool, _is_locale_right_to_left, const String &);
