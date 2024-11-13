@@ -646,6 +646,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		// Transform mode (toggle button):
 		// If we are in Transform mode we pass the events to the 3D editor,
 		// but if the Transform mode shortcut is pressed again, we go back to Selection mode.
 		if (mode_buttons_group->get_pressed_button() == transform_mode_button) {
@@ -656,7 +657,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			}
 			return EditorPlugin::AFTER_GUI_INPUT_PASS;
 		}
-
+		// Tool modes and tool actions:
 		for (BaseButton *b : viewport_shortcut_buttons) {
 			if (b->is_disabled()) {
 				continue;
@@ -673,9 +674,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 		}
-	}
-
-	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		// Hard key actions:
 		if (k->get_keycode() == Key::ESCAPE) {
 			if (input_action == INPUT_PASTE) {
 				_clear_clipboard_data();
@@ -692,7 +691,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
 		}
-
+		// Options menu shortcuts:
 		Ref<Shortcut> ed_shortcut = ED_GET_SHORTCUT("grid_map/previous_floor");
 		if (ed_shortcut.is_valid() && ed_shortcut->matches_event(p_event)) {
 			accept_event();
@@ -1396,6 +1395,7 @@ GridMapEditor::GridMapEditor() {
 	fill_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_FILL));
 	action_buttons->add_child(fill_action_button);
+	viewport_shortcut_buttons.push_back(fill_action_button);
 
 	move_action_button = memnew(Button);
 	move_action_button->set_theme_type_variation("FlatButton");
@@ -1403,6 +1403,7 @@ GridMapEditor::GridMapEditor() {
 	move_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_CUT));
 	action_buttons->add_child(move_action_button);
+	viewport_shortcut_buttons.push_back(move_action_button);
 
 	duplicate_action_button = memnew(Button);
 	duplicate_action_button->set_theme_type_variation("FlatButton");
@@ -1410,6 +1411,7 @@ GridMapEditor::GridMapEditor() {
 	duplicate_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_DUPLICATE));
 	action_buttons->add_child(duplicate_action_button);
+	viewport_shortcut_buttons.push_back(duplicate_action_button);
 
 	delete_action_button = memnew(Button);
 	delete_action_button->set_theme_type_variation("FlatButton");
@@ -1417,6 +1419,7 @@ GridMapEditor::GridMapEditor() {
 	delete_action_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_SELECTION_CLEAR));
 	action_buttons->add_child(delete_action_button);
+	viewport_shortcut_buttons.push_back(delete_action_button);
 
 	vsep = memnew(VSeparator);
 	toolbar->add_child(vsep);
@@ -1430,6 +1433,7 @@ GridMapEditor::GridMapEditor() {
 	rotate_x_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_X));
 	rotation_buttons->add_child(rotate_x_button);
+	viewport_shortcut_buttons.push_back(rotate_x_button);
 
 	rotate_y_button = memnew(Button);
 	rotate_y_button->set_theme_type_variation("FlatButton");
@@ -1437,6 +1441,7 @@ GridMapEditor::GridMapEditor() {
 	rotate_y_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Y));
 	rotation_buttons->add_child(rotate_y_button);
+	viewport_shortcut_buttons.push_back(rotate_y_button);
 
 	rotate_z_button = memnew(Button);
 	rotate_z_button->set_theme_type_variation("FlatButton");
@@ -1444,6 +1449,7 @@ GridMapEditor::GridMapEditor() {
 	rotate_z_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Z));
 	rotation_buttons->add_child(rotate_z_button);
+	viewport_shortcut_buttons.push_back(rotate_z_button);
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
 	Control *c = memnew(Control);
