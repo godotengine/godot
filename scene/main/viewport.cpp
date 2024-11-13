@@ -3062,6 +3062,13 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			}
 			v->_update_mouse_over(v->get_final_transform().affine_inverse().xform(pos));
 		}
+
+		Viewport *section_root = get_section_root_viewport();
+		if (section_root && !section_root->gui.target_control) {
+			// In the case that no control nodes were found within SubViewports at the position of the mouse cursor,
+			// ensure, that the current SubViewportContainer is considered for the Control node, that the mouse is over.
+			section_root->gui.target_control = over;
+		}
 	}
 }
 
