@@ -13,7 +13,7 @@ def make_default_controller_mappings(target, source, env):
         # ensure mappings have a consistent order
         platform_mappings: dict = OrderedDict()
         for src_path in source:
-            with open(str(src_path), "r", encoding="utf-8") as f:
+            with open(str(src_path), encoding="utf-8") as f:
                 # read mapping file and skip header
                 mapping_file_lines = f.readlines()[2:]
 
@@ -33,9 +33,7 @@ def make_default_controller_mappings(target, source, env):
                     guid = line_parts[0]
                     if guid in platform_mappings[current_platform]:
                         g.write(
-                            "// WARNING: DATABASE {} OVERWROTE PRIOR MAPPING: {} {}\n".format(
-                                src_path, current_platform, platform_mappings[current_platform][guid]
-                            )
+                            f"// WARNING: DATABASE {src_path} OVERWROTE PRIOR MAPPING: {current_platform} {platform_mappings[current_platform][guid]}\n"
                         )
                     platform_mappings[current_platform][guid] = line
 
@@ -51,9 +49,9 @@ def make_default_controller_mappings(target, source, env):
         g.write("const char* DefaultControllerMappings::mappings[] = {\n")
         for platform, mappings in platform_mappings.items():
             variable = platform_variables[platform]
-            g.write("{}\n".format(variable))
+            g.write(f"{variable}\n")
             for mapping in mappings.values():
-                g.write('\t"{}",\n'.format(mapping))
+                g.write(f'\t"{mapping}",\n')
             g.write("#endif\n")
 
         g.write("\tnullptr\n};\n")

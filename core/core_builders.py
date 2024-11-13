@@ -8,8 +8,8 @@ def escape_string(s):
         rev_result = []
         while c >= 256:
             c, low = (c // 256, c % 256)
-            rev_result.append("\\%03o" % low)
-        rev_result.append("\\%03o" % c)
+            rev_result.append(f"\\{low:03o}")
+        rev_result.append(f"\\{c:03o}")
         return "".join(reversed(rev_result))
 
     result = ""
@@ -40,7 +40,7 @@ def make_certs_header(target, source, env):
 
         # System certs path. Editor will use them if defined. (for package maintainers)
         path = env["system_certs_path"]
-        g.write('#define _SYSTEM_CERTS_PATH "%s"\n' % str(path))
+        g.write(f'#define _SYSTEM_CERTS_PATH "{path}"\n')
         if env["builtin_certs"]:
             # Defined here and not in env so changing it does not trigger a full rebuild.
             g.write("#define BUILTIN_CERTS_ENABLED\n")
@@ -69,7 +69,7 @@ def make_authors_header(target, source, env):
 
     src = str(source[0])
     dst = str(target[0])
-    with open(src, "r", encoding="utf-8") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
+    with open(src, encoding="utf-8") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef AUTHORS_GEN_H\n")
         g.write("#define AUTHORS_GEN_H\n")
@@ -126,7 +126,7 @@ def make_donors_header(target, source, env):
 
     src = str(source[0])
     dst = str(target[0])
-    with open(src, "r", encoding="utf-8") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
+    with open(src, encoding="utf-8") as f, open(dst, "w", encoding="utf-8", newline="\n") as g:
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef DONORS_GEN_H\n")
         g.write("#define DONORS_GEN_H\n")
@@ -193,7 +193,7 @@ def make_license_header(target, source, env):
     projects: dict = OrderedDict()
     license_list = []
 
-    with open(src_copyright, "r", encoding="utf-8") as copyright_file:
+    with open(src_copyright, encoding="utf-8") as copyright_file:
         reader = LicenseReader(copyright_file)
         part = {}
         while reader.current:
@@ -226,7 +226,7 @@ def make_license_header(target, source, env):
         f.write("#define LICENSE_GEN_H\n")
         f.write("const char *const GODOT_LICENSE_TEXT =")
 
-        with open(src_license, "r", encoding="utf-8") as license_file:
+        with open(src_license, encoding="utf-8") as license_file:
             for line in license_file:
                 escaped_string = escape_string(line.strip())
                 f.write('\n\t\t"' + escaped_string + '\\n"')

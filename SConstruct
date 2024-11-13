@@ -173,7 +173,7 @@ env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
+env.SConsignFile(File(f"#.sconsign{pickle.HIGHEST_PROTOCOL}.dblite").abspath)
 
 # Build options
 
@@ -190,9 +190,9 @@ opts = Variables(customs, ARGUMENTS)
 
 # Target build options
 if env.scons_version >= (4, 3):
-    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add(["platform", "p"], "Target platform ({})".format("|".join(platform_list)), "")
 else:
-    opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add("platform", "Target platform ({})".format("|".join(platform_list)), "")
     opts.Add("p", "Alias for 'platform'", "")
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
@@ -444,7 +444,7 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
-    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+    opts.Add(BoolVariable("module_" + name + "_enabled", f"Enable module '{name}'", enabled))
 
     # Add module-specific options.
     try:
@@ -588,7 +588,7 @@ if env["build_profile"] != "":
     import json
 
     try:
-        ft = json.load(open(env["build_profile"], "r", encoding="utf-8"))
+        ft = json.load(open(env["build_profile"], encoding="utf-8"))
         if "disabled_classes" in ft:
             env.disabled_classes = ft["disabled_classes"]
         if "disabled_build_options" in ft:
@@ -1062,9 +1062,7 @@ if env["vsproj"]:
 if env["compiledb"]:
     if env.scons_version < (4, 0, 0):
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        print_error(
-            "The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version
-        )
+        print_error(f"The `compiledb=yes` option requires SCons 4.0 or later, but your version is {scons_raw_version}.")
         Exit(255)
 
     env.Tool("compilation_db")
@@ -1072,7 +1070,7 @@ if env["compiledb"]:
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
-        print_error("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
+        print_error(f"The `ninja=yes` option requires SCons 4.2 or later, but your version is {scons_raw_version}.")
         Exit(255)
 
     SetOption("experimental", "ninja")

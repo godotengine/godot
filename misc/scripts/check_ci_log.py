@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import sys
 
@@ -9,7 +8,7 @@ if len(sys.argv) < 2:
 
 fname = sys.argv[1]
 
-with open(fname.strip(), "r", encoding="utf-8") as fileread:
+with open(fname.strip(), encoding="utf-8") as fileread:
     file_contents = fileread.read()
 
 # If find "ERROR: AddressSanitizer:", then happens invalid read or write

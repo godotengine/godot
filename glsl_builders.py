@@ -24,7 +24,7 @@ class RDHeaderStruct:
 
 
 def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
-    with open(filename, "r", encoding="utf-8") as fs:
+    with open(filename, encoding="utf-8") as fs:
         line = fs.readline()
 
         while line:
@@ -111,13 +111,13 @@ def build_rd_header(
 
     if header_data.compute_lines:
         body_parts = [
-            "static const char _compute_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.compute_lines),
+            f"static const char _compute_code[] = {{\n{to_raw_cstring(header_data.compute_lines)}\n\t\t}};",
             f'setup(nullptr, nullptr, _compute_code, "{out_file_class}");',
         ]
     else:
         body_parts = [
-            "static const char _vertex_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.vertex_lines),
-            "static const char _fragment_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.fragment_lines),
+            f"static const char _vertex_code[] = {{\n{to_raw_cstring(header_data.vertex_lines)}\n\t\t}};",
+            f"static const char _fragment_code[] = {{\n{to_raw_cstring(header_data.fragment_lines)}\n\t\t}};",
             f'setup(_vertex_code, _fragment_code, nullptr, "{out_file_class}");',
         ]
 
@@ -158,7 +158,7 @@ class RAWHeaderStruct:
 
 
 def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, depth: int) -> None:
-    with open(filename, "r", encoding="utf-8") as fs:
+    with open(filename, encoding="utf-8") as fs:
         line = fs.readline()
 
         while line:

@@ -110,7 +110,7 @@ def configure(env: "SConsEnvironment"):
         print("Note: Forcing `initial_memory=64` as it is required for the web editor.")
         env["initial_memory"] = 64
 
-    env.Append(LINKFLAGS=["-sINITIAL_MEMORY=%sMB" % env["initial_memory"]])
+    env.Append(LINKFLAGS=["-sINITIAL_MEMORY={}MB".format(env["initial_memory"])])
 
     ## Copy env variables.
     env["ENV"] = os.environ
@@ -197,7 +197,7 @@ def configure(env: "SConsEnvironment"):
 
     # Minimum emscripten requirements.
     if cc_semver < (3, 1, 62):
-        print_error("The minimum emscripten version to build Godot is 3.1.62, detected: %s.%s.%s" % cc_semver)
+        print_error("The minimum emscripten version to build Godot is 3.1.62, detected: {}.{}.{}".format(*cc_semver))
         sys.exit(255)
 
     env.Prepend(CPPPATH=["#platform/web"])
@@ -216,14 +216,14 @@ def configure(env: "SConsEnvironment"):
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
-    env.Append(LINKFLAGS=["-s%s=%sKB" % ("STACK_SIZE", env["stack_size"])])
+    env.Append(LINKFLAGS=["-s{}={}KB".format("STACK_SIZE", env["stack_size"])])
 
     if env["threads"]:
         # Thread support (via SharedArrayBuffer).
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
+        env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE={}KB".format(env["default_pthread_stack_size"])])
         env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:

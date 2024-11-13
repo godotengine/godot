@@ -13,13 +13,13 @@ def make_editor_icons_action(target, source, env):
 
     with StringIO() as icons_string, StringIO() as s:
         for svg in svg_icons:
-            with open(str(svg), "r") as svgf:
-                icons_string.write("\t%s,\n" % to_raw_cstring(svgf.read()))
+            with open(str(svg)) as svgf:
+                icons_string.write(f"\t{to_raw_cstring(svgf.read())},\n")
 
         s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         s.write("#ifndef _EDITOR_ICONS_H\n")
         s.write("#define _EDITOR_ICONS_H\n")
-        s.write("static const int editor_icons_count = {};\n".format(len(svg_icons)))
+        s.write(f"static const int editor_icons_count = {len(svg_icons)};\n")
         s.write("static const char *editor_icons_sources[] = {\n")
         s.write(icons_string.getvalue())
         s.write("};\n\n")
@@ -42,7 +42,7 @@ def make_editor_icons_action(target, source, env):
             if icon_name.endswith("GodotFile"):  # don't know a better way to handle this
                 thumb_big_indices.append(str(index))
 
-            s.write('\t"{0}"'.format(icon_name))
+            s.write(f'\t"{icon_name}"')
 
             if fname != svg_icons[-1]:
                 s.write(",")
@@ -54,13 +54,13 @@ def make_editor_icons_action(target, source, env):
 
         if thumb_medium_indices:
             s.write("\n\n")
-            s.write("static const int editor_md_thumbs_count = {};\n".format(len(thumb_medium_indices)))
+            s.write(f"static const int editor_md_thumbs_count = {len(thumb_medium_indices)};\n")
             s.write("static const int editor_md_thumbs_indices[] = {")
             s.write(", ".join(thumb_medium_indices))
             s.write("};\n")
         if thumb_big_indices:
             s.write("\n\n")
-            s.write("static const int editor_bg_thumbs_count = {};\n".format(len(thumb_big_indices)))
+            s.write(f"static const int editor_bg_thumbs_count = {len(thumb_big_indices)};\n")
             s.write("static const int editor_bg_thumbs_indices[] = {")
             s.write(", ".join(thumb_big_indices))
             s.write("};\n")

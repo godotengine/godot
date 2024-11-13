@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import sys
 
@@ -14,7 +13,7 @@ invalid = []
 
 for file in sys.argv[1:]:
     try:
-        with open(file, "rt", encoding="utf-8") as f:
+        with open(file, encoding="utf-8") as f:
             original = f.read()
     except UnicodeDecodeError:
         invalid.append(file)

@@ -73,7 +73,7 @@ for name, path in env.module_list.items():
     base_path = path if os.path.isabs(path) else name
     SConscript(base_path + "/SCsub")
 
-    lib = env_modules.add_library("module_%s" % name, env.modules_sources)
+    lib = env_modules.add_library(f"module_{name}", env.modules_sources)
     env.Prepend(LIBS=[lib])
     if env["vsproj"]:
         vs_sources += env.modules_sources

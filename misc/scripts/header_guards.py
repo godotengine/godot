@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import sys
 from pathlib import Path
@@ -15,7 +14,7 @@ for file in sys.argv[1:]:
     header_start = -1
     HEADER_CHECK_OFFSET = -1
 
-    with open(file.strip(), "rt", encoding="utf-8", newline="\n") as f:
+    with open(file.strip(), encoding="utf-8", newline="\n") as f:
         lines = f.readlines()
 
     for idx, line in enumerate(lines):
@@ -86,7 +85,7 @@ for file in sys.argv[1:]:
         lines[HEADER_CHECK_OFFSET] = HEADER_CHECK
         lines[HEADER_BEGIN_OFFSET] = HEADER_BEGIN
         lines[HEADER_END_OFFSET] = HEADER_END
-        with open(file, "wt", encoding="utf-8", newline="\n") as f:
+        with open(file, "w", encoding="utf-8", newline="\n") as f:
             f.writelines(lines)
         changed.append(file)
         continue
@@ -125,7 +124,7 @@ for file in sys.argv[1:]:
         lines.insert(HEADER_BEGIN_OFFSET, HEADER_BEGIN)
         lines.append("\n")
         lines.append(HEADER_END)
-        with open(file, "wt", encoding="utf-8", newline="\n") as f:
+        with open(file, "w", encoding="utf-8", newline="\n") as f:
             f.writelines(lines)
         changed.append(file)
         continue
@@ -136,7 +135,7 @@ for file in sys.argv[1:]:
         lines.insert(HEADER_BEGIN_OFFSET, HEADER_BEGIN)
         lines.append("\n")
         lines.append(HEADER_END)
-        with open(file, "wt", encoding="utf-8", newline="\n") as f:
+        with open(file, "w", encoding="utf-8", newline="\n") as f:
             f.writelines(lines)
         changed.append(file)
         continue
@@ -153,7 +152,7 @@ for file in sys.argv[1:]:
             lines.insert(HEADER_BEGIN_OFFSET, HEADER_BEGIN)
             lines.append("\n")
             lines.append(HEADER_END)
-            with open(file, "wt", encoding="utf-8", newline="\n") as f:
+            with open(file, "w", encoding="utf-8", newline="\n") as f:
                 f.writelines(lines)
             changed.append(file)
             continue

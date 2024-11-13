@@ -74,7 +74,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
             print_error(f'SCU: "{output_folder}" could not be created.')
             return
         if _verbose:
-            print("SCU: Creating folder: %s" % output_folder)
+            print(f"SCU: Creating folder: {output_folder}")
 
     file_text = ""
 
@@ -94,7 +94,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
 
     if not output_path.exists() or output_path.read_text() != file_text:
         if _verbose:
-            print("SCU: Generating: %s" % short_filename)
+            print(f"SCU: Generating: {short_filename}")
         output_path.write_text(file_text, encoding="utf8")
     elif _verbose:
         print("SCU: Generation not needed for: " + short_filename)
@@ -371,6 +371,6 @@ def generate_scu_files(max_includes_per_scu):
     os.chdir(curr_folder)
 
     if _verbose:
-        print("SCU: Processed folders: %s" % sorted(_scu_folders))
+        print(f"SCU: Processed folders: {sorted(_scu_folders)}")
 
     return _scu_folders

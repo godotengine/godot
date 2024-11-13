@@ -393,7 +393,7 @@ class State:
 
                 theme_item_name = theme_item.attrib["name"]
                 theme_item_data_name = theme_item.attrib["data_type"]
-                theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
+                theme_item_id = f"{theme_item_data_name}_{theme_item_name}"
                 if theme_item_id in class_def.theme_items:
                     print_error(
                         f'{class_name}.xml: Duplicate theme property "{theme_item_name}" of type "{theme_item_data_name}".',
@@ -727,9 +727,7 @@ def main() -> None:
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
-        lang_file = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
-        )
+        lang_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "translations", f"{args.lang}.po")
         if os.path.exists(lang_file):
             try:
                 import polib  # type: ignore
@@ -2167,7 +2165,7 @@ def format_text_block(
 
                         # Default to the tag command name. This works by default for most tags,
                         # but method, member, and theme_item have special cases.
-                        ref_type = "_{}".format(tag_state.name)
+                        ref_type = f"_{tag_state.name}"
 
                         if target_class_name in state.classes:
                             class_def = state.classes[target_class_name]

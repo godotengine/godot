@@ -85,7 +85,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for path in files:
         obj = self.Object(path)
         if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
+            print_warning(f'Object "{obj}" already included in environment sources.')
             continue
         sources.append(obj)
 
@@ -189,13 +189,13 @@ def get_version_info(module_version_string="", silent=False):
     gitfolder = ".git"
 
     if os.path.isfile(".git"):
-        with open(".git", "r", encoding="utf-8") as file:
+        with open(".git", encoding="utf-8") as file:
             module_folder = file.readline().strip()
         if module_folder.startswith("gitdir: "):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        with open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8") as file:
+        with open(os.path.join(gitfolder, "HEAD"), encoding="utf8") as file:
             head = file.readline().strip()
         if head.startswith("ref: "):
             ref = head[5:]
@@ -206,12 +206,12 @@ def get_version_info(module_version_string="", silent=False):
             head = os.path.join(gitfolder, ref)
             packedrefs = os.path.join(gitfolder, "packed-refs")
             if os.path.isfile(head):
-                with open(head, "r", encoding="utf-8") as file:
+                with open(head, encoding="utf-8") as file:
                     githash = file.readline().strip()
             elif os.path.isfile(packedrefs):
                 # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
                 # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
-                for line in open(packedrefs, "r", encoding="utf-8").read().splitlines():
+                for line in open(packedrefs, encoding="utf-8").read().splitlines():
                     if line.startswith("#"):
                         continue
                     (line_hash, line_ref) = line.split(" ")
@@ -280,7 +280,7 @@ def detect_modules(search_path, recursive=False):
         # Godot sources when using `custom_modules` build option.
         version_path = os.path.join(path, "version.py")
         if os.path.exists(version_path):
-            with open(version_path, "r", encoding="utf-8") as f:
+            with open(version_path, encoding="utf-8") as f:
                 if 'short_name = "godot"' in f.read():
                     return True
         return False
@@ -360,7 +360,7 @@ def module_check_dependencies(self, module):
     missing_deps = set()
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
-        opt = "module_{}_enabled".format(dep)
+        opt = f"module_{dep}_enabled"
         if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
             missing_deps.add(dep)
 
@@ -409,8 +409,7 @@ def use_windows_spawn_fix(self, platform=None):
             "shell": False,
             "env": env,
         }
-        if sys.version_info >= (3, 7, 0):
-            popen_args["text"] = True
+        popen_args["text"] = True
         proc = subprocess.Popen(cmdline, **popen_args)
         _, err = proc.communicate()
         rv = proc.wait()
@@ -666,7 +665,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print_error(f"Failed to find SDK path while running xcrun --sdk {sdk_name} --show-sdk-path.")
             raise
 
 
@@ -828,9 +827,7 @@ def show_progress(env):
             self.limit = limit
             if env["verbose"] and path is not None:
                 screen.write(
-                    "Current cache limit is {} (used: {})\n".format(
-                        self.convert_size(limit), self.convert_size(self.get_size(path))
-                    )
+                    f"Current cache limit is {self.convert_size(limit)} (used: {self.convert_size(self.get_size(path))})\n"
                 )
 
         def __call__(self, node, *args, **kw):
@@ -855,7 +852,7 @@ def show_progress(env):
             i = int(math.floor(math.log(size_bytes, 1024)))
             p = math.pow(1024, i)
             s = round(size_bytes / p, 2)
-            return "%s %s" % (int(s) if i == 0 else s, size_name[i])
+            return f"{int(s) if i == 0 else s} {size_name[i]}"
 
         def get_size(self, start_path="."):
             total_size = 0
@@ -874,7 +871,7 @@ def show_progress(env):
             pass
 
     try:
-        with open(node_count_fname, "r", encoding="utf-8") as f:
+        with open(node_count_fname, encoding="utf-8") as f:
             node_count_max = int(f.readline())
     except Exception:
         pass
@@ -962,7 +959,7 @@ def dump(env):
     from json import dump
 
     def non_serializable(obj):
-        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
+        return f"<<non-serializable: {type(obj).__qualname__}>>"
 
     with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)
@@ -1118,7 +1115,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     ).hexdigest()
 
     if os.path.exists(f"{project_name}.vcxproj.filters"):
-        with open(f"{project_name}.vcxproj.filters", "r", encoding="utf-8") as file:
+        with open(f"{project_name}.vcxproj.filters", encoding="utf-8") as file:
             existing_filters = file.read()
         match = re.search(r"(?ms)^<!-- CHECKSUM$.([0-9a-f]{32})", existing_filters)
         if match is not None and md5 == match.group(1):
@@ -1130,7 +1127,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     if not skip_filters:
         print(f"Regenerating {project_name}.vcxproj.filters")
 
-        with open("misc/msvs/vcxproj.filters.template", "r", encoding="utf-8") as file:
+        with open("misc/msvs/vcxproj.filters.template", encoding="utf-8") as file:
             filters_template = file.read()
         for i in range(1, 10):
             filters_template = filters_template.replace(f"%%UUID{i}%%", str(uuid.uuid4()))
@@ -1280,11 +1277,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         for x in itemlist.keys():
             properties.append(
-                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
+                "<ActiveProjectItemList_{}>;{};</ActiveProjectItemList_{}>".format(x, ";".join(itemlist[x]), x)
             )
         output = f'bin\\godot{env["PROGSUFFIX"]}'
 
-        with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
+        with open("misc/msvs/props.template", encoding="utf-8") as file:
             props_template = file.read()
 
         props_template = props_template.replace("%%VSCONF%%", vsconf)
@@ -1357,7 +1354,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     sln_uuid = str(uuid.uuid4())
 
     if os.path.exists(f"{project_name}.sln"):
-        for line in open(f"{project_name}.sln", "r", encoding="utf-8").read().splitlines():
+        for line in open(f"{project_name}.sln", encoding="utf-8").read().splitlines():
             if line.startswith('Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}")'):
                 proj_uuid = re.search(
                     r"\"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}\"$",
@@ -1446,7 +1443,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     section2 = sorted(section2)
 
     if not get_bool(original_args, "vsproj_props_only", False):
-        with open("misc/msvs/vcxproj.template", "r", encoding="utf-8") as file:
+        with open("misc/msvs/vcxproj.template", encoding="utf-8") as file:
             proj_template = file.read()
         proj_template = proj_template.replace("%%UUID%%", proj_uuid)
         proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
@@ -1458,7 +1455,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             f.write(proj_template)
 
     if not get_bool(original_args, "vsproj_props_only", False):
-        with open("misc/msvs/sln.template", "r", encoding="utf-8") as file:
+        with open("misc/msvs/sln.template", encoding="utf-8") as file:
             sln_template = file.read()
         sln_template = sln_template.replace("%%NAME%%", project_name)
         sln_template = sln_template.replace("%%UUID%%", proj_uuid)
@@ -1564,7 +1561,7 @@ def generated_wrapper(
         header_guard = (f"{prefix}{split[0]}{suffix}.{'.'.join(split[1:])}".upper()
                 .replace(".", "_").replace("-", "_").replace(" ", "_").replace("__", "_"))  # fmt: skip
 
-    with open(path, "wt", encoding="utf-8", newline="\n") as file:
+    with open(path, "w", encoding="utf-8", newline="\n") as file:
         file.write(generate_copyright_header(path))
         file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
 
