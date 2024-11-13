@@ -13,15 +13,19 @@ exclude = ["thirdparty/"]
 python_version = "3.8"
 
 [tool.ruff]
-extend-exclude = ["thirdparty"]
+extend-exclude = ["thirdparty", "version.py"]
 extend-include = ["SConstruct", "SCsub"]
 line-length = 120
 target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = [
-	"I", # isort
+	"I",     # isort
+	"UP006", # Use {to} instead of {from} for type annotation
+	"UP007", # Use `X | Y` for type annotations
+	"UP037", # Remove quotes from type annotation
 ]
+extend-safe-fixes = ["UP006", "UP007"]
 
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [
@@ -31,6 +35,7 @@ extend-select = [
 ]
 
 [tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
 sections = { metadata = ["misc.utility.scons_hints"] }
 section-order = [
 	"future",

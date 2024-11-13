@@ -1,5 +1,7 @@
 """Functions used to generate source files during build time"""
 
+from __future__ import annotations
+
 
 def make_splash(target, source, env):
     src = str(source[0])

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def can_build(env, platform):
     if platform in ("linuxbsd", "windows", "android", "macos"):
         return env["openxr"] and not env["disable_3d"]

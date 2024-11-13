@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import re
 import subprocess
@@ -79,7 +81,7 @@ def get_mingw_bin_prefix(prefix, arch):
     return bin_prefix + arch_prefix
 
 
-def get_detected(env: "SConsEnvironment", tool: str) -> str:
+def get_detected(env: SConsEnvironment, tool: str) -> str:
     checks = [
         get_mingw_bin_prefix(env["mingw_prefix"], env["arch"]) + tool,
         get_mingw_bin_prefix(env["mingw_prefix"], "") + tool,
@@ -245,7 +247,7 @@ def get_flags():
     }
 
 
-def setup_msvc_manual(env: "SConsEnvironment"):
+def setup_msvc_manual(env: SConsEnvironment):
     """Running from VCVARS environment"""
 
     env_arch = detect_build_env_arch()
@@ -260,7 +262,7 @@ def setup_msvc_manual(env: "SConsEnvironment"):
     print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
 
 
-def setup_msvc_auto(env: "SConsEnvironment"):
+def setup_msvc_auto(env: SConsEnvironment):
     """Set up MSVC using SCons's auto-detection logic"""
 
     # If MSVC_VERSION is set by SCons, we know MSVC is installed.
@@ -302,7 +304,7 @@ def setup_msvc_auto(env: "SConsEnvironment"):
     print("Using SCons-detected MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
 
 
-def setup_mingw(env: "SConsEnvironment"):
+def setup_mingw(env: SConsEnvironment):
     """Set up env for use with mingw"""
 
     env_arch = detect_build_env_arch()
@@ -333,7 +335,7 @@ def setup_mingw(env: "SConsEnvironment"):
     print("Using MinGW, arch %s" % (env["arch"]))
 
 
-def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
+def configure_msvc(env: SConsEnvironment, vcvars_msvc_config):
     """Configure env to work with MSVC"""
 
     ## Build type
@@ -670,7 +672,7 @@ def tempfile_arg_esc_func(arg):
     return WINPATHSEP_RE.sub(r"/\1", arg)
 
 
-def configure_mingw(env: "SConsEnvironment"):
+def configure_mingw(env: SConsEnvironment):
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
@@ -900,7 +902,7 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
 
-def configure(env: "SConsEnvironment"):
+def configure(env: SConsEnvironment):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)

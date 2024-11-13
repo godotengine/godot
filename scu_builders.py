@@ -1,5 +1,7 @@
 """Functions used to generate scu build source files during build time"""
 
+from __future__ import annotations
+
 import glob
 import math
 import os

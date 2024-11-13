@@ -1,7 +1,8 @@
 """Functions used to generate source files during build time"""
 
+from __future__ import annotations
+
 import os.path
-from typing import Optional
 
 from methods import print_error, to_raw_cstring
 
@@ -93,7 +94,7 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
 
 
 def build_rd_header(
-    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RDHeaderStruct] = None
+    filename: str, optional_output_filename: str | None = None, header_data: RDHeaderStruct | None = None
 ) -> None:
     header_data = header_data or RDHeaderStruct()
     include_file_in_rd_header(filename, header_data, 0)
@@ -175,7 +176,7 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
 
 
 def build_raw_header(
-    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
+    filename: str, optional_output_filename: str | None = None, header_data: RAWHeaderStruct | None = None
 ):
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)

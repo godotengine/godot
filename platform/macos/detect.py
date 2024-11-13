@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 from typing import TYPE_CHECKING
@@ -65,7 +67,7 @@ def get_flags():
     }
 
 
-def configure(env: "SConsEnvironment"):
+def configure(env: SConsEnvironment):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)

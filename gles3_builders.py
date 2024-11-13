@@ -1,7 +1,8 @@
 """Functions used to generate source files during build time"""
 
+from __future__ import annotations
+
 import os.path
-from typing import Optional
 
 from methods import print_error, to_raw_cstring
 
@@ -193,8 +194,8 @@ def build_gles3_header(
     filename: str,
     include: str,
     class_suffix: str,
-    optional_output_filename: Optional[str] = None,
-    header_data: Optional[GLES3HeaderStruct] = None,
+    optional_output_filename: str | None = None,
+    header_data: GLES3HeaderStruct | None = None,
 ):
     header_data = header_data or GLES3HeaderStruct()
     include_file_in_gles3_header(filename, header_data, 0)

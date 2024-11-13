@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def can_build(env, platform):
     if env["arch"].startswith("rv"):
         return False

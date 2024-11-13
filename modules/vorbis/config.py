@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 def can_build(env, platform):
     env.module_add_dependencies("vorbis", ["ogg"])
     return True
