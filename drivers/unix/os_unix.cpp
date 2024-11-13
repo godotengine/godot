@@ -167,7 +167,9 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-	NetSocketPosix::make_default();
+#ifndef UNIX_SOCKET_UNAVAILABLE
+	NetSocketUnix::make_default();
+#endif
 	IPUnix::make_default();
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -176,7 +178,9 @@ void OS_Unix::initialize_core() {
 
 void OS_Unix::finalize_core() {
 	memdelete(process_map);
-	NetSocketPosix::cleanup();
+#ifndef UNIX_SOCKET_UNAVAILABLE
+	NetSocketUnix::cleanup();
+#endif
 }
 
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
