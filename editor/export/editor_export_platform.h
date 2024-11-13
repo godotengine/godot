@@ -277,6 +277,7 @@ public:
 		return worst_type;
 	}
 
+	static Dictionary get_internal_export_files();
 	static Vector<String> get_forced_export_files();
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
