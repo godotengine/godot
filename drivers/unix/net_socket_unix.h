@@ -37,7 +37,7 @@
 
 #include <sys/socket.h>
 
-class NetSocketPosix : public NetSocket {
+class NetSocketUnix : public NetSocket {
 private:
 	int _sock = -1;
 	IP::Type _ip_type = IP::TYPE_NONE;
@@ -93,8 +93,8 @@ public:
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 
-	NetSocketPosix();
-	~NetSocketPosix() override;
+	NetSocketUnix();
+	~NetSocketUnix() override;
 };
 
 #endif // UNIX_ENABLED && !UNIX_SOCKET_UNAVAILABLE
