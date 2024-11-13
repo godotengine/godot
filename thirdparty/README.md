@@ -852,7 +852,7 @@ proposed by these libraries and better integrate them with Godot.
 ## spirv-cross
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Cross
-- Version: vulkan-sdk-1.3.290.0 (5d127b917f080c6f052553c47170ec0ba702e54f, 2024)
+- Version: git (9040e0d25dc545a6d725276bdbd0362791c81f14, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:

@@ -1850,6 +1850,11 @@ const SmallVector<SPIRBlock::Case> &Compiler::get_case_list(const SPIRBlock &blo
 		const auto &type = get<SPIRType>(constant->constant_type);
 		width = type.width;
 	}
+	else if (const auto *op = maybe_get<SPIRConstantOp>(block.condition))
+	{
+		const auto &type = get<SPIRType>(op->basetype);
+		width = type.width;
+	}
 	else if (const auto *var = maybe_get<SPIRVariable>(block.condition))
 	{
 		const auto &type = get<SPIRType>(var->basetype);
