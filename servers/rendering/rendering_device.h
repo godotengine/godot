@@ -1285,6 +1285,7 @@ private:
 	LocalVector<uint32_t> transfer_worker_pool_available_list;
 	LocalVector<RDD::TextureBarrier> transfer_worker_pool_texture_barriers;
 	BinaryMutex transfer_worker_pool_mutex;
+	BinaryMutex transfer_worker_pool_texture_barriers_mutex;
 	ConditionVariable transfer_worker_pool_condition;
 
 	TransferWorker *_acquire_transfer_worker(uint32_t p_transfer_size, uint32_t p_required_align, uint32_t &r_staging_offset);
@@ -1299,6 +1300,7 @@ private:
 	void _check_transfer_worker_vertex_array(VertexArray *p_vertex_array);
 	void _check_transfer_worker_index_array(IndexArray *p_index_array);
 	void _submit_transfer_workers(RDD::CommandBufferID p_draw_command_buffer = RDD::CommandBufferID());
+	void _submit_transfer_barriers(RDD::CommandBufferID p_draw_command_buffer);
 	void _wait_for_transfer_workers();
 	void _free_transfer_workers();
 
