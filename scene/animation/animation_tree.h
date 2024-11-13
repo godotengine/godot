@@ -226,6 +226,10 @@ public:
 	void set_deletable(bool p_closable);
 	bool is_deletable() const;
 
+	ObjectID get_processing_animation_tree_instance_id() const;
+
+	bool is_process_testing() const;
+
 	virtual bool has_filter() const;
 
 #ifdef TOOLS_ENABLED

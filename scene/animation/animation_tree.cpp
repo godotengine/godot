@@ -419,6 +419,16 @@ bool AnimationNode::is_deletable() const {
 	return closable;
 }
 
+ObjectID AnimationNode::get_processing_animation_tree_instance_id() const {
+	ERR_FAIL_NULL_V(process_state, ObjectID());
+	return process_state->tree->get_instance_id();
+}
+
+bool AnimationNode::is_process_testing() const {
+	ERR_FAIL_NULL_V(process_state, false);
+	return process_state->is_testing;
+}
+
 bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
 	return filter.has(p_path);
 }
@@ -543,6 +553,10 @@ void AnimationNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_filter_enabled", "enable"), &AnimationNode::set_filter_enabled);
 	ClassDB::bind_method(D_METHOD("is_filter_enabled"), &AnimationNode::is_filter_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_processing_animation_tree_instance_id"), &AnimationNode::get_processing_animation_tree_instance_id);
+
+	ClassDB::bind_method(D_METHOD("is_process_testing"), &AnimationNode::is_process_testing);
 
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
