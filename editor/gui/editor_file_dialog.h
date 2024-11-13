@@ -39,6 +39,7 @@
 class DependencyRemoveDialog;
 class GridContainer;
 class HSplitContainer;
+class HFlowContainer;
 class ItemList;
 class MenuButton;
 class OptionButton;
@@ -94,7 +95,8 @@ private:
 	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
 
-	GridContainer *grid_options = nullptr;
+	HFlowContainer *flow_checkbox_options = nullptr;
+	GridContainer *grid_select_options = nullptr;
 	VBoxContainer *vbox = nullptr;
 	FileMode mode = FILE_MODE_SAVE_FILE;
 	bool can_create_dir = false;
