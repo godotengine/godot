@@ -592,23 +592,6 @@ def glob_recursive(pattern, node="."):
     return results
 
 
-def add_to_vs_project(env, sources):
-    for x in sources:
-        fname = env.File(x).path if isinstance(x, str) else env.File(x)[0].path
-        pieces = fname.split(".")
-        if len(pieces) > 0:
-            basename = pieces[0]
-            basename = basename.replace("\\\\", "/")
-            if os.path.isfile(basename + ".h"):
-                env.vs_incs += [basename + ".h"]
-            elif os.path.isfile(basename + ".hpp"):
-                env.vs_incs += [basename + ".hpp"]
-            if os.path.isfile(basename + ".c"):
-                env.vs_srcs += [basename + ".c"]
-            elif os.path.isfile(basename + ".cpp"):
-                env.vs_srcs += [basename + ".cpp"]
-
-
 def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
     env.Precious(program)
@@ -1111,9 +1094,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     import json
 
     md5 = hashlib.md5(
-        json.dumps(headers + headers_dirs + sources + sources_dirs + others + others_dirs, sort_keys=True).encode(
-            "utf-8"
-        )
+        json.dumps(sorted(headers + headers_dirs + sources + sources_dirs + others + others_dirs)).encode("utf-8")
     ).hexdigest()
 
     if os.path.exists(f"{project_name}.vcxproj.filters"):

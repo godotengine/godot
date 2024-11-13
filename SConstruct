@@ -1055,10 +1055,6 @@ if scons_cache_path is not None:
     CacheDir(scons_cache_path)
     print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
-if env["vsproj"]:
-    env.vs_incs = []
-    env.vs_srcs = []
-
 if env["compiledb"]:
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
