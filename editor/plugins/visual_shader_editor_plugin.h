@@ -276,6 +276,7 @@ class VisualShaderEditor : public ShaderEditor {
 	bool shader_preview_showed = true;
 
 	LineEdit *param_filter = nullptr;
+	MenuButton *preview_tools = nullptr;
 	String selected_param_id;
 	Tree *parameters = nullptr;
 	HashMap<String, PropertyInfo> parameter_props;
@@ -316,6 +317,11 @@ class VisualShaderEditor : public ShaderEditor {
 	enum ToolsMenuOptions {
 		EXPAND_ALL,
 		COLLAPSE_ALL
+	};
+
+	enum PreviewToolsMenuOptions {
+		COPY_PARAMS_FROM_MATERIAL,
+		PASTE_PARAMS_TO_MATERIAL,
 	};
 
 #ifdef MINGW_ENABLED
@@ -367,6 +373,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _show_add_varying_dialog();
 	void _show_remove_varying_dialog();
 
+	void _preview_tools_menu_option(int p_idx);
 	void _clear_preview_param();
 	void _update_preview_parameter_list();
 	bool _update_preview_parameter_tree();
