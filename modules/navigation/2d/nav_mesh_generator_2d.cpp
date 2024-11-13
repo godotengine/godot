@@ -691,11 +691,15 @@ void NavMeshGenerator2D::generator_parse_navigationobstacle_node(const Ref<Navig
 		return;
 	}
 
-	const Transform2D node_xform = p_source_geometry_data->root_node_transform * Transform2D(0.0, obstacle->get_global_position());
-
+	const Vector2 safe_scale = obstacle->get_global_scale().abs().maxf(0.001);
 	const float obstacle_radius = obstacle->get_radius();
 
 	if (obstacle_radius > 0.0) {
+		// Radius defined obstacle should be uniformly scaled from obstacle basis max scale axis.
+		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+		const Vector2 uniform_max_scale = Vector2(scaling_max_value, scaling_max_value);
+		const Transform2D obstacle_circle_transform = p_source_geometry_data->root_node_transform * Transform2D(obstacle->get_global_rotation(), uniform_max_scale, 0.0, obstacle->get_global_position());
+
 		Vector<Vector2> obstruction_circle_vertices;
 
 		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
@@ -709,11 +713,14 @@ void NavMeshGenerator2D::generator_parse_navigationobstacle_node(const Ref<Navig
 
 		for (int i = 0; i < circle_points; i++) {
 			const float angle = i * circle_point_step;
-			circle_vertices_ptrw[i] = node_xform.xform(Vector2(Math::cos(angle) * obstacle_radius, Math::sin(angle) * obstacle_radius));
+			circle_vertices_ptrw[i] = obstacle_circle_transform.xform(Vector2(Math::cos(angle) * obstacle_radius, Math::sin(angle) * obstacle_radius));
 		}
 
 		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_carve_navigation_mesh());
 	}
+
+	// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
+	const Transform2D node_xform = p_source_geometry_data->root_node_transform * obstacle->get_global_transform();
 
 	const Vector<Vector2> &obstacle_vertices = obstacle->get_vertices();
 

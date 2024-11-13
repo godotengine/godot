@@ -308,8 +308,24 @@ Error OS::shell_show_in_file_manager(const String &p_path, bool p_open_folder) {
 	return ::OS::get_singleton()->shell_show_in_file_manager(p_path, p_open_folder);
 }
 
-String OS::read_string_from_stdin() {
-	return ::OS::get_singleton()->get_stdin_string();
+String OS::read_string_from_stdin(int64_t p_buffer_size) {
+	return ::OS::get_singleton()->get_stdin_string(p_buffer_size);
+}
+
+PackedByteArray OS::read_buffer_from_stdin(int64_t p_buffer_size) {
+	return ::OS::get_singleton()->get_stdin_buffer(p_buffer_size);
+}
+
+OS::StdHandleType OS::get_stdin_type() const {
+	return (OS::StdHandleType)::OS::get_singleton()->get_stdin_type();
+}
+
+OS::StdHandleType OS::get_stdout_type() const {
+	return (OS::StdHandleType)::OS::get_singleton()->get_stdout_type();
+}
+
+OS::StdHandleType OS::get_stderr_type() const {
+	return (OS::StdHandleType)::OS::get_singleton()->get_stderr_type();
 }
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
@@ -633,7 +649,13 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "weight", "stretch", "italic"), &OS::get_system_font_path, DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_system_font_path_for_text", "font_name", "text", "locale", "script", "weight", "stretch", "italic"), &OS::get_system_font_path_for_text, DEFVAL(String()), DEFVAL(String()), DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("read_string_from_stdin"), &OS::read_string_from_stdin);
+
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin);
+	ClassDB::bind_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
+	ClassDB::bind_method(D_METHOD("get_stdin_type"), &OS::get_stdin_type);
+	ClassDB::bind_method(D_METHOD("get_stdout_type"), &OS::get_stdout_type);
+	ClassDB::bind_method(D_METHOD("get_stderr_type"), &OS::get_stderr_type);
+
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
@@ -725,6 +747,12 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_MUSIC);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_PICTURES);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
+
+	BIND_ENUM_CONSTANT(STD_HANDLE_INVALID);
+	BIND_ENUM_CONSTANT(STD_HANDLE_CONSOLE);
+	BIND_ENUM_CONSTANT(STD_HANDLE_FILE);
+	BIND_ENUM_CONSTANT(STD_HANDLE_PIPE);
+	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
 }
 
 ////// Geometry2D //////

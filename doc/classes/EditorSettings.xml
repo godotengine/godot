@@ -359,7 +359,7 @@
 		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
 			The navigation scheme preset to use in the 3D editor. Changing this setting will affect the mouse button and modifier controls used to navigate the 3D editor viewport.
 			All schemes can use [kbd]Mouse wheel[/kbd] to zoom.
-			- [b]Godot:[/b] [kbd]Middle mouse button[/kbd] to orbit. [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Ctrl + Shift + Middle mouse button[/kbd] to zoom.
+			- [b]Godot:[/b] [kbd]Middle mouse button[/kbd] to orbit. [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Ctrl + Middle mouse button[/kbd] to zoom.
 			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Alt + Right mouse button[/kbd] to zoom.
 			- [b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
 			See also [member editors/3d/navigation/orbit_mouse_button], [member editors/3d/navigation/pan_mouse_button], [member editors/3d/navigation/zoom_mouse_button], and [member editors/3d/freelook/freelook_navigation_scheme].
@@ -1327,6 +1327,9 @@
 		</member>
 		<member name="text_editor/script_list/group_help_pages" type="bool" setter="" getter="">
 			If [code]true[/code], class reference pages are grouped together at the bottom of the Script Editor's script list.
+		</member>
+		<member name="text_editor/script_list/highlight_scene_scripts" type="bool" setter="" getter="">
+			If [code]true[/code], the scripts that are used by the current scene are highlighted in the Script Editor's script list.
 		</member>
 		<member name="text_editor/script_list/list_script_names_as" type="int" setter="" getter="">
 			Specifies how script paths should be displayed in Script Editor's script list. If using the "Name" option and some scripts share the same file name, more parts of their paths are revealed to avoid conflicts.

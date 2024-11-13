@@ -27,7 +27,9 @@ def generate_bundle(target, source, env):
         target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
 
         # Assemble .app bundle and update version info.
-        app_dir = Dir("#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app").abspath
+        app_dir = Dir(
+            "#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app"
+        ).abspath
         templ = Dir("#misc/dist/macos_tools.app").abspath
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)

@@ -45,6 +45,7 @@ class EditorPlugin;
 class EditorResourcePreview;
 class EditorSelection;
 class EditorSettings;
+class EditorToaster;
 class EditorUndoRedoManager;
 class FileSystemDock;
 class Mesh;
@@ -70,9 +71,7 @@ class EditorInterface : public Object {
 	SceneTreeDialog *node_selector = nullptr;
 
 	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
-	void _node_selection_canceled(const Callable &p_callback);
 	void _property_selected(const String &p_property_name, const Callable &p_callback);
-	void _property_selection_canceled(const Callable &p_callback);
 	void _method_selected(const String &p_property_name, const Callable &p_callback);
 	void _quick_open(const String &p_file_path, const Callable &p_callback);
 	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
@@ -104,6 +103,7 @@ public:
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
 	Ref<EditorSettings> get_editor_settings() const;
+	EditorToaster *get_editor_toaster() const;
 	EditorUndoRedoManager *get_editor_undo_redo() const;
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);

@@ -44,24 +44,24 @@
 #include <cmath>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
-	"Lum8", //luminance
-	"LumAlpha8", //luminance-alpha
+	"Lum8",
+	"LumAlpha8",
 	"Red8",
 	"RedGreen",
 	"RGB8",
 	"RGBA8",
 	"RGBA4444",
-	"RGBA5551",
-	"RFloat", //float
+	"RGBA5551", // Actually RGB565, kept as RGBA5551 for compatibility.
+	"RFloat",
 	"RGFloat",
 	"RGBFloat",
 	"RGBAFloat",
-	"RHalf", //half float
+	"RHalf",
 	"RGHalf",
 	"RGBHalf",
 	"RGBAHalf",
 	"RGBE9995",
-	"DXT1 RGB8", //s3tc
+	"DXT1 RGB8",
 	"DXT3 RGBA8",
 	"DXT5 RGBA8",
 	"RGTC Red8",
@@ -69,9 +69,9 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"ETC", //etc1
-	"ETC2_R11", //etc2
-	"ETC2_R11S", //signed", NOT srgb.
+	"ETC",
+	"ETC2_R11",
+	"ETC2_R11S",
 	"ETC2_RG11",
 	"ETC2_RG11S",
 	"ETC2_RGB8",
@@ -85,16 +85,59 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ASTC_8x8_HDR",
 };
 
+// External saver function pointers.
+
 SavePNGFunc Image::save_png_func = nullptr;
 SaveJPGFunc Image::save_jpg_func = nullptr;
 SaveEXRFunc Image::save_exr_func = nullptr;
+SaveWebPFunc Image::save_webp_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
-SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
 SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
-
-SaveWebPFunc Image::save_webp_func = nullptr;
+SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
 SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
+
+// External loader function pointers.
+
+ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
+ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
+ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
+
+// External VRAM compression function pointers.
+
+void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
+void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
+
+Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+
+// External VRAM decompression function pointers.
+
+void (*Image::_image_decompress_bc)(Image *) = nullptr;
+void (*Image::_image_decompress_bptc)(Image *) = nullptr;
+void (*Image::_image_decompress_etc1)(Image *) = nullptr;
+void (*Image::_image_decompress_etc2)(Image *) = nullptr;
+void (*Image::_image_decompress_astc)(Image *) = nullptr;
+
+// External packer function pointers.
+
+Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
+Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
+Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
+Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
+
+Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
+Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
+Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
+Ref<Image> (*Image::basis_universal_unpacker_ptr)(const uint8_t *, int) = nullptr;
 
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
 	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
@@ -109,9 +152,9 @@ void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *
 int Image::get_format_pixel_size(Format p_format) {
 	switch (p_format) {
 		case FORMAT_L8:
-			return 1; //luminance
+			return 1;
 		case FORMAT_LA8:
-			return 2; //luminance-alpha
+			return 2;
 		case FORMAT_R8:
 			return 1;
 		case FORMAT_RG8:
@@ -125,7 +168,7 @@ int Image::get_format_pixel_size(Format p_format) {
 		case FORMAT_RGB565:
 			return 2;
 		case FORMAT_RF:
-			return 4; //float
+			return 4;
 		case FORMAT_RGF:
 			return 8;
 		case FORMAT_RGBF:
@@ -133,7 +176,7 @@ int Image::get_format_pixel_size(Format p_format) {
 		case FORMAT_RGBAF:
 			return 16;
 		case FORMAT_RH:
-			return 2; //half float
+			return 2;
 		case FORMAT_RGH:
 			return 4;
 		case FORMAT_RGBH:
@@ -143,27 +186,27 @@ int Image::get_format_pixel_size(Format p_format) {
 		case FORMAT_RGBE9995:
 			return 4;
 		case FORMAT_DXT1:
-			return 1; //s3tc bc1
+			return 1;
 		case FORMAT_DXT3:
-			return 1; //bc2
+			return 1;
 		case FORMAT_DXT5:
-			return 1; //bc3
+			return 1;
 		case FORMAT_RGTC_R:
-			return 1; //bc4
+			return 1;
 		case FORMAT_RGTC_RG:
-			return 1; //bc5
+			return 1;
 		case FORMAT_BPTC_RGBA:
-			return 1; //btpc bc6h
+			return 1;
 		case FORMAT_BPTC_RGBF:
-			return 1; //float /
+			return 1;
 		case FORMAT_BPTC_RGBFU:
-			return 1; //unsigned float
+			return 1;
 		case FORMAT_ETC:
-			return 1; //etc1
+			return 1;
 		case FORMAT_ETC2_R11:
-			return 1; //etc2
+			return 1;
 		case FORMAT_ETC2_R11S:
-			return 1; //signed: return 1; NOT srgb.
+			return 1;
 		case FORMAT_ETC2_RG11:
 			return 1;
 		case FORMAT_ETC2_RG11S:
@@ -194,12 +237,11 @@ int Image::get_format_pixel_size(Format p_format) {
 
 void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 	switch (p_format) {
-		case FORMAT_DXT1: //s3tc bc1
-		case FORMAT_DXT3: //bc2
-		case FORMAT_DXT5: //bc3
-		case FORMAT_RGTC_R: //bc4
-		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
-
+		case FORMAT_DXT1:
+		case FORMAT_DXT3:
+		case FORMAT_DXT5:
+		case FORMAT_RGTC_R:
+		case FORMAT_RGTC_RG: {
 			r_w = 4;
 			r_h = 4;
 		} break;
@@ -213,8 +255,8 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 4;
 			r_h = 4;
 		} break;
-		case FORMAT_ETC2_R11: //etc2
-		case FORMAT_ETC2_R11S: //signed: NOT srgb.
+		case FORMAT_ETC2_R11:
+		case FORMAT_ETC2_R11S:
 		case FORMAT_ETC2_RG11:
 		case FORMAT_ETC2_RG11S:
 		case FORMAT_ETC2_RGB8:
@@ -224,19 +266,16 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 		case FORMAT_DXT5_RA_AS_RG: {
 			r_w = 4;
 			r_h = 4;
-
 		} break;
 		case FORMAT_ASTC_4x4:
 		case FORMAT_ASTC_4x4_HDR: {
 			r_w = 4;
 			r_h = 4;
-
 		} break;
 		case FORMAT_ASTC_8x8:
 		case FORMAT_ASTC_8x8_HDR: {
 			r_w = 8;
 			r_h = 8;
-
 		} break;
 		default: {
 			r_w = 1;
@@ -257,12 +296,11 @@ int Image::get_format_pixel_rshift(Format p_format) {
 
 int Image::get_format_block_size(Format p_format) {
 	switch (p_format) {
-		case FORMAT_DXT1: //s3tc bc1
-		case FORMAT_DXT3: //bc2
-		case FORMAT_DXT5: //bc3
-		case FORMAT_RGTC_R: //bc4
-		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
-
+		case FORMAT_DXT1:
+		case FORMAT_DXT3:
+		case FORMAT_DXT5:
+		case FORMAT_RGTC_R:
+		case FORMAT_RGTC_RG: {
 			return 4;
 		}
 		case FORMAT_ETC: {
@@ -273,17 +311,15 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_BPTC_RGBFU: {
 			return 4;
 		}
-		case FORMAT_ETC2_R11: //etc2
-		case FORMAT_ETC2_R11S: //signed: NOT srgb.
+		case FORMAT_ETC2_R11:
+		case FORMAT_ETC2_R11S:
 		case FORMAT_ETC2_RG11:
 		case FORMAT_ETC2_RG11S:
 		case FORMAT_ETC2_RGB8:
 		case FORMAT_ETC2_RGBA8:
 		case FORMAT_ETC2_RGB8A1:
-		case FORMAT_ETC2_RA_AS_RG: //used to make basis universal happy
-		case FORMAT_DXT5_RA_AS_RG: //used to make basis universal happy
-
-		{
+		case FORMAT_ETC2_RA_AS_RG:
+		case FORMAT_DXT5_RA_AS_RG: {
 			return 4;
 		}
 		case FORMAT_ASTC_4x4:
@@ -459,7 +495,7 @@ int Image::get_mipmap_count() const {
 	}
 }
 
-//using template generates perfectly optimized code due to constant expression reduction and unused variable removal present in all compilers
+// Using template generates perfectly optimized code due to constant expression reduction and unused variable removal present in all compilers.
 template <uint32_t read_bytes, bool read_alpha, uint32_t write_bytes, bool write_alpha, bool read_gray, bool write_gray>
 static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p_dst) {
 	constexpr uint32_t max_bytes = MAX(read_bytes, write_bytes);
@@ -551,7 +587,7 @@ void Image::convert(Format p_new_format) {
 		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 
 	} else if (!_are_formats_compatible(format, p_new_format)) {
-		//use put/set pixel which is slower but works with non byte formats
+		// Use put/set pixel which is slower but works with non-byte formats.
 		Image new_img(width, height, mipmaps, p_new_format);
 
 		for (int mip = 0; mip < mipmap_count; mip++) {
@@ -1694,7 +1730,7 @@ void Image::flip_x() {
 	}
 }
 
-/// Get mipmap size and offset.
+// Get mipmap size and offset.
 int64_t Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps, int *r_mm_width, int *r_mm_height) {
 	// Data offset in mipmaps (including the original texture).
 	int64_t size = 0;
@@ -3134,37 +3170,6 @@ void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 	}
 }
 
-ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
-ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
-ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
-
-void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
-void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
-Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
-Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_decompress_bc)(Image *) = nullptr;
-void (*Image::_image_decompress_bptc)(Image *) = nullptr;
-void (*Image::_image_decompress_etc1)(Image *) = nullptr;
-void (*Image::_image_decompress_etc2)(Image *) = nullptr;
-void (*Image::_image_decompress_astc)(Image *) = nullptr;
-
-Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
-Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
-Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
-Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
-Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
-Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
-Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
-Ref<Image> (*Image::basis_universal_unpacker_ptr)(const uint8_t *, int) = nullptr;
-
 void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("width"));
 	ERR_FAIL_COND(!p_data.has("height"));
@@ -3202,6 +3207,14 @@ Dictionary Image::_get_data() const {
 
 Color Image::get_pixelv(const Point2i &p_point) const {
 	return get_pixel(p_point.x, p_point.y);
+}
+
+void Image::_copy_internals_from(const Image &p_image) {
+	format = p_image.format;
+	width = p_image.width;
+	height = p_image.height;
+	mipmaps = p_image.mipmaps;
+	data = p_image.data;
 }
 
 Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
@@ -3643,34 +3656,34 @@ void Image::_bind_methods() {
 	BIND_CONSTANT(MAX_WIDTH);
 	BIND_CONSTANT(MAX_HEIGHT);
 
-	BIND_ENUM_CONSTANT(FORMAT_L8); //luminance
-	BIND_ENUM_CONSTANT(FORMAT_LA8); //luminance-alpha
+	BIND_ENUM_CONSTANT(FORMAT_L8);
+	BIND_ENUM_CONSTANT(FORMAT_LA8);
 	BIND_ENUM_CONSTANT(FORMAT_R8);
 	BIND_ENUM_CONSTANT(FORMAT_RG8);
 	BIND_ENUM_CONSTANT(FORMAT_RGB8);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA8);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA4444);
 	BIND_ENUM_CONSTANT(FORMAT_RGB565);
-	BIND_ENUM_CONSTANT(FORMAT_RF); //float
+	BIND_ENUM_CONSTANT(FORMAT_RF);
 	BIND_ENUM_CONSTANT(FORMAT_RGF);
 	BIND_ENUM_CONSTANT(FORMAT_RGBF);
 	BIND_ENUM_CONSTANT(FORMAT_RGBAF);
-	BIND_ENUM_CONSTANT(FORMAT_RH); //half float
+	BIND_ENUM_CONSTANT(FORMAT_RH);
 	BIND_ENUM_CONSTANT(FORMAT_RGH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBAH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBE9995);
-	BIND_ENUM_CONSTANT(FORMAT_DXT1); //s3tc bc1
-	BIND_ENUM_CONSTANT(FORMAT_DXT3); //bc2
-	BIND_ENUM_CONSTANT(FORMAT_DXT5); //bc3
+	BIND_ENUM_CONSTANT(FORMAT_DXT1);
+	BIND_ENUM_CONSTANT(FORMAT_DXT3);
+	BIND_ENUM_CONSTANT(FORMAT_DXT5);
 	BIND_ENUM_CONSTANT(FORMAT_RGTC_R);
 	BIND_ENUM_CONSTANT(FORMAT_RGTC_RG);
-	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
-	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); //float /
-	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
-	BIND_ENUM_CONSTANT(FORMAT_ETC); //etc1
-	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); //etc2
-	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
+	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA);
+	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF);
+	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU);
+	BIND_ENUM_CONSTANT(FORMAT_ETC);
+	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11);
+	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RG11);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RG11S);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RGB8);
@@ -4177,7 +4190,7 @@ void Image::renormalize_half(uint16_t *p_rgb) {
 }
 
 void Image::renormalize_rgbe9995(uint32_t *p_rgb) {
-	// Never used
+	// Never used.
 }
 
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
@@ -4208,6 +4221,15 @@ Ref<Resource> Image::duplicate(bool p_subresources) const {
 
 void Image::set_as_black() {
 	memset(data.ptrw(), 0, data.size());
+}
+
+void Image::copy_internals_from(const Ref<Image> &p_image) {
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Cannot copy image internals: invalid Image object.");
+	format = p_image->format;
+	width = p_image->width;
+	height = p_image->height;
+	mipmaps = p_image->mipmaps;
+	data = p_image->data;
 }
 
 Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric) {
@@ -4248,8 +4270,6 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	if (source_image->is_compressed()) {
 		err = source_image->decompress();
 	}
-	ERR_FAIL_COND_V(err != OK, result);
-
 	ERR_FAIL_COND_V(err != OK, result);
 
 	ERR_FAIL_COND_V_MSG((compared_image->get_format() >= Image::FORMAT_RH) && (compared_image->get_format() <= Image::FORMAT_RGBE9995), result, "Metrics on HDR images are not supported.");

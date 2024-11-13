@@ -124,7 +124,6 @@
 			<return type="void" />
 			<description>
 				Starts an edit for multiple carets. The edit must be ended with [method end_multicaret_edit]. Multicaret edits can be used to edit text at multiple carets and delay merging the carets until the end, so the caret indexes aren't affected immediately. [method begin_multicaret_edit] and [method end_multicaret_edit] can be nested, and the merge will happen at the last [method end_multicaret_edit].
-				Example usage:
 				[codeblock]
 				begin_complex_operation()
 				begin_multicaret_edit()
@@ -764,7 +763,8 @@
 			<return type="bool" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns [code]true[/code] if the caret is visible on the screen.
+				Returns [code]true[/code] if the caret is visible, [code]false[/code] otherwise. A caret will be considered hidden if it is outside the scrollable area when scrolling is enabled.
+				[b]Note:[/b] [method is_caret_visible] does not account for a caret being off-screen if it is still within the scrollable area. It will return [code]true[/code] even if the caret is off-screen as long as it meets [TextEdit]'s own conditions for being visible. This includes uses of [member scroll_fit_content_width] and [member scroll_fit_content_height] that cause the [TextEdit] to expand beyond the viewport's bounds.
 			</description>
 		</method>
 		<method name="is_dragging_cursor" qualifiers="const">

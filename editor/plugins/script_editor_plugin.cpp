@@ -2185,8 +2185,6 @@ void ScriptEditor::_update_script_colors() {
 			continue;
 		}
 
-		script_list->set_item_custom_bg_color(i, Color(0, 0, 0, 0));
-
 		if (script_temperature_enabled) {
 			int pass = n->get_meta("__editor_pass", -1);
 			if (pass < 0) {
@@ -2212,7 +2210,7 @@ void ScriptEditor::_update_script_names() {
 
 	HashSet<Ref<Script>> used;
 	Node *edited = EditorNode::get_singleton()->get_edited_scene();
-	if (edited) {
+	if (edited && EDITOR_GET("text_editor/script_list/highlight_scene_scripts")) {
 		_find_scripts(edited, edited, used);
 	}
 
@@ -2382,7 +2380,7 @@ void ScriptEditor::_update_script_names() {
 		script_list->set_item_tooltip(index, sedata_filtered[i].tooltip);
 		script_list->set_item_metadata(index, sedata_filtered[i].index); /* Saving as metadata the script's index in the tab container and not the filtered one */
 		if (sedata_filtered[i].used) {
-			script_list->set_item_custom_bg_color(index, Color(88 / 255.0, 88 / 255.0, 60 / 255.0));
+			script_list->set_item_custom_bg_color(index, Color(.5, .5, .5, .125));
 		}
 		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
 			script_list->select(index);

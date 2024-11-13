@@ -88,6 +88,8 @@ int _get_app_category_value(int category_index) {
 			return 7;
 		case APP_CATEGORY_SOCIAL:
 			return 4;
+		case APP_CATEGORY_UNDEFINED:
+			return -1;
 		case APP_CATEGORY_VIDEO:
 			return 2;
 		case APP_CATEGORY_GAME:
@@ -311,17 +313,21 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
 			"        android:icon=\"@mipmap/icon\"\n"
-			"        android:appCategory=\"%s\"\n"
 			"        android:isGame=\"%s\"\n"
 			"        android:hasFragileUserData=\"%s\"\n"
-			"        android:requestLegacyExternalStorage=\"%s\"\n"
-			"        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
-			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
+			"        android:requestLegacyExternalStorage=\"%s\"\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
-			_get_app_category_label(app_category_index),
 			bool_to_string(is_game),
 			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
 			bool_to_string(p_has_read_write_storage_permission));
+	if (app_category_index != APP_CATEGORY_UNDEFINED) {
+		manifest_application_text += vformat("        android:appCategory=\"%s\"\n", _get_app_category_label(app_category_index));
+		manifest_application_text += "        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+	} else {
+		manifest_application_text += "        tools:remove=\"android:appCategory\"\n";
+		manifest_application_text += "        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+	}
+	manifest_application_text += "        tools:ignore=\"GoogleAppIndexingWarning\">\n\n";
 
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {

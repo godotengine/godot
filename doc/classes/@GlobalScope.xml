@@ -991,8 +991,8 @@
 				[codeblock]
 				var a = rand_from_seed(4)
 
-				print(a[0])	# Prints 2879024997
-				print(a[1])	# Prints 4
+				print(a[0]) # Prints 2879024997
+				print(a[1]) # Prints 4
 				[/codeblock]
 			</description>
 		</method>
@@ -2992,7 +2992,7 @@
 		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
+			The property is a variable of enum type, i.e. it only takes named integer constants from its associated enumeration.
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
 			If property has [code]nil[/code] as default value, its type will be [Variant].

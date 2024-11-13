@@ -75,6 +75,17 @@ void SkeletonModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new)
 	//
 }
 
+void SkeletonModifier3D::_force_update_skeleton_skin() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return;
+	}
+	skeleton->force_update_deferred();
+}
+
 /* Process */
 
 void SkeletonModifier3D::set_active(bool p_active) {
@@ -83,6 +94,7 @@ void SkeletonModifier3D::set_active(bool p_active) {
 	}
 	active = p_active;
 	_set_active(active);
+	_force_update_skeleton_skin();
 }
 
 bool SkeletonModifier3D::is_active() const {
@@ -118,6 +130,10 @@ void SkeletonModifier3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_PARENTED: {
 			_update_skeleton();
+		} break;
+		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_UNPARENTED: {
+			_force_update_skeleton_skin();
 		} break;
 	}
 }

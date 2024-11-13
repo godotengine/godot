@@ -332,6 +332,7 @@ void TextEdit::Text::clear() {
 
 	max_line_width_dirty = true;
 	max_line_height_dirty = true;
+	total_visible_line_count = 0;
 
 	Line line;
 	line.gutters.resize(gutter_count);
@@ -421,6 +422,10 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 
 	for (int i = p_from_line; i < p_to_line; i++) {
 		const Line &text_line = text[i];
+		if (text_line.hidden) {
+			continue;
+		}
+
 		if (text_line.height == max_line_height) {
 			max_line_height_dirty = true;
 		}
@@ -435,6 +440,8 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 		text.write[(i - diff) + 1] = text[i + 1];
 	}
 	text.resize(text.size() - diff);
+
+	ERR_FAIL_COND(total_visible_line_count < 0); // BUG
 }
 
 void TextEdit::Text::add_gutter(int p_at) {
