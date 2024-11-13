@@ -1246,19 +1246,20 @@ public:
 	struct VariableNode : public AssignableNode {
 		enum PropertyStyle {
 			PROP_NONE,
-			PROP_INLINE,
-			PROP_SETGET,
+			PROP_INLINE, // `var a: set(value): <block> get: <block>`
+			PROP_SETGET, // `var a: set = set_a, get = get_a`
+			PROP_SHORT, // `var a => _a`
 		};
 
 		PropertyStyle property = PROP_NONE;
 		union {
-			FunctionNode *setter = nullptr;
-			IdentifierNode *setter_pointer;
+			FunctionNode *setter = nullptr; // For `PROP_INLINE`.
+			IdentifierNode *setter_pointer; // For `PROP_SETGET.
 		};
-		IdentifierNode *setter_parameter = nullptr;
+		IdentifierNode *setter_parameter = nullptr; // For `PROP_INLINE`.
 		union {
-			FunctionNode *getter = nullptr;
-			IdentifierNode *getter_pointer;
+			FunctionNode *getter = nullptr; // For `PROP_INLINE`.
+			IdentifierNode *getter_pointer; // For `PROP_SETGET`.
 		};
 
 		bool exported = false;
@@ -1269,6 +1270,20 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
+
+		bool has_getter() const {
+			switch (property) {
+				case PROP_NONE:
+					return false;
+				case PROP_INLINE:
+					return getter != nullptr;
+				case PROP_SETGET:
+					return getter_pointer != nullptr;
+				case PROP_SHORT:
+					return true; // Even if `initializer == nullptr`.
+			}
+			return false; // Unreachable.
+		}
 
 		VariableNode() {
 			type = VARIABLE;

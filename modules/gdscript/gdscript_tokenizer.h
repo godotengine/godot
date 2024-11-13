@@ -148,7 +148,8 @@ public:
 			PERIOD_PERIOD,
 			COLON,
 			DOLLAR,
-			FORWARD_ARROW,
+			MINUS_GREATER,
+			EQUAL_GREATER,
 			UNDERSCORE,
 			// Whitespace
 			NEWLINE,
