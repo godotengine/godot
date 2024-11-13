@@ -30,149 +30,502 @@
 
 #include "navigation_obstacle_3d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "core/input/input.h"
-#include "core/io/file_access.h"
+#include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "node_3d_editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/gui/separator.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/navigation_obstacle_3d.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "servers/navigation_server_3d.h"
 
-void NavigationObstacle3DEditor::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_READY: {
-			button_create->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
-			button_edit->set_button_icon(get_editor_theme_icon(SNAME("MovePoint")));
-			button_edit->set_pressed(true);
-			get_tree()->connect("node_removed", callable_mp(this, &NavigationObstacle3DEditor::_node_removed));
+bool NavigationObstacle3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<NavigationObstacle3D>(p_spatial) != nullptr;
+}
 
-		} break;
+String NavigationObstacle3DGizmoPlugin::get_gizmo_name() const {
+	return "NavigationObstacle3D";
+}
+
+void NavigationObstacle3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	p_gizmo->clear();
+
+	if (!p_gizmo->is_selected() && get_state() == HIDDEN) {
+		return;
+	}
+
+	NavigationObstacle3D *obstacle = Object::cast_to<NavigationObstacle3D>(p_gizmo->get_node_3d());
+
+	if (!obstacle) {
+		return;
+	}
+
+	const Vector<Vector3> &vertices = obstacle->get_vertices();
+	if (vertices.is_empty()) {
+		return;
+	}
+
+	float height = obstacle->get_height();
+	Basis gbi = obstacle->get_global_basis().inverse();
+
+	const int vertex_count = vertices.size();
+
+	Vector<Vector3> lines_mesh_vertices;
+	lines_mesh_vertices.resize(vertex_count * 8);
+	Vector3 *lines_mesh_vertices_ptrw = lines_mesh_vertices.ptrw();
+
+	int vertex_index = 0;
+
+	for (int i = 0; i < vertex_count; i++) {
+		Vector3 point = vertices[i];
+		Vector3 next_point = vertices[(i + 1) % vertex_count];
+
+		Vector3 direction = next_point.direction_to(point);
+		Vector3 arrow_dir = direction.cross(Vector3(0.0, 1.0, 0.0));
+		Vector3 edge_middle = point + ((next_point - point) * 0.5);
+
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(edge_middle);
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(edge_middle + (arrow_dir * 0.5));
+
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(point);
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(next_point);
+
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(Vector3(point.x, height, point.z));
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(Vector3(next_point.x, height, next_point.z));
+
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(point);
+		lines_mesh_vertices_ptrw[vertex_index++] = gbi.xform(Vector3(point.x, height, point.z));
+	}
+
+	Vector<Vector2> polygon_2d_vertices;
+	polygon_2d_vertices.resize(vertex_count);
+	for (int i = 0; i < vertex_count; i++) {
+		const Vector3 &vert = vertices[i];
+		polygon_2d_vertices.write[i] = Vector2(vert.x, vert.z);
+	}
+	Vector<int> triangulated_polygon_2d_indices = Geometry2D::triangulate_polygon(polygon_2d_vertices);
+
+	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+
+	if (triangulated_polygon_2d_indices.is_empty()) {
+		p_gizmo->add_lines(lines_mesh_vertices, ns3d->get_debug_navigation_avoidance_static_obstacle_pushin_edge_material());
+	} else {
+		p_gizmo->add_lines(lines_mesh_vertices, ns3d->get_debug_navigation_avoidance_static_obstacle_pushout_edge_material());
+	}
+	p_gizmo->add_collision_segments(lines_mesh_vertices);
+
+	if (p_gizmo->is_selected()) {
+		NavigationObstacle3DEditorPlugin::singleton->redraw();
 	}
 }
 
-void NavigationObstacle3DEditor::_node_removed(Node *p_node) {
-	if (p_node == obstacle_node) {
-		obstacle_node = nullptr;
-		if (point_lines_meshinstance->get_parent() == p_node) {
-			p_node->remove_child(point_lines_meshinstance);
+bool NavigationObstacle3DGizmoPlugin::can_be_hidden() const {
+	return true;
+}
+
+int NavigationObstacle3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+int NavigationObstacle3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const {
+	if (NavigationObstacle3DEditorPlugin::singleton->get_mode() != 1) { // MODE_EDIT
+		return -1;
+	}
+
+	NavigationObstacle3D *obstacle_node = Object::cast_to<NavigationObstacle3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL_V(obstacle_node, -1);
+
+	Transform3D gt = Transform3D(Basis(), obstacle_node->get_global_position());
+	const Vector<Vector3> &vertices = obstacle_node->get_vertices();
+
+	for (int idx = 0; idx < vertices.size(); ++idx) {
+		Vector3 pos = gt.xform(vertices[idx]);
+		if (p_camera->unproject_position(pos).distance_to(p_point) < 20) {
+			return idx;
 		}
-		hide();
 	}
+
+	return -1;
 }
 
-void NavigationObstacle3DEditor::_menu_option(int p_option) {
-	switch (p_option) {
-		case MODE_CREATE: {
-			mode = MODE_CREATE;
-			button_create->set_pressed(true);
-			button_edit->set_pressed(false);
-		} break;
-		case MODE_EDIT: {
-			mode = MODE_EDIT;
-			button_create->set_pressed(false);
-			button_edit->set_pressed(true);
-		} break;
+Vector<int> NavigationObstacle3DGizmoPlugin::subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const {
+	Vector<int> contained_points;
+	if (NavigationObstacle3DEditorPlugin::singleton->get_mode() != 1) { // MODE_EDIT
+		return contained_points;
 	}
+
+	NavigationObstacle3D *obstacle_node = Object::cast_to<NavigationObstacle3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL_V(obstacle_node, contained_points);
+
+	Transform3D gt = Transform3D(Basis(), obstacle_node->get_global_position());
+	const Vector<Vector3> &vertices = obstacle_node->get_vertices();
+
+	for (int idx = 0; idx < vertices.size(); ++idx) {
+		Vector3 pos = gt.xform(vertices[idx]);
+		bool is_contained_in_frustum = true;
+		for (int i = 0; i < p_frustum.size(); ++i) {
+			if (p_frustum[i].distance_to(pos) > 0) {
+				is_contained_in_frustum = false;
+				break;
+			}
+		}
+
+		if (is_contained_in_frustum) {
+			contained_points.push_back(idx);
+		}
+	}
+
+	return contained_points;
 }
 
-void NavigationObstacle3DEditor::_wip_close() {
-	ERR_FAIL_NULL_MSG(obstacle_node, "Edited NavigationObstacle3D is not valid.");
+Transform3D NavigationObstacle3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
+	NavigationObstacle3D *obstacle_node = Object::cast_to<NavigationObstacle3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL_V(obstacle_node, Transform3D());
+
+	const Vector<Vector3> &vertices = obstacle_node->get_vertices();
+	ERR_FAIL_INDEX_V(p_id, vertices.size(), Transform3D());
+
+	Basis gbi = obstacle_node->get_global_basis().inverse();
+
+	Transform3D subgizmo_transform = Transform3D(Basis(), gbi.xform(vertices[p_id]));
+	return subgizmo_transform;
+}
+
+void NavigationObstacle3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {
+	NavigationObstacle3D *obstacle_node = Object::cast_to<NavigationObstacle3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL(obstacle_node);
+
+	Basis gb = obstacle_node->get_global_basis();
+
+	Vector3 new_vertex_pos = p_transform.origin;
+
+	Vector<Vector3> vertices = obstacle_node->get_vertices();
+	ERR_FAIL_INDEX(p_id, vertices.size());
+
+	Vector3 vertex = gb.xform(new_vertex_pos);
+	vertex.y = 0.0;
+	vertices.write[p_id] = vertex;
+
+	obstacle_node->set_vertices(vertices);
+}
+
+void NavigationObstacle3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
+	NavigationObstacle3D *obstacle_node = Object::cast_to<NavigationObstacle3D>(p_gizmo->get_node_3d());
+	ERR_FAIL_NULL(obstacle_node);
+
+	Basis gb = obstacle_node->get_global_basis();
+
+	Vector<Vector3> vertices = obstacle_node->get_vertices();
+	Vector<Vector3> restore_vertices = vertices;
+
+	for (int i = 0; i < p_ids.size(); ++i) {
+		const int idx = p_ids[i];
+		Vector3 vertex = gb.xform(p_restore[i].origin);
+		vertex.y = 0.0;
+		restore_vertices.write[idx] = vertex;
+	}
+
+	if (p_cancel) {
+		obstacle_node->set_vertices(restore_vertices);
+		return;
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set NavigationObstacle3D Vertices"));
-	undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
-
-	PackedVector3Array polygon_3d_vertices;
-	Vector<int> triangulated_polygon_2d_indices = Geometry2D::triangulate_polygon(wip);
-
-	if (!triangulated_polygon_2d_indices.is_empty()) {
-		polygon_3d_vertices.resize(wip.size());
-		Vector3 *polygon_3d_vertices_ptr = polygon_3d_vertices.ptrw();
-		for (int i = 0; i < wip.size(); i++) {
-			const Vector2 &vert = wip[i];
-			polygon_3d_vertices_ptr[i] = Vector3(vert.x, 0.0, vert.y);
-		}
-	}
-
-	undo_redo->add_do_method(obstacle_node, "set_vertices", polygon_3d_vertices);
-	undo_redo->add_do_method(this, "_polygon_draw");
-	undo_redo->add_undo_method(this, "_polygon_draw");
-	wip.clear();
-	wip_active = false;
-	mode = MODE_EDIT;
-	button_edit->set_pressed(true);
-	button_create->set_pressed(false);
-	edited_point = -1;
+	undo_redo->create_action(TTR("Set Obstacle Vertices"));
+	undo_redo->add_do_method(obstacle_node, "set_vertices", vertices);
+	undo_redo->add_undo_method(obstacle_node, "set_vertices", restore_vertices);
 	undo_redo->commit_action();
 }
 
-EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+NavigationObstacle3DGizmoPlugin::NavigationObstacle3DGizmoPlugin() {
+	current_state = VISIBLE;
+}
+
+void NavigationObstacle3DEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_update_theme();
+		} break;
+
+		case NOTIFICATION_READY: {
+			_update_theme();
+			button_edit->set_pressed(true);
+			get_tree()->connect("node_removed", callable_mp(this, &NavigationObstacle3DEditorPlugin::_node_removed));
+			EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &NavigationObstacle3DEditorPlugin::_update_theme));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &NavigationObstacle3DEditorPlugin::_node_removed));
+			EditorNode::get_singleton()->get_gui_base()->disconnect(SceneStringName(theme_changed), callable_mp(this, &NavigationObstacle3DEditorPlugin::_update_theme));
+		} break;
+	}
+}
+
+void NavigationObstacle3DEditorPlugin::edit(Object *p_object) {
+	obstacle_node = Object::cast_to<NavigationObstacle3D>(p_object);
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	if (obstacle_node) {
+		if (obstacle_node->get_vertices().is_empty()) {
+			set_mode(MODE_CREATE);
+		} else {
+			set_mode(MODE_EDIT);
+		}
+		wip_vertices.clear();
+		wip_active = false;
+		edited_point = -1;
+
+		rs->instance_set_scenario(point_lines_instance_rid, obstacle_node->get_world_3d()->get_scenario());
+		rs->instance_set_scenario(point_handles_instance_rid, obstacle_node->get_world_3d()->get_scenario());
+
+		redraw();
+
+	} else {
+		obstacle_node = nullptr;
+
+		rs->mesh_clear(point_lines_mesh_rid);
+		rs->mesh_clear(point_handle_mesh_rid);
+		rs->instance_set_scenario(point_lines_instance_rid, RID());
+		rs->instance_set_scenario(point_handles_instance_rid, RID());
+	}
+}
+
+bool NavigationObstacle3DEditorPlugin::handles(Object *p_object) const {
+	return Object::cast_to<NavigationObstacle3D>(p_object);
+}
+
+void NavigationObstacle3DEditorPlugin::make_visible(bool p_visible) {
+	if (p_visible) {
+		obstacle_editor->show();
+	} else {
+		obstacle_editor->hide();
+		edit(nullptr);
+	}
+}
+
+void NavigationObstacle3DEditorPlugin::action_flip_vertices() {
+	if (!obstacle_node) {
+		return;
+	}
+
+	Vector<Vector3> flipped_vertices = obstacle_node->get_vertices();
+	flipped_vertices.reverse();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Edit Obstacle (Flip Winding)"));
+	undo_redo->add_do_method(obstacle_node, "set_vertices", flipped_vertices);
+	undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
+	undo_redo->commit_action();
+
+	obstacle_node->update_gizmos();
+}
+
+void NavigationObstacle3DEditorPlugin::action_clear_vertices() {
+	if (!obstacle_node) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Edit Obstacle (Clear Vertices)"));
+	undo_redo->add_do_method(obstacle_node, "set_vertices", Vector<Vector3>());
+	undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
+	undo_redo->commit_action();
+
+	obstacle_node->update_gizmos();
+	edit(obstacle_node);
+}
+
+void NavigationObstacle3DEditorPlugin::_update_theme() {
+	button_create->set_tooltip_text(TTR("Add Vertex"));
+	button_edit->set_tooltip_text(TTR("Edit Vertex"));
+	button_delete->set_tooltip_text(TTR("Delete Vertex"));
+	button_flip->set_tooltip_text(TTR("Flip Winding"));
+	button_clear->set_tooltip_text(TTR("Clear Vertices"));
+	button_create->set_button_icon(button_create->get_editor_theme_icon(SNAME("CurveCreate")));
+	button_edit->set_button_icon(button_edit->get_editor_theme_icon(SNAME("CurveEdit")));
+	button_delete->set_button_icon(button_delete->get_editor_theme_icon(SNAME("CurveDelete")));
+	button_flip->set_button_icon(button_flip->get_editor_theme_icon(SNAME("FlipWinding")));
+	button_clear->set_button_icon(button_clear->get_editor_theme_icon(SNAME("Clear")));
+}
+
+void NavigationObstacle3DEditorPlugin::_node_removed(Node *p_node) {
+	if (obstacle_node == p_node) {
+		obstacle_node = nullptr;
+
+		RenderingServer *rs = RenderingServer::get_singleton();
+		rs->mesh_clear(point_lines_mesh_rid);
+		rs->mesh_clear(point_handle_mesh_rid);
+
+		obstacle_editor->hide();
+	}
+}
+
+void NavigationObstacle3DEditorPlugin::set_mode(int p_option) {
+	if (p_option == NavigationObstacle3DEditorPlugin::ACTION_FLIP) {
+		button_flip->set_pressed(false);
+		action_flip_vertices();
+		return;
+	}
+
+	if (p_option == NavigationObstacle3DEditorPlugin::ACTION_CLEAR) {
+		button_clear->set_pressed(false);
+		button_clear_dialog->reset_size();
+		button_clear_dialog->popup_centered();
+		return;
+	}
+
+	mode = p_option;
+
+	button_create->set_pressed(p_option == NavigationObstacle3DEditorPlugin::MODE_CREATE);
+	button_edit->set_pressed(p_option == NavigationObstacle3DEditorPlugin::MODE_EDIT);
+	button_delete->set_pressed(p_option == NavigationObstacle3DEditorPlugin::MODE_DELETE);
+	button_flip->set_pressed(false);
+	button_clear->set_pressed(false);
+}
+
+void NavigationObstacle3DEditorPlugin::_wip_cancel() {
+	wip_vertices.clear();
+	wip_active = false;
+
+	edited_point = -1;
+
+	redraw();
+}
+
+void NavigationObstacle3DEditorPlugin::_wip_close() {
+	ERR_FAIL_NULL_MSG(obstacle_node, "Edited NavigationObstacle3D is not valid.");
+
+	Vector<Vector2> wip_2d_vertices;
+	wip_2d_vertices.resize(wip_vertices.size());
+	for (int i = 0; i < wip_vertices.size(); i++) {
+		const Vector3 &vert = wip_vertices[i];
+		wip_2d_vertices.write[i] = Vector2(vert.x, vert.z);
+	}
+	Vector<int> triangulated_polygon_2d_indices = Geometry2D::triangulate_polygon(wip_2d_vertices);
+
+	if (!triangulated_polygon_2d_indices.is_empty()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Set Obstacle Vertices"));
+		undo_redo->add_do_method(obstacle_node, "set_vertices", wip_vertices);
+		undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
+		undo_redo->commit_action();
+
+		wip_vertices.clear();
+		wip_active = false;
+		//mode = MODE_EDIT;
+		NavigationObstacle3DEditorPlugin::singleton->set_mode(NavigationObstacle3DEditorPlugin::MODE_EDIT);
+		button_edit->set_pressed(true);
+		button_create->set_pressed(false);
+		edited_point = -1;
+	}
+}
+
+EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!obstacle_node) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
-	// Use special transformation rules for NavigationObstacle3D: Only take global y-rotation into account and limit scaling to positive values.
-	Transform3D gt;
-	gt.origin = obstacle_node->get_global_position();
-	gt.scale_basis(obstacle_node->get_global_basis().get_scale().abs().maxf(0.001));
-	gt.rotate_basis(Vector3(0.0, 1.0, 0.0), obstacle_node->get_global_rotation().y);
-	Transform3D gi = gt.affine_inverse();
-	Plane p(Vector3(0.0, 1.0, 0.0), gt.origin);
-	point_lines_meshinstance->set_transform(gt.translated(Vector3(0.0, 0.0, 0.00001)));
+	if (!obstacle_node->is_visible_in_tree()) {
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
+	}
+
+	Ref<InputEventMouse> mouse_event = p_event;
+
+	if (mouse_event.is_null()) {
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
+	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		Vector2 gpoint = mb->get_position();
-		Vector3 ray_from = p_camera->project_ray_origin(gpoint);
-		Vector3 ray_dir = p_camera->project_ray_normal(gpoint);
+		Vector2 mouse_position = mb->get_position();
+		Vector3 ray_from = p_camera->project_ray_origin(mouse_position);
+		Vector3 ray_dir = p_camera->project_ray_normal(mouse_position);
+
+		Transform3D gt = Transform3D(Basis(), obstacle_node->get_global_position());
+		Transform3D gi = gt.affine_inverse();
+		Plane projection_plane(Vector3(0.0, 1.0, 0.0), gt.origin);
 
 		Vector3 spoint;
 
-		if (!p.intersects_ray(ray_from, ray_dir, &spoint)) {
+		if (!projection_plane.intersects_ray(ray_from, ray_dir, &spoint)) {
 			return EditorPlugin::AFTER_GUI_INPUT_PASS;
 		}
 
 		spoint = gi.xform(spoint);
 
-		Vector2 cpoint(spoint.x, spoint.z);
+		Vector3 cpoint = Vector3(spoint.x, 0.0, spoint.z);
+		Vector<Vector3> obstacle_vertices = obstacle_node->get_vertices();
 
-		//DO NOT snap here, it's confusing in 3D for adding points.
-		//Let the snap happen when the point is being moved, instead.
-		//cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
-
-		PackedVector2Array poly = _get_polygon();
-
-		//first check if a point is to be added (segment split)
 		real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 		switch (mode) {
 			case MODE_CREATE: {
 				if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+					if (obstacle_vertices.size() >= 3) {
+						int closest_idx = -1;
+						Vector2 closest_edge_point;
+						real_t closest_dist = 1e10;
+						for (int i = 0; i < obstacle_vertices.size(); i++) {
+							Vector2 points[2] = {
+								p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
+								p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
+							};
+
+							Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
+							if (cp.distance_squared_to(points[0]) < grab_threshold || cp.distance_squared_to(points[1]) < grab_threshold) {
+								continue; // Skip edge as clicked point is too close to existing vertex.
+							}
+
+							real_t d = cp.distance_to(mouse_position);
+							if (d < closest_dist && d < grab_threshold) {
+								closest_dist = d;
+								closest_edge_point = cp;
+								closest_idx = i;
+							}
+						}
+						if (closest_idx >= 0) {
+							edited_point = -1;
+							Vector3 _ray_from = p_camera->project_ray_origin(closest_edge_point);
+							Vector3 _ray_dir = p_camera->project_ray_normal(closest_edge_point);
+							Vector3 edge_intersection_point;
+							if (projection_plane.intersects_ray(_ray_from, _ray_dir, &edge_intersection_point)) {
+								edge_intersection_point = gi.xform(edge_intersection_point);
+
+								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+								undo_redo->create_action(TTR("Edit Obstacle (Add Vertex)"));
+								undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_vertices);
+								obstacle_vertices.insert(closest_idx + 1, edge_intersection_point);
+								undo_redo->add_do_method(obstacle_node, "set_vertices", obstacle_vertices);
+								undo_redo->commit_action();
+								redraw();
+								return EditorPlugin::AFTER_GUI_INPUT_STOP;
+							}
+						}
+					}
 					if (!wip_active) {
-						wip.clear();
-						wip.push_back(cpoint);
+						wip_vertices.clear();
+						wip_vertices.push_back(cpoint);
 						wip_active = true;
 						edited_point_pos = cpoint;
 						snap_ignore = false;
-						_polygon_draw();
+						redraw();
 						edited_point = 1;
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					} else {
-						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, 0.0, wip[0].y))).distance_to(gpoint) < grab_threshold) {
-							//wip closed
+						if (wip_vertices.size() > 1 && p_camera->unproject_position(gt.xform(wip_vertices[0])).distance_to(mouse_position) < grab_threshold) {
 							_wip_close();
 
 							return EditorPlugin::AFTER_GUI_INPUT_STOP;
 						} else {
-							wip.push_back(cpoint);
-							edited_point = wip.size();
+							wip_vertices.push_back(cpoint);
+							edited_point = wip_vertices.size();
 							snap_ignore = false;
-							_polygon_draw();
+							redraw();
 							return EditorPlugin::AFTER_GUI_INPUT_STOP;
 						}
 					}
@@ -186,13 +539,11 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 				if (mb->get_button_index() == MouseButton::LEFT) {
 					if (mb->is_pressed()) {
 						if (mb->is_ctrl_pressed()) {
-							if (poly.size() < 3) {
+							if (obstacle_vertices.size() < 3) {
 								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-								undo_redo->create_action(TTR("Edit Vertices"));
+								undo_redo->create_action(TTR("Edit Obstacle (Add Vertex)"));
 								undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
-								poly.push_back(cpoint);
-								undo_redo->add_do_method(this, "_polygon_draw");
-								undo_redo->add_undo_method(this, "_polygon_draw");
+								obstacle_vertices.push_back(cpoint);
 								undo_redo->commit_action();
 								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
@@ -201,18 +552,18 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
-							for (int i = 0; i < poly.size(); i++) {
+							for (int i = 0; i < obstacle_vertices.size(); i++) {
 								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, 0.0, poly[i].y))),
-									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, 0.0, poly[(i + 1) % poly.size()].y)))
+									p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
+									p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
 								};
 
-								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, points);
+								Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
 								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2) {
 									continue; //not valid to reuse point
 								}
 
-								real_t d = cp.distance_to(gpoint);
+								real_t d = cp.distance_to(mouse_position);
 								if (d < closest_dist && d < grab_threshold) {
 									closest_dist = d;
 									closest_pos = cp;
@@ -221,26 +572,24 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 							}
 
 							if (closest_idx >= 0) {
-								pre_move_edit = poly;
-								poly.insert(closest_idx + 1, cpoint);
+								pre_move_edit = obstacle_vertices;
+								obstacle_vertices.insert(closest_idx + 1, cpoint);
 								edited_point = closest_idx + 1;
 								edited_point_pos = cpoint;
-								_set_polygon(poly);
-								_polygon_draw();
+								obstacle_node->set_vertices(obstacle_vertices);
+								redraw();
 								snap_ignore = true;
 
 								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
 						} else {
-							//look for points to move
-
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
-							for (int i = 0; i < poly.size(); i++) {
-								Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, 0.0, poly[i].y)));
+							for (int i = 0; i < obstacle_vertices.size(); i++) {
+								Vector2 cp = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
 
-								real_t d = cp.distance_to(gpoint);
+								real_t d = cp.distance_to(mouse_position);
 								if (d < closest_dist && d < grab_threshold) {
 									closest_dist = d;
 									closest_pos = cp;
@@ -249,10 +598,10 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 							}
 
 							if (closest_idx >= 0) {
-								pre_move_edit = poly;
+								pre_move_edit = obstacle_vertices;
 								edited_point = closest_idx;
-								edited_point_pos = poly[closest_idx];
-								_polygon_draw();
+								edited_point_pos = obstacle_vertices[closest_idx];
+								redraw();
 								snap_ignore = false;
 								return EditorPlugin::AFTER_GUI_INPUT_STOP;
 							}
@@ -261,16 +610,13 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 						snap_ignore = false;
 
 						if (edited_point != -1) {
-							//apply
+							ERR_FAIL_INDEX_V(edited_point, obstacle_vertices.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
+							obstacle_vertices.write[edited_point] = edited_point_pos;
 
-							ERR_FAIL_INDEX_V(edited_point, poly.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
-							poly.write[edited_point] = edited_point_pos;
 							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-							undo_redo->create_action(TTR("Edit Poly"));
-							//undo_redo->add_do_method(obj, "set_polygon", poly);
-							//undo_redo->add_undo_method(obj, "set_polygon", pre_move_edit);
-							undo_redo->add_do_method(this, "_polygon_draw");
-							undo_redo->add_undo_method(this, "_polygon_draw");
+							undo_redo->create_action(TTR("Edit Obstacle (Move Vertex)"));
+							undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_node->get_vertices());
+							undo_redo->add_do_method(obstacle_node, "set_vertices", obstacle_vertices);
 							undo_redo->commit_action();
 
 							edited_point = -1;
@@ -278,30 +624,31 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 						}
 					}
 				}
-				if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && edited_point == -1) {
-					int closest_idx = -1;
-					Vector2 closest_pos;
-					real_t closest_dist = 1e10;
-					for (int i = 0; i < poly.size(); i++) {
-						Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, 0.0, poly[i].y)));
 
-						real_t d = cp.distance_to(gpoint);
+			} break;
+
+			case MODE_DELETE: {
+				if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+					int closest_idx = -1;
+					real_t closest_dist = 1e10;
+					for (int i = 0; i < obstacle_vertices.size(); i++) {
+						Vector2 point = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+						real_t d = point.distance_to(mouse_position);
 						if (d < closest_dist && d < grab_threshold) {
 							closest_dist = d;
-							closest_pos = cp;
 							closest_idx = i;
 						}
 					}
 
 					if (closest_idx >= 0) {
+						edited_point = -1;
 						EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-						//undo_redo->add_undo_method(obj, "set_polygon", poly);
-						poly.remove_at(closest_idx);
-						//undo_redo->add_do_method(obj, "set_polygon", poly);
-						undo_redo->add_do_method(this, "_polygon_draw");
-						undo_redo->add_undo_method(this, "_polygon_draw");
+						undo_redo->create_action(TTR("Edit Obstacle (Remove Vertex)"));
+						undo_redo->add_undo_method(obstacle_node, "set_vertices", obstacle_vertices);
+						obstacle_vertices.remove_at(closest_idx);
+						undo_redo->add_do_method(obstacle_node, "set_vertices", obstacle_vertices);
 						undo_redo->commit_action();
+						redraw();
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					}
 				}
@@ -314,20 +661,24 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 
 	if (mm.is_valid()) {
 		if (edited_point != -1 && (wip_active || mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-			Vector2 gpoint = mm->get_position();
+			Vector2 mouse_position = mm->get_position();
 
-			Vector3 ray_from = p_camera->project_ray_origin(gpoint);
-			Vector3 ray_dir = p_camera->project_ray_normal(gpoint);
+			Vector3 ray_from = p_camera->project_ray_origin(mouse_position);
+			Vector3 ray_dir = p_camera->project_ray_normal(mouse_position);
 
-			Vector3 spoint;
+			Transform3D gt = Transform3D(Basis(), obstacle_node->get_global_position());
+			Transform3D gi = gt.affine_inverse();
+			Plane projection_plane(Vector3(0.0, 1.0, 0.0), gt.origin);
 
-			if (!p.intersects_ray(ray_from, ray_dir, &spoint)) {
+			Vector3 intersection_point;
+
+			if (!projection_plane.intersects_ray(ray_from, ray_dir, &intersection_point)) {
 				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
-			spoint = gi.xform(spoint);
+			intersection_point = gi.xform(intersection_point);
 
-			Vector2 cpoint(spoint.x, spoint.z);
+			Vector2 cpoint(intersection_point.x, intersection_point.z);
 
 			if (snap_ignore && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 				snap_ignore = false;
@@ -336,220 +687,217 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 			if (!snap_ignore && Node3DEditor::get_singleton()->is_snap_enabled()) {
 				cpoint = cpoint.snappedf(Node3DEditor::get_singleton()->get_translate_snap());
 			}
-			edited_point_pos = cpoint;
+			edited_point_pos = Vector3(cpoint.x, 0.0, cpoint.y);
 
-			_polygon_draw();
+			redraw();
+		}
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (wip_active && k->get_keycode() == Key::ENTER) {
+			_wip_close();
+		} else if (wip_active && k->get_keycode() == Key::ESCAPE) {
+			_wip_cancel();
 		}
 	}
 
 	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
-PackedVector2Array NavigationObstacle3DEditor::_get_polygon() {
-	ERR_FAIL_NULL_V_MSG(obstacle_node, PackedVector2Array(), "Edited object is not valid.");
-	return PackedVector2Array(obstacle_node->call("get_polygon"));
-}
-
-void NavigationObstacle3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
-	ERR_FAIL_NULL_MSG(obstacle_node, "Edited object is not valid.");
-	obstacle_node->call("set_polygon", p_poly);
-}
-
-void NavigationObstacle3DEditor::_polygon_draw() {
+void NavigationObstacle3DEditorPlugin::redraw() {
 	if (!obstacle_node) {
 		return;
 	}
+	RenderingServer *rs = RenderingServer::get_singleton();
 
-	PackedVector2Array poly;
-	PackedVector3Array polygon_3d_vertices;
+	rs->mesh_clear(point_lines_mesh_rid);
+	rs->mesh_clear(point_handle_mesh_rid);
 
-	if (wip_active) {
-		poly = wip;
-	} else {
-		poly = _get_polygon();
-	}
-	polygon_3d_vertices.resize(poly.size());
-	Vector3 *polygon_3d_vertices_ptr = polygon_3d_vertices.ptrw();
-
-	for (int i = 0; i < poly.size(); i++) {
-		const Vector2 &vert = poly[i];
-		polygon_3d_vertices_ptr[i] = Vector3(vert.x, 0.0, vert.y);
-	}
-
-	point_handle_mesh->clear_surfaces();
-	point_lines_mesh->clear_surfaces();
-	point_lines_meshinstance->set_material_override(line_material);
-
-	if (poly.is_empty()) {
+	if (!obstacle_node->is_visible_in_tree()) {
 		return;
 	}
 
-	point_lines_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+	Vector<Vector3> edited_vertices;
 
-	for (int i = 0; i < poly.size(); i++) {
-		Vector2 p, p2;
-		if (i == edited_point) {
-			p = edited_point_pos;
-		} else {
-			p = poly[i];
-		}
-
-		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point)) {
-			p2 = edited_point_pos;
-		} else {
-			p2 = poly[(i + 1) % poly.size()];
-		}
-
-		Vector3 point = Vector3(p.x, 0.0, p.y);
-		Vector3 next_point = Vector3(p2.x, 0.0, p2.y);
-
-		point_lines_mesh->surface_set_color(Color(1, 0.3, 0.1, 0.8));
-		point_lines_mesh->surface_add_vertex(point);
-		point_lines_mesh->surface_set_color(Color(1, 0.3, 0.1, 0.8));
-		point_lines_mesh->surface_add_vertex(next_point);
-
-		//Color col=Color(1,0.3,0.1,0.8);
-		//vpc->draw_line(point,next_point,col,2);
-		//vpc->draw_texture(handle,point-handle->get_size()*0.5);
+	if (wip_active) {
+		edited_vertices = wip_vertices;
+	} else {
+		edited_vertices = obstacle_node->get_vertices();
 	}
 
-	point_lines_mesh->surface_end();
+	if (edited_vertices.is_empty()) {
+		return;
+	}
+
+	Array point_lines_mesh_array;
+	point_lines_mesh_array.resize(Mesh::ARRAY_MAX);
+
+	Vector<Vector3> point_lines_mesh_vertices;
+	point_lines_mesh_vertices.resize(edited_vertices.size() * 2);
+	Vector3 *point_lines_mesh_vertices_ptr = point_lines_mesh_vertices.ptrw();
+
+	int vertex_index = 0;
+
+	for (int i = 0; i < edited_vertices.size(); i++) {
+		Vector3 point, next_point;
+		if (i == edited_point) {
+			point = edited_point_pos;
+		} else {
+			point = edited_vertices[i];
+		}
+
+		if ((wip_active && i == edited_vertices.size() - 1) || (((i + 1) % edited_vertices.size()) == edited_point)) {
+			next_point = edited_point_pos;
+		} else {
+			next_point = edited_vertices[(i + 1) % edited_vertices.size()];
+		}
+
+		point_lines_mesh_vertices_ptr[vertex_index++] = point;
+		point_lines_mesh_vertices_ptr[vertex_index++] = next_point;
+	}
+
+	point_lines_mesh_array[Mesh::ARRAY_VERTEX] = point_lines_mesh_vertices;
+
+	rs->mesh_add_surface_from_arrays(point_lines_mesh_rid, RS::PRIMITIVE_LINES, point_lines_mesh_array);
+	rs->instance_set_surface_override_material(point_lines_instance_rid, 0, line_material->get_rid());
+	rs->instance_set_transform(point_lines_instance_rid, Transform3D(Basis(), obstacle_node->get_global_position()));
 
 	Array point_handle_mesh_array;
 	point_handle_mesh_array.resize(Mesh::ARRAY_MAX);
 	Vector<Vector3> point_handle_mesh_vertices;
 
-	point_handle_mesh_vertices.resize(poly.size());
+	point_handle_mesh_vertices.resize(edited_vertices.size());
 	Vector3 *point_handle_mesh_vertices_ptr = point_handle_mesh_vertices.ptrw();
 
-	for (int i = 0; i < poly.size(); i++) {
-		Vector2 point_2d;
-		Vector2 p2;
+	for (int i = 0; i < edited_vertices.size(); i++) {
+		Vector3 point_handle_3d;
 
 		if (i == edited_point) {
-			point_2d = edited_point_pos;
+			point_handle_3d = edited_point_pos;
 		} else {
-			point_2d = poly[i];
+			point_handle_3d = edited_vertices[i];
 		}
 
-		Vector3 point_handle_3d = Vector3(point_2d.x, 0.0, point_2d.y);
 		point_handle_mesh_vertices_ptr[i] = point_handle_3d;
 	}
 
 	point_handle_mesh_array[Mesh::ARRAY_VERTEX] = point_handle_mesh_vertices;
-	point_handle_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_POINTS, point_handle_mesh_array);
-	point_handle_mesh->surface_set_material(0, handle_material);
+
+	rs->mesh_add_surface_from_arrays(point_handle_mesh_rid, RS::PRIMITIVE_POINTS, point_handle_mesh_array);
+	rs->instance_set_surface_override_material(point_handles_instance_rid, 0, handle_material->get_rid());
+	rs->instance_set_transform(point_handles_instance_rid, Transform3D(Basis(), obstacle_node->get_global_position()));
 }
 
-void NavigationObstacle3DEditor::edit(Node *p_node) {
-	obstacle_node = Object::cast_to<NavigationObstacle3D>(p_node);
+NavigationObstacle3DEditorPlugin *NavigationObstacle3DEditorPlugin::singleton = nullptr;
 
-	if (obstacle_node) {
-		//Enable the pencil tool if the polygon is empty
-		if (_get_polygon().is_empty()) {
-			_menu_option(MODE_CREATE);
-		}
-		wip.clear();
-		wip_active = false;
-		edited_point = -1;
-		if (point_lines_meshinstance->get_parent()) {
-			point_lines_meshinstance->reparent(p_node, false);
-		} else {
-			p_node->add_child(point_lines_meshinstance);
-		}
-		_polygon_draw();
+NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
+	singleton = this;
 
-	} else {
-		obstacle_node = nullptr;
-
-		if (point_lines_meshinstance->get_parent()) {
-			point_lines_meshinstance->get_parent()->remove_child(point_lines_meshinstance);
-		}
-	}
-}
-
-void NavigationObstacle3DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_polygon_draw"), &NavigationObstacle3DEditor::_polygon_draw);
-}
-
-NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
-	obstacle_node = nullptr;
-
-	button_create = memnew(Button);
-	button_create->set_theme_type_variation("FlatButton");
-	add_child(button_create);
-	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_CREATE));
-	button_create->set_toggle_mode(true);
-
-	button_edit = memnew(Button);
-	button_edit->set_theme_type_variation("FlatButton");
-	add_child(button_edit);
-	button_edit->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_EDIT));
-	button_edit->set_toggle_mode(true);
-
-	mode = MODE_EDIT;
-	wip_active = false;
-	point_lines_meshinstance = memnew(MeshInstance3D);
-	point_lines_mesh.instantiate();
-	point_lines_meshinstance->set_mesh(point_lines_mesh);
-	point_lines_meshinstance->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
-	point_lines_meshinstance->set_as_top_level(true);
-
-	line_material.instantiate();
+	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	line_material->set_albedo(Color(1, 1, 1));
+	line_material->set_albedo(Color(1, 0.3, 0.1, 0.8));
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 
-	handle_material.instantiate();
+	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
+	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 
-	point_handles_meshinstance = memnew(MeshInstance3D);
-	point_lines_meshinstance->add_child(point_handles_meshinstance);
-	point_handle_mesh.instantiate();
-	point_handles_meshinstance->set_mesh(point_handle_mesh);
-	point_handles_meshinstance->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
+	RenderingServer *rs = RenderingServer::get_singleton();
 
-	snap_ignore = false;
-}
+	point_lines_mesh_rid = rs->mesh_create();
+	point_handle_mesh_rid = rs->mesh_create();
 
-NavigationObstacle3DEditor::~NavigationObstacle3DEditor() {
-	memdelete(point_lines_meshinstance);
-}
+	point_lines_instance_rid = rs->instance_create();
+	point_handles_instance_rid = rs->instance_create();
 
-void NavigationObstacle3DEditorPlugin::edit(Object *p_object) {
-	obstacle_editor->edit(Object::cast_to<Node>(p_object));
-}
+	rs->instance_set_base(point_lines_instance_rid, point_lines_mesh_rid);
+	rs->instance_set_base(point_handles_instance_rid, point_handle_mesh_rid);
 
-bool NavigationObstacle3DEditorPlugin::handles(Object *p_object) const {
-	return Object::cast_to<NavigationObstacle3D>(p_object);
-}
+	obstacle_editor = memnew(HBoxContainer);
+	obstacle_editor->hide();
 
-void NavigationObstacle3DEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		obstacle_editor->show();
-	} else {
-		obstacle_editor->hide();
-		obstacle_editor->edit(nullptr);
-	}
-}
+	Ref<ButtonGroup> bg;
+	bg.instantiate();
 
-NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
-	obstacle_editor = memnew(NavigationObstacle3DEditor);
+	button_create = memnew(Button);
+	button_create->set_theme_type_variation("FlatButton");
+	obstacle_editor->add_child(button_create);
+	button_create->set_tooltip_text(TTR("Add Vertex"));
+	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_CREATE));
+	button_create->set_toggle_mode(true);
+	button_create->set_button_group(bg);
+
+	button_edit = memnew(Button);
+	button_edit->set_theme_type_variation("FlatButton");
+	obstacle_editor->add_child(button_edit);
+	button_edit->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_EDIT));
+	button_edit->set_toggle_mode(true);
+	button_edit->set_button_group(bg);
+
+	button_delete = memnew(Button);
+	button_delete->set_theme_type_variation("FlatButton");
+	obstacle_editor->add_child(button_delete);
+	button_delete->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_DELETE));
+	button_delete->set_toggle_mode(true);
+	button_delete->set_button_group(bg);
+
+	button_flip = memnew(Button);
+	button_flip->set_theme_type_variation("FlatButton");
+	obstacle_editor->add_child(button_flip);
+	button_flip->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::ACTION_FLIP));
+	button_flip->set_toggle_mode(true);
+
+	button_clear = memnew(Button);
+	button_clear->set_theme_type_variation("FlatButton");
+	obstacle_editor->add_child(button_clear);
+	button_clear->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::ACTION_CLEAR));
+	button_clear->set_toggle_mode(true);
+
+	button_clear_dialog = memnew(ConfirmationDialog);
+	button_clear_dialog->set_title(TTR("Please Confirm..."));
+	button_clear_dialog->set_text(TTR("Remove all vertices?"));
+	button_clear_dialog->connect(SceneStringName(confirmed), callable_mp(NavigationObstacle3DEditorPlugin::singleton, &NavigationObstacle3DEditorPlugin::action_clear_vertices));
+	obstacle_editor->add_child(button_clear_dialog);
+
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(obstacle_editor);
 
-	obstacle_editor->hide();
+	Ref<NavigationObstacle3DGizmoPlugin> gizmo_plugin = memnew(NavigationObstacle3DGizmoPlugin());
+	obstacle_3d_gizmo_plugin = gizmo_plugin;
+	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }
 
 NavigationObstacle3DEditorPlugin::~NavigationObstacle3DEditorPlugin() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+
+	if (point_lines_instance_rid.is_valid()) {
+		rs->free(point_lines_instance_rid);
+		point_lines_instance_rid = RID();
+	}
+	if (point_lines_mesh_rid.is_valid()) {
+		rs->free(point_lines_mesh_rid);
+		point_lines_mesh_rid = RID();
+	}
+
+	if (point_handles_instance_rid.is_valid()) {
+		rs->free(point_handles_instance_rid);
+		point_handles_instance_rid = RID();
+	}
+	if (point_handle_mesh_rid.is_valid()) {
+		rs->free(point_handle_mesh_rid);
+		point_handle_mesh_rid = RID();
+	}
 }

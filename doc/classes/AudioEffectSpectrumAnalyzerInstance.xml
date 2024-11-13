@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		The runtime part of an [AudioEffectSpectrumAnalyzer], which can be used to query the magnitude of a frequency range on its host bus.
-		An instance of this class can be acquired with [method AudioServer.get_bus_effect_instance].
+		An instance of this class can be obtained with [method AudioServer.get_bus_effect_instance].
 	</description>
 	<tutorials>
 		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>

@@ -218,8 +218,14 @@
 			<return type="Tween" />
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
-				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant EASE_IN_OUT].
+				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default ease type is [constant EASE_IN_OUT].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses EASE_IN_OUT.
+				tween.set_ease(Tween.EASE_IN)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses EASE_IN.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_loops">
@@ -271,14 +277,36 @@
 			<return type="Tween" />
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
-				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant TRANS_LINEAR].
+				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default transition type is [constant TRANS_LINEAR].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses TRANS_LINEAR.
+				tween.set_trans(Tween.TRANS_SINE)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses TRANS_SINE.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				[b]Note:[/b] This does [i]not[/i] reset targets of [PropertyTweener]s to their values when the [Tween] first started.
+				[codeblock]
+				var tween = create_tween()
+
+				# Will move from 0 to 500 over 1 second.
+				position.x = 0.0
+				tween.tween_property(self, "position:x", 500, 1.0)
+
+				# Will be at (about) 250 when the timer finishes.
+				await get_tree().create_timer(0.5).timeout
+
+				# Will now move from (about) 250 to 500 over 1 second,
+				# thus at half the speed as before.
+				tween.stop()
+				tween.play()
+				[/codeblock]
 				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>

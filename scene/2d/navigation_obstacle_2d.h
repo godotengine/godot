@@ -106,6 +106,8 @@ public:
 	void set_carve_navigation_mesh(bool p_enabled);
 	bool get_carve_navigation_mesh() const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 private:
 	void _update_map(RID p_map);
 	void _update_position(const Vector2 p_position);

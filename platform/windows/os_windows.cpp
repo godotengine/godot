@@ -40,10 +40,10 @@
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
-#include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/file_access_windows_pipe.h"
+#include "drivers/windows/net_socket_winsock.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -156,6 +156,52 @@ void RedirectIOToConsole() {
 	}
 }
 
+bool OS_Windows::is_using_con_wrapper() const {
+	static String exe_renames[] = {
+		".console.exe",
+		"_console.exe",
+		" console.exe",
+		"console.exe",
+		String(),
+	};
+
+	bool found_exe = false;
+	bool found_conwrap_exe = false;
+	String exe_name = get_executable_path().to_lower();
+	String exe_dir = exe_name.get_base_dir();
+	String exe_fname = exe_name.get_file().get_basename();
+
+	DWORD pids[256];
+	DWORD count = GetConsoleProcessList(&pids[0], 256);
+	for (DWORD i = 0; i < count; i++) {
+		HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pids[i]);
+		if (process != NULL) {
+			WCHAR proc_name[MAX_PATH];
+			DWORD len = MAX_PATH;
+			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
+				String name = String::utf16((const char16_t *)&proc_name[0], len).replace("\\", "/").to_lower();
+				if (name == exe_name) {
+					found_exe = true;
+				}
+				for (int j = 0; !exe_renames[j].is_empty(); j++) {
+					if (name == exe_dir.path_join(exe_fname + exe_renames[j])) {
+						found_conwrap_exe = true;
+					}
+				}
+			}
+			CloseHandle(process);
+			if (found_conwrap_exe && found_exe) {
+				break;
+			}
+		}
+	}
+	if (!found_exe) {
+		return true; // Unable to read console info, assume true.
+	}
+
+	return found_conwrap_exe;
+}
+
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	if (!EngineDebugger::is_active()) {
 		return FALSE;
@@ -209,7 +255,7 @@ void OS_Windows::initialize() {
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
-	NetSocketPosix::make_default();
+	NetSocketWinSock::make_default();
 
 	// We need to know how often the clock is updated
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
@@ -303,7 +349,7 @@ void OS_Windows::finalize_core() {
 	timeEndPeriod(1);
 
 	memdelete(process_map);
-	NetSocketPosix::cleanup();
+	NetSocketWinSock::cleanup();
 
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 	remove_error_handler(&error_handlers);
@@ -918,15 +964,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	sa.lpSecurityDescriptor = nullptr;
 
 	ERR_FAIL_COND_V(!CreatePipe(&pipe_in[0], &pipe_in[1], &sa, 0), ret);
-	if (!SetHandleInformation(pipe_in[1], HANDLE_FLAG_INHERIT, 0)) {
-		CLEAN_PIPES
-		ERR_FAIL_V(ret);
-	}
 	if (!CreatePipe(&pipe_out[0], &pipe_out[1], &sa, 0)) {
-		CLEAN_PIPES
-		ERR_FAIL_V(ret);
-	}
-	if (!SetHandleInformation(pipe_out[0], HANDLE_FLAG_INHERIT, 0)) {
 		CLEAN_PIPES
 		ERR_FAIL_V(ret);
 	}
@@ -939,16 +977,37 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	// Create process.
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
-	pi.si.dwFlags |= STARTF_USESTDHANDLES;
-	pi.si.hStdInput = pipe_in[0];
-	pi.si.hStdOutput = pipe_out[1];
-	pi.si.hStdError = pipe_err[1];
+	pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+	pi.si.StartupInfo.hStdInput = pipe_in[0];
+	pi.si.StartupInfo.hStdOutput = pipe_out[1];
+	pi.si.StartupInfo.hStdError = pipe_err[1];
 
-	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW;
+	size_t attr_list_size = 0;
+	InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
+	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+	if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	HANDLE handles_to_inherit[] = { pipe_in[0], pipe_out[1], pipe_err[1] };
+	if (!UpdateProcThreadAttribute(
+				pi.si.lpAttributeList,
+				0,
+				PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+				handles_to_inherit,
+				sizeof(handles_to_inherit),
+				nullptr,
+				nullptr)) {
+		CLEAN_PIPES
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+		ERR_FAIL_V(ret);
+	}
+
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT;
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
@@ -964,11 +1023,13 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi)) {
 		CLEAN_PIPES
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 		ERR_FAIL_V_MSG(ret, "Could not create child process: " + command);
 	}
 	CloseHandle(pipe_in[0]);
 	CloseHandle(pipe_out[1]);
 	CloseHandle(pipe_err[1]);
+	DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 
 	ProcessID pid = pi.pi.dwProcessId;
 	process_map_mutex.lock();
@@ -1000,9 +1061,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	bool inherit_handles = false;
 	HANDLE pipe[2] = { nullptr, nullptr };
@@ -1014,16 +1075,40 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		sa.lpSecurityDescriptor = nullptr;
 
 		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
-		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
 
-		pi.si.dwFlags |= STARTF_USESTDHANDLES;
-		pi.si.hStdOutput = pipe[1];
+		pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.StartupInfo.hStdOutput = pipe[1];
 		if (read_stderr) {
-			pi.si.hStdError = pipe[1];
+			pi.si.StartupInfo.hStdError = pipe[1];
+		}
+
+		size_t attr_list_size = 0;
+		InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
+		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+		if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
+			CloseHandle(pipe[0]); // Cleanup pipe handles.
+			CloseHandle(pipe[1]);
+			ERR_FAIL_V(ERR_CANT_FORK);
+		}
+		if (!UpdateProcThreadAttribute(
+					pi.si.lpAttributeList,
+					0,
+					PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+					&pipe[1],
+					sizeof(HANDLE),
+					nullptr,
+					nullptr)) {
+			CloseHandle(pipe[0]); // Cleanup pipe handles.
+			CloseHandle(pipe[1]);
+			DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+			ERR_FAIL_V(ERR_CANT_FORK);
 		}
 		inherit_handles = true;
 	}
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
+	if (inherit_handles) {
+		creation_flags |= EXTENDED_STARTUPINFO_PRESENT;
+	}
 	if (p_open_console) {
 		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
@@ -1046,6 +1131,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 	}
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
@@ -1101,6 +1187,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	CloseHandle(pi.pi.hProcess);
 	CloseHandle(pi.pi.hThread);
+	if (r_pipe) {
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+	}
 
 	return OK;
 }
@@ -1114,9 +1203,9 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si.StartupInfo);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
@@ -1639,14 +1728,113 @@ void OS_Windows::unset_environment(const String &p_var) const {
 	SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr); // Null to delete.
 }
 
-String OS_Windows::get_stdin_string() {
-	char buff[1024];
+String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
+	if (get_stdin_type() == STD_HANDLE_INVALID) {
+		return String();
+	}
+
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
 	DWORD count = 0;
-	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
-		return String::utf8((const char *)buff, count);
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
+		return String::utf8((const char *)data.ptr(), count);
 	}
 
 	return String();
+}
+
+PackedByteArray OS_Windows::get_stdin_buffer(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	DWORD count = 0;
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
+		return data;
+	}
+
+	return PackedByteArray();
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
+	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+			if (!is_using_con_wrapper()) {
+				return STD_HANDLE_INVALID; // Window app can't read stdin input without werapper.
+			}
+#endif
+			return STD_HANDLE_CONSOLE;
+		}
+	}
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+			return STD_HANDLE_CONSOLE;
+		}
+	}
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stderr_type() const {
+	HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+			return STD_HANDLE_CONSOLE;
+		}
+	}
 }
 
 Error OS_Windows::shell_open(const String &p_uri) {
@@ -1738,6 +1926,34 @@ String OS_Windows::get_locale() const {
 	}
 
 	return "en";
+}
+
+String OS_Windows::get_model_name() const {
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Hardware\\Description\\System\\BIOS", 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		return OS::get_model_name();
+	}
+
+	String sys_name;
+	String board_name;
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"SystemProductName", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+		sys_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	}
+	buffer_len = 256;
+	if (RegQueryValueExW(hkey, L"BaseBoardProduct", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+		board_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	}
+	RegCloseKey(hkey);
+	if (!sys_name.is_empty() && sys_name.to_lower() != "system product name") {
+		return sys_name;
+	}
+	if (!board_name.is_empty() && board_name.to_lower() != "base board product") {
+		return board_name;
+	}
+	return OS::get_model_name();
 }
 
 String OS_Windows::get_processor_name() const {
