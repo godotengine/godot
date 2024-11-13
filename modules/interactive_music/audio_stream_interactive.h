@@ -100,7 +100,7 @@ private:
 		TransitionFromTime from_time = TRANSITION_FROM_TIME_NEXT_BEAT;
 		TransitionToTime to_time = TRANSITION_TO_TIME_START;
 		FadeMode fade_mode = FADE_AUTOMATIC;
-		int fade_beats = 1;
+		float fade_beats = 1;
 		bool use_filler_clip = false;
 		int filler_clip = 0;
 		bool hold_previous = false;
