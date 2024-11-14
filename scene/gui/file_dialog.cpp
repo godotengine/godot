@@ -68,9 +68,9 @@ void FileDialog::_native_popup() {
 		root = OS::get_singleton()->get_user_data_dir();
 	}
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+		DisplayServer::get_singleton()->file_dialog_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
 	}
 }
 
