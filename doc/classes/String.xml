@@ -248,7 +248,7 @@
 			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
-				[param values] can be a [Dictionary], an [Array] or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				[param values] can be a [Dictionary], an [Array], or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
 				[codeblock]
 				# Prints "Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it."
 				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
@@ -265,7 +265,7 @@
 				[/codeblock]
 				When passing an [Object], the property names from [method Object.get_property_list] are used as keys.
 				[codeblock]
-				# Prints: Visible true, position (0, 0).
+				# Prints "Visible true, position (0, 0)"
 				var node = Node2D.new()
 				print("Visible {visible}, position {position}".format(node))
 				[/codeblock]
