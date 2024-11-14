@@ -237,7 +237,7 @@
 			<return type="int" />
 			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns index of the screen which contains specified rectangle.
+				Returns index of screen that overlaps the most with the given rectangle. Returns [code]-1[/code] if the rectangle doesn't overlap any screen or has zero area.
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
