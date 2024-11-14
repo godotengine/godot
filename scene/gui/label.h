@@ -52,6 +52,7 @@ private:
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 	bool clip = false;
+	TextServer::TextOverrunDirection ellipsis_direction = TextServer::OVERRUN_TRIM_END;
 	String el_char = U"…";
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	mutable Size2 minsize;
@@ -155,6 +156,9 @@ public:
 
 	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
 	BitField<TextServer::JustificationFlag> get_justification_flags() const;
+
+	void set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction);
+	TextServer::TextOverrunDirection get_ellipsis_direction() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;

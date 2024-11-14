@@ -488,17 +488,19 @@ public:
 	GDVIRTUAL4RC(PackedInt32Array, _shaped_text_get_line_breaks, RID, double, int64_t, BitField<TextServer::LineBreakFlag>);
 	GDVIRTUAL3RC(PackedInt32Array, _shaped_text_get_word_breaks, RID, BitField<TextServer::GraphemeFlag>, BitField<TextServer::GraphemeFlag>);
 
-	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped) const override;
-	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped) const override;
+	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped, bool p_left = false) const override;
+	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped, bool p_left = false) const override;
 	virtual const Glyph *shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const override;
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override;
-	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_trim_pos, RID);
-	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_ellipsis_pos, RID);
+	virtual TextServer::TextOverrunDirection shaped_text_get_ellipsis_direction(const RID &p_shaped) const override;
+	GDVIRTUAL2RC_REQUIRED(int64_t, _shaped_text_get_trim_pos, RID, bool);
+	GDVIRTUAL2RC_REQUIRED(int64_t, _shaped_text_get_ellipsis_pos, RID, bool);
 	GDVIRTUAL1RC_REQUIRED(GDExtensionConstPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
 	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_ellipsis_glyph_count, RID);
+	GDVIRTUAL1RC_REQUIRED(TextServer::TextOverrunDirection, _shaped_text_get_ellipsis_direction, RID);
 
-	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;
-	GDVIRTUAL3(_shaped_text_overrun_trim_to_width, RID, double, BitField<TextServer::TextOverrunFlag>);
+	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags, TextServer::TextOverrunDirection p_direction) override;
+	GDVIRTUAL4(_shaped_text_overrun_trim_to_width, RID, double, BitField<TextServer::TextOverrunFlag>, TextServer::TextOverrunDirection);
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const override;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const override;

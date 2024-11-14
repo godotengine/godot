@@ -130,6 +130,12 @@ public:
 		OVERRUN_JUSTIFICATION_AWARE = 1 << 4,
 	};
 
+	enum TextOverrunDirection {
+		OVERRUN_TRIM_START,
+		OVERRUN_TRIM_BOTH,
+		OVERRUN_TRIM_END,
+	};
+
 	enum GraphemeFlag {
 		GRAPHEME_IS_VALID = 1 << 0, // Grapheme is valid.
 		GRAPHEME_IS_RTL = 1 << 1, // Grapheme is right-to-left.
@@ -228,6 +234,11 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	PackedInt32Array _shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
+
+	int64_t _shaped_text_get_trim_pos_bind_compat_99236(const RID &p_shaped) const;
+	int64_t _shaped_text_get_ellipsis_pos_bind_compat_99236(const RID &p_shaped) const;
+	void _shaped_text_overrun_trim_to_width_bind_compat_99236(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags);
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -496,13 +507,14 @@ public:
 	virtual PackedInt32Array shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start = 0, BitField<TextServer::LineBreakFlag> p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const;
 	virtual PackedInt32Array shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION, BitField<TextServer::GraphemeFlag> p_skip_grapheme_flags = GRAPHEME_IS_VIRTUAL) const;
 
-	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped) const = 0;
-	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped) const = 0;
+	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped, bool p_left = false) const = 0;
+	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped, bool p_left = false) const = 0;
 	virtual const Glyph *shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const;
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const = 0;
+	virtual TextOverrunDirection shaped_text_get_ellipsis_direction(const RID &p_shaped) const = 0;
 
-	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) = 0;
+	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags, TextOverrunDirection p_direction = OVERRUN_TRIM_END) = 0;
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const = 0;
@@ -654,6 +666,7 @@ VARIANT_ENUM_CAST(TextServer::Orientation);
 VARIANT_BITFIELD_CAST(TextServer::JustificationFlag);
 VARIANT_BITFIELD_CAST(TextServer::LineBreakFlag);
 VARIANT_BITFIELD_CAST(TextServer::TextOverrunFlag);
+VARIANT_ENUM_CAST(TextServer::TextOverrunDirection);
 VARIANT_BITFIELD_CAST(TextServer::GraphemeFlag);
 VARIANT_ENUM_CAST(TextServer::Hinting);
 VARIANT_ENUM_CAST(TextServer::SubpixelPositioning);

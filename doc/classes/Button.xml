@@ -49,6 +49,9 @@
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
 			If [code]true[/code], text that is too large to fit the button is clipped horizontally. If [code]false[/code], the button will always be wide enough to hold the text. The text is not vertically clipped, and the button's height is not affected by this property.
 		</member>
+		<member name="ellipsis_direction" type="int" setter="set_ellipsis_direction" getter="get_ellipsis_direction" enum="TextServer.TextOverrunDirection" default="2">
+			Ellipsis/text clipping direction.
+		</member>
 		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
 			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect. See also [theme_item icon_max_width].
 		</member>

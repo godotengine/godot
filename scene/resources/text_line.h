@@ -44,6 +44,7 @@ private:
 
 	mutable bool dirty = true;
 
+	TextServer::TextOverrunDirection ellipsis_direction = TextServer::OVERRUN_TRIM_END;
 	float width = -1.0;
 	BitField<TextServer::JustificationFlag> flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
@@ -69,6 +70,9 @@ public:
 
 	void set_orientation(TextServer::Orientation p_orientation);
 	TextServer::Orientation get_orientation() const;
+
+	void set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction);
+	TextServer::TextOverrunDirection get_ellipsis_direction() const;
 
 	void set_preserve_invalid(bool p_enabled);
 	bool get_preserve_invalid() const;

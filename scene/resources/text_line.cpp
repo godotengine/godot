@@ -33,6 +33,11 @@
 void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextLine::clear);
 
+	ClassDB::bind_method(D_METHOD("set_ellipsis_direction", "ellipsis_direction"), &TextLine::set_ellipsis_direction);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_direction"), &TextLine::get_ellipsis_direction);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ellipsis_direction", PROPERTY_HINT_ENUM, "Start,Both,End"), "set_ellipsis_direction", "get_ellipsis_direction");
+
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextLine::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextLine::get_direction);
 
@@ -142,10 +147,10 @@ void TextLine::_shape() const {
 				TS->shaped_text_fit_to_width(rid, width, flags);
 				overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 				TS->shaped_text_set_custom_ellipsis(rid, (el_char.length() > 0) ? el_char[0] : 0x2026);
-				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
+				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags, ellipsis_direction);
 			} else {
 				TS->shaped_text_set_custom_ellipsis(rid, (el_char.length() > 0) ? el_char[0] : 0x2026);
-				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
+				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags, ellipsis_direction);
 			}
 		} else if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			TS->shaped_text_fit_to_width(rid, width, flags);
@@ -160,6 +165,19 @@ RID TextLine::get_rid() const {
 
 void TextLine::clear() {
 	TS->shaped_text_clear(rid);
+}
+
+void TextLine::set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction) {
+	if (ellipsis_direction == p_ellipsis_direction) {
+		return;
+	}
+
+	ellipsis_direction = p_ellipsis_direction;
+	dirty = true;
+}
+
+TextServer::TextOverrunDirection TextLine::get_ellipsis_direction() const {
+	return ellipsis_direction;
 }
 
 void TextLine::set_preserve_invalid(bool p_enabled) {

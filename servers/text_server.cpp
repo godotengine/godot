@@ -445,12 +445,13 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags", "skip_grapheme_flags"), &TextServer::shaped_text_get_word_breaks, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION), DEFVAL(GRAPHEME_IS_VIRTUAL));
 
-	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::shaped_text_get_trim_pos);
-	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::shaped_text_get_ellipsis_pos);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped", "left"), &TextServer::shaped_text_get_trim_pos, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped", "left"), &TextServer::shaped_text_get_ellipsis_pos, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyphs", "shaped"), &TextServer::_shaped_text_get_ellipsis_glyphs_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyph_count", "shaped"), &TextServer::shaped_text_get_ellipsis_glyph_count);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_direction", "shaped"), &TextServer::shaped_text_get_ellipsis_direction);
 
-	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIM));
+	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags", "direction"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIM), DEFVAL(OVERRUN_TRIM_END));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_objects", "shaped"), &TextServer::shaped_text_get_objects);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_object_rect", "shaped", "key"), &TextServer::shaped_text_get_object_rect);
@@ -573,6 +574,11 @@ void TextServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(OVERRUN_ADD_ELLIPSIS);
 	BIND_BITFIELD_FLAG(OVERRUN_ENFORCE_ELLIPSIS);
 	BIND_BITFIELD_FLAG(OVERRUN_JUSTIFICATION_AWARE);
+
+	/* TextOverrunDirection */
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_START);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_BOTH);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_END);
 
 	/* GraphemeFlag */
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_VALID);
@@ -1660,10 +1666,15 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
-	bool rtl = shaped_text_get_direction(p_shaped) == DIRECTION_RTL;
+	bool is_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	TextOverrunDirection el_dir = shaped_text_get_ellipsis_direction(p_shaped);
+	bool left = ((el_dir == OVERRUN_TRIM_END) && is_rtl) || ((el_dir == OVERRUN_TRIM_START) && !is_rtl) || (el_dir == OVERRUN_TRIM_BOTH);
+	bool right = ((el_dir == OVERRUN_TRIM_START) && is_rtl) || ((el_dir == OVERRUN_TRIM_END) && !is_rtl) || (el_dir == OVERRUN_TRIM_BOTH);
 
-	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
-	int trim_pos = shaped_text_get_trim_pos(p_shaped);
+	int left_ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped, true);
+	int left_trim_pos = shaped_text_get_trim_pos(p_shaped, true);
+	int right_ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped, false);
+	int right_trim_pos = shaped_text_get_trim_pos(p_shaped, false);
 
 	const Glyph *ellipsis_glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
 	int ellipsis_gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
@@ -1673,7 +1684,7 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 
 	Vector2 ofs;
 	// Draw RTL ellipsis string when needed.
-	if (rtl && ellipsis_pos >= 0) {
+	if (left && left_ellipsis_pos >= 0) {
 		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
 				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
@@ -1687,15 +1698,14 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
-		if (trim_pos >= 0) {
-			if (rtl) {
-				if (i < trim_pos) {
-					continue;
-				}
-			} else {
-				if (i >= trim_pos) {
-					break;
-				}
+		if (left && (left_trim_pos >= 0)) {
+			if (i < left_trim_pos) {
+				continue;
+			}
+		}
+		if (right && (right_trim_pos >= 0)) {
+			if (i >= right_trim_pos) {
+				break;
 			}
 		}
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1739,7 +1749,7 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 		}
 	}
 	// Draw LTR ellipsis string when needed.
-	if (!rtl && ellipsis_pos >= 0) {
+	if (right && right_ellipsis_pos >= 0) {
 		for (int i = 0; i < ellipsis_gl_size; i++) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
 				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
@@ -1756,10 +1766,15 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
-	bool rtl = (shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL);
+	bool is_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	TextOverrunDirection el_dir = shaped_text_get_ellipsis_direction(p_shaped);
+	bool left = ((el_dir == OVERRUN_TRIM_END) && is_rtl) || ((el_dir == OVERRUN_TRIM_START) && !is_rtl) || (el_dir == OVERRUN_TRIM_BOTH);
+	bool right = ((el_dir == OVERRUN_TRIM_START) && is_rtl) || ((el_dir == OVERRUN_TRIM_END) && !is_rtl) || (el_dir == OVERRUN_TRIM_BOTH);
 
-	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
-	int trim_pos = shaped_text_get_trim_pos(p_shaped);
+	int left_ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped, true);
+	int left_trim_pos = shaped_text_get_trim_pos(p_shaped, true);
+	int right_ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped, false);
+	int right_trim_pos = shaped_text_get_trim_pos(p_shaped, false);
 
 	const Glyph *ellipsis_glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
 	int ellipsis_gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
@@ -1769,7 +1784,7 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 
 	Vector2 ofs;
 	// Draw RTL ellipsis string when needed.
-	if (rtl && ellipsis_pos >= 0) {
+	if (left && left_ellipsis_pos >= 0) {
 		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
 				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
@@ -1783,15 +1798,14 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
-		if (trim_pos >= 0) {
-			if (rtl) {
-				if (i < trim_pos) {
-					continue;
-				}
-			} else {
-				if (i >= trim_pos) {
-					break;
-				}
+		if (left && (left_trim_pos >= 0)) {
+			if (i < left_trim_pos) {
+				continue;
+			}
+		}
+		if (right && (right_trim_pos >= 0)) {
+			if (i >= right_trim_pos) {
+				break;
 			}
 		}
 		for (int j = 0; j < glyphs[i].repeat; j++) {
@@ -1832,7 +1846,7 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 		}
 	}
 	// Draw LTR ellipsis string when needed.
-	if (!rtl && ellipsis_pos >= 0) {
+	if (right && right_ellipsis_pos >= 0) {
 		for (int i = 0; i < ellipsis_gl_size; i++) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
 				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
@@ -1896,13 +1910,15 @@ void TextServer::debug_print_glyph(int p_idx, const Glyph &p_glyph) const {
 }
 
 void TextServer::shaped_text_debug_print(const RID &p_shaped) const {
-	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
-	int trim_pos = shaped_text_get_trim_pos(p_shaped);
+	int left_ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped, true);
+	int left_trim_pos = shaped_text_get_trim_pos(p_shaped, true);
+	int right_ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped, false);
+	int right_trim_pos = shaped_text_get_trim_pos(p_shaped, false);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
-	print_line(vformat("%x: range: %d-%d glyps: %d trim: %d ellipsis: %d", p_shaped.get_id(), range.x, range.y, v_size, trim_pos, ellipsis_pos));
+	print_line(vformat("%x: range: %d-%d glyps: %d trim: %d ellipsis: %d", p_shaped.get_id(), range.x, range.y, v_size, left_trim_pos, left_ellipsis_pos, right_trim_pos, right_ellipsis_pos));
 
 	for (int i = 0; i < v_size; i++) {
 		debug_print_glyph(i, glyphs[i]);

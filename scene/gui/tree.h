@@ -250,6 +250,9 @@ public:
 	void set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior(int p_column) const;
 
+	void set_ellipsis_direction(int p_column, TextServer::TextOverrunDirection p_ellipsis_direction);
+	TextServer::TextOverrunDirection get_ellipsis_direction(int p_column) const;
+
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 

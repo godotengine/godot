@@ -285,3 +285,15 @@ GH-101482
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/set_table_column_expand/arguments': size changed value in new API, from 3 to 4.
 
 Added optional "shrink" argument. Compatibility method registered.
+
+
+GH-99236
+--------
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_get_ellipsis_pos/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_get_trim_pos/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_overrun_trim_to_width/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_get_ellipsis_pos/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_get_trim_pos/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_overrun_trim_to_width/arguments': size changed value in new API, from 3 to 4.
+
+Added optional parameters. Compatibility methods registered.

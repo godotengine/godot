@@ -109,10 +109,11 @@ public:
 	virtual const Glyph *shaped_text_sort_logical(const RID &p_shaped) override { return nullptr; }
 	virtual int64_t shaped_text_get_glyph_count(const RID &p_shaped) const override { return 0; }
 	virtual Vector2i shaped_text_get_range(const RID &p_shaped) const override { return Vector2i(); }
-	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped) const override { return -1; }
-	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped) const override { return -1; }
+	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped, bool p_left = false) const override { return -1; }
+	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped, bool p_left = false) const override { return -1; }
 	virtual const Glyph *shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const override { return nullptr; }
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override { return -1; }
+	virtual TextOverrunDirection shaped_text_get_ellipsis_direction(const RID &p_shaped) const override { return OVERRUN_TRIM_END; }
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const override { return Array(); }
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const override { return Rect2(); }
 	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const override { return Vector2i(); }

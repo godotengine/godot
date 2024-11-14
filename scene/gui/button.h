@@ -51,6 +51,7 @@ private:
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
 	bool clip_text = false;
+	TextServer::TextOverrunDirection ellipsis_direction = TextServer::OVERRUN_TRIM_END;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	HorizontalAlignment horizontal_icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
@@ -125,6 +126,9 @@ public:
 
 	void set_text(const String &p_text);
 	String get_text() const;
+
+	void set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction);
+	TextServer::TextOverrunDirection get_ellipsis_direction() const;
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;

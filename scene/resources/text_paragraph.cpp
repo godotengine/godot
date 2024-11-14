@@ -33,6 +33,11 @@
 void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextParagraph::clear);
 
+	ClassDB::bind_method(D_METHOD("set_ellipsis_direction", "ellipsis_direction"), &TextParagraph::set_ellipsis_direction);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_direction"), &TextParagraph::get_ellipsis_direction);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ellipsis_direction", PROPERTY_HINT_ENUM, "Start,Both,End"), "set_ellipsis_direction", "get_ellipsis_direction");
+
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextParagraph::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextParagraph::get_direction);
 
@@ -266,12 +271,12 @@ void TextParagraph::_shape_lines() const {
 						TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_set_custom_ellipsis(lines_rid[visible_lines - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
-						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], line_w, overrun_flags);
+						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], line_w, overrun_flags, ellipsis_direction);
 					}
 				}
 			} else if (lines_hidden) {
 				TS->shaped_text_set_custom_ellipsis(lines_rid[visible_lines - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
-				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], (visible_lines - 1 <= dropcap_lines) ? (width - h_offset) : width, overrun_flags);
+				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], (visible_lines - 1 <= dropcap_lines) ? (width - h_offset) : width, overrun_flags, ellipsis_direction);
 			}
 		} else {
 			// Autowrap disabled.
@@ -297,11 +302,11 @@ void TextParagraph::_shape_lines() const {
 					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);
+					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags, ellipsis_direction);
 					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
 					TS->shaped_text_set_custom_ellipsis(lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);
+					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags, ellipsis_direction);
 				}
 			}
 		}
@@ -334,6 +339,19 @@ void TextParagraph::clear() {
 	lines_rid.clear();
 	TS->shaped_text_clear(rid);
 	TS->shaped_text_clear(dropcap_rid);
+}
+
+void TextParagraph::set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction) {
+	if (ellipsis_direction == p_ellipsis_direction) {
+		return;
+	}
+
+	ellipsis_direction = p_ellipsis_direction;
+	lines_dirty = true;
+}
+
+TextServer::TextOverrunDirection TextParagraph::get_ellipsis_direction() const {
+	return ellipsis_direction;
 }
 
 void TextParagraph::set_preserve_invalid(bool p_enabled) {

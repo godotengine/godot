@@ -577,6 +577,21 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) const {
 	}
 	p_paragraph->add_string(p_text, font, font_size, language);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
+	p_paragraph->set_ellipsis_direction(ellipsis_direction);
+}
+
+void Button::set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction) {
+	if (ellipsis_direction != p_ellipsis_direction) {
+		ellipsis_direction = p_ellipsis_direction;
+		_shape();
+
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+TextServer::TextOverrunDirection Button::get_ellipsis_direction() const {
+	return ellipsis_direction;
 }
 
 void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
@@ -784,6 +799,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vertical_icon_alignment"), &Button::get_vertical_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_ellipsis_direction", "ellipsis_direction"), &Button::set_ellipsis_direction);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_direction"), &Button::get_ellipsis_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_button_icon", "get_button_icon");
@@ -792,6 +809,7 @@ void Button::_bind_methods() {
 	ADD_GROUP("Text Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ellipsis_direction", PROPERTY_HINT_ENUM, "Start,Both,End"), "set_ellipsis_direction", "get_ellipsis_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 
