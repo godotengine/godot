@@ -191,7 +191,12 @@ private:
 	Error _buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align = 32);
 
 	void update_perf_report();
-
+	// flag for batching descriptor sets
+	bool descriptor_set_batching = true;
+	// When true, the final draw call that copies our offscreen result into the Swapchain is put into its
+	// own cmd buffer, so that the whole rendering can start early instead of having to wait for the
+	// swapchain semaphore to be signaled (which causes bubbles).
+	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
 	String perf_report_text;
@@ -543,6 +548,7 @@ public:
 	void framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata);
 
 	FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
+	Size2 framebuffer_get_size(RID p_framebuffer);
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -843,6 +849,7 @@ public:
 	RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 	RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
 	RID shader_create_placeholder();
+	void shader_destroy_modules(RID p_shader);
 
 	uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
@@ -855,13 +862,20 @@ public:
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
+	/*****************/
+	/**** BUFFERS ****/
+	/*****************/
+
 	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
+
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	struct Uniform {
 		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
 		uint32_t binding = 0; // Binding index as specified in shader.
+		// This flag specifies that this is an immutable sampler to be set when creating pipeline layout.
+		bool immutable_sampler = false;
 
 	private:
 		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
@@ -922,6 +936,9 @@ public:
 		_FORCE_INLINE_ Uniform() = default;
 	};
 
+	typedef Uniform PipelineImmutableSampler;
+	RID shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID(), const Vector<PipelineImmutableSampler> &p_immutable_samplers = Vector<PipelineImmutableSampler>());
+
 private:
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 	static const uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
@@ -963,10 +980,22 @@ private:
 	void _uniform_set_update_shared(UniformSet *p_uniform_set);
 
 public:
+	/** Bake a set of uniforms that can be bound at runtime with the given shader.
+	 * @remark				Setting p_linear_pool = true while keeping the RID around for longer than the current frame will result in undefined behavior.
+	 * @param p_uniforms	The uniforms to bake into a set.
+	 * @param p_shader		The shader you intend to bind these uniforms with.
+	 * @param p_set_index	The set. Should be in range [0; 4)
+	 *						The value 4 comes from physical_device_properties.limits.maxBoundDescriptorSets. Vulkan only guarantees maxBoundDescriptorSets >= 4 (== 4 is very common on Mobile).
+	 * @param p_linear_pool	If you call this function every frame (and free the returned RID within the same frame!), set it to true for better performance.
+	 *						If you plan on keeping the return value around for more than one frame (e.g. Sets that are created once and reused forever) you MUST set it to false.
+	 * @return				Baked descriptor set.
+	 */
 	template <typename Collection>
-	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
+
+	bool uniform_sets_have_linear_pools() const;
 
 	/*******************/
 	/**** PIPELINES ****/
@@ -1181,6 +1210,7 @@ public:
 	void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 	void draw_list_draw_indirect(DrawListID p_list, bool p_use_indices, RID p_buffer, uint32_t p_offset = 0, uint32_t p_draw_count = 1, uint32_t p_stride = 0);
 
+	void draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
 
@@ -1374,7 +1404,8 @@ private:
 		// This must have the same size of the transfer worker pool.
 		TightLocalVector<RDD::SemaphoreID> transfer_worker_semaphores;
 
-		// Extra command buffer pool used for driver workarounds.
+		// Extra command buffer pool used for driver workarounds or to reduce GPU bubbles by
+		// splitting the final render pass to the swapchain into its own cmd buffer.
 		RDG::CommandBufferPool command_buffer_pool;
 
 		struct Timestamp {
@@ -1405,8 +1436,14 @@ private:
 	uint64_t texture_memory = 0;
 	uint64_t buffer_memory = 0;
 
+protected:
+	void execute_chained_cmds(bool p_present_swap_chain,
+			RenderingDeviceDriver::FenceID p_draw_fence,
+			RenderingDeviceDriver::SemaphoreID p_dst_draw_semaphore_to_signal);
+
+public:
 	void _free_internal(RID p_id);
-	void _begin_frame();
+	void _begin_frame(bool p_presented = false);
 	void _end_frame();
 	void _execute_frame(bool p_present);
 	void _stall_for_previous_frames();
