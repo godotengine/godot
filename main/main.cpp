@@ -1499,6 +1499,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			editor = true;
 			cmdline_tool = true;
 			wait_for_import = true;
+			fail_on_error = true;
 			main_args.push_back(arg);
 		} else if (arg == "--patches") {
 			if (N) {
