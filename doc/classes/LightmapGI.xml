@@ -70,6 +70,7 @@
 		</member>
 		<member name="texel_scale" type="float" setter="set_texel_scale" getter="get_texel_scale" default="1.0">
 			Scales the lightmap texel density of all meshes for the current bake. This is a multiplier that builds upon the existing lightmap texel size defined in each imported 3D scene, along with the per-mesh density multiplier (which is designed to be used when the same mesh is used at different scales). Lower values will result in faster bake times.
+			For example, doubling [member texel_scale] doubles the lightmap texture resolution for all objects [i]on each axis[/i], so it will [i]quadruple[/i] the texel count.
 		</member>
 		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
 			If [code]true[/code], uses a GPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
