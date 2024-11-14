@@ -1004,6 +1004,14 @@ float AudioServer::get_bus_volume_db(int p_bus) const {
 	return buses[p_bus]->volume_db;
 }
 
+void AudioServer::set_bus_volume_linear(int p_bus, float p_volume_linear) {
+	set_bus_volume_db(p_bus, Math::linear_to_db(p_volume_linear));
+}
+
+float AudioServer::get_bus_volume_linear(int p_bus) const {
+	return Math::db_to_linear(get_bus_volume_db(p_bus));
+}
+
 int AudioServer::get_bus_channels(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	return buses[p_bus]->channels.size();
@@ -1938,6 +1946,9 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_idx", "volume_db"), &AudioServer::set_bus_volume_db);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_idx"), &AudioServer::get_bus_volume_db);
+
+	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_idx", "volume_linear"), &AudioServer::set_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_idx"), &AudioServer::get_bus_volume_linear);
 
 	ClassDB::bind_method(D_METHOD("set_bus_send", "bus_idx", "send"), &AudioServer::set_bus_send);
 	ClassDB::bind_method(D_METHOD("get_bus_send", "bus_idx"), &AudioServer::get_bus_send);
