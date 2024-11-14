@@ -1,0 +1,12 @@
+diff --git a/thirdparty/spirv-reflect/spirv_reflect.h b/thirdparty/spirv-reflect/spirv_reflect.h
+index cf8cfe2183..8f281ec80f 100644
+--- a/thirdparty/spirv-reflect/spirv_reflect.h
++++ b/thirdparty/spirv-reflect/spirv_reflect.h
+@@ -34,7 +34,7 @@ VERSION HISTORY
+ #if defined(SPIRV_REFLECT_USE_SYSTEM_SPIRV_H)
+ #include <spirv/unified1/spirv.h>
+ #else
+-#include "./include/spirv/unified1/spirv.h"
++#include "../spirv-headers/include/spirv/unified1/spirv.h"
+ #endif
+ 
