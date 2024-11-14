@@ -701,10 +701,10 @@ void RenderingDeviceGraph::_run_compute_list_command(RDD::CommandBufferID p_comm
 				driver->command_bind_compute_pipeline(p_command_buffer, bind_pipeline_instruction->pipeline);
 				instruction_data_cursor += sizeof(ComputeListBindPipelineInstruction);
 			} break;
-			case ComputeListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const ComputeListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const ComputeListBindUniformSetInstruction *>(instruction);
-				driver->command_bind_compute_uniform_set(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index);
-				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
+			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
+				driver->command_bind_compute_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
+				instruction_data_cursor += sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case ComputeListInstruction::TYPE_DISPATCH: {
 				const ComputeListDispatchInstruction *dispatch_instruction = reinterpret_cast<const ComputeListDispatchInstruction *>(instruction);
@@ -784,10 +784,10 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 				driver->command_bind_render_pipeline(p_command_buffer, bind_pipeline_instruction->pipeline);
 				instruction_data_cursor += sizeof(DrawListBindPipelineInstruction);
 			} break;
-			case DrawListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const DrawListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const DrawListBindUniformSetInstruction *>(instruction);
-				driver->command_bind_render_uniform_set(p_command_buffer, bind_uniform_set_instruction->uniform_set, bind_uniform_set_instruction->shader, bind_uniform_set_instruction->set_index);
-				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
+			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
+				driver->command_bind_render_uniform_sets(p_command_buffer, VectorView<RDD::UniformSetID>(bind_uniform_sets_instruction->uniform_set_ids(), bind_uniform_sets_instruction->set_count), bind_uniform_sets_instruction->shader, bind_uniform_sets_instruction->first_set_index, bind_uniform_sets_instruction->set_count);
+				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case DrawListInstruction::TYPE_BIND_VERTEX_BUFFERS: {
 				const DrawListBindVertexBuffersInstruction *bind_vertex_buffers_instruction = reinterpret_cast<const DrawListBindVertexBuffersInstruction *>(instruction);
@@ -874,7 +874,7 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 	}
 }
 
-void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_cache, RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb) {
+void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_cache, RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb, bool p_split_cmd_buffer) {
 	DEV_ASSERT(p_attachment_operations.size() == p_attachment_clear_values.size());
 
 	draw_instruction_list.clear();
@@ -899,6 +899,8 @@ void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_
 		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
 		draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
 	}
+
+	draw_instruction_list.split_cmd_buffer = p_split_cmd_buffer;
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	draw_instruction_list.breadcrumb = p_breadcrumb;
@@ -979,6 +981,24 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				}
 
 				const RecordedDrawListCommand *draw_list_command = reinterpret_cast<const RecordedDrawListCommand *>(command);
+
+				if (draw_list_command->split_cmd_buffer) {
+					// Create or reuse a command buffer and finish recording the current one.
+					driver->command_buffer_end(r_command_buffer);
+
+					while (r_command_buffer_pool.buffers_used >= r_command_buffer_pool.buffers.size()) {
+						RDD::CommandBufferID command_buffer = driver->command_buffer_create(r_command_buffer_pool.pool);
+						RDD::SemaphoreID command_semaphore = driver->semaphore_create();
+						r_command_buffer_pool.buffers.push_back(command_buffer);
+						r_command_buffer_pool.semaphores.push_back(command_semaphore);
+					}
+
+					// Start recording on the next usable command buffer from the pool.
+					uint32_t command_buffer_index = r_command_buffer_pool.buffers_used++;
+					r_command_buffer = r_command_buffer_pool.buffers[command_buffer_index];
+					driver->command_buffer_begin(r_command_buffer);
+				}
+
 				const VectorView clear_values(draw_list_command->clear_values(), draw_list_command->clear_values_count);
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 				driver->command_insert_breadcrumb(r_command_buffer, draw_list_command->breadcrumb);
@@ -1319,10 +1339,13 @@ void RenderingDeviceGraph::_print_draw_list(const uint8_t *p_instruction_data, u
 				print_line("\tBIND PIPELINE ID", itos(bind_pipeline_instruction->pipeline.id));
 				instruction_data_cursor += sizeof(DrawListBindPipelineInstruction);
 			} break;
-			case DrawListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const DrawListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const DrawListBindUniformSetInstruction *>(instruction);
-				print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_set_instruction->uniform_set.id), "SET INDEX", bind_uniform_set_instruction->set_index);
-				instruction_data_cursor += sizeof(DrawListBindUniformSetInstruction);
+			case DrawListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const DrawListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const DrawListBindUniformSetsInstruction *>(instruction);
+				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
+				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
+					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i].id), "START INDEX", bind_uniform_sets_instruction->first_set_index);
+				}
+				instruction_data_cursor += sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case DrawListInstruction::TYPE_BIND_VERTEX_BUFFERS: {
 				const DrawListBindVertexBuffersInstruction *bind_vertex_buffers_instruction = reinterpret_cast<const DrawListBindVertexBuffersInstruction *>(instruction);
@@ -1416,10 +1439,13 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 				print_line("\tBIND PIPELINE ID", itos(bind_pipeline_instruction->pipeline.id));
 				instruction_data_cursor += sizeof(ComputeListBindPipelineInstruction);
 			} break;
-			case ComputeListInstruction::TYPE_BIND_UNIFORM_SET: {
-				const ComputeListBindUniformSetInstruction *bind_uniform_set_instruction = reinterpret_cast<const ComputeListBindUniformSetInstruction *>(instruction);
-				print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_set_instruction->uniform_set.id), "SHADER ID", itos(bind_uniform_set_instruction->shader.id));
-				instruction_data_cursor += sizeof(ComputeListBindUniformSetInstruction);
+			case ComputeListInstruction::TYPE_BIND_UNIFORM_SETS: {
+				const ComputeListBindUniformSetsInstruction *bind_uniform_sets_instruction = reinterpret_cast<const ComputeListBindUniformSetsInstruction *>(instruction);
+				print_line("\tBIND UNIFORM SETS COUNT", bind_uniform_sets_instruction->set_count);
+				for (uint32_t i = 0; i < bind_uniform_sets_instruction->set_count; i++) {
+					print_line("\tBIND UNIFORM SET ID", itos(bind_uniform_sets_instruction->uniform_set_ids()[i].id), "START INDEX", bind_uniform_sets_instruction->first_set_index);
+				}
+				instruction_data_cursor += sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * bind_uniform_sets_instruction->set_count;
 			} break;
 			case ComputeListInstruction::TYPE_DISPATCH: {
 				const ComputeListDispatchInstruction *dispatch_instruction = reinterpret_cast<const ComputeListDispatchInstruction *>(instruction);
@@ -1604,11 +1630,23 @@ void RenderingDeviceGraph::add_compute_list_bind_pipeline(RDD::PipelineID p_pipe
 }
 
 void RenderingDeviceGraph::add_compute_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
-	ComputeListBindUniformSetInstruction *instruction = reinterpret_cast<ComputeListBindUniformSetInstruction *>(_allocate_compute_list_instruction(sizeof(ComputeListBindUniformSetInstruction)));
-	instruction->type = ComputeListInstruction::TYPE_BIND_UNIFORM_SET;
+	add_compute_list_bind_uniform_sets(p_shader, VectorView(&p_uniform_set, 1), set_index, 1);
+}
+
+void RenderingDeviceGraph::add_compute_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_sets, uint32_t p_first_set_index, uint32_t p_set_count) {
+	DEV_ASSERT(p_uniform_sets.size() >= p_set_count);
+
+	uint32_t instruction_size = sizeof(ComputeListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * p_set_count;
+	ComputeListBindUniformSetsInstruction *instruction = reinterpret_cast<ComputeListBindUniformSetsInstruction *>(_allocate_compute_list_instruction(instruction_size));
+	instruction->type = ComputeListInstruction::TYPE_BIND_UNIFORM_SETS;
 	instruction->shader = p_shader;
-	instruction->uniform_set = p_uniform_set;
-	instruction->set_index = set_index;
+	instruction->first_set_index = p_first_set_index;
+	instruction->set_count = p_set_count;
+
+	RDD::UniformSetID *ids = instruction->uniform_set_ids();
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		ids[i] = p_uniform_sets[i];
+	}
 }
 
 void RenderingDeviceGraph::add_compute_list_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
@@ -1682,12 +1720,12 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
 }
 
-void RenderingDeviceGraph::add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb) {
-	_add_draw_list_begin(p_framebuffer_cache, RDD::RenderPassID(), RDD::FramebufferID(), p_region, p_attachment_operations, p_attachment_clear_values, p_uses_color, p_uses_depth, p_breadcrumb);
+void RenderingDeviceGraph::add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb, bool p_split_cmd_buffer) {
+	_add_draw_list_begin(p_framebuffer_cache, RDD::RenderPassID(), RDD::FramebufferID(), p_region, p_attachment_operations, p_attachment_clear_values, p_uses_color, p_uses_depth, p_breadcrumb, p_split_cmd_buffer);
 }
 
-void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb) {
-	_add_draw_list_begin(nullptr, p_render_pass, p_framebuffer, p_region, p_attachment_operations, p_attachment_clear_values, p_uses_color, p_uses_depth, p_breadcrumb);
+void RenderingDeviceGraph::add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb, bool p_split_cmd_buffer) {
+	_add_draw_list_begin(nullptr, p_render_pass, p_framebuffer, p_region, p_attachment_operations, p_attachment_clear_values, p_uses_color, p_uses_depth, p_breadcrumb, p_split_cmd_buffer);
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset) {
@@ -1710,11 +1748,22 @@ void RenderingDeviceGraph::add_draw_list_bind_pipeline(RDD::PipelineID p_pipelin
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
-	DrawListBindUniformSetInstruction *instruction = reinterpret_cast<DrawListBindUniformSetInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListBindUniformSetInstruction)));
-	instruction->type = DrawListInstruction::TYPE_BIND_UNIFORM_SET;
+	add_draw_list_bind_uniform_sets(p_shader, VectorView(&p_uniform_set, 1), set_index, 1);
+}
+
+void RenderingDeviceGraph::add_draw_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_sets, uint32_t p_first_index, uint32_t p_set_count) {
+	DEV_ASSERT(p_uniform_sets.size() >= p_set_count);
+
+	uint32_t instruction_size = sizeof(DrawListBindUniformSetsInstruction) + sizeof(RDD::UniformSetID) * p_set_count;
+	DrawListBindUniformSetsInstruction *instruction = reinterpret_cast<DrawListBindUniformSetsInstruction *>(_allocate_draw_list_instruction(instruction_size));
+	instruction->type = DrawListInstruction::TYPE_BIND_UNIFORM_SETS;
 	instruction->shader = p_shader;
-	instruction->uniform_set = p_uniform_set;
-	instruction->set_index = set_index;
+	instruction->first_set_index = p_first_index;
+	instruction->set_count = p_set_count;
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		instruction->uniform_set_ids()[i] = p_uniform_sets[i];
+	}
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_vertex_buffers(VectorView<RDD::BufferID> p_vertex_buffers, VectorView<uint64_t> p_vertex_buffer_offsets) {
@@ -1887,6 +1936,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	command->breadcrumb = draw_instruction_list.breadcrumb;
 #endif
+	command->split_cmd_buffer = draw_instruction_list.split_cmd_buffer;
 	command->clear_values_count = draw_instruction_list.attachment_clear_values.size();
 	command->trackers_count = trackers_count;
 

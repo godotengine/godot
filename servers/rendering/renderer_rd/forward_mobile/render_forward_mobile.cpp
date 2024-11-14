@@ -614,8 +614,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	if (render_pass_uniform_sets[p_index].is_valid() && RD::get_singleton()->uniform_set_is_valid(render_pass_uniform_sets[p_index])) {
 		RD::get_singleton()->free(render_pass_uniform_sets[p_index]);
 	}
-
-	render_pass_uniform_sets[p_index] = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET);
+	render_pass_uniform_sets[p_index] = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET, true);
 	return render_pass_uniform_sets[p_index];
 }
 
@@ -1664,7 +1663,9 @@ void RenderForwardMobile::base_uniforms_changed() {
 void RenderForwardMobile::_update_render_base_uniform_set() {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
+	// We must always recreate the uniform set every frame if we're using linear pools (since we requested it on creation).
+	// This pays off as long as we often get inside the if() block (i.e. the settings end up changing often).
+	if (RD::get_singleton()->uniform_sets_have_linear_pools() || render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
 			RD::get_singleton()->free(render_base_uniform_set);
 		}
@@ -1678,6 +1679,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			u.binding = 2;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.append_id(scene_shader.shadow_sampler);
+			u.immutable_sampler = true;
 			uniforms.push_back(u);
 		}
 
@@ -1764,7 +1766,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
-		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
+		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET, true);
 	}
 }
 

@@ -566,8 +566,11 @@ String RenderingDevice::get_perf_report() const {
 }
 
 void RenderingDevice::update_perf_report() {
-	perf_report_text = " gpu:" + String::num_int64(gpu_copy_count);
+	perf_report_text = "";
+	perf_report_text += " gpu:" + String::num_int64(gpu_copy_count);
 	perf_report_text += " bytes:" + String::num_int64(copy_bytes_count);
+
+	perf_report_text += " lazily alloc:" + String::num_int64(driver->get_lazily_memory_used());
 
 	gpu_copy_count = 0;
 	copy_bytes_count = 0;
@@ -2639,6 +2642,15 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_get_format(RID
 	return framebuffer->format_id;
 }
 
+Size2 RenderingDevice::framebuffer_get_size(RID p_framebuffer) {
+	_THREAD_SAFE_METHOD_
+
+	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
+	ERR_FAIL_NULL_V(framebuffer, Size2(0, 0));
+
+	return framebuffer->size;
+}
+
 bool RenderingDevice::framebuffer_is_valid(RID p_framebuffer) const {
 	_THREAD_SAFE_METHOD_
 
@@ -2954,11 +2966,33 @@ Vector<uint8_t> RenderingDevice::shader_compile_binary_from_spirv(const Vector<S
 }
 
 RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder) {
+	// Immutable samplers :
+	// Expanding api when creating shader to allow passing optionally a set of immutable samplers
+	// keeping existing api but extending it by sending an empty set.
+	Vector<PipelineImmutableSampler> immutable_samplers;
+	return shader_create_from_bytecode_with_samplers(p_shader_binary, p_placeholder, immutable_samplers);
+}
+
+RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder, const Vector<PipelineImmutableSampler> &p_immutable_samplers) {
 	_THREAD_SAFE_METHOD_
 
 	ShaderDescription shader_desc;
 	String name;
-	RDD::ShaderID shader_id = driver->shader_create_from_bytecode(p_shader_binary, shader_desc, name);
+
+	Vector<RDD::ImmutableSampler> driver_immutable_samplers;
+	for (const PipelineImmutableSampler &source_sampler : p_immutable_samplers) {
+		RDD::ImmutableSampler driver_sampler;
+		driver_sampler.type = source_sampler.uniform_type;
+		driver_sampler.binding = source_sampler.binding;
+
+		for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
+			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+			driver_sampler.ids.push_back(*sampler_driver_id);
+		}
+
+		driver_immutable_samplers.append(driver_sampler);
+	}
+	RDD::ShaderID shader_id = driver->shader_create_from_bytecode(p_shader_binary, shader_desc, name, driver_immutable_samplers);
 	ERR_FAIL_COND_V(!shader_id, RID());
 
 	// All good, let's create modules.
@@ -3029,6 +3063,12 @@ RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader
 	return id;
 }
 
+void RenderingDevice::shader_destroy_modules(RID p_shader) {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+	driver->shader_destroy_modules(shader->driver_id);
+}
+
 RID RenderingDevice::shader_create_placeholder() {
 	_THREAD_SAFE_METHOD_
 
@@ -3086,12 +3126,12 @@ void RenderingDevice::_uniform_set_update_shared(UniformSet *p_uniform_set) {
 	}
 }
 
-template RID RenderingDevice::uniform_set_create(const LocalVector<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+template RID RenderingDevice::uniform_set_create(const LocalVector<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool);
 
-template RID RenderingDevice::uniform_set_create(const Vector<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+template RID RenderingDevice::uniform_set_create(const Vector<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool);
 
 template <typename Collection>
-RID RenderingDevice::uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set) {
+RID RenderingDevice::uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_uniforms.is_empty(), RID());
@@ -3141,6 +3181,9 @@ RID RenderingDevice::uniform_set_create(const Collection &p_uniforms, RID p_shad
 		RDD::BoundUniform &driver_uniform = driver_uniforms[i];
 		driver_uniform.type = uniform.uniform_type;
 		driver_uniform.binding = uniform.binding;
+
+		// Mark immutable samplers to be skipped when creating uniform set.
+		driver_uniform.immutable_sampler = uniform.immutable_sampler;
 
 		switch (uniform.uniform_type) {
 			case UNIFORM_TYPE_SAMPLER: {
@@ -3457,7 +3500,7 @@ RID RenderingDevice::uniform_set_create(const Collection &p_uniforms, RID p_shad
 		}
 	}
 
-	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set);
+	RDD::UniformSetID driver_uniform_set = driver->uniform_set_create(driver_uniforms, shader->driver_id, p_shader_set, p_linear_pool ? frame : -1);
 	ERR_FAIL_COND_V(!driver_uniform_set, RID());
 
 	UniformSet uniform_set;
@@ -3501,6 +3544,10 @@ void RenderingDevice::uniform_set_set_invalidation_callback(RID p_uniform_set, I
 	ERR_FAIL_NULL(us);
 	us->invalidated_callback = p_callback;
 	us->invalidated_callback_userdata = p_userdata;
+}
+
+bool RenderingDevice::uniform_sets_have_linear_pools() const {
+	return driver->uniform_sets_have_linear_pools();
 }
 
 /*******************/
@@ -3782,6 +3829,7 @@ Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
 Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
+	// After submitting work, acquire the swapchain image(s)
 	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
 
@@ -3918,7 +3966,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	clear_value.color = p_clear_color;
 
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
-	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, RDG::ATTACHMENT_OPERATION_CLEAR, clear_value, true, false, RDD::BreadcrumbMarker::BLIT_PASS);
+	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, RDG::ATTACHMENT_OPERATION_CLEAR, clear_value, true, false, RDD::BreadcrumbMarker::BLIT_PASS, split_swapchain_into_its_own_cmd_buffer);
 
 	draw_graph.add_draw_list_set_viewport(viewport);
 	draw_graph.add_draw_list_set_scissor(viewport);
@@ -4354,35 +4402,67 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		}
 	}
 #endif
+	thread_local LocalVector<RDD::UniformSetID> valid_descriptor_ids;
+	valid_descriptor_ids.clear();
+	valid_descriptor_ids.resize(dl->state.set_count);
+	uint32_t valid_set_count = 0;
+	uint32_t first_set_index = 0;
+	uint32_t last_set_index = 0;
+	bool found_first_set = false;
 
-	// Prepare descriptor sets if the API doesn't use pipeline barriers.
-	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
-		for (uint32_t i = 0; i < dl->state.set_count; i++) {
-			if (dl->state.sets[i].pipeline_expected_format == 0) {
-				// Nothing expected by this pipeline.
-				continue;
-			}
+	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+		if (dl->state.sets[i].pipeline_expected_format == 0) {
+			continue; // Nothing expected by this pipeline.
+		}
 
+		if (!dl->state.sets[i].bound && !found_first_set) {
+			first_set_index = i;
+			found_first_set = true;
+		}
+		// Prepare descriptor sets if the API doesn't use pipeline barriers.
+		if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
 			draw_graph.add_draw_list_uniform_set_prepare_for_use(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
 		}
 	}
 
 	// Bind descriptor sets.
-	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+	for (uint32_t i = first_set_index; i < dl->state.set_count; i++) {
 		if (dl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}
+
 		if (!dl->state.sets[i].bound) {
-			// All good, see if this requires re-binding.
-			draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+			// Batch contiguous descriptor sets in a single call
+			if (descriptor_set_batching) {
+				// All good, see if this requires re-binding.
+				if (i - last_set_index > 1) {
+					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+					draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 
-			UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
-			_uniform_set_update_shared(uniform_set);
+					first_set_index = i;
+					valid_set_count = 1;
+					valid_descriptor_ids[0] = dl->state.sets[i].uniform_set_driver_id;
+				} else {
+					// Otherwise, keep storing in the current batch
+					valid_descriptor_ids[valid_set_count] = dl->state.sets[i].uniform_set_driver_id;
+					valid_set_count++;
+				}
 
-			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+				UniformSet *uniform_set = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
+				_uniform_set_update_shared(uniform_set);
+				draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+				dl->state.sets[i].bound = true;
 
-			dl->state.sets[i].bound = true;
+				last_set_index = i;
+			} else {
+				draw_graph.add_draw_list_bind_uniform_set(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+			}
 		}
+	}
+
+	// Bind the remaining batch
+	if (descriptor_set_batching && valid_set_count > 0) {
+		draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 	}
 
 	if (p_use_indices) {
@@ -4547,6 +4627,22 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 	}
 
 	_check_transfer_worker_buffer(buffer);
+}
+
+void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+
+	ERR_FAIL_NULL(dl);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
+
+	if (p_rect.get_area() == 0) {
+		return;
+	}
+
+	dl->viewport = p_rect;
+	draw_graph.add_draw_list_set_viewport(p_rect);
 }
 
 void RenderingDevice::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
@@ -4873,37 +4969,70 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 		}
 	}
 #endif
+	thread_local LocalVector<RDD::UniformSetID> valid_descriptor_ids;
+	valid_descriptor_ids.clear();
+	valid_descriptor_ids.resize(cl->state.set_count);
 
-	// Prepare descriptor sets if the API doesn't use pipeline barriers.
-	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
-		for (uint32_t i = 0; i < cl->state.set_count; i++) {
-			if (cl->state.sets[i].pipeline_expected_format == 0) {
-				// Nothing expected by this pipeline.
-				continue;
-			}
+	uint32_t valid_set_count = 0;
+	uint32_t first_set_index = 0;
+	uint32_t last_set_index = 0;
+	bool found_first_set = false;
 
+	for (uint32_t i = 0; i < cl->state.set_count; i++) {
+		if (cl->state.sets[i].pipeline_expected_format == 0) {
+			// Nothing expected by this pipeline.
+			continue;
+		}
+
+		if (!cl->state.sets[i].bound && !found_first_set) {
+			first_set_index = i;
+			found_first_set = true;
+		}
+		// Prepare descriptor sets if the API doesn't use pipeline barriers.
+		if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
 			draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 		}
 	}
 
 	// Bind descriptor sets.
-	for (uint32_t i = 0; i < cl->state.set_count; i++) {
+	for (uint32_t i = first_set_index; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}
-		if (!cl->state.sets[i].bound) {
-			// All good, see if this requires re-binding.
-			draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 
+		if (!cl->state.sets[i].bound) {
+			// Descriptor set batching
+			if (descriptor_set_batching) {
+				// All good, see if this requires re-binding.
+				if (i - last_set_index > 1) {
+					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+					draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
+
+					first_set_index = i;
+					valid_set_count = 1;
+					valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
+				} else {
+					// Otherwise, keep storing in the current batch
+					valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
+					valid_set_count++;
+				}
+
+				last_set_index = i;
+			} else {
+				draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+			}
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 			_uniform_set_update_shared(uniform_set);
 
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
-
 			cl->state.sets[i].bound = true;
 		}
 	}
 
+	// Bind the remaining batch
+	if (valid_set_count > 0) {
+		draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
+	}
 	draw_graph.add_compute_list_dispatch(p_x_groups, p_y_groups, p_z_groups);
 	cl->state.dispatch_count++;
 }
@@ -4986,35 +5115,66 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 		}
 	}
 #endif
+	thread_local LocalVector<RDD::UniformSetID> valid_descriptor_ids;
+	valid_descriptor_ids.clear();
+	valid_descriptor_ids.resize(cl->state.set_count);
 
-	// Prepare descriptor sets if the API doesn't use pipeline barriers.
-	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
-		for (uint32_t i = 0; i < cl->state.set_count; i++) {
-			if (cl->state.sets[i].pipeline_expected_format == 0) {
-				// Nothing expected by this pipeline.
-				continue;
-			}
+	uint32_t valid_set_count = 0;
+	uint32_t first_set_index = 0;
+	uint32_t last_set_index = 0;
+	bool found_first_set = false;
 
+	for (uint32_t i = 0; i < cl->state.set_count; i++) {
+		if (cl->state.sets[i].pipeline_expected_format == 0) {
+			// Nothing expected by this pipeline.
+			continue;
+		}
+
+		if (!cl->state.sets[i].bound && !found_first_set) {
+			first_set_index = i;
+			found_first_set = true;
+		}
+
+		// Prepare descriptor sets if the API doesn't use pipeline barriers.
+		if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
 			draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 		}
 	}
 
 	// Bind descriptor sets.
-	for (uint32_t i = 0; i < cl->state.set_count; i++) {
+	for (uint32_t i = first_set_index; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
 		}
+
 		if (!cl->state.sets[i].bound) {
 			// All good, see if this requires re-binding.
-			draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+			if (i - last_set_index > 1) {
+				// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+				draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
+
+				first_set_index = i;
+				valid_set_count = 1;
+				valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
+			} else {
+				// Otherwise, keep storing in the current batch
+				valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
+				valid_set_count++;
+			}
+
+			last_set_index = i;
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 			_uniform_set_update_shared(uniform_set);
 
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
-
 			cl->state.sets[i].bound = true;
 		}
+	}
+
+	// Bind the remaining batch
+	if (valid_set_count > 0) {
+		draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 	}
 
 	draw_graph.add_compute_list_dispatch_indirect(buffer->driver_id, p_offset);
@@ -5253,6 +5413,7 @@ void RenderingDevice::_submit_transfer_worker(TransferWorker *p_transfer_worker,
 
 void RenderingDevice::_wait_for_transfer_worker(TransferWorker *p_transfer_worker) {
 	driver->fence_wait(p_transfer_worker->command_fence);
+	driver->command_pool_reset(p_transfer_worker->command_pool);
 	p_transfer_worker->staging_buffer_size_in_use = 0;
 	p_transfer_worker->submitted = false;
 
@@ -5770,7 +5931,8 @@ void RenderingDevice::swap_buffers() {
 
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
-	_begin_frame();
+
+	_begin_frame(true);
 }
 
 void RenderingDevice::submit() {
@@ -5788,7 +5950,7 @@ void RenderingDevice::sync() {
 	ERR_FAIL_COND_MSG(is_main_instance, "Only local devices can submit and sync.");
 	ERR_FAIL_COND_MSG(!local_device_processing, "sync can only be called after a submit");
 
-	_begin_frame();
+	_begin_frame(true);
 	local_device_processing = false;
 }
 
@@ -5892,14 +6054,22 @@ uint64_t RenderingDevice::get_memory_usage(MemoryType p_type) const {
 	}
 }
 
-void RenderingDevice::_begin_frame() {
+void RenderingDevice::_begin_frame(bool p_presented) {
 	// Before beginning this frame, wait on the fence if it was signaled to make sure its work is finished.
 	if (frames[frame].fence_signaled) {
 		driver->fence_wait(frames[frame].fence);
 		frames[frame].fence_signaled = false;
 	}
 
-	update_perf_report();
+	if (command_pool_reset_enabled) {
+		bool reset = driver->command_pool_reset(frames[frame].command_pool);
+		ERR_FAIL_COND(!reset);
+	}
+
+	if (p_presented) {
+		update_perf_report();
+		driver->linear_uniform_set_pools_reset(frame);
+	}
 
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);
@@ -5948,15 +6118,11 @@ void RenderingDevice::_end_frame() {
 	driver->end_segment();
 }
 
-void RenderingDevice::_execute_frame(bool p_present) {
-	// Check whether this frame should present the swap chains and in which queue.
-	const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
-	const bool separate_present_queue = main_queue != present_queue;
-	thread_local LocalVector<RDD::SwapChainID> swap_chains;
-	swap_chains.clear();
-
-	// Execute command buffers and use semaphores to wait on the execution of the previous one. Normally there's only one command buffer,
-	// but driver workarounds can force situations where there'll be more.
+void RenderingDevice::execute_chained_cmds(bool p_present_swap_chain, RenderingDeviceDriver::FenceID p_draw_fence,
+		RenderingDeviceDriver::SemaphoreID p_dst_draw_semaphore_to_signal) {
+	// Execute command buffers and use semaphores to wait on the execution of the previous one.
+	// Normally there's only one command buffer, but driver workarounds can force situations where
+	// there'll be more.
 	uint32_t command_buffer_count = 1;
 	RDG::CommandBufferPool &buffer_pool = frames[frame].command_buffer_pool;
 	if (buffer_pool.buffers_used > 0) {
@@ -5964,6 +6130,12 @@ void RenderingDevice::_execute_frame(bool p_present) {
 		buffer_pool.buffers_used = 0;
 	}
 
+	thread_local LocalVector<RDD::SwapChainID> swap_chains;
+	swap_chains.clear();
+
+	// Instead of having just one command; we have potentially many (which had to be split due to an
+	// Adreno workaround on mobile, only if the workaround is active). Thus we must execute all of them
+	// and chain them together via semaphores as dependent executions.
 	thread_local LocalVector<RDD::SemaphoreID> wait_semaphores;
 	wait_semaphores = frames[frame].semaphores_to_wait_on;
 
@@ -5973,45 +6145,57 @@ void RenderingDevice::_execute_frame(bool p_present) {
 		RDD::FenceID signal_fence;
 		if (i > 0) {
 			command_buffer = buffer_pool.buffers[i - 1];
-			signal_semaphore = buffer_pool.semaphores[i - 1];
 		} else {
 			command_buffer = frames[frame].command_buffer;
-			signal_semaphore = frames[frame].semaphore;
 		}
 
-		bool signal_semaphore_valid;
 		if (i == (command_buffer_count - 1)) {
-			// This is the last command buffer, it should signal the fence.
-			signal_fence = frames[frame].fence;
-			signal_semaphore_valid = false;
+			// This is the last command buffer, it should signal the semaphore & fence.
+			signal_semaphore = p_dst_draw_semaphore_to_signal;
+			signal_fence = p_draw_fence;
 
-			if (frame_can_present && separate_present_queue) {
-				// The semaphore is required if the frame can be presented and a separate present queue is used.
-				signal_semaphore_valid = true;
-			} else if (frame_can_present) {
+			if (p_present_swap_chain) {
 				// Just present the swap chains as part of the last command execution.
 				swap_chains = frames[frame].swap_chains_to_present;
 			}
 		} else {
+			signal_semaphore = buffer_pool.semaphores[i];
 			// Semaphores always need to be signaled if it's not the last command buffer.
-			signal_semaphore_valid = true;
 		}
 
-		driver->command_queue_execute_and_present(main_queue, wait_semaphores, command_buffer, signal_semaphore_valid ? signal_semaphore : VectorView<RDD::SemaphoreID>(), signal_fence, swap_chains);
+		driver->command_queue_execute_and_present(main_queue, wait_semaphores, command_buffer,
+				signal_semaphore ? signal_semaphore : VectorView<RDD::SemaphoreID>(), signal_fence,
+				swap_chains);
 
 		// Make the next command buffer wait on the semaphore signaled by this one.
 		wait_semaphores.resize(1);
 		wait_semaphores[0] = signal_semaphore;
 	}
 
-	// Indicate the fence has been signaled so the next time the frame's contents need to be used, the CPU needs to wait on the work to be completed.
 	frames[frame].semaphores_to_wait_on.clear();
+}
+
+void RenderingDevice::_execute_frame(bool p_present) {
+	// Check whether this frame should present the swap chains and in which queue.
+	const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
+	const bool separate_present_queue = main_queue != present_queue;
+
+	// The semaphore is required if the frame can be presented and a separate present queue is used;
+	// since the separate queue will wait for that semaphore before presenting.
+	const RDD::SemaphoreID semaphore = (frame_can_present && separate_present_queue)
+			? frames[frame].semaphore
+			: RDD::SemaphoreID(nullptr);
+	const bool present_swap_chain = frame_can_present && !separate_present_queue;
+
+	execute_chained_cmds(present_swap_chain, frames[frame].fence, semaphore);
+	// Indicate the fence has been signaled so the next time the frame's contents need to be
+	// used, the CPU needs to wait on the work to be completed.
 	frames[frame].fence_signaled = true;
 
 	if (frame_can_present) {
 		if (separate_present_queue) {
 			// Issue the presentation separately if the presentation queue is different from the main queue.
-			driver->command_queue_execute_and_present(present_queue, wait_semaphores, {}, {}, {}, frames[frame].swap_chains_to_present);
+			driver->command_queue_execute_and_present(present_queue, frames[frame].semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
 		}
 
 		frames[frame].swap_chains_to_present.clear();

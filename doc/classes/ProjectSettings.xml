@@ -2861,6 +2861,9 @@
 			[b]Note:[/b] Some platforms may restrict the actual value.
 		</member>
 		<member name="rendering/rendering_device/vulkan/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
+			The number of descriptors per pool. Godot's Vulkan backend uses linear pools for descriptors that will be created and destroyed within a single frame. Instead of destroying every single descriptor every frame, they all can be destroyed at once by resetting the pool they belong to.
+			A larger number is more efficient up to a limit, after that it will only waste RAM (maximum efficiency is achieved when there is no more than 1 pool per frame). A small number could end up with one pool per descriptor, which negatively impacts performance.
+			[b]Note:[/b] Changing this property requires a restart to take effect.
 		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
