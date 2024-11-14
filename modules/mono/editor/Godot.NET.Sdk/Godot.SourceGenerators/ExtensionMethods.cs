@@ -290,6 +290,14 @@ namespace Godot.SourceGenerators
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;
 
+        public static bool HasAttribute(this ISymbol symbol, string attribute)
+            => symbol.GetAttributes()
+                    .Any(a => a.AttributeClass?.FullQualifiedNameOmitGlobal() == attribute);
+
+        public static AttributeData GetAttribute(this ISymbol symbol, string attribute)
+            => symbol.GetAttributes()
+                .First(a => a.AttributeClass?.FullQualifiedNameOmitGlobal() == attribute);
+
         public static GodotMethodData? HasGodotCompatibleSignature(
             this IMethodSymbol method,
             MarshalUtils.TypeCache typeCache

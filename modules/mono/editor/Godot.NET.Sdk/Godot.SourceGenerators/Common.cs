@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
@@ -186,5 +185,35 @@ namespace Godot.SourceGenerators
                 isEnabledByDefault: true,
                 "The class must not be generic. Make the class non-generic, or remove the '[GlobalClass]' attribute.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0402"));
+
+        public static readonly DiagnosticDescriptor OnReadyMemberReturnMustDeriveFromNode =
+            new(id: "GD0501",
+                title: $"On ready member type must derive from {GodotClasses.Node}",
+                messageFormat: $"The [OnReady] member '{0}' type must derive from {GodotClasses.Node}",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                $"The [OnReady] member type must derive from {GodotClasses.Node}. Change the type to a type which derives from Node.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0501"));
+
+        public static readonly DiagnosticDescriptor OnReadyMemberMustBeEmptyPartial =
+            new(id: "GD0502",
+                title: "On ready member must be partial and must not be implemented",
+                messageFormat: "The [OnReady] member '{0}' must be partial without an implementation",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The [OnReady] member must be partial and must not have a body. Make the member partial and remove the body.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0502"));
+
+        public static readonly DiagnosticDescriptor OnReadyMemberCannotBeStatic =
+            new(id: "GD0503",
+                title: "On ready member cannot be static",
+                messageFormat: "The [OnReady] member '{0}' cannot be static",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The [OnReady] member cannot be static. Remove the static keyword from the member.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0503"));
     }
 }
