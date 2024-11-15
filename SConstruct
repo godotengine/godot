@@ -271,6 +271,8 @@ opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
+opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
+opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -321,6 +323,9 @@ opts.Add("rcflags", "Custom flags for Windows resource compiler")
 # in following code (especially platform and custom_modules).
 opts.Update(env)
 
+# Setup caching logic early to catch everything.
+methods.prepare_cache(env)
+
 # Copy custom environment variables if set.
 if env["import_env_vars"]:
     for env_var in str(env["import_env_vars"]).split(","):
@@ -354,7 +359,9 @@ if env["platform"] == "":
 if env["platform"] in compatibility_platform_aliases:
     alias = env["platform"]
     platform = compatibility_platform_aliases[alias]
-    print_warning(f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".')
+    print_warning(
+        f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".'
+    )
     env["platform"] = platform
 
 # Alias for convenience.
@@ -1039,11 +1046,6 @@ GLSL_BUILDERS = {
 }
 env.Append(BUILDERS=GLSL_BUILDERS)
 
-scons_cache_path = os.environ.get("SCONS_CACHE")
-if scons_cache_path is not None:
-    CacheDir(scons_cache_path)
-    print("Scons cache enabled... (path: '" + scons_cache_path + "')")
-
 if env["compiledb"]:
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
@@ -1126,5 +1128,3 @@ def purge_flaky_files():
 
 
 atexit.register(purge_flaky_files)
-
-methods.clean_cache(env)

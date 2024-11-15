@@ -1,5 +1,7 @@
+import atexit
 import contextlib
 import glob
+import math
 import os
 import re
 import subprocess
@@ -8,7 +10,7 @@ from collections import OrderedDict
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, List, Optional, Union
+from typing import Generator, List, Optional, Union, cast
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -784,159 +786,159 @@ def using_emcc(env):
 
 
 def show_progress(env):
-    if env["ninja"]:
-        # Has its own progress/tracking tool that clashes with ours
+    # Progress reporting is not available in non-TTY environments since it messes with the output
+    # (for example, when writing to a file). Ninja has its own progress/tracking tool that clashes
+    # with ours.
+    if not env["progress"] or not sys.stdout.isatty() or env["ninja"]:
         return
 
-    import sys
+    NODE_COUNT_FILENAME = f"{base_folder_path}.scons_node_count"
 
-    from SCons.Script import AlwaysBuild, Command, Progress
-
-    screen = sys.stdout
-    # Progress reporting is not available in non-TTY environments since it
-    # messes with the output (for example, when writing to a file)
-    show_progress = env["progress"] and sys.stdout.isatty()
-    node_count = 0
-    node_count_max = 0
-    node_count_interval = 1
-    node_count_fname = str(env.Dir("#")) + "/.scons_node_count"
-
-    import math
-
-    class cache_progress:
-        # The default is 1 GB cache
-        def __init__(self, path=None, limit=pow(1024, 3)):
-            self.path = path
-            self.limit = limit
-            if env["verbose"] and path is not None:
-                screen.write(
-                    "Current cache limit is {} (used: {})\n".format(
-                        self.convert_size(limit), self.convert_size(self.get_size(path))
-                    )
-                )
+    class ShowProgress:
+        def __init__(self):
+            self.count = 0
+            self.max = 0
+            try:
+                with open(NODE_COUNT_FILENAME, "r", encoding="utf-8") as f:
+                    self.max = int(f.readline())
+            except OSError:
+                pass
+            if self.max == 0:
+                print("NOTE: Performing initial build, progress percentage unavailable!")
 
         def __call__(self, node, *args, **kw):
-            nonlocal node_count, node_count_max, node_count_interval, node_count_fname, show_progress
-            if show_progress:
-                # Print the progress percentage
-                node_count += node_count_interval
-                if node_count_max > 0 and node_count <= node_count_max:
-                    screen.write("\r[%3d%%] " % (node_count * 100 / node_count_max))
-                    screen.flush()
-                elif node_count_max > 0 and node_count > node_count_max:
-                    screen.write("\r[100%] ")
-                    screen.flush()
-                else:
-                    screen.write("\r[Initial build] ")
-                    screen.flush()
+            self.count += 1
+            if self.max != 0:
+                percent = int(min(self.count * 100 / self.max, 100))
+                sys.stdout.write(f"\r[{percent:3d}%] ")
+                sys.stdout.flush()
 
-        def convert_size(self, size_bytes):
-            if size_bytes == 0:
-                return "0 bytes"
-            size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-            i = int(math.floor(math.log(size_bytes, 1024)))
-            p = math.pow(1024, i)
-            s = round(size_bytes / p, 2)
-            return "%s %s" % (int(s) if i == 0 else s, size_name[i])
+    from SCons.Script import Progress
 
-        def get_size(self, start_path="."):
-            total_size = 0
-            for dirpath, dirnames, filenames in os.walk(start_path):
-                for f in filenames:
-                    fp = os.path.join(dirpath, f)
-                    total_size += os.path.getsize(fp)
-            return total_size
+    progressor = ShowProgress()
+    Progress(progressor)
 
     def progress_finish(target, source, env):
-        nonlocal node_count, progressor
         try:
-            with open(node_count_fname, "w", encoding="utf-8", newline="\n") as f:
-                f.write("%d\n" % node_count)
-        except Exception:
+            with open(NODE_COUNT_FILENAME, "w", encoding="utf-8", newline="\n") as f:
+                f.write(f"{progressor.count}\n")
+        except OSError:
             pass
 
-    try:
-        with open(node_count_fname, "r", encoding="utf-8") as f:
-            node_count_max = int(f.readline())
-    except Exception:
-        pass
-
-    cache_directory = os.environ.get("SCONS_CACHE")
-    # Simple cache pruning, attached to SCons' progress callback. Trim the
-    # cache directory to a size not larger than cache_limit.
-    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
-    progressor = cache_progress(cache_directory, cache_limit)
-    Progress(progressor, interval=node_count_interval)
-
-    progress_finish_command = Command("progress_finish", [], progress_finish)
-    AlwaysBuild(progress_finish_command)
+    env.AlwaysBuild(
+        env.CommandNoCache(
+            "progress_finish", [], env.Action(progress_finish, "Building node count database .scons_node_count")
+        )
+    )
 
 
-def clean_cache(env):
-    import atexit
-    import time
+def convert_size(size_bytes: int) -> str:
+    if size_bytes == 0:
+        return "0 bytes"
+    SIZE_NAMES = ["bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"]
+    index = math.floor(math.log(size_bytes, 1024))
+    power = math.pow(1024, index)
+    size = round(size_bytes / power, 2)
+    return f"{size} {SIZE_NAMES[index]}"
 
-    class cache_clean:
-        def __init__(self, path=None, limit=pow(1024, 3)):
-            self.path = path
-            self.limit = limit
 
-        def clean(self):
-            self.delete(self.file_list())
+def get_size(start_path: str = ".") -> int:
+    total_size = 0
+    for dirpath, _, filenames in os.walk(start_path):
+        for file in filenames:
+            path = os.path.join(dirpath, file)
+            total_size += os.path.getsize(path)
+    return total_size
 
-        def delete(self, files):
-            if len(files) == 0:
-                return
-            if env["verbose"]:
-                # Utter something
-                print("Purging %d %s from cache..." % (len(files), "files" if len(files) > 1 else "file"))
-            [os.remove(f) for f in files]
 
-        def file_list(self):
-            if self.path is None:
-                # Nothing to do
-                return []
-            # Gather a list of (filename, (size, atime)) within the
-            # cache directory
-            file_stat = [(x, os.stat(x)[6:8]) for x in glob.glob(os.path.join(self.path, "*", "*"))]
-            if file_stat == []:
-                # Nothing to do
-                return []
-            # Weight the cache files by size (assumed to be roughly
-            # proportional to the recompilation time) times an exponential
-            # decay since the ctime, and return a list with the entries
-            # (filename, size, weight).
-            current_time = time.time()
-            file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
-            # Sort by the most recently accessed files (most sensible to keep) first
-            file_stat.sort(key=lambda x: x[2])
-            # Search for the first entry where the storage limit is
-            # reached
-            sum, mark = 0, None
-            for i, x in enumerate(file_stat):
-                sum += x[1]
-                if sum > self.limit:
-                    mark = i
-                    break
-            if mark is None:
-                return []
-            else:
-                return [x[0] for x in file_stat[mark:]]
+def clean_cache(cache_path: str, cache_limit: int, verbose: bool):
+    files = glob.glob(os.path.join(cache_path, "*", "*"))
+    if not files:
+        return
 
-    def cache_finally():
-        nonlocal cleaner
+    # Remove all text files, store binary files in list of (filename, size, atime).
+    purge = []
+    texts = []
+    stats = []
+    for file in files:
+        # Failing a utf-8 decode is the easiest way to determine if a file is binary.
         try:
-            cleaner.clean()
-        except Exception:
-            pass
+            with open(file, encoding="utf-8") as out:
+                out.read(1024)
+        except UnicodeDecodeError:
+            stats.append((file, *os.stat(file)[6:8]))
+        except OSError:
+            print_error(f'Failed to access cache file "{file}"; skipping.')
+        else:
+            texts.append(file)
 
-    cache_directory = os.environ.get("SCONS_CACHE")
-    # Simple cache pruning, attached to SCons' progress callback. Trim the
-    # cache directory to a size not larger than cache_limit.
-    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
-    cleaner = cache_clean(cache_directory, cache_limit)
+    if texts:
+        count = len(texts)
+        for file in texts:
+            try:
+                os.remove(file)
+            except OSError:
+                print_error(f'Failed to remove cache file "{file}"; skipping.')
+                count -= 1
+        if verbose:
+            print("Purging %d text %s from cache..." % (count, "files" if count > 1 else "file"))
 
-    atexit.register(cache_finally)
+    if cache_limit:
+        # Sort by most recent access (most sensible to keep) first. Search for the first entry where
+        # the cache limit is reached.
+        stats.sort(key=lambda x: x[2], reverse=True)
+        sum = 0
+        for index, stat in enumerate(stats):
+            sum += stat[1]
+            if sum > cache_limit:
+                purge.extend([x[0] for x in stats[index:]])
+                break
+
+    if purge:
+        count = len(purge)
+        for file in purge:
+            try:
+                os.remove(file)
+            except OSError:
+                print_error(f'Failed to remove cache file "{file}"; skipping.')
+                count -= 1
+        if verbose:
+            print("Purging %d %s from cache..." % (count, "files" if count > 1 else "file"))
+
+
+def prepare_cache(env) -> None:
+    if env.GetOption("clean"):
+        return
+
+    if env["cache_path"]:
+        cache_path = cast(str, env["cache_path"])
+    elif os.environ.get("SCONS_CACHE"):
+        print_warning("Environment variable `SCONS_CACHE` is deprecated; use `cache_path` argument instead.")
+        cache_path = cast(str, os.environ.get("SCONS_CACHE"))
+
+    if not cache_path:
+        return
+
+    env.CacheDir(cache_path)
+    print(f'SCons cache enabled... (path: "{cache_path}")')
+
+    if env["cache_limit"]:
+        cache_limit = float(env["cache_limit"])
+    elif os.environ.get("SCONS_CACHE_LIMIT"):
+        print_warning("Environment variable `SCONS_CACHE_LIMIT` is deprecated; use `cache_limit` argument instead.")
+        cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", "0")) / 1024  # Old method used MiB, convert to GiB
+
+    # Convert GiB to bytes; treat negative numbers as 0 (unlimited).
+    cache_limit = max(0, int(cache_limit * 1024 * 1024 * 1024))
+    if env["verbose"]:
+        print(
+            "Current cache limit is {} (used: {})".format(
+                convert_size(cache_limit) if cache_limit else "∞",
+                convert_size(get_size(cache_path)),
+            )
+        )
+
+    atexit.register(clean_cache, cache_path, cache_limit, env["verbose"])
 
 
 def dump(env):
