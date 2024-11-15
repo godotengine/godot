@@ -148,7 +148,7 @@ protected:
 	String _quote_command_line_argument(const String &p_text) const;
 
 	struct ProcessInfo {
-		STARTUPINFO si;
+		STARTUPINFOEX si;
 		PROCESS_INFORMATION pi;
 		mutable bool is_running = true;
 		mutable int exit_code = -1;
