@@ -5080,8 +5080,11 @@ void VisualShaderEditor::_param_property_changed(const String &p_property, const
 void VisualShaderEditor::_update_current_param() {
 	if (current_prop != nullptr) {
 		String name = current_prop->get_meta("id");
-		preview_material->set("shader_parameter/" + name, visual_shader->_get_preview_shader_parameter(name));
-
+		if (visual_shader->_has_preview_shader_parameter(name)) {
+			preview_material->set("shader_parameter/" + name, visual_shader->_get_preview_shader_parameter(name));
+		} else {
+			preview_material->set("shader_parameter/" + name, Variant());
+		}
 		current_prop->update_property();
 		current_prop->update_editor_property_status();
 		current_prop->update_cache();
