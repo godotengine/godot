@@ -675,7 +675,7 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 	}
 
 	// Prepare the fadeout
-	double current_pos;
+	float current_pos;
 	if (p_is_auto_advance) {
 		// Use position from before mixing from_state, otherwise a small desync can occur.
 		current_pos = from_state.before_mix_position;
@@ -683,29 +683,29 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 		current_pos = from_state.playback->get_playback_position();
 	}
 
-	double src_fade_wait = 0;
-	double dst_seek_to = 0;
+	float src_fade_wait = 0;
+	float dst_seek_to = 0;
 	float fade_speed = 0;
 	bool src_no_loop = false;
 
 	if (from_state.stream->get_bpm()) {
 		// Check if source speed has BPM, if so, transition syncs to BPM
-		double beat_sec = 60 / double(from_state.stream->get_bpm());
+		float beat_sec = 60 / float(from_state.stream->get_bpm());
 		switch (transition.from_time) {
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_IMMEDIATE: {
 				src_fade_wait = 0;
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BEAT: {
-				double remainder = Math::fmod(current_pos, beat_sec);
+				float remainder = Math::fmod(current_pos, beat_sec);
 				src_fade_wait = beat_sec - remainder;
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BAR: {
-				double bar_sec = beat_sec * from_state.stream->get_bar_beats();
-				double remainder = Math::fmod(current_pos, bar_sec);
+				float bar_sec = beat_sec * from_state.stream->get_bar_beats();
+				float remainder = Math::fmod(current_pos, bar_sec);
 				src_fade_wait = bar_sec - remainder;
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_END: {
-				double end = from_state.stream->get_beat_count() > 0 ? double(from_state.stream->get_beat_count() * beat_sec) : from_state.stream->get_length();
+				float end = from_state.stream->get_beat_count() > 0 ? float(from_state.stream->get_beat_count() * beat_sec) : from_state.stream->get_length();
 				if (end == 0) {
 					// Stream does not have a length.
 					src_fade_wait = 0;
@@ -726,7 +726,7 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 	} else {
 		// Source has no BPM, so just simple transition.
 		if (transition.from_time == AudioStreamInteractive::TRANSITION_FROM_TIME_END && from_state.stream->get_length() > 0) {
-			double end = from_state.stream->get_length();
+			float end = from_state.stream->get_length();
 			src_fade_wait = end - current_pos;
 			if (!from_state.stream->has_loop()) {
 				src_no_loop = true;
@@ -742,9 +742,9 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 	} else if (transition.to_time == AudioStreamInteractive::TRANSITION_TO_TIME_SAME_POSITION && transition.from_time != AudioStreamInteractive::TRANSITION_FROM_TIME_END && to_state.stream->get_length() > 0.0) {
 		// Seeking to basically same position as when we start fading.
 		dst_seek_to = current_pos + src_fade_wait;
-		double end;
+		float end;
 		if (to_state.stream->get_bpm() > 0 && to_state.stream->get_beat_count()) {
-			double beat_sec = 60 / double(to_state.stream->get_bpm());
+			float beat_sec = 60 / float(to_state.stream->get_bpm());
 			end = to_state.stream->get_beat_count() * beat_sec;
 		} else {
 			end = to_state.stream->get_length();
@@ -817,9 +817,9 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 		filler_state.fade_wait = src_fade_wait;
 		filler_state.first_mix = true;
 
-		double filler_end;
+		float filler_end;
 		if (filler_state.stream->get_bpm() > 0 && filler_state.stream->get_beat_count() > 0) {
-			double filler_beat_sec = 60 / double(filler_state.stream->get_bpm());
+			float filler_beat_sec = 60 / float(filler_state.stream->get_bpm());
 			filler_end = filler_beat_sec * filler_state.stream->get_beat_count();
 		} else {
 			filler_end = filler_state.stream->get_length();
