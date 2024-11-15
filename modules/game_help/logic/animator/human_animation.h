@@ -651,6 +651,7 @@ namespace HumanAnim
                 return l.str() > r.str();
             }
         };
+        
 
         static void build_virtual_pose(HumanBoneConfig& p_config,Skeleton3D* p_skeleton,Transform3D parent_trans,  int bone_index,HashMap<String, String>& p_human_bone_label) {
             
@@ -701,7 +702,7 @@ namespace HumanAnim
 				local_trans.basis = Basis(pose.rotation);
 				build_skeleton_local_pose(p_skeleton, p_config, pose, local_trans,p_skeleton_config);
 			}
-
+            bool is_hip_bone = p_skeleton->find_bone("Hips") != -1;
 			for (auto& it : p_config.root_bone) {
 				Transform3D& trans = p_skeleton_config.real_pose[it];
 				Vector3 bone_foreard = Vector3(0, 0, 1);

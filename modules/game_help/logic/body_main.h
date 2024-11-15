@@ -660,7 +660,7 @@ public:
 
 
     Ref<Animation> play_animation;
-    DECL_MEMBER_BUTTON(editor_play_select_animation);
+    DECL_MEMBER_BUTTON(animation_test_play_select_animation);
 
 
     
@@ -679,7 +679,7 @@ public:
 	DECL_MEMBER_BUTTON(editor_convert_animations_bt);
 
     
-	DECL_MEMBER_BUTTON(editor_install_mkhm);
+	DECL_MEMBER_BUTTON(humanizer_install_mkhm);
 
     void update_bone_visble();
 

@@ -482,20 +482,21 @@ void CharacterBodyMain::_bind_methods()
 
     ADD_MEMBER_BUTTON(editor_convert_animations_bt,L"转换动画文件夹",CharacterBodyMain);
 
+    ADD_SUBGROUP("animation_test", "animation_test", "");
     
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "editor_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "editor_play_animation_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
-    ADD_MEMBER_BUTTON(editor_play_select_animation,L"播放动画",CharacterBodyMain);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_test_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_test_play_animation_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
+    ADD_MEMBER_BUTTON(animation_test_play_select_animation,L"播放动画",CharacterBodyMain);
+
+
+    ADD_SUBGROUP("humanizer", "humanizer", "");
+
+    ADD_MEMBER_BUTTON(humanizer_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
 
 
-    ADD_MEMBER_BUTTON(editor_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
 
-
-
-
-    ADD_SUBGROUP("show", "");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "body_prefab", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPrefab",PROPERTY_USAGE_DEFAULT ), "set_body_prefab", "get_body_prefab");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator"); 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_library", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimationLibrary",PROPERTY_USAGE_DEFAULT ), "set_animation_library", "get_animation_library");
@@ -885,7 +886,7 @@ void CharacterBodyMain::editor_build_form_mesh_file_path()
     set_body_prefab(prefab);
     
 }
-void CharacterBodyMain::editor_play_select_animation() {
+void CharacterBodyMain::animation_test_play_select_animation() {
     init();
     if(play_animation.is_null()) {
         return;
@@ -1307,7 +1308,7 @@ static void init_all_mkhm_pack() {
     f->store_string(json->get_parsed_text());
     f->close();
 }
-void CharacterBodyMain::editor_install_mkhm() {
+void CharacterBodyMain::humanizer_install_mkhm() {
     init_all_mkhm_pack();
 }
 
