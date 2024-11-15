@@ -545,6 +545,12 @@ void SpinBox::_set_step_no_signal(double p_step) {
 	set_block_signals(false);
 }
 
+void SpinBox::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "exp_edit") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
