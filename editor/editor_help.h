@@ -44,7 +44,8 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
-#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+#include "modules/gdscript_enabled.gen.h"
+#include "modules/mono_enabled.gen.h"
 
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);

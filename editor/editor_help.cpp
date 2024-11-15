@@ -49,7 +49,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 
-#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+#include "modules/gdscript_enabled.gen.h"
+#include "modules/mono_enabled.gen.h"
 
 // For syntax highlighting.
 #ifdef MODULE_GDSCRIPT_ENABLED

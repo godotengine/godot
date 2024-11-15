@@ -44,7 +44,7 @@ class ReparentDialog;
 class ShaderCreateDialog;
 class TextureRect;
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
 class RenameDialog;
 #endif // MODULE_REGEX_ENABLED

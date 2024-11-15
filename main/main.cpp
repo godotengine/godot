@@ -121,7 +121,7 @@
 #include "main/steam_tracker.h"
 #endif
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/mono_enabled.gen.h"
 
 #if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
 #include "modules/mono/editor/bindings_generator.h"

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "thorvg_bounds_iterator.h"
+
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -40,12 +42,9 @@ using namespace godot;
 
 #include "core/typedefs.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
 #endif
 
 #ifdef MODULE_SVG_ENABLED
-
-#include "thorvg_bounds_iterator.h"
 
 #include <tvgIteratorAccessor.h>
 #include <tvgPaint.h>

@@ -37,8 +37,6 @@
 #include "core/os/time.h"
 #include "core/string/print_string.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
 #endif

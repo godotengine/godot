@@ -52,8 +52,6 @@
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/navigation_mesh.h"
 
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
-
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif

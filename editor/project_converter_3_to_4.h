@@ -33,7 +33,7 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 
 #ifndef MODULE_REGEX_ENABLED
 

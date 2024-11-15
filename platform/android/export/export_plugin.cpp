@@ -52,7 +52,8 @@
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
+#include "modules/mono_enabled.gen.h"
+#include "modules/svg_enabled.gen.h"
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif

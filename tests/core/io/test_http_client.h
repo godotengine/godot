@@ -35,7 +35,7 @@
 
 #include "tests/test_macros.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/mbedtls_enabled.gen.h"
 
 namespace TestHTTPClient {
 

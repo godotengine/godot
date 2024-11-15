@@ -41,7 +41,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_help.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif

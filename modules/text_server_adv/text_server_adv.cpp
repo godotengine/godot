@@ -54,7 +54,7 @@ using namespace godot;
 #include "core/string/translation_server.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
+#include "modules/svg_enabled.gen.h"
 
 #endif
 

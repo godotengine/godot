@@ -90,7 +90,8 @@ using namespace godot;
 #include "scene/resources/image_texture.h"
 #include "servers/text/text_server_extension.h"
 
-#include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
+#include "modules/freetype_enabled.gen.h"
+#include "modules/msdfgen_enabled.gen.h"
 
 #endif
 

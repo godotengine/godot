@@ -30,7 +30,7 @@
 
 #include "test_main.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/navigation_enabled.gen.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"

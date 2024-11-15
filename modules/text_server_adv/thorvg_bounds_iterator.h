@@ -44,7 +44,7 @@ using namespace godot;
 
 #include "core/typedefs.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/svg_enabled.gen.h"
 #endif
 
 #ifdef MODULE_SVG_ENABLED

@@ -46,7 +46,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/mono_enabled.gen.h"
 #endif // TOOLS_ENABLED
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";

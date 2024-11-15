@@ -47,7 +47,7 @@
 #include "core/io/plist.h"
 #include "core/object/ref_counted.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif

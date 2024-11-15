@@ -39,7 +39,7 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
-#include "modules/modules_enabled.gen.h" // For jsonrpc.
+#include "modules/jsonrpc_enabled.gen.h"
 #ifdef MODULE_JSONRPC_ENABLED
 #include "modules/jsonrpc/jsonrpc.h"
 #else

@@ -39,7 +39,8 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+#include "modules/csg_enabled.gen.h"
+#include "modules/gridmap_enabled.gen.h"
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif // MODULE_CSG_ENABLED

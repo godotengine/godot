@@ -45,7 +45,7 @@
 #include "scene/theme/theme_db.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/mono_enabled.gen.h"
 
 static String _get_indent(const String &p_text) {
 	String indent;

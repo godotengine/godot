@@ -36,7 +36,8 @@
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+#include "modules/csg_enabled.gen.h"
+#include "modules/gridmap_enabled.gen.h"
 
 class Node;
 class NavigationMesh;

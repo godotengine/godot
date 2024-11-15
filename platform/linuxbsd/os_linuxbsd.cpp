@@ -44,7 +44,7 @@
 #include "wayland/display_server_wayland.h"
 #endif
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif

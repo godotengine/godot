@@ -17,7 +17,7 @@ def make_default_theme_icons_action(target, source, env):
                 icons_string.write("\t%s,\n" % to_raw_cstring(svgf.read()))
 
         s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n\n")
-        s.write('#include "modules/modules_enabled.gen.h"\n\n')
+        s.write('#include "modules/svg_enabled.gen.h"\n\n')
         s.write("#ifndef _DEFAULT_THEME_ICONS_H\n")
         s.write("#define _DEFAULT_THEME_ICONS_H\n")
         s.write("static const int default_theme_icons_count = {};\n\n".format(len(svg_icons)))

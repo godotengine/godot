@@ -35,7 +35,7 @@
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif

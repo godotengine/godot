@@ -37,7 +37,10 @@
 #include "tests/test_utils.h"
 #include "thirdparty/doctest/doctest.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/bmp_enabled.gen.h"
+#include "modules/jpg_enabled.gen.h"
+#include "modules/tga_enabled.gen.h"
+#include "modules/webp_enabled.gen.h"
 
 namespace TestImage {
 

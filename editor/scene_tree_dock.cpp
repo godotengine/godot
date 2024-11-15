@@ -65,7 +65,6 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 #include "editor/rename_dialog.h"
 #endif // MODULE_REGEX_ENABLED

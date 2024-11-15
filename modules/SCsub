@@ -15,20 +15,62 @@ env_modules.Append(CPPDEFINES=["GODOT_MODULE"])
 Export("env_modules")
 
 
-# Header with MODULE_*_ENABLED defines.
-def modules_enabled_builder(target, source, env):
-    with methods.generated_wrapper(target) as file:
-        for module in source[0].read():
-            file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
+# Header with MODULE_*_ENABLED define.
+def module_enabled_builder(target, source, env):
+    with methods.generated_wrapper(target[0]) as file:
+        if not source[1].read():
+            file.write("// ")
+        file.write(f"#define MODULE_{source[0].read()}_ENABLED")
 
 
-modules_enabled = env.CommandNoCache(
-    "modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_enabled_builder)
-)
+modules = []
+for name in env.modules_detected.keys():
+    modules.append(
+        env.CommandNoCache(
+            f"{name}_enabled.gen.h",
+            [env.Value(name.upper()), env.Value(name in env.module_list)],
+            env.Run(module_enabled_builder),
+        )
+    )
+
+
+# Hardcode certain modules to "always" appear, meaning they will have a
+# corresponding header file even if the module itself no longer exists. This
+# is for the benefit of letting scripts explicitly utilize them without having
+# to recompile when an unrelated module is enabled/disabled.
+HARDCODED_MODULES = [
+    "bmp",
+    "csg",
+    "freetype",
+    "gdscript",
+    "gridmap",
+    "jpg",
+    "jsonrpc",
+    "lightmapper_rd",
+    "mbedtls",
+    "mono",
+    "msdfgen",
+    "navigation",
+    "regex",
+    "svg",
+    "tga",
+    "webp",
+    "websocket",
+]
+
+for name in HARDCODED_MODULES:
+    if name in env.modules_detected:
+        continue
+    modules.append(
+        env.CommandNoCache(
+            f"{name}_enabled.gen.h", [env.Value(name.upper()), env.Value(False)], env.Run(module_enabled_builder)
+        )
+    )
 
 
 def register_module_types_builder(target, source, env):
     modules = source[0].read()
+    mod_enabled = "\n".join([f'#include "{n}_enabled.gen.h"' for n in modules.keys()])
     mod_inc = "\n".join([f'#include "{p}/register_types.h"' for p in modules.values()])
     mod_init = "\n".join(
         [f"#ifdef MODULE_{n.upper()}_ENABLED\n\tinitialize_{n}_module(p_level);\n#endif" for n in modules.keys()]
@@ -41,7 +83,7 @@ def register_module_types_builder(target, source, env):
             f"""\
 #include "register_module_types.h"
 
-#include "modules/modules_enabled.gen.h"
+{mod_enabled}
 
 {mod_inc}
 
@@ -57,9 +99,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
 
 
 register_module_types = env.CommandNoCache(
-    "register_module_types.gen.cpp",
-    [env.Value(env.modules_detected), modules_enabled],
-    env.Run(register_module_types_builder),
+    "register_module_types.gen.cpp", [env.Value(env.modules_detected)] + modules, env.Run(register_module_types_builder)
 )
 
 

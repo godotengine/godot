@@ -38,8 +38,6 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #include <ctime>
 
 #ifdef MODULE_REGEX_ENABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "thorvg_svg_in_ot.h"
+
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -49,13 +51,10 @@ using namespace godot;
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
-#include "modules/modules_enabled.gen.h" // For svg, freetype.
 #endif
 
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
-
-#include "thorvg_svg_in_ot.h"
 
 #include "thorvg_bounds_iterator.h"
 

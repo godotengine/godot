@@ -170,7 +170,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+#include "modules/gdscript_enabled.gen.h"
+#include "modules/mono_enabled.gen.h"
 
 EditorNode *EditorNode::singleton = nullptr;
 

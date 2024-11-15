@@ -41,7 +41,7 @@
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 #include "gdscript_test_runner.h"
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/mono_enabled.gen.h"
 #include "scene/resources/packed_scene.h"
 
 #include "../gdscript.h"

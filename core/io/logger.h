@@ -34,7 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif // MODULE_REGEX_ENABLED

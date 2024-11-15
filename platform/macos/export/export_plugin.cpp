@@ -47,7 +47,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For svg and regex.
+#include "modules/regex_enabled.gen.h"
+#include "modules/svg_enabled.gen.h"
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif

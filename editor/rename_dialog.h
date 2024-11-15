@@ -31,7 +31,8 @@
 #ifndef RENAME_DIALOG_H
 #define RENAME_DIALOG_H
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex_enabled.gen.h"
+
 #ifdef MODULE_REGEX_ENABLED
 
 #include "editor/gui/scene_tree_editor.h"

@@ -41,7 +41,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/themes/editor_scale.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/svg_enabled.gen.h"
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif

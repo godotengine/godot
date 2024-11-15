@@ -38,7 +38,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/texture.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/svg_enabled.gen.h"
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif

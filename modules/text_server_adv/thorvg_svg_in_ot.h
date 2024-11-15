@@ -47,7 +47,8 @@ using namespace godot;
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
-#include "modules/modules_enabled.gen.h" // For svg, freetype.
+#include "modules/freetype_enabled.gen.h"
+#include "modules/svg_enabled.gen.h"
 #endif
 
 #ifdef MODULE_SVG_ENABLED

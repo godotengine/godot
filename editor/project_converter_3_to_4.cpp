@@ -32,8 +32,6 @@
 
 #ifndef DISABLE_DEPRECATED
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #ifdef MODULE_REGEX_ENABLED
 
 #include "core/error/error_macros.h"

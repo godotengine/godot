@@ -36,7 +36,7 @@
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
-#include "modules/modules_enabled.gen.h" // For freetype.
+#include "modules/freetype_enabled.gen.h"
 
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";

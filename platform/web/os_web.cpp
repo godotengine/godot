@@ -40,7 +40,7 @@
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 
-#include "modules/modules_enabled.gen.h" // For websocket.
+#include "modules/websocket_enabled.gen.h"
 
 #include <dlfcn.h>
 #include <emscripten.h>
