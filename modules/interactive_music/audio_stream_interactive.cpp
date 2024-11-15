@@ -779,7 +779,8 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 
 	to_state.playback->start(dst_seek_to);
 	to_state.before_mix_position = dst_seek_to;
-	to_state.queue_active = true;
+	to_state.active = !p_is_auto_advance;
+	to_state.queue_active = p_is_auto_advance;
 	to_state.fade_volume = 0.0;
 	to_state.first_mix = true;
 
@@ -806,7 +807,8 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 
 		filler_state.playback->start(0);
 		filler_state.before_mix_position = 0;
-		filler_state.queue_active = true;
+		filler_state.active = !p_is_auto_advance;
+		filler_state.queue_active = p_is_auto_advance;
 
 		// Filler state does not fade (bake fade in the audio clip if you want fading).
 		filler_state.fade_volume = 1.0;
