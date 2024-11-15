@@ -912,6 +912,7 @@ def prepare_cache(env) -> None:
     if env.GetOption("clean"):
         return
 
+    cache_path = ""
     if env["cache_path"]:
         cache_path = cast(str, env["cache_path"])
     elif os.environ.get("SCONS_CACHE"):
