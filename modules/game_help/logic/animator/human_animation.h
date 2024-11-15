@@ -689,12 +689,24 @@ namespace HumanAnim
             
         }
 		// 构建真实姿势
-		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config) {
+		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config,bool position_by_hip = false) {
 			p_skeleton->_update_bones_nested_set();
 			p_skeleton->force_update_all_bone_transforms(false);
 
+            Vector<StringName> root_bone = p_config.root_bone;
+            int spine_bone = -1;
+            bool is_hip = false;
+            if(position_by_hip) {
+                int hip_bone = p_skeleton->find_bone("Hips");
+                spine_bone = p_skeleton->find_bone("Spine");
+                if(hip_bone != -1 && spine_bone != -1) {
+                    root_bone.clear();
+                    root_bone.push_back(p_skeleton->get_bone_name(hip_bone));
+                }
+                
+            }
 			Transform3D local_trans;
-			for (auto& it : p_config.root_bone) {
+			for (auto& it : root_bone) {
 				BonePose& pose = p_config.virtual_pose[it];
 				Transform3D& trans = p_skeleton_config.real_pose[it];
 				trans = p_skeleton->get_bone_global_pose(pose.bone_index);
@@ -702,21 +714,25 @@ namespace HumanAnim
 				local_trans.basis = Basis(pose.rotation);
 				build_skeleton_local_pose(p_skeleton, p_config, pose, local_trans,p_skeleton_config);
 			}
-            bool is_hip_bone = p_skeleton->find_bone("Hips") != -1;
-			for (auto& it : p_config.root_bone) {
+			for (auto& it : root_bone) {
 				Transform3D& trans = p_skeleton_config.real_pose[it];
 				Vector3 bone_foreard = Vector3(0, 0, 1);
+                BonePose* pose = nullptr;
+                Transform3D local_trans;
+                if(is_hip) {
+                    pose = &p_config.virtual_pose[StringName("Spine")];
+                    local_trans.basis = Basis(pose->rotation);
+                    p_skeleton_config.bone_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
+                    p_skeleton_config.root_position[it] = (trans.origin - pose->position);
 
-				BonePose& pose = p_config.virtual_pose[it];
-				Transform3D local_trans;
-				local_trans.basis = Basis(pose.rotation);
-				{
-					Transform3D& child_trans = p_skeleton_config.real_pose[pose.child_bones[0]];
-					bone_foreard = child_trans.origin - trans.origin;
-				}
-				p_skeleton_config.bone_lookat[it] = bone_foreard.normalized();
-				p_skeleton_config.root_position[it] = (trans.origin - pose.position);
-				build_skeleton_global_lookat(p_config, pose,local_trans, p_skeleton_config);
+                }
+                else {
+                    pose = &p_config.virtual_pose[it];
+                    local_trans.basis = Basis(pose->rotation);
+                    p_skeleton_config.bone_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
+                    p_skeleton_config.root_position[it] = (trans.origin - pose->position);
+                }
+				build_skeleton_global_lookat(p_config, *pose,local_trans, p_skeleton_config);
 			}
 		}
         static void build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,BonePose& parent_pose, Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {

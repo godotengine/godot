@@ -462,11 +462,16 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
 
 
+    ClassDB::bind_method(D_METHOD("set_is_positiobn_by_hip_bone", "is_positiobn_by_hip_bone"), &CharacterBodyMain::set_is_positiobn_by_hip_bone);
+    ClassDB::bind_method(D_METHOD("get_is_positiobn_by_hip_bone"), &CharacterBodyMain::get_is_positiobn_by_hip_bone);
+
+
 
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human"), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_is_positiobn_by_hip_bone"), "set_is_positiobn_by_hip_bone", "get_is_positiobn_by_hip_bone");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
     
@@ -482,14 +487,14 @@ void CharacterBodyMain::_bind_methods()
 
     ADD_MEMBER_BUTTON(editor_convert_animations_bt,L"转换动画文件夹",CharacterBodyMain);
 
-    ADD_SUBGROUP("animation_test", "animation_test", "");
+    ADD_SUBGROUP("animation_test", "animation_test");
     
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_test_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_test_play_animation_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
     ADD_MEMBER_BUTTON(animation_test_play_select_animation,L"播放动画",CharacterBodyMain);
 
 
-    ADD_SUBGROUP("humanizer", "humanizer", "");
+    ADD_SUBGROUP("humanizer", "humanizer");
 
     ADD_MEMBER_BUTTON(humanizer_install_mkhm,L"安装mkhm包",CharacterBodyMain);
 
