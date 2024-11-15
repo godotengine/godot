@@ -899,7 +899,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 			test_cleanup();
 			return status;
 #else
-			ERR_PRINT(
+			OS::get_singleton()->print(
 					"`--test` was specified on the command line, but this Godot binary was compiled without support for unit tests. Aborting.\n"
 					"To be able to run unit tests, use the `tests=yes` SCons option when compiling Godot.\n");
 			return EXIT_FAILURE;
@@ -1801,12 +1801,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
-			if (!FileAccess::exists(arg) && !DirAccess::exists(arg)) {
+			// Handle arguments specific to C#-enabled builds.
+			const bool using_mono_args = arg == "--generate-mono-glue";
+#ifndef MODULE_MONO_ENABLED
+			if (using_mono_args) {
+				OS::get_singleton()->print(
+						"`--generate-mono-glue` was specified on the command line, but this Godot binary was compiled without .NET support. Aborting.\n"
+						"To be able to generate C# glue code, use the `module_mono_enabled=yes` SCons option when compiling Godot.\n");
+				goto error;
+			}
+#endif
+			if (!using_mono_args && (!FileAccess::exists(arg) && !DirAccess::exists(arg))) {
 				// Warn if the argument isn't recognized by Godot *and* the file/folder
 				// specified by a positional argument doesn't exist.
 				// This allows projects to read file or folder paths as a positional argument
 				// without printing a warning, as this scenario can't make use of user command line arguments.
-				WARN_PRINT(vformat("Unknown command line argument \"%s\". User arguments should be passed after a -- or ++ separator, e.g. \"-- %s\".", arg, arg));
+				OS::get_singleton()->print("Unknown command line argument \"%s\". User arguments should be passed after a -- or ++ separator, e.g. \"-- %s\".\n", arg.utf8().get_data(), arg.utf8().get_data());
 			}
 			main_args.push_back(arg);
 		}
