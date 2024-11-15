@@ -197,8 +197,6 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale * playback_speed_scale) / double(target_rate)) * double(FP_LEN));
 
-	int mixed_frames_total = -1;
-
 	int i;
 	for (i = 0; i < p_frames; i++) {
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
@@ -209,11 +207,6 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		AudioFrame y1 = internal_buffer[idx - 2];
 		AudioFrame y2 = internal_buffer[idx - 1];
 		AudioFrame y3 = internal_buffer[idx - 0];
-
-		if (idx >= internal_buffer_end && mixed_frames_total == -1) {
-			// The internal buffer ends somewhere in this range, and we haven't yet recorded the number of good frames we have.
-			mixed_frames_total = i;
-		}
 
 		float mu2 = mu * mu;
 		float h11 = mu2 * (mu - 1);
@@ -232,19 +225,15 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			internal_buffer[3] = internal_buffer[INTERNAL_BUFFER_LEN + 3];
 			int mixed_frames = _mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
 			if (mixed_frames != INTERNAL_BUFFER_LEN) {
-				// internal_buffer[mixed_frames] is the first frame of silence.
-				internal_buffer_end = mixed_frames;
-			} else {
-				// The internal buffer does not contain the first frame of silence.
-				internal_buffer_end = -1;
+				// Ran out of data, fill the rest (old garbage data) with silence.
+				for (int j = mixed_frames + 4; j < INTERNAL_BUFFER_LEN + 4; j++) {
+					internal_buffer[j] = AudioFrame(0, 0);
+				}
 			}
 			mix_offset -= (INTERNAL_BUFFER_LEN << FP_BITS);
 		}
 	}
-	if (mixed_frames_total == -1 && i == p_frames) {
-		mixed_frames_total = p_frames;
-	}
-	return mixed_frames_total;
+	return p_frames;
 }
 
 ////////////////////////////////
