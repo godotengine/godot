@@ -664,58 +664,76 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {
-	OBJTYPE_RLOCK;
+	String script_path;
+	{
+		OBJTYPE_RLOCK;
 
-	ClassInfo *ti = classes.getptr(p_class);
-	if (!ti) {
-		if (!ScriptServer::is_global_class(p_class)) {
-			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		ClassInfo *ti = classes.getptr(p_class);
+		if (!ti) {
+			if (!ScriptServer::is_global_class(p_class)) {
+				ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+			}
+			script_path = ScriptServer::get_global_class_path(p_class);
+			goto use_script; // Open the lock for resource loading.
 		}
-		String path = ScriptServer::get_global_class_path(p_class);
-		Ref<Script> scr = ResourceLoader::load(path);
-		return scr.is_valid() && scr->is_valid() && !scr->is_abstract();
-	}
 #ifdef TOOLS_ENABLED
-	if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
-		return false;
-	}
+		if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
+			return false;
+		}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
+		return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
+	}
+
+use_script:
+	Ref<Script> scr = ResourceLoader::load(script_path);
+	return scr.is_valid() && scr->is_valid() && !scr->is_abstract();
 }
 
 bool ClassDB::is_abstract(const StringName &p_class) {
-	OBJTYPE_RLOCK;
+	String script_path;
+	{
+		OBJTYPE_RLOCK;
 
-	ClassInfo *ti = classes.getptr(p_class);
-	if (!ti) {
-		if (!ScriptServer::is_global_class(p_class)) {
-			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		ClassInfo *ti = classes.getptr(p_class);
+		if (!ti) {
+			if (!ScriptServer::is_global_class(p_class)) {
+				ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+			}
+			script_path = ScriptServer::get_global_class_path(p_class);
+			goto use_script; // Open the lock for resource loading.
 		}
-		String path = ScriptServer::get_global_class_path(p_class);
-		Ref<Script> scr = ResourceLoader::load(path);
-		return scr.is_valid() && scr->is_valid() && scr->is_abstract();
+		return ti->creation_func == nullptr && (!ti->gdextension || ti->gdextension->create_instance == nullptr);
 	}
-	return ti->creation_func == nullptr && (!ti->gdextension || ti->gdextension->create_instance == nullptr);
+
+use_script:
+	Ref<Script> scr = ResourceLoader::load(script_path);
+	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
-	OBJTYPE_RLOCK;
+	String script_path;
+	{
+		OBJTYPE_RLOCK;
 
-	ClassInfo *ti = classes.getptr(p_class);
-	if (!ti) {
-		if (!ScriptServer::is_global_class(p_class)) {
-			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		ClassInfo *ti = classes.getptr(p_class);
+		if (!ti) {
+			if (!ScriptServer::is_global_class(p_class)) {
+				ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+			}
+			script_path = ScriptServer::get_global_class_path(p_class);
+			goto use_script; // Open the lock for resource loading.
 		}
-		String path = ScriptServer::get_global_class_path(p_class);
-		Ref<Script> scr = ResourceLoader::load(path);
-		return scr.is_valid() && scr->is_valid() && scr->is_abstract();
-	}
 #ifdef TOOLS_ENABLED
-	if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
-		return false;
-	}
+		if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
+			return false;
+		}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance) && ti->is_virtual);
+		return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance) && ti->is_virtual);
+	}
+
+use_script:
+	Ref<Script> scr = ResourceLoader::load(script_path);
+	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
