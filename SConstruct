@@ -92,10 +92,12 @@ platform_doc_class_path = {}
 platform_exporters = []
 platform_apis = []
 
+buildable_platform_list = []
+
 time_at_start = time.time()
 
 for x in sorted(glob.glob("platform/*")):
-    if not os.path.isdir(x) or not os.path.exists(x + "/detect.py"):
+    if not os.path.exists(x + "/detect.py"):
         continue
     tmppath = "./" + x
 
@@ -112,19 +114,20 @@ for x in sorted(glob.glob("platform/*")):
         pass
 
     platform_name = x[9:]
+    platform_list += [platform_name]
 
     if os.path.exists(x + "/export/export.cpp"):
         platform_exporters.append(platform_name)
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(platform_name)
+    platform_opts[platform_name] = detect.get_opts()
+    platform_flags[platform_name] = detect.get_flags()
+    if isinstance(platform_flags[platform_name], list):  # backwards compatibility
+        platform_flags[platform_name] = {flag[0]: flag[1] for flag in platform_flags[platform_name]}
+
     if detect.can_build():
-        x = x.replace("platform/", "")  # rest of world
-        x = x.replace("platform\\", "")  # win32
-        platform_list += [x]
-        platform_opts[x] = detect.get_opts()
-        platform_flags[x] = detect.get_flags()
-        if isinstance(platform_flags[x], list):  # backwards compatibility
-            platform_flags[x] = {flag[0]: flag[1] for flag in platform_flags[x]}
+        buildable_platform_list += [platform_name]
+
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
@@ -190,9 +193,9 @@ opts = Variables(customs, ARGUMENTS)
 
 # Target build options
 if env.scons_version >= (4, 3):
-    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(buildable_platform_list), "")
 else:
-    opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add("platform", "Target platform (%s)" % "|".join(buildable_platform_list), "")
     opts.Add("p", "Alias for 'platform'", "")
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
@@ -361,16 +364,20 @@ if env["platform"] in compatibility_platform_aliases:
 if env["platform"] in ["linux", "bsd"]:
     env["platform"] = "linuxbsd"
 
-if env["platform"] not in platform_list:
-    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
-    text += "Please run SCons again and select a valid platform: platform=<string>."
+if env["platform"] not in buildable_platform_list:
+    platform_lines = [p + (" *" if p in buildable_platform_list else "")  for p in platform_list]
+    text = "The following platforms are present:\n\t{}\n".format("\n\t".join(platform_lines))
+    text += "Platforms available in your environment marked with '*'\n"
+    text += "Please run SCons again and select available platform: platform=<string>."
 
     if env["platform"] == "list":
         print(text)
     elif env["platform"] == "":
         print_error("Could not detect platform automatically.\n" + text)
-    else:
+    elif env["platform"] not in platform_list:
         print_error(f'Invalid target platform "{env["platform"]}".\n' + text)
+    else:
+        print_error(f'Environment doesn\'t support building target platform "{env["platform"]}".\n' + text)
 
     Exit(0 if env["platform"] == "list" else 255)
 
