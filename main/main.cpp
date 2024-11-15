@@ -1801,13 +1801,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
-			if (!FileAccess::exists(arg) && !DirAccess::exists(arg)) {
-				// Warn if the argument isn't recognized by Godot *and* the file/folder
-				// specified by a positional argument doesn't exist.
-				// This allows projects to read file or folder paths as a positional argument
-				// without printing a warning, as this scenario can't make use of user command line arguments.
-				WARN_PRINT(vformat("Unknown command line argument \"%s\". User arguments should be passed after a -- or ++ separator, e.g. \"-- %s\".", arg, arg));
-			}
 			main_args.push_back(arg);
 		}
 
