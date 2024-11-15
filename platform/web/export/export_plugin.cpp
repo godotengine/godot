@@ -188,10 +188,12 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 
 	Ref<Image> icon;
 	if (!p_icon.is_empty()) {
+		const String icon_path = ResourceUID::ensure_path(p_icon);
+
 		icon.instantiate();
-		const Error err = ImageLoader::load_image(p_icon, icon);
+		const Error err = ImageLoader::load_image(icon_path, icon);
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not read file: \"%s\"."), p_icon));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not read file: \"%s\"."), icon_path));
 			return err;
 		}
 		if (icon->get_width() != p_size || icon->get_height() != p_size) {

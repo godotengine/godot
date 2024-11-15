@@ -915,7 +915,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				exp_name += "_tinted";
 			}
 			exp_name += ".png";
-			String icon_path = p_preset->get(key);
+			String icon_path = ResourceUID::ensure_path(p_preset->get(key));
 			bool resize_waning = true;
 			if (icon_path.is_empty()) {
 				// Load and resize base icon.
@@ -925,7 +925,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				} else if (color_mode == ICON_TINTED) {
 					key += "_tinted";
 				}
-				icon_path = p_preset->get(key);
+				icon_path = ResourceUID::ensure_path(p_preset->get(key));
 				resize_waning = false;
 			}
 			if (icon_path.is_empty()) {
@@ -933,7 +933,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 					continue;
 				}
 				// Resize main app icon.
-				icon_path = GLOBAL_GET("application/config/icon");
+				icon_path = ResourceUID::ensure_path(GLOBAL_GET("application/config/icon"));
 				Ref<Image> img = memnew(Image);
 				Error err = ImageLoader::load_image(icon_path, img);
 				if (err != OK) {
@@ -1037,8 +1037,8 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 }
 
 Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
-	const String custom_launch_image_2x = p_preset->get("storyboard/custom_image@2x");
-	const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
+	const String custom_launch_image_2x = ResourceUID::ensure_path(p_preset->get("storyboard/custom_image@2x"));
+	const String custom_launch_image_3x = ResourceUID::ensure_path(p_preset->get("storyboard/custom_image@3x"));
 
 	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
 		Ref<Image> image;
@@ -1071,7 +1071,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 	} else {
 		Ref<Image> splash;
 
-		const String splash_path = GLOBAL_GET("application/boot_splash/image");
+		const String splash_path = ResourceUID::ensure_path(GLOBAL_GET("application/boot_splash/image"));
 
 		if (!splash_path.is_empty()) {
 			splash.instantiate();

@@ -1668,7 +1668,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	monochrome.instantiate();
 
 	// Regular icon: user selection -> project icon -> default.
-	String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+	String path = ResourceUID::ensure_path(p_preset->get(launcher_icon_option)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
@@ -1680,7 +1680,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+	path = ResourceUID::ensure_path(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
 		print_verbose("- falling back to using the regular icon");
@@ -1688,14 +1688,14 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 
 	// Adaptive background: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+	path = ResourceUID::ensure_path(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
 		ImageLoader::load_image(path, background);
 	}
 
 	// Adaptive monochrome: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_monochrome_option)).strip_edges();
+	path = ResourceUID::ensure_path(p_preset->get(launcher_adaptive_icon_monochrome_option)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive monochrome icon from " + path);
 		ImageLoader::load_image(path, monochrome);

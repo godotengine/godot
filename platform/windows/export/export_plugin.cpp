@@ -492,6 +492,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	} else {
 		icon_path = GLOBAL_GET("application/config/icon");
 	}
+	icon_path = ResourceUID::ensure_path(icon_path);
 	icon_path = ProjectSettings::get_singleton()->globalize_path(icon_path);
 
 	if (p_console_icon) {

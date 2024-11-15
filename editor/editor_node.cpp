@@ -5428,7 +5428,7 @@ void EditorNode::redo() {
 
 bool EditorNode::ensure_main_scene(bool p_from_native) {
 	pick_main_scene->set_meta("from_native", p_from_native); // Whether from play button or native run.
-	String main_scene = GLOBAL_GET("application/run/main_scene");
+	String main_scene = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 
 	if (main_scene.is_empty()) {
 		current_menu_option = -1;

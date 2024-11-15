@@ -1869,6 +1869,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			}
 
 			if (!icon_path.is_empty()) {
+				icon_path = ResourceUID::ensure_path(icon_path);
+
 				if (icon_path.get_extension() == "icns") {
 					Ref<FileAccess> icon = FileAccess::open(icon_path, FileAccess::READ);
 					if (icon.is_valid()) {
