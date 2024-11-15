@@ -205,7 +205,7 @@ Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
 }
 
 bool PackedData::has_path(const String &p_path) {
-	return files.has(PathMD5(p_path.simplify_path().md5_buffer()));
+	return files.has(PathMD5(p_path.simplify_path().trim_prefix("res://").md5_buffer()));
 }
 
 bool PackedData::has_directory(const String &p_path) {

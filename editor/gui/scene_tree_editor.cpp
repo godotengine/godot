@@ -1098,8 +1098,19 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
+	if (new_name.is_empty() && p_node->get_owner() != nullptr && !p_node->get_scene_file_path().is_empty()) {
+		// If name is empty and node is root of an instance, revert to the original name.
+		const Ref<PackedScene> node_scene = ResourceLoader::load(p_node->get_scene_file_path());
+		if (node_scene.is_valid()) {
+			const Ref<SceneState> &state = node_scene->get_state();
+			if (state->get_node_count() > 0) {
+				new_name = state->get_node_name(0); // Root's name.
+			}
+		}
+	}
+
 	if (new_name.is_empty()) {
-		// If name is empty, fallback to class name.
+		// If name is still empty, fallback to class name.
 		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 			new_name = Node::adjust_name_casing(p_node->get_class());
 		} else {

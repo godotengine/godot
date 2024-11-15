@@ -3032,13 +3032,10 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
-		const double max_fps = Engine::get_singleton()->get_max_fps();
-		const uint64_t max_time = max_fps > 0 ? uint64_t((1000.0 * 1000.0 * 1000.0) / max_fps) : 0;
-
 		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), physical_device,
 				vk_device, swap_chain->vk_swapchain, &swap_chain->refresh_duration);
 		SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
-		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, MAX(swap_chain->refresh_duration, max_time));
+		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, swap_chain->refresh_duration);
 
 		enum SwappyModes {
 			PIPELINE_FORCED_ON,

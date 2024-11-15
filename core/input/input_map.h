@@ -49,6 +49,8 @@ public:
 		List<Ref<InputEvent>> inputs;
 	};
 
+	static constexpr float DEFAULT_DEADZONE = 0.2f;
+
 private:
 	static InputMap *singleton;
 
@@ -74,7 +76,7 @@ public:
 
 	bool has_action(const StringName &p_action) const;
 	List<StringName> get_actions() const;
-	void add_action(const StringName &p_action, float p_deadzone = 0.2);
+	void add_action(const StringName &p_action, float p_deadzone = DEFAULT_DEADZONE);
 	void erase_action(const StringName &p_action);
 
 	float action_get_deadzone(const StringName &p_action);

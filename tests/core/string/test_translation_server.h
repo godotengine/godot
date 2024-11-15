@@ -120,18 +120,50 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 	locale_a = "sr-Latn-CS";
 	locale_b = "sr-Latn-RS";
 
-	// Two elements from locales match.
+	// Script matches (+1) but country doesn't (-1).
 	res = ts->compare_locales(locale_a, locale_b);
 
-	CHECK(res == 2);
+	CHECK(res == 5);
 
 	locale_a = "uz-Cyrl-UZ";
 	locale_b = "uz-Latn-UZ";
 
-	// Two elements match, but they are not sequentual.
+	// Country matches (+1) but script doesn't (-1).
 	res = ts->compare_locales(locale_a, locale_b);
 
-	CHECK(res == 2);
+	CHECK(res == 5);
+
+	locale_a = "aa-Latn-ER";
+	locale_b = "aa-Latn-ER-saaho";
+
+	// Script and country match (+2) with variant on one locale (+0).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 7);
+
+	locale_a = "uz-Cyrl-UZ";
+	locale_b = "uz-Latn-KG";
+
+	// Both script and country mismatched (-2).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 3);
+
+	locale_a = "es-ES";
+	locale_b = "es-AR";
+
+	// Mismatched country (-1).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 4);
+
+	locale_a = "es";
+	locale_b = "es-AR";
+
+	// No country for one locale (+0).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 5);
 
 	locale_a = "es-EC";
 	locale_b = "fr-LU";
@@ -140,6 +172,24 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 	res = ts->compare_locales(locale_a, locale_b);
 
 	CHECK(res == 0);
+
+	locale_a = "zh-HK";
+	locale_b = "zh";
+
+	// In full standardization, zh-HK becomes zh_Hant_HK and zh becomes
+	// zh_Hans_CN. Both script and country mismatch (-2).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 3);
+
+	locale_a = "zh-CN";
+	locale_b = "zh";
+
+	// In full standardization, zh and zh-CN both become zh_Hans_CN for an
+	// exact match.
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 10);
 }
 } // namespace TestTranslationServer
 

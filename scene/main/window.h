@@ -274,6 +274,7 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
+	String get_translated_title() const;
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;

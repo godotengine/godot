@@ -444,6 +444,7 @@ public:
 	void force_update_all_bone_transforms(bool p_notify = true);
 	void process_pose_updated();
 	void force_update_bone_children_transforms(int bone_idx);
+	void force_update_deferred();
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;

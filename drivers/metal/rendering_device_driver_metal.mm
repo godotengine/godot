@@ -982,6 +982,12 @@ RDD::DataFormat RenderingDeviceDriverMetal::swap_chain_get_format(SwapChainID p_
 	return swap_chain->data_format;
 }
 
+void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
+	metal_surface->set_max_fps(p_max_fps);
+}
+
 void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);

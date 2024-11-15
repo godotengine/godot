@@ -622,10 +622,11 @@ public:
 	}
 
 	// Inserts an element without checking if it already exists.
-	void insert_new(const TKey &p_key, const TValue &p_value) {
+	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
-		_insert_element(p_key, p_value, hash);
+		uint32_t pos = _insert_element(p_key, p_value, hash);
+		return Iterator(elements + pos, elements, elements + num_elements);
 	}
 
 	/* Array methods. */

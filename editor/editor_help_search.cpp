@@ -1166,7 +1166,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (p_matching_keyword.is_empty()) {
 		item->set_text(0, p_doc->name);
 	} else {
-		item->set_text(0, p_doc->name + "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword)));
+		item->set_text(0, p_doc->name + "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword));
 	}
 
 	if (!term.is_empty()) {
@@ -1272,7 +1272,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_class_name + "." + p_text;
 	}
 	if (!p_matching_keyword.is_empty()) {
-		text += "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword));
+		text += "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword);
 	}
 	item->set_text(0, text);
 

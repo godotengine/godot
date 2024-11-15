@@ -117,6 +117,12 @@
 				[b]Note:[/b] When creating custom editor UI, prefer accessing theme items directly from your GUI nodes using the [code]get_theme_*[/code] methods.
 			</description>
 		</method>
+		<method name="get_editor_toaster" qualifiers="const">
+			<return type="EditorToaster" />
+			<description>
+				Returns the editor's [EditorToaster].
+			</description>
+		</method>
 		<method name="get_editor_undo_redo" qualifiers="const">
 			<return type="EditorUndoRedoManager" />
 			<description>

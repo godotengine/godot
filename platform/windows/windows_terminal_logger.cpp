@@ -30,6 +30,8 @@
 
 #include "windows_terminal_logger.h"
 
+#include "core/os/os.h"
+
 #ifdef WINDOWS_ENABLED
 
 #include <stdio.h>
@@ -78,7 +80,7 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 	}
 
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hCon || hCon == INVALID_HANDLE_VALUE) {
+	if (OS::get_singleton()->get_stdout_type() != OS::STD_HANDLE_CONSOLE || !hCon || hCon == INVALID_HANDLE_VALUE) {
 		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 	} else {
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original

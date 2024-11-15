@@ -17,8 +17,8 @@ concurrency:
 
 jobs:
   build-linux:
-    # If unspecified, stay one LTS before latest to increase portability of Linux artifacts.
-    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
+    # Stay one LTS before latest to increase portability of Linux artifacts.
+    runs-on: ubuntu-22.04
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -61,8 +61,6 @@ jobs:
             artifact: false
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
-            # Python 3.6 unavailable on 22.04.
-            os: ubuntu-20.04
 
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -132,8 +130,8 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.6
-          scons-version: 3.1.2
+          python-version: 3.8
+          scons-version: 4.0
 
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master
