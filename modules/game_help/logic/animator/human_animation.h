@@ -698,8 +698,8 @@ namespace HumanAnim
             bool is_hip = false;
             if(position_by_hip) {
                 int hip_bone = p_skeleton->find_bone("Hips");
-                spine_bone = p_skeleton->find_bone("Spine");
-                if(hip_bone != -1 && spine_bone != -1) {
+                if(hip_bone != -1 ) {
+                    is_hip = true;
                     root_bone.clear();
                     root_bone.push_back(p_skeleton->get_bone_name(hip_bone));
                 }
@@ -720,7 +720,7 @@ namespace HumanAnim
                 BonePose* pose = nullptr;
                 Transform3D local_trans;
                 if(is_hip) {
-                    pose = &p_config.virtual_pose[StringName("Spine")];
+                    pose = &p_config.virtual_pose[StringName("Hips")];
                     local_trans.basis = Basis(pose->rotation);
                     p_skeleton_config.bone_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
                     p_skeleton_config.root_position[it] = (trans.origin - pose->position);
