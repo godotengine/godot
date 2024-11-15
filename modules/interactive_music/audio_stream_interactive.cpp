@@ -912,6 +912,17 @@ void AudioStreamPlaybackInteractive::_mix_internal(int p_frames) {
 		state.queue_active = false;
 		_mix_internal_state(i, p_frames);
 	}
+
+	// Only go one level deep when immediately processing queued states,
+	// so mark any remaining queued states as active for next time.
+	for (int i = 0; i < stream->clip_count; i++) {
+		if (!states[i].queue_active) {
+			continue;
+		}
+		State &state = states[i];
+		state.active = true;
+		state.queue_active = false;
+	}
 }
 
 void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_frames) {
