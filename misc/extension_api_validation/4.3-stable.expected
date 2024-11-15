@@ -326,3 +326,11 @@ GH-102796
 Validate extension JSON: Error: Field 'classes/GraphEdit/signals/frame_rect_changed/arguments/1': type changed value in new API, from "Vector2" to "Rect2".
 
 Previous type was incorrect. No compatibility system for signal arguments.
+
+
+GH-99297
+--------
+Validate extension JSON: Error: Field 'classes/EditorTranslationParserPlugin/methods/_parse_file/arguments': size changed value in new API, from 3 to 1.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorTranslationParserPlugin/methods/_parse_file': return_value
+
+Returning by argument reference is not safe in extensions, changed to returning as an Array and merged with `get_comments`. Compatibility method registered.

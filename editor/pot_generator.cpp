@@ -67,31 +67,24 @@ void POTGenerator::generate_pot(const String &p_file) {
 
 	// Collect all translatable strings according to files order in "POT Generation" setting.
 	for (int i = 0; i < files.size(); i++) {
-		Vector<String> msgids;
-		Vector<Vector<String>> msgids_context_plural;
-
-		Vector<String> msgids_comment;
-		Vector<String> msgids_context_plural_comment;
+		Vector<Vector<String>> translations;
 
 		const String &file_path = files[i];
 		String file_extension = file_path.get_extension();
 
 		if (EditorTranslationParser::get_singleton()->can_parse(file_extension)) {
-			EditorTranslationParser::get_singleton()->get_parser(file_extension)->parse_file(file_path, &msgids, &msgids_context_plural);
-			EditorTranslationParser::get_singleton()->get_parser(file_extension)->get_comments(&msgids_comment, &msgids_context_plural_comment);
+			EditorTranslationParser::get_singleton()->get_parser(file_extension)->parse_file(file_path, &translations);
 		} else {
 			ERR_PRINT("Unrecognized file extension " + file_extension + " in generate_pot()");
 			return;
 		}
 
-		for (int j = 0; j < msgids_context_plural.size(); j++) {
-			const Vector<String> &entry = msgids_context_plural[j];
-			const String &comment = (j < msgids_context_plural_comment.size()) ? msgids_context_plural_comment[j] : String();
-			_add_new_msgid(entry[0], entry[1], entry[2], file_path, comment);
-		}
-		for (int j = 0; j < msgids.size(); j++) {
-			const String &comment = (j < msgids_comment.size()) ? msgids_comment[j] : String();
-			_add_new_msgid(msgids[j], "", "", file_path, comment);
+		for (const Vector<String> &translation : translations) {
+			ERR_CONTINUE(translation.is_empty());
+			const String &msgctxt = (translation.size() > 1) ? translation[1] : String();
+			const String &msgid_plural = (translation.size() > 2) ? translation[2] : String();
+			const String &comment = (translation.size() > 3) ? translation[3] : String();
+			_add_new_msgid(translation[0], msgctxt, msgid_plural, file_path, comment);
 		}
 	}
 
