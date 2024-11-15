@@ -1099,7 +1099,11 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, texture->real_format, data);
-		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+		if (image->is_empty()) {
+			const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+		}
+
 		if (texture->format != texture->real_format) {
 			image->convert(texture->format);
 		}
@@ -1155,7 +1159,10 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data);
-		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+		if (image->is_empty()) {
+			const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+		}
 
 		if (texture->format != Image::FORMAT_RGBA8) {
 			image->convert(texture->format);
@@ -1227,7 +1234,10 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+	if (image->is_empty()) {
+		const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+	}
 
 	if (texture->format != Image::FORMAT_RGBA8) {
 		image->convert(texture->format);
