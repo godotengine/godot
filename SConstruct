@@ -663,40 +663,32 @@ elif methods.using_gcc(env):
             "to switch to posix threads."
         )
         Exit(255)
-    if env["debug_paths_relative"] and cc_version_major < 8:
-        print_warning("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-        env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     # Apple LLVM versions differ from upstream LLVM version \o/, compare
     # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-    if env["platform"] == "macos" or env["platform"] == "ios":
-        vanilla = methods.is_vanilla_clang(env)
-        if vanilla and cc_version_major < 6:
-            print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
-            )
-            Exit(255)
-        elif not vanilla and cc_version_major < 10:
+    if methods.is_apple_clang(env):
+        if cc_version_major < 10:
             print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
-        if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
+        elif env["debug_paths_relative"] and cc_version_major < 12:
             print_warning(
                 "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
             )
             env["debug_paths_relative"] = False
-    elif cc_version_major < 6:
-        print_error(
-            "Detected Clang version older than 6, which does not fully support "
-            "C++17. Supported versions are Clang 6 and later."
-        )
-        Exit(255)
-    if env["debug_paths_relative"] and cc_version_major < 10:
-        print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-        env["debug_paths_relative"] = False
+    else:
+        if cc_version_major < 6:
+            print_error(
+                "Detected Clang version older than 6, which does not fully support "
+                "C++17. Supported versions are Clang 6 and later."
+            )
+            Exit(255)
+        elif env["debug_paths_relative"] and cc_version_major < 10:
+            print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            env["debug_paths_relative"] = False
+
 elif env.msvc:
     # Ensure latest minor builds of Visual Studio 2017/2019.
     # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
@@ -760,7 +752,7 @@ else:
             project_path = Dir("#").abspath
             env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
-        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+        if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
             env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
         else:
