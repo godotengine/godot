@@ -101,6 +101,7 @@ private:
 	Button *show_filename_filter_button = nullptr;
 
 	Vector<String> filters;
+	Vector<String> processed_filters;
 	String file_name_filter;
 	bool show_filename_filter = false;
 

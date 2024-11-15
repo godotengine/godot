@@ -68,9 +68,9 @@ void FileDialog::_native_popup() {
 		root = OS::get_singleton()->get_user_data_dir();
 	}
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+		DisplayServer::get_singleton()->file_dialog_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb));
 	}
 }
 
@@ -851,37 +851,54 @@ void FileDialog::_filename_filter_selected() {
 
 void FileDialog::update_filters() {
 	filter->clear();
+	processed_filters.clear();
 
 	if (filters.size() > 1) {
 		String all_filters;
+		String all_filters_full;
 
 		const int max_filters = 5;
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
-			String flt = filters[i].get_slice(";", 0).strip_edges();
+			String flt = filters[i].get_slicec(';', 0).strip_edges();
 			if (i > 0) {
 				all_filters += ", ";
 			}
 			all_filters += flt;
+		}
+		for (int i = 0; i < filters.size(); i++) {
+			String flt = filters[i].get_slicec(';', 0).strip_edges();
+			if (i > 0) {
+				all_filters_full += ",";
+			}
+			all_filters_full += flt;
 		}
 
 		if (max_filters < filters.size()) {
 			all_filters += ", ...";
 		}
 
-		filter->add_item(atr(ETR("All Recognized")) + " (" + all_filters + ")");
+		String f = atr(ETR("All Recognized")) + " (" + all_filters + ")";
+		filter->add_item(f);
+		processed_filters.push_back(all_filters_full + ";" + f);
 	}
 	for (int i = 0; i < filters.size(); i++) {
-		String flt = filters[i].get_slice(";", 0).strip_edges();
+		String flt = filters[i].get_slicec(';', 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length()) {
-			filter->add_item(String(tr(desc)) + " (" + flt + ")");
+			String f = atr(desc) + " (" + flt + ")";
+			filter->add_item(f);
+			processed_filters.push_back(flt + ";" + f);
 		} else {
-			filter->add_item("(" + flt + ")");
+			String f = "(" + flt + ")";
+			filter->add_item(f);
+			processed_filters.push_back(flt + ";" + f);
 		}
 	}
 
-	filter->add_item(atr(ETR("All Files")) + " (*)");
+	String f = atr(ETR("All Files")) + " (*)";
+	filter->add_item(f);
+	processed_filters.push_back("*.*;" + f);
 }
 
 void FileDialog::clear_filename_filter() {
