@@ -394,7 +394,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 				} else {
 					if (flt == "*.*") {
 						filter_exts.push_back("*");
-						filter_names.push_back(RTR("All Files"));
+						filter_names.push_back(RTR("All Files") + " (*)");
 					} else {
 						filter_exts.push_back(flt);
 						filter_names.push_back(flt);
@@ -405,7 +405,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	}
 	if (filter_names.is_empty()) {
 		filter_exts.push_back("*");
-		filter_names.push_back(RTR("All Files"));
+		filter_names.push_back(RTR("All Files") + " (*)");
 	}
 
 	DBusError err;

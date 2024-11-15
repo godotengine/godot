@@ -65,7 +65,7 @@ void EditorFileDialog::_native_popup() {
 	} else if (access == ACCESS_USERDATA) {
 		root = OS::get_singleton()->get_user_data_dir();
 	}
-	DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb));
+	DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb));
 }
 
 void EditorFileDialog::popup(const Rect2i &p_rect) {
@@ -1148,37 +1148,54 @@ void EditorFileDialog::_filter_selected(int) {
 
 void EditorFileDialog::update_filters() {
 	filter->clear();
+	processed_filters.clear();
 
 	if (filters.size() > 1) {
 		String all_filters;
+		String all_filters_full;
 
 		const int max_filters = 5;
 
 		for (int i = 0; i < MIN(max_filters, filters.size()); i++) {
-			String flt = filters[i].get_slice(";", 0).strip_edges();
+			String flt = filters[i].get_slicec(';', 0).strip_edges();
 			if (i > 0) {
 				all_filters += ", ";
 			}
 			all_filters += flt;
+		}
+		for (int i = 0; i < filters.size(); i++) {
+			String flt = filters[i].get_slicec(';', 0).strip_edges();
+			if (i > 0) {
+				all_filters_full += ",";
+			}
+			all_filters_full += flt;
 		}
 
 		if (max_filters < filters.size()) {
 			all_filters += ", ...";
 		}
 
-		filter->add_item(TTR("All Recognized") + " (" + all_filters + ")");
+		String f = TTR("All Recognized") + " (" + all_filters + ")";
+		filter->add_item(f);
+		processed_filters.push_back(all_filters_full + ";" + f);
 	}
 	for (int i = 0; i < filters.size(); i++) {
-		String flt = filters[i].get_slice(";", 0).strip_edges();
+		String flt = filters[i].get_slicec(';', 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length()) {
-			filter->add_item(desc + " (" + flt + ")");
+			String f = desc + " (" + flt + ")";
+			filter->add_item(f);
+			processed_filters.push_back(flt + ";" + f);
 		} else {
-			filter->add_item("(" + flt + ")");
+			String f = "(" + flt + ")";
+			filter->add_item(f);
+			processed_filters.push_back(flt + ";" + f);
 		}
 	}
 
-	filter->add_item(TTR("All Files (*)"));
+	String f = TTR("All Files (*)");
+	filter->add_item(f);
+	processed_filters.push_back("*.*;" + f);
 }
 
 void EditorFileDialog::clear_filters() {
