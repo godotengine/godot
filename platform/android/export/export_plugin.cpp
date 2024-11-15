@@ -268,6 +268,9 @@ static const LauncherIcon launcher_adaptive_icon_monochromes[icon_densities_coun
 static const int EXPORT_FORMAT_APK = 0;
 static const int EXPORT_FORMAT_AAB = 1;
 
+static const int GRADLE_BUILD_TYPE_DEBUG = 0;
+static const int GRADLE_BUILD_TYPE_RELEASE = 1;
+
 static const char *APK_ASSETS_DIRECTORY = "assets";
 static const char *AAB_ASSETS_DIRECTORY = "assetPacks/installTime/src/main/assets";
 
@@ -1869,6 +1872,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	// This implies doing validation that the string is a proper int.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", VULKAN_MIN_SDK_VERSION)), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/debug_build_type", PROPERTY_HINT_ENUM, "Debug,Release"), GRADLE_BUILD_TYPE_DEBUG, false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/release_build_type", PROPERTY_HINT_ENUM, "Debug,Release"), GRADLE_BUILD_TYPE_RELEASE, false, true));
 
 #ifndef DISABLE_DEPRECATED
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
@@ -1961,7 +1966,10 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 			p_option == "apk_expansion/public_key") {
 		return advanced_options_enabled;
 	}
-	if (p_option == "gradle_build/gradle_build_directory" || p_option == "gradle_build/android_source_template") {
+	if (p_option == "gradle_build/gradle_build_directory" ||
+			p_option == "gradle_build/android_source_template" ||
+			p_option == "gradle_build/debug_build_type" ||
+			p_option == "gradle_build/release_build_type") {
 		return advanced_options_enabled && bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
 	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
@@ -3273,7 +3281,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		String edition = has_dotnet_project ? "Mono" : "Standard";
-		String build_type = p_debug ? "Debug" : "Release";
+
+		int build_type_index = p_debug ? p_preset->get("gradle_build/debug_build_type") : p_preset->get("gradle_build/release_build_type");
+		String build_type = build_type_index == GRADLE_BUILD_TYPE_DEBUG ? "Debug" : "Release";
+
 		if (export_format == EXPORT_FORMAT_AAB) {
 			String bundle_build_command = vformat("bundle%s", build_type);
 			cmdline.push_back(bundle_build_command);
@@ -3308,43 +3319,43 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		print_verbose("Build Android project using gradle command: " + String("\n") + build_command + " " + join_list(cmdline, String(" ")));
 
 		if (should_sign) {
+			String keystore_path;
+			String keystore_user;
+			String keystore_password;
+
 			if (p_debug) {
-				String debug_keystore = _get_keystore_path(p_preset, true);
-				String debug_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
-				String debug_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
+				keystore_path = _get_keystore_path(p_preset, true);
+				keystore_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
+				keystore_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
 
-				if (debug_keystore.is_empty()) {
-					debug_keystore = EDITOR_GET("export/android/debug_keystore");
-					debug_password = EDITOR_GET("export/android/debug_keystore_pass");
-					debug_user = EDITOR_GET("export/android/debug_keystore_user");
+				if (keystore_path.is_empty()) {
+					keystore_path = EDITOR_GET("export/android/debug_keystore");
+					keystore_user = EDITOR_GET("export/android/debug_keystore_user");
+					keystore_password = EDITOR_GET("export/android/debug_keystore_pass");
 				}
-				if (debug_keystore.is_relative_path()) {
-					debug_keystore = OS::get_singleton()->get_resource_dir().path_join(debug_keystore).simplify_path();
-				}
-				if (!FileAccess::exists(debug_keystore)) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
-					return ERR_FILE_CANT_OPEN;
-				}
-
-				cmdline.push_back("-Pdebug_keystore_file=" + debug_keystore); // argument to specify the debug keystore file.
-				cmdline.push_back("-Pdebug_keystore_alias=" + debug_user); // argument to specify the debug keystore alias.
-				cmdline.push_back("-Pdebug_keystore_password=" + debug_password); // argument to specify the debug keystore password.
 			} else {
-				// Pass the release keystore info as well
-				String release_keystore = _get_keystore_path(p_preset, false);
-				String release_username = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
-				String release_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
-				if (release_keystore.is_relative_path()) {
-					release_keystore = OS::get_singleton()->get_resource_dir().path_join(release_keystore).simplify_path();
-				}
-				if (!FileAccess::exists(release_keystore)) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
-					return ERR_FILE_CANT_OPEN;
-				}
+				keystore_path = _get_keystore_path(p_preset, false);
+				keystore_user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
+				keystore_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
+			}
 
-				cmdline.push_back("-Prelease_keystore_file=" + release_keystore); // argument to specify the release keystore file.
-				cmdline.push_back("-Prelease_keystore_alias=" + release_username); // argument to specify the release keystore alias.
-				cmdline.push_back("-Prelease_keystore_password=" + release_password); // argument to specify the release keystore password.
+			if (keystore_path.is_relative_path()) {
+				keystore_path = OS::get_singleton()->get_resource_dir().path_join(keystore_path).simplify_path();
+			}
+
+			if (!FileAccess::exists(keystore_path)) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
+				return ERR_FILE_CANT_OPEN;
+			}
+
+			if (build_type_index == GRADLE_BUILD_TYPE_DEBUG) {
+				cmdline.push_back("-Pdebug_keystore_file=" + keystore_path); // argument to specify the debug keystore file.
+				cmdline.push_back("-Pdebug_keystore_alias=" + keystore_user); // argument to specify the debug keystore alias.
+				cmdline.push_back("-Pdebug_keystore_password=" + keystore_password); // argument to specify the debug keystore password.
+			} else if (build_type_index == GRADLE_BUILD_TYPE_RELEASE) {
+				cmdline.push_back("-Prelease_keystore_file=" + keystore_path); // argument to specify the release keystore file.
+				cmdline.push_back("-Prelease_keystore_alias=" + keystore_user); // argument to specify the release keystore alias.
+				cmdline.push_back("-Prelease_keystore_password=" + keystore_password); // argument to specify the release keystore password.
 			}
 		}
 

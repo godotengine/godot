@@ -51,6 +51,10 @@
 			If [code]true[/code], native libraries are compressed when performing a Gradle build.
 			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
 		</member>
+		<member name="gradle_build/debug_build_type" type="int" setter="" getter="">
+			Gradle build type to use for debug exports.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled.
+		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
 		</member>
@@ -59,6 +63,10 @@
 		</member>
 		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
 			Minimum Android API level required for the application to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:minSdkVersion[/url].
+		</member>
+		<member name="gradle_build/release_build_type" type="int" setter="" getter="">
+			Gradle build type to use for release exports.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled.
 		</member>
 		<member name="gradle_build/target_sdk" type="String" setter="" getter="">
 			The Android API level on which the application is designed to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:targetSdkVersion[/url].
