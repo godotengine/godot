@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceImporterWAV" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Imports a WAV audio file for playback.
+		Imports data from a WAV/AIFF audio file for playback.
 	</brief_description>
 	<description>
-		WAV is an uncompressed format, which can provide higher quality compared to Ogg Vorbis and MP3. It also has the lowest CPU cost to decode. This means high numbers of WAV sounds can be played at the same time, even on low-end deviceS.
+		WAV/AIFF is an uncompressed format, which can provide higher quality compared to Ogg Vorbis and MP3. It also has the lowest CPU cost to decode. This means high numbers of sounds can be played at the same time, even on low-end devices.
 	</description>
 	<tutorials>
 		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>
