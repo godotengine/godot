@@ -986,7 +986,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	pi.si.StartupInfo.hStdOutput = pipe_out[1];
 	pi.si.StartupInfo.hStdError = pipe_err[1];
 
-	size_t attr_list_size = 0;
+	SIZE_T attr_list_size = 0;
 	InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
 	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
 	if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
@@ -1082,7 +1082,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			pi.si.StartupInfo.hStdError = pipe[1];
 		}
 
-		size_t attr_list_size = 0;
+		SIZE_T attr_list_size = 0;
 		InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
 		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
 		if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {

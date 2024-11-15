@@ -951,7 +951,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
 		String symbol = p_symbol;
 		if (symbol.begins_with("uid://")) {
-			symbol = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(symbol));
+			symbol = ResourceUID::uid_to_path(symbol);
 		}
 
 		List<String> scene_extensions;

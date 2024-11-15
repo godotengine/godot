@@ -221,6 +221,10 @@ class VisualShaderEditor : public ShaderEditor {
 	Button *code_preview_button = nullptr;
 	Button *shader_preview_button = nullptr;
 
+	int last_to_node = -1;
+	int last_to_port = -1;
+	Label *info_label = nullptr;
+
 	OptionButton *edit_type = nullptr;
 	OptionButton *edit_type_standard = nullptr;
 	OptionButton *edit_type_particles = nullptr;
@@ -502,6 +506,7 @@ class VisualShaderEditor : public ShaderEditor {
 
 	void _unlink_node_from_parent_frame(int p_node_id);
 
+	void _connection_drag_ended();
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
 	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_node_id = nullptr, int *r_to_port = nullptr);

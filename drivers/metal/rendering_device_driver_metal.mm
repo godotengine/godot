@@ -1032,7 +1032,7 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 
 #pragma mark - Shader
 
-const uint32_t SHADER_BINARY_VERSION = 2;
+const uint32_t SHADER_BINARY_VERSION = 3;
 
 // region Serialization
 
@@ -1336,23 +1336,32 @@ struct ComputeSize {
 
 struct ShaderStageData {
 	RD::ShaderStage stage = RD::ShaderStage::SHADER_STAGE_MAX;
+	uint32_t is_position_invariant = UINT32_MAX;
+	uint32_t supports_fast_math = UINT32_MAX;
 	CharString entry_point_name;
 	CharString source;
 
 	size_t serialize_size() const {
 		int comp_size = Compression::get_max_compressed_buffer_size(source.length(), Compression::MODE_ZSTD);
 		return sizeof(uint32_t) // Stage.
-				+ sizeof(uint32_t) /* entry_point_name.utf8().length */ + entry_point_name.length() + sizeof(uint32_t) /* uncompressed size */ + sizeof(uint32_t) /* compressed size */ + comp_size;
+				+ sizeof(uint32_t) // is_position_invariant
+				+ sizeof(uint32_t) // supports_fast_math
+				+ sizeof(uint32_t) /* entry_point_name.utf8().length */
+				+ entry_point_name.length() + sizeof(uint32_t) /* uncompressed size */ + sizeof(uint32_t) /* compressed size */ + comp_size;
 	}
 
 	void serialize(BufWriter &p_writer) const {
 		p_writer.write((uint32_t)stage);
+		p_writer.write(is_position_invariant);
+		p_writer.write(supports_fast_math);
 		p_writer.write(entry_point_name);
 		p_writer.write_compressed(source);
 	}
 
 	void deserialize(BufReader &p_reader) {
 		p_reader.read((uint32_t &)stage);
+		p_reader.read(is_position_invariant);
+		p_reader.read(supports_fast_math);
 		p_reader.read(entry_point_name);
 		p_reader.read_compressed(source);
 	}
@@ -2293,6 +2302,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 		ShaderStageData stage_data;
 		stage_data.stage = v.shader_stage;
+		stage_data.is_position_invariant = compiler.is_position_invariant();
+		stage_data.supports_fast_math = !entry_point.flags.get(spv::ExecutionModeSignedZeroInfNanPreserve);
 		stage_data.entry_point_name = entry_point.name.c_str();
 		stage_data.source = source.c_str();
 		bin_data.stages.push_back(stage_data);
@@ -2365,7 +2376,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 		ShaderCacheEntry *cd = memnew(ShaderCacheEntry(*this, key));
 		cd->name = binary_data.shader_name;
 		cd->stage = shader_data.stage;
-
+		options.preserveInvariance = shader_data.is_position_invariant;
+		options.fastMathEnabled = YES;
 		MDLibrary *library = [MDLibrary newLibraryWithCacheEntry:cd
 														  device:device
 														  source:source
