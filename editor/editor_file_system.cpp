@@ -1516,6 +1516,9 @@ void EditorFileSystem::_delete_internal_files(const String &p_file) {
 		}
 		da->remove(p_file + ".import");
 	}
+	if (FileAccess::exists(p_file + ".uid")) {
+		DirAccess::remove_absolute(p_file + ".uid");
+	}
 }
 
 int EditorFileSystem::_insert_actions_delete_files_directory(EditorFileSystemDirectory *p_dir) {

@@ -38,7 +38,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
-#include "drivers/unix/net_socket_posix.h"
+#include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
@@ -77,6 +77,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -166,7 +167,9 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-	NetSocketPosix::make_default();
+#ifndef UNIX_SOCKET_UNAVAILABLE
+	NetSocketUnix::make_default();
+#endif
 	IPUnix::make_default();
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -175,16 +178,96 @@ void OS_Unix::initialize_core() {
 
 void OS_Unix::finalize_core() {
 	memdelete(process_map);
-	NetSocketPosix::cleanup();
+#ifndef UNIX_SOCKET_UNAVAILABLE
+	NetSocketUnix::cleanup();
+#endif
 }
 
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 	return Vector<String>();
 }
 
-String OS_Unix::get_stdin_string() {
-	char buff[1024];
-	return String::utf8(fgets(buff, 1024, stdin));
+String OS_Unix::get_stdin_string(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	if (fgets((char *)data.ptrw(), data.size(), stdin)) {
+		return String::utf8((char *)data.ptr());
+	}
+	return String();
+}
+
+PackedByteArray OS_Unix::get_stdin_buffer(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	size_t sz = fread((void *)data.ptrw(), 1, data.size(), stdin);
+	if (sz > 0) {
+		data.resize(sz);
+		return data;
+	}
+	return PackedByteArray();
+}
+
+OS_Unix::StdHandleType OS_Unix::get_stdin_type() const {
+	int h = fileno(stdin);
+	if (h == -1) {
+		return STD_HANDLE_INVALID;
+	}
+
+	if (isatty(h)) {
+		return STD_HANDLE_CONSOLE;
+	}
+	struct stat statbuf;
+	if (fstat(h, &statbuf) < 0) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	if (S_ISFIFO(statbuf.st_mode)) {
+		return STD_HANDLE_PIPE;
+	} else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+		return STD_HANDLE_FILE;
+	}
+	return STD_HANDLE_UNKNOWN;
+}
+
+OS_Unix::StdHandleType OS_Unix::get_stdout_type() const {
+	int h = fileno(stdout);
+	if (h == -1) {
+		return STD_HANDLE_INVALID;
+	}
+
+	if (isatty(h)) {
+		return STD_HANDLE_CONSOLE;
+	}
+	struct stat statbuf;
+	if (fstat(h, &statbuf) < 0) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	if (S_ISFIFO(statbuf.st_mode)) {
+		return STD_HANDLE_PIPE;
+	} else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+		return STD_HANDLE_FILE;
+	}
+	return STD_HANDLE_UNKNOWN;
+}
+
+OS_Unix::StdHandleType OS_Unix::get_stderr_type() const {
+	int h = fileno(stderr);
+	if (h == -1) {
+		return STD_HANDLE_INVALID;
+	}
+
+	if (isatty(h)) {
+		return STD_HANDLE_CONSOLE;
+	}
+	struct stat statbuf;
+	if (fstat(h, &statbuf) < 0) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	if (S_ISFIFO(statbuf.st_mode)) {
+		return STD_HANDLE_PIPE;
+	} else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+		return STD_HANDLE_FILE;
+	}
+	return STD_HANDLE_UNKNOWN;
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {

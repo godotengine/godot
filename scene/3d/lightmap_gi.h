@@ -194,7 +194,7 @@ private:
 		NodePath node_path;
 		int32_t subindex = 0;
 		Ref<Mesh> mesh;
-		int32_t lightmap_scale = 0;
+		float lightmap_scale = 0.0;
 		Vector<Ref<Material>> overrides;
 	};
 

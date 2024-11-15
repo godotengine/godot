@@ -1930,37 +1930,50 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 	// Drag resize handles
 	if (drag_type == DRAG_NONE) {
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && ((b->is_alt_pressed() && b->is_command_or_control_pressed()) || tool == TOOL_SCALE)) {
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() &&
+				((tool == TOOL_SELECT && b->is_alt_pressed() && b->is_command_or_control_pressed()) || tool == TOOL_SCALE)) {
 			bool has_locked_items = false;
 			List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
-			if (selection.size() == 1) {
+
+			// Remove non-movable nodes.
+			for (CanvasItem *ci : selection) {
+				if (!_is_node_movable(ci, true)) {
+					selection.erase(ci);
+				}
+			}
+
+			if (!selection.is_empty()) {
 				CanvasItem *ci = selection.front()->get();
 
-				if (_is_node_movable(ci)) {
-					Transform2D xform = transform * ci->get_global_transform_with_canvas();
-					Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
-
-					drag_type = DRAG_SCALE_BOTH;
-
-					if (show_transformation_gizmos) {
-						Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
-						Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
-						if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
-							drag_type = DRAG_SCALE_X;
-						}
-						Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
-						if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
-							drag_type = DRAG_SCALE_Y;
-						}
-					}
-
-					drag_from = transform.affine_inverse().xform(b->get_position());
-					drag_selection = List<CanvasItem *>();
-					drag_selection.push_back(ci);
-					_save_canvas_item_state(drag_selection);
-					return true;
+				Transform2D edit_transform;
+				if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
+					edit_transform = Transform2D(ci->_edit_get_rotation(), temp_pivot);
+				} else {
+					edit_transform = ci->_edit_get_transform();
 				}
+
+				Transform2D xform = transform * ci->get_global_transform_with_canvas();
+				Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
+				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+				drag_type = DRAG_SCALE_BOTH;
+
+				if (show_transformation_gizmos) {
+					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
+					Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+					if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+						drag_type = DRAG_SCALE_X;
+					}
+					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+					if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+						drag_type = DRAG_SCALE_Y;
+					}
+				}
+
+				drag_from = transform.affine_inverse().xform(b->get_position());
+				drag_selection = selection;
+				_save_canvas_item_state(drag_selection);
+				return true;
 			} else {
 				if (has_locked_items) {
 					EditorToaster::get_singleton()->popup_str(TTR(locked_transform_warning), EditorToaster::SEVERITY_WARNING);
@@ -1968,66 +1981,87 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				return has_locked_items;
 			}
 		}
-	}
-
-	if (drag_type == DRAG_SCALE_BOTH || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+	} else if (drag_type == DRAG_SCALE_BOTH || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 		// Resize the node
 		if (m.is_valid()) {
 			_restore_canvas_item_state(drag_selection);
-			CanvasItem *ci = drag_selection.front()->get();
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
-			Transform2D parent_xform = ci->get_global_transform_with_canvas() * ci->get_transform().affine_inverse();
-			Transform2D unscaled_transform = (transform * parent_xform * ci->_edit_get_transform()).orthonormalized();
-			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
-
-			bool uniform = m->is_shift_pressed();
-			bool is_ctrl = m->is_command_or_control_pressed();
-
-			Point2 drag_from_local = simple_xform.xform(drag_from);
-			Point2 drag_to_local = simple_xform.xform(drag_to);
-			Point2 offset = drag_to_local - drag_from_local;
-
-			Size2 scale = ci->_edit_get_scale();
-			Size2 original_scale = scale;
-			real_t ratio = scale.y / scale.x;
-			if (drag_type == DRAG_SCALE_BOTH) {
-				Size2 scale_factor = drag_to_local / drag_from_local;
-				if (uniform) {
-					scale *= (scale_factor.x + scale_factor.y) / 2.0;
-				} else {
-					scale *= scale_factor;
-				}
-			} else {
-				Size2 scale_factor = Vector2(offset.x, -offset.y) / SCALE_HANDLE_DISTANCE;
-				Size2 parent_scale = parent_xform.get_scale();
-				scale_factor *= Vector2(1.0 / parent_scale.x, 1.0 / parent_scale.y);
-
-				if (drag_type == DRAG_SCALE_X) {
-					scale.x += scale_factor.x;
-					if (uniform) {
-						scale.y = scale.x * ratio;
-					}
-				} else if (drag_type == DRAG_SCALE_Y) {
-					scale.y -= scale_factor.y;
-					if (uniform) {
-						scale.x = scale.y / ratio;
-					}
+			Size2 scale_max;
+			if (drag_type != DRAG_SCALE_BOTH) {
+				for (CanvasItem *ci : drag_selection) {
+					scale_max = scale_max.max(ci->_edit_get_scale());
 				}
 			}
 
-			if (snap_scale && !is_ctrl) {
-				if (snap_relative) {
-					scale.x = original_scale.x * (roundf((scale.x / original_scale.x) / snap_scale_step) * snap_scale_step);
-					scale.y = original_scale.y * (roundf((scale.y / original_scale.y) / snap_scale_step) * snap_scale_step);
+			for (CanvasItem *ci : drag_selection) {
+				Transform2D edit_transform;
+				bool using_temp_pivot = !Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y);
+				if (using_temp_pivot) {
+					edit_transform = Transform2D(ci->_edit_get_rotation(), temp_pivot);
 				} else {
-					scale.x = roundf(scale.x / snap_scale_step) * snap_scale_step;
-					scale.y = roundf(scale.y / snap_scale_step) * snap_scale_step;
+					edit_transform = ci->_edit_get_transform();
+				}
+
+				Transform2D parent_xform = ci->get_global_transform_with_canvas() * ci->get_transform().affine_inverse();
+				Transform2D unscaled_transform = (transform * parent_xform * edit_transform).orthonormalized();
+				Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
+
+				bool uniform = m->is_shift_pressed();
+				bool is_ctrl = m->is_command_or_control_pressed();
+
+				Point2 drag_from_local = simple_xform.xform(drag_from);
+				Point2 drag_to_local = simple_xform.xform(drag_to);
+				Point2 offset = drag_to_local - drag_from_local;
+
+				Size2 scale = ci->_edit_get_scale();
+				Size2 original_scale = scale;
+				real_t ratio = scale.y / scale.x;
+				if (drag_type == DRAG_SCALE_BOTH) {
+					Size2 scale_factor = drag_to_local / drag_from_local;
+					if (uniform) {
+						scale *= (scale_factor.x + scale_factor.y) / 2.0;
+					} else {
+						scale *= scale_factor;
+					}
+				} else {
+					Size2 scale_factor = Vector2(offset.x, -offset.y) / SCALE_HANDLE_DISTANCE;
+					Size2 parent_scale = parent_xform.get_scale();
+					// Take into account the biggest scale, so all nodes are scaled uniformly.
+					scale_factor *= Vector2(1.0 / parent_scale.x, 1.0 / parent_scale.y) / (scale_max / original_scale);
+
+					if (drag_type == DRAG_SCALE_X) {
+						scale.x += scale_factor.x;
+						if (uniform) {
+							scale.y = scale.x * ratio;
+						}
+					} else if (drag_type == DRAG_SCALE_Y) {
+						scale.y -= scale_factor.y;
+						if (uniform) {
+							scale.x = scale.y / ratio;
+						}
+					}
+				}
+
+				if (snap_scale && !is_ctrl) {
+					if (snap_relative) {
+						scale.x = original_scale.x * (Math::round((scale.x / original_scale.x) / snap_scale_step) * snap_scale_step);
+						scale.y = original_scale.y * (Math::round((scale.y / original_scale.y) / snap_scale_step) * snap_scale_step);
+					} else {
+						scale.x = Math::round(scale.x / snap_scale_step) * snap_scale_step;
+						scale.y = Math::round(scale.y / snap_scale_step) * snap_scale_step;
+					}
+				}
+
+				ci->_edit_set_scale(scale);
+
+				if (using_temp_pivot) {
+					Point2 ci_origin = ci->_edit_get_transform().get_origin();
+					ci->_edit_set_position(ci_origin + (ci_origin - temp_pivot) * ((scale - original_scale) / original_scale));
 				}
 			}
 
-			ci->_edit_set_scale(scale);
 			return true;
 		}
 
@@ -2075,7 +2109,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		//Start moving the nodes
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
-			if ((b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
+			if ((tool == TOOL_SELECT && b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
 				bool has_locked_items = false;
 				List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
 
@@ -2135,7 +2169,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			}
 
 			Point2 drag_delta = drag_to - drag_from;
-			if (drag_selection.size() == 1 && (drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y)) {
+			if (drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y) {
 				const CanvasItem *selected = drag_selection.front()->get();
 				Transform2D parent_xform = selected->get_global_transform_with_canvas() * selected->get_transform().affine_inverse();
 				Transform2D unscaled_transform = (transform * parent_xform * selected->_edit_get_transform()).orthonormalized();
@@ -3468,15 +3502,13 @@ void CanvasItemEditor::_draw_selection() {
 	Ref<Texture2D> previous_position_icon = get_editor_theme_icon(SNAME("EditorPositionPrevious"));
 
 	RID vp_ci = viewport->get_canvas_item();
-
 	List<CanvasItem *> selection = _get_edited_canvas_items(true, false);
-
 	bool single = selection.size() == 1;
+	bool transform_tool = tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT;
+
 	for (CanvasItem *E : selection) {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E);
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
-
-		bool item_locked = ci->has_meta("_edit_lock_");
 
 		// Draw the previous position if we are dragging the node
 		if (show_helpers &&
@@ -3502,6 +3534,7 @@ void CanvasItemEditor::_draw_selection() {
 			}
 		}
 
+		bool item_locked = ci->has_meta("_edit_lock_");
 		Transform2D xform = transform * ci->get_global_transform_with_canvas();
 
 		// Draw the selected items position / surrounding boxes
@@ -3531,7 +3564,7 @@ void CanvasItemEditor::_draw_selection() {
 			viewport->draw_set_transform_matrix(viewport->get_transform());
 		}
 
-		if (single && !item_locked && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
+		if (single && !item_locked && transform_tool) {
 			// Draw the pivot
 			if (ci->_edit_use_pivot()) {
 				// Draw the node's pivot
@@ -3574,73 +3607,88 @@ void CanvasItemEditor::_draw_selection() {
 					select_handle->draw(vp_ci, (ofs - (select_handle->get_size() / 2)).floor());
 				}
 			}
+		}
+	}
 
-			// Draw the move handles
-			bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
-			bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
-			if (tool == TOOL_MOVE && show_transformation_gizmos) {
-				if (_is_node_movable(ci)) {
-					Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+	// Remove non-movable nodes.
+	for (CanvasItem *ci : selection) {
+		if (!_is_node_movable(ci, true)) {
+			selection.erase(ci);
+		}
+	}
 
-					Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
-					viewport->draw_set_transform_matrix(simple_xform);
+	if (!selection.is_empty() && transform_tool && show_transformation_gizmos) {
+		CanvasItem *ci = selection.front()->get();
 
-					Vector<Point2> points = {
-						Vector2(move_factor.x * EDSCALE, 5 * EDSCALE),
-						Vector2(move_factor.x * EDSCALE, -5 * EDSCALE),
-						Vector2((move_factor.x + 10) * EDSCALE, 0)
-					};
+		Transform2D xform = transform * ci->get_global_transform_with_canvas();
+		bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+		bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
-					viewport->draw_colored_polygon(points, get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)));
-					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+		// Draw the move handles.
+		if ((tool == TOOL_SELECT && is_alt && !is_ctrl) || tool == TOOL_MOVE) {
+			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
+			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
-					points.clear();
-					points.push_back(Vector2(5 * EDSCALE, move_factor.y * EDSCALE));
-					points.push_back(Vector2(-5 * EDSCALE, move_factor.y * EDSCALE));
-					points.push_back(Vector2(0, (move_factor.y + 10) * EDSCALE));
+			Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
+			viewport->draw_set_transform_matrix(simple_xform);
 
-					viewport->draw_colored_polygon(points, get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)));
-					viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+			Vector<Point2> points = {
+				Vector2(move_factor.x * EDSCALE, 5 * EDSCALE),
+				Vector2(move_factor.x * EDSCALE, -5 * EDSCALE),
+				Vector2((move_factor.x + 10) * EDSCALE, 0)
+			};
 
-					viewport->draw_set_transform_matrix(viewport->get_transform());
+			viewport->draw_colored_polygon(points, get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)));
+			viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+
+			points.clear();
+			points.push_back(Vector2(5 * EDSCALE, move_factor.y * EDSCALE));
+			points.push_back(Vector2(-5 * EDSCALE, move_factor.y * EDSCALE));
+			points.push_back(Vector2(0, (move_factor.y + 10) * EDSCALE));
+
+			viewport->draw_colored_polygon(points, get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)));
+			viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+
+			viewport->draw_set_transform_matrix(viewport->get_transform());
+		}
+
+		// Draw the rescale handles.
+		if ((tool == TOOL_SELECT && is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+			Transform2D edit_transform;
+			if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
+				edit_transform = Transform2D(ci->_edit_get_rotation(), temp_pivot);
+			} else {
+				edit_transform = ci->_edit_get_transform();
+			}
+			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
+			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+			Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
+			bool uniform = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+			Point2 offset = (simple_xform.affine_inverse().xform(drag_to) - simple_xform.affine_inverse().xform(drag_from)) * zoom;
+
+			if (drag_type == DRAG_SCALE_X) {
+				scale_factor.x += offset.x;
+				if (uniform) {
+					scale_factor.y += offset.x;
+				}
+			} else if (drag_type == DRAG_SCALE_Y) {
+				scale_factor.y += offset.y;
+				if (uniform) {
+					scale_factor.x += offset.y;
 				}
 			}
 
-			// Draw the rescale handles
-			if (show_transformation_gizmos && ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y)) {
-				if (_is_node_movable(ci)) {
-					Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
-					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+			viewport->draw_set_transform_matrix(simple_xform);
+			Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+			viewport->draw_rect(x_handle_rect, get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)));
+			viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)), Math::round(EDSCALE));
 
-					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
-					bool uniform = Input::get_singleton()->is_key_pressed(Key::SHIFT);
-					Point2 offset = (simple_xform.affine_inverse().xform(drag_to) - simple_xform.affine_inverse().xform(drag_from)) * zoom;
+			Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+			viewport->draw_rect(y_handle_rect, get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)));
+			viewport->draw_line(Point2(), Point2(0, scale_factor.y * EDSCALE), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)), Math::round(EDSCALE));
 
-					if (drag_type == DRAG_SCALE_X) {
-						scale_factor.x += offset.x;
-						if (uniform) {
-							scale_factor.y += offset.x;
-						}
-					} else if (drag_type == DRAG_SCALE_Y) {
-						scale_factor.y += offset.y;
-						if (uniform) {
-							scale_factor.x += offset.y;
-						}
-					}
-
-					viewport->draw_set_transform_matrix(simple_xform);
-					Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
-					viewport->draw_rect(x_handle_rect, get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)));
-					viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)), Math::round(EDSCALE));
-
-					Rect2 y_handle_rect = Rect2(-5 * EDSCALE, scale_factor.y * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
-					viewport->draw_rect(y_handle_rect, get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)));
-					viewport->draw_line(Point2(), Point2(0, scale_factor.y * EDSCALE), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)), Math::round(EDSCALE));
-
-					viewport->draw_set_transform_matrix(viewport->get_transform());
-				}
-			}
+			viewport->draw_set_transform_matrix(viewport->get_transform());
 		}
 	}
 
@@ -5356,7 +5404,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
-	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot.") + "\n" + TTR("Shift: Set temporary rotation pivot.") + "\n" + TTR("Click this button while holding Shift to put the temporary rotation pivot in the center of the selected nodes."));
+	pivot_button->set_tooltip_text(TTR("Click to change object's pivot.") + "\n" + TTR("Shift: Set temporary pivot.") + "\n" + TTR("Click this button while holding Shift to put the temporary pivot in the center of the selected nodes."));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation("FlatButton");

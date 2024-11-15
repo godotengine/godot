@@ -16,7 +16,7 @@
 			<param index="0" name="delay" type="float" />
 			<description>
 				Makes the callback call delayed by given time in seconds.
-				[b]Example:[/b] Call [method Node.queue_free] after 2 seconds.
+				[b]Example:[/b] Call [method Node.queue_free] after 2 seconds:
 				[codeblock]
 				var tween = get_tree().create_tween()
 				tween.tween_callback(queue_free).set_delay(2)

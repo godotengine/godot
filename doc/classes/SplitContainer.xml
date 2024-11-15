@@ -30,7 +30,7 @@
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
-			If [code]true[/code], the area of the first [Control] will be collapsed and the dragger will be disabled.
+			If [code]true[/code], the dragger will be disabled and the children will be sized as if the [member split_offset] was [code]0[/code].
 		</member>
 		<member name="drag_area_highlight_in_editor" type="bool" setter="set_drag_area_highlight_in_editor" getter="is_drag_area_highlight_in_editor_enabled" default="false">
 			Highlights the drag area [Rect2] so you can see where it is during development. The drag area is gold if [member dragging_enabled] is [code]true[/code], and red if [code]false[/code].

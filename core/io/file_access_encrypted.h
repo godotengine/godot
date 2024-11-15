@@ -44,6 +44,7 @@ public:
 	};
 
 private:
+	Vector<uint8_t> iv;
 	Vector<uint8_t> key;
 	bool writing = false;
 	Ref<FileAccess> file;
@@ -57,8 +58,10 @@ private:
 	void _close();
 
 public:
-	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true);
+	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
 	Error open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode);
+
+	Vector<uint8_t> get_iv() const { return iv; }
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open

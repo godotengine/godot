@@ -37,7 +37,7 @@
 			<return type="void" />
 			<description>
 				Override this method to customize the newly duplicated resource created from [method PackedScene.instantiate], if the original's [member resource_local_to_scene] is set to [code]true[/code].
-				[b]Example:[/b] Set a random [code]damage[/code] value to every local resource from an instantiated scene.
+				[b]Example:[/b] Set a random [code]damage[/code] value to every local resource from an instantiated scene:
 				[codeblock]
 				extends Resource
 

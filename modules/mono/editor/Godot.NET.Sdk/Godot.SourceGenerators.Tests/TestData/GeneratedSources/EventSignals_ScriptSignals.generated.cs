@@ -32,9 +32,9 @@ partial class EventSignals
         add => backing_MySignal += value;
         remove => backing_MySignal -= value;
 }
-    protected void EmitSignalMySignal(string str, int num)
+    protected void EmitSignalMySignal(string @str, int @num)
     {
-        EmitSignal(SignalName.MySignal, str, num);
+        EmitSignal(SignalName.MySignal, @str, @num);
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]

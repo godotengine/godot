@@ -241,7 +241,10 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_clamp_exposure"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
+
+	// Maximum bound is the highest allowed value for lossy compression (the lowest common denominator).
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,16383,1"), 0));
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
 	// Do path based customization only if a path was passed.
@@ -454,7 +457,28 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
 	// Support for texture streaming is not implemented yet.
 	const bool stream = false;
-	const int size_limit = p_options["process/size_limit"];
+
+	int size_limit = p_options["process/size_limit"];
+	bool using_fallback_size_limit = false;
+	if (size_limit == 0) {
+		using_fallback_size_limit = true;
+		// If no size limit is defined, use a fallback size limit to prevent textures from looking incorrect or failing to import.
+		switch (compress_mode) {
+			case COMPRESS_LOSSY:
+				// Maximum WebP size on either axis.
+				size_limit = 16383;
+				break;
+			case COMPRESS_BASIS_UNIVERSAL:
+				// Maximum Basis Universal size on either axis.
+				size_limit = 16384;
+				break;
+			default:
+				// As of June 2024, no GPU can correctly display a texture larger than 32768 pixels on either axis.
+				size_limit = 32768;
+				break;
+		}
+	}
+
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
 	if (hdr_as_srgb) {
 		loader_flags |= ImageFormatLoader::FLAG_FORCE_LINEAR;
@@ -523,11 +547,19 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				int new_width = size_limit;
 				int new_height = target_image->get_height() * new_width / target_image->get_width();
 
+				if (using_fallback_size_limit) {
+					// Only warn if downsizing occurred when the user did not explicitly request it.
+					WARN_PRINT(vformat("%s: Texture was downsized on import as its width (%d pixels) exceeded the importable size limit (%d pixels).", p_source_file, target_image->get_width(), size_limit));
+				}
 				target_image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
 			} else {
 				int new_height = size_limit;
 				int new_width = target_image->get_width() * new_height / target_image->get_height();
 
+				if (using_fallback_size_limit) {
+					// Only warn if downsizing occurred when the user did not explicitly request it.
+					WARN_PRINT(vformat("%s: Texture was downsized on import as its height (%d pixels) exceeded the importable size limit (%d pixels).", p_source_file, target_image->get_height(), size_limit));
+				}
 				target_image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
 			}
 

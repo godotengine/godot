@@ -92,6 +92,7 @@ private:
 	String enc_ex_filters;
 	bool enc_pck = false;
 	bool enc_directory = false;
+	uint64_t seed = 0;
 
 	String script_key;
 	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
@@ -164,6 +165,9 @@ public:
 
 	void set_enc_ex_filter(const String &p_filter);
 	String get_enc_ex_filter() const;
+
+	void set_seed(uint64_t p_seed);
+	uint64_t get_seed() const;
 
 	void set_enc_pck(bool p_enabled);
 	bool get_enc_pck() const;

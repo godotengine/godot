@@ -506,6 +506,14 @@ void EditorToaster::instant_close(Control *p_control) {
 	p_control->set_modulate(Color(1, 1, 1, 0));
 }
 
+void EditorToaster::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("push_toast", "message", "severity", "tooltip"), &EditorToaster::_popup_str, DEFVAL(EditorToaster::SEVERITY_INFO), DEFVAL(String()));
+
+	BIND_ENUM_CONSTANT(SEVERITY_INFO);
+	BIND_ENUM_CONSTANT(SEVERITY_WARNING);
+	BIND_ENUM_CONSTANT(SEVERITY_ERROR);
+}
+
 EditorToaster *EditorToaster::get_singleton() {
 	return singleton;
 }

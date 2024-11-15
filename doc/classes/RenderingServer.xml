@@ -1614,7 +1614,7 @@
 			<return type="RID" />
 			<description>
 				Returns the RID of a 256×256 texture with a testing pattern on it (in [constant Image.FORMAT_RGB8] format). This texture will be created and returned on the first call to [method get_test_texture], then it will be cached for subsequent calls. See also [method get_white_texture].
-				Example of getting the test texture and applying it to a [Sprite2D] node:
+				[b]Example:[/b] Get the test texture and apply it to a [Sprite2D] node:
 				[codeblock]
 				var texture_rid = RenderingServer.get_test_texture()
 				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
@@ -1655,7 +1655,7 @@
 			<return type="RID" />
 			<description>
 				Returns the ID of a 4×4 white texture (in [constant Image.FORMAT_RGB8] format). This texture will be created and returned on the first call to [method get_white_texture], then it will be cached for subsequent calls. See also [method get_test_texture].
-				Example of getting the white texture and applying it to a [Sprite2D] node:
+				[b]Example:[/b] Get the white texture and apply it to a [Sprite2D] node:
 				[codeblock]
 				var texture_rid = RenderingServer.get_white_texture()
 				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
@@ -3528,7 +3528,7 @@
 			<param index="0" name="texture" type="RID" />
 			<description>
 				Returns an [Image] instance from the given [param texture] [RID].
-				Example of getting the test texture from [method get_test_texture] and applying it to a [Sprite2D] node:
+				[b]Example:[/b] Get the test texture from [method get_test_texture] and apply it to a [Sprite2D] node:
 				[codeblock]
 				var texture_rid = RenderingServer.get_test_texture()
 				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
