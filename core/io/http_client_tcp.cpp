@@ -508,11 +508,11 @@ Error HTTPClientTCP::poll() {
 							continue;
 						}
 						if (s.begins_with("content-length:")) {
-							body_size = s.substr(s.find(":") + 1, s.length()).strip_edges().to_int();
+							body_size = s.substr(s.find_char(':') + 1, s.length()).strip_edges().to_int();
 							body_left = body_size;
 
 						} else if (s.begins_with("transfer-encoding:")) {
-							String encoding = header.substr(header.find(":") + 1, header.length()).strip_edges();
+							String encoding = header.substr(header.find_char(':') + 1, header.length()).strip_edges();
 							if (encoding == "chunked") {
 								chunked = true;
 							}

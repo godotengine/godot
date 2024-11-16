@@ -194,7 +194,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		return cwd.replace_first(res_path, "res://");
 	} else {
-		int sep = path.rfind("/");
+		int sep = path.rfind_char('/');
 		if (sep == -1) {
 			return "res://" + path;
 		}
@@ -300,7 +300,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		{ // Feature overrides.
-			int dot = p_name.operator String().find(".");
+			int dot = p_name.operator String().find_char('.');
 			if (dot != -1) {
 				Vector<String> s = p_name.operator String().split(".");
 
@@ -435,7 +435,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const _VCSort &E : vclist) {
 		String prop_info_name = E.name;
-		int dot = prop_info_name.find(".");
+		int dot = prop_info_name.find_char('.');
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
 			prop_info_name = prop_info_name.substr(0, dot);
 		}
@@ -1092,7 +1092,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		String category = E.name;
 		String name = E.name;
 
-		int div = category.find("/");
+		int div = category.find_char('/');
 
 		if (div < 0) {
 			category = "";

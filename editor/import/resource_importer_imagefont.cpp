@@ -199,7 +199,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 					case STEP_OFF_Y_BEGIN: {
 						// Read advance and offset.
 						if (range[c] == ' ') {
-							int next = range.find(" ", c + 1);
+							int next = range.find_char(' ', c + 1);
 							if (next < c) {
 								next = range.length();
 							}
