@@ -426,6 +426,16 @@ void finalize_theme_db() {
 #define MAIN_PRINT(m_txt)
 #endif
 
+/**
+ * Prints a message related to invalid command line arguments, with a blank line added automatically at the end.
+ * The formatting is similar to `ERR_PRINT()`, but without a visible stack trace.
+ * Unlike `ERR_PRINT()`, this method can be called early in the initialization
+ * without the message disappearing on Windows.
+ */
+void Main::print_argument_error(const char *p_message) {
+	OS::get_singleton()->print("\u001b[1;91mERROR:\u001b[0;91m %s\u001b[0m\n", p_message);
+}
+
 void Main::print_header(bool p_rich) {
 	if (VERSION_TIMESTAMP > 0) {
 		// Version timestamp available.
@@ -899,9 +909,9 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 			test_cleanup();
 			return status;
 #else
-			ERR_PRINT(
+			print_argument_error(
 					"`--test` was specified on the command line, but this Godot binary was compiled without support for unit tests. Aborting.\n"
-					"To be able to run unit tests, use the `tests=yes` SCons option when compiling Godot.\n");
+					"To be able to run unit tests, use the `tests=yes` SCons option when compiling Godot.");
 			return EXIT_FAILURE;
 #endif
 		}
@@ -1120,27 +1130,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 
 				if (!found) {
-					OS::get_singleton()->print("Unknown audio driver '%s', aborting.\nValid options are ",
-							audio_driver.utf8().get_data());
-
+					String audio_drivers;
 					for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
 						if (i == AudioDriverManager::get_driver_count() - 1) {
-							OS::get_singleton()->print(" and ");
+							audio_drivers += " and ";
 						} else if (i != 0) {
-							OS::get_singleton()->print(", ");
+							audio_drivers += ", ";
 						}
 
-						OS::get_singleton()->print("'%s'", AudioDriverManager::get_driver(i)->get_name());
+						audio_drivers += vformat("\"%s\"", AudioDriverManager::get_driver(i)->get_name());
 					}
 
-					OS::get_singleton()->print(".\n");
+					print_argument_error(
+							vformat("Unknown audio driver \"%s\", aborting.\nValid options are %s.",
+									audio_driver, audio_drivers)
+									.utf8()
+									.get_data());
 
 					goto error;
 				}
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
+				print_argument_error("Missing audio driver argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--audio-output-latency") {
@@ -1148,7 +1160,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				audio_output_latency = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing audio output latency argument, aborting.\n");
+				print_argument_error("Missing audio output latency argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--text-driver") {
@@ -1156,7 +1168,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				text_driver = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
+				print_argument_error("Missing text driver argument, aborting.");
 				goto error;
 			}
 
@@ -1173,27 +1185,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 
 				if (!found) {
-					OS::get_singleton()->print("Unknown display driver '%s', aborting.\nValid options are ",
-							display_driver.utf8().get_data());
-
+					String display_drivers;
 					for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 						if (i == DisplayServer::get_create_function_count() - 1) {
-							OS::get_singleton()->print(" and ");
+							display_drivers += " and ";
 						} else if (i != 0) {
-							OS::get_singleton()->print(", ");
+							display_drivers += ", ";
 						}
 
-						OS::get_singleton()->print("'%s'", DisplayServer::get_create_function_name(i));
+						display_drivers += vformat("\"%s\"", DisplayServer::get_create_function_name(i));
 					}
 
-					OS::get_singleton()->print(".\n");
+					print_argument_error(vformat("Unknown display driver \"%s\", aborting.\nValid options are %s.",
+							display_driver, display_drivers)
+									.utf8()
+									.get_data());
 
 					goto error;
 				}
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing display driver argument, aborting.\n");
+				print_argument_error("Missing display driver argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--rendering-method") {
@@ -1201,7 +1214,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				rendering_method = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing renderer name argument, aborting.\n");
+				print_argument_error("Missing renderer name argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--rendering-driver") {
@@ -1209,7 +1222,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				rendering_driver = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
+				print_argument_error("Missing rendering driver argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "-f" || arg == "--fullscreen") { // force fullscreen
@@ -1226,7 +1239,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				Engine::singleton->gpu_idx = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
+				print_argument_error("Missing GPU index argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--gpu-validation") {
@@ -1248,7 +1261,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				tablet_driver = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
+				print_argument_error("Missing tablet driver argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--delta-smoothing") {
@@ -1266,12 +1279,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					recognized = true;
 				}
 				if (!recognized) {
-					OS::get_singleton()->print("Delta-smoothing argument not recognized, aborting.\n");
+					print_argument_error("Unknown delta smoothing argument, aborting.\nValid options are \"enable\" and \"disable\".");
 					goto error;
 				}
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing delta-smoothing argument, aborting.\n");
+				print_argument_error("Missing delta smoothing argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--single-window") { // force single window
@@ -1287,8 +1300,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				if (!vm.contains("x")) { // invalid parameter format
 
-					OS::get_singleton()->print("Invalid resolution '%s', it should be e.g. '1280x720'.\n",
-							vm.utf8().get_data());
+					print_argument_error(vformat("Invalid resolution \"%s\", aborting. It should be e.g. \"1280x720\".", vm).utf8().get_data());
 					goto error;
 				}
 
@@ -1296,8 +1308,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				int h = vm.get_slice("x", 1).to_int();
 
 				if (w <= 0 || h <= 0) {
-					OS::get_singleton()->print("Invalid resolution '%s', width and height must be above 0.\n",
-							vm.utf8().get_data());
+					print_argument_error(vformat("Invalid resolution \"%s\", aborting. Width and height must be above 0.", vm).utf8().get_data());
 					goto error;
 				}
 
@@ -1307,7 +1318,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing resolution argument, aborting.\n");
+				print_argument_error("Missing resolution argument, aborting.");
 				goto error;
 			}
 
@@ -1319,7 +1330,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing screen argument, aborting.\n");
+				print_argument_error("Missing screen argument, aborting.");
 				goto error;
 			}
 
@@ -1330,8 +1341,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				if (!vm.contains(",")) { // invalid parameter format
 
-					OS::get_singleton()->print("Invalid position '%s', it should be e.g. '80,128'.\n",
-							vm.utf8().get_data());
+					print_argument_error(vformat("Invalid position \"%s\", aborting. It should be e.g. \"80,128\".", vm).utf8().get_data());
 					goto error;
 				}
 
@@ -1343,7 +1353,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing position argument, aborting.\n");
+				print_argument_error("Missing position argument, aborting.");
 				goto error;
 			}
 
@@ -1358,7 +1368,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				log_file = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing log file path argument, aborting.\n");
+				print_argument_error("Missing log file path argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--profiling") { // enable profiling
@@ -1371,7 +1381,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				locale = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing language argument, aborting.\n");
+				print_argument_error("Missing language argument, aborting.");
 				goto error;
 			}
 
@@ -1381,7 +1391,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				remotefs = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing remote filesystem address, aborting.\n");
+				print_argument_error("Missing remote filesystem address, aborting.");
 				goto error;
 			}
 		} else if (arg == "--remote-fs-password") { // remote filesystem password
@@ -1390,7 +1400,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				remotefs_pass = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
+				print_argument_error("Missing remote filesystem password, aborting.");
 				goto error;
 			}
 		} else if (arg == "--render-thread") { // render thread mode
@@ -1403,13 +1413,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				} else if (N->get() == "separate") {
 					rtm = OS::RENDER_SEPARATE_THREAD;
 				} else {
-					OS::get_singleton()->print("Unknown render thread mode, aborting.\nValid options are 'unsafe', 'safe' and 'separate'.\n");
+					print_argument_error("Unknown render thread mode, aborting.\nValid options are \"unsafe\", \"safe\" and \"separate\".");
 					goto error;
 				}
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing render thread mode argument, aborting.\n");
+				print_argument_error("Missing render thread mode argument, aborting.");
 				goto error;
 			}
 #ifdef TOOLS_ENABLED
@@ -1422,12 +1432,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				debug_server_uri = N->get();
 				if (!debug_server_uri.contains("://")) { // wrong address
-					OS::get_singleton()->print("Invalid debug server uri. It should be of the form <protocol>://<bind_address>:<port>.\n");
+					print_argument_error("Invalid debug server URI, aborting. It should be of the form \"<protocol>://<bind_address>:<port>\".");
 					goto error;
 				}
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing remote debug server uri, aborting.\n");
+				print_argument_error("Missing remote debug server URI, aborting.");
 				goto error;
 			}
 		} else if (arg == "--single-threaded-scene") {
@@ -1483,7 +1493,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing file to load argument after --validate-extension-api, aborting.");
+				print_argument_error("Missing file to load argument after --validate-extension-api, aborting.");
 				goto error;
 			}
 		} else if (arg == "--import") {
@@ -1506,12 +1516,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing comma-separated list of patches after --patches, aborting.\n");
+				print_argument_error("Missing comma-separated list of patches after --patches, aborting.");
 				goto error;
 			}
 #ifndef DISABLE_DEPRECATED
 		} else if (arg == "--export") { // For users used to 3.x syntax.
-			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
+			print_argument_error("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options, aborting.\nSee the --help output for details.");
 			goto error;
 		} else if (arg == "--convert-3to4") {
 			// Actually handling is done in start().
@@ -1565,7 +1575,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				// This forces main loop to quit without adding more GDScript-specific exceptions to setup.
 				quit_after = 1;
 			} else {
-				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
+				print_argument_error("Missing relative or absolute path to project for --gdscript-docs, aborting.");
 				goto error;
 			}
 #endif // MODULE_GDSCRIPT_ENABLED
@@ -1575,12 +1585,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				String p = N->get();
 				if (OS::get_singleton()->set_cwd(p) != OK) {
-					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
+					print_argument_error(vformat("Invalid project path specified: \"%s\", aborting.", p).utf8().get_data());
 					goto error;
 				}
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
+				print_argument_error("Missing relative or absolute path, aborting.");
 				goto error;
 			}
 		} else if (arg == "-u" || arg == "--upwards") { // scan folders upwards
@@ -1592,7 +1602,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				quit_after = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing number of iterations, aborting.\n");
+				print_argument_error("Missing number of iterations to quit after, aborting.");
 				goto error;
 			}
 		} else if (arg.ends_with("project.godot")) {
@@ -1619,7 +1629,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				breakpoints = bplist.split(",");
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
+				print_argument_error("Missing list of breakpoints, aborting.");
 				goto error;
 			}
 
@@ -1629,7 +1639,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				max_fps = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing maximum FPS argument, aborting.\n");
+				print_argument_error("Missing maximum FPS argument, aborting.");
 				goto error;
 			}
 
@@ -1639,7 +1649,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				frame_delay = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing frame delay argument, aborting.\n");
+				print_argument_error("Missing frame delay argument, aborting.");
 				goto error;
 			}
 
@@ -1649,7 +1659,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				Engine::get_singleton()->set_time_scale(N->get().to_float());
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
+				print_argument_error("Missing time scale argument, aborting.");
 				goto error;
 			}
 
@@ -1658,7 +1668,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				main_pack = N->get();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
+				print_argument_error("Missing path to main pack file, aborting.");
 				goto error;
 			}
 
@@ -1683,13 +1693,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				debug_uri = N->get();
 				if (!debug_uri.contains("://")) { // wrong address
-					OS::get_singleton()->print(
-							"Invalid debug host address, it should be of the form <protocol>://<host/IP>:<port>.\n");
+					print_argument_error("Invalid debug host address, aborting. It should be of the form \"<protocol>://<host/IP>:<port>\".");
 					goto error;
 				}
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
+				print_argument_error("Missing remote debug host address, aborting.");
 				goto error;
 			}
 		} else if (arg == "--editor-pid") { // not exposed to user
@@ -1697,7 +1706,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				editor_pid = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
+				print_argument_error("Missing editor PID argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--disable-render-loop") {
@@ -1707,7 +1716,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				fixed_fps = N->get().to_int();
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
+				print_argument_error("Missing fixed FPS argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--write-movie") {
@@ -1719,7 +1728,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 				OS::get_singleton()->_writing_movie = true;
 			} else {
-				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
+				print_argument_error("Missing write movie output path argument, aborting.");
 				goto error;
 			}
 		} else if (arg == "--disable-vsync") {
@@ -1748,11 +1757,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				} else if (xr_mode == "on") {
 					XRServer::set_xr_mode(XRServer::XRMODE_ON);
 				} else {
-					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
+					print_argument_error(vformat("Unknown --xr-mode argument \"%s\", aborting.", xr_mode).ascii().get_data());
 					goto error;
 				}
 			} else {
-				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
+				print_argument_error("Missing --xr-mode argument, aborting.");
 				goto error;
 			}
 #endif // _3D_DISABLED
@@ -1765,7 +1774,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->set_benchmark_file(benchmark_file);
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing <path> argument for --benchmark-file <path>.\n");
+				print_argument_error("Missing <path> argument for --benchmark-file <path>, aborting.");
 				goto error;
 			}
 #if defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
@@ -1773,13 +1782,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				int port_override = N->get().to_int();
 				if (port_override < 0 || port_override > 65535) {
-					OS::get_singleton()->print("<port> argument for --lsp-port <port> must be between 0 and 65535.\n");
+					print_argument_error("<port> argument for --lsp-port <port> must be between 0 and 65535, aborting.");
 					goto error;
 				}
 				GDScriptLanguageServer::port_override = port_override;
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing <port> argument for --lsp-port <port>.\n");
+				print_argument_error("Missing <port> argument for --lsp-port <port>, aborting.");
 				goto error;
 			}
 #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
@@ -1788,13 +1797,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				int port_override = N->get().to_int();
 				if (port_override < 0 || port_override > 65535) {
-					OS::get_singleton()->print("<port> argument for --dap-port <port> must be between 0 and 65535.\n");
+					print_argument_error("<port> argument for --dap-port <port> must be between 0 and 65535, aborting.");
 					goto error;
 				}
 				DebugAdapterServer::port_override = port_override;
 				N = N->next();
 			} else {
-				OS::get_singleton()->print("Missing <port> argument for --dap-port <port>.\n");
+				print_argument_error("Missing <port> argument for --dap-port <port>, aborting.");
 				goto error;
 			}
 #endif // TOOLS_ENABLED
@@ -1809,14 +1818,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #ifdef TOOLS_ENABLED
 	if (editor && project_manager) {
-		OS::get_singleton()->print(
-				"Error: Command line arguments implied opening both editor and project manager, which is not possible. Aborting.\n");
+		print_argument_error("Command line arguments implied opening both the editor and project manager, which is not possible. Aborting.");
 		goto error;
 	}
 #endif
 
 	// Network file system needs to be configured before globals, since globals are based on the
-	// 'project.godot' file which will only be available through the network if this is enabled
+	// \"project.godot\" file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
 		int port;
 		if (remotefs.contains(":")) {
@@ -1828,7 +1836,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		Error err = OS::get_singleton()->setup_remote_filesystem(remotefs, port, remotefs_pass, project_path);
 
 		if (err) {
-			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i.\n", remotefs.utf8().get_data(), port);
+			print_argument_error(vformat("Could not connect to remote filesystem: %s:%i. Aborting.", remotefs, port).utf8().get_data());
 			goto error;
 		}
 	}
@@ -1842,9 +1850,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
-		OS::get_singleton()->print("%s", error_msg.utf8().get_data());
-		OS::get_singleton()->alert(error_msg);
+		const String error_msg = "Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).";
+		print_argument_error(error_msg.utf8().get_data());
+		OS::get_singleton()->alert("Error: " + error_msg);
 
 		goto error;
 #endif
@@ -1950,9 +1958,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
-			const String error_msg = "Error: Can't run project: no main scene defined in the project.\n";
-			OS::get_singleton()->print("%s", error_msg.utf8().get_data());
-			OS::get_singleton()->alert(error_msg);
+			const String error_msg = "Can't run project: no main scene defined in the project.";
+			print_argument_error(error_msg.utf8().get_data());
+			OS::get_singleton()->alert("Error: " + error_msg);
 			goto error;
 #ifdef TOOLS_ENABLED
 		}
@@ -2238,20 +2246,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (rendering_method != "forward_plus" &&
 				rendering_method != "mobile" &&
 				rendering_method != "gl_compatibility") {
-			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
-					rendering_method.utf8().get_data());
-
 			const Vector<String> rendering_method_hints = renderer_hints.split(",");
+			String rendering_methods;
 			for (int i = 0; i < rendering_method_hints.size(); i++) {
 				if (i == rendering_method_hints.size() - 1) {
-					OS::get_singleton()->print(" and ");
+					rendering_methods += " and ";
 				} else if (i != 0) {
-					OS::get_singleton()->print(", ");
+					rendering_methods += ", ";
 				}
-				OS::get_singleton()->print("'%s'", rendering_method_hints[i].utf8().get_data());
+				rendering_methods += vformat("\"%s\"", rendering_method_hints[i]);
 			}
 
-			OS::get_singleton()->print(".\n");
+			print_argument_error(vformat("Unknown rendering method \"%s\", aborting.\nValid options are %s.",
+					rendering_method, rendering_methods)
+							.utf8()
+							.get_data());
+
 			goto error;
 		}
 	}
@@ -2274,9 +2284,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		if (!found) {
-			OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
-					rendering_driver.utf8().get_data());
-
 			// Deduplicate driver entries, as a rendering driver may be supported by several display servers.
 			Vector<String> unique_rendering_drivers;
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
@@ -2289,16 +2296,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				}
 			}
 
+			String rendering_drivers;
 			for (int i = 0; i < unique_rendering_drivers.size(); i++) {
 				if (i == unique_rendering_drivers.size() - 1) {
-					OS::get_singleton()->print(" and ");
+					rendering_drivers += " and ";
 				} else if (i != 0) {
-					OS::get_singleton()->print(", ");
+					rendering_drivers += ", ";
 				}
-				OS::get_singleton()->print("'%s'", unique_rendering_drivers[i].utf8().get_data());
+				rendering_drivers += vformat("\"%s\"", unique_rendering_drivers[i]);
 			}
 
-			OS::get_singleton()->print(".\n");
+			print_argument_error(vformat("Unknown rendering driver \"%s\", aborting.\nValid options are %s.",
+					rendering_driver, rendering_drivers)
+							.utf8()
+							.get_data());
 
 			goto error;
 		}
@@ -2334,7 +2345,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 #endif
 		if (available_drivers.is_empty()) {
-			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
+			print_argument_error(vformat("Unknown renderer name \"%s\", aborting.", rendering_method).utf8().get_data());
 			goto error;
 		}
 
@@ -2346,13 +2357,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		if (!valid_combination) {
-			OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
-
-			for (int d = 0; d < available_drivers.size(); d++) {
-				OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
+			String rendering_drivers;
+			for (int i = 0; i < available_drivers.size(); i++) {
+				if (i == available_drivers.size() - 1) {
+					rendering_drivers += " and ";
+				} else if (i != 0) {
+					rendering_drivers += ", ";
+				}
+				rendering_drivers += vformat("\"%s\"", available_drivers[i]);
 			}
-
-			OS::get_singleton()->print(".\n");
+			print_argument_error(vformat("Invalid renderer/driver combination \"%s\" and \"%s\", aborting.\n\"%s\" only supports the following drivers: %s.",
+					rendering_method,
+					rendering_driver,
+					rendering_method,
+					rendering_drivers)
+							.utf8()
+							.get_data());
 
 			goto error;
 		}
@@ -2724,7 +2744,7 @@ Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<R
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
 	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
-		r_err_str = "Expected ')'";
+		r_err_str = "Expected \")\"";
 		return ERR_PARSE_ERROR;
 	}
 
@@ -3462,7 +3482,7 @@ void Main::setup_boot_logo() {
 				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 				if (load_err) {
 					String msg = (boot_logo_path.ends_with(".png") ? "" : "The only supported format is PNG.");
-					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + +"'. " + msg + " Loading default splash.");
+					ERR_PRINT("Non-existing or invalid boot splash at \"" + boot_logo_path + +"\". " + msg + " Loading default splash.");
 				}
 			}
 		} else {
@@ -3807,7 +3827,7 @@ int Main::start() {
 		// Let's throw an error gently. The code leading to this is pretty brittle so
 		// this might end up triggered by valid usage, in which case we'll have to
 		// fine-tune further.
-		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
+		OS::get_singleton()->alert("Error: Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 		ERR_FAIL_V_MSG(EXIT_FAILURE, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 	}
 #endif
@@ -3836,7 +3856,7 @@ int Main::start() {
 				if (obj) {
 					memdelete(obj);
 				}
-				OS::get_singleton()->alert(vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
+				OS::get_singleton()->alert(vformat("Error: Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 				ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
@@ -3970,10 +3990,10 @@ int Main::start() {
 						if (script_res.is_valid()) {
 							StringName ibt = script_res->get_instance_base_type();
 							bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-							ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script '%s' does not inherit from 'Node'.", info.path));
+							ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script \"%s\" does not inherit from \"Node\".", info.path));
 
 							Object *obj = ClassDB::instantiate(ibt);
-							ERR_CONTINUE_MSG(!obj, vformat("Failed to instantiate an autoload, cannot instantiate '%s'.", ibt));
+							ERR_CONTINUE_MSG(!obj, vformat("Failed to instantiate an autoload, cannot instantiate \"%s\".", ibt));
 
 							n = Object::cast_to<Node>(obj);
 							n->set_script(script_res);
