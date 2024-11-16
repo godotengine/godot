@@ -294,11 +294,6 @@ void VisualShaderGraphPlugin::update_node_deferred(VisualShader::Type p_type, in
 
 void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_id) {
 	// TODO: Adjust this check to node groups.
-	print_line("update_node: " + itos(p_node_id) + " has links: " + (links.has(p_node_id) ? "true" : "false"));
-	// Print all links.
-	for (const KeyValue<int, Link> &E : links) {
-		print_line("Link: " + itos(E.key));
-	}
 	if (p_type != editor->get_current_shader_type() || !links.has(p_node_id)) {
 		return;
 	}
@@ -713,7 +708,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			// Add "Edit" button to group node titlebar.
 			Button *edit_group_btn = memnew(Button);
 			edit_group_btn->set_text(TTR("Edit"));
-			edit_group_btn->set_icon(editor->get_theme_icon("Edit", "EditorIcons"));
+			edit_group_btn->set_button_icon(editor->get_theme_icon("Edit", "EditorIcons"));
 			edit_group_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_group_in_graph).bind(p_id), CONNECT_DEFERRED);
 			titlebar->add_child(edit_group_btn);
 
@@ -1656,7 +1651,7 @@ void VisualShaderEditor::save_external_data(const String &p_str) {
 
 void VisualShaderEditor::validate_script() {
 	// TODO: Check if this is correct. Probably needs more work.
-	if (editing_shader_graph != nullptr) {
+	if (editing_shader_graph.is_valid()) {
 		_update_nodes();
 	}
 }
@@ -2623,8 +2618,6 @@ void VisualShaderEditor::_set_mode(int p_which) {
 }
 
 void VisualShaderEditor::_edit_group_in_graph(int p_idx) {
-	print_line("Edit group: " + itos(p_idx));
-
 	Ref<VisualShaderNodeGroup> group_node = editing_shader_graph->get_node(p_idx);
 	ERR_FAIL_COND(group_node.is_null());
 
@@ -2790,7 +2783,7 @@ void VisualShaderEditor::_update_parameter_refs(HashSet<String> &p_deleted_names
 }
 
 void VisualShaderEditor::_update_graph() {
-	if (editing_shader_graph == nullptr) {
+	if (editing_shader_graph.is_null()) {
 		return;
 	}
 

@@ -1,10 +1,111 @@
+/**************************************************************************/
+/*  visual_shader_group.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "visual_shader_group.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/vmap.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/graph_node.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "visual_shader_particle_nodes.h"
+
+String VisualShaderGroup::_validate_port_name(const String &p_port_name, int p_port_id, bool p_output) const {
+	String port_name = p_port_name;
+
+	if (port_name.is_empty()) {
+		return String();
+	}
+
+	while (port_name.length() && !is_ascii_alphabet_char(port_name[0])) {
+		port_name = port_name.substr(1, port_name.length() - 1);
+	}
+
+	if (!port_name.is_empty()) {
+		String valid_name;
+
+		for (int i = 0; i < port_name.length(); i++) {
+			if (is_ascii_identifier_char(port_name[i])) {
+				valid_name += String::chr(port_name[i]);
+			} else if (port_name[i] == ' ') {
+				valid_name += "_";
+			}
+		}
+
+		port_name = valid_name;
+	} else {
+		return String();
+	}
+
+	List<String> input_names;
+	List<String> output_names;
+
+	for (int i = 0; i < get_input_ports().size(); i++) {
+		if (!p_output && i == p_port_id) {
+			continue;
+		}
+		if (port_name == get_input_port(i).name) {
+			return String();
+		}
+	}
+	for (int i = 0; i < get_output_ports().size(); i++) {
+		if (p_output && i == p_port_id) {
+			continue;
+		}
+		if (port_name == get_output_port(i).name) {
+			return String();
+		}
+	}
+
+	return port_name;
+}
+
+String VisualShaderGroup::_validate_group_name(const String &p_name) const {
+	String valid_name;
+
+	for (int i = 0; i < p_name.length(); i++) {
+		if (is_ascii_identifier_char(p_name[i])) {
+			valid_name += String::chr(p_name[i]);
+		} else if (p_name[i] == ' ') {
+			valid_name += "_";
+		}
+	}
+
+	return valid_name;
+}
 
 void VisualShaderGroup::_bind_methods() {
 	// TODO: Bind setters/getters for input/output ports.
@@ -31,7 +132,7 @@ void VisualShaderGroup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "from_node", "from_port", "to_node", "to_port"), &VisualShaderGroup::disconnect_nodes);
 	ClassDB::bind_method(D_METHOD("connect_nodes_forced", "from_node", "from_port", "to_node", "to_port"), &VisualShaderGroup::connect_nodes_forced);
 
-	// TODO: Readd this method.
+	// TODO: Re-add this method.
 	// ClassDB::bind_method(D_METHOD("get_node_connections", "type"), &VisualShaderGroup::get_node_connections);
 
 	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "id", "frame"), &VisualShaderGroup::attach_node_to_frame);
@@ -39,6 +140,120 @@ void VisualShaderGroup::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "group_name"), "set_group_name", "get_group_name");
 	ADD_PROPERTY_DEFAULT("group_name", "Node group");
+}
+
+void VisualShaderGroup::_queue_update() {
+	if (dirty.is_set()) {
+		return;
+	}
+
+	dirty.set();
+	callable_mp(this, &VisualShaderGroup::_update_group).call_deferred();
+}
+
+void VisualShaderGroup::_update_group() {
+	if (!dirty.is_set()) {
+		return;
+	}
+
+	dirty.clear();
+
+	// TODO: Update group.
+
+	StringBuilder global_code_builder;
+	StringBuilder global_code_per_node_builder;
+	HashMap<ShaderGraph::Type, StringBuilder> global_code_per_func_builder;
+	StringBuilder code_builder;
+	Vector<ShaderGraph::DefaultTextureParam> default_tex_params;
+	// static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
+
+	HashSet<StringName> classes;
+	HashMap<int, int> insertion_pos;
+
+	String global_expressions;
+	HashSet<String> used_parameter_names;
+	List<VisualShaderNodeParameter *> parameters;
+	List<int> emitters;
+	HashMap<int, List<int>> varying_setters;
+
+	// Preprocess nodes.
+	int index = 0;
+	for (const KeyValue<int, ShaderGraph::Node> &E : graph->nodes) {
+		Ref<VisualShaderNodeGlobalExpression> global_expression = E.value.node;
+		if (global_expression.is_valid()) {
+			String expr = "";
+			expr += "// " + global_expression->get_caption() + ":" + itos(index++) + "\n";
+			expr += global_expression->generate_global(Shader::MODE_MAX, VisualShader::TYPE_MAX, -1);
+			expr = expr.replace("\n", "\n	");
+			expr += "\n";
+			global_expressions += expr;
+		}
+		Ref<VisualShaderNodeParameterRef> parameter_ref = E.value.node;
+		if (parameter_ref.is_valid()) {
+			used_parameter_names.insert(parameter_ref->get_parameter_name());
+		}
+		Ref<VisualShaderNodeParameter> parameter = E.value.node;
+		if (parameter.is_valid()) {
+			parameters.push_back(parameter.ptr());
+		}
+		Ref<VisualShaderNodeParticleEmit> emit_particle = E.value.node;
+		if (emit_particle.is_valid()) {
+			emitters.push_back(E.key);
+		}
+	}
+
+	// TODO: Forbid parameters.
+	// int idx = 0
+	// for (List<VisualShaderNodeParameter *>::Iterator itr = parameters.begin(); itr != parameters.end(); ++itr, ++idx) {
+	// 	VisualShaderNodeParameter *parameter = *itr;
+	// 	if (used_parameter_names.has(parameter->get_parameter_name())) {
+	// 		global_code += parameter->generate_global(get_mode(), Type(idx), -1);
+	// 		const_cast<VisualShaderNodeParameter *>(parameter)->set_global_code_generated(true);
+	// 	} else {
+	// 		const_cast<VisualShaderNodeParameter *>(parameter)->set_global_code_generated(false);
+	// 	}
+	// }
+	HashMap<int, String> code_map;
+	HashSet<int> empty_funcs;
+	VMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> input_connections;
+	VMap<ShaderGraph::ConnectionKey, const List<ShaderGraph::Connection>::Element *> output_connections;
+
+	StringBuilder group_code;
+	HashSet<int> processed;
+
+	for (const List<ShaderGraph::Connection>::Element *E = graph->connections.front(); E; E = E->next()) {
+		ShaderGraph::ConnectionKey from_key;
+		from_key.node = E->get().from_node;
+		from_key.port = E->get().from_port;
+
+		output_connections.insert(from_key, E);
+
+		ShaderGraph::ConnectionKey to_key;
+		to_key.node = E->get().to_node;
+		to_key.port = E->get().to_port;
+
+		input_connections.insert(to_key, E);
+	}
+
+	Error err = graph->_write_node(&global_code_builder, &global_code_per_node_builder, &global_code_per_func_builder, group_code, default_tex_params, input_connections, output_connections, NODE_ID_GROUP_OUTPUT, processed, false, classes);
+	ERR_FAIL_COND(err != OK);
+
+	// TODO: Figure out why this needs to be separately.
+	for (int &E : emitters) {
+		err = graph->_write_node(&global_code_builder, &global_code_per_node_builder, &global_code_per_func_builder, group_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+		ERR_FAIL_COND(err != OK);
+	}
+
+	// TODO: Use concept of previous code to determine whether to fire the changed signal?
+
+	code_builder += "// Group content: " + group_name + "\n";
+	code_builder += group_code;
+
+	global_code_builder.append(global_code_per_node_builder);
+	global_code_builder.append(global_expressions);
+	global_code = global_code_builder.as_string();
+	// TODO: Insert global code per func
+	code = code_builder.as_string();
 }
 
 bool VisualShaderGroup::_set(const StringName &p_name, const Variant &p_value) {
@@ -108,12 +323,28 @@ Ref<ShaderGraph> VisualShaderGroup::get_graph() const {
 	return graph;
 }
 
+String VisualShaderGroup::get_code() {
+	if (dirty.is_set()) {
+		_update_group();
+	}
+	return code;
+}
+
+String VisualShaderGroup::get_global_code() {
+	if (dirty.is_set()) {
+		_update_group();
+	}
+	return global_code;
+}
+
 void VisualShaderGroup::set_group_name(const String &p_name) {
-	if (group_name == p_name) {
+	const String valid_name = _validate_group_name(p_name);
+
+	if (group_name == p_name || valid_name.is_empty()) {
 		return;
 	}
 
-	group_name = p_name;
+	group_name = p_name; // Don't use valid_name here, since we want to keep the original name.
 	emit_changed();
 }
 
@@ -122,16 +353,32 @@ String VisualShaderGroup::get_group_name() const {
 }
 
 void VisualShaderGroup::add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name) {
-	input_ports[p_id] = Port{ p_type, p_name };
+	const String valid_name = _validate_port_name(p_name, p_id, false);
+
+	if (valid_name.is_empty()) {
+		return;
+	}
+
+	input_ports[p_id] = Port{ p_type, valid_name };
 	emit_changed();
 }
 
 void VisualShaderGroup::set_input_port_name(int p_id, const String &p_name) {
-	input_ports[p_id].name = p_name;
+	ERR_FAIL_COND(!input_ports.has(p_id));
+
+	const String valid_name = _validate_port_name(p_name, p_id, false);
+
+	if (valid_name.is_empty()) {
+		return;
+	}
+
+	input_ports[p_id].name = valid_name;
 	emit_changed();
 }
 
 void VisualShaderGroup::set_input_port_type(int p_id, VisualShaderNode::PortType p_type) {
+	ERR_FAIL_COND(!input_ports.has(p_id));
+
 	input_ports[p_id].type = p_type;
 	emit_changed();
 }
@@ -154,16 +401,32 @@ void VisualShaderGroup::remove_input_port(int p_id) {
 }
 
 void VisualShaderGroup::add_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name) {
-	output_ports[p_id] = Port{ p_type, p_name };
+	const String valid_name = _validate_port_name(p_name, p_id, true);
+
+	if (valid_name.is_empty()) {
+		return;
+	}
+
+	output_ports[p_id] = Port{ p_type, valid_name };
 	emit_changed();
 }
 
 void VisualShaderGroup::set_output_port_name(int p_id, const String &p_name) {
-	output_ports[p_id].name = p_name;
+	ERR_FAIL_COND(!output_ports.has(p_id));
+
+	const String valid_name = _validate_port_name(p_name, p_id, true);
+
+	if (valid_name.is_empty()) {
+		return;
+	}
+
+	output_ports[p_id].name = valid_name;
 	emit_changed();
 }
 
 void VisualShaderGroup::set_output_port_type(int p_id, VisualShaderNode::PortType p_type) {
+	ERR_FAIL_COND(!output_ports.has(p_id));
+
 	output_ports[p_id].type = p_type;
 	emit_changed();
 }
@@ -266,7 +529,10 @@ void VisualShaderGroup::get_node_connections(List<ShaderGraph::Connection> *r_co
 }
 
 VisualShaderGroup::VisualShaderGroup() {
+	dirty.set();
+
 	graph.instantiate();
+	graph->connect("graph_changed", callable_mp(this, &VisualShaderGroup::_queue_update));
 
 	Ref<VisualShaderNodeGroupInput> input_node;
 	input_node.instantiate();
@@ -280,7 +546,7 @@ VisualShaderGroup::VisualShaderGroup() {
 	graph->nodes[NODE_ID_GROUP_OUTPUT].node = output_node;
 	graph->nodes[NODE_ID_GROUP_OUTPUT].position = Vector2(400, 150);
 
-	group_name == TTR("Node group");
+	group_name = TTR("Node group");
 }
 
 ////////////// Group
@@ -371,9 +637,93 @@ Ref<VisualShaderGroup> VisualShaderNodeGroup::get_group() const {
 	return group;
 }
 
+void VisualShaderNodeGroup::set_shader_type(ShaderGraph::Type p_type) {
+	shader_type = p_type;
+}
+
+void VisualShaderNodeGroup::set_shader_mode(Shader::Mode p_mode) {
+	shader_mode = p_mode;
+}
+
 String VisualShaderNodeGroup::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	// TODO: Implement.
-	return String();
+	if (group.is_null()) {
+		return String();
+	}
+	// TODO:Validate name and append unique id.
+
+	// Generate the code for the group.
+	String code = String("/* Group: ") + group->get_group_name() + " */\n";
+
+	const String valid_group_name = group->_validate_group_name(group->get_group_name());
+	ERR_FAIL_COND_V(valid_group_name.is_empty(), "");
+	code += "group_" + valid_group_name + "(";
+
+	const Vector<VisualShaderGroup::Port> input_ports = group->get_input_ports();
+	int param_idx = 0;
+	for (int i = 0; i < input_ports.size(); i++) {
+		if (i > 0) {
+			code += ",";
+		}
+		code += p_input_vars[i];
+		param_idx++;
+	}
+
+	const Vector<VisualShaderGroup::Port> output_ports = group->get_output_ports();
+	for (int i = 0; i < output_ports.size(); i++) {
+		if (param_idx > 0) {
+			code += ",";
+		}
+		code += p_output_vars[i];
+		param_idx++;
+	}
+
+	code += ");\n";
+
+	return code;
+}
+
+String VisualShaderNodeGroup::generate_group_function(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	if (group.is_null()) {
+		return String();
+	}
+
+	// Generate a global function for the group.
+	String code = String("/* Group: ") + group->get_group_name() + " */\n";
+
+	code += group->get_global_code();
+
+	// TODO: Don't use the type and id for the function name.
+	const String valid_group_name = group->_validate_group_name(group->get_group_name());
+	ERR_FAIL_COND_V(valid_group_name.is_empty(), "");
+
+	code += "void group_" + valid_group_name + "(";
+
+	// Add all inputs/outputs as function parameters.
+	const Vector<VisualShaderGroup::Port> input_ports = group->get_input_ports();
+	for (int i = 0; i < input_ports.size(); i++) {
+		if (i == 0) {
+			code += "in ";
+		} else {
+			code += ", in ";
+		}
+		code += VisualShaderNode::port_type_to_shader_string(input_ports[i].type) + " ";
+		code += input_ports[i].name;
+	}
+
+	const Vector<VisualShaderGroup::Port> output_ports = group->get_output_ports();
+	for (int i = 0; i < output_ports.size(); i++) {
+		code += ", out ";
+		code += VisualShaderNode::port_type_to_shader_string(output_ports[i].type) + " ";
+		code += output_ports[i].name;
+	}
+
+	code += ") {\n";
+
+	// Add the code for the group.
+	code += group->get_code();
+
+	code += "}\n";
+	return code;
 }
 
 bool VisualShaderNodeGroup::is_output_port_expandable(int p_port) const {
@@ -384,14 +734,6 @@ bool VisualShaderNodeGroup::is_output_port_expandable(int p_port) const {
 VisualShaderNodeGroup::VisualShaderNodeGroup() {
 	simple_decl = false;
 }
-
-// void VisualShaderNodeGroupInput::_bind_methods() {
-// 	// TODO: Implement?
-// }
-
-// void VisualShaderNodeGroupInput::_validate_property(PropertyInfo &p_property) const {
-// 	// TODO: Implement?
-// }
 
 void VisualShaderNodeGroupInput::set_group(VisualShaderGroup *p_group) {
 	group = p_group;
@@ -444,8 +786,13 @@ String VisualShaderNodeGroupInput::get_caption() const {
 }
 
 String VisualShaderNodeGroupInput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	// TODO: Implement.
-	return String();
+	ERR_FAIL_NULL_V(group, "");
+
+	String code;
+	for (int i = 0; i < group->get_input_ports().size(); i++) {
+		code += p_output_vars[i] + " = " + group->get_input_port(i).name + ";\n";
+	}
+	return code;
 }
 
 Vector<StringName> VisualShaderNodeGroupInput::get_editable_properties() const {
@@ -511,7 +858,16 @@ String VisualShaderNodeGroupOutput::get_caption() const {
 }
 
 String VisualShaderNodeGroupOutput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return String();
+	ERR_FAIL_NULL_V(group, String());
+
+	String code;
+	for (int i = 0; i < group->get_output_ports().size(); i++) {
+		if (p_input_vars[i].is_empty()) {
+			continue;
+		};
+		code += group->get_output_port(i).name + " = " + p_input_vars[i] + ";\n";
+	}
+	return code;
 }
 
 VisualShaderNodeGroupOutput::VisualShaderNodeGroupOutput() {
@@ -522,7 +878,16 @@ void VisualShaderGroupPortsDialog::_add_port() {
 
 	// Add a new port to the group.
 	const VisualShaderNode::PortType port_type = VisualShaderNode::PORT_TYPE_SCALAR;
-	const String port_name = "new_port";
+	String port_name = edit_inputs ? "new_in_port" : "new_out_port";
+
+	// Find a new valid name for the port.
+	int port_idx = 2;
+	String port_name_numerated = port_name;
+	while (group->_validate_port_name(port_name_numerated, -1, !edit_inputs).is_empty()) {
+		port_name_numerated = port_name + itos(port_idx);
+	}
+	port_name = port_name_numerated;
+
 	if (edit_inputs) {
 		group->add_input_port(group->get_input_ports().size(), port_type, port_name);
 	} else {
@@ -555,6 +920,7 @@ void VisualShaderGroupPortsDialog::_update_editor_for_port(int p_idx) {
 	port_type_optbtn->set_visible(true);
 
 	// Update the controls in the editor area of the dialog.
+	ERR_FAIL_INDEX(p_idx, edit_inputs ? group->get_input_ports().size() : group->get_output_ports().size());
 	const VisualShaderGroup::Port port = edit_inputs ? group->get_input_port(p_idx) : group->get_output_port(p_idx);
 
 	name_edit->set_text(port.name);
@@ -592,6 +958,7 @@ void VisualShaderGroupPortsDialog::_on_port_item_selected(int p_index) {
 
 void VisualShaderGroupPortsDialog::_on_port_name_changed(const String &p_name) {
 	ERR_FAIL_NULL(group);
+	ERR_FAIL_COND(port_item_list->get_selected_items().size() != 1);
 
 	// Update the port name in the group.
 	const int port_idx = port_item_list->get_selected_items()[0];
@@ -607,6 +974,7 @@ void VisualShaderGroupPortsDialog::_on_port_name_changed(const String &p_name) {
 
 void VisualShaderGroupPortsDialog::_on_port_type_changed(int p_idx) {
 	ERR_FAIL_NULL(group);
+	ERR_FAIL_COND(port_item_list->get_selected_items().size() != 1);
 
 	// Update the port type in the group.
 	const int port_idx = port_item_list->get_selected_items()[0];
@@ -621,7 +989,23 @@ void VisualShaderGroupPortsDialog::_on_port_type_changed(int p_idx) {
 	port_item_list->set_item_icon_modulate(port_idx, port_colors[p_idx]);
 }
 
+void VisualShaderGroupPortsDialog::_on_dialog_about_to_popup() {
+	ERR_FAIL_NULL(group);
+	if (port_item_list->get_item_count() == 0) {
+		_update_editor_for_port(-1);
+		return;
+	}
+
+	if (port_item_list->get_selected_items().size() != 1) {
+		port_item_list->select(0);
+	}
+	_update_editor_for_port(port_item_list->get_selected_items()[0]);
+}
+
 void VisualShaderGroupPortsDialog::set_dialog_mode(bool p_edit_inputs) {
+	if (edit_inputs == p_edit_inputs) {
+		return;
+	}
 	edit_inputs = p_edit_inputs;
 }
 
@@ -639,11 +1023,12 @@ void VisualShaderGroupPortsDialog::set_group(VisualShaderGroup *p_group) {
 		port_item_list->add_item(ports[i].name, port_icon);
 		port_item_list->set_item_icon_modulate(i, port_colors[ports[i].type]);
 	}
-
-	port_item_list->select(0);
 }
 
 VisualShaderGroupPortsDialog::VisualShaderGroupPortsDialog() {
+	connect(SNAME("about_to_popup"), callable_mp(this, &VisualShaderGroupPortsDialog::_on_dialog_about_to_popup));
+	set_title("Edit group ports");
+
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 

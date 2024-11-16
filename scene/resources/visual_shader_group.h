@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  visual_shader_group.h                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #ifndef VISUAL_SHADER_GROUP_H
 #define VISUAL_SHADER_GROUP_H
 
@@ -6,6 +36,9 @@
 
 class VisualShaderGroup : public Resource {
 	GDCLASS(VisualShaderGroup, Resource);
+
+	inline static int NODE_ID_GROUP_INPUT = 0;
+	inline static int NODE_ID_GROUP_OUTPUT = 1;
 
 public:
 	struct Port {
@@ -22,11 +55,15 @@ private:
 
 	Ref<ShaderGraph> graph;
 
-	inline static int NODE_ID_GROUP_INPUT = 0;
-	inline static int NODE_ID_GROUP_OUTPUT = 1;
+	mutable SafeFlag dirty;
+	String code;
+	String global_code;
 
 protected:
 	static void _bind_methods();
+
+	void _queue_update();
+	void _update_group();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -34,9 +71,15 @@ protected:
 
 public:
 	Ref<ShaderGraph> get_graph() const;
+	String get_code();
+	String get_global_code();
 
 	void set_group_name(const String &p_name);
 	String get_group_name() const;
+
+	// TODO: Make private?
+	String _validate_port_name(const String &p_port_name, int p_port_id, bool p_output) const;
+	String _validate_group_name(const String &p_name) const;
 
 	void add_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
 	void set_input_port_name(int p_id, const String &p_name);
@@ -68,7 +111,6 @@ public:
 	// TODO: Rename this method and evaluate whether it is necessary.
 	bool are_nodes_connected(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 
-	// TODO: Do you need the graph as a parameter
 	bool is_nodes_connected_relatively(int p_node, int p_target) const;
 	bool can_connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	Error connect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port);
@@ -82,12 +124,10 @@ public:
 	String get_reroute_parameter_name(int p_reroute_node) const;
 
 	// TODO: Maybe change this method to use a return type.
-
 	void get_node_connections(List<ShaderGraph::Connection> *r_connections) const;
 	// TODO: Implement?
 	String generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
 
-	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
 	// TODO: Implement?
 	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
 
@@ -98,6 +138,10 @@ class VisualShaderNodeGroup : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeGroup, VisualShaderNode);
 
 	Ref<VisualShaderGroup> group;
+
+	// For validation.
+	ShaderGraph::Type shader_type = ShaderGraph::Type::TYPE_MAX; // TYPE_MAX when used in a VisualShaderGroup itself.
+	Shader::Mode shader_mode = Shader::Mode::MODE_MAX; // MODE_MAX when used in a VisualShaderGroup itself.
 
 	void _emit_changed();
 
@@ -122,7 +166,12 @@ public:
 	void set_group(const Ref<VisualShaderGroup> &p_group);
 	Ref<VisualShaderGroup> get_group() const;
 
+	void set_shader_type(ShaderGraph::Type p_type);
+	void set_shader_mode(Shader::Mode p_mode);
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	// virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	String generate_group_function(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual bool is_output_port_expandable(int p_port) const override;
 
 	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
@@ -142,14 +191,7 @@ class VisualShaderNodeGroupInput : public VisualShaderNode {
 	// 	const char *string;
 	// };
 
-	// static const Port ports[];
 	// static const Port preview_ports[];
-
-	// String input_name = "[None]";
-
-protected:
-	// static void _bind_methods();
-	// void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_group(VisualShaderGroup *p_group);
@@ -189,7 +231,7 @@ class VisualShaderNodeGroupOutput : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeGroupOutput, VisualShaderNode);
 
 	// TODO: Possibly dangerous, but it is necessary for now since we don't have a proper weak reference.
-	VisualShaderGroup *group;
+	VisualShaderGroup *group = nullptr;
 
 	// struct Port {
 	// 	PortType type = PortType::PORT_TYPE_MAX;
@@ -249,6 +291,7 @@ class VisualShaderGroupPortsDialog : public AcceptDialog {
 	void _on_port_item_selected(int p_idx);
 	void _on_port_name_changed(const String &p_name);
 	void _on_port_type_changed(int p_idx);
+	void _on_dialog_about_to_popup();
 
 	// TODO: Update graph on exit.
 public:
