@@ -110,10 +110,8 @@ class GameView : public VBoxContainer {
 
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
-	VSeparator *embedding_separator;
 	Button *embedded_button;
 	Button *auto_focus_button;
-	Button *keep_aspect_button;
 
 	Button *hide_selection = nullptr;
 

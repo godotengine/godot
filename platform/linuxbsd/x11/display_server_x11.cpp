@@ -5853,10 +5853,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		wd.is_popup = true;
 	}
 
-	if (p_flags & WINDOW_FLAG_HIDDEN_BIT) {
-		wd.hidden = true;
-	}
-
 	// Setup for menu subwindows:
 	// - override_redirect forces the WM not to interfere with the window, to avoid delays due to
 	//   handling decorations and placement.

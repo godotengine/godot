@@ -211,8 +211,6 @@ class DisplayServerX11 : public DisplayServer {
 
 		Window embed_parent = 0;
 
-		Window embed_parent = 0;
-
 		Rect2i parent_safe_rect;
 
 		unsigned int focus_order = 0;

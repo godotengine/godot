@@ -175,12 +175,6 @@ void GameViewDebugger::_bind_methods() {
 
 ///////
 
-GameView *GameView::singleton = nullptr;
-
-GameView *GameView::get_singleton() {
-	return singleton;
-}
-
 void GameView::_sessions_changed() {
 	// The debugger session's `session_started/stopped` signal can be unreliable, so count it manually.
 	active_sessions = 0;
@@ -731,10 +725,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 
 	p_wrapper->connect("window_before_closing", callable_mp(this, &GameView::_window_before_closing));
 	p_wrapper->connect("window_size_changed", callable_mp(this, &GameView::_update_floating_window_settings));
-}
-
-GameView::~GameView() {
-	singleton = nullptr;
 }
 
 ///////
