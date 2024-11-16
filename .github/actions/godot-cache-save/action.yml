@@ -6,7 +6,7 @@ inputs:
     default: ${{ github.job }}
   scons-cache:
     description: The SCons cache path.
-    default: ${{ github.workspace }}/.scons-cache/
+    default: ${{ github.workspace }}/.scons_cache/
 
 runs:
   using: composite

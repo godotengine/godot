@@ -2981,7 +2981,7 @@
 			Editing the property prompts the user for restarting the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is a script variable which should be serialized and saved in the scene file.
+			The property is a script variable. [constant PROPERTY_USAGE_SCRIPT_VARIABLE] can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, [constant PROPERTY_USAGE_SCRIPT_VARIABLE] is [b]not[/b] applied to variables that are created by overriding [method Object._get_property_list] in a script.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
 			The property value of type [Object] will be stored even if its value is [code]null[/code].

@@ -14,7 +14,7 @@
 		# Static
 		DirAccess.make_dir_absolute("user://levels/world1")
 		[/codeblock]
-		[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. Use [ResourceLoader] to access imported resources.
+		[b]Note:[/b] Accessing project ("res://") directories once exported may behave unexpectedly as some files are converted to engine-specific formats and their original source files may not be present in the expected PCK package. Because of this, to access resources in an exported project, it is recommended to use [ResourceLoader] instead of [FileAccess].
 		Here is an example on how to iterate through the files of a directory:
 		[codeblocks]
 		[gdscript]
@@ -116,6 +116,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
+				[b]Note:[/b] The returned [bool] in the editor and after exporting when used on a path in the [code]res://[/code] directory may be different. Some files are converted to engine-specific formats when exported, potentially changing the directory structure.
 			</description>
 		</method>
 		<method name="dir_exists_absolute" qualifiers="static">
@@ -123,6 +124,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Static version of [method dir_exists]. Supports only absolute paths.
+				[b]Note:[/b] The returned [bool] in the editor and after exporting when used on a path in the [code]res://[/code] directory may be different. Some files are converted to engine-specific formats when exported, potentially changing the directory structure.
 			</description>
 		</method>
 		<method name="file_exists">
@@ -131,6 +133,7 @@
 			<description>
 				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
 				For a static equivalent, use [method FileAccess.file_exists].
+				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
 			</description>
 		</method>
 		<method name="get_current_dir" qualifiers="const">
@@ -151,6 +154,7 @@
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding files. The array is sorted alphabetically.
 				Affected by [member include_hidden] and [member include_navigational].
+				[b]Note:[/b] The returned directories in the editor and after exporting in the [code]res://[/code] directory may differ as some files are converted to engine-specific formats when exported.
 			</description>
 		</method>
 		<method name="get_directories_at" qualifiers="static">
@@ -159,6 +163,7 @@
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding files, at the given [param path]. The array is sorted alphabetically.
 				Use [method get_directories] if you want more control of what gets included.
+				[b]Note:[/b] The returned directories in the editor and after exporting in the [code]res://[/code] directory may differ as some files are converted to engine-specific formats when exported.
 			</description>
 		</method>
 		<method name="get_drive_count" qualifiers="static">
@@ -194,6 +199,7 @@
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories, at the given [param path]. The array is sorted alphabetically.
 				Use [method get_files] if you want more control of what gets included.
+				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code].gd[/code] and [code].import[/code] files are returned (plus a few other files, such as [code]project.godot[/code] or [code]project.binary[/code] and the project icon). In an exported project, the list of returned files will also vary depending on [member ProjectSettings.editor/export/convert_text_resources_to_binary].
 			</description>
 		</method>
 		<method name="get_next">

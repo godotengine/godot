@@ -115,3 +115,10 @@ GH-91201
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/OS/methods/read_string_from_stdin': arguments
 
 Added optional argument. Compatibility method registered.
+
+
+GH-98918
+--------
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/open_encrypted/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added to allow setting initialization vector. Compatibility method registered.

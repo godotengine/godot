@@ -201,7 +201,7 @@ def configure(env: "SConsEnvironment"):
         sys.exit(255)
 
     env.Prepend(CPPPATH=["#platform/web"])
-    env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])
+    env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED", "UNIX_SOCKET_UNAVAILABLE"])
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])

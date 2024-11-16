@@ -321,6 +321,7 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+	void _create_track_num_to_track_cashe_for_animation(Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
 	AudioServer::PlaybackType playback_type;

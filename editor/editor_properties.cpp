@@ -476,7 +476,7 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 String EditorPropertyPath::_get_path_text() {
 	String full_path = get_edited_property_value();
 	if (full_path.begins_with("uid://")) {
-		full_path = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(full_path));
+		full_path = ResourceUID::uid_to_path(full_path);
 	}
 
 	return full_path;

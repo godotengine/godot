@@ -66,6 +66,7 @@ SceneStringNames::SceneStringNames() {
 
 	focus_entered = StaticCString::create("focus_entered");
 	focus_exited = StaticCString::create("focus_exited");
+	position_changed = StaticCString::create("position_changed");
 
 	pre_sort_children = StaticCString::create("pre_sort_children");
 	sort_children = StaticCString::create("sort_children");

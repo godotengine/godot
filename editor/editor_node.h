@@ -474,6 +474,8 @@ private:
 
 	bool was_window_windowed_last = false;
 
+	bool unfocused_low_processor_usage_mode_enabled = true;
+
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	static int build_callback_count;
@@ -747,6 +749,7 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
+	void ensure_uid_file(const String &p_new_resource_path);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
@@ -786,6 +789,8 @@ public:
 
 	HashMap<StringName, Variant> get_modified_properties_for_node(Node *p_node, bool p_node_references_only);
 	HashMap<StringName, Variant> get_modified_properties_reference_to_nodes(Node *p_node, List<Node *> &p_nodes_referenced_by);
+
+	void set_unfocused_low_processor_usage_mode_enabled(bool p_enabled);
 
 	struct AdditiveNodeEntry {
 		Node *node = nullptr;

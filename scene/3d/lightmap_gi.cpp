@@ -333,9 +333,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 				mf.node_path = get_path_to(mi);
 				mf.subindex = -1;
 				mf.mesh = mesh;
-
-				static const int lightmap_scale[GeometryInstance3D::LIGHTMAP_SCALE_MAX] = { 1, 2, 4, 8 };
-				mf.lightmap_scale = lightmap_scale[mi->get_lightmap_scale()];
+				mf.lightmap_scale = mi->get_lightmap_texel_scale();
 
 				Ref<Material> all_override = mi->get_material_override();
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
@@ -369,7 +367,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 				mf.xform = xf * mesh_xf;
 				mf.node_path = get_path_to(s);
 				mf.subindex = i / 2;
-				mf.lightmap_scale = 1;
+				mf.lightmap_scale = 1.0;
 				mf.mesh = mesh;
 
 				meshes.push_back(mf);

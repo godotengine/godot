@@ -226,6 +226,8 @@ static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
 static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
+static int64_t init_embed_parent_window_id = 0;
+static bool init_hidden = false;
 
 // Debug
 
@@ -617,6 +619,8 @@ void Main::print_help(const char *p_binary) {
 #ifndef _3D_DISABLED
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
+	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--hidden", "Request hidden window.\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -1798,6 +1802,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // TOOLS_ENABLED
+		} else if (arg == "--wid") {
+			if (N) {
+				init_embed_parent_window_id = N->get().to_int();
+				if (init_embed_parent_window_id == 0) {
+					OS::get_singleton()->print("<window_id> argument for --wid <window_id> must be different then 0.\n");
+					goto error;
+				}
+
+				OS::get_singleton()->_embedded = true;
+				Engine::get_singleton()->set_embedded(true);
+
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing <window_id> argument for --wid <window_id>.\n");
+				goto error;
+			}
+
+		} else if (arg == "--hidden") {
+			init_hidden = true;
+
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
@@ -2554,7 +2578,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
 	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
-	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/output_latency", PROPERTY_HINT_RANGE, "1,100,1"), 15);
 	// Use a safer default output_latency for web to avoid audio cracking on low-end devices, especially mobile.
@@ -2574,10 +2597,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	OS::get_singleton()->set_environment("MVK_CONFIG_LOG_LEVEL", OS::get_singleton()->_verbose_stdout ? "3" : "1"); // 1 = Errors only, 3 = Info
 #endif
-
-	if (max_fps >= 0) {
-		Engine::get_singleton()->set_max_fps(max_fps);
-	}
 
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/frame_delay_msec", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), 0);
@@ -2965,9 +2984,19 @@ Error Main::setup2(bool p_show_boot_logo) {
 			context = DisplayServer::CONTEXT_ENGINE;
 		}
 
+		if (init_embed_parent_window_id) {
+			// Reset flags and other settings to be sure it's borderless and windowed. The position and size should have been initialized correctly
+			// from --position and --resolution parameters.
+			window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
+			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+		}
+		if (init_hidden) {
+			window_flags |= DisplayServer::WINDOW_FLAG_HIDDEN_BIT;
+		}
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 		if (err != OK || display_server == nullptr) {
 			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
 
@@ -2981,7 +3010,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 				String name = DisplayServer::get_create_function_name(i);
 				WARN_PRINT(vformat("Display driver %s failed, falling back to %s.", last_name, name));
 
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}
@@ -3022,6 +3051,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Display");
+	}
+
+	// Max FPS needs to be set after the DisplayServer is created.
+	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
+
+	if (max_fps >= 0) {
+		Engine::get_singleton()->set_max_fps(max_fps);
 	}
 
 #ifdef TOOLS_ENABLED
@@ -3178,15 +3214,17 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		MAIN_PRINT("Main: Setup Logo");
 
-		if (init_windowed) {
-			//do none..
-		} else if (init_maximized) {
-			DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_MAXIMIZED);
-		} else if (init_fullscreen) {
-			DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_FULLSCREEN);
-		}
-		if (init_always_on_top) {
-			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
+		if (!init_embed_parent_window_id) {
+			if (init_windowed) {
+				//do none..
+			} else if (init_maximized) {
+				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_MAXIMIZED);
+			} else if (init_fullscreen) {
+				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_FULLSCREEN);
+			}
+			if (init_always_on_top) {
+				DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
+			}
 		}
 
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.354, 0.354, 0.354));

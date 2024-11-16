@@ -216,7 +216,7 @@ void EditorExportPlatform::_unload_patches() {
 	PackedData::get_singleton()->clear();
 }
 
-Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
 
 	PackData *pd = (PackData *)p_userdata;
@@ -247,10 +247,27 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	Ref<FileAccess> ftmp = pd->f;
 
 	if (sd.encrypted) {
+		Vector<uint8_t> iv;
+		if (p_seed != 0) {
+			uint64_t seed = p_seed;
+
+			const uint8_t *ptr = p_data.ptr();
+			int64_t len = p_data.size();
+			for (int64_t i = 0; i < len; i++) {
+				seed = ((seed << 5) + seed) ^ ptr[i];
+			}
+
+			RandomPCG rng = RandomPCG(seed, RandomPCG::DEFAULT_INC);
+			iv.resize(16);
+			for (int i = 0; i < 16; i++) {
+				iv.write[i] = rng.rand() % 256;
+			}
+		}
+
 		fae.instantiate();
 		ERR_FAIL_COND_V(fae.is_null(), ERR_SKIP);
 
-		Error err = fae->open_and_parse(ftmp, p_key, FileAccessEncrypted::MODE_WRITE_AES256, false);
+		Error err = fae->open_and_parse(ftmp, p_key, FileAccessEncrypted::MODE_WRITE_AES256, false, iv);
 		ERR_FAIL_COND_V(err != OK, ERR_SKIP);
 		ftmp = fae;
 	}
@@ -288,15 +305,15 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	return OK;
 }
 
-Error EditorExportPlatform::_save_pack_patch_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatform::_save_pack_patch_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	if (_check_hash(PackedData::get_singleton()->get_file_hash(p_path), p_data)) {
 		return OK;
 	}
 
-	return _save_pack_file(p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key);
+	return _save_pack_file(p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed);
 }
 
-Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
 
 	String path = p_path.replace_first("res://", "");
@@ -328,12 +345,12 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	return OK;
 }
 
-Error EditorExportPlatform::_save_zip_patch_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatform::_save_zip_patch_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	if (_check_hash(PackedData::get_singleton()->get_file_hash(p_path), p_data)) {
 		return OK;
 	}
 
-	return _save_zip_file(p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key);
+	return _save_zip_file(p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed);
 }
 
 Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
@@ -932,7 +949,7 @@ Vector<String> EditorExportPlatform::get_forced_export_files() {
 	return files;
 }
 
-Error EditorExportPlatform::_script_save_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatform::_script_save_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	Callable cb = ((ScriptCallbackData *)p_userdata)->file_cb;
 	ERR_FAIL_COND_V(!cb.is_valid(), FAILED);
 
@@ -1043,8 +1060,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Vector<String> enc_in_filters;
 	Vector<String> enc_ex_filters;
 	Vector<uint8_t> key;
+	uint64_t seed = 0;
 
 	if (enc_pck) {
+		seed = p_preset->get_seed();
 		Vector<String> enc_in_split = p_preset->get_enc_in_filter().split(",");
 		for (int i = 0; i < enc_in_split.size(); i++) {
 			String f = enc_in_split[i].strip_edges();
@@ -1116,7 +1135,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 		}
 		for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-			err = p_save_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key);
+			err = p_save_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key, seed);
 			if (err != OK) {
 				return err;
 			}
@@ -1234,7 +1253,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 			for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-				err = p_save_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_save_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 				if (err != OK) {
 					return err;
 				}
@@ -1266,7 +1285,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			if (importer_type == "keep") {
 				// Just keep file as-is.
 				Vector<uint8_t> array = FileAccess::get_file_as_bytes(path);
-				err = p_save_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_save_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 
 				if (err != OK) {
 					return err;
@@ -1309,13 +1328,13 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				sarr.resize(cs.size());
 				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
 
-				err = p_save_func(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_save_func(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 				if (err != OK) {
 					return err;
 				}
 				// Now actual remapped file:
 				sarr = FileAccess::get_file_as_bytes(export_path);
-				err = p_save_func(p_udata, export_path, sarr, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_save_func(p_udata, export_path, sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 				if (err != OK) {
 					return err;
 				}
@@ -1345,14 +1364,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					if (remap == "path") {
 						String remapped_path = config->get_value("remap", remap);
 						Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
-						err = p_save_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+						err = p_save_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 					} else if (remap.begins_with("path.")) {
 						String feature = remap.get_slice(".", 1);
 
 						if (remap_features.has(feature)) {
 							String remapped_path = config->get_value("remap", remap);
 							Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
-							err = p_save_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+							err = p_save_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 						} else {
 							// Remove paths if feature not enabled.
 							config->erase_section_key("remap", remap);
@@ -1378,7 +1397,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				sarr.resize(cs.size());
 				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
 
-				err = p_save_func(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_save_func(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 
 				if (err != OK) {
 					return err;
@@ -1399,7 +1418,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 
 			Vector<uint8_t> array = FileAccess::get_file_as_bytes(export_path);
-			err = p_save_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+			err = p_save_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 			if (err != OK) {
 				return err;
 			}
@@ -1463,7 +1482,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 					new_file.write[j] = utf8[j];
 				}
 
-				err = p_save_func(p_udata, from + ".remap", new_file, idx, total, enc_in_filters, enc_ex_filters, key);
+				err = p_save_func(p_udata, from + ".remap", new_file, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 				if (err != OK) {
 					return err;
 				}
@@ -1477,7 +1496,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Vector<String> forced_export = get_forced_export_files();
 	for (int i = 0; i < forced_export.size(); i++) {
 		Vector<uint8_t> array = FileAccess::get_file_as_bytes(forced_export[i]);
-		err = p_save_func(p_udata, forced_export[i], array, idx, total, enc_in_filters, enc_ex_filters, key);
+		err = p_save_func(p_udata, forced_export[i], array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 		if (err != OK) {
 			return err;
 		}
@@ -1489,7 +1508,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Vector<uint8_t> data = FileAccess::get_file_as_bytes(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
 
-	err = p_save_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key);
+	err = p_save_func(p_udata, "res://" + config_file, data, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 	if (err != OK) {
 		return err;
 	}
@@ -1872,6 +1891,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	Ref<FileAccess> fhead = f;
 
 	if (enc_pck && enc_directory) {
+		uint64_t seed = p_preset->get_seed();
 		String script_key = _get_script_encryption_key(p_preset);
 		Vector<uint8_t> key;
 		key.resize(32);
@@ -1906,7 +1926,27 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			return ERR_CANT_CREATE;
 		}
 
-		err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_WRITE_AES256, false);
+		Vector<uint8_t> iv;
+		if (seed != 0) {
+			for (int i = 0; i < pd.file_ofs.size(); i++) {
+				for (int64_t j = 0; j < pd.file_ofs[i].path_utf8.length(); j++) {
+					seed = ((seed << 5) + seed) ^ pd.file_ofs[i].path_utf8.get_data()[j];
+				}
+				for (int64_t j = 0; j < pd.file_ofs[i].md5.size(); j++) {
+					seed = ((seed << 5) + seed) ^ pd.file_ofs[i].md5[j];
+				}
+				seed = ((seed << 5) + seed) ^ pd.file_ofs[i].ofs;
+				seed = ((seed << 5) + seed) ^ pd.file_ofs[i].size;
+			}
+
+			RandomPCG rng = RandomPCG(seed, RandomPCG::DEFAULT_INC);
+			iv.resize(16);
+			for (int i = 0; i < 16; i++) {
+				iv.write[i] = rng.rand() % 256;
+			}
+		}
+
+		err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_WRITE_AES256, false, iv);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Can't open encrypted file to write."));
 			return ERR_CANT_CREATE;
