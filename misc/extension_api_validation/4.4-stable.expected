@@ -104,3 +104,11 @@ GH-105570
 Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_create_from_extension/arguments': size changed value in new API, from 9 to 10.
 
 Argument added; p_mipmaps. Compatibility method registered.
+
+
+GH-98566
+--------
+Validate extension JSON: API was removed: classes/VisualShader/methods/set_graph_offset
+Validate extension JSON: API was removed: classes/VisualShader/methods/get_graph_offset
+
+The graph_offset property was removed from the resource. This information is now stored in `vs_editor_cache.cfg`.
