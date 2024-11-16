@@ -190,6 +190,10 @@ def version_info_builder(target, source, env):
 #define VERSION_WEBSITE "{website}"
 #define VERSION_DOCS_BRANCH "{docs_branch}"
 #define VERSION_DOCS_URL "https://docs.blazium.app"
+#define EXTERNAL_VERSION_MAJOR {external_major}
+#define EXTERNAL_VERSION_MINOR {external_minor}
+#define EXTERNAL_VERSION_PATCH {external_patch}
+#define EXTERNAL_VERSION_STATUS "{external_status}"
 """.format(**env.version_info)
         )
 

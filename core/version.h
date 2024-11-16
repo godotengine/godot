@@ -57,6 +57,8 @@
 #define VERSION_NUMBER VERSION_BRANCH
 #endif // VERSION_PATCH
 
+#define EXTERNAL_VERSION_NUMBER _MKSTR(EXTERNAL_VERSION_MAJOR) "." _MKSTR(EXTERNAL_VERSION_MINOR) "." _MKSTR(EXTERNAL_VERSION_PATCH) "." EXTERNAL_VERSION_STATUS
+
 // Version number encoded as hexadecimal int with one byte for each number,
 // for easy comparison from code.
 // Example: 3.1.4 will be 0x030104, making comparison easy from script.
@@ -67,14 +69,18 @@
 // Example: "3.1.4.stable.mono"
 #define VERSION_FULL_CONFIG VERSION_NUMBER "." VERSION_STATUS VERSION_MODULE_CONFIG
 
+#define EXTERNAL_VERSION_FULL_CONFIG EXTERNAL_VERSION_NUMBER VERSION_MODULE_CONFIG
+
 // Similar to VERSION_FULL_CONFIG, but also includes the (potentially custom) VERSION_BUILD
 // description (e.g. official, custom_build, etc.).
 // Example: "3.1.4.stable.mono.official"
 #define VERSION_FULL_BUILD VERSION_FULL_CONFIG "." VERSION_BUILD
 
+#define EXTERNAL_VERSION_FULL_BUILD EXTERNAL_VERSION_NUMBER "(" VERSION_FULL_BUILD ")"
+
 // Same as above, but prepended with Godot's name and a cosmetic "v" for "version".
 // Example: "Godot v3.1.4.stable.official.mono"
-#define VERSION_FULL_NAME VERSION_NAME " v" VERSION_FULL_BUILD
+#define VERSION_FULL_NAME VERSION_NAME " v" EXTERNAL_VERSION_NUMBER " (base v" VERSION_FULL_BUILD ")"
 
 // Git commit hash, generated at build time in `core/version_hash.gen.cpp`.
 extern const char *const VERSION_HASH;
