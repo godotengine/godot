@@ -454,6 +454,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	Control *c = shader_tabs->get_tab_control(p_index);
 	VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(c);
 	if (vs_editor) {
+		vs_editor->save_editor_layout();
 		file_menu->get_parent()->remove_child(file_menu);
 		menu_hb->add_child(file_menu);
 		menu_hb->move_child(file_menu, 0);
