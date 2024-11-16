@@ -90,3 +90,11 @@ Validate extension JSON: API was removed: classes/RenderingServer/methods/instan
 Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_reset_physics_interpolation
 
 Functionality moved out of server.
+
+
+GH-98566
+--------
+Validate extension JSON: API was removed: classes/VisualShader/methods/set_graph_offset
+Validate extension JSON: API was removed: classes/VisualShader/methods/get_graph_offset
+
+The graph_offset property was removed from the resource. This information is now stored in `vs_editor_cache.cfg`.
