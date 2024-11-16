@@ -2452,7 +2452,7 @@
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1" experimental="This setting has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.">
 			The thread model to use for rendering. Rendering on a thread may improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
-		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
+		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.354, 0.354, 0.354, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
 		</member>
 		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">

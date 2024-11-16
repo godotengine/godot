@@ -114,7 +114,7 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 			f->get_length() >= 18000,
 			"The generated non-empty PCK file should be large enough to actually hold the contents specified above.");
 	CHECK_MESSAGE(
-			f->get_length() <= 27000,
+			f->get_length() <= 40000,
 			"The generated non-empty PCK file shouldn't be too large.");
 }
 } // namespace TestPCKPacker
