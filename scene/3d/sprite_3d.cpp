@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "sprite_3d.h"
+#include "sprite_3d.compat.inc"
 
 #include "scene/resources/atlas_texture.h"
 
@@ -378,7 +379,7 @@ real_t SpriteBase3D::get_pixel_size() const {
 	return pixel_size;
 }
 
-void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
+void SpriteBase3D::set_axis(int p_axis) {
 	ERR_FAIL_INDEX(p_axis, 3);
 
 	if (axis == p_axis) {
@@ -389,7 +390,7 @@ void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 	_queue_redraw();
 }
 
-Vector3::Axis SpriteBase3D::get_axis() const {
+int SpriteBase3D::get_axis() const {
 	return axis;
 }
 

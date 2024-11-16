@@ -31,6 +31,7 @@
 #ifndef _3D_DISABLED
 
 #include "physics_server_3d.h"
+#include "physics_server_3d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"

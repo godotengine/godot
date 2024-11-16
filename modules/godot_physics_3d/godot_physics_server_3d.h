@@ -348,11 +348,20 @@ public:
 
 	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override; //reference frame is A
 
-	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param, real_t p_value) override;
-	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) const override;
+	virtual void generic_6dof_joint_set_param(RID p_joint, int, G6DOFJointAxisParam p_param, real_t p_value) override;
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, int, G6DOFJointAxisParam p_param) const override;
 
-	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override;
+	virtual void generic_6dof_joint_set_flag(RID p_joint, int, G6DOFJointAxisFlag p_flag, bool p_enable) override;
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, int, G6DOFJointAxisFlag p_flag) const override;
+
+#ifndef DISABLE_DEPRECATED
+	virtual void _generic_6dof_joint_set_param_bind_compat_99341(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param, real_t p_value) override;
+	virtual real_t _generic_6dof_joint_get_param_bind_compat_99341(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) const override;
+
+	virtual void _generic_6dof_joint_set_flag_bind_compat_99341(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override;
+	virtual bool _generic_6dof_joint_get_flag_bind_compat_99341(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override;
+
+#endif //DISABLE_DEPRECATED
 
 	virtual JointType joint_get_type(RID p_joint) const override;
 

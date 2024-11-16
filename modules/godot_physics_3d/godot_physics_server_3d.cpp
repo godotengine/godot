@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_physics_server_3d.h"
+#include "godot_physics_server_3d.compat.inc"
 
 #include "godot_body_direct_state_3d.h"
 #include "godot_broad_phase_3d_bvh.h"
@@ -1521,7 +1522,7 @@ void GodotPhysicsServer3D::joint_make_generic_6dof(RID p_joint, RID p_body_A, co
 	memdelete(prev_joint);
 }
 
-void GodotPhysicsServer3D::generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) {
+void GodotPhysicsServer3D::generic_6dof_joint_set_param(RID p_joint, int p_axis, G6DOFJointAxisParam p_param, real_t p_value) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
@@ -1529,7 +1530,7 @@ void GodotPhysicsServer3D::generic_6dof_joint_set_param(RID p_joint, Vector3::Ax
 	generic_6dof_joint->set_param(p_axis, p_param, p_value);
 }
 
-real_t GodotPhysicsServer3D::generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) const {
+real_t GodotPhysicsServer3D::generic_6dof_joint_get_param(RID p_joint, int p_axis, G6DOFJointAxisParam p_param) const {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, 0);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_6DOF, 0);
@@ -1537,7 +1538,7 @@ real_t GodotPhysicsServer3D::generic_6dof_joint_get_param(RID p_joint, Vector3::
 	return generic_6dof_joint->get_param(p_axis, p_param);
 }
 
-void GodotPhysicsServer3D::generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) {
+void GodotPhysicsServer3D::generic_6dof_joint_set_flag(RID p_joint, int p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
@@ -1545,7 +1546,7 @@ void GodotPhysicsServer3D::generic_6dof_joint_set_flag(RID p_joint, Vector3::Axi
 	generic_6dof_joint->set_flag(p_axis, p_flag, p_enable);
 }
 
-bool GodotPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) const {
+bool GodotPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, int p_axis, G6DOFJointAxisFlag p_flag) const {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, false);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_6DOF, false);

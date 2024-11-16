@@ -122,3 +122,19 @@ GH-98918
 Validate extension JSON: Error: Field 'classes/FileAccess/methods/open_encrypted/arguments': size changed value in new API, from 3 to 4.
 
 Optional argument added to allow setting initialization vector. Compatibility method registered.
+
+
+GH-99341
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsServer3D/methods/generic_6dof_joint_set_param/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3D/methods/generic_6dof_joint_get_param/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3D/methods/generic_6dof_joint_set_flag/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3D/methods/generic_6dof_joint_get_flag/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_generic_6dof_joint_set_param/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_generic_6dof_joint_get_param/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_generic_6dof_joint_set_flag/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_generic_6dof_joint_get_flag/arguments/1': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/SpriteBase3D/methods/set_axis/arguments/0': type changed value in new API, from "enum::Vector3.Axis" to "int".
+Validate extension JSON: Error: Field 'classes/SpriteBase3D/methods/get_axis/return_value': type changed value in new API, from "enum::Vector3.Axis" to "int".
+
+Fix use of non-existent Vector3.Axis enum type in built-in methods and members

@@ -59,7 +59,7 @@ private:
 	Vector3 forward_vector;
 	Vector3 forward_vector_nrm;
 	BoneAxis forward_axis = BONE_AXIS_PLUS_Z;
-	Vector3::Axis primary_rotation_axis = Vector3::AXIS_Y;
+	int primary_rotation_axis = Vector3::AXIS_Y;
 	Vector3::Axis secondary_rotation_axis = Vector3::AXIS_X;
 	bool use_secondary_rotation = true;
 
@@ -104,12 +104,12 @@ private:
 
 	Vector3 get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis) const;
 	Vector3 get_vector_from_bone_axis(const BoneAxis &p_axis) const;
-	Vector3 get_vector_from_axis(const Vector3::Axis &p_axis) const;
+	Vector3 get_vector_from_axis(const int &p_axis) const;
 	Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis) const;
-	Vector2 get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis) const;
+	Vector2 get_projection_vector(const Vector3 &p_vector, int p_axis) const;
 	float remap_damped(float p_from, float p_to, float p_damp_threshold, float p_value) const;
 	double get_bspline_y(const Vector2 &p_from, const Vector2 &p_control, const Vector2 &p_to, double p_x) const;
-	bool is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, Vector3::Axis p_flipping_axis, Vector3::Axis p_check_axis, bool p_check_plane = false) const;
+	bool is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, int p_flipping_axis, int p_check_axis, bool p_check_plane = false) const;
 
 	Transform3D look_at_with_axes(const Transform3D &p_rest);
 	void init_transition();
@@ -128,8 +128,8 @@ public:
 
 	void set_forward_axis(BoneAxis p_axis);
 	BoneAxis get_forward_axis() const;
-	void set_primary_rotation_axis(Vector3::Axis p_axis);
-	Vector3::Axis get_primary_rotation_axis() const;
+	void set_primary_rotation_axis(int p_axis);
+	int get_primary_rotation_axis() const;
 	void set_use_secondary_rotation(bool p_enabled);
 	bool is_using_secondary_rotation() const;
 

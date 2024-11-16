@@ -82,8 +82,8 @@
 		<member name="primary_positive_limit_angle" type="float" setter="set_primary_positive_limit_angle" getter="get_primary_positive_limit_angle">
 			The limit angle of positive side of the primary rotation when [member symmetry_limitation] is [code]false[/code].
 		</member>
-		<member name="primary_rotation_axis" type="int" setter="set_primary_rotation_axis" getter="get_primary_rotation_axis" enum="Vector3.Axis" default="1">
-			The axis of the first rotation. This [SkeletonModifier3D] works by compositing the rotation by Euler angles to prevent to rotate the [member forward_axis].
+		<member name="primary_rotation_axis" type="int" setter="set_primary_rotation_axis" getter="get_primary_rotation_axis" default="1">
+			The index of the axis of the first rotation. This [SkeletonModifier3D] works by compositing the rotation by Euler angles to prevent to rotate the [member forward_axis] (see [constant Vector3.AXIS_X], [constant Vector3.AXIS_Y], and [constant Vector3.AXIS_Z]).
 		</member>
 		<member name="secondary_damp_threshold" type="float" setter="set_secondary_damp_threshold" getter="get_secondary_damp_threshold">
 			The threshold to start damping for [member secondary_limit_angle].

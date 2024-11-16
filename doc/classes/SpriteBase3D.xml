@@ -53,8 +53,8 @@
 		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" default="0.5">
 			Threshold at which the alpha scissor will discard values.
 		</member>
-		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="Vector3.Axis" default="2">
-			The direction in which the front of the texture faces.
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" default="2">
+			The index of the axis in which the front of the texture faces (see [constant Vector3.AXIS_X], [constant Vector3.AXIS_Y], and [constant Vector3.AXIS_Z]).
 		</member>
 		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
 			The billboard mode to use for the sprite. See [enum BaseMaterial3D.BillboardMode] for possible values.

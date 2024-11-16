@@ -739,7 +739,7 @@ Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
 	return planes;
 }
 
-Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
+Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, int p_axis) {
 	ERR_FAIL_INDEX_V(p_axis, 3, Vector<Plane>());
 
 	Vector<Plane> planes;
@@ -793,7 +793,7 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 	return planes;
 }
 
-Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, int p_axis) {
 	ERR_FAIL_INDEX_V(p_axis, 3, Vector<Plane>());
 
 	Vector<Plane> planes;

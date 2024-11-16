@@ -683,7 +683,7 @@
 		<method name="_generic_6dof_joint_get_flag" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
-			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="1" name="axis" type="int" />
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<description>
 			</description>
@@ -691,7 +691,7 @@
 		<method name="_generic_6dof_joint_get_param" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
-			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="1" name="axis" type="int" />
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<description>
 			</description>
@@ -699,7 +699,7 @@
 		<method name="_generic_6dof_joint_set_flag" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
-			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="1" name="axis" type="int" />
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<param index="3" name="enable" type="bool" />
 			<description>
@@ -708,7 +708,7 @@
 		<method name="_generic_6dof_joint_set_param" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
-			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="1" name="axis" type="int" />
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<param index="3" name="value" type="float" />
 			<description>

@@ -444,7 +444,7 @@ void GodotGeneric6DOFJoint3D::calcAnchorPos() {
 	m_AnchorPos = pA * weight + pB * (real_t(1.0) - weight);
 }
 
-void GodotGeneric6DOFJoint3D::set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value) {
+void GodotGeneric6DOFJoint3D::set_param(int p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	switch (p_param) {
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_LOWER_LIMIT: {
@@ -531,7 +531,7 @@ void GodotGeneric6DOFJoint3D::set_param(Vector3::Axis p_axis, PhysicsServer3D::G
 	}
 }
 
-real_t GodotGeneric6DOFJoint3D::get_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const {
+real_t GodotGeneric6DOFJoint3D::get_param(int p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	switch (p_param) {
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_LOWER_LIMIT: {
@@ -619,7 +619,7 @@ real_t GodotGeneric6DOFJoint3D::get_param(Vector3::Axis p_axis, PhysicsServer3D:
 	return 0;
 }
 
-void GodotGeneric6DOFJoint3D::set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value) {
+void GodotGeneric6DOFJoint3D::set_flag(int p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 
 	switch (p_flag) {
@@ -646,7 +646,7 @@ void GodotGeneric6DOFJoint3D::set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6
 	}
 }
 
-bool GodotGeneric6DOFJoint3D::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const {
+bool GodotGeneric6DOFJoint3D::get_flag(int p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, false);
 	switch (p_flag) {
 		case PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT: {

@@ -312,11 +312,11 @@ public:
 
 	virtual void calcAnchorPos(); // overridable
 
-	void set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value);
-	real_t get_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const;
+	void set_param(int p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value);
+	real_t get_param(int p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const;
 
-	void set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value);
-	bool get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const;
+	void set_flag(int p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value);
+	bool get_flag(int p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const;
 };
 
 #endif // GODOT_GENERIC_6DOF_JOINT_3D_H

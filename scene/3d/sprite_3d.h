@@ -75,7 +75,7 @@ private:
 	Color modulate = Color(1, 1, 1, 1);
 	int render_priority = 0;
 
-	Vector3::Axis axis = Vector3::AXIS_Z;
+	int axis = Vector3::AXIS_Z;
 	real_t pixel_size = 0.01;
 	AABB aabb;
 
@@ -102,6 +102,9 @@ protected:
 	Color _get_color_accum();
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif //DISABLE_DEPRECATED
 	virtual void _draw() = 0;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
@@ -141,8 +144,13 @@ public:
 	void set_pixel_size(real_t p_amount);
 	real_t get_pixel_size() const;
 
-	void set_axis(Vector3::Axis p_axis);
-	Vector3::Axis get_axis() const;
+	void set_axis(int p_axis);
+	int get_axis() const;
+
+#ifndef DISABLE_DEPRECATED
+	void _set_axis_bind_compat_99341(Vector3::Axis p_axis);
+	Vector3::Axis _get_axis_bind_compat_99341() const;
+#endif //DISABLE_DEPRECATED
 
 	void set_draw_flag(DrawFlags p_flag, bool p_enable);
 	bool get_draw_flag(DrawFlags p_flag) const;

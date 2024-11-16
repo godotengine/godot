@@ -92,12 +92,12 @@ LookAtModifier3D::BoneAxis LookAtModifier3D::get_forward_axis() const {
 	return forward_axis;
 }
 
-void LookAtModifier3D::set_primary_rotation_axis(Vector3::Axis p_axis) {
+void LookAtModifier3D::set_primary_rotation_axis(int p_axis) {
 	primary_rotation_axis = p_axis;
 	update_configuration_warnings();
 }
 
-Vector3::Axis LookAtModifier3D::get_primary_rotation_axis() const {
+int LookAtModifier3D::get_primary_rotation_axis() const {
 	return primary_rotation_axis;
 }
 
@@ -542,7 +542,7 @@ void LookAtModifier3D::_process_modification() {
 	prev_q = destination;
 }
 
-bool LookAtModifier3D::is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, Vector3::Axis p_flipping_axis, Vector3::Axis p_check_axis, bool p_check_plane) const {
+bool LookAtModifier3D::is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, int p_flipping_axis, int p_check_axis, bool p_check_plane) const {
 	// Prevent that the angular velocity does not become too large.
 	// Check that is p_flipping_axis flipped nearby p_check_axis (close than origin_safe_margin) or not. If p_check_plane is true, check two axes of crossed plane.
 	if (p_check_plane) {
@@ -606,7 +606,7 @@ Vector3 LookAtModifier3D::get_vector_from_bone_axis(const LookAtModifier3D::Bone
 	return ret;
 }
 
-Vector3 LookAtModifier3D::get_vector_from_axis(const Vector3::Axis &p_axis) const {
+Vector3 LookAtModifier3D::get_vector_from_axis(const int &p_axis) const {
 	Vector3 ret;
 	switch (p_axis) {
 		case Vector3::AXIS_X: {
@@ -641,7 +641,7 @@ Vector3::Axis LookAtModifier3D::get_axis_from_bone_axis(BoneAxis p_axis) const {
 	return ret;
 }
 
-Vector2 LookAtModifier3D::get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis) const {
+Vector2 LookAtModifier3D::get_projection_vector(const Vector3 &p_vector, int p_axis) const {
 	// NOTE: axis is swapped between 2D and 3D.
 	Vector2 ret;
 	switch (p_axis) {

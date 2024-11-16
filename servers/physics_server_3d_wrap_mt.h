@@ -363,11 +363,20 @@ public:
 
 	FUNC5(joint_make_generic_6dof, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	FUNC4(generic_6dof_joint_set_param, RID, Vector3::Axis, G6DOFJointAxisParam, real_t)
-	FUNC3RC(real_t, generic_6dof_joint_get_param, RID, Vector3::Axis, G6DOFJointAxisParam)
+	FUNC4(generic_6dof_joint_set_param, RID, int, G6DOFJointAxisParam, real_t)
+	FUNC3RC(real_t, generic_6dof_joint_get_param, RID, int, G6DOFJointAxisParam)
 
-	FUNC4(generic_6dof_joint_set_flag, RID, Vector3::Axis, G6DOFJointAxisFlag, bool)
-	FUNC3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, G6DOFJointAxisFlag)
+	FUNC4(generic_6dof_joint_set_flag, RID, int, G6DOFJointAxisFlag, bool)
+	FUNC3RC(bool, generic_6dof_joint_get_flag, RID, int, G6DOFJointAxisFlag)
+
+#ifndef DISABLE_DEPRECATED
+	FUNC4(_generic_6dof_joint_set_param_bind_compat_99341, RID, Vector3::Axis, G6DOFJointAxisParam, real_t)
+	FUNC3RC(real_t, _generic_6dof_joint_get_param_bind_compat_99341, RID, Vector3::Axis, G6DOFJointAxisParam)
+
+	FUNC4(_generic_6dof_joint_set_flag_bind_compat_99341, RID, Vector3::Axis, G6DOFJointAxisFlag, bool)
+	FUNC3RC(bool, _generic_6dof_joint_get_flag_bind_compat_99341, RID, Vector3::Axis, G6DOFJointAxisFlag)
+
+#endif //DISABLE_DEPRECATED
 
 	FUNC1RC(JointType, joint_get_type, RID);
 
