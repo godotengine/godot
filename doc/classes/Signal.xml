@@ -4,7 +4,7 @@
 		A built-in type representing a signal of an [Object].
 	</brief_description>
 	<description>
-		[Signal] is a built-in [Variant] type that represents a signal of an [Object] instance. Like all [Variant] types, it can be stored in variables and passed to functions. Signals allow all connected [Callable]s (and by extension their respective objects) to listen and react to events, without directly referencing one another. This keeps the code flexible and easier to manage.
+		[Signal] is a built-in [Variant] type that represents a signal of an [Object] instance. Like all [Variant] types, it can be stored in variables and passed to functions. Signals allow all connected [Callable]s (and by extension their respective objects) to listen and react to events, without directly referencing one another. This keeps the code flexible and easier to manage. You can check whether an [Object] has a given signal name using [method Object.has_signal].
 		In GDScript, signals can be declared with the [code]signal[/code] keyword. In C#, you may use the [code][Signal][/code] attribute on a delegate.
 		[codeblocks]
 		[gdscript]
@@ -48,7 +48,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="signal" type="StringName" />
 			<description>
-				Creates a new [Signal] named [param signal] in the specified [param object].
+				Creates a [Signal] object referencing a signal named [param signal] in the specified [param object].
 			</description>
 		</constructor>
 	</constructors>
@@ -119,7 +119,7 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the signal's name does not exist in its object, or the object is not valid.
+				Returns [code]true[/code] if this [Signal] has no object and the signal name is empty. Equivalent to [code]signal == Signal()[/code].
 			</description>
 		</method>
 	</methods>

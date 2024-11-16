@@ -150,7 +150,7 @@ PACKED_ARRAY_TYPES: List[str] = [
     "PackedByteArray",
     "PackedColorArray",
     "PackedFloat32Array",
-    "Packedfloat64Array",
+    "PackedFloat64Array",
     "PackedInt32Array",
     "PackedInt64Array",
     "PackedStringArray",

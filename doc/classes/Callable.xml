@@ -203,7 +203,8 @@
 		<method name="is_null" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Callable] has no target to call the method on.
+				Returns [code]true[/code] if this [Callable] has no target to call the method on. Equivalent to [code]callable == Callable()[/code].
+				[b]Note:[/b] This is [i]not[/i] the same as [code]not is_valid()[/code] and using [code]not is_null()[/code] will [i]not[/i] guarantee that this callable can be called. Use [method is_valid] instead.
 			</description>
 		</method>
 		<method name="is_standard" qualifiers="const">

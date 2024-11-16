@@ -120,7 +120,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
-				Returns the list of all neighboring cells to the one at [param coords].
+				Returns the list of all neighboring cells to the one at [param coords]. Any neighboring cell is one that is touching edges, so for a square cell 4 cells would be returned, for a hexagon 6 cells are returned.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">

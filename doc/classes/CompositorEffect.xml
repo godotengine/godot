@@ -7,6 +7,7 @@
 		This resource defines a custom rendering effect that can be applied to [Viewport]s through the viewports' [Environment]. You can implement a callback that is called during rendering at a given stage of the rendering pipeline and allows you to insert additional passes. Note that this callback happens on the rendering thread. CompositorEffect is an abstract base class and must be extended to implement specific rendering logic.
 	</description>
 	<tutorials>
+		<link title="The Compositor">$DOCS_URL/tutorials/rendering/compositor.html</link>
 	</tutorials>
 	<methods>
 		<method name="_render_callback" qualifiers="virtual">
@@ -55,6 +56,17 @@
 			[codeblock]
 			var render_scene_buffers : RenderSceneBuffersRD = render_data.get_render_scene_buffers()
 			var roughness_buffer = render_scene_buffers.get_texture("forward_clustered", "normal_roughness")
+			[/codeblock]
+			The raw normal and roughness buffer is stored in an optimized format, different than the one available in Spatial shaders. When sampling the buffer, a conversion function must be applied. Use this function, copied from [url=https://github.com/godotengine/godot/blob/da5f39889f155658cef7f7ec3cc1abb94e17d815/servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered_inc.glsl#L334-L341]here[/url]:
+			[codeblock]
+			vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
+			    float roughness = p_normal_roughness.w;
+			    if (roughness &gt; 0.5) {
+			        roughness = 1.0 - roughness;
+			    }
+			    roughness /= (127.0 / 255.0);
+			    return vec4(normalize(p_normal_roughness.xyz * 2.0 - 1.0) * 0.5 + 0.5, roughness);
+			}
 			[/codeblock]
 		</member>
 		<member name="needs_separate_specular" type="bool" setter="set_needs_separate_specular" getter="get_needs_separate_specular">

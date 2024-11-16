@@ -26,7 +26,7 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Returns whether any [InputEvent] in [member events] equals [param event].
+				Returns whether any [InputEvent] in [member events] equals [param event]. This uses [method InputEvent.is_match] to compare events.
 			</description>
 		</method>
 	</methods>
