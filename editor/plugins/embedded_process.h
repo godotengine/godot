@@ -43,6 +43,8 @@ class EmbeddedProcess : public Control {
 	bool _embedding_grab_focus = false;
 	bool _embedding_completed = false;
 	uint64_t _start_embedding_time = 0;
+	bool _updated_embedded_process_queued = false;
+	bool _last_updated_embedded_process_focused = false;
 
 	Window *_window = nullptr;
 	Timer *_timer_embedding = nullptr;
@@ -56,11 +58,13 @@ class EmbeddedProcess : public Control {
 	Point2i _margin_bottom_right;
 
 	void _try_embed_process();
+	void _queue_update_embedded_process();
 	void _update_embedded_process();
 	void _timer_embedding_timeout();
 	void _draw();
 	void _check_mouse_over();
 	void _check_focused_process_id();
+	bool _is_embedded_process_updatable();
 
 protected:
 	static void _bind_methods();

@@ -137,7 +137,6 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
-		case FEATURE_WINDOW_HIDDEN:
 			return true;
 		default:
 			return false;
@@ -2121,7 +2120,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embbed_child, bool p_hidden, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embbed_child, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2134,7 +2133,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 		if (!p_embbed_child) {
 			r_style_ex |= WS_EX_APPWINDOW;
 		}
-		if (p_initialized && !p_hidden) {
+		if (p_initialized) {
 			r_style |= WS_VISIBLE;
 		}
 	}
@@ -2197,7 +2196,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, wd.hidden, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2847,6 +2846,10 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 			// Set the parent to current window.
 			SetParent(ep->window_handle, wd.hWnd);
 		}
+	}
+
+	if (p_rect.size.x < 100 || p_rect.size.y < 100) {
+		p_visible = false;
 	}
 
 	// In Godot, the window position is offset by the screen's origin coordinates.
@@ -4264,8 +4267,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (windows[window_id].no_focus || windows[window_id].is_popup) {
 				return MA_NOACTIVATE; // Do not activate, but process mouse messages.
 			}
-			// When embedded, the window is a child of the parent are is not activated
-			// by default because there's no native controls in it.
+			// When embedded, the window is a child of the parent and is not activated
+			// by default because it lacks native controls.
 			if (windows[window_id].parent_hwnd) {
 				SetFocus(windows[window_id].hWnd);
 				return MA_ACTIVATE;
@@ -5773,7 +5776,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), p_parent_hwnd, (p_flags & WINDOW_FLAG_HIDDEN_BIT), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), p_parent_hwnd, dwStyle, dwExStyle);
 
 	RECT WindowRect;
 

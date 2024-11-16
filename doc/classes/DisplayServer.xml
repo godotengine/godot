@@ -1898,9 +1898,6 @@
 		<constant name="FEATURE_WINDOW_EMBEDDING" value="27" enum="Feature">
 			Display server supports embedding a window from another process. [b]Windows, Linux (X11)[/b]
 		</constant>
-		<constant name="FEATURE_WINDOW_HIDDEN" value="28" enum="Feature">
-			Display server supports hiding a window without destroying it. [b]Windows, Linux (X11)[/b]
-		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -2116,11 +2113,7 @@
 			Window style is overridden, forcing sharp corners.
 			[b]Note:[/b] This flag is implemented only on Windows (11).
 		</constant>
-		<constant name="WINDOW_FLAG_HIDDEN" value="9" enum="WindowFlags">
-			The window is hidden but not destroyed.
-			[b]Note:[/b] This flag is implemented only on Windows and Linux (X11).
-		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="10" enum="WindowFlags">
+		<constant name="WINDOW_FLAG_MAX" value="9" enum="WindowFlags">
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 			Sent when the mouse pointer enters the window.

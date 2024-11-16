@@ -412,12 +412,12 @@ void Engine::set_freeze_time_scale(bool p_frozen) {
 	freeze_time_scale = p_frozen;
 }
 
-void Engine::set_embedded(bool p_enabled) {
-	embedded = p_enabled;
+void Engine::set_embedded_in_editor(bool p_enabled) {
+	embedded_in_editor = p_enabled;
 }
 
-bool Engine::is_embedded() const {
-	return embedded;
+bool Engine::is_embedded_in_editor() const {
+	return embedded_in_editor;
 }
 
 Engine::Engine() {

@@ -141,7 +141,6 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_WINDOW_EMBEDDING:
-		case FEATURE_WINDOW_HIDDEN:
 			return true;
 		case FEATURE_SCREEN_CAPTURE:
 			return !xwayland;
@@ -2777,7 +2776,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 	ERR_FAIL_COND_MSG(p_mode != WINDOW_MODE_WINDOWED && wd.embed_parent, "Embedded window only support Windowed mode.");
 
-	//remove all "extra" modes
+	// Remove all "extra" modes.
 	switch (old_mode) {
 		case WINDOW_MODE_WINDOWED: {
 			//do nothing
@@ -2895,7 +2894,9 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			}
 
 			// Preserve window size
-			window_set_size(window_get_size(p_window), p_window);
+			if (!wd.embed_parent) {
+				window_set_size(window_get_size(p_window), p_window);
+			}
 
 			wd.borderless = p_enabled;
 			_update_window_mouse_passthrough(p_window);
