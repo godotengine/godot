@@ -75,7 +75,7 @@ void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMap
 	for (int i = 0; i < c; i += offset) {
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
-		const int buffer_size = (format == TILE_MAP_DATA_FORMAT_2) ? 12 : 8;
+		const int buffer_size = (p_format >= TILE_MAP_DATA_FORMAT_2) ? 12 : 8;
 		for (int j = 0; j < buffer_size; j++) {
 			local[j] = ptr[j];
 		}

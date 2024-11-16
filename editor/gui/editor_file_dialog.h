@@ -145,6 +145,7 @@ private:
 	void _push_history();
 
 	Vector<String> filters;
+	Vector<String> processed_filters;
 
 	bool previews_enabled = true;
 	bool preview_waiting = false;

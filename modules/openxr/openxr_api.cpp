@@ -2036,8 +2036,9 @@ bool OpenXRAPI::poll_events() {
 				if (local_floor_emulation.enabled) {
 					local_floor_emulation.should_reset_floor_height = true;
 				}
-				if (event->poseValid && xr_interface) {
-					xr_interface->on_pose_recentered();
+
+				if (xr_interface) {
+					xr_interface->on_reference_space_change_pending();
 				}
 			} break;
 			case XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED: {

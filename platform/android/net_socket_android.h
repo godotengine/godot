@@ -44,7 +44,7 @@
  * the lock when broadcasting is enabled/disabled on a socket, or that socket
  * joins/leaves a multicast group.
  */
-class NetSocketAndroid : public NetSocketPosix {
+class NetSocketAndroid : public NetSocketUnix {
 private:
 	static jobject net_utils;
 	static jclass cls;

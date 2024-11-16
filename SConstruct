@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-EnsureSConsVersion(3, 1, 2)
-EnsurePythonVersion(3, 6)
+EnsureSConsVersion(4, 0)
+EnsurePythonVersion(3, 8)
 
 # System
 import atexit
@@ -59,7 +59,7 @@ import glsl_builders
 import methods
 import scu_builders
 from methods import print_error, print_warning
-from platform_methods import architecture_aliases, architectures
+from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -272,6 +272,8 @@ opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
+opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
+opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -322,6 +324,9 @@ opts.Add("rcflags", "Custom flags for Windows resource compiler")
 # in following code (especially platform and custom_modules).
 opts.Update(env)
 
+# Setup caching logic early to catch everything.
+methods.prepare_cache(env)
+
 # Copy custom environment variables if set.
 if env["import_env_vars"]:
     for env_var in str(env["import_env_vars"]).split(","):
@@ -351,27 +356,18 @@ if env["platform"] == "":
     if env["platform"] != "":
         print(f'Automatically detected platform: {env["platform"]}')
 
-if env["platform"] == "osx":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    env["platform"] = "macos"
+# Deprecated aliases kept for compatibility.
+if env["platform"] in compatibility_platform_aliases:
+    alias = env["platform"]
+    platform = compatibility_platform_aliases[alias]
+    print_warning(
+        f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".'
+    )
+    env["platform"] = platform
 
-if env["platform"] == "iphone":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    env["platform"] = "ios"
-
-if env["platform"] in ["linux", "bsd", "x11"]:
-    if env["platform"] == "x11":
-        # Deprecated alias kept for compatibility.
-        print_warning('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
-    # Alias for convenience.
+# Alias for convenience.
+if env["platform"] in ["linux", "bsd"]:
     env["platform"] = "linuxbsd"
-
-if env["platform"] == "javascript":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
-    env["platform"] = "web"
 
 if env["platform"] not in platform_list:
     text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
@@ -668,40 +664,32 @@ elif methods.using_gcc(env):
             "to switch to posix threads."
         )
         Exit(255)
-    if env["debug_paths_relative"] and cc_version_major < 8:
-        print_warning("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-        env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     # Apple LLVM versions differ from upstream LLVM version \o/, compare
     # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-    if env["platform"] == "macos" or env["platform"] == "ios":
-        vanilla = methods.is_vanilla_clang(env)
-        if vanilla and cc_version_major < 6:
-            print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
-            )
-            Exit(255)
-        elif not vanilla and cc_version_major < 10:
+    if methods.is_apple_clang(env):
+        if cc_version_major < 10:
             print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
-        if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
+        elif env["debug_paths_relative"] and cc_version_major < 12:
             print_warning(
                 "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
             )
             env["debug_paths_relative"] = False
-    elif cc_version_major < 6:
-        print_error(
-            "Detected Clang version older than 6, which does not fully support "
-            "C++17. Supported versions are Clang 6 and later."
-        )
-        Exit(255)
-    if env["debug_paths_relative"] and cc_version_major < 10:
-        print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-        env["debug_paths_relative"] = False
+    else:
+        if cc_version_major < 6:
+            print_error(
+                "Detected Clang version older than 6, which does not fully support "
+                "C++17. Supported versions are Clang 6 and later."
+            )
+            Exit(255)
+        elif env["debug_paths_relative"] and cc_version_major < 10:
+            print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            env["debug_paths_relative"] = False
+
 elif env.msvc:
     # Ensure latest minor builds of Visual Studio 2017/2019.
     # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
@@ -765,7 +753,7 @@ else:
             project_path = Dir("#").abspath
             env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
-        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+        if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
             env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
         else:
@@ -1053,23 +1041,7 @@ GLSL_BUILDERS = {
 }
 env.Append(BUILDERS=GLSL_BUILDERS)
 
-scons_cache_path = os.environ.get("SCONS_CACHE")
-if scons_cache_path is not None:
-    CacheDir(scons_cache_path)
-    print("Scons cache enabled... (path: '" + scons_cache_path + "')")
-
-if env["vsproj"]:
-    env.vs_incs = []
-    env.vs_srcs = []
-
 if env["compiledb"]:
-    if env.scons_version < (4, 0, 0):
-        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        print_error(
-            "The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version
-        )
-        Exit(255)
-
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
 
@@ -1151,5 +1123,3 @@ def purge_flaky_files():
 
 
 atexit.register(purge_flaky_files)
-
-methods.clean_cache(env)

@@ -308,6 +308,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
 			<param index="2" name="key" type="PackedByteArray" />
+			<param index="3" name="iv" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Creates a new [FileAccess] object and opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
 				[b]Note:[/b] The provided key must be 32 bytes long.
