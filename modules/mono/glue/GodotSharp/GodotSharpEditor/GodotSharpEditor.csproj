@@ -11,16 +11,16 @@
     <LangVersion>10</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <Description>Godot C# Editor API.</Description>
-    <Authors>Godot Engine contributors</Authors>
+    <Description>Blazium C# Editor API.</Description>
+    <Authors>Godot Engine contributors;Blazium Engine contributors</Authors>
 
-    <PackageId>GodotSharpEditor</PackageId>
+    <PackageId>BlaziumSharpEditor</PackageId>
     <Version>4.3.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
-    <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharpEditor</RepositoryUrl>
+    <RepositoryUrl>https://github.com/blazium-engine/blazium/tree/master/modules/mono/glue/GodotSharp/GodotSharpEditor</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
+    <Copyright>Copyright (c) Godot Engine contributors and Blazium Engine contributors</Copyright>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>

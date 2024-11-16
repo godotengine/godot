@@ -5,16 +5,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
-    <Description>Core C# source generator for Godot projects.</Description>
-    <Authors>Godot Engine contributors</Authors>
+    <Description>Core C# source generator for Blazium projects.</Description>
+    <Authors>Godot Engine contributors;Blazium Engine contributors</Authors>
 
-    <PackageId>Godot.SourceGenerators</PackageId>
+    <PackageId>Blazium.SourceGenerators</PackageId>
     <Version>4.3.0</Version>
     <PackageVersion>$(PackageVersion_Godot_SourceGenerators)</PackageVersion>
-    <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators</RepositoryUrl>
+    <RepositoryUrl>https://github.com/blazium-engine/blazium/tree/master/modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
+    <Copyright>Copyright (c) Godot Engine contributors and Blazium Engine contributors</Copyright>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- Do not include the generator as a lib dependency -->
@@ -34,6 +34,6 @@
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
     <!-- Package the props file -->
-    <None Include="Godot.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true" />
+    <None Include="Blazium.SourceGenerators.props" Pack="true" PackagePath="build" Visible="true" />
   </ItemGroup>
 </Project>

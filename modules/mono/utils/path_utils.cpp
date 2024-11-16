@@ -232,7 +232,7 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
 
-const Vector<String> reserved_assembly_names = { "GodotSharp", "GodotSharpEditor", "Godot.SourceGenerators" };
+const Vector<String> reserved_assembly_names = { "GodotSharp", "GodotSharpEditor", "Godot.SourceGenerators", "BlaziumSharp", "BlaziumSharpEditor", "Blazium.SourceGenerators" };
 
 String get_csharp_project_name() {
 	String name = GLOBAL_GET("dotnet/project/assembly_name");

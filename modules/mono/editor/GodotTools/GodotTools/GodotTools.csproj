@@ -32,11 +32,11 @@
     <PackageReference Include="JetBrains.Rider.PathLocator" Version="1.0.9" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <Reference Include="GodotSharp">
+    <Reference Include="BlaziumSharp">
       <HintPath>$(GodotApiAssembliesDir)/GodotSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="GodotSharpEditor">
+    <Reference Include="BlaziumSharpEditor">
       <HintPath>$(GodotApiAssembliesDir)/GodotSharpEditor.dll</HintPath>
       <Private>False</Private>
     </Reference>
