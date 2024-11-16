@@ -361,6 +361,23 @@ bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
 	return (*taskp)->completed;
 }
 
+bool WorkerThreadPool::clear_task_if_completed(TaskID p_task_id) {
+	MutexLock task_lock(task_mutex);
+	Task **taskp = tasks.getptr(p_task_id);
+	if (!taskp) {
+		ERR_FAIL_V_MSG(false, "Invalid Task ID"); // Invalid task
+	}
+	Task *task = *taskp;
+	if (task->completed) {
+		if (task->waiting_pool == 0 && task->waiting_user == 0) {
+			tasks.erase(p_task_id);
+			task_allocator.free(task);
+		}
+		return true;
+	}
+	return false;
+}
+
 Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 	task_mutex.lock();
 	Task **taskp = tasks.getptr(p_task_id);
@@ -824,8 +841,8 @@ void WorkerThreadPool::finish() {
 void WorkerThreadPool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_task_completed", "task_id"), &WorkerThreadPool::is_task_completed);
+	ClassDB::bind_method(D_METHOD("clear_task_if_completed", "task_id"), &WorkerThreadPool::clear_task_if_completed);
 	ClassDB::bind_method(D_METHOD("wait_for_task_completion", "task_id"), &WorkerThreadPool::wait_for_task_completion);
-
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &WorkerThreadPool::add_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_group_task_completed", "group_id"), &WorkerThreadPool::is_group_task_completed);
 	ClassDB::bind_method(D_METHOD("get_group_processed_element_count", "group_id"), &WorkerThreadPool::get_group_processed_element_count);

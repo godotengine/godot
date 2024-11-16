@@ -238,6 +238,7 @@ public:
 	TaskID add_task(const Callable &p_action, bool p_high_priority = false, const String &p_description = String());
 
 	bool is_task_completed(TaskID p_task_id) const;
+	bool clear_task_if_completed(TaskID p_task_id);
 	Error wait_for_task_completion(TaskID p_task_id);
 
 	void yield();
