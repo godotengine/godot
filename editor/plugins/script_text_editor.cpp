@@ -267,7 +267,13 @@ void ScriptTextEditor::_set_theme_for_script() {
 	List<String> block_key_delimiters;
 	script->get_language()->get_block_key_delimiters(&block_key_delimiters);
 
-	text_edit->set_block_key_delimiters(&block_key_delimiters);
+	Vector<String> block_key_delimiters_vector;
+
+	for (const String &delimiter : block_key_delimiters) {
+		block_key_delimiters_vector.push_back(delimiter);
+	}
+
+	text_edit->set_block_key_delimiters(block_key_delimiters_vector);
 }
 
 void ScriptTextEditor::_show_errors_panel(bool p_show) {

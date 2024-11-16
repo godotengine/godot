@@ -1200,12 +1200,12 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 	end_complex_operation();
 }
 
-void CodeEdit::_auto_fill_doc_comments(int caret, bool p_above) {
+void CodeEdit::_auto_fill_doc_comments(int p_caret, bool p_above) {
 	if (block_key_delimiters.is_empty()) {
 		return;
 	}
 
-	const int cl = p_above ? (get_caret_line(caret) + 1) : (get_caret_line(caret) - 1);
+	const int cl = p_above ? (get_caret_line(p_caret) + 1) : (get_caret_line(p_caret) - 1);
 	const String line = get_line(cl);
 
 	if (is_in_comment(cl) != -1) {
@@ -1218,7 +1218,7 @@ void CodeEdit::_auto_fill_doc_comments(int caret, bool p_above) {
 			// Case for inline comments.
 			if (delimiter_begin == delimiter_end) {
 				if (line_strip.begins_with(delimiter_begin)) {
-					insert_text_at_caret(delimiter_begin + " ", caret);
+					insert_text_at_caret(delimiter_begin + " ", p_caret);
 					break;
 				}
 
@@ -1233,22 +1233,22 @@ void CodeEdit::_auto_fill_doc_comments(int caret, bool p_above) {
 					const int non_whitespace_column = get_first_non_whitespace_column(cl);
 					const String indent = line.substr(0, non_whitespace_column);
 
-					insert_text_at_caret(delimiter_begin + " ", caret);
+					insert_text_at_caret(delimiter_begin + " ", p_caret);
 
 					const int line_to_move_on = cl + 1;
 					const int line_length = get_line(line_to_move_on).length();
-					set_caret_line(line_to_move_on, false, true, -1, caret);
-					set_caret_column(line_length, false, caret);
+					set_caret_line(line_to_move_on, false, true, -1, p_caret);
+					set_caret_column(line_length, false, p_caret);
 					break;
 				}
 
-				insert_text_at_caret(delimiter_begin + " ", caret);
+				insert_text_at_caret(delimiter_begin + " ", p_caret);
 				break;
 			}
 
 			// Case when the caret is on the same line as the end delimiter.
 			if (p_above && line_strip.ends_with(delimiter_end)) {
-				insert_text_at_caret(delimiter_begin + " ", caret);
+				insert_text_at_caret(delimiter_begin + " ", p_caret);
 				break;
 			}
 
@@ -1262,7 +1262,7 @@ void CodeEdit::_auto_fill_doc_comments(int caret, bool p_above) {
 				}
 
 				if (line_strip.begins_with(delimiter_begin)) {
-					insert_text_at_caret(delimiter_begin + " ", caret);
+					insert_text_at_caret(delimiter_begin + " ", p_caret);
 					break;
 				}
 			}
@@ -2130,10 +2130,10 @@ Vector<String> CodeEdit::get_block_key_delimiters() const {
 	return block_key_delimiters;
 }
 
-void CodeEdit::set_block_key_delimiters(const List<String> *p_delimiters) {
+void CodeEdit::set_block_key_delimiters(const Vector<String> &p_delimiters) {
 	block_key_delimiters.clear();
 
-	for (const String &delimiter : *p_delimiters) {
+	for (const String &delimiter : p_delimiters) {
 		block_key_delimiters.push_back(delimiter);
 	}
 }

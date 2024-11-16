@@ -74,7 +74,7 @@ private:
 	int _calculate_spaces_till_next_right_indent(int p_column) const;
 
 	void _new_line(bool p_split_current_line = true, bool p_above = false);
-	void _auto_fill_doc_comments(int caret, bool p_above);
+	void _auto_fill_doc_comments(int p_caret, bool p_above);
 
 	/* Auto brace completion */
 	bool auto_brace_completion_enabled = false;
@@ -470,7 +470,7 @@ public:
 	Point2 get_delimiter_end_position(int p_line, int p_column) const;
 
 	Vector<String> get_block_key_delimiters() const;
-	void set_block_key_delimiters(const List<String> *p_delimiters);
+	void set_block_key_delimiters(const Vector<String> &p_delimiters);
 
 	/* Code hint */
 	void set_code_hint(const String &p_hint);
