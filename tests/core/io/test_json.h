@@ -165,8 +165,8 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 	SUBCASE("Basic valid escape sequences") {
 		for (int i = 0; i < valid_escapes.size(); i++) {
 			String valid_escape = valid_escapes[i];
-			String valid_escape_string = valid_escape.get_slice(";", 0);
-			String valid_escape_value = valid_escape.get_slice(";", 1);
+			String valid_escape_string = valid_escape.get_slicec(';', 0);
+			String valid_escape_value = valid_escape.get_slicec(';', 1);
 
 			String json_string = "\"\\";
 			json_string += valid_escape_string;
@@ -204,7 +204,7 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 			bool skip = false;
 			for (int j = 0; j < valid_escapes.size(); j++) {
 				String valid_escape = valid_escapes[j];
-				String valid_escape_string = valid_escape.get_slice(";", 0);
+				String valid_escape_string = valid_escape.get_slicec(';', 0);
 				if (valid_escape_string[0] == i) {
 					skip = true;
 					break;
