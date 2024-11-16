@@ -163,7 +163,7 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (property.IsReadOnly || property.SetMethod!.IsInitOnly)
+                if (property.IsReadOnly || property.SetMethodOrBaseSetMethod() is not { IsInitOnly: false })
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.ExportedMemberIsReadOnlyRule,
