@@ -2179,7 +2179,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
 
-	if (!p_borderless && !p_no_activate_focus && p_initialized && !p_hidden) {
+	if (!p_borderless && !p_no_activate_focus && p_initialized) {
 		r_style |= WS_VISIBLE;
 	}
 
@@ -5886,8 +5886,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			DWORD value = wd.sharp_corners ? DWMWCP_DONOTROUND : DWMWCP_DEFAULT;
 			::DwmSetWindowAttribute(wd.hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(value));
 		}
-
-		wd.hidden = (p_flags & WINDOW_FLAG_HIDDEN_BIT);
 
 		if (is_dark_mode_supported() && dark_title_available) {
 			BOOL value = is_dark_mode();
