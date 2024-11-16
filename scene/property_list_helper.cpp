@@ -111,6 +111,7 @@ void PropertyListHelper::setup_for_instance(const PropertyListHelper &p_base, Ob
 
 	prefix = p_base.prefix;
 	array_length_getter = p_base.array_length_getter;
+	property_filter = p_base.property_filter;
 	property_list = p_base.property_list;
 	object = p_object;
 }
@@ -140,6 +141,16 @@ void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < property_count; i++) {
 		for (const KeyValue<String, Property> &E : property_list) {
 			const Property &property = E.value;
+			if (property_filter) {
+				Callable::CallError ce;
+				Variant args[] = { property.info.name, i };
+				const Variant *argptrs[] = { &args[0], &args[1] };
+
+				bool property_valid = property_filter->call(object, argptrs, 2, ce);
+				if (!property_valid) {
+					continue;
+				}
+			}
 
 			PropertyInfo info = property.info;
 			if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, i) == property.default_value) {
@@ -192,6 +203,9 @@ bool PropertyListHelper::property_get_revert(const String &p_property, Variant &
 void PropertyListHelper::clear() {
 	if (is_initialized()) {
 		memdelete(array_length_getter);
+		if (property_filter) {
+			memdelete(property_filter);
+		}
 
 		for (const KeyValue<String, Property> &E : property_list) {
 			if (E.value.setter) {
