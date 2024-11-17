@@ -36,7 +36,7 @@
 
 void EmbeddedProcess::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE: {
 			_window = get_window();
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -49,7 +49,7 @@ void EmbeddedProcess::_notification(int p_what) {
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_VISIBILITY_CHANGED:
 		case NOTIFICATION_WM_POSITION_CHANGED: {
-			_update_embedded_process();
+			_queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_focus_style_box = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
@@ -66,7 +66,7 @@ void EmbeddedProcess::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
-			_update_embedded_process();
+			_queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_application_has_focus = true;
@@ -77,7 +77,7 @@ void EmbeddedProcess::_notification(int p_what) {
 				// or if the current window is a different popup or secondary window.
 				if (_embedding_completed && _current_process_id != _focused_process_id && _window && _window->has_focus()) {
 					grab_focus();
-					_update_embedded_process();
+					_queue_update_embedded_process();
 				}
 			}
 		} break;
@@ -97,8 +97,10 @@ int EmbeddedProcess::get_embedding_timeout() {
 }
 
 void EmbeddedProcess::set_window_size(Size2i p_window_size) {
-	_window_size = p_window_size;
-	_update_embedded_process();
+	if (_window_size != p_window_size) {
+		_window_size = p_window_size;
+		_queue_update_embedded_process();
+	}
 }
 
 Size2i EmbeddedProcess::get_window_size() {
@@ -106,8 +108,10 @@ Size2i EmbeddedProcess::get_window_size() {
 }
 
 void EmbeddedProcess::set_keep_aspect(bool p_keep_aspect) {
-	_keep_aspect = p_keep_aspect;
-	_update_embedded_process();
+	if (_keep_aspect != p_keep_aspect) {
+		_keep_aspect = p_keep_aspect;
+		_queue_update_embedded_process();
+	}
 }
 
 bool EmbeddedProcess::get_keep_aspect() {
@@ -116,16 +120,11 @@ bool EmbeddedProcess::get_keep_aspect() {
 
 Rect2i EmbeddedProcess::get_global_embedded_window_rect() {
 	Rect2i control_rect = this->get_global_rect();
-	if (control_rect.size.x <= 0 || control_rect.size.y <= 0) {
-		// The control is probably not visible. We will spawn the window anyway
-		// at its "normal" size. It will not be visible regardless
-		// because embed_process should have been called with p_visible set to false.
-		control_rect = Rect2i(control_rect.position, Size2i(MAX(_window_size.x, 1), MAX(_window_size.y, 1)));
-	}
+	control_rect = Rect2i(control_rect.position, Size2i(MAX(control_rect.size.x, 1), MAX(control_rect.size.y, 1)));
 	if (_keep_aspect) {
 		Rect2i desired_rect = control_rect;
 		float ratio = MIN((float)control_rect.size.x / _window_size.x, (float)control_rect.size.y / _window_size.y);
-		desired_rect.size = Size2i(_window_size.x * ratio, _window_size.y * ratio);
+		desired_rect.size = Size2i(MAX(_window_size.x * ratio, 1), MAX(_window_size.y * ratio, 1));
 		desired_rect.position = Size2i(control_rect.position.x + ((control_rect.size.x - desired_rect.size.x) / 2), control_rect.position.y + ((control_rect.size.y - desired_rect.size.y) / 2));
 		return desired_rect;
 	} else {
@@ -210,12 +209,37 @@ void EmbeddedProcess::_try_embed_process() {
 	}
 }
 
-void EmbeddedProcess::_update_embedded_process() {
-	if (!_window || _current_process_id == 0 || !_embedding_completed) {
+bool EmbeddedProcess::_is_embedded_process_updatable() {
+	return _window && _current_process_id != 0 && _embedding_completed;
+}
+
+void EmbeddedProcess::_queue_update_embedded_process() {
+	if (_updated_embedded_process_queued || !_is_embedded_process_updatable()) {
 		return;
 	}
 
-	DisplayServer::get_singleton()->embed_process(_window->get_window_id(), _current_process_id, get_screen_embedded_window_rect(), is_visible_in_tree(), has_focus());
+	_updated_embedded_process_queued = true;
+
+	callable_mp(this, &EmbeddedProcess::_update_embedded_process).call_deferred();
+}
+
+void EmbeddedProcess::_update_embedded_process() {
+	_updated_embedded_process_queued = false;
+
+	if (!_is_embedded_process_updatable()) {
+		return;
+	}
+
+	bool must_grab_focus = false;
+	bool focus = has_focus();
+	if (_last_updated_embedded_process_focused != focus) {
+		if (focus) {
+			must_grab_focus = true;
+		}
+		_last_updated_embedded_process_focused = focus;
+	}
+
+	DisplayServer::get_singleton()->embed_process(_window->get_window_id(), _current_process_id, get_screen_embedded_window_rect(), is_visible_in_tree(), must_grab_focus);
 }
 
 void EmbeddedProcess::_timer_embedding_timeout() {
@@ -251,10 +275,16 @@ void EmbeddedProcess::_check_mouse_over() {
 		return;
 	}
 
+	// Don't grab the focus if mouse over another window.
+	DisplayServer::WindowID window_id_over = DisplayServer::get_singleton()->get_window_at_screen_position(mouse_position);
+	if (window_id_over > 0 && window_id_over != _window->get_window_id()) {
+		return;
+	}
+
 	// When we already have the focus and the user moves the mouse over the embedded process,
 	// we just need to refocus the process.
 	if (focused) {
-		_update_embedded_process();
+		_queue_update_embedded_process();
 	} else {
 		grab_focus();
 		queue_redraw();
