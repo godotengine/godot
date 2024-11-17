@@ -13,14 +13,14 @@ done
 convert icon16.png icon16.tga
 
 # zip for Linux
-zip godot-icons.zip icon*.png
+zip blazium-icons.zip icon*.png
 
 # ico for Windows
 # Not including biggest ones or it blows up in size
-icotool -c -o godot-icon.ico icon{16,24,32,48,64,128,256}.png
+icotool -c -o blazium-icon.ico icon{16,24,32,48,64,128,256}.png
 
 # icns for macOS
 # Only some sizes: https://iconhandbook.co.uk/reference/chart/osx/
-png2icns godot-icon.icns icon{16,32,128,256,512,1024}.png
+png2icns blazium-icon.icns icon{16,32,128,256,512,1024}.png
 
 rm -f icon*.png

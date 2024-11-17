@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2017-2022 Rémi Verschelde <remi@godotengine.org> -->
 <component type="desktop">
-  <id>org.godotengine.Godot</id>
+  <id>app.blazium.Godot</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Godot Engine</name>
   <summary>Multi-platform 2D and 3D game engine with a feature-rich editor</summary>
-  ​<launchable type="desktop-id">org.godotengine.Godot.desktop</launchable>
+  ​<launchable type="desktop-id">app.blazium.Godot.desktop</launchable>
   <description>
     <p>
       Godot is an advanced, feature-packed, multi-platform 2D and 3D game
