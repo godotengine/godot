@@ -327,9 +327,14 @@ Error GodotJavaWrapper::show_file_picker(const String &p_current_directory, cons
 		jstring j_current_directory = env->NewStringUTF(p_current_directory.utf8().get_data());
 		jstring j_filename = env->NewStringUTF(p_filename.utf8().get_data());
 		jint j_mode = p_mode;
-		jobjectArray j_filters = env->NewObjectArray(p_filters.size(), env->FindClass("java/lang/String"), nullptr);
-		for (int i = 0; i < p_filters.size(); ++i) {
-			jstring j_filter = env->NewStringUTF(p_filters[i].get_slice(";", 0).utf8().get_data());
+		Vector<String> filters;
+		for (const String &E : p_filters) {
+			filters.append_array(E.get_slicec(';', 0).split(",")); // Add extensions.
+			filters.append_array(E.get_slicec(';', 2).split(",")); // Add MIME types.
+		}
+		jobjectArray j_filters = env->NewObjectArray(filters.size(), env->FindClass("java/lang/String"), nullptr);
+		for (int i = 0; i < filters.size(); ++i) {
+			jstring j_filter = env->NewStringUTF(filters[i].utf8().get_data());
 			env->SetObjectArrayElement(j_filters, i, j_filter);
 			env->DeleteLocalRef(j_filter);
 		}
