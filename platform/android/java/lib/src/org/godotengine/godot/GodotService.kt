@@ -1,4 +1,4 @@
-package org.godotengine.godot
+package app.blazium.godot
 
 import android.app.Service
 import android.content.Intent

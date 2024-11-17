@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
-import org.godotengine.godot.gl.GLSurfaceView;
-import org.godotengine.godot.gl.GodotRenderer;
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.xr.XRMode;
-import org.godotengine.godot.xr.ovr.OvrConfigChooser;
-import org.godotengine.godot.xr.ovr.OvrContextFactory;
-import org.godotengine.godot.xr.ovr.OvrWindowSurfaceFactory;
-import org.godotengine.godot.xr.regular.RegularConfigChooser;
-import org.godotengine.godot.xr.regular.RegularContextFactory;
-import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
+import app.blazium.godot.gl.GLSurfaceView;
+import app.blazium.godot.gl.GodotRenderer;
+import app.blazium.godot.input.GodotInputHandler;
+import app.blazium.godot.xr.XRMode;
+import app.blazium.godot.xr.ovr.OvrConfigChooser;
+import app.blazium.godot.xr.ovr.OvrContextFactory;
+import app.blazium.godot.xr.ovr.OvrWindowSurfaceFactory;
+import app.blazium.godot.xr.regular.RegularConfigChooser;
+import app.blazium.godot.xr.regular.RegularContextFactory;
+import app.blazium.godot.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;

@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.directory
+package app.blazium.godot.io.directory
 
 import android.content.Context
 import android.util.Log
-import org.godotengine.godot.Godot
-import org.godotengine.godot.io.StorageScope
-import org.godotengine.godot.io.directory.DirectoryAccessHandler.AccessType.ACCESS_RESOURCES
+import app.blazium.godot.Godot
+import app.blazium.godot.io.StorageScope
+import app.blazium.godot.io.directory.DirectoryAccessHandler.AccessType.ACCESS_RESOURCES
 
 /**
  * Handles files and directories access and manipulation for the Android platform

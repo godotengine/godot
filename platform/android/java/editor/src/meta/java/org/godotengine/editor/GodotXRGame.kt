@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.editor
+package app.blazium.editor
 
-import org.godotengine.godot.GodotLib
-import org.godotengine.godot.utils.PermissionsUtil
-import org.godotengine.godot.xr.XRMode
+import app.blazium.godot.GodotLib
+import app.blazium.godot.utils.PermissionsUtil
+import app.blazium.godot.xr.XRMode
 
 /**
  * Provide support for running XR apps / games from the editor window.

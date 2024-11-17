@@ -33,7 +33,7 @@
  */
 @file:JvmName("DeviceUtils")
 
-package org.godotengine.godot.utils
+package app.blazium.godot.utils
 
 import android.os.Build
 

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package app.blazium.godot;
 
-import org.godotengine.godot.error.Error;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.utils.BenchmarkUtils;
+import app.blazium.godot.error.Error;
+import app.blazium.godot.plugin.GodotPlugin;
+import app.blazium.godot.utils.BenchmarkUtils;
 
 import android.app.Activity;
 import android.app.PendingIntent;

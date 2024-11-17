@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.regular;
+package app.blazium.godot.xr.regular;
 
-import org.godotengine.godot.gl.GLSurfaceView;
-import org.godotengine.godot.utils.GLUtils;
+import app.blazium.godot.gl.GLSurfaceView;
+import app.blazium.godot.utils.GLUtils;
 
 import android.util.Log;
 

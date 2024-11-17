@@ -55,11 +55,11 @@ String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
 
 	switch (p_context) {
 		case CONTEXT_EDITOR: {
-			app_id = "org.godotengine.Editor";
+			app_id = "app.blazium.Editor";
 		} break;
 
 		case CONTEXT_PROJECTMAN: {
-			app_id = "org.godotengine.ProjectManager";
+			app_id = "app.blazium.ProjectManager";
 		} break;
 
 		case CONTEXT_ENGINE:
@@ -68,7 +68,7 @@ String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
 			if (config_name.length() != 0) {
 				app_id = config_name;
 			} else {
-				app_id = "org.godotengine.Blazium";
+				app_id = "app.blazium.Blazium";
 			}
 		}
 	}

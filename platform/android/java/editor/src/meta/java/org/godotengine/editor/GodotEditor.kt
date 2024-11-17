@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.editor
+package app.blazium.editor
 
-import org.godotengine.godot.GodotLib
-import org.godotengine.godot.utils.isNativeXRDevice
+import app.blazium.godot.GodotLib
+import app.blazium.godot.utils.isNativeXRDevice
 
 /**
  * Primary window of the Godot Editor.

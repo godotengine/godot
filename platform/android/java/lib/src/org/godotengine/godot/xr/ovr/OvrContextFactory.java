@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
+package app.blazium.godot.xr.ovr;
 
-import org.godotengine.godot.gl.GLSurfaceView;
+import app.blazium.godot.gl.GLSurfaceView;
 
 import android.opengl.EGL14;
 

@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.input;
+package app.blazium.godot.input;
 
-import static org.godotengine.godot.utils.GLUtils.DEBUG;
+import static app.blazium.godot.utils.GLUtils.DEBUG;
 
-import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotRenderView;
+import app.blazium.godot.Godot;
+import app.blazium.godot.GodotLib;
+import app.blazium.godot.GodotRenderView;
 
 import android.content.Context;
 import android.hardware.Sensor;

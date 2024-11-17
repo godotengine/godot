@@ -31,7 +31,7 @@
 
         <!-- Records the version of the Blazium editor used for building -->
         <meta-data
-            android:name="org.godotengine.editor.version"
+            android:name="app.blazium.editor.version"
             android:value="${godotEditorVersion}" />
 
         <activity

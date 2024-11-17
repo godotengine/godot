@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.plugin;
+package app.blazium.godot.plugin;
 
-import org.godotengine.godot.BuildConfig;
-import org.godotengine.godot.Godot;
+import app.blazium.godot.BuildConfig;
+import app.blazium.godot.Godot;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -61,10 +61,10 @@ import javax.microedition.khronos.opengles.GL10;
  * <p>
  * A Godot Android plugin is an Android library with the following requirements:
  * <p>
- * - The plugin must have a dependency on the Godot Android library: `implementation "org.godotengine:godot:<godotLibVersion>"`
+ * - The plugin must have a dependency on the Godot Android library: `implementation "app.blazium:godot:<godotLibVersion>"`
  * <p>
  * - The plugin must include a <meta-data> tag in its Android manifest with the following format:
- * <meta-data android:name="org.godotengine.plugin.v2.[PluginName]" android:value="[plugin.init.ClassFullName]" />
+ * <meta-data android:name="app.blazium.plugin.v2.[PluginName]" android:value="[plugin.init.ClassFullName]" />
  * <p>
  * Where:
  * <p>
@@ -167,7 +167,7 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Invoked once during the initialization process after creation of the
-	 * {@link org.godotengine.godot.GodotRenderView} view.
+	 * {@link app.blazium.godot.GodotRenderView} view.
 	 * <p>
 	 * The plugin can return a non-null {@link View} layout which will be added to the Godot view
 	 * hierarchy.

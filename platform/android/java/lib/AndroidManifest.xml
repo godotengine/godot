@@ -7,7 +7,7 @@
 
         <!-- Records the version of the Godot library -->
         <meta-data
-            android:name="org.godotengine.library.version"
+            android:name="app.blazium.library.version"
             android:value="${godotLibraryVersion}" />
 
         <service android:name=".GodotDownloaderService" />

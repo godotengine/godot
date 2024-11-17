@@ -74,11 +74,11 @@ android {
     buildToolsVersion versions.buildTools
     ndkVersion versions.ndkVersion
 
-    namespace = "org.godotengine.editor"
+    namespace = "app.blazium.editor"
 
     defaultConfig {
         // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
-        applicationId "org.godotengine.editor.v4"
+        applicationId "app.blazium.editor.v4"
         versionCode generateVersionCode()
         versionName generateVersionName()
         minSdkVersion versions.minSdk
