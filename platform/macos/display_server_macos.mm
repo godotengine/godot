@@ -1200,6 +1200,10 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 	return OK;
 }
 
+void DisplayServerMacOS::beep() const {
+	NSBeep();
+}
+
 Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 

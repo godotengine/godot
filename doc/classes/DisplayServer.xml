@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="beep" qualifiers="const">
+			<return type="void" />
+			<description>
+				Plays the beep sound from the operative system, if possible. Because it comes from the OS, the beep sound will be audible even if the application is muted. It may also be disabled for the entire OS by the user.
+				[b]Note:[/b] This method is implemented on macOS, Linux (X11/Wayland), and Windows.
+			</description>
+		</method>
 		<method name="clipboard_get" qualifiers="const">
 			<return type="String" />
 			<description>

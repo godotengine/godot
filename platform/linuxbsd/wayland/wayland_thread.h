@@ -69,6 +69,7 @@
 #include "wayland/protocol/xdg_decoration.gen.h"
 #include "wayland/protocol/xdg_foreign.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
+#include "wayland/protocol/xdg_system_bell.gen.h"
 
 #ifdef LIBDECOR_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -161,6 +162,9 @@ public:
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
+
+		struct xdg_system_bell_v1 *xdg_system_bell = nullptr;
+		uint32_t xdg_system_bell_name = 0;
 
 		struct xdg_activation_v1 *xdg_activation = nullptr;
 		uint32_t xdg_activation_name = 0;
@@ -925,6 +929,8 @@ public:
 	void push_message(Ref<Message> message);
 	bool has_message();
 	Ref<Message> pop_message();
+
+	void beep() const;
 
 	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
