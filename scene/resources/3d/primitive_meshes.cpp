@@ -237,8 +237,10 @@ void PrimitiveMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mesh_arrays"), &PrimitiveMesh::get_mesh_arrays);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &PrimitiveMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &PrimitiveMesh::get_custom_aabb);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &PrimitiveMesh::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &PrimitiveMesh::get_flip_faces);
@@ -252,7 +254,9 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_update"), &PrimitiveMesh::request_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "add_uv2"), "set_add_uv2", "get_add_uv2");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv2_padding", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"), "set_uv2_padding", "get_uv2_padding");
@@ -278,15 +282,19 @@ Array PrimitiveMesh::get_mesh_arrays() const {
 	return surface_get_arrays(0);
 }
 
+#ifndef DISABLE_DEPRECATED
 void PrimitiveMesh::set_custom_aabb(const AABB &p_custom) {
 	custom_aabb = p_custom;
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
+	WARN_DEPRECATED_MSG("Use GeometryInstance3D.set_custom_aabb instead.");
 	emit_changed();
 }
 
 AABB PrimitiveMesh::get_custom_aabb() const {
+	WARN_DEPRECATED_MSG("Use GeometryInstance3D.set_custom_aabb instead.");
 	return custom_aabb;
 }
+#endif
 
 void PrimitiveMesh::set_flip_faces(bool p_enable) {
 	flip_faces = p_enable;

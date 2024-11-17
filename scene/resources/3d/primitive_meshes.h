@@ -48,7 +48,9 @@ class PrimitiveMesh : public Mesh {
 private:
 	RID mesh;
 	mutable AABB aabb;
+#ifndef DISABLE_DEPRECATED
 	AABB custom_aabb;
+#endif
 
 	mutable int array_len = 0;
 	mutable int index_array_len = 0;
@@ -103,8 +105,10 @@ public:
 
 	Array get_mesh_arrays() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_custom_aabb(const AABB &p_custom);
 	AABB get_custom_aabb() const;
+#endif
 
 	void set_flip_faces(bool p_enable);
 	bool get_flip_faces() const;

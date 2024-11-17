@@ -321,7 +321,9 @@ private:
 	AABB aabb;
 	BlendShapeMode blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
 	Vector<StringName> blend_shapes;
+#ifndef DISABLE_DEPRECATED
 	AABB custom_aabb;
+#endif
 
 	_FORCE_INLINE_ void _create_if_empty() const;
 	void _recompute_aabb();
@@ -364,8 +366,6 @@ public:
 
 	void clear_surfaces();
 
-	void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
-
 	int surface_get_array_len(int p_idx) const override;
 	int surface_get_array_index_len(int p_idx) const override;
 	BitField<ArrayFormat> surface_get_format(int p_idx) const override;
@@ -377,9 +377,10 @@ public:
 	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);
 	String surface_get_name(int p_idx) const;
-
+#ifndef DISABLE_DEPRECATED
 	void set_custom_aabb(const AABB &p_custom);
 	AABB get_custom_aabb() const;
+#endif
 
 	AABB get_aabb() const override;
 	virtual RID get_rid() const override;

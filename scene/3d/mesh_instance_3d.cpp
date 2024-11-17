@@ -406,7 +406,12 @@ void MeshInstance3D::_mesh_changed() {
 			RS::get_singleton()->instance_set_surface_override_material(get_instance(), surface_index, surface_override_materials[surface_index]->get_rid());
 		}
 	}
-
+#ifndef DISABLE_DEPRECATED
+	// Workaround for also setting the GeometryInstance3D.custom_aabb when setting the mesh resource custom_aabb
+	if (has_method("set_custom_aabb") && mesh->has_method("get_custom_aabb")) {
+		call("set_custom_aabb", mesh->call("get_custom_aabb"));
+	}
+#endif
 	update_gizmos();
 }
 

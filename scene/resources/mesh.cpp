@@ -1731,7 +1731,9 @@ void ArrayMesh::reset_state() {
 
 	aabb = AABB();
 	blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
+#ifndef DISABLE_DEPRECATED
 	custom_aabb = AABB();
+#endif
 }
 
 void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -1977,13 +1979,6 @@ void ArrayMesh::surface_update_skin_region(int p_surface, int p_offset, const Ve
 	emit_changed();
 }
 
-void ArrayMesh::surface_set_custom_aabb(int p_idx, const AABB &p_aabb) {
-	ERR_FAIL_INDEX(p_idx, surfaces.size());
-	surfaces.write[p_idx].aabb = p_aabb;
-	// set custom aabb too?
-	emit_changed();
-}
-
 Ref<Material> ArrayMesh::surface_get_material(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), Ref<Material>());
 	return surfaces[p_idx].material;
@@ -2007,16 +2002,20 @@ void ArrayMesh::clear_surfaces() {
 	aabb = AABB();
 }
 
+#ifndef DISABLE_DEPRECATED
 void ArrayMesh::set_custom_aabb(const AABB &p_custom) {
 	_create_if_empty();
 	custom_aabb = p_custom;
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
+	WARN_DEPRECATED_MSG("Use GeometryInstance3D.set_custom_aabb instead.");
 	emit_changed();
 }
 
 AABB ArrayMesh::get_custom_aabb() const {
+	WARN_DEPRECATED_MSG("Use GeometryInstance3D.get_custom_aabb instead.");
 	return custom_aabb;
 }
+#endif
 
 void ArrayMesh::regen_normal_maps() {
 	if (surfaces.size() == 0) {
@@ -2295,9 +2294,10 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
-
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &ArrayMesh::get_custom_aabb);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_shadow_mesh", "mesh"), &ArrayMesh::set_shadow_mesh);
 	ClassDB::bind_method(D_METHOD("get_shadow_mesh"), &ArrayMesh::get_shadow_mesh);
@@ -2311,7 +2311,9 @@ void ArrayMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");
 }
 
