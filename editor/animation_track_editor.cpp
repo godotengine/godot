@@ -2191,7 +2191,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = animation->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color);
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
 					}
 				}
 			}
@@ -3647,7 +3647,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = editor->get_current_animation()->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color);
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
 					}
 				}
 			}
@@ -8307,9 +8307,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
-			Color linecolor = color;
-			linecolor.a = 0.2;
 
 			// SECTION PREVIEW //
 
@@ -8368,31 +8365,21 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 					draw_key(name, scale, int(offset), is_selected, limit, limit_end);
 
-					const int font_size = 16;
+					const int font_size = 12 * EDSCALE;
 					Size2 string_size = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size);
 					if (int(offset) <= limit_end && int(offset) >= limit && should_show_all_marker_names) {
 						float bottom = get_size().height + string_size.y - font->get_descent(font_size);
 						float extrusion = MAX(0, offset + string_size.x - limit_end); // How much the string would extrude outside limit_end if unadjusted.
 						Color marker_color = animation->get_marker_color(name);
-						draw_string(font, Point2(offset - extrusion, bottom), name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, marker_color);
-						draw_string_outline(font, Point2(offset - extrusion, bottom), name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, 1, color);
+						float margin = 4 * EDSCALE;
+						Point2 pos = Point2(offset - extrusion + margin, bottom + margin);
+						draw_string(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, marker_color);
+						draw_string_outline(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, 1, color);
 					}
 				}
 			}
 
 			draw_fg(limit, get_size().width - timeline->get_buttons_width());
-
-			// BUTTONS //
-
-			{
-				int ofs = get_size().width - timeline->get_buttons_width();
-
-				draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
-
-				ofs += hsep;
-			}
-
-			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER:
