@@ -111,6 +111,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@private"), AnnotationInfo::SCRIPT, &GDScriptParser::private_annotation);
 		register_annotation(MethodInfo("@protected"), AnnotationInfo::SCRIPT, &GDScriptParser::protected_annotation);
+		register_annotation(MethodInfo("@public"), AnnotationInfo::SCRIPT, &GDScriptParser::public_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 
@@ -636,7 +637,7 @@ void GDScriptParser::parse_program() {
 					annotation_stack.push_back(annotation);
 				} else if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
 					PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@private") || annotation->name == SNAME("@protected")) {
+					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@private") || annotation->name == SNAME("@protected") || annotation->name == SNAME("@public")) {
 						// Some annotations need to be resolved in the parser.
 						annotation->apply(this, head, nullptr); // `head->outer == nullptr`.
 					} else {
@@ -4201,6 +4202,19 @@ bool GDScriptParser::protected_annotation(AnnotationNode *p_annotation, Node *p_
 #endif // DEBUG_ENABLED
 	_default_access_level_set = true;
 	default_access_level = AccessLevel::PROTECTED;
+	next_access_level = default_access_level;
+	return true;
+}
+
+bool GDScriptParser::public_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+#ifdef DEBUG_ENABLED
+	if (_default_access_level_set) {
+		push_error(R"(Default access level annotation can only be used once.)", p_annotation);
+		return false;
+	}
+#endif // DEBUG_ENABLED
+	_default_access_level_set = true;
+	default_access_level = AccessLevel::PUBLIC;
 	next_access_level = default_access_level;
 	return true;
 }

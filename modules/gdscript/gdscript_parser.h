@@ -1518,6 +1518,7 @@ private:
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool private_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool protected_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool public_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
