@@ -676,6 +676,12 @@ void GDScriptParser::parse_program() {
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	if (_default_access_level_set == false) {
+		push_warning(head, GDScriptWarning::IMPLICIT_DEFAULT_ACCESS_LEVEL);
+	}
+#endif
+
 	while (can_have_class_or_extends) {
 		// Order here doesn't matter, but there should be only one of each at most.
 		switch (current.type) {
