@@ -11089,7 +11089,7 @@ msgstr "导航代理"
 msgid "Is Skeleton Human"
 msgstr "骨架是否为人形"
 
-msgid "Is Positiobn_by Hip Bone"
+msgid "Is Position by Hip Bone"
 msgstr "通过臀部计算位置"
 
 

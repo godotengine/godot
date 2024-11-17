@@ -133,6 +133,7 @@ struct CharacterRootMotion
                 return Vector3();
             }
             Quaternion q = Quaternion(Vector3(0,0,1), Vector3(forward.x,0,forward.z));
+			q.normalize();
             return q.xform(Vector3(velocity.x,0,velocity.z ));
         }
         if(forward.x + forward.y + forward.z == 0)

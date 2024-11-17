@@ -701,7 +701,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	if(p_path.size() == 0) {
 		return;
 	}
-	file_list_search_box->clear();
+	//file_list_search_box->clear();
 	if (p_path == "Favorites") {
 		current_path = p_path;
 	} else {

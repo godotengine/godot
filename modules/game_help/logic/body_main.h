@@ -593,11 +593,11 @@ public:
     bool get_editor_is_skeleton_human() {
         return is_skeleton_human;
     }
-    void set_is_positiobn_by_hip_bone(bool p_is_positiobn_by_hip_bone) {
-        is_positiobn_by_hip_bone = p_is_positiobn_by_hip_bone;
+    void set_is_position_by_hip_bone(bool p_is_position_by_hip_bone) {
+        is_position_by_hip_bone = p_is_position_by_hip_bone;
     }
-    bool get_is_positiobn_by_hip_bone() {
-        return is_positiobn_by_hip_bone;
+    bool get_is_position_by_hip_bone() {
+        return is_position_by_hip_bone;
     }
 	Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path, bool is_skeleton_human);
     DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
@@ -706,7 +706,7 @@ protected:
     String editor_form_mesh_file_path;
     bool is_skeleton_human = false;
     // 通過臀部計算位置
-    bool is_positiobn_by_hip_bone = true;
+    bool is_position_by_hip_bone = true;
 
 
     bool is_skill_stop = false;

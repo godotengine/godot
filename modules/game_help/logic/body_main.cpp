@@ -462,8 +462,8 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
 
 
-    ClassDB::bind_method(D_METHOD("set_is_positiobn_by_hip_bone", "is_positiobn_by_hip_bone"), &CharacterBodyMain::set_is_positiobn_by_hip_bone);
-    ClassDB::bind_method(D_METHOD("get_is_positiobn_by_hip_bone"), &CharacterBodyMain::get_is_positiobn_by_hip_bone);
+    ClassDB::bind_method(D_METHOD("set_is_position_by_hip_bone", "is_positiobn_by_hip_bone"), &CharacterBodyMain::set_is_position_by_hip_bone);
+    ClassDB::bind_method(D_METHOD("get_is_position_by_hip_bone"), &CharacterBodyMain::get_is_position_by_hip_bone);
 
 
 
@@ -471,7 +471,7 @@ void CharacterBodyMain::_bind_methods()
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human"), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_is_positiobn_by_hip_bone"), "set_is_positiobn_by_hip_bone", "get_is_positiobn_by_hip_bone");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_position_by_hip_bone"), "set_is_position_by_hip_bone", "get_is_position_by_hip_bone");
     ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
 
     
@@ -991,7 +991,8 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 	Dictionary bone_map;
 	Vector<String> bone_names;
 	Ref<HumanBoneConfig> animation_human_config;
-	if (skeleton == nullptr) {
+	//if (skeleton == nullptr)
+	{
 		is_node_skeleton = true;
 
 		HashSet<String> node_name;
@@ -1010,16 +1011,31 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 					break;
 				}
 			}
-		}		
+		}
+		bone_names = bone_map_skeleton->get_bone_names();
+
+		bone_map = bone_map_skeleton->get_human_bone_mapping();
+		bone_map_skeleton->set_human_bone_mapping(bone_map);
 	}
-	else {
-		bone_map_skeleton = skeleton;
+	//else
+
+	// 有些动画的骨架可能存在多份,选择骨头最多的当做身体
+	if(skeleton != nullptr && skeleton->get_bone_count() > bone_map.size())
+	{
+		auto new_bone_map = skeleton->get_human_bone_mapping();
+		if (new_bone_map.size() > bone_map.size()) {
+			bone_map = new_bone_map;
+			bone_names = skeleton->get_bone_names();
+
+			skeleton->set_human_bone_mapping(bone_map);
+			bone_map_skeleton = skeleton;
+		}
+	}
+	if (bone_map.size() < 2) {
+			print_line(L"CharacterBodyMain: 动画的骨架不支持:" + p_file_path);
+		return;
 	}
 
-	bone_names = bone_map_skeleton->get_bone_names();
-
-	bone_map = bone_map_skeleton->get_human_bone_mapping();
-	bone_map_skeleton->set_human_bone_mapping(bone_map);
 
 
 

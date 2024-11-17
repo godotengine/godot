@@ -1903,7 +1903,8 @@ hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_
 	Vector2i size = _get_size(fd, p_size);
 
 	FontForSizeAdvanced *ffsd = nullptr;
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), nullptr);
+	bool p_silent = false;
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd, p_silent), nullptr);
 
 	return ffsd->hb_handle;
 }

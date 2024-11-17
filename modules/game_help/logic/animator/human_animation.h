@@ -16,6 +16,7 @@ namespace HumanAnim
 
         HashMap<StringName, Vector3> bone_lookat;
 		HashMap<StringName, Vector3> root_position;
+		HashMap<StringName, Vector3> root_lookat;
 
 
 
@@ -117,9 +118,9 @@ namespace HumanAnim
                 name = p_bone.substr(5);
             }
 			root_global_rotation_add[name] = q;
-            Vector3 loc;
-            p_animation->try_position_track_interpolate(track_index, time, &loc);
-			bone_lookat[name] = loc;
+   //         Vector3 loc;
+   //         p_animation->try_position_track_interpolate(track_index, time, &loc);
+			//root_lookat[name] = loc;
         }
 
         void set_root_position_add(Ref<Animation> p_animation, StringName p_bone, int track_index ,double time,double delta) {
@@ -155,9 +156,9 @@ namespace HumanAnim
                 name = p_bone.substr(5);
             }
 			root_global_move_add[name] = q;
-            Vector3 loc;
-            p_animation->try_position_track_interpolate(track_index, time, &loc);
-			root_position[name] = loc;
+   //         Vector3 loc;
+   //         p_animation->try_position_track_interpolate(track_index, time, &loc);
+			//root_position[name] = loc;
             
         }
 
@@ -358,6 +359,7 @@ namespace HumanAnim
             Vector<HashMap<StringName, Vector3>> animation_root_lookat;
             animation_lookat.resize(key_count);
             animation_root_position.resize(key_count);
+            animation_root_lookat.resize(key_count);
 		    Vector<Animation::Track*> tracks = p_animation->get_tracks();
 
             // 获取非人型骨骼的轨迹
@@ -459,6 +461,7 @@ namespace HumanAnim
                 // 存储动画
                 animation_lookat.set(i,skeleton_config.bone_lookat);
                 animation_root_position.set(i,skeleton_config.root_position);
+                animation_root_lookat.set(i,skeleton_config.root_lookat);
 
             }
 
@@ -497,6 +500,22 @@ namespace HumanAnim
                         Animation::TKey<Vector3> key;
                         key.time = time;
                         key.value = animation_root_position[i][it.key];
+                        track->positions.set(i,key);
+                    }
+                }
+                // 根节点的朝向
+                auto& root_look_keys = animation_root_lookat[0];
+                for(auto& it : root_look_keys) {
+                    int track_index = out_anim->add_track(Animation::TYPE_POSITION_3D);
+                    Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
+                    track->path = String("hm.v.") + it.key;
+                    track->interpolation = Animation::INTERPOLATION_LINEAR;
+                    track->positions.resize(animation_root_position.size());
+                    for(int i = 0;i < animation_root_lookat.size();i++) {
+                        double time = double(i) / 100.0;
+                        Animation::TKey<Vector3> key;
+                        key.time = time;
+                        key.value = animation_root_lookat[i][it.key];
                         track->positions.set(i,key);
                     }
                 }
@@ -694,6 +713,15 @@ namespace HumanAnim
 			p_skeleton->force_update_all_bone_transforms(false);
 
             Vector<StringName> root_bone = p_config.root_bone;
+			Transform3D local_trans;
+			for (auto& it : root_bone) {
+				BonePose& pose = p_config.virtual_pose[it];
+				Transform3D& trans = p_skeleton_config.real_pose[it];
+				trans = p_skeleton->get_bone_global_pose(pose.bone_index);
+
+				local_trans.basis = Basis(pose.rotation);
+				build_skeleton_local_pose(p_skeleton, p_config, pose, local_trans,p_skeleton_config);
+			}
             int spine_bone = -1;
             bool is_hip = false;
             if(position_by_hip) {
@@ -705,33 +733,27 @@ namespace HumanAnim
                 }
                 
             }
-			Transform3D local_trans;
 			for (auto& it : root_bone) {
-				BonePose& pose = p_config.virtual_pose[it];
-				Transform3D& trans = p_skeleton_config.real_pose[it];
-				trans = p_skeleton->get_bone_global_pose(pose.bone_index);
-
-				local_trans.basis = Basis(pose.rotation);
-				build_skeleton_local_pose(p_skeleton, p_config, pose, local_trans,p_skeleton_config);
-			}
-			for (auto& it : root_bone) {
-				Transform3D& trans = p_skeleton_config.real_pose[it];
 				Vector3 bone_foreard = Vector3(0, 0, 1);
                 BonePose* pose = nullptr;
-                Transform3D local_trans;
                 if(is_hip) {
-                    pose = &p_config.virtual_pose[StringName("Hips")];
-                    local_trans.basis = Basis(pose->rotation);
-                    p_skeleton_config.bone_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
-                    p_skeleton_config.root_position[it] = (trans.origin - pose->position);
+                    StringName hip_bone = StringName("Hips");
+                    StringName root_bone = StringName("Root");
+				    Transform3D& trans = p_skeleton_config.real_pose[hip_bone];
+                    pose = &p_config.virtual_pose[hip_bone];
+                    local_trans.basis = trans.basis;
+                    p_skeleton_config.root_lookat[root_bone] = local_trans.basis.xform(bone_foreard).normalized();
+                    p_skeleton_config.root_position[root_bone] = (trans.origin - pose->position - p_config.virtual_pose[root_bone].position);
 
                 }
                 else {
+				    Transform3D& trans = p_skeleton_config.real_pose[it];
                     pose = &p_config.virtual_pose[it];
-                    local_trans.basis = Basis(pose->rotation);
-                    p_skeleton_config.bone_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
+					local_trans.basis = trans.basis;
+                    p_skeleton_config.root_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
                     p_skeleton_config.root_position[it] = (trans.origin - pose->position);
                 }
+                // 臀部的朝向计算到全身的旋转
 				build_skeleton_global_lookat(p_config, *pose,local_trans, p_skeleton_config);
 			}
 		}
