@@ -48,6 +48,7 @@ void EditorRunNative::_notification(int p_what) {
 			if (changed) {
 				PopupMenu *popup = remote_debug->get_popup();
 				popup->clear();
+				int device_shortcut_id = 1;
 				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 					Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 					Ref<EditorExportPlatform> eep = preset->get_platform();
@@ -70,15 +71,20 @@ void EditorRunNative::_notification(int p_what) {
 							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * platform_idx + j);
 							popup->set_item_tooltip(-1, eep->get_option_tooltip(j));
 							popup->set_item_indent(-1, 2);
+							if (device_shortcut_id <= 4) {
+								// Assign shortcuts for the first 4 devices added in the list.
+								popup->set_item_shortcut(-1, ED_GET_SHORTCUT(vformat("remote_deploy/deploy_to_device_%d", device_shortcut_id)), true);
+								device_shortcut_id += 1;
+							}
 						}
 					}
 				}
 				if (popup->get_item_count() == 0) {
 					remote_debug->set_disabled(true);
-					remote_debug->set_tooltip_text(TTR("No Remote Debug export presets configured."));
+					remote_debug->set_tooltip_text(TTR("No Remote Deploy export presets configured."));
 				} else {
 					remote_debug->set_disabled(false);
-					remote_debug->set_tooltip_text(TTR("Remote Debug"));
+					remote_debug->set_tooltip_text(TTR("Remote Deploy"));
 				}
 
 				first = false;
@@ -129,8 +135,8 @@ Error EditorRunNative::start_run_native(int p_id) {
 		bool is_arch_enabled = preset->get(preset_arch);
 
 		if (!is_arch_enabled) {
-			String warning_message = vformat(TTR("Warning: The CPU architecture '%s' is not active in your export preset.\n\n"), Variant(architecture));
-			warning_message += TTR("Run 'Remote Debug' anyway?");
+			String warning_message = vformat(TTR("Warning: The CPU architecture \"%s\" is not active in your export preset.\n\n"), Variant(architecture));
+			warning_message += TTR("Run \"Remote Deploy\" anyway?");
 
 			run_native_confirm->set_text(warning_message);
 			run_native_confirm->popup_centered();
@@ -185,11 +191,17 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 }
 
 EditorRunNative::EditorRunNative() {
+	ED_SHORTCUT("remote_deploy/deploy_to_device_1", TTR("Deploy to First Device in List"), KeyModifierMask::SHIFT | Key::F5);
+	ED_SHORTCUT_OVERRIDE("remote_deploy/deploy_to_device_1", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
+	ED_SHORTCUT("remote_deploy/deploy_to_device_2", TTR("Deploy to Second Device in List"));
+	ED_SHORTCUT("remote_deploy/deploy_to_device_3", TTR("Deploy to Third Device in List"));
+	ED_SHORTCUT("remote_deploy/deploy_to_device_4", TTR("Deploy to Fourth Device in List"));
+
 	remote_debug = memnew(MenuButton);
 	remote_debug->set_flat(false);
 	remote_debug->set_theme_type_variation("RunBarButton");
 	remote_debug->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunNative::start_run_native));
-	remote_debug->set_tooltip_text(TTR("Remote Debug"));
+	remote_debug->set_tooltip_text(TTR("Remote Deploy"));
 	remote_debug->set_disabled(true);
 
 	add_child(remote_debug);
