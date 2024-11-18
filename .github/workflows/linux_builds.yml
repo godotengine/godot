@@ -17,7 +17,8 @@ concurrency:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    # Stay one LTS before latest to increase portability of Linux artifacts.
+    runs-on: ubuntu-22.04
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -100,7 +101,7 @@ jobs:
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu focal main"
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu ${{ matrix.os == 'ubuntu-20.04' && 'focal' || 'jammy' }} main"
           sudo apt-get install -qq mesa-vulkan-drivers
 
       # TODO: Figure out somehow how to embed this one.
@@ -129,8 +130,8 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.6
-          scons-version: 3.1.2
+          python-version: 3.8
+          scons-version: 4.0
 
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master

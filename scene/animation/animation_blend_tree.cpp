@@ -93,7 +93,9 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::process(const AnimationMixer
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	if (p_playback_info.seeked) {
-		pi.delta = get_node_time_info().position - p_playback_info.time;
+		if (p_playback_info.is_external_seeking) {
+			pi.delta = get_node_time_info().position - p_playback_info.time;
+		}
 	} else {
 		pi.time = get_node_time_info().position + (backward ? -p_playback_info.delta : p_playback_info.delta);
 	}
@@ -140,6 +142,12 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 
 	// 1. Progress for AnimationNode.
 	bool will_end = Animation::is_greater_or_equal_approx(cur_time + cur_delta, cur_len);
+	bool is_started = p_seek && !p_is_external_seeking && Math::is_zero_approx(cur_time);
+
+	// 1. Progress for AnimationNode.
+	if (is_started && advance_on_start) {
+		cur_time = cur_delta;
+	}
 	if (cur_loop_mode != Animation::LOOP_NONE) {
 		if (cur_loop_mode == Animation::LOOP_LINEAR) {
 			if (!Math::is_zero_approx(cur_len)) {
@@ -232,7 +240,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		// We should use call_deferred since the track keys are still being processed.
 		if (process_state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
-			if (p_seek && !p_is_external_seeking && Math::is_zero_approx(cur_playback_time)) {
+			if (is_started) {
 				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_started), animation);
 			}
 			// Finished.
@@ -280,6 +288,14 @@ void AnimationNodeAnimation::set_backward(bool p_backward) {
 
 bool AnimationNodeAnimation::is_backward() const {
 	return backward;
+}
+
+void AnimationNodeAnimation::set_advance_on_start(bool p_advance_on_start) {
+	advance_on_start = p_advance_on_start;
+}
+
+bool AnimationNodeAnimation::is_advance_on_start() const {
+	return advance_on_start;
 }
 
 void AnimationNodeAnimation::set_use_custom_timeline(bool p_use_custom_timeline) {
@@ -331,6 +347,9 @@ void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_play_mode", "mode"), &AnimationNodeAnimation::set_play_mode);
 	ClassDB::bind_method(D_METHOD("get_play_mode"), &AnimationNodeAnimation::get_play_mode);
 
+	ClassDB::bind_method(D_METHOD("set_advance_on_start", "advance_on_start"), &AnimationNodeAnimation::set_advance_on_start);
+	ClassDB::bind_method(D_METHOD("is_advance_on_start"), &AnimationNodeAnimation::is_advance_on_start);
+
 	ClassDB::bind_method(D_METHOD("set_use_custom_timeline", "use_custom_timeline"), &AnimationNodeAnimation::set_use_custom_timeline);
 	ClassDB::bind_method(D_METHOD("is_using_custom_timeline"), &AnimationNodeAnimation::is_using_custom_timeline);
 
@@ -348,6 +367,7 @@ void AnimationNodeAnimation::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "advance_on_start"), "set_advance_on_start", "is_advance_on_start");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_custom_timeline"), "set_use_custom_timeline", "is_using_custom_timeline");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeline_length", PROPERTY_HINT_RANGE, "0.001,60,0.001,or_greater,or_less,hide_slider,suffix:s"), "set_timeline_length", "get_timeline_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch_time_scale"), "set_stretch_time_scale", "is_stretching_time_scale");

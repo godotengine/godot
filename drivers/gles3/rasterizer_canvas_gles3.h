@@ -273,14 +273,12 @@ public:
 
 		RID material;
 		GLES3::CanvasMaterialData *material_data = nullptr;
-		CanvasShaderGLES3::ShaderVariant shader_variant = CanvasShaderGLES3::MODE_QUAD;
 		uint64_t vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_COLOR | RS::ARRAY_FORMAT_TEX_UV;
+		uint64_t specialization = 0;
 
 		const Item::Command *command = nullptr;
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
 		uint32_t primitive_points = 0;
-
-		bool lights_disabled = false;
 	};
 
 	// DataBuffer contains our per-frame data. I.e. the resources that are updated each frame.

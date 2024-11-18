@@ -151,7 +151,7 @@ void EditorHelpSearch::_update_results() {
 			search_flags |= SEARCH_SHOW_HIERARCHY;
 		}
 
-		search = Ref<Runner>(memnew(Runner(results_tree, results_tree, &tree_cache, term, search_flags)));
+		search.instantiate(results_tree, results_tree, &tree_cache, term, search_flags);
 
 		// Clear old search flags to force rebuild on short term.
 		old_search_flags = 0;
@@ -162,7 +162,7 @@ void EditorHelpSearch::_update_results() {
 		hierarchy_button->set_disabled(true);
 
 		// Always show hierarchy for short searches.
-		search = Ref<Runner>(memnew(Runner(results_tree, results_tree, &tree_cache, term, search_flags | SEARCH_SHOW_HIERARCHY)));
+		search.instantiate(results_tree, results_tree, &tree_cache, term, search_flags | SEARCH_SHOW_HIERARCHY);
 
 		old_search_flags = search_flags;
 		set_process(true);
@@ -1166,7 +1166,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (p_matching_keyword.is_empty()) {
 		item->set_text(0, p_doc->name);
 	} else {
-		item->set_text(0, p_doc->name + "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword)));
+		item->set_text(0, p_doc->name + "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword));
 	}
 
 	if (!term.is_empty()) {
@@ -1272,7 +1272,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_class_name + "." + p_text;
 	}
 	if (!p_matching_keyword.is_empty()) {
-		text += "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword));
+		text += "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword);
 	}
 	item->set_text(0, text);
 

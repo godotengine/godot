@@ -1,17 +1,16 @@
 /* clang-format off */
 #[modes]
 
-mode_quad =
-mode_ninepatch = #define USE_NINEPATCH
-mode_primitive = #define USE_PRIMITIVE
-mode_attributes = #define USE_ATTRIBUTES
-mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
+mode_default =
 
 #[specializations]
 
 DISABLE_LIGHTING = true
 USE_RGBA_SHADOWS = false
-SINGLE_INSTANCE = false
+USE_NINEPATCH = false
+USE_PRIMITIVE = false
+USE_ATTRIBUTES = false
+USE_INSTANCING = false
 
 #[vertex]
 

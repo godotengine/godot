@@ -505,7 +505,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 	if (filter_names.is_empty()) {
 		filter_exts.push_back(String("*.*").utf16());
-		filter_names.push_back(RTR("All Files").utf16());
+		filter_names.push_back((RTR("All Files") + " (*)").utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
@@ -4792,9 +4792,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
-			if (receiving_window_id == INVALID_WINDOW_ID) {
-				receiving_window_id = window_id;
+			DisplayServer::WindowID receiving_window_id = window_id;
+			if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+				receiving_window_id = _get_focused_window_or_popup();
+				if (receiving_window_id == INVALID_WINDOW_ID) {
+					receiving_window_id = window_id;
+				}
 			}
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();

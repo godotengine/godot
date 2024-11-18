@@ -3012,5 +3012,5 @@ GraphEdit::GraphEdit() {
 
 	set_clip_contents(true);
 
-	arranger = Ref<GraphEditArranger>(memnew(GraphEditArranger(this)));
+	arranger.instantiate(this);
 }

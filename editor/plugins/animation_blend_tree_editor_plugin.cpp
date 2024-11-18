@@ -45,6 +45,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
@@ -1265,7 +1266,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	open_file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	open_file->connect("file_selected", callable_mp(this, &AnimationNodeBlendTreeEditor::_file_opened));
 
-	animation_node_inspector_plugin = Ref<EditorInspectorPluginAnimationNodeAnimation>(memnew(EditorInspectorPluginAnimationNodeAnimation));
+	animation_node_inspector_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(animation_node_inspector_plugin);
 }
 
@@ -1397,32 +1398,30 @@ bool EditorInspectorPluginAnimationNodeAnimation::parse_property(Object *p_objec
 }
 
 AnimationNodeAnimationEditorDialog::AnimationNodeAnimationEditorDialog() {
-	set_title(TTR("Select Markers..."));
-	VBoxContainer *vbox = memnew(VBoxContainer);
-	add_child(vbox);
-	vbox->set_offsets_preset(Control::PRESET_FULL_RECT);
+	set_title(TTR("Select Markers"));
 
-	HBoxContainer *container_start = memnew(HBoxContainer);
-	vbox->add_child(container_start);
-	Label *label_start = memnew(Label);
-	container_start->add_child(label_start);
+	GridContainer *grid = memnew(GridContainer);
+	grid->set_columns(2);
+	grid->set_offsets_preset(Control::PRESET_FULL_RECT);
+	add_child(grid);
+
+	Label *label_start = memnew(Label(TTR("Start Marker")));
+	grid->add_child(label_start);
 	label_start->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_start->set_stretch_ratio(1);
-	label_start->set_text(TTR("Start Marker"));
 	select_start = memnew(OptionButton);
-	container_start->add_child(select_start);
+	select_start->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	grid->add_child(select_start);
 	select_start->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_start->set_stretch_ratio(2);
 
-	HBoxContainer *container_end = memnew(HBoxContainer);
-	vbox->add_child(container_end);
-	Label *label_end = memnew(Label);
-	container_end->add_child(label_end);
+	Label *label_end = memnew(Label(TTR("End Marker")));
+	grid->add_child(label_end);
 	label_end->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_end->set_stretch_ratio(1);
-	label_end->set_text(TTR("End Marker"));
 	select_end = memnew(OptionButton);
-	container_end->add_child(select_end);
+	select_end->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	grid->add_child(select_end);
 	select_end->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_end->set_stretch_ratio(2);
 }

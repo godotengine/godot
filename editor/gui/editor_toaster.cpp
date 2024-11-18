@@ -375,7 +375,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	if (p_time > 0.0) {
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
-		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::close).bind(panel));
+		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::instant_close).bind(panel));
 		hbox_container->add_child(close_button);
 
 		toast.close_button = close_button;
@@ -499,6 +499,19 @@ void EditorToaster::close(Control *p_control) {
 	ERR_FAIL_COND(!toasts.has(p_control));
 	toasts[p_control].remaining_time = -1.0;
 	toasts[p_control].popped = false;
+}
+
+void EditorToaster::instant_close(Control *p_control) {
+	close(p_control);
+	p_control->set_modulate(Color(1, 1, 1, 0));
+}
+
+void EditorToaster::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("push_toast", "message", "severity", "tooltip"), &EditorToaster::_popup_str, DEFVAL(EditorToaster::SEVERITY_INFO), DEFVAL(String()));
+
+	BIND_ENUM_CONSTANT(SEVERITY_INFO);
+	BIND_ENUM_CONSTANT(SEVERITY_WARNING);
+	BIND_ENUM_CONSTANT(SEVERITY_ERROR);
 }
 
 EditorToaster *EditorToaster::get_singleton() {

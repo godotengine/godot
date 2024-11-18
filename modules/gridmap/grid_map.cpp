@@ -801,8 +801,8 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 			if (!g.navigation_debug_edge_connections_instance.is_valid()) {
 				g.navigation_debug_edge_connections_instance = RenderingServer::get_singleton()->instance_create();
 			}
-			if (!g.navigation_debug_edge_connections_mesh.is_valid()) {
-				g.navigation_debug_edge_connections_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+			if (g.navigation_debug_edge_connections_mesh.is_null()) {
+				g.navigation_debug_edge_connections_mesh.instantiate();
 			}
 
 			_update_octant_navigation_debug_edge_connections_mesh(p_key);
@@ -1386,8 +1386,8 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 		g.navigation_debug_edge_connections_instance = RenderingServer::get_singleton()->instance_create();
 	}
 
-	if (!g.navigation_debug_edge_connections_mesh.is_valid()) {
-		g.navigation_debug_edge_connections_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (g.navigation_debug_edge_connections_mesh.is_null()) {
+		g.navigation_debug_edge_connections_mesh.instantiate();
 	}
 
 	g.navigation_debug_edge_connections_mesh->clear_surfaces();

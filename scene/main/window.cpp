@@ -303,6 +303,11 @@ String Window::get_title() const {
 	return title;
 }
 
+String Window::get_translated_title() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	return tr_title;
+}
+
 void Window::_settings_changed() {
 	if (visible && initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE && is_in_edited_scene_root()) {
 		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));

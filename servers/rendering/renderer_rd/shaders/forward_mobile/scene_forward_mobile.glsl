@@ -434,12 +434,12 @@ void main() {
 
 	vertex_interp = vertex;
 #ifdef NORMAL_USED
-	normal_interp = normal;
+	normal_interp = normalize(normal);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	tangent_interp = tangent;
-	binormal_interp = binormal;
+	tangent_interp = normalize(tangent);
+	binormal_interp = normalize(binormal);
 #endif
 
 // VERTEX LIGHTING
@@ -456,13 +456,13 @@ void main() {
 	uvec2 omni_light_indices = instances.data[draw_call.instance_index].omni_lights;
 	for (uint i = 0; i < sc_omni_lights(); i++) {
 		uint light_index = (i > 3) ? ((omni_light_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_light_indices.x >> (i * 8)) & 0xFF);
-		light_process_omni_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_omni_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
 	uvec2 spot_light_indices = instances.data[draw_call.instance_index].spot_lights;
 	for (uint i = 0; i < sc_spot_lights(); i++) {
 		uint light_index = (i > 3) ? ((spot_light_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_light_indices.x >> (i * 8)) & 0xFF);
-		light_process_spot_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_spot_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
 	if (sc_directional_lights() > 0) {
@@ -479,13 +479,13 @@ void main() {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
-				light_compute_vertex(normal, directional_lights.data[0].direction, view,
+				light_compute_vertex(normal_interp, directional_lights.data[0].direction, view,
 						directional_lights.data[0].color * directional_lights.data[0].energy,
 						true, roughness,
 						directional_diffuse,
 						directional_specular);
 			} else {
-				light_compute_vertex(normal, directional_lights.data[i].direction, view,
+				light_compute_vertex(normal_interp, directional_lights.data[i].direction, view,
 						directional_lights.data[i].color * directional_lights.data[i].energy,
 						true, roughness,
 						diffuse_light_interp.rgb,

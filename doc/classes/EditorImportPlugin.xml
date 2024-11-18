@@ -154,7 +154,7 @@
 			<param index="1" name="option_name" type="StringName" />
 			<param index="2" name="options" type="Dictionary" />
 			<description>
-				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
+				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled.
 				[codeblocks]
 				[gdscript]
 				func _get_option_visibility(option, options):

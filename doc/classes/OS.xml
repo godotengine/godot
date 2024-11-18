@@ -23,7 +23,7 @@
 			<return type="void" />
 			<description>
 				Shuts down the system MIDI driver. Godot will no longer receive [InputEventMIDI]. See also [method open_midi_inputs] and [method get_connected_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="crash">
@@ -53,7 +53,7 @@
 				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
 				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
-				For example, running another instance of the project:
+				[b]Example:[/b] Run another instance of the project:
 				[codeblocks]
 				[gdscript]
 				var pid = OS.create_process(OS.get_executable_path(), [])
@@ -184,7 +184,7 @@
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
-				Here's a minimal example on how to parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
+				[b]Example:[/b] Parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
 				[codeblocks]
 				[gdscript]
 				var arguments = {}
@@ -244,7 +244,7 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -356,7 +356,7 @@
 			<return type="String" />
 			<description>
 				Returns the model name of the current device.
-				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, and Windows. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -464,6 +464,24 @@
 			<return type="int" />
 			<description>
 				Returns the amount of static memory being used by the program in bytes. Only works in debug builds.
+			</description>
+		</method>
+		<method name="get_stderr_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard error device.
+			</description>
+		</method>
+		<method name="get_stdin_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard input device.
+			</description>
+		</method>
+		<method name="get_stdout_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard output device.
 			</description>
 		</method>
 		<method name="get_system_ca_certificates">
@@ -680,15 +698,31 @@
 			<return type="void" />
 			<description>
 				Initializes the singleton for the system MIDI driver, allowing Godot to receive [InputEventMIDI]. See also [method get_connected_midi_inputs] and [method close_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="read_buffer_from_stdin">
+			<return type="PackedByteArray" />
+			<param index="0" name="buffer_size" type="int" />
+			<description>
+				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
+			<param index="0" name="buffer_size" type="int" />
 			<description>
-				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. Otherwise, the standard input will not work correctly. If you need a single executable with console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
+				Reads a user input as a UTF-8 encoded string from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="request_permission">
@@ -830,6 +864,21 @@
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
 			Refers to the Ringtones directory path.
+		</constant>
+		<constant name="STD_HANDLE_INVALID" value="0" enum="StdHandleType">
+			Standard I/O device is invalid. No data can be received from or sent to these standard I/O devices.
+		</constant>
+		<constant name="STD_HANDLE_CONSOLE" value="1" enum="StdHandleType">
+			Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
+		</constant>
+		<constant name="STD_HANDLE_FILE" value="2" enum="StdHandleType">
+			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
+		</constant>
+		<constant name="STD_HANDLE_PIPE" value="3" enum="StdHandleType">
+			Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].
+		</constant>
+		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
+			Standard I/O device type is unknown.
 		</constant>
 	</constants>
 </class>

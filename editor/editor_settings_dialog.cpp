@@ -106,8 +106,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		pan_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-		zoom_mod_key_1 = InputEventKey::create_reference(Key::SHIFT);
-		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
+		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
+		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
 		set_preset = true;
 		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;

@@ -88,8 +88,8 @@ void Path3D::_update_debug_mesh() {
 		return;
 	}
 
-	if (!debug_mesh.is_valid()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_mesh.is_null()) {
+		debug_mesh.instantiate();
 	}
 
 	if (!(curve.is_valid())) {

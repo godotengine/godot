@@ -31,35 +31,35 @@
 #include "editor_bottom_panel.h"
 
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_about.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/engine_update_label.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/split_container.h"
 
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			pin_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			expand_button->set_button_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
 		} break;
 	}
 }
 
-void EditorBottomPanel::_switch_by_control(bool p_visible, Control *p_control) {
+void EditorBottomPanel::_switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock) {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].control == p_control) {
-			_switch_to_item(p_visible, i);
+			_switch_to_item(p_visible, i, p_ignore_lock);
 			return;
 		}
 	}
 }
 
-void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
+void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (items[p_idx].control->is_visible() == p_visible) {
@@ -70,6 +70,10 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 	ERR_FAIL_NULL(center_split);
 
 	if (p_visible) {
+		if (!p_ignore_lock && lock_panel_switching && pin_button->is_visible()) {
+			return;
+		}
+
 		for (int i = 0; i < items.size(); i++) {
 			items[i].button->set_pressed_no_signal(i == p_idx);
 			items[i].control->set_visible(i == p_idx);
@@ -80,18 +84,23 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 		} else {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
+
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
+		pin_button->show();
+
+		expand_button->show();
 		if (expand_button->is_pressed()) {
 			EditorNode::get_top_split()->hide();
 		}
-		expand_button->show();
 	} else {
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		items[p_idx].button->set_pressed_no_signal(false);
 		items[p_idx].control->set_visible(false);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 		center_split->set_collapsed(true);
+		pin_button->hide();
+
 		expand_button->hide();
 		if (expand_button->is_pressed()) {
 			EditorNode::get_top_split()->show();
@@ -101,13 +110,17 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx) {
 	last_opened_control = items[p_idx].control;
 }
 
+void EditorBottomPanel::_pin_button_toggled(bool p_pressed) {
+	lock_panel_switching = p_pressed;
+}
+
 void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_top_split()->set_visible(!p_pressed);
 }
 
 bool EditorBottomPanel::_button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control) {
 	if (!p_button->is_pressed()) {
-		_switch_by_control(true, p_control);
+		_switch_by_control(true, p_control, true);
 	}
 	return false;
 }
@@ -149,7 +162,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
 	Button *tb = memnew(Button);
 	tb->set_theme_type_variation("BottomPanelButton");
-	tb->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
+	tb->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item, true));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorBottomPanel::_button_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
 	tb->set_shortcut(p_shortcut);
@@ -231,10 +244,10 @@ void EditorBottomPanel::toggle_last_opened_bottom_panel() {
 	// Select by control instead of index, so that the last bottom panel is opened correctly
 	// if it's been reordered since.
 	if (last_opened_control) {
-		_switch_by_control(!last_opened_control->is_visible(), last_opened_control);
+		_switch_by_control(!last_opened_control->is_visible(), last_opened_control, true);
 	} else {
 		// Open the first panel in the list if no panel was opened this session.
-		_switch_to_item(true, 0);
+		_switch_to_item(true, 0, true);
 	}
 }
 
@@ -263,10 +276,17 @@ EditorBottomPanel::EditorBottomPanel() {
 	Control *h_spacer = memnew(Control);
 	bottom_hbox->add_child(h_spacer);
 
+	pin_button = memnew(Button);
+	bottom_hbox->add_child(pin_button);
+	pin_button->hide();
+	pin_button->set_theme_type_variation("FlatMenuButton");
+	pin_button->set_toggle_mode(true);
+	pin_button->set_tooltip_text(TTR("Pin Bottom Panel Switching"));
+	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
+
 	expand_button = memnew(Button);
 	bottom_hbox->add_child(expand_button);
 	expand_button->hide();
-	expand_button->set_flat(false);
 	expand_button->set_theme_type_variation("FlatMenuButton");
 	expand_button->set_toggle_mode(true);
 	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));

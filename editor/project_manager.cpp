@@ -34,8 +34,6 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/resource_saver.h"
-#include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
@@ -51,12 +49,9 @@
 #include "editor/project_manager/project_list.h"
 #include "editor/project_manager/project_tag.h"
 #include "editor/project_manager/quick_settings_dialog.h"
-#include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/main.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -64,7 +59,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
@@ -1300,15 +1294,10 @@ ProjectManager::ProjectManager() {
 			filter_option->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_on_order_option_changed));
 			hb->add_child(filter_option);
 
-			Vector<String> sort_filter_titles;
-			sort_filter_titles.push_back(TTR("Last Edited"));
-			sort_filter_titles.push_back(TTR("Name"));
-			sort_filter_titles.push_back(TTR("Path"));
-			sort_filter_titles.push_back(TTR("Tags"));
-
-			for (int i = 0; i < sort_filter_titles.size(); i++) {
-				filter_option->add_item(sort_filter_titles[i]);
-			}
+			filter_option->add_item(TTR("Last Edited"));
+			filter_option->add_item(TTR("Name"));
+			filter_option->add_item(TTR("Path"));
+			filter_option->add_item(TTR("Tags"));
 		}
 
 		// Project list and its sidebar.

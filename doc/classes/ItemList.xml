@@ -29,7 +29,7 @@
 			<description>
 				Adds an item to the item list with specified text. Returns the index of an added item.
 				Specify an [param icon], or use [code]null[/code] as the [param icon] for a list item with no icon.
-				If selectable is [code]true[/code], the list item will be selectable.
+				If [param selectable] is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">

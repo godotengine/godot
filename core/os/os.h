@@ -94,7 +94,15 @@ public:
 	enum RenderThreadMode {
 		RENDER_THREAD_UNSAFE,
 		RENDER_THREAD_SAFE,
-		RENDER_SEPARATE_THREAD
+		RENDER_SEPARATE_THREAD,
+	};
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
 	};
 
 protected:
@@ -146,7 +154,12 @@ public:
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	virtual String get_stdin_string() = 0;
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) = 0;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) = 0;
+
+	virtual StdHandleType get_stdin_type() const { return STD_HANDLE_UNKNOWN; }
+	virtual StdHandleType get_stdout_type() const { return STD_HANDLE_UNKNOWN; }
+	virtual StdHandleType get_stderr_type() const { return STD_HANDLE_UNKNOWN; }
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.

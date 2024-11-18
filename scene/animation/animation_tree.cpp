@@ -371,7 +371,9 @@ AnimationNode::NodeTimeInfo AnimationNode::process(const AnimationMixer::Playbac
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	if (p_playback_info.seeked) {
-		pi.delta = get_node_time_info().position - p_playback_info.time;
+		if (p_playback_info.is_external_seeking) {
+			pi.delta = get_node_time_info().position - p_playback_info.time;
+		}
 	} else {
 		pi.time = get_node_time_info().position + p_playback_info.delta;
 	}

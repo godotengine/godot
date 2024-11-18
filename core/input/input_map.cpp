@@ -42,7 +42,7 @@ InputMap *InputMap::singleton = nullptr;
 void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
-	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.2f));
+	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(DEFAULT_DEADZONE));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
@@ -104,7 +104,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
 			r_options->push_back(name.quote());
 		}
 	}
@@ -302,10 +302,10 @@ void InputMap::load_from_project_settings() {
 			continue;
 		}
 
-		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+		String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
 
 		Dictionary action = GLOBAL_GET(pi.name);
-		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : 0.2f;
+		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
 		Array events = action["events"];
 
 		add_action(name, deadzone);

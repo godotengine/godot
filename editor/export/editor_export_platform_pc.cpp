@@ -194,7 +194,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 
 	int64_t embedded_pos;
 	int64_t embedded_size;
-	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
@@ -223,13 +223,13 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 				if (err == OK) {
 					err = da->copy_dir(src_path, target_path, -1, true);
 					if (err != OK) {
-						add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), TTR(vformat("Failed to copy shared object \"%s\".", src_path)));
+						add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
 					}
 				}
 			} else {
 				err = da->copy(src_path, target_path);
 				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), TTR(vformat("Failed to copy shared object \"%s\".", src_path)));
+					add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
 				}
 				if (err == OK) {
 					err = sign_shared_object(p_preset, p_debug, target_path);

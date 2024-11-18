@@ -64,7 +64,7 @@ bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
 	String fname = p_path.get_file().to_lower();
 
-	int dot = fname.find(".");
+	int dot = fname.find_char('.');
 	if (dot != -1) {
 		fname = fname.substr(0, dot);
 	}

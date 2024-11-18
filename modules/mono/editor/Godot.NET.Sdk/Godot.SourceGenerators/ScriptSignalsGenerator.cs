@@ -295,7 +295,7 @@ namespace Godot.SourceGenerators
                 for (int i = 0; i < paramCount; i++)
                 {
                     var paramSymbol = invokeMethodSymbol.Parameters[i];
-                    source.Append($"{paramSymbol.Type.FullQualifiedNameIncludeGlobal()} {paramSymbol.Name}");
+                    source.Append($"{paramSymbol.Type.FullQualifiedNameIncludeGlobal()} @{paramSymbol.Name}");
                     if (i < paramCount - 1)
                     {
                         source.Append(", ");
@@ -310,11 +310,11 @@ namespace Godot.SourceGenerators
                     if (paramSymbol.Type.TypeKind == TypeKind.Enum)
                     {
                         var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType;
-                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()}){paramSymbol.Name}");
+                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
                         continue;
                     }
 
-                    source.Append($", {paramSymbol.Name}");
+                    source.Append($", @{paramSymbol.Name}");
                 }
                 source.Append(");\n");
                 source.Append("    }\n");

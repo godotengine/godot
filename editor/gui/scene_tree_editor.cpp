@@ -369,16 +369,14 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 					msg_temp += String::utf8("•  ") + String(E.name) + "\n";
 				}
 			}
-		}
-		if (num_connections >= 1 || num_groups >= 1) {
-			if (num_groups < 1) {
-				msg_temp += "\n";
-			}
-			msg_temp += TTR("Click to show signals dock.");
+		} else {
+			msg_temp += "\n";
 		}
 
 		Ref<Texture2D> icon_temp;
 		SceneTreeEditorButton signal_temp = BUTTON_SIGNALS;
+		String msg_temp_end = TTR("Click to show signals dock.");
+
 		if (num_connections >= 1 && num_groups >= 1) {
 			icon_temp = get_editor_theme_icon(SNAME("SignalsAndGroups"));
 		} else if (num_connections >= 1) {
@@ -386,9 +384,11 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		} else if (num_groups >= 1) {
 			icon_temp = get_editor_theme_icon(SNAME("Groups"));
 			signal_temp = BUTTON_GROUPS;
+			msg_temp_end = TTR("Click to show groups dock.");
 		}
 
 		if (num_connections >= 1 || num_groups >= 1) {
+			msg_temp += msg_temp_end;
 			item->add_button(0, icon_temp, signal_temp, false, msg_temp);
 		}
 	}
@@ -1098,8 +1098,19 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
+	if (new_name.is_empty() && p_node->get_owner() != nullptr && !p_node->get_scene_file_path().is_empty()) {
+		// If name is empty and node is root of an instance, revert to the original name.
+		const Ref<PackedScene> node_scene = ResourceLoader::load(p_node->get_scene_file_path());
+		if (node_scene.is_valid()) {
+			const Ref<SceneState> &state = node_scene->get_state();
+			if (state->get_node_count() > 0) {
+				new_name = state->get_node_name(0); // Root's name.
+			}
+		}
+	}
+
 	if (new_name.is_empty()) {
-		// If name is empty, fallback to class name.
+		// If name is still empty, fallback to class name.
 		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 			new_name = Node::adjust_name_casing(p_node->get_class());
 		} else {

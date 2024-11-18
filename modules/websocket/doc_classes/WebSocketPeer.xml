@@ -155,10 +155,14 @@
 			The extra HTTP headers to be sent during the WebSocket handshake.
 			[b]Note:[/b] Not supported in Web exports due to browsers' restrictions.
 		</member>
+		<member name="heartbeat_interval" type="float" setter="set_heartbeat_interval" getter="get_heartbeat_interval" default="0.0">
+			The interval (in seconds) at which the peer will automatically send WebSocket "ping" control frames. When set to [code]0[/code], no "ping" control frames will be sent.
+			[b]Note:[/b] Has no effect in Web exports due to browser restrictions.
+		</member>
 		<member name="inbound_buffer_size" type="int" setter="set_inbound_buffer_size" getter="get_inbound_buffer_size" default="65535">
 			The size of the input buffer in bytes (roughly the maximum amount of memory that will be allocated for the inbound packets).
 		</member>
-		<member name="max_queued_packets" type="int" setter="set_max_queued_packets" getter="get_max_queued_packets" default="2048">
+		<member name="max_queued_packets" type="int" setter="set_max_queued_packets" getter="get_max_queued_packets" default="4096">
 			The maximum amount of packets that will be allowed in the queues (both inbound and outbound).
 		</member>
 		<member name="outbound_buffer_size" type="int" setter="set_outbound_buffer_size" getter="get_outbound_buffer_size" default="65535">

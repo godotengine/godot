@@ -86,6 +86,8 @@ public:
 	bool exists(const String &p_path, const String &p_type_hint = "");
 	ResourceUID::ID get_resource_uid(const String &p_path);
 
+	Vector<String> list_directory(const String &p_directory);
+
 	ResourceLoader() { singleton = this; }
 };
 
@@ -132,6 +134,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
 
+	String _read_string_from_stdin_bind_compat_91201();
 	static void _bind_compatibility_methods();
 #endif
 
@@ -145,6 +148,14 @@ public:
 
 	PackedByteArray get_entropy(int p_bytes);
 	String get_system_ca_certificates();
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
+	};
 
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
@@ -166,7 +177,13 @@ public:
 	String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	String get_executable_path() const;
-	String read_string_from_stdin();
+
+	String read_string_from_stdin(int64_t p_buffer_size = 1024);
+	PackedByteArray read_buffer_from_stdin(int64_t p_buffer_size = 1024);
+	StdHandleType get_stdin_type() const;
+	StdHandleType get_stdout_type() const;
+	StdHandleType get_stderr_type() const;
+
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = ClassDB::default_array_arg, bool p_read_stderr = false, bool p_open_console = false);
 	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
@@ -642,6 +659,7 @@ VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
 VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
+VARIANT_ENUM_CAST(core_bind::OS::StdHandleType);
 
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
