@@ -71,7 +71,7 @@ void FileAccess::_set_access_type(AccessType p_access) {
 
 Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	Ref<FileAccess> ret;
-	if (p_path.begins_with("res://")) {
+	if (p_path.begins_with("res://") || p_path.begins_with("uid://")) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
@@ -183,13 +183,17 @@ FileAccess::AccessType FileAccess::get_access_type() const {
 }
 
 String FileAccess::fix_path(const String &p_path) const {
-	//helper used by file accesses that use a single filesystem
+	// Helper used by file accesses that use a single filesystem.
 
 	String r_path = p_path.replace("\\", "/");
 
 	switch (_access_type) {
 		case ACCESS_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
+				if (r_path.begins_with("uid://")) {
+					r_path = ResourceUID::uid_to_path(r_path);
+				}
+
 				if (r_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (!resource_path.is_empty()) {
