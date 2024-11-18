@@ -423,25 +423,10 @@ namespace Godot.SourceGenerators
 
             if (exportAttr != null && propertySymbol != null)
             {
-                if (propertySymbol.GetMethod == null)
+                if (propertySymbol.GetMethod == null || propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
                 {
-                    // This should never happen, as we filtered WriteOnly properties, but just in case.
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.ExportedPropertyIsWriteOnlyRule,
-                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
-                        propertySymbol.ToDisplayString()
-                    ));
-                    return null;
-                }
-
-                if (propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
-                {
-                    // This should never happen, as we filtered ReadOnly properties, but just in case.
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.ExportedMemberIsReadOnlyRule,
-                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
-                        propertySymbol.ToDisplayString()
-                    ));
+                    // Exports can be neither read-only nor write-only but the diagnostic errors for properties are already
+                    // reported by ScriptPropertyDefValGenerator.cs so just quit early here.
                     return null;
                 }
             }

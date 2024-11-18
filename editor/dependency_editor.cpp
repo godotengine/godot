@@ -471,7 +471,7 @@ void DependencyRemoveDialog::_find_localization_remaps_of_removed_files(Vector<R
 			for (int j = 0; j < remap_keys.size(); j++) {
 				PackedStringArray remapped_files = remaps[remap_keys[j]];
 				for (int k = 0; k < remapped_files.size(); k++) {
-					int splitter_pos = remapped_files[k].rfind(":");
+					int splitter_pos = remapped_files[k].rfind_char(':');
 					String res_path = remapped_files[k].substr(0, splitter_pos);
 					if (res_path == path) {
 						String locale_name = remapped_files[k].substr(splitter_pos + 1);

@@ -493,8 +493,7 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 		if (FileAccess::exists(full_path)) {
 			full_path = old_full_path;
 		}
-		ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
-
+		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
 		if (id != ResourceUID::INVALID_ID) {
 			full_path = ResourceUID::get_singleton()->id_to_text(id);
 		}
