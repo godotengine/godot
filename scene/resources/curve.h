@@ -264,6 +264,8 @@ class Curve3D : public Resource {
 	mutable Vector<size_t> points_in_cache;
 #endif
 
+	bool closed = false;
+
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector3Array baked_point_cache;
 	mutable Vector<real_t> baked_tilt_cache;
@@ -330,6 +332,8 @@ public:
 	Vector3 sample(int p_index, real_t p_offset) const;
 	Vector3 samplef(real_t p_findex) const;
 
+	void set_closed(bool p_closed);
+	bool is_closed() const;
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
 	void set_up_vector_enabled(bool p_enable);
