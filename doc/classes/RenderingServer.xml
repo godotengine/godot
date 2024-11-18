@@ -3321,7 +3321,8 @@
 			<return type="void" />
 			<param index="0" name="generate" type="bool" />
 			<description>
-				This method is currently unimplemented and does nothing if called with [param generate] set to [code]true[/code].
+				If [param generate] is [code]true[/code], generates debug wireframes for all meshes that are loaded when using the Compatibility renderer. By default, the engine does not generate debug wireframes at runtime, since they slow down loading of assets and take up VRAM.
+				[b]Note:[/b] You must call this method before loading any meshes when using the Compatibility renderer, otherwise wireframes will not be used.
 			</description>
 		</method>
 		<method name="set_default_clear_color">
@@ -5054,6 +5055,7 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
+			[b]Note:[/b] [method set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
 			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.

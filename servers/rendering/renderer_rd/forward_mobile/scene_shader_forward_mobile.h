@@ -243,7 +243,7 @@ public:
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_world_coordinates;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_world_coordinates && !wireframe;
 		}
 
 		virtual void set_code(const String &p_Code);
