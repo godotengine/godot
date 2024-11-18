@@ -80,7 +80,7 @@ void WebToolsEditorPlugin::_download_zip() {
 	const String output_path = String("/tmp").path_join(output_name);
 
 	zipFile zip = zipOpen2(output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
-	const String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
+	const String base_path = resource_path.substr(0, resource_path.rfind_char('/')) + "/";
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, nullptr);
 	{

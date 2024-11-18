@@ -1275,7 +1275,7 @@
 			If [code]true[/code], adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key. If [code]true[/code], newly created scripts will also automatically have type hints added to their method parameters and return types.
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
-			If [code]true[/code], automatically completes braces when making use of code completion.
+			If [code]true[/code], automatically inserts the matching closing brace when the opening brace is inserted by typing or autocompletion. Also automatically removes the closing brace when pressing [kbd]Backspace[/kbd] on the opening brace. This includes brackets ([code]()[/code], [code][][/code], [code]{}[/code]), string quotation marks ([code]''[/code], [code]""[/code]), and comments ([code]/**/[/code]) if the language supports it.
 		</member>
 		<member name="text_editor/completion/code_complete_delay" type="float" setter="" getter="">
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.

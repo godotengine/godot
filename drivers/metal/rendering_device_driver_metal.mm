@@ -2020,7 +2020,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 		ERR_FAIL_COND_V_MSG(compiler.get_entry_points_and_stages().size() != 1, Result(), "Expected a single entry point and stage.");
 
-		EntryPoint &entry_point_stage = compiler.get_entry_points_and_stages().front();
+		SmallVector<EntryPoint> entry_pts_stages = compiler.get_entry_points_and_stages();
+		EntryPoint &entry_point_stage = entry_pts_stages.front();
 		SPIREntryPoint &entry_point = compiler.get_entry_point(entry_point_stage.name, entry_point_stage.execution_model);
 
 		// Process specialization constants.

@@ -3472,7 +3472,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 					String arg = arg_itr->name;
 					if (arg.contains(":")) {
-						arg = arg.substr(0, arg.find(":"));
+						arg = arg.substr(0, arg.find_char(':'));
 					}
 					method_hint += arg;
 					if (use_type_hint) {

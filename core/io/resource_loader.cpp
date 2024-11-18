@@ -1206,7 +1206,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 
 		int best_score = 0;
 		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].rfind(":");
+			int split = res_remaps[i].rfind_char(':');
 			if (split == -1) {
 				continue;
 			}
@@ -1498,11 +1498,11 @@ Vector<String> ResourceLoader::list_directory(const String &p_directory) {
 			}
 		} else {
 			if (d.ends_with(".import") || d.ends_with(".remap") || d.ends_with(".uid")) {
-				d = d.substr(0, d.rfind("."));
+				d = d.substr(0, d.rfind_char('.'));
 			}
 
 			if (d.ends_with(".gdc")) {
-				d = d.substr(0, d.rfind("."));
+				d = d.substr(0, d.rfind_char('.'));
 				d += ".gd";
 			}
 
