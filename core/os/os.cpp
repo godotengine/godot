@@ -49,6 +49,13 @@
 #define THREADING_NAMESPACE std
 #endif
 
+#ifdef _WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
+
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
 
@@ -78,6 +85,15 @@ void OS::add_logger(Logger *p_logger) {
 		_logger = memnew(CompositeLogger(loggers));
 	} else {
 		_logger->add_logger(p_logger);
+	}
+}
+
+void OS::initialize_launchpath() {
+	char launchpath_buffer[FILENAME_MAX];
+	if (getcwd(launchpath_buffer, sizeof(launchpath_buffer))) {
+		_launchpath = String::utf8(launchpath_buffer);
+	} else {
+		ERR_PRINT_ED("Could not initialize the launch path / current working directory.");
 	}
 }
 

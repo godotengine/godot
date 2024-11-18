@@ -315,6 +315,12 @@
 				See also [method find_keycode_from_string], [member InputEventKey.keycode], and [method InputEventKey.get_keycode_with_modifiers].
 			</description>
 		</method>
+		<method name="get_launch_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the working directory from which the engine or game executable was launched.
+			</description>
+		</method>
 		<method name="get_locale" qualifiers="const">
 			<return type="String" />
 			<description>

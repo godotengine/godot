@@ -46,6 +46,7 @@ class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
 	String _execpath;
+	String _launchpath;
 	List<String> _cmdline;
 	List<String> _user_args;
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
@@ -118,6 +119,7 @@ protected:
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
+	virtual void initialize_launchpath();
 
 	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
@@ -216,6 +218,7 @@ public:
 	virtual String get_identifier() const;
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
+	virtual String get_launch_path() const { return _launchpath; }
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
