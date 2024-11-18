@@ -488,10 +488,21 @@ void EditorPropertyPath::_set_read_only(bool p_read_only) {
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
-	ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
+	String old_full_path = get_edited_property_value();
+	if (!folder) {
+		if (FileAccess::exists(full_path)) {
+			full_path = old_full_path;
+		}
+		ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
 
-	if (id != ResourceUID::INVALID_ID) {
-		full_path = ResourceUID::get_singleton()->id_to_text(id);
+		if (id != ResourceUID::INVALID_ID) {
+			full_path = ResourceUID::get_singleton()->id_to_text(id);
+		}
+	}
+	else {
+		if (!DirAccess::exists(full_path)) {
+			full_path = old_full_path;
+		}
 	}
 
 	emit_changed(get_edited_property(), full_path);

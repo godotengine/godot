@@ -569,7 +569,7 @@ public:
 	Array get_animation_Group() const;
     void set_editor_form_mesh_file_path(const String& p_file_path)
     {
-        editor_form_mesh_file_path = p_file_path;
+		editor_form_mesh_file_path = ResourceUID::ensure_path(p_file_path);
     }
     String get_editor_form_mesh_file_path()
     {
@@ -605,7 +605,7 @@ public:
     // 生成动画资产帮助类
     void set_editor_animation_file_path(const String& p_file_path)
     {
-		editor_animation_file_path = p_file_path;
+		editor_convert_animations_path = ResourceUID::ensure_path(p_file_path);
     }
 
     String get_editor_animation_file_path()
@@ -673,7 +673,7 @@ public:
     // 动画路径
     String editor_convert_animations_path;
     void set_editor_convert_animations_path(const String& p_path) {
-        editor_convert_animations_path = p_path;
+		editor_convert_animations_path = ResourceUID::ensure_path(p_path);
     }
 
     String get_editor_convert_animations_path() {
