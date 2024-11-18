@@ -33,6 +33,10 @@
 
 #include "core/typedefs.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #if defined(__APPLE__)
 
 #include <os/lock.h>
@@ -52,19 +56,52 @@ public:
 
 #else
 
+#include "core/os/thread.h"
+
 #include <atomic>
 
-class SpinLock {
-	mutable std::atomic_flag locked = ATOMIC_FLAG_INIT;
+_ALWAYS_INLINE_ static void _cpu_pause() {
+#if defined(_MSC_VER)
+// ----- MSVC.
+#if defined(_M_ARM) || defined(_M_ARM64) // ARM.
+	__yield();
+#elif defined(_M_IX86) || defined(_M_X64) // x86.
+	_mm_pause();
+#endif
+#elif defined(__GNUC__) || defined(__clang__)
+// ----- GCC/Clang.
+#if defined(__i386__) || defined(__x86_64__) // x86.
+	__builtin_ia32_pause();
+#elif defined(__arm__) || defined(__aarch64__) // ARM.
+	asm volatile("yield");
+#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__) // PowerPC.
+	asm volatile("or 27,27,27");
+#elif defined(__riscv) // RISC-V.
+	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
+#endif
+#endif
+}
+
+static_assert(std::atomic_bool::is_always_lock_free);
+
+class alignas(Thread::CACHE_LINE_BYTES) SpinLock {
+	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
-		while (locked.test_and_set(std::memory_order_acquire)) {
-			// Continue.
+		while (true) {
+			bool expected = false;
+			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+				break;
+			}
+			do {
+				_cpu_pause();
+			} while (locked.load(std::memory_order_relaxed));
 		}
 	}
+
 	_ALWAYS_INLINE_ void unlock() const {
-		locked.clear(std::memory_order_release);
+		locked.store(false, std::memory_order_release);
 	}
 };
 
