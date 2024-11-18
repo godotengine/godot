@@ -147,7 +147,7 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 		for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 			String breakpoint = E->get();
 
-			String path = breakpoint.left(breakpoint.find(":", 6)); // Skip initial part of path, aka "res://"
+			String path = breakpoint.left(breakpoint.find_char(':', 6)); // Skip initial part of path, aka "res://"
 			int line = breakpoint.substr(path.size()).to_int();
 
 			DebugAdapterProtocol::get_singleton()->on_debug_breakpoint_toggled(path, line, true);

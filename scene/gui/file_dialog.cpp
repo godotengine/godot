@@ -50,7 +50,7 @@ void FileDialog::popup_file_dialog() {
 }
 
 void FileDialog::_focus_file_text() {
-	int lp = file->get_text().rfind(".");
+	int lp = file->get_text().rfind_char('.');
 	if (lp != -1) {
 		file->select(0, lp);
 		if (file->is_inside_tree() && !is_part_of_edited_scene()) {
@@ -1001,7 +1001,7 @@ void FileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size()) {
 		return;
 	}
-	int pos = MAX(p_path.rfind("/"), p_path.rfind("\\"));
+	int pos = MAX(p_path.rfind_char('/'), p_path.rfind_char('\\'));
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {

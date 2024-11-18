@@ -689,7 +689,7 @@ void GLTFDocument::_compute_node_heights(Ref<GLTFState> p_state) {
 }
 
 static Vector<uint8_t> _parse_base64_uri(const String &p_uri) {
-	int start = p_uri.find(",");
+	int start = p_uri.find_char(',');
 	ERR_FAIL_COND_V(start == -1, Vector<uint8_t>());
 
 	CharString substr = p_uri.substr(start + 1).ascii();

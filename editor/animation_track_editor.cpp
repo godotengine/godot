@@ -4340,7 +4340,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			if (track_path == np) {
 				actual_value = value; // All good.
 			} else {
-				int sep = track_path.rfind(":");
+				int sep = track_path.rfind_char(':');
 				if (sep != -1) {
 					String base_path = track_path.substr(0, sep);
 					if (base_path == np) {
@@ -6495,7 +6495,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					path = NodePath(node->get_path().get_names(), path.get_subnames(), true); // Store full path instead for copying.
 				} else {
 					text = path;
-					int sep = text.find(":");
+					int sep = text.find_char(':');
 					if (sep != -1) {
 						text = text.substr(sep + 1, text.length());
 					}

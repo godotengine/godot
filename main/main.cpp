@@ -1598,7 +1598,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg.ends_with("project.godot")) {
 			String path;
 			String file = arg;
-			int sep = MAX(file.rfind("/"), file.rfind("\\"));
+			int sep = MAX(file.rfind_char('/'), file.rfind_char('\\'));
 			if (sep == -1) {
 				path = ".";
 			} else {
@@ -4145,7 +4145,7 @@ int Main::start() {
 						local_game_path = "res://" + local_game_path;
 
 					} else {
-						int sep = local_game_path.rfind("/");
+						int sep = local_game_path.rfind_char('/');
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);

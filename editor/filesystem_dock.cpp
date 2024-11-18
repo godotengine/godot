@@ -137,7 +137,7 @@ bool FileSystemList::edit_selected() {
 
 	String name = get_item_text(s);
 	line_editor->set_text(name);
-	line_editor->select(0, name.rfind("."));
+	line_editor->select(0, name.rfind_char('.'));
 
 	popup_edit_commited = false; // Start edit popup processing.
 	popup_editor->popup();
@@ -2432,7 +2432,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 					if (to_rename.is_file) {
 						String name = to_rename.path.get_file();
-						tree->set_editor_selection(0, name.rfind("."));
+						tree->set_editor_selection(0, name.rfind_char('.'));
 					} else {
 						String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
 						tree->set_editor_selection(0, name.length());
@@ -3658,10 +3658,10 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			tree_item->select(0);
 		} else {
 			// Find parent folder.
-			fpath = fpath.substr(0, fpath.rfind("/") + 1);
+			fpath = fpath.substr(0, fpath.rfind_char('/') + 1);
 			if (fpath.size() > String("res://").size()) {
 				fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
-				const int slash_idx = fpath.rfind("/");
+				const int slash_idx = fpath.rfind_char('/');
 				fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
 			}
 
