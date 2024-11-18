@@ -1199,6 +1199,8 @@ void GridMapEditor::_notification(int p_what) {
 					RS::get_singleton()->instance_set_transform(grid_instance[i], xf * edit_grid_xform);
 				}
 				grid_xform = xf;
+				_update_cursor_transform();
+				_update_selection_transform();
 			}
 		} break;
 
