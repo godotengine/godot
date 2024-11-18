@@ -2469,7 +2469,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
 	if (swap_chain->d3d_swap_chain != nullptr) {
 		_swap_chain_release_buffers(swap_chain);
-		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, 0, 0, DXGI_FORMAT_UNKNOWN, creation_flags);
+		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, surface->width, surface->height, DXGI_FORMAT_UNKNOWN, creation_flags);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_UNAVAILABLE);
 	} else {
 		swap_chain_desc.BufferCount = p_desired_framebuffer_count;
@@ -2478,7 +2478,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swap_chain_desc.SampleDesc.Count = 1;
 		swap_chain_desc.Flags = creation_flags;
-		swap_chain_desc.Scaling = DXGI_SCALING_NONE;
+		swap_chain_desc.Scaling = DXGI_SCALING_STRETCH;
 		if (OS::get_singleton()->is_layered_allowed()) {
 			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
 			has_comp_alpha[(uint64_t)p_cmd_queue.id] = true;
@@ -2486,20 +2486,47 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 			has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
 		}
+		swap_chain_desc.Width = surface->width;
+		swap_chain_desc.Height = surface->height;
 
 		ComPtr<IDXGISwapChain1> swap_chain_1;
-		res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
-		if (!SUCCEEDED(res) && swap_chain_desc.AlphaMode != DXGI_ALPHA_MODE_IGNORE) {
-			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-			has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
-			res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
-		}
+		res = context_driver->dxgi_factory_get()->CreateSwapChainForComposition(command_queue->d3d_queue.Get(), &swap_chain_desc, nullptr, swap_chain_1.GetAddressOf());
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 		swap_chain_1.As(&swap_chain->d3d_swap_chain);
 		ERR_FAIL_NULL_V(swap_chain->d3d_swap_chain, ERR_CANT_CREATE);
 
 		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+	}
+
+	if (surface->composition_device.Get() == nullptr) {
+		using PFN_DCompositionCreateDevice = HRESULT(WINAPI *)(IDXGIDevice *, REFIID, void **);
+		PFN_DCompositionCreateDevice pfn_DCompositionCreateDevice = (PFN_DCompositionCreateDevice)(void *)GetProcAddress(context_driver->lib_dcomp, "DCompositionCreateDevice");
+		ERR_FAIL_NULL_V(pfn_DCompositionCreateDevice, ERR_CANT_CREATE);
+
+		res = pfn_DCompositionCreateDevice(nullptr, IID_PPV_ARGS(surface->composition_device.GetAddressOf()));
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->CreateTargetForHwnd(surface->hwnd, TRUE, surface->composition_target.GetAddressOf());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->CreateVisual(surface->composition_visual.GetAddressOf());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_visual->SetContent(swap_chain->d3d_swap_chain.Get());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_target->SetRoot(surface->composition_visual.Get());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->Commit();
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+	} else {
+		res = surface->composition_visual->SetContent(swap_chain->d3d_swap_chain.Get());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->Commit();
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 	}
 

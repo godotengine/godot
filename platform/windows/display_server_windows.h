@@ -356,6 +356,10 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
 } SHC_PROCESS_DPI_AWARENESS;
 
+#ifndef WS_EX_NOREDIRECTIONBITMAP
+#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
+#endif
+
 class DropTargetWindows;
 
 class DisplayServerWindows : public DisplayServer {
