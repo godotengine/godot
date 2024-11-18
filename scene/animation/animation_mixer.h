@@ -334,6 +334,7 @@ protected:
 
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	NodePath root_motion_track;
+	bool root_motion_local = false;
 	Vector3 root_motion_position = Vector3(0, 0, 0);
 	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale = Vector3(0, 0, 0);
@@ -446,6 +447,9 @@ public:
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
+
+	void set_root_motion_local(bool p_enabled);
+	bool is_root_motion_local() const;
 
 	Vector3 get_root_motion_position() const;
 	Quaternion get_root_motion_rotation() const;
