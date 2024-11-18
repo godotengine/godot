@@ -947,7 +947,7 @@ void CharacterBodyMain::editor_build_animation() {
         WARN_PRINT("请先设置动画组名");
         return;
     }
-    editor_build_animation_form_path(editor_animation_file_path);
+    editor_build_animation_form_path(editor_animation_file_name);
 }
 void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 {
@@ -1061,7 +1061,7 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (animation_human_config.is_valid()) {
-				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map);
+				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map, is_position_by_hip_bone);
 			}
             new_animation->set_animation_group(editor_animation_group);
             new_animation->optimize();

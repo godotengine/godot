@@ -347,7 +347,7 @@ namespace HumanAnim
 
         }
 
-        static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map) {            
+        static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map, bool position_by_hip = false) {
             int key_count = p_animation->get_length() * 100 + 1;
             Vector3 loc,scale;
             Quaternion rot;
@@ -457,7 +457,7 @@ namespace HumanAnim
                     }
                 }
                 // 转换骨骼姿势到动画
-                build_skeleton_pose(p_skeleton,p_config,skeleton_config);
+                build_skeleton_pose(p_skeleton,p_config,skeleton_config, position_by_hip);
                 // 存储动画
                 animation_lookat.set(i,skeleton_config.bone_lookat);
                 animation_root_position.set(i,skeleton_config.root_position);
@@ -560,17 +560,7 @@ namespace HumanAnim
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.real_pose[it];
                 Transform3D local_trans;
-				local_trans.basis = trans.basis;
-
-				Transform3D child_trans = trans * p_skeleton_config.real_pose[pose.child_bones[0]];
-				Vector3 forward = (child_trans.origin - trans.origin).normalized();
-                
-                trans.basis.rotate_to_align(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
-                p_skeleton_config.real_local_pose[it] = trans.basis.get_rotation_quaternion();
-
-
-				p_skeleton_config.root_global_rotation[it] = (local_trans.basis.inverse() * trans.basis).get_rotation_quaternion();
-                
+				local_trans.basis = trans.basis;        
 
                 retarget(p_config, pose, local_trans,p_skeleton_config);
 
@@ -806,8 +796,10 @@ namespace HumanAnim
 				else {
 					forward = trans.origin - parent_trans.origin;
 				}
-				float length = (p_skeleton_config.bone_lookat[it] - trans.origin).length();
-                trans.basis.rotate_to_align(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
+				if (p_skeleton_config.bone_lookat.has(it)) {
+					float length = (p_skeleton_config.bone_lookat[it] - trans.origin).length();
+					trans.basis.rotate_to_align(forward, p_skeleton_config.bone_lookat[it] - trans.origin);
+				}
 
                 Transform3D local_trans = parent_trans.inverse() * trans;
                 p_skeleton_config.real_local_pose[it] = local_trans.basis.get_rotation_quaternion();
