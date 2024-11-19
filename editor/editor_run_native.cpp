@@ -187,7 +187,7 @@ void EditorRunNative::_bind_methods() {
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {
-	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
+	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", true);
 }
 
 EditorRunNative::EditorRunNative() {
