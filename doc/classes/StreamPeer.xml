@@ -63,7 +63,7 @@
 			<return type="Array" />
 			<param index="0" name="bytes" type="int" />
 			<description>
-				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the "bytes" argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an [enum Error] code, and a data array.
+				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the [param bytes] argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values, an [enum Error] code, and a data array.
 			</description>
 		</method>
 		<method name="get_string">
@@ -111,6 +111,7 @@
 				Gets a Variant from the stream. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
+				[b]Warning[/b] Usage of this function on a server is unsafe, as a client can send a malformed packet and fill up the server's memory with this method.
 			</description>
 		</method>
 		<method name="put_8">
