@@ -439,12 +439,12 @@ void main() {
 
 	vertex_interp = vertex;
 #ifdef NORMAL_USED
-	normal_interp = normal;
+	normal_interp = normalize(normal);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	tangent_interp = tangent;
-	binormal_interp = binormal;
+	tangent_interp = normalize(tangent);
+	binormal_interp = normalize(binormal);
 #endif
 
 #ifdef MODE_RENDER_DEPTH
