@@ -314,6 +314,16 @@ bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, con
 	return false;
 }
 
+int GraphEdit::get_connection_count(const StringName &p_node, int p_port) {
+	unsigned int count = 0;
+	for (const Ref<Connection> &conn : connections) {
+		if (conn->to_node == p_node && (conn->to_port == p_port || conn->from_port == p_port)) {
+			count += 1;
+		}
+	}
+	return count;
+}
+
 void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 
@@ -2637,6 +2647,7 @@ void GraphEdit::arrange_nodes() {
 void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::connect_node);
 	ClassDB::bind_method(D_METHOD("is_node_connected", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::is_node_connected);
+	ClassDB::bind_method(D_METHOD("get_connection_count", "node", "port"), &GraphEdit::get_connection_count);
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::disconnect_node);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from_node", "from_port", "to_node", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);

@@ -226,6 +226,14 @@
 				Returns [code]true[/code] if the [param from_port] of the [param from_node] [GraphNode] is connected to the [param to_port] of the [param to_node] [GraphNode].
 			</description>
 		</method>
+		<method name="get_connection_count">
+			<return type="int" />
+			<param index="0" name="node" type="StringName" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Returns the number of connections from [param node] to [param port] port.
+			</description>
+		</method>
 		<method name="is_valid_connection_type" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="from_type" type="int" />
