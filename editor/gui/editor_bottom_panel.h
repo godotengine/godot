@@ -37,6 +37,10 @@ class Button;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
+class PopupMenu;
+class ScrollContainer;
+class StyleBoxEmpty;
+class StyleBoxFlat;
 class VBoxContainer;
 
 class EditorBottomPanel : public PanelContainer {
@@ -51,18 +55,34 @@ class EditorBottomPanel : public PanelContainer {
 	Vector<BottomPanelItem> items;
 	bool lock_panel_switching = false;
 
+	Control *shadow_spacer = nullptr;
 	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
+	HBoxContainer *button_tab_bar_hbox = nullptr;
+	Panel *shadow_panel_left = nullptr;
+	Panel *shadow_panel_right = nullptr;
+	ScrollContainer *button_sc = nullptr;
+	Button *button_menu = nullptr;
+	PopupMenu *button_popup_menu = nullptr;
 	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
 	Control *last_opened_control = nullptr;
+	Ref<StyleBoxFlat> stylebox_shadow_left;
+	Ref<StyleBoxFlat> stylebox_shadow_right;
+	Ref<StyleBoxEmpty> stylebox_shadow_empty;
 
 	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
 	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
+	void _focus_pressed_button(ObjectID btn_id);
+	void _add_item_to_popup();
+	void _popup_item_pressed(int p_idx);
+	void _set_button_sc_controls();
+	void _sc_input(const Ref<InputEvent> &p_gui_input);
+	void _popup_position();
 
 	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
