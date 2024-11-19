@@ -463,10 +463,12 @@ void EditorPropertyPath::_set_read_only(bool p_read_only) {
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
-	ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
 
-	if (id != ResourceUID::INVALID_ID) {
-		full_path = ResourceUID::get_singleton()->id_to_text(id);
+	if (!global) {
+		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
+		if (id != ResourceUID::INVALID_ID) {
+			full_path = ResourceUID::get_singleton()->id_to_text(id);
+		}
 	}
 
 	emit_changed(get_edited_property(), full_path);

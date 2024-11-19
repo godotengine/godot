@@ -590,8 +590,6 @@ String DirAccessPack::get_current_dir(bool p_include_drive) const {
 }
 
 bool DirAccessPack::file_exists(String p_file) {
-	p_file = fix_path(p_file);
-
 	PackedData::PackedDir *pd = _find_dir(p_file.get_base_dir());
 	if (!pd) {
 		return false;
@@ -600,8 +598,6 @@ bool DirAccessPack::file_exists(String p_file) {
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
-	p_dir = fix_path(p_dir);
-
 	return _find_dir(p_dir) != nullptr;
 }
 

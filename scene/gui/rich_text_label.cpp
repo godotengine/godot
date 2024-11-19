@@ -4845,7 +4845,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				String tooltip;
 				bool size_in_percent = false;
 				if (!bbcode_value.is_empty()) {
-					int sep = bbcode_value.find("x");
+					int sep = bbcode_value.find_char('x');
 					if (sep == -1) {
 						width = bbcode_value.to_int();
 					} else {

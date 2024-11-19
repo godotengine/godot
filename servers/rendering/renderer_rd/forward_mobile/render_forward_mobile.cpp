@@ -2064,6 +2064,10 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 			surf = surf->next;
 		}
 	}
+
+	if (p_render_list == RENDER_LIST_OPAQUE && lightmap_captures_used) {
+		RD::get_singleton()->buffer_update(scene_state.lightmap_capture_buffer, 0, sizeof(LightmapCaptureData) * lightmap_captures_used, scene_state.lightmap_captures);
+	}
 }
 
 void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows, int p_index) {

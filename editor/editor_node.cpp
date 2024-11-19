@@ -253,8 +253,8 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				// append that to yield "folder/foo.tscn".
 				if (difference > 0) {
 					String parent = full_path.substr(0, difference);
-					int slash_idx = parent.rfind("/");
-					slash_idx = parent.rfind("/", slash_idx - 1);
+					int slash_idx = parent.rfind_char('/');
+					slash_idx = parent.rfind_char('/', slash_idx - 1);
 					parent = (slash_idx >= 0 && parent.length() > 1) ? parent.substr(slash_idx + 1) : parent;
 					r_filenames.write[set_idx] = parent + r_filenames[set_idx];
 				}

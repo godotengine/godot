@@ -103,7 +103,7 @@ void ShaderCreateDialog::_update_language_info() {
 
 void ShaderCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
-		int filename_start_pos = initial_base_path.rfind("/") + 1;
+		int filename_start_pos = initial_base_path.rfind_char('/') + 1;
 		int filename_end_pos = initial_base_path.length();
 
 		if (!is_built_in) {

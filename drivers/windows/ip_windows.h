@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ip_unix.h                                                             */
+/*  ip_windows.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IP_UNIX_H
-#define IP_UNIX_H
+#ifndef IP_WINDOWS_H
+#define IP_WINDOWS_H
 
-#if defined(UNIX_ENABLED)
+#if defined(WINDOWS_ENABLED)
 
 #include "core/io/ip.h"
 
-class IPUnix : public IP {
-	GDCLASS(IPUnix, IP);
+class IPWindows : public IP {
+	GDCLASS(IPWindows, IP);
 
 	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
 
@@ -46,9 +46,9 @@ public:
 	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const override;
 
 	static void make_default();
-	IPUnix();
+	IPWindows();
 };
 
-#endif // UNIX_ENABLED
+#endif // WINDOWS_ENABLED
 
-#endif // IP_UNIX_H
+#endif // IP_WINDOWS_H

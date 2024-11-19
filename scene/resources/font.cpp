@@ -1734,7 +1734,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 		while (true) {
 			String line = f->get_line();
 
-			int delimiter = line.find(" ");
+			int delimiter = line.find_char(' ');
 			String type = line.substr(0, delimiter);
 			int pos = delimiter + 1;
 			HashMap<String, String> keys;
@@ -1744,7 +1744,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			}
 
 			while (pos < line.size()) {
-				int eq = line.find("=", pos);
+				int eq = line.find_char('=', pos);
 				if (eq == -1) {
 					break;
 				}
@@ -1752,14 +1752,14 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				int end = -1;
 				String value;
 				if (line[eq + 1] == '"') {
-					end = line.find("\"", eq + 2);
+					end = line.find_char('"', eq + 2);
 					if (end == -1) {
 						break;
 					}
 					value = line.substr(eq + 2, end - 1 - eq - 1);
 					pos = end + 1;
 				} else {
-					end = line.find(" ", eq + 1);
+					end = line.find_char(' ', eq + 1);
 					if (end == -1) {
 						end = line.size();
 					}
