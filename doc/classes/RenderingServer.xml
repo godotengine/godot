@@ -2559,6 +2559,7 @@
 			<param index="2" name="transform_format" type="int" enum="RenderingServer.MultimeshTransformFormat" />
 			<param index="3" name="color_format" type="bool" default="false" />
 			<param index="4" name="custom_data_format" type="bool" default="false" />
+			<param index="5" name="use_indirect" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -2591,6 +2592,29 @@
 			<param index="0" name="multimesh" type="RID" />
 			<description>
 				Returns the [RenderingDevice] [RID] handle of the [MultiMesh], which can be used as any other buffer on the Rendering Device.
+			</description>
+		</method>
+		<method name="multimesh_get_command_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the [MultiMesh] command buffer. This [RID] is only valid if [code]use_indirect[/code] is set to [code]true[/code] when allocating data through [method multimesh_allocate_data]. It can be used to directly modify the instance count via buffer.
+				The data structure is dependent on both how many surfaces the mesh contains and whether it is indexed or not, the buffer has 5 integers in it, with the last unused if the mesh is not indexed.
+				Each of the values in the buffer correspond to these options:
+				[codeblock lang=text]
+				Indexed:
+				  0 - indexCount;
+				  1 - instanceCount;
+				  2 - firstIndex;
+				  3 - vertexOffset;
+				  4 - firstInstance;
+				Non Indexed:
+				  0 - vertexCount;
+				  1 - instanceCount;
+				  2 - firstVertex;
+				  3 - firstInstance;
+				  4 - unused;
+				[/codeblock]
 			</description>
 		</method>
 		<method name="multimesh_get_custom_aabb" qualifiers="const">
