@@ -1463,19 +1463,21 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				bool has_locked_items = false;
 				List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
 
-				// Remove not movable nodes
-				for (List<CanvasItem *>::Element *E = selection.front(); E;) {
-					List<CanvasItem *>::Element *N = E->next();
-					if (!_is_node_movable(E->get(), true)) {
-						selection.erase(E);
+				if (!selection.is_empty()) {
+					drag_selection.clear();
+					for (List<CanvasItem *>::Element *E = selection.front(); E;) {
+						List<CanvasItem *>::Element *N = E->next();
+						if (_is_node_movable(E->get(), true)) {
+							drag_selection.push_back(E->get());
+						}
+						E = N;
 					}
-					E = N;
-				}
+					if (drag_selection.is_empty()) {
+						return true;
+					}
 
-				drag_selection = selection;
-				if (drag_selection.size() > 0) {
 					drag_type = DRAG_ROTATE;
-					drag_from = transform.affine_inverse().xform(b->get_position());
+
 					CanvasItem *ci = drag_selection.front()->get();
 					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 						drag_rotation_center = temp_pivot;
@@ -1484,6 +1486,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 					} else {
 						drag_rotation_center = ci->get_global_transform_with_canvas().get_origin();
 					}
+					drag_from = transform.affine_inverse().xform(b->get_position());
 					_save_canvas_item_state(drag_selection);
 					return true;
 				} else {
@@ -1935,16 +1938,19 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			bool has_locked_items = false;
 			List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
 
-			// Remove non-movable nodes.
-			for (CanvasItem *ci : selection) {
-				if (!_is_node_movable(ci, true)) {
-					selection.erase(ci);
-				}
-			}
-
 			if (!selection.is_empty()) {
-				CanvasItem *ci = selection.front()->get();
+				drag_selection.clear();
+				for (CanvasItem *E : selection) {
+					if (_is_node_movable(E, true)) {
+						drag_selection.push_back(E);
+					}
+				}
 
+				if (drag_selection.is_empty()) {
+					return true;
+				}
+
+				CanvasItem *ci = drag_selection.front()->get();
 				Transform2D edit_transform;
 				if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 					edit_transform = Transform2D(ci->_edit_get_rotation(), temp_pivot);
@@ -1971,7 +1977,6 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				}
 
 				drag_from = transform.affine_inverse().xform(b->get_position());
-				drag_selection = selection;
 				_save_canvas_item_state(drag_selection);
 				return true;
 			} else {
@@ -2120,10 +2125,13 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 							drag_selection.push_back(E);
 						}
 					}
+					if (drag_selection.is_empty()) {
+						return true;
+					}
 
 					drag_type = DRAG_MOVE;
 
-					CanvasItem *ci = selection.front()->get();
+					CanvasItem *ci = drag_selection.front()->get();
 					Transform2D parent_xform = ci->get_global_transform_with_canvas() * ci->get_transform().affine_inverse();
 					Transform2D unscaled_transform = (transform * parent_xform * ci->_edit_get_transform()).orthonormalized();
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
