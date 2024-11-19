@@ -1375,7 +1375,9 @@ LightmapGI::BakeError LightmapGI::_bake(Node *p_from_node, String p_image_data_p
 	}
 
 	gi_data->set_path(p_image_data_path, true);
-	Error err = ResourceSaver::save(gi_data);
+	String base_path = p_image_data_path.get_basename();
+	String new_bake_file_path = base_path + ".lmbake";
+	Error err = ResourceSaver::save(gi_data, new_bake_file_path);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
@@ -1717,7 +1719,7 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &LightmapGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &LightmapGI::get_camera_attributes);
 
-	ClassDB::bind_method(D_METHOD("bake", "from_node"), &LightmapGI::bake, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("bake", "from_node", "image_data_path"), &LightmapGI::bake, DEFVAL(""));
 
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
