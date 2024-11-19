@@ -3612,7 +3612,7 @@ void CanvasItemEditor::_draw_selection() {
 
 	// Remove non-movable nodes.
 	for (CanvasItem *ci : selection) {
-		if (!_is_node_movable(ci, true)) {
+		if (!_is_node_movable(ci)) {
 			selection.erase(ci);
 		}
 	}
