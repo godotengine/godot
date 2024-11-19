@@ -167,6 +167,7 @@ public:
 		RDD::BufferID buffer_driver_id;
 		RDD::TextureID texture_driver_id;
 		RDD::TextureSubresourceRange texture_subresources;
+		Size2i texture_size;
 		uint32_t texture_usage = 0;
 		int32_t texture_slice_command_index = -1;
 		ResourceTracker *parent = nullptr;
@@ -271,6 +272,7 @@ private:
 		int32_t command_index = -1;
 		int32_t next_list_index = -1;
 		Rect2i subresources;
+		bool partial_coverage = false;
 	};
 
 	struct RecordedBufferClearCommand : RecordedCommand {
@@ -649,11 +651,12 @@ private:
 	static bool _is_write_usage(ResourceUsage p_usage);
 	static RDD::TextureLayout _usage_to_image_layout(ResourceUsage p_usage);
 	static RDD::BarrierAccessBits _usage_to_access_bits(ResourceUsage p_usage);
-	bool _check_command_intersection(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index, bool &r_intersection_partial_coverage) const;
+	bool _check_command_intersection(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index) const;
+	bool _check_command_partial_coverage(ResourceTracker *p_resource_tracker, int32_t p_command_index) const;
 	int32_t _add_to_command_list(int32_t p_command_index, int32_t p_list_index);
 	void _add_adjacent_command(int32_t p_previous_command_index, int32_t p_command_index, RecordedCommand *r_command);
 	int32_t _add_to_slice_read_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index);
-	int32_t _add_to_write_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index);
+	int32_t _add_to_write_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index, bool p_partial_coverage);
 	RecordedCommand *_allocate_command(uint32_t p_command_size, int32_t &r_command_index);
 	DrawListInstruction *_allocate_draw_list_instruction(uint32_t p_instruction_size);
 	ComputeListInstruction *_allocate_compute_list_instruction(uint32_t p_instruction_size);

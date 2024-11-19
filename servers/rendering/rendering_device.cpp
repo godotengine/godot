@@ -946,6 +946,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 
 		RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
 		tracker->texture_driver_id = texture.shared_fallback->texture;
+		tracker->texture_size = Size2i(texture.width, texture.height);
 		tracker->texture_subresources = texture.barrier_range();
 		tracker->texture_usage = alias_format.usage_bits;
 		tracker->reference_count = 1;
@@ -1125,6 +1126,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 
 		RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
 		tracker->texture_driver_id = texture.shared_fallback->texture;
+		tracker->texture_size = Size2i(texture.width, texture.height);
 		tracker->texture_subresources = slice_range;
 		tracker->texture_usage = slice_format.usage_bits;
 		tracker->reference_count = 1;
@@ -5415,6 +5417,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 						draw_tracker = RDG::resource_tracker_create();
 						draw_tracker->parent = owner_texture->draw_tracker;
 						draw_tracker->texture_driver_id = p_texture->driver_id;
+						draw_tracker->texture_size = Size2i(p_texture->width, p_texture->height);
 						draw_tracker->texture_subresources = p_texture->barrier_range();
 						draw_tracker->texture_usage = p_texture->usage_flags;
 						draw_tracker->texture_slice_or_dirty_rect = p_texture->slice_rect;
@@ -5437,6 +5440,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 			// Regular texture.
 			p_texture->draw_tracker = RDG::resource_tracker_create();
 			p_texture->draw_tracker->texture_driver_id = p_texture->driver_id;
+			p_texture->draw_tracker->texture_size = Size2i(p_texture->width, p_texture->height);
 			p_texture->draw_tracker->texture_subresources = p_texture->barrier_range();
 			p_texture->draw_tracker->texture_usage = p_texture->usage_flags;
 			p_texture->draw_tracker->reference_count = 1;
