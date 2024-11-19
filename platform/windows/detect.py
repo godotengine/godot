@@ -101,7 +101,7 @@ def detect_build_env_arch():
         "arm64": "arm64",
         "aarch64": "arm64",
     }
-    if os.getenv("VCINSTALLDIR") or os.getenv("VCTOOLSINSTALLDIR"):
+    if os.getenv("VCTOOLSINSTALLDIR"):
         if os.getenv("Platform"):
             msvc_arch = os.getenv("Platform").lower()
             if msvc_arch in msvc_target_aliases.keys():
@@ -112,32 +112,11 @@ def detect_build_env_arch():
             if msvc_arch in msvc_target_aliases.keys():
                 return msvc_target_aliases[msvc_arch]
 
-        # Pre VS 2017 checks.
-        if os.getenv("VCINSTALLDIR"):
-            PATH = os.getenv("PATH").upper()
-            VCINSTALLDIR = os.getenv("VCINSTALLDIR").upper()
-            path_arch = {
-                "BIN\\x86_ARM;": "arm32",
-                "BIN\\amd64_ARM;": "arm32",
-                "BIN\\x86_ARM64;": "arm64",
-                "BIN\\amd64_ARM64;": "arm64",
-                "BIN\\x86_amd64;": "a86_64",
-                "BIN\\amd64;": "x86_64",
-                "BIN\\amd64_x86;": "x86_32",
-                "BIN;": "x86_32",
-            }
-            for path, arch in path_arch.items():
-                final_path = VCINSTALLDIR + path
-                if final_path in PATH:
-                    return arch
-
-        # VS 2017 and newer.
-        if os.getenv("VCTOOLSINSTALLDIR"):
-            host_path_index = os.getenv("PATH").upper().find(os.getenv("VCTOOLSINSTALLDIR").upper() + "BIN\\HOST")
-            if host_path_index > -1:
-                first_path_arch = os.getenv("PATH")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
-                if first_path_arch in msvc_target_aliases.keys():
-                    return msvc_target_aliases[first_path_arch]
+        host_path_index = os.getenv("PATH").upper().find(os.getenv("VCTOOLSINSTALLDIR").upper() + "BIN\\HOST")
+        if host_path_index > -1:
+            first_path_arch = os.getenv("PATH")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
+            if first_path_arch in msvc_target_aliases.keys():
+                return msvc_target_aliases[first_path_arch]
 
     msys_target_aliases = {
         "mingw32": "x86_32",

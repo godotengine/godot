@@ -854,8 +854,6 @@ else:  # GCC, Clang
 
     if methods.using_gcc(env):
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
-        if cc_version_major == 7:  # Bogus warning fixed in 8+.
-            common_warnings += ["-Wno-strict-overflow"]
         if cc_version_major < 11:
             # Regression in GCC 9/10, spams so much in our variadic templates
             # that we need to outright disable it.
