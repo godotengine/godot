@@ -51,13 +51,6 @@
 
 #define PRECISION 1
 
-void Sprite2DEditor::_node_removed(Node *p_node) {
-	if (p_node == node) {
-		node = nullptr;
-		options->hide();
-	}
-}
-
 Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
 	int size = points.size();
 	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
@@ -612,15 +605,12 @@ void Sprite2DEditor::edit(Sprite2D *p_sprite) {
 }
 
 Sprite2DEditor::Sprite2DEditor() {
-	// Top HBoxContainer definition
 	top_hb = memnew(HBoxContainer);
-
+	top_hb->hide();
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(top_hb);
 
-	// Options definition
+	// Options definition.
 	options = memnew(MenuButton);
-
-	top_hb->add_child(options);
 
 	options->set_text(TTR("Sprite2D"));
 	options->set_flat(false);
@@ -632,9 +622,10 @@ Sprite2DEditor::Sprite2DEditor() {
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
 	options->set_switch_on_hover(true);
 
+	top_hb->add_child(options);
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
-	// Resize region rect definition
+	// Resize region rect definition.
 	resize_region_rect = memnew(Button);
 
 	resize_region_rect->set_theme_type_variation("FlatMenuButton");
@@ -645,7 +636,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	top_hb->add_child(resize_region_rect);
 
-	// Other elements definition
+	// Other elements definition.
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 
@@ -723,18 +714,10 @@ bool Sprite2DEditorPlugin::handles(Object *p_object) const {
 }
 
 void Sprite2DEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		sprite_editor->top_hb->show();
-	} else {
-		sprite_editor->top_hb->hide();
-		sprite_editor->edit(nullptr);
-	}
+	sprite_editor->top_hb->set_visible(p_visible);
 }
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
-
-	make_visible(false);
-	//sprite_editor->options->hide();
 }
