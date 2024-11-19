@@ -2441,8 +2441,8 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	uint32_t view_count = rt->view_count;
 	GLuint texture_target = view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
 
-	GLuint velocity_texture_id = texture_get_texid(rt->overridden.velocity);
-	glBindTexture(texture_target, velocity_texture_id);
+	rt->velocity_texture = texture_get_texid(rt->overridden.velocity);
+	glBindTexture(texture_target, rt->velocity_texture);
 	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2450,16 +2450,16 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 
 #ifndef IOS_ENABLED
 	if (view_count > 1) {
-		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0, view_count);
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->velocity_texture, 0, 0, view_count);
 	} else {
 #else
 	{
 #endif
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, velocity_texture_id, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->velocity_texture, 0);
 	}
 
-	GLuint velocity_depth_texture_id = texture_get_texid(rt->overridden.velocity_depth);
-	glBindTexture(texture_target, velocity_depth_texture_id);
+	rt->velocity_depth_texture = texture_get_texid(rt->overridden.velocity_depth);
+	glBindTexture(texture_target, rt->velocity_depth_texture);
 	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2467,12 +2467,12 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 
 #ifndef IOS_ENABLED
 	if (view_count > 1) {
-		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0, view_count);
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->velocity_depth_texture, 0, 0, view_count);
 	} else {
 #else
 	{
 #endif
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, velocity_depth_texture_id, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->velocity_depth_texture, 0);
 	}
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -2480,7 +2480,7 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 		glDeleteFramebuffers(1, &new_velocity_fbo);
 		WARN_PRINT(vformat("Could not create motion vector render target, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
 	} else {
-		rt->overridden.velocity_fbo = new_velocity_fbo;
+		rt->velocity_fbo = new_velocity_fbo;
 	}
 
 	glBindTexture(texture_target, 0);
@@ -2628,11 +2628,13 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		return;
 	}
 
-	for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
-		glDeleteFramebuffers(1, &E.value);
+	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.velocity_fbo_cache) {
+		glDeleteFramebuffers(1, &E.value.fbo);
 	}
 	rt->overridden.velocity_fbo_cache.clear();
-	rt->overridden.velocity_fbo = 0;
+	rt->velocity_fbo = 0;
+	rt->velocity_texture = 0;
+	rt->velocity_depth_texture = 0;
 
 	// Dispose of the cached fbo's and the allocated textures
 	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.fbo_cache) {
@@ -2836,19 +2838,50 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	velocity_hash_key = hash_murmur3_one_64(p_velocity_depth_texture.get_id(), velocity_hash_key);
 	velocity_hash_key = hash_fmix32(velocity_hash_key);
 
-	RBMap<uint32_t, GLuint>::Element *fbo = rt->overridden.velocity_fbo_cache.find(velocity_hash_key);
-	if (fbo != nullptr) {
-		rt->overridden.velocity_fbo = fbo->get();
+	RBMap<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry>::Element *velocity_cache = rt->overridden.velocity_fbo_cache.find(velocity_hash_key);
+	if (velocity_cache != nullptr) {
+		rt->velocity_fbo = velocity_cache->get().fbo;
+		rt->velocity_texture = velocity_cache->get().color;
+		rt->velocity_depth_texture = velocity_cache->get().depth;
+
 		create_new_velocity_fbo = false;
+
+		if (rt->reattach_textures) {
+			glBindFramebuffer(GL_FRAMEBUFFER, rt->velocity_fbo);
+
+#ifndef IOS_ENABLED
+			if (rt->view_count > 1) {
+				glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->velocity_texture, 0, 0, rt->view_count);
+			} else {
+#else
+			{
+#endif
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->velocity_texture, 0);
+			}
+
+#ifndef IOS_ENABLED
+			if (rt->view_count > 1) {
+				glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->velocity_depth_texture, 0, 0, rt->view_count);
+			} else {
+#else
+			{
+#endif
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->velocity_depth_texture, 0);
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 	}
 
 	if (p_velocity_texture.is_null()) {
-		for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
-			glDeleteFramebuffers(1, &E.value);
+		for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.velocity_fbo_cache) {
+			glDeleteFramebuffers(1, &E.value.fbo);
 		}
 
 		rt->overridden.velocity_fbo_cache.clear();
-		rt->overridden.velocity_fbo = 0;
+		rt->velocity_fbo = 0;
+		rt->velocity_texture = 0;
+		rt->velocity_depth_texture = 0;
 		create_new_velocity_fbo = false;
 	}
 
@@ -2872,7 +2905,11 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	if (create_new_velocity_fbo) {
 		_update_render_target_velocity(rt);
-		rt->overridden.velocity_fbo_cache.insert(velocity_hash_key, rt->overridden.velocity_fbo);
+		RenderTarget::RTOverridden::FBOCacheEntry new_entry;
+		new_entry.fbo = rt->velocity_fbo;
+		new_entry.color = rt->velocity_texture;
+		new_entry.depth = rt->velocity_depth_texture;
+		rt->overridden.velocity_fbo_cache.insert(velocity_hash_key, new_entry);
 	}
 }
 
