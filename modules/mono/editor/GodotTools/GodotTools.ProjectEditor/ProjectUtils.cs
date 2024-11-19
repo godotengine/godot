@@ -28,6 +28,8 @@ namespace GodotTools.ProjectEditor
             public string TargetFramework { get; init; }
         }
 
+        private const string MinimumTargetFramework = "net6.0";
+
         private static readonly List<PlatformFramework> _platformsFrameworks = new()
         {
             new PlatformFramework { Platform = "ios", TargetFramework = "net8.0" },
@@ -83,13 +85,12 @@ namespace GodotTools.ProjectEditor
             bool HasNoCondition(ProjectElement element) => string.IsNullOrEmpty(element.Condition);
 
             bool ConditionMatches(ProjectElement element, string platform) =>
-                string.Compare(element.Condition.Trim().Replace(" ", ""),
-                    $"'$(GodotTargetPlatform)'=='{platform}'", StringComparison.OrdinalIgnoreCase) == 0;
+                element.Condition.Trim().Replace(" ", "").Equals($"'$(GodotTargetPlatform)'=='{platform}'", StringComparison.OrdinalIgnoreCase);
 
             // if the existing framework is equal or higher than what we need, we're good.
             bool IsVersionUsable(string theirs, string ours) =>
-                Version.TryParse(theirs.Substring(3), out var versionTheirs) &&
-                Version.TryParse(ours.Substring(3), out var versionOurs) &&
+                Version.TryParse(theirs[3..], out var versionTheirs) &&
+                Version.TryParse(ours[3..], out var versionOurs) &&
                 versionTheirs >= versionOurs;
 
             // if the property already has our condition, we're good.
@@ -143,39 +144,59 @@ namespace GodotTools.ProjectEditor
             // so they're all together as much as possible.
             var platformsAlreadySupported = new List<PlatformFramework>();
 
-            foreach (var group in root.PropertyGroups)
+            // If the user sets the GodotSkipAutomaticTargetFrameworkUpdate property, we don't do anything.
+            if (root.PropertyGroups.SelectMany(x => x.Properties)
+                .Any(x =>
+                    x.Name.Equals("GodotSkipAutomaticTargetFrameworkUpdate", StringComparison.OrdinalIgnoreCase) &&
+                    (x.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false)))
             {
-                foreach (var prop in group.Properties)
+                return;
+            }
+
+            var defaultTargetFramework = root.PropertyGroups
+                    .Where(HasNoCondition)
+                    .SelectMany(group => group.Properties)
+                    .FirstOrDefault(prop => prop.Name.Equals("TargetFramework", StringComparison.OrdinalIgnoreCase) && HasNoCondition(prop));
+
+            if (defaultTargetFramework == null)
+            {
+                mainGroup = root.PropertyGroups.FirstOrDefault(HasNoCondition);
+                mainGroup ??= root.AddPropertyGroup();
+                mainGroup.AddProperty("TargetFramework", MinimumTargetFramework);
+                project.HasUnsavedChanges = true;
+            }
+            else
+            {
+                // if we need to add the property, we'll add it on the first conditionless property group that
+                // has a TargetFramework, just so everything is close together
+                mainGroup = (ProjectPropertyGroupElement)defaultTargetFramework.Parent;
+                if (!IsVersionUsable(defaultTargetFramework.Value, MinimumTargetFramework))
                 {
-                    // If the user sets the GodotSkipAutomaticTargetFrameworkUpdate property, we don't do anything.
-                    if (string.Equals(prop.Name, "GodotSkipAutomaticTargetFrameworkUpdate", StringComparison.OrdinalIgnoreCase))
+                    // we should have already found the first property group that has a TargetFramework, but if not...
+                    defaultTargetFramework.Value = MinimumTargetFramework;
+                    project.HasUnsavedChanges = true;
+                }
+            }
+
+            foreach (var prop in root.PropertyGroups
+                         .SelectMany(group => group.Properties)
+                         .Where(prop => prop.Name.Equals("TargetFramework", StringComparison.OrdinalIgnoreCase)))
+            {
+                var group = (ProjectPropertyGroupElement)prop.Parent;
+                foreach (var pf in _platformsFrameworks)
+                {
+                    if (ShouldReplaceProperty(group, prop, pf.Platform, pf.TargetFramework))
                     {
-                        if (prop.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false)
-                            return;
+                        if (!propertiesToRemove.ContainsKey(group))
+                            propertiesToRemove.Add(group, new List<ProjectPropertyElement>());
+
+                        propertiesToRemove[group].Add(prop);
                     }
 
-                    if (string.Equals(prop.Name, "TargetFramework", StringComparison.OrdinalIgnoreCase))
+                    if (!platformsAlreadySupported.Contains(pf) &&
+                        IsFrameworkUsable(group, prop, pf.Platform, pf.TargetFramework))
                     {
-                        // if we need to add the property, we'll add it on the first conditionless property group that
-                        // has a TargetFramework, just so everything is close together
-                        if (mainGroup == null && HasNoCondition(group))
-                            mainGroup = group;
-
-                        foreach (var pf in _platformsFrameworks)
-                        {
-                            if (ShouldReplaceProperty(group, prop, pf.Platform, pf.TargetFramework))
-                            {
-                                if (!propertiesToRemove.ContainsKey(group))
-                                    propertiesToRemove.Add(group, new List<ProjectPropertyElement>());
-
-                                propertiesToRemove[group].Add(prop);
-                            }
-
-                            if (!platformsAlreadySupported.Contains(pf) && IsFrameworkUsable(group, prop, pf.Platform, pf.TargetFramework))
-                            {
-                                platformsAlreadySupported.Add(pf);
-                            }
-                        }
+                        platformsAlreadySupported.Add(pf);
                     }
                 }
             }
