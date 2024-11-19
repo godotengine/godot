@@ -585,6 +585,19 @@ A patch is included to modify the simplifier to report only distance error
 metrics instead of a combination of distance and attribute errors.
 
 
+## mimalloc
+- Upstream: https://github.com/microsoft/mimalloc
+- Version: 2.1.7 (8c532c32c3c96e5ba1f2283e032f69ead8add00f, 2024)
+- License: MIT
+
+Files extracted from upstream repository:
+
+- All files in `src/`
+- All files in `include/mimalloc`
+- `include/mimalloc.h`
+- `LICENSE`
+
+
 ## mingw-std-threads
 
 - Upstream: https://github.com/meganz/mingw-std-threads
