@@ -806,8 +806,13 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	return LightmapGI::BAKE_ERROR_OK;
 }
 
+bool LightmapGI::_dummy_bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
+	// No reporting needed, but baking logic is identical
+	return true;
+}
+
 LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path) {
-	return _bake(p_from_node, p_image_data_path, true, nullptr)
+	return _bake(p_from_node, p_image_data_path, _dummy_bake_func_step, nullptr);
 }
 
 LightmapGI::BakeError LightmapGI::_bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
