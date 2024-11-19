@@ -1062,6 +1062,7 @@ void ScriptEditorDebugger::_update_buttons_state() {
 	for (KeyValue<uint64_t, ThreadDebugged> &I : threads_debugged) {
 		threadss.push_back(&I.value);
 	}
+	threads->set_disabled(threadss.is_empty());
 
 	threadss.sort_custom<ThreadSort>();
 	threads->clear();
