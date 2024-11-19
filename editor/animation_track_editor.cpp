@@ -7983,6 +7983,11 @@ AnimationTrackEditor::~AnimationTrackEditor() {
 
 // AnimationTrackKeyEditEditorPlugin.
 
+void AnimationTrackKeyEditEditor::_time_edit_spun() {
+	_time_edit_entered();
+	_time_edit_exited();
+}
+
 void AnimationTrackKeyEditEditor::_time_edit_entered() {
 	int key = animation->track_find_key(track, key_ofs, Animation::FIND_MODE_APPROX);
 	if (key == -1) {
@@ -8010,7 +8015,7 @@ void AnimationTrackKeyEditEditor::_time_edit_exited() {
 
 	int existing = animation->track_find_key(track, new_time, Animation::FIND_MODE_APPROX);
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Change Keyframe Time"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Animation Change Keyframe Time"));
 
 	if (existing != -1) {
 		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track, animation->track_get_key_time(track, existing));
@@ -8057,6 +8062,7 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->set_min(0);
 	spinner->set_allow_greater(true);
 	spinner->set_allow_lesser(true);
+	add_child(spinner);
 
 	if (use_fps) {
 		spinner->set_step(FPS_DECIMAL);
@@ -8065,13 +8071,12 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(key_ofs * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_spun), CONNECT_DEFERRED);
 	} else {
 		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(key_ofs);
 		spinner->set_max(animation->get_length());
 	}
-
-	add_child(spinner);
 
 	spinner->connect("grabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
@@ -9180,9 +9185,6 @@ void AnimationMultiMarkerKeyEdit::_get_property_list(List<PropertyInfo> *p_list)
 
 // AnimationMarkerKeyEditEditorPlugin
 
-void AnimationMarkerKeyEditEditor::_time_edit_entered() {
-}
-
 void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	real_t new_time = spinner->get_value();
 
@@ -9201,7 +9203,7 @@ void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Change Marker Time"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Animation Change Marker Time"));
 
 	Color color = animation->get_marker_color(marker_name);
 	undo_redo->add_do_method(animation.ptr(), "add_marker", marker_name, new_time);
@@ -9242,6 +9244,7 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 	spinner->set_min(0);
 	spinner->set_allow_greater(true);
 	spinner->set_allow_lesser(true);
+	add_child(spinner);
 
 	float time = animation->get_marker_time(marker_name);
 
@@ -9252,17 +9255,14 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(time * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	} else {
 		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(time);
 		spinner->set_max(animation->get_length());
 	}
 
-	add_child(spinner);
-
-	spinner->connect("grabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
-	spinner->connect("value_focus_entered", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 }
 
