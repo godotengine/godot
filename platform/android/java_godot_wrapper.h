@@ -32,7 +32,6 @@
 #define JAVA_GODOT_WRAPPER_H
 
 #include "java_godot_view_wrapper.h"
-#include "string_android.h"
 
 #include "core/math/color.h"
 #include "core/templates/list.h"

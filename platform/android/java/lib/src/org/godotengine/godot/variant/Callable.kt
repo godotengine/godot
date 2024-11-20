@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  java_godot_io_wrapper.h                                               */
+/*  Callable.kt                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,69 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_GODOT_IO_WRAPPER_H
-#define JAVA_GODOT_IO_WRAPPER_H
+package org.godotengine.godot.variant
 
-#include "jni_utils.h"
+import androidx.annotation.Keep
 
-#include "core/math/rect2i.h"
-#include "core/variant/typed_array.h"
+/**
+ * Android version of a Godot built-in Callable type representing a method or a standalone function.
+ */
+@Keep
+class Callable private constructor(private val nativeCallablePointer: Long) {
 
-#include <android/log.h>
-#include <jni.h>
+	companion object {
+		/**
+		 * Invoke method [methodName] on the Godot object specified by [godotObjectId]
+		 */
+		@JvmStatic
+		fun call(godotObjectId: Long, methodName: String, vararg methodParameters: Any): Any? {
+			return nativeCallObject(godotObjectId, methodName, methodParameters)
+		}
 
-// Class that makes functions in java/src/org/godotengine/godot/GodotIO.java callable from C++
-class GodotIOJavaWrapper {
-private:
-	jobject godot_io_instance;
-	jclass cls;
+		/**
+		 * Invoke method [methodName] on the Godot object specified by [godotObjectId] during idle time.
+		 */
+		@JvmStatic
+		fun callDeferred(godotObjectId: Long, methodName: String, vararg methodParameters: Any) {
+			nativeCallObjectDeferred(godotObjectId, methodName, methodParameters)
+		}
 
-	jmethodID _open_URI = 0;
-	jmethodID _get_cache_dir = 0;
-	jmethodID _get_data_dir = 0;
-	jmethodID _get_temp_dir = 0;
-	jmethodID _get_display_cutouts = 0;
-	jmethodID _get_display_safe_area = 0;
-	jmethodID _get_locale = 0;
-	jmethodID _get_model = 0;
-	jmethodID _get_screen_DPI = 0;
-	jmethodID _get_scaled_density = 0;
-	jmethodID _get_screen_refresh_rate = 0;
-	jmethodID _get_unique_id = 0;
-	jmethodID _show_keyboard = 0;
-	jmethodID _hide_keyboard = 0;
-	jmethodID _has_hardware_keyboard = 0;
-	jmethodID _set_screen_orientation = 0;
-	jmethodID _get_screen_orientation = 0;
-	jmethodID _get_system_dir = 0;
+		@JvmStatic
+		private external fun nativeCall(pointer: Long, params: Array<out Any>): Any?
 
-public:
-	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);
-	~GodotIOJavaWrapper();
+		@JvmStatic
+		private external fun nativeCallObject(godotObjectId: Long, methodName: String, params: Array<out Any>): Any?
 
-	jobject get_instance();
+		@JvmStatic
+		private external fun nativeCallObjectDeferred(godotObjectId: Long, methodName: String, params: Array<out Any>)
 
-	Error open_uri(const String &p_uri);
-	String get_cache_dir();
-	String get_temp_dir();
-	String get_user_data_dir();
-	String get_locale();
-	String get_model();
-	int get_screen_dpi();
-	float get_scaled_density();
-	float get_screen_refresh_rate(float fallback);
-	TypedArray<Rect2> get_display_cutouts();
-	Rect2i get_display_safe_area();
-	String get_unique_id();
-	bool has_vk();
-	bool has_hardware_keyboard();
-	void show_vk(const String &p_existing, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end);
-	void hide_vk();
-	int get_vk_height();
-	void set_vk_height(int p_height);
-	void set_screen_orientation(int p_orient);
-	int get_screen_orientation();
-	String get_system_dir(int p_dir, bool p_shared_storage);
-};
+		@JvmStatic
+		private external fun releaseNativePointer(nativePointer: Long)
+	}
 
-#endif // JAVA_GODOT_IO_WRAPPER_H
+	/**
+	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
+	 */
+	internal fun call(vararg params: Any): Any? {
+		if (nativeCallablePointer == 0L) {
+			return null
+		}
+
+		return nativeCall(nativeCallablePointer, params)
+	}
+
+	/**
+	 * Used to provide access to the native callable pointer to the native logic.
+	 */
+	private fun getNativePointer() = nativeCallablePointer
+
+	/** Note that [finalize] is deprecated and shouldn't be used, unfortunately its replacement,
+	 * [java.lang.ref.Cleaner], is only available on Android api 33 and higher.
+	 * So we resort to using it for the time being until our min api catches up to api 33.
+	 **/
+	protected fun finalize() {
+		releaseNativePointer(nativeCallablePointer)
+	}
+}
