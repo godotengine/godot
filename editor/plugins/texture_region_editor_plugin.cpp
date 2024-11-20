@@ -1107,12 +1107,34 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
+void TextureRegionEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		bool handled = false;
+
+		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
+			EditorNode::get_singleton()->undo();
+			handled = true;
+		}
+
+		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
+			EditorNode::get_singleton()->redo();
+			handled = true;
+		}
+
+		if (handled) {
+			set_input_as_handled();
+		}
+	}
+}
+
 void TextureRegionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_rect"), &TextureRegionEditor::_update_rect);
 }
 
 TextureRegionEditor::TextureRegionEditor() {
 	set_title(TTR("Region Editor"));
+	set_process_shortcut_input(true);
 	set_ok_button_text(TTR("Close"));
 
 	// A power-of-two value works better as a default grid size.
