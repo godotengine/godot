@@ -294,26 +294,27 @@ def detect_modules(search_path, recursive=False):
         files.sort()
         return files
 
-    if not recursive:
-        if is_module(search_path):
-            add_module(search_path)
-        for path in get_files(search_path):
-            if is_engine(path):
-                continue
-            if is_module(path):
-                add_module(path)
-    else:
-        to_search = [search_path]
-        while to_search:
-            path = to_search.pop()
-            if is_module(path):
-                add_module(path)
-            for child in get_files(path):
-                if not os.path.isdir(child):
+    if not is_engine(search_path):
+        if not recursive:
+            if is_module(search_path):
+                add_module(search_path)
+            for path in get_files(search_path):
+                if is_engine(path):
                     continue
-                if is_engine(child):
-                    continue
-                to_search.insert(0, child)
+                if is_module(path):
+                    add_module(path)
+        else:
+            to_search = [search_path]
+            while to_search:
+                path = to_search.pop()
+                if is_module(path):
+                    add_module(path)
+                for child in get_files(path):
+                    if not os.path.isdir(child):
+                        continue
+                    if is_engine(child):
+                        continue
+                    to_search.insert(0, child)
     return modules
 
 
