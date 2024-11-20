@@ -3240,6 +3240,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		ResourceLoader::load_path_remaps();
 
+		OS::get_singleton()->initialize_platform_text();
+
 		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
 	}
 

@@ -118,6 +118,7 @@ protected:
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
+	virtual void initialize_platform_text() = 0;
 
 	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
