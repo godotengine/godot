@@ -79,13 +79,11 @@ void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 
 #ifdef MIMALLOC_ENABLED
 	if ((p1 = (void *)mi_malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == nullptr) {
-		return nullptr;
-	}
 #else
-	if ((p1 = (void *)malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == nullptr) {
-		return nullptr;
-	}
+ 	if ((p1 = (void *)malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == nullptr) {
 #endif
+ 		return nullptr;
+ 	}
 
 	p2 = (void *)(((uintptr_t)p1 + sizeof(uint32_t) + p_alignment - 1) & ~((p_alignment)-1));
 	*((uint32_t *)p2 - 1) = (uint32_t)((uintptr_t)p2 - (uintptr_t)p1);
@@ -231,15 +229,16 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 
 #ifdef MIMALLOC_ENABLED
 		mi_free(mem);
-	} else {
-		mi_free(mem);
-	}
 #else
-		free(mem);
-	} else {
-		free(mem);
-	}
+ 		free(mem);
 #endif
+ 	} else {
+#ifdef MIMALLOC_ENABLED
+		mi_free(mem);
+#else
+ 		free(mem);
+#endif
+ 	}
 }
 
 uint64_t Memory::get_mem_available() {
