@@ -45,82 +45,82 @@ TEST_CASE("[SceneTree][OccluderInstance3D] Test baking functionality") {
 // We need to load an occluder path because when the light occluder generates
 // it has to save to a file.
 #ifdef WINDOWS_ENABLED
-    const String occluder_path = OS::get_singleton()->get_environment("TEMP").path_join("test_occluder.occ");
+	const String occluder_path = OS::get_singleton()->get_environment("TEMP").path_join("test_occluder.occ");
 #else
-    const String occluder_path = "/tmp/test_occluder.occ";
+	const String occluder_path = "/tmp/test_occluder.occ";
 #endif
 
-    SceneTree *scene_tree = SceneTree::get_singleton();
+	SceneTree *scene_tree = SceneTree::get_singleton();
 
-    // Create our occluder to do tests with.
-    OccluderInstance3D *occluder_instance = memnew(OccluderInstance3D);
-    CHECK_EQ(occluder_instance->get_occluder(), nullptr);
+	// Create our occluder to do tests with.
+	OccluderInstance3D *occluder_instance = memnew(OccluderInstance3D);
+	CHECK_EQ(occluder_instance->get_occluder(), nullptr);
 
-    // Root node to put meshes under.
-    Node *test_bake_scene = memnew(Node);
+	// Root node to put meshes under.
+	Node *test_bake_scene = memnew(Node);
 
-    scene_tree->get_root()->add_child(test_bake_scene);
-    scene_tree->get_root()->add_child(occluder_instance);
+	scene_tree->get_root()->add_child(test_bake_scene);
+	scene_tree->get_root()->add_child(occluder_instance);
 
-    // Instantiate a mesh to generate.
-    MeshInstance3D *box_mesh_instance = memnew(MeshInstance3D);
-    Ref<BoxMesh> box_mesh = Ref<BoxMesh>();
-    box_mesh.instantiate();
-    box_mesh_instance->set_mesh(box_mesh);
-    test_bake_scene->add_child(box_mesh_instance);
-    box_mesh_instance->set_owner(test_bake_scene);
+	// Instantiate a mesh to generate.
+	MeshInstance3D *box_mesh_instance = memnew(MeshInstance3D);
+	Ref<BoxMesh> box_mesh = Ref<BoxMesh>();
+	box_mesh.instantiate();
+	box_mesh_instance->set_mesh(box_mesh);
+	test_bake_scene->add_child(box_mesh_instance);
+	box_mesh_instance->set_owner(test_bake_scene);
 
-    // This is the vertices output that we expect for a single cube.
-    const PackedVector3Array expected_vertices_output = PackedVector3Array(
-            { Vector3(-0.5, 0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, -0.5), Vector3(-0.5, 0.5, -0.5), 
-                    Vector3(0.5, -0.5, -0.5), Vector3(-0.5, -0.5, -0.5) });
+	// This is the vertices output that we expect for a single cube.
+	const PackedVector3Array expected_vertices_output = PackedVector3Array(
+			{ Vector3(-0.5, 0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, -0.5), Vector3(-0.5, 0.5, -0.5),
+					Vector3(0.5, -0.5, -0.5), Vector3(-0.5, -0.5, -0.5) });
 
-    // This is the indices output that we expect for a single cube.
-    const PackedInt32Array expected_indices_output = PackedInt32Array(
-            { 0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 1, 4, 3, 4, 6, 3, 5, 0, 7, 0, 2, 7, 1, 0, 4, 0, 5, 4, 2, 3, 7, 3, 6, 7 });
+	// This is the indices output that we expect for a single cube.
+	const PackedInt32Array expected_indices_output = PackedInt32Array(
+			{ 0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 1, 4, 3, 4, 6, 3, 5, 0, 7, 0, 2, 7, 1, 0, 4, 0, 5, 4, 2, 3, 7, 3, 6, 7 });
 
-    // Turn errors off to supress a warning about occlusion culling disabled at build-time.
-    ERR_PRINT_OFF;
-    OccluderInstance3D::BakeError error = occluder_instance->bake_scene(test_bake_scene, occluder_path);
-    ERR_PRINT_ON;
+	// Turn errors off to suppress a warning about occlusion culling disabled at build-time.
+	ERR_PRINT_OFF;
+	OccluderInstance3D::BakeError error = occluder_instance->bake_scene(test_bake_scene, occluder_path);
+	ERR_PRINT_ON;
 
-    // If everything's done correctly, we should get an error OK.
-    CHECK_EQ(error, OccluderInstance3D::BAKE_ERROR_OK);
-    CHECK_EQ(expected_vertices_output, occluder_instance->get_occluder()->get_vertices());
-    CHECK_EQ(expected_indices_output, occluder_instance->get_occluder()->get_indices());
+	// If everything's done correctly, we should get an error OK.
+	CHECK_EQ(error, OccluderInstance3D::BAKE_ERROR_OK);
+	CHECK_EQ(expected_vertices_output, occluder_instance->get_occluder()->get_vertices());
+	CHECK_EQ(expected_indices_output, occluder_instance->get_occluder()->get_indices());
 
-    // No path provided, we should get that error.
-    ERR_PRINT_OFF;
-    error = occluder_instance->bake_scene(test_bake_scene);
-    ERR_PRINT_ON;
-    CHECK_EQ(error, OccluderInstance3D::BAKE_ERROR_NO_SAVE_PATH);
+	// No path provided, we should get that error.
+	ERR_PRINT_OFF;
+	error = occluder_instance->bake_scene(test_bake_scene);
+	ERR_PRINT_ON;
+	CHECK_EQ(error, OccluderInstance3D::BAKE_ERROR_NO_SAVE_PATH);
 
-    // No meshes, we should get that error.
-    Node *empty_scene = memnew(Node);
-    ERR_PRINT_OFF;
-    error = occluder_instance->bake_scene(empty_scene, occluder_path);
-    ERR_PRINT_ON;
-    CHECK_EQ(error, OccluderInstance3D::BAKE_ERROR_NO_MESHES);
+	// No meshes, we should get that error.
+	Node *empty_scene = memnew(Node);
+	ERR_PRINT_OFF;
+	error = occluder_instance->bake_scene(empty_scene, occluder_path);
+	ERR_PRINT_ON;
+	CHECK_EQ(error, OccluderInstance3D::BAKE_ERROR_NO_MESHES);
 
-    // Tests for single node. We have to provide a vertices and indices array.
-    PackedVector3Array vertices = PackedVector3Array();
-    PackedInt32Array indices = PackedInt32Array();
+	// Tests for single node. We have to provide a vertices and indices array.
+	PackedVector3Array vertices = PackedVector3Array();
+	PackedInt32Array indices = PackedInt32Array();
 
-    ERR_PRINT_OFF;
-    occluder_instance->bake_single_node(box_mesh_instance, 0.1f, vertices, indices);
-    ERR_PRINT_ON;
+	ERR_PRINT_OFF;
+	occluder_instance->bake_single_node(box_mesh_instance, 0.1f, vertices, indices);
+	ERR_PRINT_ON;
 
-    CHECK_EQ(expected_vertices_output, vertices);
-    CHECK_EQ(expected_indices_output, indices);
+	CHECK_EQ(expected_vertices_output, vertices);
+	CHECK_EQ(expected_indices_output, indices);
 
-    // Cleanup
-    scene_tree->get_root()->remove_child(test_bake_scene);
-    scene_tree->get_root()->remove_child(occluder_instance);
+	// Cleanup
+	scene_tree->get_root()->remove_child(test_bake_scene);
+	scene_tree->get_root()->remove_child(occluder_instance);
 
-    memdelete(empty_scene);
-    memdelete(box_mesh_instance);
-    memdelete(test_bake_scene);
-    memdelete(occluder_instance);
+	memdelete(empty_scene);
+	memdelete(box_mesh_instance);
+	memdelete(test_bake_scene);
+	memdelete(occluder_instance);
 }
 
 } // namespace TestOccluderInstance3D
