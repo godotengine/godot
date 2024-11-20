@@ -40,6 +40,27 @@ void CharacterBodyMain::init()
 		mainShape->set_position(Vector3(0, 1, 0));
         mainShape->set_link_target(this);        
     }
+    if(audio_players.has(StringName("body"))) {
+        Ref<AudioStreamPlayer3DCompoent> player;
+        player.instantiate();
+        player->set_owenr(this);
+        audio_players["body"] = player;
+    }
+    if(audio_players.has(StringName("footstep"))) {
+        Ref<AudioStreamPlayer3DCompoent> player;
+        player.instantiate();
+        player->set_owenr(this);
+        audio_players["footstep"] = player;
+        
+    }
+    if(check_area.size() == 0) {
+        Ref<CharacterCheckArea3D> area;
+        area.instantiate();
+        area->set_name(StringName(L"周围人物检查区域"));
+        area->set_body_main(this);
+        area->init();
+        check_area.push_back(area);
+    }
 }
 void CharacterBodyMain::clear_all()
 {

@@ -251,23 +251,25 @@ void CollisionObject3DConnectionShape::_bind_methods()
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale");
 }
 void CollisionObject3DConnectionShape::set_link_target(Node3D *p_target) {
-	if(link_target == p_target) {
-		return;
-	}
-	link_target = p_target;
-	if(link_target) {
-		shape_node = memnew (CollisionShape3D);
-		link_target->add_child(shape_node, true);
-		shape_node->set_owner(link_target->get_owner());
-		shape_node->set_shape(shape);
-		shape_node->set_dont_save(true);
-	}
-	else
-	{
+	if(p_target == nullptr) {
+		link_target = ObjectID();
 		if(shape_node) {
 			shape_node->queue_free();
 			shape_node = nullptr;
 		}
+		return;
+	}
+	ObjectID target_id = p_target->get_instance_id();
+	if(link_target == target_id) {
+		return;
+	}
+	link_target = target_id;
+	if(p_target) {
+		shape_node = memnew (CollisionShape3D);
+		p_target->add_child(shape_node, true);
+		shape_node->set_owner(p_target->get_owner());
+		shape_node->set_shape(shape);
+		shape_node->set_dont_save(true);
 	}
 	update_transform();
 }
@@ -280,49 +282,6 @@ void CollisionObject3DConnectionShape::update_transform() {
 	}
 	
 }
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void CollisionObject3DConnection::_bind_methods()
-{
-
-	ClassDB::bind_method(D_METHOD("set_name", "name"), &CollisionObject3DConnection::set_name);
-	ClassDB::bind_method(D_METHOD("get_name"), &CollisionObject3DConnection::get_name);
-
-	ClassDB::bind_method(D_METHOD("set_shapes", "shapes"), &CollisionObject3DConnection::set_shapes);
-	ClassDB::bind_method(D_METHOD("get_shapes"), &CollisionObject3DConnection::get_shapes);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shapes", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("CollisionObject3DConnectionShape")), "set_shapes", "get_shapes");
-}
-
-void CollisionObject3DConnection::set_link_target(Node3D *p_target) {
-	if(link_target == p_target) {
-		return;
-	}
-	if(link_target) {
-		link_target->disconnect(CoreStringName(on_free), callable_mp(this, &CollisionObject3DConnection::on_taeget_free));
-	}
-	link_target = p_target;
-	if(link_target)
-	{
-		link_target->connect(CoreStringName(on_free), callable_mp(this, &CollisionObject3DConnection::on_taeget_free));
-	}
-	update_link_target();
-}
-void CollisionObject3DConnection::update_link_target() {
-	if(link_target) {
-		for(int i = 0; i < shapes.size(); i++) {
-			Ref<CollisionObject3DConnectionShape> sp = shapes[i];
-			if(sp.is_valid())
-				sp->set_link_target(link_target);
-		}
-	}
-}
-
-
 
 
 

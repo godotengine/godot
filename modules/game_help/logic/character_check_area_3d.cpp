@@ -33,9 +33,9 @@ void CharacterCheckArea3D::set_body_main(class CharacterBodyMain* p_mainBody)
         areaCollision->set_collision_mask(collision_check_mask);
         areaCollisionID = areaCollision->get_instance_id();
     }
-    if(area_shape.is_valid())
-    {
-        area_shape->set_link_target(areaCollision);
+    for(int i = 0;i < area_shape.size();i++ ) {
+        Ref<CollisionObject3DConnectionShape> shape = area_shape[i];
+        shape->set_link_target(areaCollision);
     }
 
 }
@@ -64,23 +64,6 @@ void CharacterCheckArea3D::update_coord()
 }
 
     
-void CharacterCheckArea3D::set_area_shape(Ref<CollisionObject3DConnection> p_shape)
-{
-    if(area_shape == p_shape)
-    {
-        return;
-    }
-    if(area_shape.is_valid())
-    {
-        area_shape->set_link_target(nullptr);
-    }
-    area_shape = p_shape;
-    if(mainBody && areaCollisionID.is_valid() && area_shape.is_valid())
-    {
-        Area3D* areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
-        area_shape->set_link_target(areaCollision);
-    }
-}
 
 void CharacterCheckArea3D::get_bound_other_character_by_angle(TypedArray<CharacterCheckArea3DResult>& _array,float angle)
 {

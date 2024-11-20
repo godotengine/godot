@@ -122,50 +122,13 @@ friend class CollisionObject3DConnection;
 	void update_transform();
 protected:
 	StringName name;
-	Node3D* link_target = nullptr;
+	ObjectID link_target;
 	CollisionShape3D *shape_node = nullptr;
 	Ref<Shape3D> shape;
 	Vector3 local_origin = Vector3(0, 0, 0);
 	Vector3 local_rotation = Vector3(0, 0, 0);
 	Vector3 local_scale = Vector3(1, 1, 1);
 
-};
-
-
-class CollisionObject3DConnection : public RefCounted {
-	GDCLASS(CollisionObject3DConnection, RefCounted);
-
-	static void _bind_methods();
-public:
-	void set_name(const StringName &p_name) {
-		name = p_name;
-	}
-
-	StringName get_name() const {
-		return name;
-	}
-	void set_shapes(const TypedArray<CollisionObject3DConnectionShape> &p_shapes) {
-		shapes = p_shapes;
-		update_link_target();
-	}
-	TypedArray<CollisionObject3DConnectionShape> get_shapes() const {
-		return shapes;
-	}
-
-	void set_link_target(Node3D *p_target) ;
-	void update_link_target();
-	~CollisionObject3DConnection()
-	{
-		link_target = nullptr;
-		update_link_target();
-	}
-	void on_taeget_free() {
-		link_target = nullptr;
-	}
-protected:	
-	StringName name;
-	TypedArray<CollisionObject3DConnectionShape> shapes;
-	Node3D* link_target = nullptr;
 };
 
 #endif // COLLISION_SHAPE_3D_H

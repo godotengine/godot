@@ -180,11 +180,6 @@ public:
         return cell_size;
     }
     
-    void set_area_shape(Ref<CollisionObject3DConnection> p_shape);
-    Ref<CollisionObject3DConnection> get_area_shape()
-    {
-        return area_shape;
-    }
 
     void on_body_enter_area(Node3D *p_area)
     {
@@ -204,6 +199,24 @@ public:
     void set_body_main(class CharacterBodyMain* p_mainBody);
     void update_coord();
     void get_bound_other_character_by_angle(TypedArray<CharacterCheckArea3DResult>& _array,float angle);
+
+    void set_area_shape(TypedArray<CollisionObject3DConnectionShape> p_shape)
+    {
+
+		Area3D* areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
+        for(int i = 0;i < p_shape.size();i++ ) {
+            Ref<CollisionObject3DConnectionShape> shape = p_shape[i];
+            shape->set_link_target(areaCollision);
+        }
+        area_shape = p_shape;
+    }
+    TypedArray<CollisionObject3DConnectionShape> get_area_shape()
+    {
+        return area_shape;
+    }
+
+    void init() {
+    }
     CharacterCheckArea3D()
     {
 
@@ -222,7 +235,7 @@ public:
     HashMap<CellPos,LocalVector<Ref<CharacterCheckArea3DResult>>,CellPos,CellPos> boundOtherCharacterByCoord;
     class CharacterBodyMain* mainBody = nullptr;
     ObjectID areaCollisionID;
-    Ref<CollisionObject3DConnection> area_shape;
+	TypedArray<CollisionObject3DConnectionShape> area_shape;
     uint32_t collision_check_mask = 0;
     bool is_update_coord = true;
 
