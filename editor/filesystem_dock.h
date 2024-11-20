@@ -381,6 +381,7 @@ public:
 
 	String get_current_path() const;
 	String get_current_directory() const;
+	String get_folder_path_at_mouse_position() const;
 
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();

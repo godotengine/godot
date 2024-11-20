@@ -5844,7 +5844,11 @@ PopupMenu *EditorNode::get_export_as_menu() {
 }
 
 void EditorNode::_dropped_files(const Vector<String> &p_files) {
-	String to_path = ProjectSettings::get_singleton()->globalize_path(FileSystemDock::get_singleton()->get_current_directory());
+	String to_path = FileSystemDock::get_singleton()->get_folder_path_at_mouse_position();
+	if (to_path.is_empty()) {
+		to_path = FileSystemDock::get_singleton()->get_current_directory();
+	}
+	to_path = ProjectSettings::get_singleton()->globalize_path(to_path);
 
 	_add_dropped_files_recursive(p_files, to_path);
 

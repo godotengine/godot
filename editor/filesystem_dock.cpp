@@ -2799,6 +2799,15 @@ void FileSystemDock::remove_resource_tooltip_plugin(const Ref<EditorResourceTool
 	tooltip_plugins.remove_at(index);
 }
 
+String FileSystemDock::get_folder_path_at_mouse_position() const {
+	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
+	if (!item) {
+		return String();
+	}
+	String fpath = item->get_metadata(0);
+	return fpath.get_base_dir();
+}
+
 Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 	if (p_path == "Favorites") {
 		// No tooltip for the "Favorites" group.
