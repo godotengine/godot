@@ -22,7 +22,7 @@
 			[b]Mesh:[/b] Imports the atlas as an [ArrayMesh] resource, keeping the original bitmap visible (but rendered as a polygon). This can be used to reduce fill rate when rendering large transparent sprites, at the cost of slower rendering if there are little to no transparent areas in the sprite.
 		</member>
 		<member name="star_rdp" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], a slower Ramer Douglas Peuker Algorithm will be used that does not self-intersect.
+			If [code]true[/code], a slower [url=https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm]Ramer Douglas Peuker Algorithm[/url] is used that does not self-intersect.
 			[b]Note:[/b] Only effective if [member import_mode] is [b]Mesh2D[/b].
 		</member>
 		<member name="trim_alpha_border_from_region" type="bool" setter="" getter="" default="true">
