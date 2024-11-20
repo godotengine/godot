@@ -527,7 +527,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 				// The index is just the latest command index that wrote to the resource.
 				if (search_tracker->write_command_or_list_index == p_command_index) {
 					ERR_FAIL_MSG("Command can't have itself as a dependency.");
-				} else if (_check_command_intersection(resource_tracker, search_tracker->write_command_or_list_index, p_command_index)) {
+				} else {
 					_add_adjacent_command(search_tracker->write_command_or_list_index, p_command_index, r_command);
 				}
 			}
