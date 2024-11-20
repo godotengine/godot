@@ -6,6 +6,7 @@
 #include "character_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/dir_access.h"
+#define EDITOR_OPTIMIZE_ANIMATION 0
 
 CharacterAIContext::CharacterAIContext()
 {
@@ -1065,7 +1066,9 @@ void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
 			}
             new_animation->set_animation_group(editor_animation_group);
             new_animation->optimize();
+#if EDITOR_OPTIMIZE_ANIMATION
             new_animation->compress();
+#endif
             play_animation = new_animation;
 			String group = p_group;
 			if (p_animations.size() == 1)

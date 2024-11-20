@@ -1091,10 +1091,10 @@ void Skeleton3DEditor::create_editors() {
 	{
 		return;
 	}
-	if (skeleton) {
-		skeleton->add_child(handles_mesh_instance);
-		handles_mesh_instance->set_skeleton_path(NodePath(""));
-	}
+	//if (skeleton) {
+	//	skeleton->add_child(handles_mesh_instance);
+	//	handles_mesh_instance->set_skeleton_path(NodePath(""));
+	//}
 
 	// Keying buttons.
 	animation_hb = memnew(HBoxContainer);

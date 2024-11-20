@@ -457,7 +457,7 @@ namespace HumanAnim
                     }
                 }
                 // 转换骨骼姿势到动画
-                build_skeleton_pose(p_skeleton,p_config,skeleton_config, position_by_hip);
+                build_skeleton_pose(p_skeleton,p_config,skeleton_config);
                 // 存储动画
                 animation_lookat.set(i,skeleton_config.bone_lookat);
                 animation_root_position.set(i,skeleton_config.root_position);
@@ -510,7 +510,7 @@ namespace HumanAnim
                     Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
                     track->path = String("hm.v.") + it.key;
                     track->interpolation = Animation::INTERPOLATION_LINEAR;
-                    track->positions.resize(animation_root_position.size());
+                    track->positions.resize(animation_root_lookat.size());
                     for(int i = 0;i < animation_root_lookat.size();i++) {
                         double time = double(i) / 100.0;
                         Animation::TKey<Vector3> key;
