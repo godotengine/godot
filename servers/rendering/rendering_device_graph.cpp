@@ -140,7 +140,7 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 #endif
 }
 
-bool RenderingDeviceGraph::_check_command_intersection(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index, bool &r_intersection_partial_coverage) const {
+bool RenderingDeviceGraph::_check_command_intersection(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index) const {
 	if (p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE && p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE) {
 		// We don't check possible intersections for usages that aren't consecutive color or depth writes.
 		return true;
@@ -155,13 +155,25 @@ bool RenderingDeviceGraph::_check_command_intersection(ResourceTracker *p_resour
 		return true;
 	}
 
-	if (!r_intersection_partial_coverage) {
-		// Indicate if this draw list only partially covers the region of the previous draw list.
-		r_intersection_partial_coverage = !current_draw_list_command.region.encloses(previous_draw_list_command.region);
-	}
-
 	// We check if the region used by both draw lists have an intersection.
 	return previous_draw_list_command.region.intersects(current_draw_list_command.region);
+}
+
+bool RenderingDeviceGraph::_check_command_partial_coverage(ResourceTracker *p_resource_tracker, int32_t p_command_index) const {
+	if (p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE && p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE) {
+		// We don't check for partial coverage in usages that aren't attachment writes.
+		return true;
+	}
+
+	const uint32_t command_data_offset = command_data_offsets[p_command_index];
+	const RecordedDrawListCommand &draw_list_command = *reinterpret_cast<const RecordedDrawListCommand *>(&command_data[command_data_offset]);
+	if (draw_list_command.type != RecordedCommand::TYPE_DRAW_LIST) {
+		// We don't check for partial coverage on commands that aren't draw lists.
+		return false;
+	}
+
+	Rect2i texture_region(Point2i(0, 0), p_resource_tracker->texture_size);
+	return !draw_list_command.region.encloses(texture_region);
 }
 
 int32_t RenderingDeviceGraph::_add_to_command_list(int32_t p_command_index, int32_t p_list_index) {
@@ -199,7 +211,7 @@ int32_t RenderingDeviceGraph::_add_to_slice_read_list(int32_t p_command_index, R
 	return next_index;
 }
 
-int32_t RenderingDeviceGraph::_add_to_write_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index) {
+int32_t RenderingDeviceGraph::_add_to_write_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index, bool p_partial_coverage) {
 	DEV_ASSERT(p_command_index < int32_t(command_count));
 	DEV_ASSERT(p_list_index < int32_t(write_slice_list_nodes.size()));
 
@@ -210,6 +222,7 @@ int32_t RenderingDeviceGraph::_add_to_write_list(int32_t p_command_index, Rect2i
 	new_node.command_index = p_command_index;
 	new_node.next_list_index = p_list_index;
 	new_node.subresources = p_subresources;
+	new_node.partial_coverage = p_partial_coverage;
 	return next_index;
 }
 
@@ -476,7 +489,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 			resource_tracker->usage = new_resource_usage;
 		}
 
-		bool intersection_partial_coverage = false;
+		bool write_usage_has_partial_coverage = !different_usage && _check_command_partial_coverage(resource_tracker, p_command_index);
 		if (search_tracker->write_command_or_list_index >= 0) {
 			if (search_tracker->write_command_list_enabled) {
 				// Make this command adjacent to any commands that wrote to this resource and intersect with the slice if it applies.
@@ -488,11 +501,11 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 					if (!resource_has_parent || search_tracker_rect.intersects(write_list_node.subresources)) {
 						if (write_list_node.command_index == p_command_index) {
 							ERR_FAIL_COND_MSG(!resource_has_parent, "Command can't have itself as a dependency.");
-						} else if (_check_command_intersection(resource_tracker, write_list_node.command_index, p_command_index, intersection_partial_coverage)) {
+						} else if (!write_list_node.partial_coverage || _check_command_intersection(resource_tracker, write_list_node.command_index, p_command_index)) {
 							// Command is dependent on this command. Add this command to the adjacency list of the write command.
 							_add_adjacent_command(write_list_node.command_index, p_command_index, r_command);
 
-							if (resource_has_parent && write_usage && search_tracker_rect.encloses(write_list_node.subresources)) {
+							if (resource_has_parent && write_usage && search_tracker_rect.encloses(write_list_node.subresources) && !write_usage_has_partial_coverage) {
 								// Eliminate redundant writes from the list.
 								if (previous_write_list_index >= 0) {
 									RecordedSliceListNode &previous_list_node = write_slice_list_nodes[previous_write_list_index];
@@ -514,22 +527,23 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 				// The index is just the latest command index that wrote to the resource.
 				if (search_tracker->write_command_or_list_index == p_command_index) {
 					ERR_FAIL_MSG("Command can't have itself as a dependency.");
-				} else if (_check_command_intersection(resource_tracker, search_tracker->write_command_or_list_index, p_command_index, intersection_partial_coverage)) {
+				} else if (_check_command_intersection(resource_tracker, search_tracker->write_command_or_list_index, p_command_index)) {
 					_add_adjacent_command(search_tracker->write_command_or_list_index, p_command_index, r_command);
 				}
 			}
 		}
 
 		if (write_usage) {
-			if (resource_has_parent || intersection_partial_coverage) {
+			bool use_write_list = resource_has_parent || write_usage_has_partial_coverage;
+			if (use_write_list) {
 				if (!search_tracker->write_command_list_enabled && search_tracker->write_command_or_list_index >= 0) {
 					// Write command list was not being used but there was a write command recorded. Add a new node with the entire parent resource's subresources and the recorded command index to the list.
 					const RDD::TextureSubresourceRange &tracker_subresources = search_tracker->texture_subresources;
 					Rect2i tracker_rect(tracker_subresources.base_mipmap, tracker_subresources.base_layer, tracker_subresources.mipmap_count, tracker_subresources.layer_count);
-					search_tracker->write_command_or_list_index = _add_to_write_list(search_tracker->write_command_or_list_index, tracker_rect, -1);
+					search_tracker->write_command_or_list_index = _add_to_write_list(search_tracker->write_command_or_list_index, tracker_rect, -1, false);
 				}
 
-				search_tracker->write_command_or_list_index = _add_to_write_list(p_command_index, search_tracker_rect, search_tracker->write_command_or_list_index);
+				search_tracker->write_command_or_list_index = _add_to_write_list(p_command_index, search_tracker_rect, search_tracker->write_command_or_list_index, write_usage_has_partial_coverage);
 				search_tracker->write_command_list_enabled = true;
 			} else {
 				search_tracker->write_command_or_list_index = p_command_index;
@@ -554,7 +568,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 				read_full_command_list_index = read_full_next_index;
 			}
 
-			if (!resource_has_parent) {
+			if (!use_write_list) {
 				// Clear the full list if this resource is not a slice.
 				search_tracker->read_full_command_list_index = -1;
 			}
@@ -564,7 +578,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 			int32_t read_slice_command_list_index = search_tracker->read_slice_command_list_index;
 			while (read_slice_command_list_index >= 0) {
 				const RecordedSliceListNode &read_list_node = read_slice_list_nodes[read_slice_command_list_index];
-				if (!resource_has_parent || search_tracker_rect.encloses(read_list_node.subresources)) {
+				if (!use_write_list || search_tracker_rect.encloses(read_list_node.subresources)) {
 					if (previous_slice_command_list_index >= 0) {
 						// Erase this element and connect the previous one to the next element.
 						read_slice_list_nodes[previous_slice_command_list_index].next_list_index = read_list_node.next_list_index;
