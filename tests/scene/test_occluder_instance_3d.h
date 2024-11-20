@@ -31,24 +31,24 @@
 #ifndef TEST_OCCLUDER_INSTANCE_3D_H
 #define TEST_OCCLUDER_INSTANCE_3D_H
 
-#include "scene/3d/occluder_instance_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/3d/primitive_meshes.h"
-#include "scene/main/scene_tree.h"
 #include "core/math/vector3.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/occluder_instance_3d.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 #include "tests/test_macros.h"
 
 namespace TestOccluderInstance3D {
 
 TEST_CASE("[SceneTree][OccluderInstance3D] Test baking functionality") {
-    // We need to load an occluder path because when the light occluder generates
-    // it has to save to a file.
-    #ifdef WINDOWS_ENABLED
-        const String occluder_path = OS::get_singleton()->get_environment("TEMP").path_join("test_occluder.occ");
-    #else
-        const String occluder_path = "/tmp/test_occluder.occ";
-    #endif
+// We need to load an occluder path because when the light occluder generates
+// it has to save to a file.
+#ifdef WINDOWS_ENABLED
+    const String occluder_path = OS::get_singleton()->get_environment("TEMP").path_join("test_occluder.occ");
+#else
+    const String occluder_path = "/tmp/test_occluder.occ";
+#endif
 
     SceneTree *scene_tree = SceneTree::get_singleton();
 
@@ -72,18 +72,12 @@ TEST_CASE("[SceneTree][OccluderInstance3D] Test baking functionality") {
 
     // This is the vertices output that we expect for a single cube.
     const PackedVector3Array expected_vertices_output = PackedVector3Array(
-        {
-            Vector3(-0.5, 0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, -0.5), Vector3(-0.5, 0.5, -0.5), 
-            Vector3(0.5, -0.5, -0.5), Vector3(-0.5, -0.5, -0.5)
-        }
-    );
+            { Vector3(-0.5, 0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, -0.5), Vector3(-0.5, 0.5, -0.5), 
+                    Vector3(0.5, -0.5, -0.5), Vector3(-0.5, -0.5, -0.5) });
 
     // This is the indices output that we expect for a single cube.
     const PackedInt32Array expected_indices_output = PackedInt32Array(
-        {
-            0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 1, 4, 3, 4, 6, 3, 5, 0, 7, 0, 2, 7, 1, 0, 4, 0, 5, 4, 2, 3, 7, 3, 6, 7
-        }
-    );
+            { 0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 1, 4, 3, 4, 6, 3, 5, 0, 7, 0, 2, 7, 1, 0, 4, 0, 5, 4, 2, 3, 7, 3, 6, 7 });
 
     // Turn errors off to supress a warning about occlusion culling disabled at build-time.
     ERR_PRINT_OFF;
