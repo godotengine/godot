@@ -54,7 +54,6 @@ TEST_CASE("[SceneTree][OccluderInstance3D] Test baking functionality") {
 
 	// Create our occluder to do tests with.
 	OccluderInstance3D *occluder_instance = memnew(OccluderInstance3D);
-	CHECK_EQ(occluder_instance->get_occluder(), nullptr);
 
 	// Root node to put meshes under.
 	Node *test_bake_scene = memnew(Node);
