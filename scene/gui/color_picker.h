@@ -79,6 +79,12 @@ class ColorPicker : public VBoxContainer {
 	GDCLASS(ColorPicker, VBoxContainer);
 
 	// These classes poke into theme items for their internal logic.
+	friend class ColorPickerShape;
+	friend class ColorPickerShapeRectangle;
+	friend class ColorPickerShapeWheel;
+	friend class ColorPickerShapeVHSCircle;
+	friend class ColorPickerShapeOKHSLCircle;
+
 	friend class ColorModeRGB;
 	friend class ColorModeHSV;
 	friend class ColorModeRAW;
@@ -127,11 +133,11 @@ private:
 
 	int current_slider_count = SLIDER_COUNT;
 	static const int MODE_BUTTON_COUNT = 3;
-	const float WHEEL_RADIUS = 0.42;
 
 	bool slider_theme_modified = true;
 
-	Vector<ColorMode *> modes;
+	LocalVector<ColorMode *> modes;
+	LocalVector<ColorPickerShape *> shapes;
 
 	Popup *picker_window = nullptr;
 	TextureRect *picker_texture_zoom = nullptr;
@@ -148,14 +154,7 @@ private:
 	PopupMenu *options_menu = nullptr;
 
 	MarginContainer *internal_margin = nullptr;
-	Control *uv_edit = nullptr;
-	Control *w_edit = nullptr;
-	AspectRatioContainer *wheel_edit = nullptr;
-	MarginContainer *wheel_margin = nullptr;
-	Ref<ShaderMaterial> wheel_mat;
-	Ref<ShaderMaterial> circle_mat;
-	Control *wheel = nullptr;
-	Control *wheel_uv = nullptr;
+	HBoxContainer *shape_container = nullptr;
 	TextureRect *sample = nullptr;
 	VBoxContainer *swatches_vbc = nullptr;
 	GridContainer *preset_container = nullptr;
@@ -291,11 +290,8 @@ private:
 	void _text_type_toggled();
 	void _sample_input(const Ref<InputEvent> &p_event);
 	void _sample_draw();
-	void _hsv_draw(int p_which, Control *c);
 	void _slider_draw(int p_which);
 
-	void _uv_input(const Ref<InputEvent> &p_event, Control *c);
-	void _w_input(const Ref<InputEvent> &p_event);
 	void _slider_or_spin_input(const Ref<InputEvent> &p_event);
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 	void _preset_input(const Ref<InputEvent> &p_event, const Color &p_color);
@@ -347,6 +343,7 @@ public:
 	static void finish_shaders();
 
 	void add_mode(ColorMode *p_mode);
+	void add_shape(ColorPickerShape *p_shape);
 
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
