@@ -383,8 +383,7 @@ if env["platform"] not in platform_list:
 
 # Add platform-specific options.
 if env["platform"] in platform_opts:
-    for opt in platform_opts[env["platform"]]:
-        opts.Add(opt)
+    opts.AddVariables(*platform_opts[env["platform"]])
 
 # Platform-specific flags.
 # These can sometimes override default options, so they need to be processed
@@ -440,12 +439,11 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
-    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+    opts.Add(BoolVariable(f"module_{name}_enabled", f"Enable module '{name}'", enabled))
 
     # Add module-specific options.
     try:
-        for opt in config.get_opts(env["platform"]):
-            opts.Add(opt)
+        opts.AddVariables(*config.get_opts(env["platform"]))
     except AttributeError:
         pass
 
@@ -580,7 +578,7 @@ env.Append(RCFLAGS=env.get("rcflags", "").split())
 # Feature build profile
 env.disabled_classes = []
 if env["build_profile"] != "":
-    print('Using feature build profile: "{}"'.format(env["build_profile"]))
+    print(f'Using feature build profile: "{env["build_profile"]}"')
     import json
 
     try:
@@ -592,7 +590,7 @@ if env["build_profile"] != "":
             for c in dbo:
                 env[c] = dbo[c]
     except json.JSONDecodeError:
-        print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
+        print_error(f'Failed to open feature build profile: "{env["build_profile"]}"')
         Exit(255)
 
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
@@ -854,8 +852,6 @@ else:  # GCC, Clang
 
     if methods.using_gcc(env):
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
-        if cc_version_major == 7:  # Bogus warning fixed in 8+.
-            common_warnings += ["-Wno-strict-overflow"]
         if cc_version_major < 11:
             # Regression in GCC 9/10, spams so much in our variadic templates
             # that we need to outright disable it.
@@ -931,7 +927,7 @@ env.module_icons_paths = []
 env.doc_class_path = platform_doc_class_path
 
 for name, path in modules_detected.items():
-    if not env["module_" + name + "_enabled"]:
+    if not env[f"module_{name}_enabled"]:
         continue
     sys.path.insert(0, path)
     env.current_module = name
@@ -1044,7 +1040,7 @@ if env["compiledb"]:
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
-        print_error("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
+        print_error(f"The `ninja=yes` option requires SCons 4.2 or later, but your version is {scons_raw_version}.")
         Exit(255)
 
     SetOption("experimental", "ninja")
