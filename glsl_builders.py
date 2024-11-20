@@ -53,6 +53,40 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
                 header_data.compute_offset = header_data.line_offset
                 continue
 
+            if line.find("#inline ") != -1:
+                inlineline = line.replace("#inline ", "").strip()[1:-1]
+                noteline = "//inline START for: " + inlineline
+                if header_data.reading == "vertex":
+                    header_data.vertex_lines += [noteline]
+                if header_data.reading == "fragment":
+                    header_data.fragment_lines += [noteline]
+                if header_data.reading == "compute":
+                    header_data.compute_lines += [noteline]
+                header_data.line_offset += 1
+                inlinefile = os.path.relpath(os.path.dirname(filename) + "/" + inlineline)
+                with open(inlinefile, "r", encoding="utf-8") as inlinefs:
+                    inline = inlinefs.readline()
+                    while inline:
+                        inline = inline.replace("\r", "").replace("\n", "")
+                        if header_data.reading == "vertex":
+                            header_data.vertex_lines += [inline]
+                        if header_data.reading == "fragment":
+                            header_data.fragment_lines += [inline]
+                        if header_data.reading == "compute":
+                            header_data.compute_lines += [inline]
+                        inline = inlinefs.readline()
+                        header_data.line_offset += 1
+                noteline = "//inline END for: " + inlineline
+                if header_data.reading == "vertex":
+                    header_data.vertex_lines += [noteline]
+                if header_data.reading == "fragment":
+                    header_data.fragment_lines += [noteline]
+                if header_data.reading == "compute":
+                    header_data.compute_lines += [noteline]
+                header_data.line_offset += 1
+                line = fs.readline()
+                continue
+
             while line.find("#include ") != -1:
                 includeline = line.replace("#include ", "").strip()[1:-1]
 
