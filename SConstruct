@@ -1012,7 +1012,7 @@ if env["minizip"]:
 if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
 if env["mimalloc"]:
-    env.Append(CPPDEFINES=["MIMALLOC_ENABLED"])
+    env.Append(CPPDEFINES=["ALLOC_MIMALLOC"])
 
 if not env["verbose"]:
     methods.no_verbose(env)

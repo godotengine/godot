@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 #include "thirdparty/mimalloc/include/mimalloc.h"
 #endif
 
@@ -77,7 +77,7 @@ void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 
 	void *p1, *p2;
 
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 	if ((p1 = (void *)mi_malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == nullptr) {
 #else
 	if ((p1 = (void *)malloc(p_bytes + p_alignment - 1 + sizeof(uint32_t))) == nullptr) {
@@ -104,7 +104,7 @@ void *Memory::realloc_aligned_static(void *p_memory, size_t p_bytes, size_t p_pr
 void Memory::free_aligned_static(void *p_memory) {
 	uint32_t offset = *((uint32_t *)p_memory - 1);
 	void *p = (void *)((uint8_t *)p_memory - offset);
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 	mi_free(p);
 #else
 	free(p);
@@ -118,7 +118,7 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 	void *mem = mi_malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
 #else
 	void *mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
@@ -171,7 +171,7 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 #endif
 
 		if (p_bytes == 0) {
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 			mi_free(mem);
 #else
 			free(mem);
@@ -180,7 +180,7 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 		} else {
 			*s = p_bytes;
 
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 			mem = (uint8_t *)mi_realloc(mem, p_bytes + DATA_OFFSET);
 #else
 			mem = (uint8_t *)realloc(mem, p_bytes + DATA_OFFSET);
@@ -194,7 +194,7 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 			return mem + DATA_OFFSET;
 		}
 	} else {
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 		mem = (uint8_t *)mi_realloc(mem, p_bytes);
 #else
 		mem = (uint8_t *)realloc(mem, p_bytes);
@@ -227,13 +227,13 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 		mem_usage.sub(*s);
 #endif
 
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 		mi_free(mem);
 #else
 		free(mem);
 #endif
 	} else {
-#ifdef MIMALLOC_ENABLED
+#ifdef ALLOC_MIMALLOC
 		mi_free(mem);
 #else
 		free(mem);
