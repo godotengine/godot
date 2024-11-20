@@ -442,6 +442,7 @@
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
 			<param index="1" name="underline_mode" type="int" enum="RichTextLabel.MetaUnderline" default="1" />
+			<param index="2" name="tooltip" type="String" default="&quot;&quot;" />
 			<description>
 				Adds a meta tag to the tag stack. Similar to the BBCode [code skip-lint][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 				If [member meta_underlined] is [code]true[/code], meta tags display an underline. This behavior can be customized with [param underline_mode].
