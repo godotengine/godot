@@ -863,16 +863,21 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool):
     texts = []
     stats = []
     for file in files:
-        # Failing a utf-8 decode is the easiest way to determine if a file is binary.
         try:
-            with open(file, encoding="utf-8") as out:
-                out.read(1024)
-        except UnicodeDecodeError:
-            stats.append((file, *os.stat(file)[6:8]))
+            # Save file stats to rewrite after modifying.
+            tmp_stat = os.stat(file)
+            # Failing a utf-8 decode is the easiest way to determine if a file is binary.
+            try:
+                with open(file, encoding="utf-8") as out:
+                    out.read(1024)
+            except UnicodeDecodeError:
+                stats.append((file, *tmp_stat[6:8]))
+                # Restore file stats after reading.
+                os.utime(file, (tmp_stat[7], tmp_stat[8]))
+            else:
+                texts.append(file)
         except OSError:
             print_error(f'Failed to access cache file "{file}"; skipping.')
-        else:
-            texts.append(file)
 
     if texts:
         count = len(texts)
