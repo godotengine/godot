@@ -117,6 +117,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Color transition_icon_disabled_color;
 		Color highlight_color;
 		Color highlight_disabled_color;
+		Color focus_color;
 		Color guideline_color;
 
 		Ref<Texture2D> transition_icons[6]{};
