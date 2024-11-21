@@ -219,6 +219,8 @@ def get_version_info(module_version_string="", silent=False):
         "external_patch": int(os.getenv("EXTERNAL_PATCH", version.external_patch)),
         "external_status": os.getenv("EXTERNAL_STATUS", version.external_status),
         "external_sha": os.getenv("EXTERNAL_SHA", version.external_status),
+        "mirror_list": os.getenv("MIRROR_LIST_URL", version.mirror_list),
+        "version_url": os.getenv("VERSION_URL", version.version_url),
     }
 
     # For dev snapshots (alpha, beta, RC, etc.) we do not commit status change to Git,

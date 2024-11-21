@@ -12,3 +12,5 @@ external_minor = 1
 external_patch = 0
 external_status = "nightly"
 external_sha = "ff9bc0422349219b337b015643544a0454d4a7ee"
+mirror_list = "https://blazium.app/mirrorlist/"
+version_url = "https://blazium.app/versions-" + external_status + ".json"

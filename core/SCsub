@@ -194,6 +194,8 @@ def version_info_builder(target, source, env):
 #define EXTERNAL_VERSION_MINOR {external_minor}
 #define EXTERNAL_VERSION_PATCH {external_patch}
 #define EXTERNAL_VERSION_STATUS "{external_status}"
+#define MIRROR_LIST_URL "{mirror_list}"
+#define VERSION_URL "{version_url}"
 """.format(**env.version_info)
         )
 

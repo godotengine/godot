@@ -238,7 +238,8 @@ void ExportTemplateManager::_refresh_mirrors() {
 	is_refreshing_mirrors = true;
 
 	String current_version = EXTERNAL_VERSION_FULL_CONFIG;
-	const String mirrors_metadata_url = "https://blazium.app/mirrorlist/" + current_version + ".json";
+	String mirror_list_url = MIRROR_LIST_URL;
+	const String mirrors_metadata_url = mirror_list_url + current_version + ".json";
 	request_mirrors->request(mirrors_metadata_url);
 }
 
