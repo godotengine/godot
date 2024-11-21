@@ -1012,6 +1012,30 @@ def generate_vs_project(env, original_args, project_name="godot"):
             return v[0] if len(v) == 1 else f"{v[0]}={v[1]}"
         return v
 
+    def get_dependencies(file, env, exts, headers, sources, others):
+        for child in file.children():
+            if isinstance(child, str):
+                child = env.File(x)
+            fname = ""
+            try:
+                fname = child.path
+            except AttributeError:
+                # It's not a file.
+                pass
+
+            if fname:
+                parts = os.path.splitext(fname)
+                if len(parts) > 1:
+                    ext = parts[1].lower()
+                    if ext in exts["sources"]:
+                        sources += [fname]
+                    elif ext in exts["headers"]:
+                        headers += [fname]
+                    elif ext in exts["others"]:
+                        others += [fname]
+
+            get_dependencies(child, env, exts, headers, sources, others)
+
     filtered_args = original_args.copy()
 
     # Ignore the "vsproj" option to not regenerate the VS project on every build
@@ -1073,26 +1097,28 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.path.remove(tmppath)
         sys.modules.pop("msvs")
 
+    extensions = {}
+    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc"]
+    extensions["sources"] = [".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".java"]
+    extensions["others"] = [".natvis", ".glsl", ".rc"]
+
     headers = []
     headers_dirs = []
-    for file in glob_recursive_2("*.h", headers_dirs):
-        headers.append(str(file).replace("/", "\\"))
-    for file in glob_recursive_2("*.hpp", headers_dirs):
-        headers.append(str(file).replace("/", "\\"))
+    for ext in extensions["headers"]:
+        for file in glob_recursive_2("*" + ext, headers_dirs):
+            headers.append(str(file).replace("/", "\\"))
 
     sources = []
     sources_dirs = []
-    for file in glob_recursive_2("*.cpp", sources_dirs):
-        sources.append(str(file).replace("/", "\\"))
-    for file in glob_recursive_2("*.c", sources_dirs):
-        sources.append(str(file).replace("/", "\\"))
+    for ext in extensions["sources"]:
+        for file in glob_recursive_2("*" + ext, sources_dirs):
+            sources.append(str(file).replace("/", "\\"))
 
     others = []
     others_dirs = []
-    for file in glob_recursive_2("*.natvis", others_dirs):
-        others.append(str(file).replace("/", "\\"))
-    for file in glob_recursive_2("*.glsl", others_dirs):
-        others.append(str(file).replace("/", "\\"))
+    for ext in extensions["others"]:
+        for file in glob_recursive_2("*" + ext, others_dirs):
+            others.append(str(file).replace("/", "\\"))
 
     skip_filters = False
     import hashlib
@@ -1156,58 +1182,13 @@ def generate_vs_project(env, original_args, project_name="godot"):
         with open(f"{project_name}.vcxproj.filters", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(filters_template)
 
-    envsources = []
-
-    envsources += env.core_sources
-    envsources += env.drivers_sources
-    envsources += env.main_sources
-    envsources += env.modules_sources
-    envsources += env.scene_sources
-    envsources += env.servers_sources
-    if env.editor_build:
-        envsources += env.editor_sources
-    envsources += env.platform_sources
-
     headers_active = []
     sources_active = []
     others_active = []
-    for x in envsources:
-        fname = ""
-        if isinstance(x, str):
-            fname = env.File(x).path
-        else:
-            # Some object files might get added directly as a File object and not a list.
-            try:
-                fname = env.File(x)[0].path
-            except Exception:
-                fname = x.path
-                pass
 
-        if fname:
-            fname = fname.replace("\\\\", "/")
-            parts = os.path.splitext(fname)
-            basename = parts[0]
-            ext = parts[1]
-            idx = fname.find(env["OBJSUFFIX"])
-            if ext in [".h", ".hpp"]:
-                headers_active += [fname]
-            elif ext in [".c", ".cpp"]:
-                sources_active += [fname]
-            elif idx > 0:
-                basename = fname[:idx]
-                if os.path.isfile(basename + ".h"):
-                    headers_active += [basename + ".h"]
-                elif os.path.isfile(basename + ".hpp"):
-                    headers_active += [basename + ".hpp"]
-                elif basename.endswith(".gen") and os.path.isfile(basename[:-4] + ".h"):
-                    headers_active += [basename[:-4] + ".h"]
-                if os.path.isfile(basename + ".c"):
-                    sources_active += [basename + ".c"]
-                elif os.path.isfile(basename + ".cpp"):
-                    sources_active += [basename + ".cpp"]
-            else:
-                fname = os.path.relpath(os.path.abspath(fname), env.Dir("").abspath)
-                others_active += [fname]
+    get_dependencies(
+        env.File(f"#bin/godot{env['PROGSUFFIX']}"), env, extensions, headers_active, sources_active, others_active
+    )
 
     all_items = []
     properties = []
