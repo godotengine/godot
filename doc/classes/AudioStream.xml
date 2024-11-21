@@ -48,7 +48,7 @@
 		<method name="_instantiate_playback" qualifiers="virtual const">
 			<return type="AudioStreamPlayback" />
 			<description>
-				Override this method to customize the returned value of [method instantiate_playback]. Should returned a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer])..
+				Override this method to customize the returned value of [method instantiate_playback]. Should return a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]).
 			</description>
 		</method>
 		<method name="_is_monophonic" qualifiers="virtual const">
