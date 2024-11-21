@@ -538,6 +538,11 @@ public:
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
+#ifdef DEBUG_ENABLED
+	void debug_print_glyph(int p_idx, const Glyph &p_glyph) const;
+	void shaped_text_debug_print(const RID &p_shaped) const;
+#endif
+
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const = 0;

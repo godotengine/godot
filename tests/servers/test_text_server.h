@@ -489,6 +489,34 @@ TEST_SUITE("[TextServer]") {
 					ts->free_rid(ctx);
 				}
 
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+					struct TestCase {
+						String text;
+						PackedInt32Array breaks;
+					};
+					TestCase cases[] = {
+						{ U"            เมาส์ตัวนี้", { 0, 17, 17, 23 } },
+						{ U"              กู้ไฟล์", { 0, 17, 17, 21 } },
+						{ U"             ไม่มีคำ", { 0, 18, 18, 20 } },
+						{ U"             ไม่มีคำพูด", { 0, 18, 18, 23 } },
+						{ U"            ไม่มีคำ", { 0, 17, 17, 19 } },
+						{ U"         มีอุปกรณ์\nนี้", { 0, 11, 11, 19, 19, 22 } },
+						{ U"الحمدا لحمدا لحمـــد", { 0, 13, 13, 20 } },
+						{ U"         الحمد test", { 0, 15, 15, 19 } },
+						{ U"الحمـد الرياضي العربي", { 0, 7, 7, 21 } },
+					};
+					for (size_t j = 0; j < sizeof(cases) / sizeof(TestCase); j++) {
+						RID ctx = ts->create_shaped_text();
+						CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
+						CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0);
+
+						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
+						ts->free_rid(ctx);
+					}
+				}
+
 				for (int j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}
