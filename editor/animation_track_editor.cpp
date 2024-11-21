@@ -7364,7 +7364,6 @@ void AnimationTrackEditor::_update_snap_unit() {
 	}
 
 	if (timeline->is_using_fps()) {
-		_clear_selection(true); // Needs to recreate a spinbox of the KeyEdit.
 		snap_unit = 1.0 / step->get_value();
 	} else {
 		if (fps_compat->is_pressed()) {
