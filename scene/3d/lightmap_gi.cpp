@@ -1189,6 +1189,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		return BAKE_ERROR_MESHES_INVALID;
 	} else if (bake_err == Lightmapper::BAKE_ERROR_ATLAS_TOO_SMALL) {
 		return BAKE_ERROR_ATLAS_TOO_SMALL;
+	} else if (bake_err == Lightmapper::BAKE_ERROR_USER_ABORTED) {
+		return BAKE_ERROR_USER_ABORTED;
 	}
 
 	// POSTBAKE: Save Textures.

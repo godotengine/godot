@@ -152,7 +152,7 @@ EditorProgress *LightmapGIEditorPlugin::tmp_progress = nullptr;
 
 bool LightmapGIEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
 	if (!tmp_progress) {
-		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, false));
+		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, true));
 		ERR_FAIL_NULL_V(tmp_progress, false);
 	}
 	return tmp_progress->step(p_description, p_progress * 1000, p_refresh);
