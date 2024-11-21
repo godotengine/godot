@@ -135,7 +135,7 @@ class CharacterCheckArea3D : public RefCounted
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
         ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_size"), "set_cell_size", "get_cell_size");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "area_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnection"), "set_area_shape", "get_area_shape");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_shape", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CollisionObject3DConnectionShape")), "set_area_shape", "get_area_shape");
     }
 public:
     
