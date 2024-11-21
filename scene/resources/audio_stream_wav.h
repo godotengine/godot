@@ -124,6 +124,9 @@ private:
 	LocalVector<uint8_t> data;
 	uint32_t data_bytes = 0;
 
+	HashMap<String, String> tag_id_remaps;
+	Dictionary tags;
+
 protected:
 	static void _bind_methods();
 
@@ -148,6 +151,11 @@ public:
 
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
+
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
+
+	HashMap<String, String>::ConstIterator remap_tag_id(const String &p_tag_id);
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 
@@ -284,6 +292,8 @@ public:
 			dst_ptr += qoa_encode_frame(data16.ptr(), p_desc, frame_len, dst_ptr);
 		}
 	}
+
+	AudioStreamWAV();
 };
 
 VARIANT_ENUM_CAST(AudioStreamWAV::Format)
