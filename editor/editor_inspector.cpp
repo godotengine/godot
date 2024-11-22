@@ -3648,8 +3648,6 @@ void EditorInspector::update_tree() {
 		for (List<EditorInspectorSection *>::Element *I = sections.back(); I; I = I->prev()) {
 			EditorInspectorSection *section = I->get();
 			if (section->get_vbox()->get_child_count() == 0) {
-				I = I->prev();
-
 				sections.erase(section);
 				vbox_per_path[main_vbox].erase(section->get_section());
 				memdelete(section);
