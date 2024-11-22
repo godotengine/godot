@@ -34,10 +34,10 @@
 			The stride, in bytes, between interleaved data. If [code]-1[/code], this buffer view is not interleaved.
 		</member>
 		<member name="indices" type="bool" setter="set_indices" getter="get_indices" default="false">
-			True if the GLTFBufferView's OpenGL GPU buffer type is an [code]ELEMENT_ARRAY_BUFFER[/code] used for vertex indices (integer constant [code]34963[/code]). False if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
+			[code]true[/code] if the GLTFBufferView's OpenGL GPU buffer type is an [code]ELEMENT_ARRAY_BUFFER[/code] used for vertex indices (integer constant [code]34963[/code]). [code]false[/code] if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
 		</member>
 		<member name="vertex_attributes" type="bool" setter="set_vertex_attributes" getter="get_vertex_attributes" default="false">
-			True if the GLTFBufferView's OpenGL GPU buffer type is an [code]ARRAY_BUFFER[/code] used for vertex attributes (integer constant [code]34962[/code]). False if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
+			[code]true[/code] if the GLTFBufferView's OpenGL GPU buffer type is an [code]ARRAY_BUFFER[/code] used for vertex attributes (integer constant [code]34962[/code]). [code]false[/code] if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
 		</member>
 	</members>
 </class>

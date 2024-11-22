@@ -1263,7 +1263,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					//bleh, must ignore invalid
 
 					ERR_FAIL_COND_V(!collada.state.mesh_data_map.has(meshid), ERR_INVALID_DATA);
-					mesh = Ref<ImporterMesh>(memnew(ImporterMesh));
+					mesh.instantiate();
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					String name = meshdata.name;
 					if (name.is_empty()) {

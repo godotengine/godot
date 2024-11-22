@@ -130,7 +130,7 @@
 					}
 
 					if ([type_filters count] > 0) {
-						NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : vformat("%s (%s)", tokens[1].strip_edges(), tokens[0].strip_edges())).utf8().get_data()];
+						NSString *name_str = [NSString stringWithUTF8String:((tokens.size() == 1) ? tokens[0] : tokens[1].strip_edges()).utf8().get_data()];
 						[new_allowed_types addObject:type_filters];
 						[popup addItemWithTitle:name_str];
 					}

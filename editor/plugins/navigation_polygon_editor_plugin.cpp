@@ -38,8 +38,8 @@
 
 Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
-	if (!navpoly.is_valid()) {
-		navpoly = Ref<NavigationPolygon>(memnew(NavigationPolygon));
+	if (navpoly.is_null()) {
+		navpoly.instantiate();
 		node->set_navigation_polygon(navpoly);
 	}
 	return navpoly;

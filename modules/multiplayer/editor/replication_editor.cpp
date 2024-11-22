@@ -375,7 +375,7 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 
-	int idx = np_text.find(":");
+	int idx = np_text.find_char(':');
 	if (idx == -1) {
 		np_text = ".:" + np_text;
 	} else if (idx == 0) {
@@ -554,7 +554,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	Node *root_node = current && !current->get_root_path().is_empty() ? current->get_node(current->get_root_path()) : nullptr;
 	Ref<Texture2D> icon = _get_class_icon(root_node);
 	if (root_node) {
-		String path = prop.substr(0, prop.find(":"));
+		String path = prop.substr(0, prop.find_char(':'));
 		String subpath = prop.substr(path.size());
 		Node *node = root_node->get_node_or_null(path);
 		if (!node) {

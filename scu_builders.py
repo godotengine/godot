@@ -259,10 +259,6 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
 
 def generate_scu_files(max_includes_per_scu):
-    print("=============================")
-    print("Single Compilation Unit Build")
-    print("=============================")
-
     global _max_includes_per_scu
     _max_includes_per_scu = max_includes_per_scu
 

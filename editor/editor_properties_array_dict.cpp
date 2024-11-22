@@ -740,10 +740,10 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 	// The format of p_hint_string is:
 	// subType/subTypeHint:nextSubtype ... etc.
 	if (!p_hint_string.is_empty()) {
-		int hint_subtype_separator = p_hint_string.find(":");
+		int hint_subtype_separator = p_hint_string.find_char(':');
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
-			int slash_pos = subtype_string.find("/");
+			int slash_pos = subtype_string.find_char('/');
 			if (slash_pos >= 0) {
 				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
 				subtype_string = subtype_string.substr(0, slash_pos);
@@ -1006,10 +1006,10 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 	PackedStringArray types = p_hint_string.split(";");
 	if (types.size() > 0 && !types[0].is_empty()) {
 		String key = types[0];
-		int hint_key_subtype_separator = key.find(":");
+		int hint_key_subtype_separator = key.find_char(':');
 		if (hint_key_subtype_separator >= 0) {
 			String key_subtype_string = key.substr(0, hint_key_subtype_separator);
-			int slash_pos = key_subtype_string.find("/");
+			int slash_pos = key_subtype_string.find_char('/');
 			if (slash_pos >= 0) {
 				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1, key_subtype_string.size() - slash_pos - 1).to_int());
 				key_subtype_string = key_subtype_string.substr(0, slash_pos);
@@ -1025,10 +1025,10 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 	}
 	if (types.size() > 1 && !types[1].is_empty()) {
 		String value = types[1];
-		int hint_value_subtype_separator = value.find(":");
+		int hint_value_subtype_separator = value.find_char(':');
 		if (hint_value_subtype_separator >= 0) {
 			String value_subtype_string = value.substr(0, hint_value_subtype_separator);
-			int slash_pos = value_subtype_string.find("/");
+			int slash_pos = value_subtype_string.find_char('/');
 			if (slash_pos >= 0) {
 				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1, value_subtype_string.size() - slash_pos - 1).to_int());
 				value_subtype_string = value_subtype_string.substr(0, slash_pos);
@@ -1173,6 +1173,11 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
 				slot.set_prop(new_prop);
+			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+				Variant key = dict.get_key_at_index(slot.index);
+				String cs = key.get_construct_string();
+				slot.prop->set_label(cs);
+				slot.prop->set_tooltip_text(cs);
 			}
 
 			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
@@ -1200,7 +1205,8 @@ void EditorPropertyDictionary::update_property() {
 
 void EditorPropertyDictionary::_remove_pressed(int p_slot_index) {
 	Dictionary dict = object->get_dict().duplicate();
-	dict.erase(dict.get_key_at_index(p_slot_index));
+	int index = slots[p_slot_index].index;
+	dict.erase(dict.get_key_at_index(index));
 
 	emit_changed(get_edited_property(), dict);
 }

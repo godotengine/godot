@@ -389,6 +389,19 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
 }
 
+TEST_CASE("[String] Find character") {
+	String s = "racecar";
+	CHECK_EQ(s.find_char('r'), 0);
+	CHECK_EQ(s.find_char('r', 1), 6);
+	CHECK_EQ(s.find_char('e'), 3);
+	CHECK_EQ(s.find_char('e', 4), -1);
+
+	CHECK_EQ(s.rfind_char('r'), 6);
+	CHECK_EQ(s.rfind_char('r', 5), 0);
+	CHECK_EQ(s.rfind_char('e'), 3);
+	CHECK_EQ(s.rfind_char('e', 2), -1);
+}
+
 TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
 	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
@@ -1252,6 +1265,12 @@ TEST_CASE("[String] is_subsequence_of") {
 	CHECK(String("sub").is_subsequence_of(a));
 	CHECK(!String("Sub").is_subsequence_of(a));
 	CHECK(String("Sub").is_subsequence_ofn(a));
+}
+
+TEST_CASE("[String] is_lowercase") {
+	CHECK(String("abcd1234 !@#$%^&*()_-=+,.<>/\\|[]{};':\"`~").is_lowercase());
+	CHECK(String("").is_lowercase());
+	CHECK(!String("abc_ABC").is_lowercase());
 }
 
 TEST_CASE("[String] match") {

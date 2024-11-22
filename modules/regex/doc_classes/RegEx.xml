@@ -34,14 +34,14 @@
 		    print(result.get_string("digit"))
 		# Would print 01 03 0 3f 42
 		[/codeblock]
-		[b]Example of splitting a string using a RegEx:[/b]
+		[b]Example:[/b] Split a string using a RegEx:
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\S+") # Negated whitespace character class.
 		var results = []
 		for result in regex.search_all("One  Two \n\tThree"):
 		    results.push_back(result.get_string())
-		# The `results` array now contains "One", "Two", "Three".
+		# The `results` array now contains "One", "Two", and "Three".
 		[/codeblock]
 		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].
 		[b]Tip:[/b] You can use [url=https://regexr.com/]Regexr[/url] to test regular expressions online.

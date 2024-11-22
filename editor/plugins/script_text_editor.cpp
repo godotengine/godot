@@ -282,7 +282,7 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 		CodeEdit *text_editor = code_editor->get_text_editor();
 		String prev_line = line > 0 ? text_editor->get_line(line - 1) : "";
 		if (prev_line.contains("@warning_ignore")) {
-			const int closing_bracket_idx = prev_line.find(")");
+			const int closing_bracket_idx = prev_line.find_char(')');
 			const String text_to_insert = ", " + code.quote(quote_style);
 			text_editor->insert_text(text_to_insert, line - 1, closing_bracket_idx);
 		} else {
@@ -951,7 +951,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
 		String symbol = p_symbol;
 		if (symbol.begins_with("uid://")) {
-			symbol = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(symbol));
+			symbol = ResourceUID::uid_to_path(symbol);
 		}
 
 		List<String> scene_extensions;
@@ -1205,7 +1205,7 @@ void ScriptTextEditor::_update_connected_methods() {
 
 		// Account for inner classes by stripping the class names from the method,
 		// starting from the right since our inner class might be inside of another inner class.
-		int pos = raw_name.rfind(".");
+		int pos = raw_name.rfind_char('.');
 		if (pos != -1) {
 			name = raw_name.substr(pos + 1);
 		}

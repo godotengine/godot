@@ -33,6 +33,8 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
@@ -265,6 +267,16 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	}
 
 	return false;
+}
+
+StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
+	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
+	for (const AnimationLibraryData &lib : animation_libraries) {
+		if (lib.library == p_animation_library) {
+			return lib.name;
+		}
+	}
+	return StringName();
 }
 
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
@@ -600,6 +612,22 @@ void AnimationMixer::_init_root_motion_cache() {
 	root_motion_scale_accumulator = Vector3(1, 1, 1);
 }
 
+void AnimationMixer::_create_track_num_to_track_cashe_for_animation(Ref<Animation> &p_animation) {
+	ERR_FAIL_COND(animation_track_num_to_track_cashe.has(p_animation));
+	LocalVector<TrackCache *> &track_num_to_track_cashe = animation_track_num_to_track_cashe.insert_new(p_animation, LocalVector<TrackCache *>())->value;
+	const Vector<Animation::Track *> &tracks = p_animation->get_tracks();
+
+	track_num_to_track_cashe.resize(tracks.size());
+	for (int i = 0; i < tracks.size(); i++) {
+		TrackCache **track_ptr = track_cache.getptr(tracks[i]->thash);
+		if (track_ptr == nullptr) {
+			track_num_to_track_cashe[i] = nullptr;
+		} else {
+			track_num_to_track_cashe[i] = *track_ptr;
+		}
+	}
+}
+
 bool AnimationMixer::_update_caches() {
 	setup_pass++;
 
@@ -928,20 +956,9 @@ bool AnimationMixer::_update_caches() {
 	}
 
 	animation_track_num_to_track_cashe.clear();
-	LocalVector<TrackCache *> track_num_to_track_cashe;
 	for (const StringName &E : sname_list) {
 		Ref<Animation> anim = get_animation(E);
-		const Vector<Animation::Track *> tracks = anim->get_tracks();
-		track_num_to_track_cashe.resize(tracks.size());
-		for (int i = 0; i < tracks.size(); i++) {
-			TrackCache **track_ptr = track_cache.getptr(tracks[i]->thash);
-			if (track_ptr == nullptr) {
-				track_num_to_track_cashe[i] = nullptr;
-			} else {
-				track_num_to_track_cashe[i] = *track_ptr;
-			}
-		}
-		animation_track_num_to_track_cashe.insert(anim, track_num_to_track_cashe);
+		_create_track_num_to_track_cashe_for_animation(anim);
 	}
 
 	track_count = idx;
@@ -1074,6 +1091,9 @@ void AnimationMixer::blend_capture(double p_delta) {
 
 	capture_cache.remain -= p_delta * capture_cache.step;
 	if (Animation::is_less_or_equal_approx(capture_cache.remain, 0)) {
+		if (capture_cache.animation.is_valid()) {
+			animation_track_num_to_track_cashe.erase(capture_cache.animation);
+		}
 		capture_cache.clear();
 		return;
 	}
@@ -2205,6 +2225,9 @@ void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween:
 	capture_cache.step = 1.0 / p_duration;
 	capture_cache.trans_type = p_trans_type;
 	capture_cache.ease_type = p_ease_type;
+	if (capture_cache.animation.is_valid()) {
+		animation_track_num_to_track_cashe.erase(capture_cache.animation);
+	}
 	capture_cache.animation.instantiate();
 
 	bool is_valid = false;
@@ -2228,6 +2251,8 @@ void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween:
 	}
 	if (!is_valid) {
 		capture_cache.clear();
+	} else {
+		_create_track_num_to_track_cashe_for_animation(capture_cache.animation);
 	}
 }
 

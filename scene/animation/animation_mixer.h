@@ -321,6 +321,7 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+	void _create_track_num_to_track_cashe_for_animation(Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
 	AudioServer::PlaybackType playback_type;
@@ -408,6 +409,7 @@ public:
 	void get_animation_library_list(List<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
+	StringName get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const;
 	StringName find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);

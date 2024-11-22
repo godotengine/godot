@@ -28,12 +28,12 @@
 		<signal name="drag_ended">
 			<param index="0" name="value_changed" type="bool" />
 			<description>
-				Emitted when dragging stops. If [param value_changed] is true, [member Range.value] is different from the value when you started the dragging.
+				Emitted when the grabber stops being dragged. If [param value_changed] is [code]true[/code], [member Range.value] is different from the value when the dragging was started.
 			</description>
 		</signal>
 		<signal name="drag_started">
 			<description>
-				Emitted when dragging is started. This is emitted before the corresponding [signal Range.value_changed] signal.
+				Emitted when the grabber starts being dragged. This is emitted before the corresponding [signal Range.value_changed] signal.
 			</description>
 		</signal>
 	</signals>

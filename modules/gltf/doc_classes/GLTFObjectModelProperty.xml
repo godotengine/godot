@@ -81,7 +81,7 @@
 			Unknown or not set object model type. If the object model type is set to this value, the real type still needs to be determined.
 		</constant>
 		<constant name="GLTF_OBJECT_MODEL_TYPE_BOOL" value="1" enum="GLTFObjectModelType">
-			Object model type "bool". Represented in the glTF JSON as a boolean, and encoded in a [GLTFAccessor] as "SCALAR". When encoded in an accessor, a value of 0 is false, and any other value is true.
+			Object model type "bool". Represented in the glTF JSON as a boolean, and encoded in a [GLTFAccessor] as "SCALAR". When encoded in an accessor, a value of [code]0[/code] is [code]false[/code], and any other value is [code]true[/code].
 		</constant>
 		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT" value="2" enum="GLTFObjectModelType">
 			Object model type "float". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR".

@@ -2,7 +2,7 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang, print_error, print_warning
+from methods import detect_darwin_sdk_path, get_compiler_version, is_apple_clang, print_error, print_warning
 from platform_methods import detect_arch, detect_mvk, validate_arch
 
 if TYPE_CHECKING:
@@ -101,10 +101,9 @@ def configure(env: "SConsEnvironment"):
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
     cc_version_minor = cc_version["apple_minor"]
-    vanilla = is_vanilla_clang(env)
 
     # Workaround for Xcode 15 linker bug.
-    if not vanilla and cc_version_major == 1500 and cc_version_minor == 0:
+    if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])

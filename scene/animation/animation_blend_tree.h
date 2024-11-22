@@ -38,6 +38,8 @@ class AnimationNodeAnimation : public AnimationRootNode {
 
 	StringName animation;
 
+	bool advance_on_start = false;
+
 	bool use_custom_timeline = false;
 	double timeline_length = 1.0;
 	Animation::LoopMode loop_mode = Animation::LOOP_NONE;
@@ -71,6 +73,9 @@ public:
 
 	void set_backward(bool p_backward);
 	bool is_backward() const;
+
+	void set_advance_on_start(bool p_advance_on_start);
+	bool is_advance_on_start() const;
 
 	void set_use_custom_timeline(bool p_use_custom_timeline);
 	bool is_using_custom_timeline() const;

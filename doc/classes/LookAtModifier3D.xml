@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LookAtModifier3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		The [SkeletonModifier3D] rotates a bone to look a target.
+	</brief_description>
+	<description>
+		This [SkeletonModifier3D] rotates a bone to look a target. This is helpful for moving character's head to look at the player, rotating a turret to look at a target, or any other case where you want to make a bone rotate towards something quickly and easily.
+		When applying multiple [LookAtModifier3D]s, the [LookAtModifier3D] assigned to the parent bone must be put above the [LookAtModifier3D] assigned to the child bone in the list in order for the child bone results to be correct.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_interpolation_remaining" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the remaining seconds of the time-based interpolation.
+			</description>
+		</method>
+		<method name="is_interpolating" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the time-based interpolation is running or not. If [code]true[/code], it is equivalent to [method get_interpolation_remaining] being [code]0[/code].
+				This is useful to determine whether a [LookAtModifier3D] can be removed safely.
+			</description>
+		</method>
+		<method name="is_target_within_limitation" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the target is within the angle limitations. It is useful for unsetting the [member target_node] when the target is outside of the angle limitations.
+				[b]Note:[/b] The value is updated after [method SkeletonModifier3D._process_modification]. To retrieve this value correctly, we recommend using the signal [signal SkeletonModifier3D.modification_processed].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bone" type="int" setter="set_bone" getter="get_bone" default="0">
+			The bone index of the [Skeleton3D] that the modification will operate on.
+		</member>
+		<member name="duration" type="float" setter="set_duration" getter="get_duration" default="0.0">
+			The duration of the time-based interpolation. Interpolation is triggered at the following cases:
+			- When the target node is changed
+			- When an axis is flipped due to angle limitation
+			[b]Note:[/b] The flipping occurs when the target is outside the angle limitation and the internally computed secondary rotation axis of the forward vector is flipped. Visually, it occurs when the target is outside the angle limitation and crosses the plane of the [member forward_axis] and [member primary_rotation_axis].
+		</member>
+		<member name="ease_type" type="int" setter="set_ease_type" getter="get_ease_type" enum="Tween.EaseType" default="0">
+			The ease type of the time-based interpolation. See also [enum Tween.EaseType].
+		</member>
+		<member name="forward_axis" type="int" setter="set_forward_axis" getter="get_forward_axis" enum="LookAtModifier3D.BoneAxis" default="4">
+			The forward axis of the bone. This [SkeletonModifier3D] modifies the bone so that this axis points toward the [member target_node].
+		</member>
+		<member name="origin_bone" type="int" setter="set_origin_bone" getter="get_origin_bone">
+			If [member origin_from] is [constant ORIGIN_FROM_SPECIFIC_BONE], the bone global pose position specified for this is used as origin.
+		</member>
+		<member name="origin_external_node" type="NodePath" setter="set_origin_external_node" getter="get_origin_external_node">
+			If [member origin_from] is [constant ORIGIN_FROM_EXTERNAL_NODE], the global position of the [Node3D] specified for this is used as origin.
+		</member>
+		<member name="origin_from" type="int" setter="set_origin_from" getter="get_origin_from" enum="LookAtModifier3D.OriginFrom" default="0">
+			This value determines from what origin is retrieved for use in the calculation of the forward vector.
+		</member>
+		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" default="Vector3(0, 0, 0)">
+			The offset of the bone pose origin. Matching the origins by offset is useful for cases where multiple bones must always face the same direction, such as the eyes.
+			[b]Note:[/b] This value indicates the local position of the object set in [member origin_from].
+		</member>
+		<member name="origin_safe_margin" type="float" setter="set_origin_safe_margin" getter="get_origin_safe_margin" default="0.1">
+			If the target passes through too close to the origin than this value, time-based interpolation is used even if the target is within the angular limitations, to prevent the angular velocity from becoming too high.
+		</member>
+		<member name="primary_damp_threshold" type="float" setter="set_primary_damp_threshold" getter="get_primary_damp_threshold">
+			The threshold to start damping for [member primary_limit_angle]. It provides non-linear (b-spline) interpolation, let it feel more resistance the more it rotate to the edge limit. This is useful for simulating the limits of human motion.
+			If [code]1.0[/code], no damping is performed. If [code]0.0[/code], damping is always performed.
+		</member>
+		<member name="primary_limit_angle" type="float" setter="set_primary_limit_angle" getter="get_primary_limit_angle">
+			The limit angle of the primary rotation when [member symmetry_limitation] is [code]true[/code].
+		</member>
+		<member name="primary_negative_damp_threshold" type="float" setter="set_primary_negative_damp_threshold" getter="get_primary_negative_damp_threshold">
+			The threshold to start damping for [member primary_negative_limit_angle].
+		</member>
+		<member name="primary_negative_limit_angle" type="float" setter="set_primary_negative_limit_angle" getter="get_primary_negative_limit_angle">
+			The limit angle of negative side of the primary rotation when [member symmetry_limitation] is [code]false[/code].
+		</member>
+		<member name="primary_positive_damp_threshold" type="float" setter="set_primary_positive_damp_threshold" getter="get_primary_positive_damp_threshold">
+			The threshold to start damping for [member primary_positive_limit_angle].
+		</member>
+		<member name="primary_positive_limit_angle" type="float" setter="set_primary_positive_limit_angle" getter="get_primary_positive_limit_angle">
+			The limit angle of positive side of the primary rotation when [member symmetry_limitation] is [code]false[/code].
+		</member>
+		<member name="primary_rotation_axis" type="int" setter="set_primary_rotation_axis" getter="get_primary_rotation_axis" enum="Vector3.Axis" default="1">
+			The axis of the first rotation. This [SkeletonModifier3D] works by compositing the rotation by Euler angles to prevent to rotate the [member forward_axis].
+		</member>
+		<member name="secondary_damp_threshold" type="float" setter="set_secondary_damp_threshold" getter="get_secondary_damp_threshold">
+			The threshold to start damping for [member secondary_limit_angle].
+		</member>
+		<member name="secondary_limit_angle" type="float" setter="set_secondary_limit_angle" getter="get_secondary_limit_angle">
+			The limit angle of the secondary rotation when [member symmetry_limitation] is [code]true[/code].
+		</member>
+		<member name="secondary_negative_damp_threshold" type="float" setter="set_secondary_negative_damp_threshold" getter="get_secondary_negative_damp_threshold">
+			The threshold to start damping for [member secondary_negative_limit_angle].
+		</member>
+		<member name="secondary_negative_limit_angle" type="float" setter="set_secondary_negative_limit_angle" getter="get_secondary_negative_limit_angle">
+			The limit angle of negative side of the secondary rotation when [member symmetry_limitation] is [code]false[/code].
+		</member>
+		<member name="secondary_positive_damp_threshold" type="float" setter="set_secondary_positive_damp_threshold" getter="get_secondary_positive_damp_threshold">
+			The threshold to start damping for [member secondary_positive_limit_angle].
+		</member>
+		<member name="secondary_positive_limit_angle" type="float" setter="set_secondary_positive_limit_angle" getter="get_secondary_positive_limit_angle">
+			The limit angle of positive side of the secondary rotation when [member symmetry_limitation] is [code]false[/code].
+		</member>
+		<member name="symmetry_limitation" type="bool" setter="set_symmetry_limitation" getter="is_limitation_symmetry">
+			If [code]true[/code], the limitations are spread from the bone symmetrically.
+			If [code]false[/code], the limitation can be specified separately for each side of the bone rest.
+		</member>
+		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The [NodePath] to the node that is the target for the look at modification. This node is what the modification will rotate the bone to.
+		</member>
+		<member name="transition_type" type="int" setter="set_transition_type" getter="get_transition_type" enum="Tween.TransitionType" default="0">
+			The transition type of the time-based interpolation. See also [enum Tween.TransitionType].
+		</member>
+		<member name="use_angle_limitation" type="bool" setter="set_use_angle_limitation" getter="is_using_angle_limitation" default="false">
+			If [code]true[/code], limits the degree of rotation. This helps prevent the character's neck from rotating 360 degrees.
+			[b]Note:[/b] As with [AnimationTree] blending, interpolation is provided that favors [method Skeleton3D.get_bone_rest]. This means that interpolation does not select the shortest path in some cases.
+			[b]Note:[/b] Some [member transition_type] may exceed the limitations (e.g. `Back`, `Elastic`, and `Spring`). If interpolation occurs while overshooting the limitations, the result might possibly not respect the bone rest.
+		</member>
+		<member name="use_secondary_rotation" type="bool" setter="set_use_secondary_rotation" getter="is_using_secondary_rotation" default="true">
+			If [code]true[/code], provides rotation by two axes.
+		</member>
+	</members>
+	<constants>
+		<constant name="BONE_AXIS_PLUS_X" value="0" enum="BoneAxis">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_X" value="1" enum="BoneAxis">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Y" value="2" enum="BoneAxis">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Y" value="3" enum="BoneAxis">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Z" value="4" enum="BoneAxis">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Z" value="5" enum="BoneAxis">
+			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="ORIGIN_FROM_SELF" value="0" enum="OriginFrom">
+			The bone rest position of the bone specified in [member bone] is used as origin.
+		</constant>
+		<constant name="ORIGIN_FROM_SPECIFIC_BONE" value="1" enum="OriginFrom">
+			The bone global pose position of the bone specified in [member origin_bone] is used as origin.
+			[b]Note:[/b] It is recommended that you select only the parent bone unless you are familiar with the bone processing process. The specified bone pose at the time the [LookAtModifier3D] is processed is used as a reference. In other words, if you specify a child bone and the [LookAtModifier3D] causes the child bone to move, the rendered result and direction will not match.
+		</constant>
+		<constant name="ORIGIN_FROM_EXTERNAL_NODE" value="2" enum="OriginFrom">
+			The global position of the [Node3D] specified in [member origin_external_node] is used as origin.
+			[b]Note:[/b] Same as [constant ORIGIN_FROM_SPECIFIC_BONE], when specifying a [BoneAttachment3D] with a child bone assigned, the rendered result and direction will not match.
+		</constant>
+	</constants>
+</class>

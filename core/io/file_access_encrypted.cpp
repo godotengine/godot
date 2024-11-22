@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 
-Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
+Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic, const Vector<uint8_t> &p_iv) {
 	ERR_FAIL_COND_V_MSG(file.is_valid(), ERR_ALREADY_IN_USE, vformat("Can't open file while another file from path '%s' is open.", file->get_path_absolute()));
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
@@ -49,6 +49,16 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		writing = true;
 		file = p_base;
 		key = p_key;
+		if (p_iv.is_empty()) {
+			iv.resize(16);
+			CryptoCore::RandomGenerator rng;
+			ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
+			Error err = rng.get_random_bytes(iv.ptrw(), 16);
+			ERR_FAIL_COND_V(err != OK, err);
+		} else {
+			ERR_FAIL_COND_V(p_iv.size() != 16, ERR_INVALID_PARAMETER);
+			iv = p_iv;
+		}
 
 	} else if (p_mode == MODE_READ) {
 		writing = false;
@@ -63,10 +73,8 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		p_base->get_buffer(md5d, 16);
 		length = p_base->get_64();
 
-		unsigned char iv[16];
-		for (int i = 0; i < 16; i++) {
-			iv[i] = p_base->get_8();
-		}
+		iv.resize(16);
+		p_base->get_buffer(iv.ptrw(), 16);
 
 		base = p_base->get_position();
 		ERR_FAIL_COND_V(p_base->get_length() < base + length, ERR_FILE_CORRUPT);
@@ -83,7 +91,7 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 			CryptoCore::AESContext ctx;
 
 			ctx.set_encode_key(key.ptrw(), 256); // Due to the nature of CFB, same key schedule is used for both encryption and decryption!
-			ctx.decrypt_cfb(ds, iv, data.ptrw(), data.ptrw());
+			ctx.decrypt_cfb(ds, iv.ptrw(), data.ptrw(), data.ptrw());
 		}
 
 		data.resize(length);
@@ -145,14 +153,9 @@ void FileAccessEncrypted::_close() {
 
 		file->store_buffer(hash, 16);
 		file->store_64(data.size());
+		file->store_buffer(iv.ptr(), 16);
 
-		unsigned char iv[16];
-		for (int i = 0; i < 16; i++) {
-			iv[i] = Math::rand() % 256;
-			file->store_8(iv[i]);
-		}
-
-		ctx.encrypt_cfb(len, iv, compressed.ptrw(), compressed.ptrw());
+		ctx.encrypt_cfb(len, iv.ptrw(), compressed.ptrw(), compressed.ptrw());
 
 		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();

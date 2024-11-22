@@ -585,8 +585,25 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 }
 
 void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
-	// Avoid validated evaluator for modulo and division when operands are int, since there's no check for division by zero.
-	if (HAS_BUILTIN_TYPE(p_left_operand) && HAS_BUILTIN_TYPE(p_right_operand) && ((p_operator != Variant::OP_DIVIDE && p_operator != Variant::OP_MODULE) || p_left_operand.type.builtin_type != Variant::INT || p_right_operand.type.builtin_type != Variant::INT)) {
+	bool valid = HAS_BUILTIN_TYPE(p_left_operand) && HAS_BUILTIN_TYPE(p_right_operand);
+
+	// Avoid validated evaluator for modulo and division when operands are int or integer vector, since there's no check for division by zero.
+	if (valid && (p_operator == Variant::OP_DIVIDE || p_operator == Variant::OP_MODULE)) {
+		switch (p_left_operand.type.builtin_type) {
+			case Variant::INT:
+				valid = p_right_operand.type.builtin_type != Variant::INT;
+				break;
+			case Variant::VECTOR2I:
+			case Variant::VECTOR3I:
+			case Variant::VECTOR4I:
+				valid = p_right_operand.type.builtin_type != Variant::INT && p_right_operand.type.builtin_type != p_left_operand.type.builtin_type;
+				break;
+			default:
+				break;
+		}
+	}
+
+	if (valid) {
 		if (p_target.mode == Address::TEMPORARY) {
 			Variant::Type result_type = Variant::get_operator_return_type(p_operator, p_left_operand.type.builtin_type, p_right_operand.type.builtin_type);
 			Variant::Type temp_type = temporaries[p_target.address].type;

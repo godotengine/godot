@@ -876,6 +876,20 @@ Tween::EaseType AnimationPlayer::get_auto_capture_ease_type() const {
 	return auto_capture_ease_type;
 }
 
+#ifdef TOOLS_ENABLED
+void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "play" || pf == "play_backwards" || pf == "has_animation" || pf == "queue")) {
+		List<StringName> al;
+		get_animation_list(&al);
+		for (const StringName &name : al) {
+			r_options->push_back(String(name).quote());
+		}
+	}
+	AnimationMixer::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {
 	AnimationMixer::_animation_removed(p_name, p_library);
 

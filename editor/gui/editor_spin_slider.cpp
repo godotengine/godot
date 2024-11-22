@@ -67,6 +67,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					} else {
 						set_value(get_value() - get_step());
 					}
+					emit_signal("updown_pressed");
 					return;
 				}
 				_grab_start();
@@ -437,7 +438,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 				Vector2 scale = get_global_transform_with_canvas().get_scale();
 				grabber->set_scale(scale);
 				grabber->reset_size();
-				grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+				grabber->set_position((grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
@@ -696,6 +697,7 @@ void EditorSpinSlider::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("grabbed"));
 	ADD_SIGNAL(MethodInfo("ungrabbed"));
+	ADD_SIGNAL(MethodInfo("updown_pressed"));
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 
@@ -731,7 +733,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
-	grabber->set_as_top_level(true);
+	grabber->set_z_index(1);
 	grabber->set_mouse_filter(MOUSE_FILTER_STOP);
 	grabber->connect(SceneStringName(mouse_entered), callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));

@@ -299,7 +299,7 @@ public:
 	void _compress_animations(AnimationPlayer *anim, int p_page_size_kb);
 
 	Node *pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options);
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;

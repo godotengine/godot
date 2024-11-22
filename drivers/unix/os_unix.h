@@ -58,7 +58,11 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
-	virtual String get_stdin_string() override;
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
+	virtual StdHandleType get_stdin_type() const override;
+	virtual StdHandleType get_stdout_type() const override;
+	virtual StdHandleType get_stderr_type() const override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 

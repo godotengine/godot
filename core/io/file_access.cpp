@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "file_access.h"
+#include "file_access.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -70,7 +71,7 @@ void FileAccess::_set_access_type(AccessType p_access) {
 
 Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	Ref<FileAccess> ret;
-	if (p_path.begins_with("res://")) {
+	if (p_path.begins_with("res://") || p_path.begins_with("uid://")) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
@@ -124,7 +125,7 @@ Ref<FileAccess> FileAccess::_open(const String &p_path, ModeFlags p_mode_flags) 
 	return fa;
 }
 
-Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
+Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key, const Vector<uint8_t> &p_iv) {
 	Ref<FileAccess> fa = _open(p_path, p_mode_flags);
 	if (fa.is_null()) {
 		return fa;
@@ -132,7 +133,7 @@ Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mod
 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
-	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ, true, p_iv);
 	last_file_open_error = err;
 	if (err) {
 		return Ref<FileAccess>();
@@ -182,13 +183,17 @@ FileAccess::AccessType FileAccess::get_access_type() const {
 }
 
 String FileAccess::fix_path(const String &p_path) const {
-	//helper used by file accesses that use a single filesystem
+	// Helper used by file accesses that use a single filesystem.
 
 	String r_path = p_path.replace("\\", "/");
 
 	switch (_access_type) {
 		case ACCESS_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
+				if (r_path.begins_with("uid://")) {
+					r_path = ResourceUID::uid_to_path(r_path);
+				}
+
 				if (r_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (!resource_path.is_empty()) {
@@ -806,7 +811,7 @@ String FileAccess::get_sha256(const String &p_file) {
 
 void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open", "path", "flags"), &FileAccess::_open);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::open_encrypted);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key", "iv"), &FileAccess::open_encrypted, DEFVAL(Vector<uint8_t>()));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_open_error"), &FileAccess::get_open_error);

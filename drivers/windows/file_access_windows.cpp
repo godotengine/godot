@@ -64,7 +64,7 @@ bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
 	String fname = p_path.get_file().to_lower();
 
-	int dot = fname.find(".");
+	int dot = fname.find_char('.');
 	if (dot != -1) {
 		fname = fname.substr(0, dot);
 	}
@@ -127,7 +127,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	}
 
 #ifdef TOOLS_ENABLED
-	// Windows is case insensitive, but all other platforms are sensitive to it
+	// Windows is case insensitive in the default configuration, but other platforms can be sensitive to it
 	// To ease cross-platform development, we issue a warning if users try to access
 	// a file using the wrong case (which *works* on Windows, but won't on other
 	// platforms), we only check for relative paths, or paths in res:// or user://,

@@ -224,7 +224,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="ignore" type="bool" />
 			<description>
-				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to false.
+				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to [code]false[/code].
 			</description>
 		</method>
 		<method name="canvas_item_add_lcd_texture_rect_region">
@@ -1548,6 +1548,20 @@
 				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingServer directly.
 			</description>
 		</method>
+		<method name="get_current_rendering_driver_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the current rendering driver. This can be [code]vulkan[/code], [code]d3d12[/code], [code]metal[/code], [code]opengl3[/code], [code]opengl3_es[/code], or [code]opengl3_angle[/code]. See also [method get_current_rendering_method].
+				The rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver], the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+			</description>
+		</method>
+		<method name="get_current_rendering_method" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the current rendering method. This can be [code]forward_plus[/code], [code]mobile[/code], or [code]gl_compatibility[/code]. See also [method get_current_rendering_driver_name].
+				The rendering method is determined by [member ProjectSettings.rendering/renderer/rendering_method], the [code]--rendering-method[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+			</description>
+		</method>
 		<method name="get_default_clear_color">
 			<return type="Color" />
 			<description>
@@ -1600,7 +1614,7 @@
 			<return type="RID" />
 			<description>
 				Returns the RID of a 256×256 texture with a testing pattern on it (in [constant Image.FORMAT_RGB8] format). This texture will be created and returned on the first call to [method get_test_texture], then it will be cached for subsequent calls. See also [method get_white_texture].
-				Example of getting the test texture and applying it to a [Sprite2D] node:
+				[b]Example:[/b] Get the test texture and apply it to a [Sprite2D] node:
 				[codeblock]
 				var texture_rid = RenderingServer.get_test_texture()
 				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
@@ -1641,7 +1655,7 @@
 			<return type="RID" />
 			<description>
 				Returns the ID of a 4×4 white texture (in [constant Image.FORMAT_RGB8] format). This texture will be created and returned on the first call to [method get_white_texture], then it will be cached for subsequent calls. See also [method get_test_texture].
-				Example of getting the white texture and applying it to a [Sprite2D] node:
+				[b]Example:[/b] Get the white texture and apply it to a [Sprite2D] node:
 				[codeblock]
 				var texture_rid = RenderingServer.get_white_texture()
 				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
@@ -2531,6 +2545,13 @@
 				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
+		<method name="multimesh_get_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the [MultiMesh], which can be used as any other buffer on the Rendering Device.
+			</description>
+		</method>
 		<method name="multimesh_get_custom_aabb" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2957,7 +2978,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="emitting" type="bool" />
 			<description>
-				If [code]true[/code], particles will emit over time. Setting to false does not reset the particles, but only stops their emission. Equivalent to [member GPUParticles3D.emitting].
+				If [code]true[/code], particles will emit over time. Setting to [code]false[/code] does not reset the particles, but only stops their emission. Equivalent to [member GPUParticles3D.emitting].
 			</description>
 		</method>
 		<method name="particles_set_explosiveness_ratio">
@@ -3300,7 +3321,8 @@
 			<return type="void" />
 			<param index="0" name="generate" type="bool" />
 			<description>
-				This method is currently unimplemented and does nothing if called with [param generate] set to [code]true[/code].
+				If [param generate] is [code]true[/code], generates debug wireframes for all meshes that are loaded when using the Compatibility renderer. By default, the engine does not generate debug wireframes at runtime, since they slow down loading of assets and take up VRAM.
+				[b]Note:[/b] You must call this method before loading any meshes when using the Compatibility renderer, otherwise wireframes will not be used.
 			</description>
 		</method>
 		<method name="set_default_clear_color">
@@ -3514,7 +3536,7 @@
 			<param index="0" name="texture" type="RID" />
 			<description>
 				Returns an [Image] instance from the given [param texture] [RID].
-				Example of getting the test texture from [method get_test_texture] and applying it to a [Sprite2D] node:
+				[b]Example:[/b] Get the test texture from [method get_test_texture] and apply it to a [Sprite2D] node:
 				[codeblock]
 				var texture_rid = RenderingServer.get_test_texture()
 				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
@@ -5033,6 +5055,7 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
+			[b]Note:[/b] [method set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
 			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.
