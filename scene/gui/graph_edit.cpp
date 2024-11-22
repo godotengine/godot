@@ -337,6 +337,16 @@ const List<Ref<GraphEdit::Connection>> &GraphEdit::get_connection_list() const {
 	return connections;
 }
 
+int GraphEdit::get_connection_count(const StringName &p_node, int p_port) {
+	int count = 0;
+	for (const Ref<Connection> &conn : connections) {
+		if ((conn->from_node == p_node && conn->from_port == p_port) || (conn->to_node == p_node && conn->to_port == p_port)) {
+			count += 1;
+		}
+	}
+	return count;
+}
+
 void GraphEdit::set_scroll_offset(const Vector2 &p_offset) {
 	setting_scroll_offset = true;
 	h_scrollbar->set_value(p_offset.x);
@@ -2640,6 +2650,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_node", "from_node", "from_port", "to_node", "to_port"), &GraphEdit::disconnect_node);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from_node", "from_port", "to_node", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
+	ClassDB::bind_method(D_METHOD("get_connection_count", "from_node", "from_port"), &GraphEdit::get_connection_count);
 	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
 	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
