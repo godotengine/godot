@@ -240,6 +240,7 @@ static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
 static bool debug_canvas_item_redraw = false;
+static bool debug_mute_audio = false;
 #endif
 static int max_fps = -1;
 static int frame_delay = 0;
@@ -1672,6 +1673,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			debug_canvas_item_redraw = true;
 		} else if (arg == "--debug-stringnames") {
 			StringName::set_debug_stringnames(true);
+		} else if (arg == "--debug-mute-audio") {
+			debug_mute_audio = true;
 #endif
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--test-rd-support") {
@@ -4009,6 +4012,10 @@ int Main::start() {
 		}
 		if (debug_canvas_item_redraw) {
 			RenderingServer::get_singleton()->canvas_item_set_debug_redraw(true);
+		}
+
+		if (debug_mute_audio) {
+			AudioServer::get_singleton()->set_debug_mute(true);
 		}
 #endif
 
