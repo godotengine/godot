@@ -209,9 +209,6 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			RD::FramebufferPass pass;
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
-			if (vrs_texture.is_valid()) {
-				pass.vrs_attachment = 2;
-			}
 
 			if (use_msaa) {
 				// Add resolve
@@ -232,9 +229,6 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			RD::FramebufferPass pass;
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
-			if (vrs_texture.is_valid()) {
-				pass.vrs_attachment = 2;
-			}
 
 			if (use_msaa) {
 				// add resolve
@@ -2882,6 +2876,7 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	attachments.push_back(attachment);
 
 	if (p_vrs) {
+		// VRS attachment.
 		attachment.samples = RD::TEXTURE_SAMPLES_1;
 		attachment.format = RenderSceneBuffersRD::get_vrs_format();
 		attachment.usage_flags = RenderSceneBuffersRD::get_vrs_usage_bits();
@@ -2902,10 +2897,6 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	pass.color_attachments.clear();
 	pass.color_attachments.push_back(0);
 	pass.depth_attachment = 1;
-
-	if (p_vrs) {
-		pass.vrs_attachment = 2;
-	}
 
 	if (multisampling) {
 		pass.resolve_attachments.push_back(attachments.size() - 1);
@@ -2932,7 +2923,8 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 		passes.push_back(blit_pass);
 	}
 
-	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes, p_view_count);
+	int32_t vrs_attachment = p_vrs ? 2 : -1;
+	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes, p_view_count, vrs_attachment);
 }
 
 static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline() {

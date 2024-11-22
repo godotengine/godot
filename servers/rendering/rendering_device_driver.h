@@ -237,7 +237,8 @@ public:
 		TEXTURE_LAYOUT_COPY_DST_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL,
-		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_MAX
 	};
 
@@ -246,6 +247,11 @@ public:
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
 		TEXTURE_ASPECT_MAX
+	};
+
+	enum TextureUsageMethod {
+		TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT = TEXTURE_USAGE_MAX_BIT << 1,
+		TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT = TEXTURE_USAGE_MAX_BIT << 2,
 	};
 
 	enum TextureAspectBits {
@@ -334,6 +340,8 @@ public:
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
+		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
+		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
 	};
 
 	enum BarrierAccessBits {
@@ -355,8 +363,9 @@ public:
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
-		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 24),
-		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 25),
+		BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT = (1 << 24),
+		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 25),
+		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 26),
 		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
@@ -628,7 +637,8 @@ public:
 		AttachmentReference depth_stencil_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
-		AttachmentReference vrs_reference;
+		AttachmentReference fragment_shading_rate_reference;
+		Size2i fragment_shading_rate_texel_size;
 	};
 
 	struct SubpassDependency {
@@ -640,7 +650,7 @@ public:
 		BitField<BarrierAccessBits> dst_access;
 	};
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) = 0;
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) = 0;
 	virtual void render_pass_free(RenderPassID p_render_pass) = 0;
 
 	// ----- COMMANDS -----
@@ -786,6 +796,26 @@ public:
 		uint32_t max_instance_count = 0;
 	};
 
+	struct FragmentShadingRateCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i max_fragment_size;
+		bool pipeline_supported = false;
+		bool primitive_supported = false;
+		bool attachment_supported = false;
+	};
+
+	struct FragmentDensityMapCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i offset_granularity;
+		bool attachment_supported = false;
+		bool dynamic_attachment_supported = false;
+		bool non_subsampled_images_supported = false;
+		bool invocations_supported = false;
+		bool offset_supported = false;
+	};
+
 	enum ApiTrait {
 		API_TRAIT_HONORS_PIPELINE_BARRIERS,
 		API_TRAIT_SHADER_CHANGE_INVALIDATION,
@@ -827,6 +857,8 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() = 0;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() = 0;
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;

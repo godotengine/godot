@@ -40,6 +40,8 @@ private:
 	enum VRSMode {
 		VRS_DEFAULT,
 		VRS_MULTIVIEW,
+		VRS_RG,
+		VRS_RG_MULTIVIEW,
 		VRS_MAX,
 	};
 
