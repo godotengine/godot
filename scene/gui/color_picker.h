@@ -31,28 +31,24 @@
 #ifndef COLOR_PICKER_H
 #define COLOR_PICKER_H
 
-#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/control.h"
-#include "scene/gui/grid_container.h"
-#include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/resources/style_box_flat.h"
 
+class AspectRatioContainer;
 class ColorMode;
-class ColorModeRGB;
-class ColorModeHSV;
-class ColorModeRAW;
-class ColorModeOKHSL;
+class ColorPickerShape;
+class GridContainer;
+class HSlider;
+class Label;
+class LineEdit;
+class MarginContainer;
+class MenuButton;
+class OptionButton;
+class PopupMenu;
+class SpinBox;
+class StyleBoxFlat;
+class TextureRect;
 
 class ColorPresetButton : public BaseButton {
 	GDCLASS(ColorPresetButton, BaseButton);
@@ -110,11 +106,11 @@ public:
 	static const int SLIDER_COUNT = 4;
 
 private:
-	static Ref<Shader> wheel_shader;
-	static Ref<Shader> circle_shader;
-	static Ref<Shader> circle_ok_color_shader;
-	static List<Color> preset_cache;
-	static List<Color> recent_preset_cache;
+	static inline Ref<Shader> wheel_shader;
+	static inline Ref<Shader> circle_shader;
+	static inline Ref<Shader> circle_ok_color_shader;
+	static inline List<Color> preset_cache;
+	static inline List<Color> recent_preset_cache;
 
 #ifdef TOOLS_ENABLED
 	Object *editor_settings = nullptr;
