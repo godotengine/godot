@@ -66,6 +66,14 @@
 				Adds the given [UPNPDevice] to the list of discovered devices.
 			</description>
 		</method>
+		<method name="add_device_from_url">
+			<return type="int" enum="UPNP.UPNPResult" />
+			<param index="0" name="desc_url" type="String" />
+			<description>
+				Discovers a [UPNPDevice] directly from the provided device description URL [code]desc_url[/code], allowing the much slower call to [method discover] to be skipped.
+				Returns one of the [enum UPNPResult] code constants ([constant UPNP_RESULT_SUCCESS] on success).
+			</description>
+		</method>
 		<method name="add_port_mapping" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="port" type="int" />

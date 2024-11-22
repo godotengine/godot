@@ -100,6 +100,7 @@ public:
 	Ref<UPNPDevice> get_gateway() const;
 
 	int discover(int timeout = 2000, int ttl = 2, const String &device_filter = "InternetGatewayDevice");
+	UPNPResult add_device_from_url(const String &desc_url);
 
 	String query_external_address() const;
 
