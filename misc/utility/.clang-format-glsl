@@ -30,7 +30,10 @@ JavaImportGroups:
   - com.google
   - java
   - javax
-KeepEmptyLinesAtTheStartOfBlocks: false
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfBlock: false
+  AtStartOfFile: false
 ObjCBlockIndentWidth: 4
 PackConstructorInitializers: NextLine
 RemoveSemicolon: false # Differs from base .clang-format
