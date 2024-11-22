@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="LookAtModifier3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		The [SkeletonModifier3D] rotates a bone to look a target.
+		The [LookAtModifier3D] rotates a bone to look at a target.
 	</brief_description>
 	<description>
-		This [SkeletonModifier3D] rotates a bone to look a target. This is helpful for moving character's head to look at the player, rotating a turret to look at a target, or any other case where you want to make a bone rotate towards something quickly and easily.
+		This [SkeletonModifier3D] rotates a bone to look at a target. This is helpful for moving a character's head to look at the player, rotating a turret to look at a target, or any other case where you want to make a bone rotate towards something quickly and easily.
 		When applying multiple [LookAtModifier3D]s, the [LookAtModifier3D] assigned to the parent bone must be put above the [LookAtModifier3D] assigned to the child bone in the list in order for the child bone results to be correct.
 	</description>
 	<tutorials>
