@@ -801,6 +801,13 @@ void EditorDebuggerNode::live_debug_reparent_node(const NodePath &p_at, const No
 	});
 }
 
+void EditorDebuggerNode::set_audio_enabled(bool p_enabled) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_audio_enabled(p_enabled);
+	});
+	audio_enabled = p_enabled;
+}
+
 void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->set_camera_override(p_override);

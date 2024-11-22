@@ -126,6 +126,10 @@ void GameViewDebugger::set_select_mode(int p_mode) {
 	}
 }
 
+void GameViewDebugger::set_audio_enabled(bool p_enabled) {
+	EditorDebuggerNode::get_singleton()->set_audio_enabled(p_enabled);
+}
+
 void GameViewDebugger::set_camera_override(bool p_enabled) {
 	EditorDebuggerNode::get_singleton()->set_camera_override(p_enabled ? camera_override_mode : EditorDebuggerNode::OVERRIDE_NONE);
 }
@@ -235,6 +239,10 @@ void GameView::_hide_selection_toggled(bool p_pressed) {
 	debugger->set_selection_visible(!p_pressed);
 }
 
+void GameView::_enable_audio_button_toggled(bool p_pressed) {
+	debugger->set_audio_enabled(p_pressed);
+}
+
 void GameView::_camera_override_button_toggled(bool p_pressed) {
 	_update_debugger_buttons();
 
@@ -288,6 +296,7 @@ void GameView::_notification(int p_what) {
 
 			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
 
+			enable_audio_button->set_button_icon(get_editor_theme_icon(SNAME("AudioStreamPlayer")));
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
 			camera_override_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;
@@ -412,6 +421,16 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger) {
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_theme_type_variation("FlatButton");
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_LIST));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
+
+	main_menu_hbox->add_child(memnew(VSeparator));
+
+	enable_audio_button = memnew(Button);
+	main_menu_hbox->add_child(enable_audio_button);
+	enable_audio_button->set_toggle_mode(true);
+	enable_audio_button->set_pressed(true);
+	enable_audio_button->set_theme_type_variation("FlatButton");
+	enable_audio_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_enable_audio_button_toggled));
+	enable_audio_button->set_tooltip_text("Enable or mute game audio.");
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
