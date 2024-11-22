@@ -1262,9 +1262,9 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	return loader.resource;
 }
 
-void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String &p_type, List<String> *r_extensions) const {
 	if (p_type.is_empty()) {
-		get_recognized_extensions(p_extensions);
+		get_recognized_extensions(r_extensions);
 		return;
 	}
 
@@ -1280,18 +1280,18 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 
 	for (const String &E : extensions) {
 		String ext = E.to_lower();
-		p_extensions->push_back(ext);
+		r_extensions->push_back(ext);
 	}
 }
 
-void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *r_extensions) const {
 	List<String> extensions;
 	ClassDB::get_resource_base_extensions(&extensions);
 	extensions.sort();
 
 	for (const String &E : extensions) {
 		String ext = E.to_lower();
-		p_extensions->push_back(ext);
+		r_extensions->push_back(ext);
 	}
 }
 
@@ -2518,11 +2518,11 @@ bool ResourceFormatSaverBinary::recognize(const Ref<Resource> &p_resource) const
 	return true; //all recognized
 }
 
-void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	String base = p_resource->get_base_extension().to_lower();
-	p_extensions->push_back(base);
+	r_extensions->push_back(base);
 	if (base != "res") {
-		p_extensions->push_back("res");
+		r_extensions->push_back("res");
 	}
 }
 

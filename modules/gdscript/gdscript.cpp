@@ -3046,9 +3046,9 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 	return scr;
 }
 
-void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gd");
-	p_extensions->push_back("gdc");
+void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("gd");
+	r_extensions->push_back("gdc");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -3107,9 +3107,9 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	return OK;
 }
 
-void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	if (Object::cast_to<GDScript>(*p_resource)) {
-		p_extensions->push_back("gd");
+		r_extensions->push_back("gd");
 	}
 }
 

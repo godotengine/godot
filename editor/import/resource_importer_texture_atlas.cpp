@@ -50,8 +50,8 @@ String ResourceImporterTextureAtlas::get_visible_name() const {
 	return "TextureAtlas";
 }
 
-void ResourceImporterTextureAtlas::get_recognized_extensions(List<String> *p_extensions) const {
-	ImageLoader::get_recognized_extensions(p_extensions);
+void ResourceImporterTextureAtlas::get_recognized_extensions(List<String> *r_extensions) const {
+	ImageLoader::get_recognized_extensions(r_extensions);
 }
 
 String ResourceImporterTextureAtlas::get_save_extension() const {

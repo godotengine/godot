@@ -80,8 +80,8 @@ String ResourceImporterLayeredTexture::get_visible_name() const {
 	ERR_FAIL_V("");
 }
 
-void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
-	ImageLoader::get_recognized_extensions(p_extensions);
+void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *r_extensions) const {
+	ImageLoader::get_recognized_extensions(r_extensions);
 }
 
 String ResourceImporterLayeredTexture::get_save_extension() const {

@@ -110,9 +110,9 @@ Error ImageLoader::load_image(const String &p_file, Ref<Image> p_image, Ref<File
 	return ERR_FILE_UNRECOGNIZED;
 }
 
-void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
+void ImageLoader::get_recognized_extensions(List<String> *r_extensions) {
 	for (int i = 0; i < loader.size(); i++) {
-		loader[i]->get_recognized_extensions(p_extensions);
+		loader[i]->get_recognized_extensions(r_extensions);
 	}
 }
 
@@ -201,8 +201,8 @@ Ref<Resource> ResourceFormatLoaderImage::load(const String &p_path, const String
 	return image;
 }
 
-void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("image");
+void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("image");
 }
 
 bool ResourceFormatLoaderImage::handles_type(const String &p_type) const {

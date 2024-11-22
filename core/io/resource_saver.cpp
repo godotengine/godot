@@ -59,12 +59,12 @@ bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
 	return success;
 }
 
-void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	PackedStringArray exts;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, p_resource, exts)) {
 		const String *r = exts.ptr();
 		for (int i = 0; i < exts.size(); ++i) {
-			p_extensions->push_back(r[i]);
+			r_extensions->push_back(r[i]);
 		}
 	}
 }
@@ -174,10 +174,10 @@ void ResourceSaver::set_save_callback(ResourceSavedCallback p_callback) {
 	save_callback = p_callback;
 }
 
-void ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) {
+void ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) {
 	ERR_FAIL_COND_MSG(p_resource.is_null(), "It's not a reference to a valid Resource object.");
 	for (int i = 0; i < saver_count; i++) {
-		saver[i]->get_recognized_extensions(p_resource, p_extensions);
+		saver[i]->get_recognized_extensions(p_resource, r_extensions);
 	}
 }
 

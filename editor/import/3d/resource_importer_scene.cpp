@@ -267,8 +267,8 @@ String ResourceImporterScene::get_visible_name() const {
 	return _scene_import_type.capitalize();
 }
 
-void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
-	get_scene_importer_extensions(p_extensions);
+void ResourceImporterScene::get_recognized_extensions(List<String> *r_extensions) const {
+	get_scene_importer_extensions(r_extensions);
 }
 
 String ResourceImporterScene::get_save_extension() const {
@@ -3243,9 +3243,9 @@ void ResourceImporterScene::clean_up_importer_plugins() {
 	post_importer_plugins.clear();
 }
 
-void ResourceImporterScene::get_scene_importer_extensions(List<String> *p_extensions) {
+void ResourceImporterScene::get_scene_importer_extensions(List<String> *r_extensions) {
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
-		importer_elem->get_extensions(p_extensions);
+		importer_elem->get_extensions(r_extensions);
 	}
 }
 

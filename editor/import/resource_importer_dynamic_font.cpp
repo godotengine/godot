@@ -46,17 +46,17 @@ String ResourceImporterDynamicFont::get_visible_name() const {
 	return "Font Data (Dynamic Font)";
 }
 
-void ResourceImporterDynamicFont::get_recognized_extensions(List<String> *p_extensions) const {
-	if (p_extensions) {
+void ResourceImporterDynamicFont::get_recognized_extensions(List<String> *r_extensions) const {
+	if (r_extensions) {
 #ifdef MODULE_FREETYPE_ENABLED
-		p_extensions->push_back("ttf");
-		p_extensions->push_back("ttc");
-		p_extensions->push_back("otf");
-		p_extensions->push_back("otc");
-		p_extensions->push_back("woff");
-		p_extensions->push_back("woff2");
-		p_extensions->push_back("pfb");
-		p_extensions->push_back("pfm");
+		r_extensions->push_back("ttf");
+		r_extensions->push_back("ttc");
+		r_extensions->push_back("otf");
+		r_extensions->push_back("otc");
+		r_extensions->push_back("woff");
+		r_extensions->push_back("woff2");
+		r_extensions->push_back("pfb");
+		r_extensions->push_back("pfm");
 #endif
 	}
 }

@@ -111,8 +111,8 @@ Ref<Resource> ResourceFormatLoaderShaderInclude::load(const String &p_path, cons
 	return shader_inc;
 }
 
-void ResourceFormatLoaderShaderInclude::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gdshaderinc");
+void ResourceFormatLoaderShaderInclude::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("gdshaderinc");
 }
 
 bool ResourceFormatLoaderShaderInclude::handles_type(const String &p_type) const {
@@ -148,10 +148,10 @@ Error ResourceFormatSaverShaderInclude::save(const Ref<Resource> &p_resource, co
 	return OK;
 }
 
-void ResourceFormatSaverShaderInclude::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverShaderInclude::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	const ShaderInclude *shader_inc = Object::cast_to<ShaderInclude>(*p_resource);
 	if (shader_inc != nullptr) {
-		p_extensions->push_back("gdshaderinc");
+		r_extensions->push_back("gdshaderinc");
 	}
 }
 

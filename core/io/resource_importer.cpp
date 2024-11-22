@@ -183,7 +183,7 @@ Ref<Resource> ResourceFormatImporter::load_internal(const String &p_path, Error 
 	return res;
 }
 
-void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceFormatImporter::get_recognized_extensions(List<String> *r_extensions) const {
 	HashSet<String> found;
 
 	for (int i = 0; i < importers.size(); i++) {
@@ -191,16 +191,16 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 		importers[i]->get_recognized_extensions(&local_exts);
 		for (const String &F : local_exts) {
 			if (!found.has(F)) {
-				p_extensions->push_back(F);
+				r_extensions->push_back(F);
 				found.insert(F);
 			}
 		}
 	}
 }
 
-void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *r_extensions) const {
 	if (p_type.is_empty()) {
-		get_recognized_extensions(p_extensions);
+		get_recognized_extensions(r_extensions);
 		return;
 	}
 
@@ -220,7 +220,7 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 		importers[i]->get_recognized_extensions(&local_exts);
 		for (const String &F : local_exts) {
 			if (!found.has(F)) {
-				p_extensions->push_back(F);
+				r_extensions->push_back(F);
 				found.insert(F);
 			}
 		}

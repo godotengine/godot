@@ -41,9 +41,9 @@ String ResourceImporterImageFont::get_visible_name() const {
 	return "Font Data (Image Font)";
 }
 
-void ResourceImporterImageFont::get_recognized_extensions(List<String> *p_extensions) const {
-	if (p_extensions) {
-		ImageLoader::get_recognized_extensions(p_extensions);
+void ResourceImporterImageFont::get_recognized_extensions(List<String> *r_extensions) const {
+	if (r_extensions) {
+		ImageLoader::get_recognized_extensions(r_extensions);
 	}
 }
 

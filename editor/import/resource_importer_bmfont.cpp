@@ -41,10 +41,10 @@ String ResourceImporterBMFont::get_visible_name() const {
 	return "Font Data (AngelCode BMFont)";
 }
 
-void ResourceImporterBMFont::get_recognized_extensions(List<String> *p_extensions) const {
-	if (p_extensions) {
-		p_extensions->push_back("font");
-		p_extensions->push_back("fnt");
+void ResourceImporterBMFont::get_recognized_extensions(List<String> *r_extensions) const {
+	if (r_extensions) {
+		r_extensions->push_back("font");
+		r_extensions->push_back("fnt");
 	}
 }
 

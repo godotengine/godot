@@ -50,7 +50,7 @@ class ResourceImporterOBJ : public ResourceImporter {
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 	virtual int get_format_version() const override;

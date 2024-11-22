@@ -2112,9 +2112,9 @@ void ClassDB::add_resource_base_extension(const StringName &p_extension, const S
 	resource_base_extensions[p_extension] = p_class;
 }
 
-void ClassDB::get_resource_base_extensions(List<String> *p_extensions) {
+void ClassDB::get_resource_base_extensions(List<String> *r_extensions) {
 	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
-		p_extensions->push_back(E.key);
+		r_extensions->push_back(E.key);
 	}
 }
 
@@ -2122,10 +2122,10 @@ bool ClassDB::is_resource_extension(const StringName &p_extension) {
 	return resource_base_extensions.has(p_extension);
 }
 
-void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p_extensions) {
+void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *r_extensions) {
 	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
 		if (is_parent_class(p_class, E.value) || is_parent_class(E.value, p_class)) {
-			p_extensions->push_back(E.key);
+			r_extensions->push_back(E.key);
 		}
 	}
 }

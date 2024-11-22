@@ -76,9 +76,9 @@ bool ResourceSaverPNG::recognize(const Ref<Resource> &p_resource) const {
 	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
 }
 
-void ResourceSaverPNG::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceSaverPNG::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	if (Object::cast_to<ImageTexture>(*p_resource)) {
-		p_extensions->push_back("png");
+		r_extensions->push_back("png");
 	}
 }
 

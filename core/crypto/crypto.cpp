@@ -208,10 +208,10 @@ Ref<Resource> ResourceFormatLoaderCrypto::load(const String &p_path, const Strin
 	return nullptr;
 }
 
-void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("crt");
-	p_extensions->push_back("key");
-	p_extensions->push_back("pub");
+void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("crt");
+	r_extensions->push_back("key");
+	r_extensions->push_back("pub");
 }
 
 bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {
@@ -244,17 +244,17 @@ Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const Str
 	return OK;
 }
 
-void ResourceFormatSaverCrypto::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverCrypto::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	const X509Certificate *cert = Object::cast_to<X509Certificate>(*p_resource);
 	const CryptoKey *key = Object::cast_to<CryptoKey>(*p_resource);
 	if (cert) {
-		p_extensions->push_back("crt");
+		r_extensions->push_back("crt");
 	}
 	if (key) {
 		if (!key->is_public_only()) {
-			p_extensions->push_back("key");
+			r_extensions->push_back("key");
 		}
-		p_extensions->push_back("pub");
+		r_extensions->push_back("pub");
 	}
 }
 

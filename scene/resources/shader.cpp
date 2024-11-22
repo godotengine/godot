@@ -329,8 +329,8 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 	return shader;
 }
 
-void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gdshader");
+void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("gdshader");
 }
 
 bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
@@ -364,10 +364,10 @@ Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const Str
 	return OK;
 }
 
-void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *r_extensions) const {
 	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
 		if (shader->is_text_shader()) {
-			p_extensions->push_back("gdshader");
+			r_extensions->push_back("gdshader");
 		}
 	}
 }

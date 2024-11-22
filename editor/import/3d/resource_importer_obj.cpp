@@ -602,8 +602,8 @@ String ResourceImporterOBJ::get_visible_name() const {
 	return "OBJ as Mesh";
 }
 
-void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("obj");
+void ResourceImporterOBJ::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("obj");
 }
 
 String ResourceImporterOBJ::get_save_extension() const {

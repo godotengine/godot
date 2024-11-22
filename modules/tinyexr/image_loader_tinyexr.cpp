@@ -290,8 +290,8 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 	return OK;
 }
 
-void ImageLoaderTinyEXR::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("exr");
+void ImageLoaderTinyEXR::get_recognized_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("exr");
 }
 
 ImageLoaderTinyEXR::ImageLoaderTinyEXR() {
