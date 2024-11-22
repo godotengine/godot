@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "soft_body_3d.h"
-#include "soft_body_3d.compat.inc"
 
 #include "scene/3d/physics/physics_body_3d.h"
 
@@ -821,3 +820,15 @@ int SoftBody3D::_has_pinned_point(int p_point_index) const {
 	}
 	return -1;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void SoftBody3D::_pin_point_bind_compat_94684(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path) {
+	pin_point(p_point_index, pin, p_spatial_attachment_path, -1);
+}
+
+void SoftBody3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path"), &SoftBody3D::_pin_point_bind_compat_94684, DEFVAL(NodePath()));
+}
+
+#endif // DISABLE_DEPRECATED

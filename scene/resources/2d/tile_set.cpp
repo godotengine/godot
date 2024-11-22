@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "tile_set.h"
-#include "tile_set.compat.inc"
 
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
@@ -7138,3 +7137,20 @@ void TileData::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Ref<NavigationPolygon> TileData::_get_navigation_polygon_bind_compat_84660(int p_layer_id) const {
+	return get_navigation_polygon(p_layer_id, false, false, false);
+}
+
+Ref<OccluderPolygon2D> TileData::_get_occluder_bind_compat_84660(int p_layer_id) const {
+	return get_occluder_polygon(p_layer_id, 0, false, false, false);
+}
+
+void TileData::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_polygon"), &TileData::_get_navigation_polygon_bind_compat_84660);
+	ClassDB::bind_compatibility_method(D_METHOD("get_occluder"), &TileData::_get_occluder_bind_compat_84660);
+}
+
+#endif // DISABLE_DEPRECATED

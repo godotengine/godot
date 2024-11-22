@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "audio_stream_player.h"
-#include "audio_stream_player.compat.inc"
 
 #include "scene/audio/audio_stream_player_internal.h"
 #include "servers/audio/audio_stream.h"
@@ -284,3 +283,15 @@ AudioStreamPlayer::AudioStreamPlayer() {
 AudioStreamPlayer::~AudioStreamPlayer() {
 	memdelete(internal);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+bool AudioStreamPlayer::_is_autoplay_enabled_bind_compat_86907() {
+	return is_autoplay_enabled();
+}
+
+void AudioStreamPlayer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::_is_autoplay_enabled_bind_compat_86907);
+}
+
+#endif // DISABLE_DEPRECATED

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "webxr_interface.h"
-#include "webxr_interface.compat.inc"
 
 #include <stdlib.h>
 
@@ -82,3 +81,15 @@ void WebXRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_TRACKED_POINTER);
 	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_SCREEN);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Ref<XRPositionalTracker> WebXRInterface::_get_input_source_tracker_bind_compat_90645(int p_input_source_id) const {
+	return get_input_source_tracker(p_input_source_id);
+}
+
+void WebXRInterface::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_input_source_tracker", "input_source_id"), &WebXRInterface::_get_input_source_tracker_bind_compat_90645);
+}
+
+#endif // DISABLE_DEPRECATED

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "editor_plugin.h"
-#include "editor_plugin.compat.inc"
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_dock_manager.h"
@@ -712,3 +711,20 @@ EditorUndoRedoManager *EditorPlugin::get_undo_redo() {
 EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];
 
 int EditorPlugins::creation_func_count = 0;
+
+#ifndef DISABLE_DEPRECATED
+
+Button *EditorPlugin::_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title) {
+	return add_control_to_bottom_panel(p_control, p_title, nullptr);
+}
+
+void EditorPlugin::_add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control) {
+	return add_control_to_dock(p_slot, p_control, nullptr);
+}
+
+void EditorPlugin::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::_add_control_to_bottom_panel_compat_88081);
+	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::_add_control_to_dock_compat_88081);
+}
+
+#endif // DISABLE_DEPRECATED

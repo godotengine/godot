@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "input_map.h"
-#include "input_map.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -864,3 +863,15 @@ InputMap::InputMap() {
 InputMap::~InputMap() {
 	singleton = nullptr;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void InputMap::_add_action_bind_compat_97281(const StringName &p_action, float p_deadzone) {
+	add_action(p_action, p_deadzone);
+}
+
+void InputMap::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::_add_action_bind_compat_97281, DEFVAL(0.5f));
+}
+
+#endif // DISABLE_DEPRECATED

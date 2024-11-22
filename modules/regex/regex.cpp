@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "regex.h"
-#include "regex.compat.inc"
 
 #include "core/os/memory.h"
 
@@ -410,3 +409,20 @@ void RegEx::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_group_count"), &RegEx::get_group_count);
 	ClassDB::bind_method(D_METHOD("get_names"), &RegEx::get_names);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Ref<RegEx> RegEx::_create_from_string_bind_compat_95212(const String &p_pattern) {
+	return create_from_string(p_pattern, true);
+}
+
+Error RegEx::_compile_bind_compat_95212(const String &p_pattern) {
+	return compile(p_pattern, true);
+}
+
+void RegEx::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_static_method("RegEx", D_METHOD("create_from_string", "pattern"), &RegEx::_create_from_string_bind_compat_95212);
+	ClassDB::bind_compatibility_method(D_METHOD("compile", "pattern"), &RegEx::_compile_bind_compat_95212);
+}
+
+#endif // DISABLE_DEPRECATED

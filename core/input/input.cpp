@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "input.h"
-#include "input.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
@@ -1829,5 +1828,17 @@ Input::Input() {
 Input::~Input() {
 	singleton = nullptr;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void Input::_vibrate_handheld_bind_compat_91143(int p_duration_ms) {
+	vibrate_handheld(p_duration_ms, -1.0);
+}
+
+void Input::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::_vibrate_handheld_bind_compat_91143, DEFVAL(500));
+}
+
+#endif // DISABLE_DEPRECATED
 
 //////////////////////////////////////////////////////////

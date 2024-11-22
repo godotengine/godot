@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "editor_inspector.h"
-#include "editor_inspector.compat.inc"
 
 #include "core/os/keyboard.h"
 #include "editor/add_metadata_dialog.h"
@@ -4683,3 +4682,15 @@ EditorInspector::EditorInspector() {
 	// `use_settings_name_style` is true by default, set the name style accordingly.
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void EditorInspectorPlugin::_add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end) {
+	add_property_editor(p_for_property, p_prop, p_add_to_end, "");
+}
+
+void EditorInspectorPlugin::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_property_editor", "property", "editor", "add_to_end"), &EditorInspectorPlugin::_add_property_editor_bind_compat_92322, DEFVAL(false));
+}
+
+#endif // DISABLE_DEPRECATED

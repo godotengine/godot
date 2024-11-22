@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "audio_stream_player_2d.h"
-#include "audio_stream_player_2d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/2d/audio_listener_2d.h"
@@ -433,3 +432,15 @@ AudioStreamPlayer2D::AudioStreamPlayer2D() {
 AudioStreamPlayer2D::~AudioStreamPlayer2D() {
 	memdelete(internal);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+bool AudioStreamPlayer2D::_is_autoplay_enabled_bind_compat_86907() {
+	return is_autoplay_enabled();
+}
+
+void AudioStreamPlayer2D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer2D::_is_autoplay_enabled_bind_compat_86907);
+}
+
+#endif // DISABLE_DEPRECATED

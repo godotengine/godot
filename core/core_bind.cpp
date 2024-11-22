@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "core_bind.h"
-#include "core_bind.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -755,6 +754,23 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
 }
 
+#ifndef DISABLE_DEPRECATED
+
+String OS::_read_string_from_stdin_bind_compat_91201() {
+	return read_string_from_stdin(1024);
+}
+
+Dictionary OS::_execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments) {
+	return execute_with_pipe(p_path, p_arguments, true);
+}
+
+void OS::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("read_string_from_stdin"), &OS::_read_string_from_stdin_bind_compat_91201);
+	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
+}
+
+#endif // DISABLE_DEPRECATED
+
 ////// Geometry2D //////
 
 Geometry2D *Geometry2D::singleton = nullptr;
@@ -1286,6 +1302,18 @@ void Semaphore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("try_wait"), &Semaphore::try_wait);
 	ClassDB::bind_method(D_METHOD("post", "count"), &Semaphore::post, DEFVAL(1));
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void Semaphore::_post_bind_compat_93605() {
+	post(1);
+}
+
+void Semaphore::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("post"), &Semaphore::_post_bind_compat_93605);
+}
+
+#endif // DISABLE_DEPRECATED
 
 ////// Mutex //////
 

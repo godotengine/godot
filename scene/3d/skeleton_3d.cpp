@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "skeleton_3d.h"
-#include "skeleton_3d.compat.inc"
 
 #include "core/variant/type_info.h"
 #include "scene/3d/skeleton_modifier_3d.h"
@@ -1380,3 +1379,15 @@ Skeleton3D::~Skeleton3D() {
 		E->skeleton_node = nullptr;
 	}
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void Skeleton3D::_add_bone_bind_compat_88791(const String &p_name) {
+	add_bone(p_name);
+}
+
+void Skeleton3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_bone", "p_name"), &Skeleton3D::_add_bone_bind_compat_88791);
+}
+
+#endif // DISABLE_DEPRECATED

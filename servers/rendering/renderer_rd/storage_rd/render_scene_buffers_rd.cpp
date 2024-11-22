@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "render_scene_buffers_rd.h"
-#include "render_scene_buffers_rd.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
@@ -730,3 +729,40 @@ RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {
 uint32_t RenderSceneBuffersRD::get_vrs_usage_bits() {
 	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+RID RenderSceneBuffersRD::_get_color_texture_compat_80214() {
+	return _get_color_texture(msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+RID RenderSceneBuffersRD::_get_color_layer_compat_80214(const uint32_t p_layer) {
+	return _get_color_layer(p_layer, msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+RID RenderSceneBuffersRD::_get_depth_texture_compat_80214() {
+	return _get_depth_texture(msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+RID RenderSceneBuffersRD::_get_depth_layer_compat_80214(const uint32_t p_layer) {
+	return _get_depth_layer(p_layer, msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+RID RenderSceneBuffersRD::_get_velocity_texture_compat_80214() {
+	return _get_velocity_texture(msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+RID RenderSceneBuffersRD::_get_velocity_layer_compat_80214(const uint32_t p_layer) {
+	return _get_velocity_layer(p_layer, msaa_3d != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+void RenderSceneBuffersRD::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer_compat_80214);
+}
+
+#endif // DISABLE_DEPRECATED

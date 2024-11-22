@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "gltf_buffer_view.h"
-#include "gltf_buffer_view.compat.inc"
 
 #include "../gltf_state.h"
 
@@ -114,3 +113,35 @@ Vector<uint8_t> GLTFBufferView::load_buffer_view_data(const Ref<GLTFState> p_sta
 	const int64_t byte_end = byte_offset + byte_length;
 	return buffer_data.slice(byte_offset, byte_end);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+GLTFBufferIndex GLTFBufferView::_get_buffer_bind_compat_86907() {
+	return get_buffer();
+}
+
+int GLTFBufferView::_get_byte_offset_bind_compat_86907() {
+	return get_byte_offset();
+}
+
+int GLTFBufferView::_get_byte_length_bind_compat_86907() {
+	return get_byte_length();
+}
+
+int GLTFBufferView::_get_byte_stride_bind_compat_86907() {
+	return get_byte_stride();
+}
+
+bool GLTFBufferView::_get_indices_bind_compat_86907() {
+	return get_indices();
+}
+
+void GLTFBufferView::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_buffer"), &GLTFBufferView::_get_buffer_bind_compat_86907);
+	ClassDB::bind_compatibility_method(D_METHOD("get_byte_offset"), &GLTFBufferView::_get_byte_offset_bind_compat_86907);
+	ClassDB::bind_compatibility_method(D_METHOD("get_byte_length"), &GLTFBufferView::_get_byte_length_bind_compat_86907);
+	ClassDB::bind_compatibility_method(D_METHOD("get_byte_stride"), &GLTFBufferView::_get_byte_stride_bind_compat_86907);
+	ClassDB::bind_compatibility_method(D_METHOD("get_indices"), &GLTFBufferView::_get_indices_bind_compat_86907);
+}
+
+#endif // DISABLE_DEPRECATED

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "a_star_grid_2d.h"
-#include "a_star_grid_2d.compat.inc"
 
 #include "core/variant/typed_array.h"
 
@@ -801,3 +800,20 @@ void AStarGrid2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_SHAPE_ISOMETRIC_DOWN);
 	BIND_ENUM_CONSTANT(CELL_SHAPE_MAX);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+TypedArray<Vector2i> AStarGrid2D::_get_id_path_bind_compat_88047(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+	return get_id_path(p_from_id, p_to_id, false);
+}
+
+Vector<Vector2> AStarGrid2D::_get_point_path_bind_compat_88047(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+	return get_point_path(p_from_id, p_to_id, false);
+}
+
+void AStarGrid2D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStarGrid2D::_get_id_path_bind_compat_88047);
+	ClassDB::bind_compatibility_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStarGrid2D::_get_point_path_bind_compat_88047);
+}
+
+#endif // DISABLE_DEPRECATED

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "audio_stream_player_3d.h"
-#include "audio_stream_player_3d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/3d/audio_listener_3d.h"
@@ -875,3 +874,15 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {
 	memdelete(internal);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+bool AudioStreamPlayer3D::_is_autoplay_enabled_bind_compat_86907() {
+	return is_autoplay_enabled();
+}
+
+void AudioStreamPlayer3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer3D::_is_autoplay_enabled_bind_compat_86907);
+}
+
+#endif // DISABLE_DEPRECATED

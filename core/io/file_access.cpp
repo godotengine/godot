@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "file_access.h"
-#include "file_access.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -902,3 +901,15 @@ void FileAccess::_bind_methods() {
 	BIND_BITFIELD_FLAG(UNIX_SET_GROUP_ID);
 	BIND_BITFIELD_FLAG(UNIX_RESTRICTED_DELETE);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Ref<FileAccess> FileAccess::_open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
+	return open_encrypted(p_path, p_mode_flags, p_key, Vector<uint8_t>());
+}
+
+void FileAccess::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::_open_encrypted_bind_compat_98918);
+}
+
+#endif // DISABLE_DEPRECATED

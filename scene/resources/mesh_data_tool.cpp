@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "mesh_data_tool.h"
-#include "mesh_data_tool.compat.inc"
 
 void MeshDataTool::clear() {
 	vertices.clear();
@@ -581,3 +580,15 @@ void MeshDataTool::_bind_methods() {
 MeshDataTool::MeshDataTool() {
 	clear();
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Error MeshDataTool::commit_to_surface_bind_compat_81138(const Ref<ArrayMesh> &p_mesh) {
+	return commit_to_surface(p_mesh, 0);
+}
+
+void MeshDataTool::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface_bind_compat_81138);
+}
+
+#endif // DISABLE_DEPRECATED

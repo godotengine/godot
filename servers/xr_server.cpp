@@ -35,7 +35,6 @@
 #include "xr/xr_hand_tracker.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
-#include "xr_server.compat.inc"
 
 XRServer::XRMode XRServer::xr_mode = XRMODE_DEFAULT;
 
@@ -475,3 +474,25 @@ XRServer::~XRServer() {
 
 	singleton = nullptr;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void XRServer::_add_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker) {
+	add_tracker(p_tracker);
+}
+
+void XRServer::_remove_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker) {
+	remove_tracker(p_tracker);
+}
+
+Ref<XRPositionalTracker> XRServer::_get_tracker_bind_compat_90645(const StringName &p_name) const {
+	return get_tracker(p_name);
+}
+
+void XRServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_tracker", "tracker"), &XRServer::_add_tracker_bind_compat_90645);
+	ClassDB::bind_compatibility_method(D_METHOD("remove_tracker", "tracker"), &XRServer::_remove_tracker_bind_compat_90645);
+	ClassDB::bind_compatibility_method(D_METHOD("get_tracker", "name"), &XRServer::_get_tracker_bind_compat_90645);
+}
+
+#endif // DISABLE_DEPRECATED

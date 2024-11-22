@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "bone_attachment_3d.h"
-#include "bone_attachment_3d.compat.inc"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
@@ -391,3 +390,15 @@ void BoneAttachment3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_pose"), "set_override_pose", "get_override_pose");
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void BoneAttachment3D::_on_bone_pose_update_bind_compat_90575(int p_bone_index) {
+	return on_skeleton_update();
+}
+
+void BoneAttachment3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("on_bone_pose_update", "bone_index"), &BoneAttachment3D::_on_bone_pose_update_bind_compat_90575);
+}
+
+#endif // DISABLE_DEPRECATED

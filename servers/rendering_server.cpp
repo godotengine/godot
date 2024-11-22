@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "rendering_server.h"
-#include "rendering_server.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
@@ -3699,3 +3698,30 @@ void RenderingServer::init() {
 RenderingServer::~RenderingServer() {
 	singleton = nullptr;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void RenderingServer::_environment_set_fog_bind_compat_84792(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) {
+	environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect, RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL);
+}
+
+void RenderingServer::_canvas_item_add_multiline_bind_compat_84523(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
+	canvas_item_add_multiline(p_item, p_points, p_colors, p_width, false);
+}
+
+void RenderingServer::_canvas_item_add_rect_bind_compat_84523(RID p_item, const Rect2 &p_rect, const Color &p_color) {
+	canvas_item_add_rect(p_item, p_rect, p_color, false);
+}
+
+void RenderingServer::_canvas_item_add_circle_bind_compat_84523(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
+	canvas_item_add_circle(p_item, p_pos, p_radius, p_color, false);
+}
+
+void RenderingServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::_environment_set_fog_bind_compat_84792);
+	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width"), &RenderingServer::_canvas_item_add_multiline_bind_compat_84523, DEFVAL(-1.0));
+	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color"), &RenderingServer::_canvas_item_add_rect_bind_compat_84523);
+	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::_canvas_item_add_circle_bind_compat_84523);
+}
+
+#endif // DISABLE_DEPRECATED

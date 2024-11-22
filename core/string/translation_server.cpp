@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "translation_server.h"
-#include "translation_server.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
@@ -644,3 +643,15 @@ TranslationServer::TranslationServer() {
 	doc_domain = get_or_add_domain("godot.documentation");
 	init_locale_info();
 }
+
+#ifndef DISABLE_DEPRECATED
+
+String TranslationServer::_standardize_locale_bind_compat_98972(const String &p_locale) const {
+	return standardize_locale(p_locale, false);
+}
+
+void TranslationServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("standardize_locale", "locale"), &TranslationServer::_standardize_locale_bind_compat_98972);
+}
+
+#endif // DISABLE_DEPRECATED

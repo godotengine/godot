@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "a_star.h"
-#include "a_star.compat.inc"
 
 #include "core/math/geometry_3d.h"
 #include "core/object/script_language.h"
@@ -921,3 +920,33 @@ void AStar2D::_bind_methods() {
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Vector<int64_t> AStar3D::_get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id) {
+	return get_id_path(p_from_id, p_to_id, false);
+}
+
+Vector<Vector3> AStar3D::_get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id) {
+	return get_point_path(p_from_id, p_to_id, false);
+}
+
+void AStar3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar3D::_get_id_path_bind_compat_88047);
+	ClassDB::bind_compatibility_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar3D::_get_point_path_bind_compat_88047);
+}
+
+Vector<int64_t> AStar2D::_get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id) {
+	return get_id_path(p_from_id, p_to_id, false);
+}
+
+Vector<Vector2> AStar2D::_get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id) {
+	return get_point_path(p_from_id, p_to_id, false);
+}
+
+void AStar2D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar2D::_get_id_path_bind_compat_88047);
+	ClassDB::bind_compatibility_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar2D::_get_point_path_bind_compat_88047);
+}
+
+#endif // DISABLE_DEPRECATED

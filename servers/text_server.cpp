@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "servers/text_server.h"
-#include "text_server.compat.inc"
 
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
@@ -2178,3 +2177,15 @@ TextServer::TextServer() {
 
 TextServer::~TextServer() {
 }
+
+#ifndef DISABLE_DEPRECATED
+
+PackedInt32Array TextServer::_shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
+	return shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, 0);
+}
+
+void TextServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::_shaped_text_get_word_breaks_bind_compat_90732, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
+}
+
+#endif // DISABLE_DEPRECATED

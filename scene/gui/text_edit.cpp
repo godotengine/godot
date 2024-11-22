@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "text_edit.h"
-#include "text_edit.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -8584,3 +8583,15 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	set_clip_contents(true);
 	set_editable(true);
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void TextEdit::_set_selection_mode_compat_86978(SelectionMode p_mode, int p_line, int p_column, int p_caret) {
+	set_selection_mode(p_mode);
+}
+
+void TextEdit::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_selection_mode", "mode", "line", "column", "caret_index"), &TextEdit::_set_selection_mode_compat_86978, DEFVAL(-1), DEFVAL(-1), DEFVAL(0));
+}
+
+#endif // DISABLE_DEPRECATED

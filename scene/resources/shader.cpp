@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "shader.h"
-#include "shader.compat.inc"
 
 #include "core/io/file_access.h"
 #include "scene/main/scene_tree.h"
@@ -375,3 +374,20 @@ void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p
 bool ResourceFormatSaverShader::recognize(const Ref<Resource> &p_resource) const {
 	return p_resource->get_class_name() == "Shader"; //only shader, not inherited
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void Shader::_set_default_texture_parameter_bind_compat_95126(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index) {
+	set_default_texture_parameter(p_name, p_texture, p_index);
+}
+
+Ref<Texture2D> Shader::_get_default_texture_parameter_bind_compat_95126(const StringName &p_name, int p_index) const {
+	return get_default_texture_parameter(p_name, p_index);
+}
+
+void Shader::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_default_texture_parameter", "name", "texture", "index"), &Shader::_set_default_texture_parameter_bind_compat_95126, DEFVAL(0));
+	ClassDB::bind_compatibility_method(D_METHOD("get_default_texture_parameter", "name", "index"), &Shader::_get_default_texture_parameter_bind_compat_95126, DEFVAL(0));
+}
+
+#endif // DISABLE_DEPRECATED

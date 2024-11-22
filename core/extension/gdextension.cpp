@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "gdextension.h"
-#include "gdextension.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/object/class_db.h"
@@ -1049,3 +1048,23 @@ void GDExtensionEditorHelp::remove_class(const String &p_class) {
 	editor_help_remove_class(p_class);
 }
 #endif // TOOLS_ENABLED
+
+#ifndef DISABLE_DEPRECATED
+
+Error GDExtension::_open_library_bind_compat_88418(const String &p_path, const String &p_entry_symbol) {
+	return ERR_UNAVAILABLE;
+}
+
+void GDExtension::_close_library_bind_compat_88418() {
+}
+
+void GDExtension::_initialize_library_bind_compat_88418(InitializationLevel p_level) {
+}
+
+void GDExtension::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::_open_library_bind_compat_88418);
+	ClassDB::bind_compatibility_method(D_METHOD("close_library"), &GDExtension::_close_library_bind_compat_88418);
+	ClassDB::bind_compatibility_method(D_METHOD("initialize_library", "level"), &GDExtension::_initialize_library_bind_compat_88418);
+}
+
+#endif // DISABLE_DEPRECATED

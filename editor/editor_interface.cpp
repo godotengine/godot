@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "editor_interface.h"
-#include "editor_interface.compat.inc"
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
@@ -674,3 +673,20 @@ EditorInterface::EditorInterface() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+void EditorInterface::_popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
+	popup_node_selector(p_callback, p_valid_types, nullptr);
+}
+
+void EditorInterface::_popup_property_selector_bind_compat_94323(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter) {
+	popup_property_selector(p_object, p_callback, p_type_filter, String());
+}
+
+void EditorInterface::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::_popup_node_selector_bind_compat_94323, DEFVAL(TypedArray<StringName>()));
+	ClassDB::bind_compatibility_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::_popup_property_selector_bind_compat_94323, DEFVAL(PackedInt32Array()));
+}
+
+#endif // DISABLE_DEPRECATED

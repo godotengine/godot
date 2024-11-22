@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "animation_mixer.h"
-#include "animation_mixer.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -2486,3 +2485,18 @@ AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer:
 	}
 	return nullptr;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+Variant AnimationMixer::_post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx) {
+	if (!p_object) {
+		return Variant();
+	}
+	return _post_process_key_value(p_anim, p_track, p_value, p_object->get_instance_id(), p_object_idx);
+}
+
+void AnimationMixer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("_post_process_key_value", "animation", "track", "value", "object", "object_idx"), &AnimationMixer::_post_process_key_value_bind_compat_86687);
+}
+
+#endif // DISABLE_DEPRECATED
