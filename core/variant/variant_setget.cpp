@@ -257,6 +257,13 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 	} else if (type == Variant::DICTIONARY) {
 		Dictionary &dict = *VariantGetInternalPtr<Dictionary>::get_ptr(this);
 		r_valid = dict.set(p_member, p_value);
+	} else if (type == Variant::ARRAY && is_struct()) {
+		Array &array = *VariantGetInternalPtr<Array>::get_ptr(this);
+		int index = array.find_member(p_member);
+		if (index >= 0) {
+			array.set(index, p_value);
+			r_valid = true;
+		}
 	} else {
 		r_valid = false;
 	}
@@ -287,6 +294,20 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 		} break;
 		case Variant::DICTIONARY: {
 			const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
+			if (v) {
+				r_valid = true;
+				return *v;
+			}
+		} break;
+		case Variant::ARRAY: {
+			const Array *array = VariantGetInternalPtr<Array>::get_ptr(this);
+			if (!array->get_struct_info()) {
+				if (Variant::has_builtin_method(type, p_member)) {
+					r_valid = true;
+					return Callable(memnew(VariantCallable(*this, p_member)));
+				}
+			}
+			const Variant *v = array->getptr(p_member);
 			if (v) {
 				r_valid = true;
 				return *v;
@@ -1256,28 +1277,45 @@ Variant Variant::get(const Variant &p_index, bool *r_valid, VariantGetError *err
 }
 
 void Variant::get_property_list(List<PropertyInfo> *p_list) const {
-	if (type == DICTIONARY) {
-		const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-		List<Variant> keys;
-		dic->get_key_list(&keys);
-		for (const Variant &E : keys) {
-			if (E.is_string()) {
-				p_list->push_back(PropertyInfo(dic->get_valid(E).get_type(), E));
+	switch (type) {
+		case DICTIONARY: {
+			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
+			List<Variant> keys;
+			dic->get_key_list(&keys);
+			for (const Variant &E : keys) {
+				if (E.is_string()) {
+					p_list->push_back(PropertyInfo(dic->get_valid(E).get_type(), E));
+				}
 			}
+			break;
 		}
-	} else if (type == OBJECT) {
-		Object *obj = get_validated_object();
-		ERR_FAIL_NULL(obj);
-		obj->get_property_list(p_list);
-
-	} else {
-		List<StringName> members;
-		get_member_list(type, &members);
-		for (const StringName &E : members) {
-			PropertyInfo pi;
-			pi.name = E;
-			pi.type = get_member_type(type, E);
-			p_list->push_back(pi);
+		case OBJECT: {
+			Object *obj = get_validated_object();
+			ERR_FAIL_NULL(obj);
+			obj->get_property_list(p_list);
+			break;
+		}
+		case ARRAY: {
+			const Array *array = reinterpret_cast<const Array *>(_data._mem);
+			// if not struct, continue on to default case, otherwise...
+			if (array->is_struct()) {
+				const StructInfo *struct_info = array->get_struct_info();
+				for (int32_t i = 0; i < struct_info->count; i++) {
+					p_list->push_back(PropertyInfo(struct_info->types[i], struct_info->names[i], PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, struct_info->type_names[i]));
+				}
+				break;
+			}
+			[[fallthrough]];
+		}
+		default: {
+			List<StringName> members;
+			get_member_list(type, &members);
+			for (const StringName &E : members) {
+				PropertyInfo pi;
+				pi.name = E;
+				pi.type = get_member_type(type, E);
+				p_list->push_back(pi);
+			}
 		}
 	}
 }

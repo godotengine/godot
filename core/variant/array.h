@@ -40,6 +40,11 @@ class ArrayPrivate;
 class Object;
 class StringName;
 class Callable;
+template <typename T>
+class Vector;
+struct ContainerTypeValidate;
+struct StructInfo;
+class Dictionary;
 
 class Array {
 	mutable ArrayPrivate *_p;
@@ -118,6 +123,14 @@ public:
 	void set(int p_idx, const Variant &p_value);
 	const Variant &get(int p_idx) const;
 
+	void set_named(const StringName &p_member, const Variant &p_value);
+	Variant &get_named(const StringName &p_member);
+	const Variant &get_named(const StringName &p_member) const; // TODO: should be & return?
+	const StringName get_member_name(int p_idx) const;
+	int find_member(const StringName &p_member) const;
+	int rfind_member(const StringName &p_member) const;
+	const Variant *getptr(const StringName &p_member) const;
+
 	int size() const;
 	bool is_empty() const;
 	void clear();
@@ -130,6 +143,7 @@ public:
 	uint32_t recursive_hash(int recursion_count) const;
 	void operator=(const Array &p_array);
 
+	bool can_reference(const Array &p_array) const;
 	void assign(const Array &p_array);
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
@@ -185,13 +199,24 @@ public:
 
 	const void *id() const;
 
+	Error validate_set_type();
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_struct(const StructInfo &p_struct_info, bool p_is_struct = true);
+
+protected:
+	void initialize_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void initialize_struct_type(const StructInfo &p_struct_info, bool p_is_struct = true);
+
+public:
 	bool is_typed() const;
+	bool is_struct() const;
+	bool is_array_of_structs() const;
 	bool is_same_typed(const Array &p_other) const;
 	bool is_same_instance(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
+	const StructInfo *get_struct_info() const;
 
 	void make_read_only();
 	bool is_read_only() const;
@@ -199,6 +224,9 @@ public:
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
+	Array(const Array &p_from, const StructInfo &p_struct_info);
+	Array(const Dictionary &p_from, const StructInfo &p_struct_info);
+	Array(const StructInfo &p_struct_info, bool p_is_struct = true);
 	Array();
 	~Array();
 };

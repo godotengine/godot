@@ -33,7 +33,9 @@
 
 #include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
+#include "core/object/method_info.h"
 #include "core/object/object_id.h"
+#include "core/object/property_info.h"
 #include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
@@ -42,90 +44,14 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/struct_generator.h"
 #include "core/variant/variant.h"
 
 template <typename T>
 class TypedArray;
 
-enum PropertyHint {
-	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
-	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
-	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
-	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "positive_only" to exclude in-out and out-in. (ie: "attenuation,positive_only")
-	PROPERTY_HINT_LINK,
-	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
-	PROPERTY_HINT_LAYERS_2D_RENDER,
-	PROPERTY_HINT_LAYERS_2D_PHYSICS,
-	PROPERTY_HINT_LAYERS_2D_NAVIGATION,
-	PROPERTY_HINT_LAYERS_3D_RENDER,
-	PROPERTY_HINT_LAYERS_3D_PHYSICS,
-	PROPERTY_HINT_LAYERS_3D_NAVIGATION,
-	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
-	PROPERTY_HINT_DIR, ///< a directory path must be passed
-	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
-	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
-	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
-	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
-	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
-	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
-	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
-	PROPERTY_HINT_OBJECT_ID,
-	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
-	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, // Deprecated.
-	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
-	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
-	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
-	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
-	PROPERTY_HINT_INT_IS_OBJECTID, // Deprecated.
-	PROPERTY_HINT_INT_IS_POINTER,
-	PROPERTY_HINT_ARRAY_TYPE,
-	PROPERTY_HINT_LOCALE_ID,
-	PROPERTY_HINT_LOCALIZABLE_STRING,
-	PROPERTY_HINT_NODE_TYPE, ///< a node object type
-	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
-	PROPERTY_HINT_PASSWORD,
-	PROPERTY_HINT_LAYERS_AVOIDANCE,
-	PROPERTY_HINT_DICTIONARY_TYPE,
-	PROPERTY_HINT_TOOL_BUTTON,
-	PROPERTY_HINT_MAX,
-};
-
-enum PropertyUsageFlags {
-	PROPERTY_USAGE_NONE = 0,
-	PROPERTY_USAGE_STORAGE = 1 << 1,
-	PROPERTY_USAGE_EDITOR = 1 << 2,
-	PROPERTY_USAGE_INTERNAL = 1 << 3,
-	PROPERTY_USAGE_CHECKABLE = 1 << 4, // Used for editing global variables.
-	PROPERTY_USAGE_CHECKED = 1 << 5, // Used for editing global variables.
-	PROPERTY_USAGE_GROUP = 1 << 6, // Used for grouping props in the editor.
-	PROPERTY_USAGE_CATEGORY = 1 << 7,
-	PROPERTY_USAGE_SUBGROUP = 1 << 8,
-	PROPERTY_USAGE_CLASS_IS_BITFIELD = 1 << 9,
-	PROPERTY_USAGE_NO_INSTANCE_STATE = 1 << 10,
-	PROPERTY_USAGE_RESTART_IF_CHANGED = 1 << 11,
-	PROPERTY_USAGE_SCRIPT_VARIABLE = 1 << 12,
-	PROPERTY_USAGE_STORE_IF_NULL = 1 << 13,
-	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 14,
-	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15, // Deprecated.
-	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
-	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
-	PROPERTY_USAGE_ARRAY = 1 << 18, // Used in the inspector to group properties as elements of an array.
-	PROPERTY_USAGE_ALWAYS_DUPLICATE = 1 << 19, // When duplicating a resource, always duplicate, even with subresource duplication disabled.
-	PROPERTY_USAGE_NEVER_DUPLICATE = 1 << 20, // When duplicating a resource, never duplicate, even with subresource duplication enabled.
-	PROPERTY_USAGE_HIGH_END_GFX = 1 << 21,
-	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 22,
-	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 23,
-	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 24, // Used in inspector to increment property when keyed in animation player.
-	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25, // Deprecated.
-	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
-	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
-	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
-	PROPERTY_USAGE_SECRET = 1 << 29, // Export preset credentials that should be stored separately from the rest of the export config.
-
-	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
-	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
-};
+template <typename T>
+class Struct;
 
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
@@ -140,170 +66,12 @@ enum PropertyUsageFlags {
 #define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
+// TODO: This probably doesn't work yet as is.
+#define ADD_STRUCT(m_array_path, m_prefix) ClassDB::add_property_struct(get_class_static(), m_array_path, m_prefix)
 
 // Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
 // PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
-
-struct PropertyInfo {
-	Variant::Type type = Variant::NIL;
-	String name;
-	StringName class_name; // For classes
-	PropertyHint hint = PROPERTY_HINT_NONE;
-	String hint_string;
-	uint32_t usage = PROPERTY_USAGE_DEFAULT;
-
-	// If you are thinking about adding another member to this class, ask the maintainer (Juan) first.
-
-	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
-		PropertyInfo pi = *this;
-		pi.usage |= p_fl;
-		return pi;
-	}
-
-	operator Dictionary() const;
-
-	static PropertyInfo from_dict(const Dictionary &p_dict);
-
-	PropertyInfo() {}
-
-	PropertyInfo(const Variant::Type p_type, const String &p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
-			type(p_type),
-			name(p_name),
-			hint(p_hint),
-			hint_string(p_hint_string),
-			usage(p_usage) {
-		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			class_name = hint_string;
-		} else {
-			class_name = p_class_name;
-		}
-	}
-
-	PropertyInfo(const StringName &p_class_name) :
-			type(Variant::OBJECT),
-			class_name(p_class_name) {}
-
-	explicit PropertyInfo(const GDExtensionPropertyInfo &pinfo) :
-			type((Variant::Type)pinfo.type),
-			name(*reinterpret_cast<StringName *>(pinfo.name)),
-			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
-			hint((PropertyHint)pinfo.hint),
-			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
-			usage(pinfo.usage) {}
-
-	bool operator==(const PropertyInfo &p_info) const {
-		return ((type == p_info.type) &&
-				(name == p_info.name) &&
-				(class_name == p_info.class_name) &&
-				(hint == p_info.hint) &&
-				(hint_string == p_info.hint_string) &&
-				(usage == p_info.usage));
-	}
-
-	bool operator<(const PropertyInfo &p_info) const {
-		return name < p_info.name;
-	}
-};
-
-TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
-
-enum MethodFlags {
-	METHOD_FLAG_NORMAL = 1,
-	METHOD_FLAG_EDITOR = 2,
-	METHOD_FLAG_CONST = 4,
-	METHOD_FLAG_VIRTUAL = 8,
-	METHOD_FLAG_VARARG = 16,
-	METHOD_FLAG_STATIC = 32,
-	METHOD_FLAG_OBJECT_CORE = 64,
-	METHOD_FLAG_VIRTUAL_REQUIRED = 128,
-	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
-};
-
-struct MethodInfo {
-	String name;
-	PropertyInfo return_val;
-	uint32_t flags = METHOD_FLAGS_DEFAULT;
-	int id = 0;
-	List<PropertyInfo> arguments;
-	Vector<Variant> default_arguments;
-	int return_val_metadata = 0;
-	Vector<int> arguments_metadata;
-
-	int get_argument_meta(int p_arg) const {
-		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
-		if (p_arg == -1) {
-			return return_val_metadata;
-		}
-		return arguments_metadata.size() > p_arg ? arguments_metadata[p_arg] : 0;
-	}
-
-	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id && name == p_method.name; }
-	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
-
-	operator Dictionary() const;
-
-	static MethodInfo from_dict(const Dictionary &p_dict);
-
-	MethodInfo() {}
-
-	explicit MethodInfo(const GDExtensionMethodInfo &pinfo) :
-			name(*reinterpret_cast<StringName *>(pinfo.name)),
-			return_val(PropertyInfo(pinfo.return_value)),
-			flags(pinfo.flags),
-			id(pinfo.id) {
-		for (uint32_t j = 0; j < pinfo.argument_count; j++) {
-			arguments.push_back(PropertyInfo(pinfo.arguments[j]));
-		}
-		const Variant *def_values = (const Variant *)pinfo.default_arguments;
-		for (uint32_t j = 0; j < pinfo.default_argument_count; j++) {
-			default_arguments.push_back(def_values[j]);
-		}
-	}
-
-	void _push_params(const PropertyInfo &p_param) {
-		arguments.push_back(p_param);
-	}
-
-	template <typename... VarArgs>
-	void _push_params(const PropertyInfo &p_param, VarArgs... p_params) {
-		arguments.push_back(p_param);
-		_push_params(p_params...);
-	}
-
-	MethodInfo(const String &p_name) { name = p_name; }
-
-	template <typename... VarArgs>
-	MethodInfo(const String &p_name, VarArgs... p_params) {
-		name = p_name;
-		_push_params(p_params...);
-	}
-
-	MethodInfo(Variant::Type ret) { return_val.type = ret; }
-	MethodInfo(Variant::Type ret, const String &p_name) {
-		return_val.type = ret;
-		name = p_name;
-	}
-
-	template <typename... VarArgs>
-	MethodInfo(Variant::Type ret, const String &p_name, VarArgs... p_params) {
-		name = p_name;
-		return_val.type = ret;
-		_push_params(p_params...);
-	}
-
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name) {
-		return_val = p_ret;
-		name = p_name;
-	}
-
-	template <typename... VarArgs>
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, VarArgs... p_params) {
-		return_val = p_ret;
-		name = p_name;
-		_push_params(p_params...);
-	}
-};
 
 // API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
@@ -575,10 +343,12 @@ public:
 	};
 
 	struct Connection {
-		::Signal signal;
-		Callable callable;
+		STRUCT_DECLARE(Connection);
+		STRUCT_MEMBER(::Signal, signal, ::Signal());
+		STRUCT_MEMBER(Callable, callable, Callable());
+		STRUCT_MEMBER(uint32_t, flags, 0);
+		STRUCT_LAYOUT(Object, Connection, struct signal, struct callable, struct flags);
 
-		uint32_t flags = 0;
 		bool operator<(const Connection &p_conn) const;
 
 		operator Variant() const;
@@ -634,12 +404,16 @@ private:
 	mutable const StringName *_class_name_ptr = nullptr;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
+	//void _add_user_signal_as_struct(const Struct<MethodInfo> &p_signal);
 	bool _has_user_signal(const StringName &p_name) const;
 	void _remove_user_signal(const StringName &p_name);
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	TypedArray<Dictionary> _get_signal_list() const;
 	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
 	TypedArray<Dictionary> _get_incoming_connections() const;
+	//TypedArray<Struct<MethodInfo>> _get_signal_list_as_structs() const;
+	//TypedArray<Struct<Connection>> _get_signal_connection_list_as_structs(const StringName &p_signal) const;
+	//TypedArray<Struct<Connection>> _get_incoming_connections_as_structs() const;
 	void _set_bind(const StringName &p_set, const Variant &p_value);
 	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
@@ -746,7 +520,9 @@ protected:
 
 	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
+	//TypedArray<Struct<PropertyInfo>> _get_property_list_as_structs_bind() const;
 	TypedArray<Dictionary> _get_method_list_bind() const;
+	//TypedArray<Struct<MethodInfo>> _get_method_list_as_structs_bind() const;
 
 	void _clear_internal_resource_paths(const Variant &p_var);
 
