@@ -345,14 +345,14 @@
 	</methods>
 	<members>
 		<member name="end" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The ending point. This is usually the corner on the top-right and forward of the bounding box, and is equivalent to [code]position + size[/code]. Setting this point affects the [member size].
+			The ending point. This is usually the corner on the top-right and back of the bounding box, and is equivalent to [code]position + size[/code]. Setting this point affects the [member size].
 		</member>
 		<member name="position" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The origin point. This is usually the corner on the bottom-left and back of the bounding box.
+			The origin point. This is usually the corner on the bottom-left and forward of the bounding box.
 		</member>
 		<member name="size" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			The bounding box's width, height, and depth starting from [member position]. Setting this value also affects the [member end] point.
-			[b]Note:[/b] It's recommended setting the width, height, and depth to non-negative values. This is because most methods in Godot assume that the [member position] is the bottom-left-back corner, and the [member end] is the top-right-forward corner. To get an equivalent bounding box with non-negative size, use [method abs].
+			[b]Note:[/b] It's recommended setting the width, height, and depth to non-negative values. This is because most methods in Godot assume that the [member position] is the bottom-left-forward corner, and the [member end] is the top-right-back corner. To get an equivalent bounding box with non-negative size, use [method abs].
 		</member>
 	</members>
 	<operators>

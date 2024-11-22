@@ -211,6 +211,11 @@ private:
 	float h = 0.0;
 	float s = 0.0;
 	float v = 0.0;
+
+	float ok_hsl_h = 0.0;
+	float ok_hsl_s = 0.0;
+	float ok_hsl_l = 0.0;
+
 	Color last_color;
 
 	struct ThemeCache {
