@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  web_tools_editor_plugin.h                                             */
+/*  translation_server.compat.inc                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEB_TOOLS_EDITOR_PLUGIN_H
-#define WEB_TOOLS_EDITOR_PLUGIN_H
+#ifndef DISABLE_DEPRECATED
 
-#if defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
+String TranslationServer::_standardize_locale_bind_compat_98972(const String &p_locale) const {
+	return standardize_locale(p_locale, false);
+}
 
-#include "core/io/zip_io.h"
-#include "editor/plugins/editor_plugin.h"
+void TranslationServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("standardize_locale", "locale"), &TranslationServer::_standardize_locale_bind_compat_98972);
+}
 
-class WebToolsEditorPlugin : public EditorPlugin {
-	GDCLASS(WebToolsEditorPlugin, EditorPlugin);
-
-private:
-	void _zip_file(String p_path, String p_base_path, zipFile p_zip);
-	void _zip_recursive(String p_path, String p_base_path, zipFile p_zip);
-	void _download_zip();
-
-public:
-	static void initialize();
-
-	WebToolsEditorPlugin();
-};
-
-#else
-
-class WebToolsEditorPlugin {
-public:
-	static void initialize() {}
-};
-
-#endif // TOOLS_ENABLED && WEB_ENABLED
-
-#endif // WEB_TOOLS_EDITOR_PLUGIN_H
+#endif // DISABLE_DEPRECATED

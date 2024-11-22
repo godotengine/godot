@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  subviewport_container.h                                               */
+/*  web_tools_editor_plugin.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SUBVIEWPORT_CONTAINER_H
-#define SUBVIEWPORT_CONTAINER_H
+#ifndef WEB_TOOLS_EDITOR_PLUGIN_H
+#define WEB_TOOLS_EDITOR_PLUGIN_H
 
-#include "scene/gui/container.h"
+#include "core/io/zip_io.h"
+#include "editor/plugins/editor_plugin.h"
 
-class SubViewportContainer : public Container {
-	GDCLASS(SubViewportContainer, Container);
+class WebToolsEditorPlugin : public EditorPlugin {
+	GDCLASS(WebToolsEditorPlugin, EditorPlugin);
 
-	bool stretch = false;
-	int shrink = 1;
-	bool consume_drag_and_drop = false;
-
-	void _notify_viewports(int p_notification);
-	bool _is_propagated_in_gui_input(const Ref<InputEvent> &p_event);
-	void _send_event_to_viewports(const Ref<InputEvent> &p_event);
-	void _propagate_nonpositional_event(const Ref<InputEvent> &p_event);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-	virtual void add_child_notify(Node *p_child) override;
-	virtual void remove_child_notify(Node *p_child) override;
-
-	GDVIRTUAL1RC(bool, _propagate_input_event, Ref<InputEvent>);
+private:
+	void _zip_file(String p_path, String p_base_path, zipFile p_zip);
+	void _zip_recursive(String p_path, String p_base_path, zipFile p_zip);
+	void _download_zip();
 
 public:
-	void set_stretch(bool p_enable);
-	bool is_stretch_enabled() const;
+	static void initialize();
 
-	virtual void input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	void set_stretch_shrink(int p_shrink);
-	int get_stretch_shrink() const;
-	void recalc_force_viewport_sizes();
-
-	void set_consume_drag_and_drop(bool p_enable);
-	bool is_consume_drag_and_drop_enabled();
-
-	virtual Size2 get_minimum_size() const override;
-
-	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
-	virtual Vector<int> get_allowed_size_flags_vertical() const override;
-
-	PackedStringArray get_configuration_warnings() const override;
-
-	SubViewportContainer();
+	WebToolsEditorPlugin();
 };
 
-#endif // SUBVIEWPORT_CONTAINER_H
+#else
+
+class WebToolsEditorPlugin {
+public:
+	static void initialize() {}
+};
+
+#endif // WEB_TOOLS_EDITOR_PLUGIN_H
