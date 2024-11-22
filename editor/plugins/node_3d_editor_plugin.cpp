@@ -92,6 +92,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/sky_material.h"

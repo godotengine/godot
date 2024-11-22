@@ -64,6 +64,8 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 #include "script_text_editor.h"
