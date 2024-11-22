@@ -148,8 +148,7 @@ layout(std140) uniform DirectionalLightData { //ubo:3
 	mediump vec4 shadow_split_offsets;
 
 	mediump float fade_from;
-	mediump float fade_to;
-	mediump vec2 pad;
+	mediump vec3 pad;
 };
 
 #endif //ubershader-skip
@@ -848,8 +847,7 @@ layout(std140) uniform DirectionalLightData {
 	mediump vec4 shadow_split_offsets;
 
 	mediump float fade_from;
-	mediump float fade_to;
-	mediump vec2 pad;
+	mediump vec3 pad;
 };
 
 uniform highp sampler2DShadow directional_shadow; // texunit:-5
@@ -2292,7 +2290,7 @@ FRAGMENT_SHADER_CODE
 			shadow = min(shadow, contact_shadow);
 		}
 #endif //ubershader-runtime
-		float pssm_fade = smoothstep(fade_from, fade_to, vertex.z);
+		float pssm_fade = smoothstep(fade_from, -shadow_split_offsets.w, vertex.z);
 		light_attenuation = mix(mix(shadow_color_contact.rgb, vec3(1.0), shadow), vec3(1.0), pssm_fade);
 	}
 
