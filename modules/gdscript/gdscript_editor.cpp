@@ -1139,10 +1139,12 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.function->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-						if (member.function->parameters.size() > 0) {
+						if (member.function->parameters.size() > 0 || (member.function->info.flags & METHOD_FLAG_VARARG)) {
 							option.insert_text += "(";
+							option.display += U"(\u2026)";
 						} else {
 							option.insert_text += "()";
+							option.display += "()";
 						}
 						break;
 					case GDScriptParser::ClassNode::Member::SIGNAL:
@@ -1184,6 +1186,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 	if (!p_types_only && base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM) {
 		ScriptLanguage::CodeCompletionOption option("new", ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, ScriptLanguage::LOCATION_LOCAL);
 		option.insert_text += "(";
+		option.display += U"(\u2026)";
 		r_result.insert(option.display, option);
 	}
 
@@ -1241,10 +1244,12 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							}
 							int location = p_recursion_depth + _get_method_location(scr->get_class_name(), E.name);
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-							if (E.arguments.size()) {
+							if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
 								option.insert_text += "(";
+								option.display += U"(\u2026)";
 							} else {
 								option.insert_text += "()";
+								option.display += "()";
 							}
 							r_result.insert(option.display, option);
 						}
@@ -1327,10 +1332,12 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 					int location = p_recursion_depth + _get_method_location(type, E.name);
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-					if (E.arguments.size()) {
+					if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
 						option.insert_text += "(";
+						option.display += U"(\u2026)";
 					} else {
 						option.insert_text += "()";
+						option.display += "()";
 					}
 					r_result.insert(option.display, option);
 				}
@@ -1398,10 +1405,12 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						continue;
 					}
 					ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
-					if (E.arguments.size()) {
+					if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
 						option.insert_text += "(";
+						option.display += U"(\u2026)";
 					} else {
 						option.insert_text += "()";
+						option.display += "()";
 					}
 					r_result.insert(option.display, option);
 				}
@@ -1433,8 +1442,10 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		ScriptLanguage::CodeCompletionOption option(String(E), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 		if (function.arguments.size() || (function.flags & METHOD_FLAG_VARARG)) {
 			option.insert_text += "(";
+			option.display += U"(\u2026)";
 		} else {
 			option.insert_text += "()";
+			option.display += "()";
 		}
 		r_result.insert(option.display, option);
 	}
@@ -1481,6 +1492,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	while (*kwa) {
 		ScriptLanguage::CodeCompletionOption option(*kwa, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 		option.insert_text += "(";
+		option.display += U"(\u2026)";
 		r_result.insert(option.display, option);
 		kwa++;
 	}
@@ -1491,6 +1503,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	for (List<StringName>::Element *E = utility_func_names.front(); E; E = E->next()) {
 		ScriptLanguage::CodeCompletionOption option(E->get(), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 		option.insert_text += "(";
+		option.display += U"(\u2026)"; // As all utility functions contain an argument or more, this is hardcoded here.
 		r_result.insert(option.display, option);
 	}
 
