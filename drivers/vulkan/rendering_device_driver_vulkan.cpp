@@ -2392,7 +2392,9 @@ RDD::CommandQueueFamilyID RenderingDeviceDriverVulkan::command_queue_family_get(
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(picked_family_index >= queue_family_properties.size(), CommandQueueFamilyID(), "A queue family with the requested bits could not be found.");
+	if (picked_family_index >= queue_family_properties.size()) {
+		return CommandQueueFamilyID();
+	}
 
 	// Since 0 is a valid index and we use 0 as the error case, we make the index start from 1 instead.
 	return CommandQueueFamilyID(picked_family_index + 1);

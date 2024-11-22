@@ -2191,7 +2191,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = animation->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color);
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
 					}
 				}
 			}
@@ -3647,7 +3647,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = editor->get_current_animation()->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color);
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
 					}
 				}
 			}
@@ -7364,7 +7364,6 @@ void AnimationTrackEditor::_update_snap_unit() {
 	}
 
 	if (timeline->is_using_fps()) {
-		_clear_selection(true); // Needs to recreate a spinbox of the KeyEdit.
 		snap_unit = 1.0 / step->get_value();
 	} else {
 		if (fps_compat->is_pressed()) {
@@ -7983,6 +7982,11 @@ AnimationTrackEditor::~AnimationTrackEditor() {
 
 // AnimationTrackKeyEditEditorPlugin.
 
+void AnimationTrackKeyEditEditor::_time_edit_spun() {
+	_time_edit_entered();
+	_time_edit_exited();
+}
+
 void AnimationTrackKeyEditEditor::_time_edit_entered() {
 	int key = animation->track_find_key(track, key_ofs, Animation::FIND_MODE_APPROX);
 	if (key == -1) {
@@ -8010,7 +8014,7 @@ void AnimationTrackKeyEditEditor::_time_edit_exited() {
 
 	int existing = animation->track_find_key(track, new_time, Animation::FIND_MODE_APPROX);
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Change Keyframe Time"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Animation Change Keyframe Time"));
 
 	if (existing != -1) {
 		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track, animation->track_get_key_time(track, existing));
@@ -8057,6 +8061,7 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->set_min(0);
 	spinner->set_allow_greater(true);
 	spinner->set_allow_lesser(true);
+	add_child(spinner);
 
 	if (use_fps) {
 		spinner->set_step(FPS_DECIMAL);
@@ -8065,13 +8070,12 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(key_ofs * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_spun), CONNECT_DEFERRED);
 	} else {
 		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(key_ofs);
 		spinner->set_max(animation->get_length());
 	}
-
-	add_child(spinner);
 
 	spinner->connect("grabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
@@ -8307,9 +8311,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
-			Color linecolor = color;
-			linecolor.a = 0.2;
 
 			// SECTION PREVIEW //
 
@@ -8368,31 +8369,21 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 					draw_key(name, scale, int(offset), is_selected, limit, limit_end);
 
-					const int font_size = 16;
+					const int font_size = 12 * EDSCALE;
 					Size2 string_size = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size);
 					if (int(offset) <= limit_end && int(offset) >= limit && should_show_all_marker_names) {
 						float bottom = get_size().height + string_size.y - font->get_descent(font_size);
 						float extrusion = MAX(0, offset + string_size.x - limit_end); // How much the string would extrude outside limit_end if unadjusted.
 						Color marker_color = animation->get_marker_color(name);
-						draw_string(font, Point2(offset - extrusion, bottom), name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, marker_color);
-						draw_string_outline(font, Point2(offset - extrusion, bottom), name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, 1, color);
+						float margin = 4 * EDSCALE;
+						Point2 pos = Point2(offset - extrusion + margin, bottom + margin);
+						draw_string(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, marker_color);
+						draw_string_outline(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, 1, color);
 					}
 				}
 			}
 
 			draw_fg(limit, get_size().width - timeline->get_buttons_width());
-
-			// BUTTONS //
-
-			{
-				int ofs = get_size().width - timeline->get_buttons_width();
-
-				draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
-
-				ofs += hsep;
-			}
-
-			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER:
@@ -9193,9 +9184,6 @@ void AnimationMultiMarkerKeyEdit::_get_property_list(List<PropertyInfo> *p_list)
 
 // AnimationMarkerKeyEditEditorPlugin
 
-void AnimationMarkerKeyEditEditor::_time_edit_entered() {
-}
-
 void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	real_t new_time = spinner->get_value();
 
@@ -9214,7 +9202,7 @@ void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Change Marker Time"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Animation Change Marker Time"));
 
 	Color color = animation->get_marker_color(marker_name);
 	undo_redo->add_do_method(animation.ptr(), "add_marker", marker_name, new_time);
@@ -9255,6 +9243,7 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 	spinner->set_min(0);
 	spinner->set_allow_greater(true);
 	spinner->set_allow_lesser(true);
+	add_child(spinner);
 
 	float time = animation->get_marker_time(marker_name);
 
@@ -9265,17 +9254,14 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(time * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	} else {
 		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(time);
 		spinner->set_max(animation->get_length());
 	}
 
-	add_child(spinner);
-
-	spinner->connect("grabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
-	spinner->connect("value_focus_entered", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 }
 

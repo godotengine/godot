@@ -514,16 +514,19 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 			}
 		}
 	}
-	if (p_from_version <= 5) {
-		// Converts the device in events from -1 (emulated events) to -3 (all events).
+	if (p_from_version == 5) {
+		// Converts the device in events from -3 to -1.
+		// -3 was introduced in GH-97707 as a way to prevent a clash in device IDs, but as reported in GH-99243, this leads to problems.
+		// -3 was used during dev-releases, so this conversion helps to revert such affected projects.
+		// This conversion doesn't affect any other projects, since -3 is not used otherwise.
 		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
 			if (String(E.key).begins_with("input/")) {
 				Dictionary action = E.value.variant;
 				Array events = action["events"];
 				for (int i = 0; i < events.size(); i++) {
 					Ref<InputEvent> ev = events[i];
-					if (ev.is_valid() && ev->get_device() == -1) { // -1 was the previous value (GH-97707).
-						ev->set_device(InputEvent::DEVICE_ID_ALL_DEVICES);
+					if (ev.is_valid() && ev->get_device() == -3) {
+						ev->set_device(-1);
 					}
 				}
 			}
