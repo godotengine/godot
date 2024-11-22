@@ -933,7 +933,7 @@ RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1);
+	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1, RDD::AttachmentReference());
 	ERR_FAIL_COND_V(!render_pass, SwapChainID());
 
 	// Create the empty swap chain until it is resized.
@@ -2992,7 +2992,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::pipeline_cache_serialize() {
 
 // ----- SUBPASS -----
 
-RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
+RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
 	PixelFormats &pf = *pixel_formats;
 
 	size_t subpass_count = p_subpasses.size();
@@ -3872,8 +3872,6 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return (int64_t)limits.subgroupSupportedShaderStages;
 		case LIMIT_SUBGROUP_OPERATIONS:
 			return (int64_t)limits.subgroupSupportedOperations;
-		UNKNOWN(LIMIT_VRS_TEXEL_WIDTH);
-		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
 		default:
 			ERR_FAIL_V(0);
 	}
@@ -3892,17 +3890,8 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_MULTIVIEW:
-			return multiview_capabilities.is_supported;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return true;
-		case SUPPORTS_ATTACHMENT_VRS:
-			// TODO(sgc): Maybe supported via https://developer.apple.com/documentation/metal/render_passes/rendering_at_different_rasterization_rates?language=objc
-			// See also:
-			//
-			// * https://forum.beyond3d.com/threads/variable-rate-shading-vs-variable-rate-rasterization.62243/post-2191363
-			//
-			return false;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		default:
@@ -3912,6 +3901,14 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 
 const RDD::MultiviewCapabilities &RenderingDeviceDriverMetal::get_multiview_capabilities() {
 	return multiview_capabilities;
+}
+
+const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverMetal::get_fragment_shading_rate_capabilities() {
+	return fsr_capabilities;
+}
+
+const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverMetal::get_fragment_density_map_capabilities() {
+	return fdm_capabilities;
 }
 
 String RenderingDeviceDriverMetal::get_api_version() const {

@@ -290,7 +290,8 @@ static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_COPY_DST_OPTIMAL
 	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
-	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT, // TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL
 };
 
 static VkPipelineStageFlags _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStageBits> p_stages) {
@@ -504,6 +505,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true);
 	_register_requested_device_extension(VK_KHR_MULTIVIEW_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
@@ -730,7 +732,8 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		void *next_features = nullptr;
 		VkPhysicalDeviceVulkan12Features device_features_vk_1_2 = {};
 		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
-		VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
+		VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
+		VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = {};
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
@@ -747,9 +750,15 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
-			vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-			vrs_features.pNext = next_features;
-			next_features = &vrs_features;
+			fsr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+			fsr_features.pNext = next_features;
+			next_features = &fsr_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME)) {
+			fdm_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+			fdm_features.pNext = next_features;
+			next_features = &fdm_features;
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
@@ -791,9 +800,15 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
-			vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
-			vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
-			vrs_capabilities.attachment_vrs_supported = vrs_features.attachmentFragmentShadingRate;
+			fsr_capabilities.pipeline_supported = fsr_features.pipelineFragmentShadingRate;
+			fsr_capabilities.primitive_supported = fsr_features.primitiveFragmentShadingRate;
+			fsr_capabilities.attachment_supported = fsr_features.attachmentFragmentShadingRate;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME)) {
+			fdm_capabilities.attachment_supported = fdm_features.fragmentDensityMap;
+			fdm_capabilities.dynamic_attachment_supported = fdm_features.fragmentDensityMapDynamic;
+			fdm_capabilities.non_subsampled_images_supported = fdm_features.fragmentDensityMapNonSubsampledImages;
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
@@ -825,7 +840,8 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 
 	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
 		void *next_properties = nullptr;
-		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrs_properties = {};
+		VkPhysicalDeviceFragmentShadingRatePropertiesKHR fsr_properties = {};
+		VkPhysicalDeviceFragmentDensityMapPropertiesEXT fdm_properties = {};
 		VkPhysicalDeviceMultiviewProperties multiview_properties = {};
 		VkPhysicalDeviceSubgroupProperties subgroup_properties = {};
 		VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_properties = {};
@@ -851,10 +867,16 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			next_properties = &multiview_properties;
 		}
 
-		if (vrs_capabilities.attachment_vrs_supported) {
-			vrs_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-			vrs_properties.pNext = next_properties;
-			next_properties = &vrs_properties;
+		if (fsr_capabilities.attachment_supported) {
+			fsr_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+			fsr_properties.pNext = next_properties;
+			next_properties = &fsr_properties;
+		}
+
+		if (fdm_capabilities.attachment_supported) {
+			fdm_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
+			fdm_properties.pNext = next_properties;
+			next_properties = &fdm_properties;
 		}
 
 		physical_device_properties_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -877,31 +899,51 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			subgroup_capabilities.max_size = subgroup_size_control_properties.maxSubgroupSize;
 		}
 
-		if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-			print_verbose("- Vulkan Variable Rate Shading supported:");
-			if (vrs_capabilities.pipeline_vrs_supported) {
+		if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
+			print_verbose("- Vulkan Fragment Shading Rate supported:");
+			if (fsr_capabilities.pipeline_supported) {
 				print_verbose("  Pipeline fragment shading rate");
 			}
-			if (vrs_capabilities.primitive_vrs_supported) {
+			if (fsr_capabilities.primitive_supported) {
 				print_verbose("  Primitive fragment shading rate");
 			}
-			if (vrs_capabilities.attachment_vrs_supported) {
+			if (fsr_capabilities.attachment_supported) {
 				// TODO: Expose these somehow to the end user.
-				vrs_capabilities.min_texel_size.x = vrs_properties.minFragmentShadingRateAttachmentTexelSize.width;
-				vrs_capabilities.min_texel_size.y = vrs_properties.minFragmentShadingRateAttachmentTexelSize.height;
-				vrs_capabilities.max_texel_size.x = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.width;
-				vrs_capabilities.max_texel_size.y = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.height;
-				vrs_capabilities.max_fragment_size.x = vrs_properties.maxFragmentSize.width; // either 4 or 8
-				vrs_capabilities.max_fragment_size.y = vrs_properties.maxFragmentSize.height; // generally the same as width
+				fsr_capabilities.min_texel_size.x = fsr_properties.minFragmentShadingRateAttachmentTexelSize.width;
+				fsr_capabilities.min_texel_size.y = fsr_properties.minFragmentShadingRateAttachmentTexelSize.height;
+				fsr_capabilities.max_texel_size.x = fsr_properties.maxFragmentShadingRateAttachmentTexelSize.width;
+				fsr_capabilities.max_texel_size.y = fsr_properties.maxFragmentShadingRateAttachmentTexelSize.height;
+				fsr_capabilities.max_fragment_size.x = fsr_properties.maxFragmentSize.width; // either 4 or 8
+				fsr_capabilities.max_fragment_size.y = fsr_properties.maxFragmentSize.height; // generally the same as width
 
-				// We'll attempt to default to a texel size of 16x16.
-				vrs_capabilities.texel_size = Vector2i(16, 16).clamp(vrs_capabilities.min_texel_size, vrs_capabilities.max_texel_size);
-
-				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")") + String(", max fragment size: (") + itos(vrs_capabilities.max_fragment_size.x) + String(", ") + itos(vrs_capabilities.max_fragment_size.y) + String(")"));
+				print_verbose(String("  Attachment fragment shading rate") +
+						String(", min texel size: (") + itos(fsr_capabilities.min_texel_size.x) + String(", ") + itos(fsr_capabilities.min_texel_size.y) + String(")") +
+						String(", max texel size: (") + itos(fsr_capabilities.max_texel_size.x) + String(", ") + itos(fsr_capabilities.max_texel_size.y) + String(")") +
+						String(", max fragment size: (") + itos(fsr_capabilities.max_fragment_size.x) + String(", ") + itos(fsr_capabilities.max_fragment_size.y) + String(")"));
 			}
 
 		} else {
 			print_verbose("- Vulkan Variable Rate Shading not supported");
+		}
+
+		if (fdm_capabilities.attachment_supported || fdm_capabilities.dynamic_attachment_supported || fdm_capabilities.non_subsampled_images_supported) {
+			print_verbose("- Vulkan Fragment Density Map supported");
+
+			fdm_capabilities.min_texel_size.x = fdm_properties.minFragmentDensityTexelSize.width;
+			fdm_capabilities.min_texel_size.y = fdm_properties.minFragmentDensityTexelSize.height;
+			fdm_capabilities.max_texel_size.x = fdm_properties.maxFragmentDensityTexelSize.width;
+			fdm_capabilities.max_texel_size.y = fdm_properties.maxFragmentDensityTexelSize.height;
+			fdm_capabilities.invocations_supported = fdm_properties.fragmentDensityInvocations;
+
+			if (fdm_capabilities.dynamic_attachment_supported) {
+				print_verbose("  - dynamic fragment density map supported");
+			}
+
+			if (fdm_capabilities.non_subsampled_images_supported) {
+				print_verbose("  - non-subsampled images supported");
+			}
+		} else {
+			print_verbose("- Vulkan Fragment Density Map not supported");
 		}
 
 		if (multiview_capabilities.is_supported) {
@@ -971,14 +1013,24 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 	shader_features.shaderInt8 = shader_capabilities.shader_int8_is_supported;
 	create_info_next = &shader_features;
 
-	VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
-	if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-		vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-		vrs_features.pNext = create_info_next;
-		vrs_features.pipelineFragmentShadingRate = vrs_capabilities.pipeline_vrs_supported;
-		vrs_features.primitiveFragmentShadingRate = vrs_capabilities.primitive_vrs_supported;
-		vrs_features.attachmentFragmentShadingRate = vrs_capabilities.attachment_vrs_supported;
-		create_info_next = &vrs_features;
+	VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
+	if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
+		fsr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+		fsr_features.pNext = create_info_next;
+		fsr_features.pipelineFragmentShadingRate = fsr_capabilities.pipeline_supported;
+		fsr_features.primitiveFragmentShadingRate = fsr_capabilities.primitive_supported;
+		fsr_features.attachmentFragmentShadingRate = fsr_capabilities.attachment_supported;
+		create_info_next = &fsr_features;
+	}
+
+	VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = {};
+	if (fdm_capabilities.attachment_supported || fdm_capabilities.dynamic_attachment_supported || fdm_capabilities.non_subsampled_images_supported) {
+		fdm_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+		fdm_features.pNext = create_info_next;
+		fdm_features.fragmentDensityMap = fdm_capabilities.attachment_supported;
+		fdm_features.fragmentDensityMapDynamic = fdm_capabilities.dynamic_attachment_supported;
+		fdm_features.fragmentDensityMapNonSubsampledImages = fdm_capabilities.non_subsampled_images_supported;
+		create_info_next = &fdm_features;
 	}
 
 	VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
@@ -1705,8 +1757,11 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if ((p_format.usage_bits & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -2060,8 +2115,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	if (!(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_STORAGE_ATOMIC_BIT);
 	}
-	// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
-	if (p_format != DATA_FORMAT_R8_UINT) {
+	if (p_format != DATA_FORMAT_R8_UINT && p_format != DATA_FORMAT_R8G8_UNORM) {
 		supported.clear_flag(TEXTURE_USAGE_VRS_ATTACHMENT_BIT);
 	}
 
@@ -2195,6 +2249,8 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPE
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT, VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT));
 
 // RDD::BarrierAccessBits == VkAccessFlagBits.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT, VK_ACCESS_INDIRECT_COMMAND_READ_BIT));
@@ -2213,6 +2269,7 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_HOST_WRITE_BIT, VK_ACCESS_H
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_MEMORY_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT, VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT, VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT));
 
 void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		CommandBufferID p_cmd_buffer,
@@ -4367,7 +4424,7 @@ static void _attachment_reference_to_vk(const RDD::AttachmentReference &p_attach
 	r_vk_attachment_reference->aspectMask = (VkImageAspectFlags)p_attachment_reference.aspect;
 }
 
-RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
+RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
 	// These are only used if we use multiview but we need to define them in scope.
 	const uint32_t view_mask = (1 << p_view_count) - 1;
 	const uint32_t correlation_mask = (1 << p_view_count) - 1;
@@ -4422,22 +4479,22 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_subpasses[i].preserveAttachmentCount = p_subpasses[i].preserve_attachments.size();
 		vk_subpasses[i].pPreserveAttachments = p_subpasses[i].preserve_attachments.ptr();
 
-		// VRS.
-		if (vrs_capabilities.attachment_vrs_supported && p_subpasses[i].vrs_reference.attachment != AttachmentReference::UNUSED) {
-			VkAttachmentReference2KHR *vk_subpass_vrs_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
-			*vk_subpass_vrs_attachment = {};
-			vk_subpass_vrs_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
-			vk_subpass_vrs_attachment->attachment = p_subpasses[i].vrs_reference.attachment;
-			vk_subpass_vrs_attachment->layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+		// Fragment shading rate.
+		if (fsr_capabilities.attachment_supported && p_subpasses[i].fragment_shading_rate_reference.attachment != AttachmentReference::UNUSED) {
+			VkAttachmentReference2KHR *vk_subpass_fsr_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
+			*vk_subpass_fsr_attachment = {};
+			vk_subpass_fsr_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			vk_subpass_fsr_attachment->attachment = p_subpasses[i].fragment_shading_rate_reference.attachment;
+			vk_subpass_fsr_attachment->layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
 
-			VkFragmentShadingRateAttachmentInfoKHR *vk_vrs_info = ALLOCA_SINGLE(VkFragmentShadingRateAttachmentInfoKHR);
-			*vk_vrs_info = {};
-			vk_vrs_info->sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
-			vk_vrs_info->pFragmentShadingRateAttachment = vk_subpass_vrs_attachment;
-			vk_vrs_info->shadingRateAttachmentTexelSize.width = vrs_capabilities.texel_size.x;
-			vk_vrs_info->shadingRateAttachmentTexelSize.height = vrs_capabilities.texel_size.y;
+			VkFragmentShadingRateAttachmentInfoKHR *vk_fsr_info = ALLOCA_SINGLE(VkFragmentShadingRateAttachmentInfoKHR);
+			*vk_fsr_info = {};
+			vk_fsr_info->sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+			vk_fsr_info->pFragmentShadingRateAttachment = vk_subpass_fsr_attachment;
+			vk_fsr_info->shadingRateAttachmentTexelSize.width = p_subpasses[i].fragment_shading_rate_texel_size.x;
+			vk_fsr_info->shadingRateAttachmentTexelSize.height = p_subpasses[i].fragment_shading_rate_texel_size.y;
 
-			vk_subpasses[i].pNext = vk_vrs_info;
+			vk_subpasses[i].pNext = vk_fsr_info;
 		}
 	}
 
@@ -4484,6 +4541,16 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		multiview_create_info->pCorrelationMasks = &correlation_mask;
 
 		create_info.pNext = multiview_create_info;
+	}
+
+	// Fragment density map.
+	if (fdm_capabilities.attachment_supported && p_fragment_density_map_attachment.attachment != AttachmentReference::UNUSED) {
+		VkRenderPassFragmentDensityMapCreateInfoEXT *vk_fdm_info = ALLOCA_SINGLE(VkRenderPassFragmentDensityMapCreateInfoEXT);
+		vk_fdm_info->sType = VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT;
+		vk_fdm_info->fragmentDensityMapAttachment.attachment = p_fragment_density_map_attachment.attachment;
+		vk_fdm_info->fragmentDensityMapAttachment.layout = RD_TO_VK_LAYOUT[p_fragment_density_map_attachment.layout];
+		vk_fdm_info->pNext = create_info.pNext;
+		create_info.pNext = vk_fdm_info;
 	}
 
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
@@ -4922,23 +4989,22 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	dynamic_state_create_info.dynamicStateCount = vk_dynamic_states_count;
 	dynamic_state_create_info.pDynamicStates = vk_dynamic_states;
 
-	// VRS.
-
 	void *graphics_pipeline_nextptr = nullptr;
 
-	if (vrs_capabilities.attachment_vrs_supported) {
-		// If VRS is used, this defines how the different VRS types are combined.
-		// combinerOps[0] decides how we use the output of pipeline and primitive (drawcall) VRS.
-		// combinerOps[1] decides how we use the output of combinerOps[0] and our attachment VRS.
+	if (fsr_capabilities.attachment_supported) {
+		// Fragment shading rate.
+		// If FSR is used, this defines how the different FSR types are combined.
+		// combinerOps[0] decides how we use the output of pipeline and primitive (drawcall) FSR.
+		// combinerOps[1] decides how we use the output of combinerOps[0] and our attachment FSR.
 
-		VkPipelineFragmentShadingRateStateCreateInfoKHR *vrs_create_info = ALLOCA_SINGLE(VkPipelineFragmentShadingRateStateCreateInfoKHR);
-		*vrs_create_info = {};
-		vrs_create_info->sType = VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR;
-		vrs_create_info->fragmentSize = { 4, 4 };
-		vrs_create_info->combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR; // We don't use pipeline/primitive VRS so this really doesn't matter.
-		vrs_create_info->combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR; // Always use the outcome of attachment VRS if enabled.
+		VkPipelineFragmentShadingRateStateCreateInfoKHR *fsr_create_info = ALLOCA_SINGLE(VkPipelineFragmentShadingRateStateCreateInfoKHR);
+		*fsr_create_info = {};
+		fsr_create_info->sType = VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR;
+		fsr_create_info->fragmentSize = { 4, 4 };
+		fsr_create_info->combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR; // We don't use pipeline/primitive FSR so this really doesn't matter.
+		fsr_create_info->combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR; // Always use the outcome of attachment FSR if enabled.
 
-		graphics_pipeline_nextptr = vrs_create_info;
+		graphics_pipeline_nextptr = fsr_create_info;
 	}
 
 	// Finally, pipeline create info.
@@ -5642,14 +5708,6 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return subgroup_capabilities.supported_stages_flags_rd();
 		case LIMIT_SUBGROUP_OPERATIONS:
 			return subgroup_capabilities.supported_operations_flags_rd();
-		case LIMIT_VRS_TEXEL_WIDTH:
-			return vrs_capabilities.texel_size.x;
-		case LIMIT_VRS_TEXEL_HEIGHT:
-			return vrs_capabilities.texel_size.y;
-		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
-			return vrs_capabilities.max_fragment_size.x;
-		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
-			return vrs_capabilities.max_fragment_size.y;
 		default:
 			ERR_FAIL_V(0);
 	}
@@ -5668,12 +5726,8 @@ uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_MULTIVIEW:
-			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return shader_capabilities.shader_float16_is_supported && physical_device_features.shaderInt16 && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
-		case SUPPORTS_ATTACHMENT_VRS:
-			return vrs_capabilities.attachment_vrs_supported && physical_device_features.shaderStorageImageExtendedFormats;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		default:
@@ -5683,6 +5737,14 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 
 const RDD::MultiviewCapabilities &RenderingDeviceDriverVulkan::get_multiview_capabilities() {
 	return multiview_capabilities;
+}
+
+const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverVulkan::get_fragment_shading_rate_capabilities() {
+	return fsr_capabilities;
+}
+
+const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverVulkan::get_fragment_density_map_capabilities() {
+	return fdm_capabilities;
 }
 
 String RenderingDeviceDriverVulkan::get_api_name() const {
