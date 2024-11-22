@@ -3560,9 +3560,6 @@ bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
 
-void Variant::static_assign(const Variant &p_variant) {
-}
-
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
 		case OBJECT:

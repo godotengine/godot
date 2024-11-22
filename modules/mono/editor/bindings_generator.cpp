@@ -5040,22 +5040,25 @@ void BindingsGenerator::_populate_global_constants() {
 		}
 	}
 
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2I.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3I.Axis");
-	for (const StringName &enum_cname : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		TypeInterface enum_itype;
-		enum_itype.is_enum = true;
-		enum_itype.name = enum_cname.operator String();
-		enum_itype.cname = enum_cname;
-		enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
-		TypeInterface::postsetup_enum_type(enum_itype);
-		enum_types.insert(enum_itype.cname, enum_itype);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::OBJECT) {
+			continue;
+		}
+
+		const Variant::Type type = Variant::Type(i);
+
+		List<StringName> enum_names;
+		Variant::get_enums_for_type(type, &enum_names);
+
+		for (const StringName &enum_name : enum_names) {
+			TypeInterface enum_itype;
+			enum_itype.is_enum = true;
+			enum_itype.name = Variant::get_type_name(type) + "." + enum_name;
+			enum_itype.cname = enum_itype.name;
+			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
+			TypeInterface::postsetup_enum_type(enum_itype);
+			enum_types.insert(enum_itype.cname, enum_itype);
+		}
 	}
 }
 
