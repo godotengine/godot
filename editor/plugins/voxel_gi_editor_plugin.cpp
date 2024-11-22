@@ -146,15 +146,15 @@ void VoxelGIEditorPlugin::make_visible(bool p_visible) {
 
 EditorProgress *VoxelGIEditorPlugin::tmp_progress = nullptr;
 
-void VoxelGIEditorPlugin::bake_func_begin(int p_steps) {
+void VoxelGIEditorPlugin::bake_func_begin() {
 	ERR_FAIL_COND(tmp_progress != nullptr);
 
-	tmp_progress = memnew(EditorProgress("bake_gi", TTR("Bake VoxelGI"), p_steps));
+	tmp_progress = memnew(EditorProgress("bake_gi", TTR("Bake VoxelGI"), 1000, true));
 }
 
-void VoxelGIEditorPlugin::bake_func_step(int p_step, const String &p_description) {
-	ERR_FAIL_NULL(tmp_progress);
-	tmp_progress->step(p_description, p_step, false);
+bool VoxelGIEditorPlugin::bake_func_step(int p_progress, const String &p_description) {
+	ERR_FAIL_NULL_V(tmp_progress, false);
+	return tmp_progress->step(p_description, p_progress, false);
 }
 
 void VoxelGIEditorPlugin::bake_func_end() {
