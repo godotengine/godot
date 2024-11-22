@@ -47,6 +47,13 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 		return;
 	}
 
+	if (p_emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
+
 	emitting = p_emitting;
 	if (emitting) {
 		active = true;
@@ -57,6 +64,10 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 			_update_internal();
 		}
 	}
+}
+
+void CPUParticles3D::set_autostart(bool p_autostart) {
+	autostart = p_autostart;
 }
 
 void CPUParticles3D::set_amount(int p_amount) {
@@ -86,6 +97,13 @@ void CPUParticles3D::set_lifetime(double p_lifetime) {
 
 void CPUParticles3D::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
+
+	if (emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
 }
 
 void CPUParticles3D::set_pre_process_time(double p_time) {
@@ -120,6 +138,10 @@ void CPUParticles3D::set_speed_scale(double p_scale) {
 
 bool CPUParticles3D::is_emitting() const {
 	return emitting;
+}
+
+bool CPUParticles3D::get_autostart() const {
+	return autostart;
 }
 
 int CPUParticles3D::get_amount() const {
@@ -569,6 +591,12 @@ void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "autostart") {
+		if (emitting && !one_shot) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		}
 	}
 }
 
@@ -1296,6 +1324,16 @@ void CPUParticles3D::_update_render_thread() {
 
 void CPUParticles3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				break;
+			}
+#endif
+			if (autostart) {
+				set_emitting(true);
+			}
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(emitting);
 
@@ -1444,6 +1482,7 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &CPUParticles3D::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_autostart", "autostart"), &CPUParticles3D::set_autostart);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &CPUParticles3D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &CPUParticles3D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &CPUParticles3D::set_one_shot);
@@ -1457,6 +1496,7 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &CPUParticles3D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &CPUParticles3D::set_speed_scale);
 
+	ClassDB::bind_method(D_METHOD("get_autostart"), &CPUParticles3D::get_autostart);
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles3D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &CPUParticles3D::get_lifetime);
@@ -1482,6 +1522,7 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &CPUParticles3D::capture_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "get_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");

@@ -42,6 +42,13 @@ AABB GPUParticles3D::get_aabb() const {
 void GPUParticles3D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
+	if (p_emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
+
 	if (p_emitting && one_shot) {
 		if (!active && !emitting) {
 			// Last cycle ended.
@@ -68,6 +75,10 @@ void GPUParticles3D::set_emitting(bool p_emitting) {
 	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
+void GPUParticles3D::set_autostart(bool p_autostart) {
+	autostart = p_autostart;
+}
+
 void GPUParticles3D::set_amount(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
@@ -86,7 +97,15 @@ void GPUParticles3D::set_interp_to_end(float p_interp) {
 }
 
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
+
 	one_shot = p_one_shot;
+
+	if (emitting && !one_shot) {
+		autostart = false;
+		notify_property_list_changed();
+	} else {
+		notify_property_list_changed();
+	}
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
@@ -145,6 +164,10 @@ void GPUParticles3D::set_collision_base_size(real_t p_size) {
 
 bool GPUParticles3D::is_emitting() const {
 	return emitting;
+}
+
+bool GPUParticles3D::get_autostart() const {
+	return autostart;
 }
 
 int GPUParticles3D::get_amount() const {
@@ -421,6 +444,12 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 			return;
 		}
 	}
+
+	if (p_property.name == "autostart") {
+		if (emitting && !one_shot) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		}
+	}
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -456,6 +485,16 @@ NodePath GPUParticles3D::get_sub_emitter() const {
 
 void GPUParticles3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				break;
+			}
+#endif
+			if (autostart) {
+				set_emitting(true);
+			}
+		} break;
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -674,6 +713,7 @@ float GPUParticles3D::get_amount_ratio() const {
 
 void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles3D::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_autostart", "autostart"), &GPUParticles3D::set_autostart);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &GPUParticles3D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &GPUParticles3D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &GPUParticles3D::set_one_shot);
@@ -691,6 +731,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles3D::set_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles3D::is_emitting);
+	ClassDB::bind_method(D_METHOD("get_autostart"), &GPUParticles3D::get_autostart);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles3D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &GPUParticles3D::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &GPUParticles3D::get_one_shot);
@@ -746,6 +787,8 @@ void GPUParticles3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "get_autostart");
+	ADD_PROPERTY_DEFAULT("autostart", false); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles3D"), "set_sub_emitter", "get_sub_emitter");

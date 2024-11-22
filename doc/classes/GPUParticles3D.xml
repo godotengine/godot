@@ -100,6 +100,9 @@
 			[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the [signal finished] signal during which setting this to [code]true[/code] will not restart the emission cycle.
 			[b]Tip:[/b] If your [member one_shot] emitter needs to immediately restart emitting particles once [signal finished] signal is received, consider calling [method restart] instead of setting [member emitting].
 		</member>
+		<member name="autostart" type="bool" setter="set_autostart" getter="get_autostart" default="false">
+			If [code]true[/code], it will start emitting once it is placed in the scene.
+		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
 			Time ratio between each emission. If [code]0[/code], particles are emitted continuously. If [code]1[/code], all particles are emitted simultaneously.
 		</member>
