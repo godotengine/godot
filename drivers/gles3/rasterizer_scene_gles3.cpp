@@ -2799,7 +2799,10 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 		const float fade_start = li->light_ptr->param[VS::LIGHT_PARAM_SHADOW_FADE_START];
 		// Using 1.0 would break `smoothstep()` in the shader.
 		ubo_data.fade_from = -ubo_data.shadow_split_offsets[shadow_count - 1] * MIN(fade_start, 0.999);
-		ubo_data.fade_to = -ubo_data.shadow_split_offsets[shadow_count - 1];
+
+		// To prevent the need for a fade to, store the fade to in the final split offset.
+		// It will either be the same as before, or the maximum split offset.
+		ubo_data.shadow_split_offsets[3] = ubo_data.shadow_split_offsets[shadow_count - 1];
 	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.directional_ubo);
