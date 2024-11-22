@@ -2887,10 +2887,12 @@ void EditorInspector::update_tree() {
 	}
 
 	String filter = search_box ? search_box->get_text() : "";
-	String group;
-	String group_base;
-	String subgroup;
-	String subgroup_base;
+
+	String active_group_display_name;
+	String active_group_prefix;
+	String active_subgroup_display_name;
+	String active_subgroup_prefix;
+
 	int section_depth = 0;
 	bool disable_favorite = false;
 	VBoxContainer *category_vbox = nullptr;
@@ -2921,10 +2923,10 @@ void EditorInspector::update_tree() {
 
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
-			subgroup = p.name;
+			active_subgroup_display_name = p.name;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
-			subgroup_base = hint_parts[0];
+			active_subgroup_prefix = hint_parts[0];
 			if (hint_parts.size() > 1) {
 				section_depth = hint_parts[1].to_int();
 			} else {
@@ -2935,27 +2937,27 @@ void EditorInspector::update_tree() {
 
 		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
-			group = p.name;
+			active_group_display_name = p.name;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
-			group_base = hint_parts[0];
+			active_group_prefix = hint_parts[0];
 			if (hint_parts.size() > 1) {
 				section_depth = hint_parts[1].to_int();
 			} else {
 				section_depth = 0;
 			}
 
-			subgroup = "";
-			subgroup_base = "";
+			active_subgroup_display_name = "";
+			active_subgroup_prefix = "";
 
 			continue;
 
 		} else if (p.usage & PROPERTY_USAGE_CATEGORY) {
 			// Setup a property category.
-			group = "";
-			group_base = "";
-			subgroup = "";
-			subgroup_base = "";
+			active_group_display_name = "";
+			active_group_prefix = "";
+			active_subgroup_display_name = "";
+			active_subgroup_prefix = "";
 			section_depth = 0;
 			disable_favorite = false;
 
@@ -3139,34 +3141,34 @@ void EditorInspector::update_tree() {
 			}
 		} else {
 			// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
-			if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
-				if (path.begins_with(subgroup_base)) {
-					path = path.trim_prefix(subgroup_base);
-				} else if (subgroup_base.begins_with(path)) {
+			if (!active_subgroup_display_name.is_empty() && !active_subgroup_prefix.is_empty()) {
+				if (path.begins_with(active_subgroup_prefix)) {
+					path = path.trim_prefix(active_subgroup_prefix);
+				} else if (active_subgroup_prefix.begins_with(path)) {
 					// Keep it, this is used pretty often.
 				} else {
-					subgroup = ""; // The prefix changed, we are no longer in the subgroup.
+					active_subgroup_display_name = ""; // The prefix changed, we are no longer in the subgroup.
 				}
 			}
 
 			// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
-			if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
-				if (path.begins_with(group_base)) {
-					path = path.trim_prefix(group_base);
-				} else if (group_base.begins_with(path)) {
+			if (!active_group_display_name.is_empty() && !active_group_prefix.is_empty() && active_subgroup_display_name.is_empty()) {
+				if (path.begins_with(active_group_prefix)) {
+					path = path.trim_prefix(active_group_prefix);
+				} else if (active_group_prefix.begins_with(path)) {
 					// Keep it, this is used pretty often.
 				} else {
-					group = ""; // The prefix changed, we are no longer in the group.
-					subgroup = "";
+					active_group_display_name = ""; // The prefix changed, we are no longer in the group.
+					active_subgroup_display_name = "";
 				}
 			}
 
 			// Add the group and subgroup to the path.
-			if (!subgroup.is_empty()) {
-				path = subgroup + "/" + path;
+			if (!active_subgroup_display_name.is_empty()) {
+				path = active_subgroup_display_name + "/" + path;
 			}
-			if (!group.is_empty()) {
-				path = group + "/" + path;
+			if (!active_group_display_name.is_empty()) {
+				path = active_group_display_name + "/" + path;
 			}
 		}
 
@@ -3247,7 +3249,7 @@ void EditorInspector::update_tree() {
 				}
 
 				// Only process group label if this is not the group or subgroup.
-				if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
+				if ((i == 0 && component == active_group_display_name) || (i == 1 && component == active_subgroup_display_name)) {
 					if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 						label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
 						tooltip = component;
@@ -3344,16 +3346,6 @@ void EditorInspector::update_tree() {
 
 			continue;
 		}
-
-		// Checkable and checked properties.
-		bool checkable = false;
-		bool checked = false;
-		if (p.usage & PROPERTY_USAGE_CHECKABLE) {
-			checkable = true;
-			checked = p.usage & PROPERTY_USAGE_CHECKED;
-		}
-
-		bool property_read_only = (p.usage & PROPERTY_USAGE_READ_ONLY) || read_only;
 
 		// Mark properties that would require an editor restart (mostly when editing editor settings).
 		if (p.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
@@ -3453,7 +3445,7 @@ void EditorInspector::update_tree() {
 
 		// Search for the inspector plugin that will handle the properties. Then add the correct property editor to it.
 		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
+			bool stop_rendering = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
 
 			for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
 				if (F.add_to_end) {
@@ -3465,12 +3457,20 @@ void EditorInspector::update_tree() {
 
 			ped->added_editors.clear();
 
-			if (exclusive) {
+			if (stop_rendering) {
 				break;
 			}
 		}
 
 		editors.append_array(late_editors);
+
+		bool checkable = false;
+		bool checked = false;
+		if (p.usage & PROPERTY_USAGE_CHECKABLE) {
+			checkable = true;
+			checked = p.usage & PROPERTY_USAGE_CHECKED;
+		}
+		bool property_read_only = (p.usage & PROPERTY_USAGE_READ_ONLY) || read_only || all_read_only;
 
 		for (int i = 0; i < editors.size(); i++) {
 			EditorProperty *ep = Object::cast_to<EditorProperty>(editors[i].property_editor);
@@ -3524,7 +3524,7 @@ void EditorInspector::update_tree() {
 				ep->set_checkable(checkable);
 				ep->set_checked(checked);
 				ep->set_keying(keying);
-				ep->set_read_only(property_read_only || all_read_only);
+				ep->set_read_only(property_read_only);
 				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
 			}
 
