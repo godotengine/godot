@@ -12,6 +12,7 @@
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/InternalEdgeRemovingCollector.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -270,6 +271,86 @@ void NarrowPhaseQuery::CollideShape(const Shape *inShape, Vec3Arg inShapeScale, 
 		const BodyLockInterface &		mBodyLockInterface;
 		const BodyFilter &				mBodyFilter;
 		const ShapeFilter &				mShapeFilter;
+	};
+
+	// Calculate bounds for shape and expand by max separation distance
+	AABox bounds = inShape->GetWorldSpaceBounds(inCenterOfMassTransform, inShapeScale);
+	bounds.ExpandBy(Vec3::sReplicate(inCollideShapeSettings.mMaxSeparationDistance));
+
+	// Do broadphase test
+	MyCollector collector(inShape, inShapeScale, inCenterOfMassTransform, inCollideShapeSettings, inBaseOffset, ioCollector, *mBodyLockInterface, inBodyFilter, inShapeFilter);
+	mBroadPhaseQuery->CollideAABox(bounds, collector, inBroadPhaseLayerFilter, inObjectLayerFilter);
+}
+
+void NarrowPhaseQuery::CollideShapeWithInternalEdgeRemoval(const Shape *inShape, Vec3Arg inShapeScale, RMat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const
+{
+	JPH_PROFILE_FUNCTION();
+
+	class MyCollector : public CollideShapeBodyCollector
+	{
+	public:
+							MyCollector(const Shape *inShape, Vec3Arg inShapeScale, RMat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, const BodyLockInterface &inBodyLockInterface, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) :
+			CollideShapeBodyCollector(ioCollector),
+			mShape(inShape),
+			mShapeScale(inShapeScale),
+			mCenterOfMassTransform(inCenterOfMassTransform),
+			mBaseOffset(inBaseOffset),
+			mBodyLockInterface(inBodyLockInterface),
+			mBodyFilter(inBodyFilter),
+			mShapeFilter(inShapeFilter),
+			mCollideShapeSettings(inCollideShapeSettings),
+			mCollector(ioCollector)
+		{
+			// We require these settings for internal edge removal to work
+			mCollideShapeSettings.mActiveEdgeMode = EActiveEdgeMode::CollideWithAll;
+			mCollideShapeSettings.mCollectFacesMode = ECollectFacesMode::CollectFaces;
+		}
+
+		virtual void		AddHit(const ResultType &inResult) override
+		{
+			// Only test shape if it passes the body filter
+			if (mBodyFilter.ShouldCollide(inResult))
+			{
+				// Lock the body
+				BodyLockRead lock(mBodyLockInterface, inResult);
+				if (lock.SucceededAndIsInBroadPhase()) // Race condition: body could have been removed since it has been found in the broadphase, ensures body is in the broadphase while we call the callbacks
+				{
+					const Body &body = lock.GetBody();
+
+					// Check body filter again now that we've locked the body
+					if (mBodyFilter.ShouldCollideLocked(body))
+					{
+						// Collect the transformed shape
+						TransformedShape ts = body.GetTransformedShape();
+
+						// Notify collector of new body
+						mCollector.OnBody(body);
+
+						// Release the lock now, we have all the info we need in the transformed shape
+						lock.ReleaseLock();
+
+						// Do narrow phase collision check
+						ts.CollideShape(mShape, mShapeScale, mCenterOfMassTransform, mCollideShapeSettings, mBaseOffset, mCollector, mShapeFilter);
+
+						// After each body, we need to flush the InternalEdgeRemovingCollector because it uses 'ts' as context and it will go out of scope at the end of this block
+						mCollector.Flush();
+
+						// Update early out fraction based on narrow phase collector
+						UpdateEarlyOutFraction(mCollector.GetEarlyOutFraction());
+					}
+				}
+			}
+		}
+
+		const Shape *					mShape;
+		Vec3							mShapeScale;
+		RMat44							mCenterOfMassTransform;
+		RVec3							mBaseOffset;
+		const BodyLockInterface &		mBodyLockInterface;
+		const BodyFilter &				mBodyFilter;
+		const ShapeFilter &				mShapeFilter;
+		CollideShapeSettings			mCollideShapeSettings;
+		InternalEdgeRemovingCollector	mCollector;
 	};
 
 	// Calculate bounds for shape and expand by max separation distance

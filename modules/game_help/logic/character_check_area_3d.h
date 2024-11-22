@@ -215,8 +215,7 @@ public:
         return area_shape;
     }
 
-    void init() {
-    }
+    void init();
     CharacterCheckArea3D()
     {
 

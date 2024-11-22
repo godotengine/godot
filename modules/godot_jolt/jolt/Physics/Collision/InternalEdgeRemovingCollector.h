@@ -224,6 +224,7 @@ public:
 	/// Version of CollisionDispatch::sCollideShapeVsShape that removes internal edges
 	static void				sCollideShapeVsShape(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter = { })
 	{
+		JPH_ASSERT(inCollideShapeSettings.mActiveEdgeMode == EActiveEdgeMode::CollideWithAll); // Won't work without colliding with all edges
 		JPH_ASSERT(inCollideShapeSettings.mCollectFacesMode == ECollectFacesMode::CollectFaces); // Won't work without collecting faces
 
 		InternalEdgeRemovingCollector wrapper(ioCollector);

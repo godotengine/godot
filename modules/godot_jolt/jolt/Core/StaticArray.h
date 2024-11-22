@@ -282,6 +282,19 @@ public:
 		return false;
 	}
 
+	/// Get hash for this array
+	uint64					GetHash() const
+	{
+		// Hash length first
+		uint64 ret = Hash<uint32> { } (uint32(size()));
+
+		// Then hash elements
+		for (const T *element = reinterpret_cast<const T *>(mElements), *element_end = reinterpret_cast<const T *>(mElements) + mSize; element < element_end; ++element)
+			HashCombine(ret, *element);
+
+		return ret;
+	}
+
 protected:
 	struct alignas(T) Storage
 	{
@@ -308,16 +321,7 @@ namespace std
 	{
 		size_t operator () (const JPH::StaticArray<T, N> &inRHS) const
 		{
-			std::size_t ret = 0;
-
-			// Hash length first
-			JPH::HashCombine(ret, inRHS.size());
-
-			// Then hash elements
-			for (const T &t : inRHS)
-				JPH::HashCombine(ret, t);
-
-			return ret;
+			return std::size_t(inRHS.GetHash());
 		}
 	};
 }

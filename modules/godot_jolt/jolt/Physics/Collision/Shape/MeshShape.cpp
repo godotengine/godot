@@ -93,7 +93,7 @@ void MeshShapeSettings::Sanitize()
 {
 	// Remove degenerate and duplicate triangles
 	UnorderedSet<IndexedTriangle> triangles;
-	triangles.reserve(mIndexedTriangles.size());
+	triangles.reserve(UnorderedSet<IndexedTriangle>::size_type(mIndexedTriangles.size()));
 	TriangleCodec::ValidationContext validation_ctx(mIndexedTriangles, mTriangleVertices);
 	for (int t = (int)mIndexedTriangles.size() - 1; t >= 0; --t)
 	{
@@ -245,11 +245,15 @@ void MeshShape::sFindActiveEdges(const MeshShapeSettings &inSettings, IndexedTri
 			return mIdx1 == inRHS.mIdx1 && mIdx2 == inRHS.mIdx2;
 		}
 
+		uint64	GetHash() const
+		{
+			static_assert(sizeof(*this) == 2 * sizeof(int), "No padding expected");
+			return HashBytes(this, sizeof(*this));
+		}
+
 		int		mIdx1;
 		int		mIdx2;
 	};
-
-	JPH_MAKE_HASH_STRUCT(Edge, EdgeHash, t.mIdx1, t.mIdx2)
 
 	// A struct to hold the triangles that are connected to an edge
 	struct TriangleIndices
@@ -259,16 +263,17 @@ void MeshShape::sFindActiveEdges(const MeshShapeSettings &inSettings, IndexedTri
 	};
 
 	// Build a list of edge to triangles
-	using EdgeToTriangle = UnorderedMap<Edge, TriangleIndices, EdgeHash>;
+	using EdgeToTriangle = UnorderedMap<Edge, TriangleIndices>;
 	EdgeToTriangle edge_to_triangle;
-	edge_to_triangle.reserve(ioIndices.size() * 3);
+	edge_to_triangle.reserve(EdgeToTriangle::size_type(ioIndices.size() * 3));
 	for (uint triangle_idx = 0; triangle_idx < ioIndices.size(); ++triangle_idx)
 	{
 		IndexedTriangle &triangle = ioIndices[triangle_idx];
 		for (uint edge_idx = 0; edge_idx < 3; ++edge_idx)
 		{
 			Edge edge(triangle.mIdx[edge_idx], triangle.mIdx[(edge_idx + 1) % 3]);
-			TriangleIndices &indices = edge_to_triangle[edge];
+			EdgeToTriangle::iterator edge_to_triangle_it = edge_to_triangle.try_emplace(edge, TriangleIndices()).first;
+			TriangleIndices &indices = edge_to_triangle_it->second;
 			if (indices.mNumTriangles < 2)
 			{
 				// Store index of triangle that connects to this edge

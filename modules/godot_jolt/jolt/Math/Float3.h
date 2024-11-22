@@ -46,5 +46,5 @@ static_assert(is_trivial<Float3>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 
-// Create a std::hash for Float3
+// Create a std::hash/JPH::Hash for Float3
 JPH_MAKE_HASHABLE(JPH::Float3, t.x, t.y, t.z)

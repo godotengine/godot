@@ -308,6 +308,7 @@
 	JPH_CLANG_SUPPRESS_WARNING("-Wgnu-zero-variadic-macro-arguments")							\
 	JPH_CLANG_SUPPRESS_WARNING("-Wdocumentation-unknown-command")								\
 	JPH_CLANG_SUPPRESS_WARNING("-Wctad-maybe-unsupported")										\
+	JPH_CLANG_SUPPRESS_WARNING("-Wswitch-default")												\
 	JPH_CLANG_13_PLUS_SUPPRESS_WARNING("-Wdeprecated-copy")										\
 	JPH_CLANG_13_PLUS_SUPPRESS_WARNING("-Wdeprecated-copy-with-dtor")							\
 	JPH_CLANG_16_PLUS_SUPPRESS_WARNING("-Wunsafe-buffer-usage")									\

@@ -247,6 +247,7 @@ float ConvexHullBuilder::DetermineCoplanarDistance() const
 int ConvexHullBuilder::GetNumVerticesUsed() const
 {
 	UnorderedSet<int> used_verts;
+	used_verts.reserve(UnorderedSet<int>::size_type(mPositions.size()));
 	for (Face *f : mFaces)
 	{
 		Edge *e = f->mFirstEdge;

@@ -630,6 +630,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CollisionObject3DConnectionShape);
 	GDREGISTER_CLASS(CollisionPolygon3D);
 	GDREGISTER_CLASS(RayCast3D);
+	GDREGISTER_CLASS(RayCastCompoent3D);
 	GDREGISTER_CLASS(ShapeCast3D);
 	GDREGISTER_CLASS(MultiMeshInstance3D);
 

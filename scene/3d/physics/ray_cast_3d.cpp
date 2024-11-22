@@ -755,7 +755,7 @@ void RayCastCompoent3D::_update_raycast_state() {
 	PhysicsDirectSpaceState3D *dss = PhysicsServer3D::get_singleton()->space_get_direct_state(w3d->get_space());
 	ERR_FAIL_NULL(dss);
 
-	Transform3D gt = owenr->get_global_transform();
+	Transform3D gt = owenr->get_global_transform() * transform;
 
 	Vector3 to = target_position;
 	if (to == Vector3()) {
@@ -855,6 +855,16 @@ bool RayCastCompoent3D::is_hit_back_faces_enabled() const {
 }
 
 void RayCastCompoent3D::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_rotation", "rotation"), &RayCastCompoent3D::set_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation"), &RayCastCompoent3D::get_rotation);
+
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &RayCastCompoent3D::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &RayCastCompoent3D::get_position);
+
+	ClassDB::bind_method(D_METHOD("set_owenr", "owenr"), &RayCastCompoent3D::set_owenr);
+	ClassDB::bind_method(D_METHOD("get_owenr"), &RayCastCompoent3D::get_owenr);
+
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCastCompoent3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCastCompoent3D::is_enabled);
 
@@ -906,6 +916,8 @@ void RayCastCompoent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_shape_thickness", "debug_shape_thickness"), &RayCastCompoent3D::set_debug_shape_thickness);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_thickness"), &RayCastCompoent3D::get_debug_shape_thickness);
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_NONE, "suffix:m"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "suffix:m"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position", PROPERTY_HINT_NONE, "suffix:m"), "set_target_position", "get_target_position");

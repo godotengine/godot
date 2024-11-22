@@ -44,5 +44,5 @@ static_assert(is_trivial<Double3>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 
-// Create a std::hash for Double3
+// Create a std::hash/JPH::Hash for Double3
 JPH_MAKE_HASHABLE(JPH::Double3, t.x, t.y, t.z)

@@ -111,6 +111,6 @@ using IndexedTriangleList = Array<IndexedTriangle>;
 
 JPH_NAMESPACE_END
 
-// Create a std::hash for IndexedTriangleNoMaterial and IndexedTriangle
+// Create a std::hash/JPH::Hash for IndexedTriangleNoMaterial and IndexedTriangle
 JPH_MAKE_HASHABLE(JPH::IndexedTriangleNoMaterial, t.mIdx[0], t.mIdx[1], t.mIdx[2])
 JPH_MAKE_HASHABLE(JPH::IndexedTriangle, t.mIdx[0], t.mIdx[1], t.mIdx[2], t.mMaterialIndex, t.mUserData)

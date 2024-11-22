@@ -29,6 +29,7 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Core/FPException.h
 	${JOLT_PHYSICS_ROOT}/Core/FPFlushDenormals.h
 	${JOLT_PHYSICS_ROOT}/Core/HashCombine.h
+	${JOLT_PHYSICS_ROOT}/Core/HashTable.h
 	${JOLT_PHYSICS_ROOT}/Core/InsertionSort.h
 	${JOLT_PHYSICS_ROOT}/Core/IssueReporting.cpp
 	${JOLT_PHYSICS_ROOT}/Core/IssueReporting.h
@@ -105,6 +106,8 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Geometry/Triangle.h
 	${JOLT_PHYSICS_ROOT}/Jolt.cmake
 	${JOLT_PHYSICS_ROOT}/Jolt.h
+	${JOLT_PHYSICS_ROOT}/Math/BVec16.h
+	${JOLT_PHYSICS_ROOT}/Math/BVec16.inl
 	${JOLT_PHYSICS_ROOT}/Math/DMat44.h
 	${JOLT_PHYSICS_ROOT}/Math/DMat44.inl
 	${JOLT_PHYSICS_ROOT}/Math/Double3.h

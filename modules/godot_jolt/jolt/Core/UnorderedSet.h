@@ -1,15 +1,32 @@
 // Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
-// SPDX-FileCopyrightText: 2021 Jorrit Rouwe
+// SPDX-FileCopyrightText: 2024 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
 #pragma once
 
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <unordered_set>
-JPH_SUPPRESS_WARNINGS_STD_END
+#include <Jolt/Core/HashTable.h>
 
 JPH_NAMESPACE_BEGIN
 
-template <class Key, class Hash = std::hash<Key>, class KeyEqual = std::equal_to<Key>> using UnorderedSet = std::unordered_set<Key, Hash, KeyEqual, STLAllocator<Key>>;
+/// Internal helper class to provide context for UnorderedSet
+template <class Key>
+class UnorderedSetDetail
+{
+public:
+	/// The key is the key, just return it
+	static const Key &		sGetKey(const Key &inKey)
+	{
+		return inKey;
+	}
+};
+
+/// Hash Set class
+/// @tparam Key Key type
+/// @tparam Hash Hash function (note should be 64-bits)
+/// @tparam KeyEqual Equality comparison function
+template <class Key, class Hash = JPH::Hash<Key>, class KeyEqual = std::equal_to<Key>>
+class UnorderedSet : public HashTable<Key, Key, UnorderedSetDetail<Key>, Hash, KeyEqual>
+{
+};
 
 JPH_NAMESPACE_END

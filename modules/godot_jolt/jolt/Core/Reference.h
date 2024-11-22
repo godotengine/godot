@@ -134,6 +134,12 @@ public:
 	/// Get pointer
 	inline T *				GetPtr() const									{ return mPtr; }
 
+	/// Get hash for this object
+	uint64					GetHash() const
+	{
+		return Hash<T *> { } (mPtr);
+	}
+
 	/// INTERNAL HELPER FUNCTION USED BY SERIALIZATION
 	void **					InternalGetPointer()							{ return reinterpret_cast<void **>(&mPtr); }
 
@@ -190,6 +196,12 @@ public:
 	/// Get pointer
 	inline const T *		GetPtr() const									{ return mPtr; }
 
+	/// Get hash for this object
+	uint64					GetHash() const
+	{
+		return Hash<const T *> { } (mPtr);
+	}
+
 	/// INTERNAL HELPER FUNCTION USED BY SERIALIZATION
 	void **					InternalGetPointer()							{ return const_cast<void **>(reinterpret_cast<const void **>(&mPtr)); }
 
@@ -214,7 +226,7 @@ namespace std
 	{
 		size_t operator () (const JPH::Ref<T> &inRHS) const
 		{
-			return hash<T *> { }(inRHS.GetPtr());
+			return size_t(inRHS.GetHash());
 		}
 	};
 
@@ -224,7 +236,7 @@ namespace std
 	{
 		size_t operator () (const JPH::RefConst<T> &inRHS) const
 		{
-			return hash<const T *> { }(inRHS.GetPtr());
+			return size_t(inRHS.GetHash());
 		}
 	};
 }

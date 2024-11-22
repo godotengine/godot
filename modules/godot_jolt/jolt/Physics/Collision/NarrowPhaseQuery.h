@@ -52,6 +52,9 @@ public:
 	/// @param inShapeFilter Filter that filters at shape level
 	void						CollideShape(const Shape *inShape, Vec3Arg inShapeScale, RMat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter = { }, const ObjectLayerFilter &inObjectLayerFilter = { }, const BodyFilter &inBodyFilter = { }, const ShapeFilter &inShapeFilter = { }) const;
 
+	/// Same as CollideShape, but uses InternalEdgeRemovingCollector to remove internal edges from the collision results (a.k.a. ghost collisions)
+	void						CollideShapeWithInternalEdgeRemoval(const Shape *inShape, Vec3Arg inShapeScale, RMat44Arg inCenterOfMassTransform, const CollideShapeSettings &inCollideShapeSettings, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter = { }, const ObjectLayerFilter &inObjectLayerFilter = { }, const BodyFilter &inBodyFilter = { }, const ShapeFilter &inShapeFilter = { }) const;
+
 	/// Cast a shape and report any hits to ioCollector
 	/// @param inShapeCast The shape cast and its position and direction
 	/// @param inShapeCastSettings Settings for the shape cast

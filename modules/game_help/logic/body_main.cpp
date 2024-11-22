@@ -54,12 +54,12 @@ void CharacterBodyMain::init()
         
     }
     if(check_area.size() == 0) {
-        Ref<CharacterCheckArea3D> area;
-        area.instantiate();
-        area->set_name(StringName(L"周围人物检查区域"));
-        area->set_body_main(this);
-        area->init();
-        check_area.push_back(area);
+        Ref<CharacterCheckArea3D> _area;
+		_area.instantiate();
+		_area->set_name(StringName(L"周围人物检查区域"));
+		_area->set_body_main(this);
+		_area->init();
+        check_area.push_back(_area);
     }
 }
 void CharacterBodyMain::clear_all()
@@ -135,6 +135,7 @@ void CharacterBodyMain::_update(double p_delta)
 
     // 更新玩家位置
     GDVIRTUAL_CALL(_update_player_position);
+    _process_move();
     for(uint32_t i = 0; i < check_area.size();++i)
     {
         if(check_area[i].is_valid())
@@ -142,7 +143,6 @@ void CharacterBodyMain::_update(double p_delta)
             check_area[i]->update_world_move(get_global_position());
         }
     }
-    _process_move();
 
 }
 void CharacterBodyMain::_update_ai()
@@ -235,6 +235,14 @@ void CharacterBodyMain::_process_move()
         set_velocity(_velocity);
 
         move_and_slide(animator->get_time_delta());
+    }
+
+    // 处理射线检测
+    for(auto& it : raycast) {
+        Ref<RayCastCompoent3D> raycast_compoent = it.value;
+        if(raycast_compoent.is_valid()) {
+            raycast_compoent->force_raycast_update();
+        }
     }
 
 }
@@ -438,6 +446,9 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_check_area"), &CharacterBodyMain::get_check_area);
     ClassDB::bind_method(D_METHOD("get_check_area_by_name", "name"), &CharacterBodyMain::get_check_area_by_name);
 
+    ClassDB::bind_method(D_METHOD("set_raycast", "raycast"), &CharacterBodyMain::set_raycast);
+    ClassDB::bind_method(D_METHOD("get_raycast"), &CharacterBodyMain::get_raycast);
+
 
     ClassDB::bind_method(D_METHOD("set_body_prefab", "body_prefab"), &CharacterBodyMain::set_body_prefab);
     ClassDB::bind_method(D_METHOD("get_body_prefab"), &CharacterBodyMain::get_body_prefab);
@@ -536,6 +547,7 @@ void CharacterBodyMain::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_agent", PROPERTY_HINT_RESOURCE_TYPE, "CharacterNavigationAgent3D"), "set_navigation_agent", "get_navigation_agent");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "CollisionObject3DConnectionShape",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "check_area", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("CharacterCheckArea3D"),PROPERTY_USAGE_DEFAULT), "set_check_area", "get_check_area");
+    ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "raycast", PROPERTY_HINT_RESOURCE_TYPE, MAKE_RESOURCE_TYPE_HINT("RayCastCompoent3D"),PROPERTY_USAGE_DEFAULT), "set_raycast", "get_raycast");
 
 
 	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));

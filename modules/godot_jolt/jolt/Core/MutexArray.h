@@ -45,7 +45,7 @@ public:
 	/// Convert an object index to a mutex index
 	inline uint32			GetMutexIndex(uint32 inObjectIndex) const
 	{
-		std::hash<uint32> hasher;
+		Hash<uint32> hasher;
 		return hasher(inObjectIndex) & (mNumMutexes - 1);
 	}
 

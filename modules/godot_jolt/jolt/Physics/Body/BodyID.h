@@ -96,5 +96,5 @@ private:
 
 JPH_NAMESPACE_END
 
-// Create a std::hash for BodyID
+// Create a std::hash/JPH::Hash for BodyID
 JPH_MAKE_HASHABLE(JPH::BodyID, t.GetIndexAndSequenceNumber())

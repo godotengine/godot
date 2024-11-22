@@ -174,16 +174,31 @@ class RayCastCompoent3D : public RefCounted {
 	RID debug_instance;
 	Ref<ArrayMesh> debug_mesh;
 
-	Node3D *owenr = nullptr;
+	CollisionObject3D *owenr = nullptr;
+	Transform3D transform;
 public:
 	void _notification(int p_what);
+	void set_rotation(const Vector3 &p_rotation) {
+		transform.basis.set_euler(p_rotation);
+	}
+	Vector3 get_rotation() const {
+		return transform.basis.get_euler();
+	}
+	void set_position(const Vector3 &p_position) {
+		transform.origin = p_position;
+	}
+	Vector3 get_position() const {
+		return transform.origin;
+	}
+
 
 protected:
 	void _update_raycast_state();
 	static void _bind_methods();
 
 public:
-	void set_owenr(Node3D *p_owenr) { owenr = p_owenr; }
+	void set_owenr(CollisionObject3D *p_owenr) { owenr = p_owenr; }
+	CollisionObject3D *get_owenr() const { return owenr; }
 	void set_collide_with_areas(bool p_enabled);
 	bool is_collide_with_areas_enabled() const;
 

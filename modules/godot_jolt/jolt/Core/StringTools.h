@@ -20,19 +20,6 @@ String ConvertToString(const T &inValue)
 	return oss.str();
 }
 
-/// Calculate the FNV-1a hash of inString.
-/// @see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
-constexpr uint64 HashString(const char *inString)
-{
-	uint64 hash = 14695981039346656037UL;
-	for (const char *c = inString; *c != 0; ++c)
-	{
-		hash ^= *c;
-		hash = hash * 1099511628211UL;
-	}
-	return hash;
-}
-
 /// Replace substring with other string
 JPH_EXPORT void StringReplace(String &ioString, const string_view &inSearch, const string_view &inReplace);
 

@@ -7,6 +7,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
+#include "scene/3d/physics/ray_cast_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/audio_stream_player_3d_compoent.h"
 #include "scene/3d/label_3d.h"
@@ -301,6 +302,26 @@ public:
             }
         }
         return Ref<CharacterCheckArea3D>();
+    }
+
+    void set_raycast(Dictionary p_raycast) {
+
+        auto keys = p_raycast.keys();
+        for (int i = 0; i < keys.size(); i++) {
+            Ref<RayCastCompoent3D> raycast_compoent = p_raycast[keys[i]];
+            if(raycast_compoent.is_valid()) {
+                raycast_compoent->set_owenr(this);
+            }
+            raycast[keys[i]] = raycast_compoent;
+        }
+    }
+
+    Dictionary get_raycast() {
+        Dictionary ret;
+        for (const KeyValue<StringName, Ref<RayCastCompoent3D>> &E : raycast) {
+            ret[E.key] = E.value;
+        }
+        return ret;
     }
 
 public:
@@ -700,6 +721,7 @@ public:
 protected:
     LocalVector<Ref<CharacterCheckArea3D>> check_area;
     Ref<CollisionObject3DConnectionShape> mainShape;
+    HashMap<StringName, Ref<RayCastCompoent3D>> raycast;
     // 初始化数据
     Dictionary init_data;
     // 角色的编辑器模型

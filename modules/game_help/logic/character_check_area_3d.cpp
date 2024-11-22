@@ -1,5 +1,6 @@
 #include "character_check_area_3d.h"
 #include "body_main.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
 
 
 void CharacterCheckArea3D::set_body_main(class CharacterBodyMain* p_mainBody)
@@ -38,6 +39,15 @@ void CharacterCheckArea3D::set_body_main(class CharacterBodyMain* p_mainBody)
         shape->set_link_target(areaCollision);
     }
 
+}
+
+void CharacterCheckArea3D::init() {
+    Ref<CollisionObject3DConnectionShape> shape = Ref<CollisionObject3DConnectionShape>(memnew(CollisionObject3DConnectionShape));
+    shape->set_shape(Ref<Shape3D>(memnew(SphereShape3D)));
+    shape->set_scale(Vector3(10,10,10));
+    Area3D* areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
+    shape->set_link_target(areaCollision);
+    area_shape.push_back(shape);
 }
 void CharacterCheckArea3D::update_coord()
 {

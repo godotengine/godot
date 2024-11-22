@@ -10,6 +10,7 @@ class Vec3;
 class DVec3;
 class Vec4;
 class UVec4;
+class BVec16;
 class Quat;
 class Mat44;
 class DMat44;
@@ -23,6 +24,7 @@ using Vec3Arg = const Vec3&;
 #endif
 using Vec4Arg = const Vec4&;
 using UVec4Arg = const UVec4&;
+using BVec16Arg = const BVec16&;
 using QuatArg = const Quat&;
 using Mat44Arg = const Mat44 &;
 using DMat44Arg = const DMat44 &;

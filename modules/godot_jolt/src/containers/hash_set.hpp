@@ -1,5 +1,5 @@
 #pragma once
-
+#include <unordered_set>
 template<
 	typename TKey,
 	typename THasher = HashMapHasherDefault,

@@ -19,7 +19,6 @@
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
 #include <Jolt/Core/UnorderedMap.h>
-#include <Jolt/Core/UnorderedSet.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -126,6 +125,7 @@ ConvexHullShape::ConvexHullShape(const ConvexHullShapeSettings &inSettings, Shap
 	// Convert polygons from the builder to our internal representation
 	using VtxMap = UnorderedMap<int, uint8>;
 	VtxMap vertex_map;
+	vertex_map.reserve(VtxMap::size_type(inSettings.mPoints.size()));
 	for (BuilderFace *builder_face : builder_faces)
 	{
 		// Determine where the vertices go
