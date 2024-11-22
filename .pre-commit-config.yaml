@@ -156,7 +156,6 @@ repos:
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         exclude: |
           (?x)^(
-            core/math/bvh_.*\.inc$|
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
             platform/android/java/editor/src/main/java/com/android/.*|
             platform/android/java/lib/src/com/.*|
