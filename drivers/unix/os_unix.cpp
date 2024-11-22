@@ -191,7 +191,7 @@ String OS_Unix::get_stdin_string(int64_t p_buffer_size) {
 	Vector<uint8_t> data;
 	data.resize(p_buffer_size);
 	if (fgets((char *)data.ptrw(), data.size(), stdin)) {
-		return String::utf8((char *)data.ptr());
+		return String::utf8((char *)data.ptr()).replace("\r\n", "\n").rstrip("\n");
 	}
 	return String();
 }
