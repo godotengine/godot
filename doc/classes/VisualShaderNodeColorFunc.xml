@@ -40,7 +40,10 @@
 			return vec3(r, g, b);
 			[/codeblock]
 		</constant>
-		<constant name="FUNC_MAX" value="4" enum="Function">
+		<constant name="FUNC_POSTERIZE" value="4" enum="Function">
+			Applies an effect which divides the input colors into a number of colors of the given steps input.
+		</constant>
+		<constant name="FUNC_MAX" value="5" enum="Function">
 			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>

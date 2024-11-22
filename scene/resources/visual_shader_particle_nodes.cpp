@@ -1162,6 +1162,206 @@ VisualShaderNodeParticleAccelerator::VisualShaderNodeParticleAccelerator() {
 	simple_decl = false;
 }
 
+// VisualShaderNodeParticleTurbulence
+
+String VisualShaderNodeParticleTurbulence::get_caption() const {
+	return "ParticleTurbulence";
+}
+
+int VisualShaderNodeParticleTurbulence::get_output_port_count() const {
+	return 2;
+}
+
+VisualShaderNodeParticleTurbulence::PortType VisualShaderNodeParticleTurbulence::get_output_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_SCALAR;
+		case 1:
+			return PORT_TYPE_VECTOR_3D;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeParticleTurbulence::get_output_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "turbulence influence";
+		case 1:
+			return "noise direction";
+	}
+	return String();
+}
+
+bool VisualShaderNodeParticleTurbulence::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+	return p_port == 1; // seed
+}
+
+int VisualShaderNodeParticleTurbulence::get_input_port_count() const {
+	return 9;
+}
+
+VisualShaderNodeParticleTurbulence::PortType VisualShaderNodeParticleTurbulence::get_input_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_VECTOR_3D;
+		case 1:
+			return PORT_TYPE_SCALAR_UINT;
+		case 2:
+			return PORT_TYPE_SCALAR;
+		case 3:
+			return PORT_TYPE_SCALAR;
+		case 4:
+			return PORT_TYPE_VECTOR_3D;
+		case 5:
+			return PORT_TYPE_SCALAR;
+		case 6:
+			return PORT_TYPE_SCALAR;
+		case 7:
+			return PORT_TYPE_SCALAR;
+		case 8:
+			return PORT_TYPE_SCALAR;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeParticleTurbulence::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "particle position";
+		case 1:
+			return "noise seed";
+		case 2:
+			return "noise strength";
+		case 3:
+			return "noise scale";
+		case 4:
+			return "noise speed";
+		case 5:
+			return "noise speed random";
+		case 6:
+			return "influence min";
+		case 7:
+			return "influence max";
+		case 8:
+			return "influence over life";
+	}
+	return String();
+}
+
+String VisualShaderNodeParticleTurbulence::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
+	String code;
+
+	code = vformat(R"(
+vec4 turb_grad(vec4 p) {
+	p = fract(vec4(
+		dot(p, vec4(0.143081, 0.001724, 0.280166, 0.262771)),
+		dot(p, vec4(0.645401, -0.047791, -0.146698, 0.595016)),
+		dot(p, vec4(-0.499665, -0.095734, 0.425674, -0.207367)),
+		dot(p, vec4(-0.013596, -0.848588, 0.423736, 0.17044))));
+	return fract((p.xyzw * p.yzwx) * 2365.952041) * 2.0 - 1.0;
+}
+
+float turb_noise(vec4 coord) {
+	// Domain rotation to improve the look of XYZ slices + animation patterns.
+	coord = vec4(
+		coord.xyz + dot(coord, vec4(vec3(-0.1666667), -0.5)),
+		dot(coord, vec4(0.5)));
+	vec4 base = floor(coord), delta = coord - base;
+	vec4 grad_0000 = turb_grad(base + vec4(0.0, 0.0, 0.0, 0.0)), grad_1000 = turb_grad(base + vec4(1.0, 0.0, 0.0, 0.0));
+	vec4 grad_0100 = turb_grad(base + vec4(0.0, 1.0, 0.0, 0.0)), grad_1100 = turb_grad(base + vec4(1.0, 1.0, 0.0, 0.0));
+	vec4 grad_0010 = turb_grad(base + vec4(0.0, 0.0, 1.0, 0.0)), grad_1010 = turb_grad(base + vec4(1.0, 0.0, 1.0, 0.0));
+	vec4 grad_0110 = turb_grad(base + vec4(0.0, 1.0, 1.0, 0.0)), grad_1110 = turb_grad(base + vec4(1.0, 1.0, 1.0, 0.0));
+	vec4 grad_0001 = turb_grad(base + vec4(0.0, 0.0, 0.0, 1.0)), grad_1001 = turb_grad(base + vec4(1.0, 0.0, 0.0, 1.0));
+	vec4 grad_0101 = turb_grad(base + vec4(0.0, 1.0, 0.0, 1.0)), grad_1101 = turb_grad(base + vec4(1.0, 1.0, 0.0, 1.0));
+	vec4 grad_0011 = turb_grad(base + vec4(0.0, 0.0, 1.0, 1.0)), grad_1011 = turb_grad(base + vec4(1.0, 0.0, 1.0, 1.0));
+	vec4 grad_0111 = turb_grad(base + vec4(0.0, 1.0, 1.0, 1.0)), grad_1111 = turb_grad(base + vec4(1.0, 1.0, 1.0, 1.0));
+	vec4 result_0123 = vec4(
+		dot(delta - vec4(0.0, 0.0, 0.0, 0.0), grad_0000), dot(delta - vec4(1.0, 0.0, 0.0, 0.0), grad_1000),
+		dot(delta - vec4(0.0, 1.0, 0.0, 0.0), grad_0100), dot(delta - vec4(1.0, 1.0, 0.0, 0.0), grad_1100));
+	vec4 result_4567 = vec4(
+		dot(delta - vec4(0.0, 0.0, 1.0, 0.0), grad_0010), dot(delta - vec4(1.0, 0.0, 1.0, 0.0), grad_1010),
+		dot(delta - vec4(0.0, 1.0, 1.0, 0.0), grad_0110), dot(delta - vec4(1.0, 1.0, 1.0, 0.0), grad_1110));
+	vec4 result_89AB = vec4(
+		dot(delta - vec4(0.0, 0.0, 0.0, 1.0), grad_0001), dot(delta - vec4(1.0, 0.0, 0.0, 1.0), grad_1001),
+		dot(delta - vec4(0.0, 1.0, 0.0, 1.0), grad_0101), dot(delta - vec4(1.0, 1.0, 0.0, 1.0), grad_1101));
+	vec4 result_CDEF = vec4(
+		dot(delta - vec4(0.0, 0.0, 1.0, 1.0), grad_0011), dot(delta - vec4(1.0, 0.0, 1.0, 1.0), grad_1011),
+		dot(delta - vec4(0.0, 1.0, 1.0, 1.0), grad_0111), dot(delta - vec4(1.0, 1.0, 1.0, 1.0), grad_1111));
+	vec4 fade = delta * delta * delta * (10.0 + delta * (-15.0 + delta * 6.0));
+	vec4 result_W0 = mix(result_0123, result_89AB, fade.w), result_W1 = mix(result_4567, result_CDEF, fade.w);
+	vec4 result_WZ = mix(result_W0, result_W1, fade.z);
+	vec2 result_WZY = mix(result_WZ.xy, result_WZ.zw, fade.y);
+	return mix(result_WZY.x, result_WZY.y, fade.x);
+}
+
+// Curl 3D and three-noise function with friendly permission by Isaac Cohen.
+// Modified to accept 4D noise.
+vec3 turb_noise_3x(vec4 p) {
+	float s = turb_noise(p);
+	float s1 = turb_noise(p + vec4(vec3(0.0), 1.7320508 * 2048.333333));
+	float s2 = turb_noise(p - vec4(vec3(0.0), 1.7320508 * 2048.333333));
+	vec3 c = vec3(s, s1, s2);
+	return c;
+}
+
+vec3 turb_curl_3d(vec4 p, float c) {
+	float epsilon = 0.001 + c;
+	vec4 dx = vec4(epsilon, 0.0, 0.0, 0.0);
+	vec4 dy = vec4(0.0, epsilon, 0.0, 0.0);
+	vec4 dz = vec4(0.0, 0.0, epsilon, 0.0);
+	vec3 x0 = turb_noise_3x(p - dx).xyz;
+	vec3 x1 = turb_noise_3x(p + dx).xyz;
+	vec3 y0 = turb_noise_3x(p - dy).xyz;
+	vec3 y1 = turb_noise_3x(p + dy).xyz;
+	vec3 z0 = turb_noise_3x(p - dz).xyz;
+	vec3 z1 = turb_noise_3x(p + dz).xyz;
+	float x = (y1.z - y0.z) - (z1.y - z0.y);
+	float y = (z1.x - z0.x) - (x1.z - x0.z);
+	float z = (x1.y - x0.y) - (y1.x - y0.x);
+	return normalize(vec3(x, y, z));
+}
+
+vec3 get_turb_noise_direction(vec3 __pos, float __turb_n_strength, float __turb_n_scale, vec3 __turb_n_speed, float __turb_n_speed_random) {
+	float __adj_contrast = max((__turb_n_strength - 1.0), 0.0) * 70.0;
+	vec4 __noise_time = TIME * vec4(__turb_n_speed, __turb_n_speed_random);
+	vec4 __noise_pos = vec4(__pos * __turb_n_scale, 0.0);
+	vec3 __noise_direction = turb_curl_3d(__noise_pos + __noise_time, __adj_contrast);
+	__noise_direction = mix(0.9 * __noise_direction, __noise_direction, __turb_n_strength - 9.0);
+	return __noise_direction;
+}
+
+float get_turb_influence(uint __noise_seed, float __turb_influence_min, float __turb_influence_max, float __turb_influence_over_life) {
+	float __turb_influence_range = mix(__turb_influence_min, __turb_influence_max, __rand_from_seed(__noise_seed));
+	float __turb_influence = clamp(__turb_influence_range * __turb_influence_over_life, 0.0, 1.0);
+	return __turb_influence;
+}
+	)");
+
+	return code;
+}
+
+String VisualShaderNodeParticleTurbulence::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	code += vformat("	%s = get_turb_influence(%s, %s, %s, %s);\n", p_output_vars[0], p_input_vars[1].is_empty() ? "__seed" : p_input_vars[1], p_input_vars[6], p_input_vars[7], p_input_vars[8]);
+	code += vformat("	%s = get_turb_noise_direction(%s, %s, %s, %s, %s);\n", p_output_vars[1], p_input_vars[0], p_input_vars[2], p_input_vars[3], p_input_vars[4], p_input_vars[5]);
+
+	return code;
+}
+
+bool VisualShaderNodeParticleTurbulence::has_output_port_preview(int p_port) const {
+	return false;
+}
+
+VisualShaderNodeParticleTurbulence::VisualShaderNodeParticleTurbulence() {
+	set_input_port_default_value(2, 1.0); // noise strength
+	set_input_port_default_value(3, 9.0); // noise scale
+	set_input_port_default_value(4, Vector3(0.0, 0.0, 0.0)); // noise speed
+	set_input_port_default_value(5, 0.2); // noise speed random
+	set_input_port_default_value(6, 0.1); // influence min
+	set_input_port_default_value(7, 0.1); // influence max
+	set_input_port_default_value(8, 1.0); // influence over life
+}
+
 // VisualShaderNodeParticleOutput
 
 String VisualShaderNodeParticleOutput::get_caption() const {
