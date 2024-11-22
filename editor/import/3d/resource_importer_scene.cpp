@@ -2930,7 +2930,7 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 			if (ResourceUID::get_singleton()->has_id(save_id)) {
 				if (save_path != ResourceUID::get_singleton()->get_id_path(save_id)) {
 					// The user has specified a path which does not match the default UID.
-					save_id = ResourceUID::get_singleton()->create_id();
+					save_id = ResourceUID::get_singleton()->create_id_for_path(save_path);
 				}
 			}
 			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(save_id);

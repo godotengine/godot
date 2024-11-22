@@ -905,7 +905,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (existing_id != ResourceUID::INVALID_ID) {
 					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
 					if (old_path != new_file_path && FileAccess::exists(old_path)) {
-						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id();
+						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
 						ResourceSaver::set_uid(new_file_path, new_id);
 						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
@@ -916,7 +916,7 @@ bool EditorFileSystem::_update_scan_actions() {
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						ia.new_file->uid = ResourceUID::get_singleton()->create_id();
+						ia.new_file->uid = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
 					}
 				}
@@ -1353,7 +1353,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
 				if (f.is_valid()) {
 					if (fi->uid == ResourceUID::INVALID_ID) {
-						fi->uid = ResourceUID::get_singleton()->create_id();
+						fi->uid = ResourceUID::get_singleton()->create_id_for_path(path);
 					} else {
 						WARN_PRINT(vformat("Missing .uid file for path \"%s\". The file was re-created from cache.", path));
 					}
@@ -2442,7 +2442,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				if (ResourceLoader::should_create_uid_file(file)) {
 					Ref<FileAccess> f = FileAccess::open(file + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
-						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id();
+						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
 						ResourceUID::get_singleton()->add_id(id, file);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(id));
 						fi->uid = id;
@@ -2630,7 +2630,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			}
 
 			if (uid == ResourceUID::INVALID_ID) {
-				uid = ResourceUID::get_singleton()->create_id();
+				uid = ResourceUID::get_singleton()->create_id_for_path(file);
 			}
 
 			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
@@ -2852,7 +2852,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	}
 
 	if (uid == ResourceUID::INVALID_ID) {
-		uid = ResourceUID::get_singleton()->create_id();
+		uid = ResourceUID::get_singleton()->create_id_for_path(p_file);
 	}
 
 	//finally, perform import!!
@@ -3541,14 +3541,14 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 		}
 
 		if (p_generate) {
-			return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
+			return ResourceUID::get_singleton()->create_id_for_path(p_path); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
 		} else {
 			return ResourceUID::INVALID_ID;
 		}
 	} else if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
 		return fs->files[cpos]->uid;
 	} else if (p_generate) {
-		return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
+		return ResourceUID::get_singleton()->create_id_for_path(p_path); // Just create a new one, we will be notified of save anyway and fetch the right UID at that time, to keep things simple.
 	} else {
 		return ResourceUID::INVALID_ID;
 	}
