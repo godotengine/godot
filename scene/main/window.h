@@ -134,6 +134,7 @@ private:
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
+	bool native_hint = true;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
 	bool updating_embedded_window = false;
@@ -151,6 +152,9 @@ private:
 	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
 	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
+
+	void _init_window();
+	void _deinit_window();
 
 	void _make_window();
 	void _clear_window();
@@ -331,6 +335,9 @@ public:
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
+
+	void set_native_hint(bool p_native);
+	bool is_native_hint() const;
 
 	void set_clamp_to_embedder(bool p_enable);
 	bool is_clamped_to_embedder() const;

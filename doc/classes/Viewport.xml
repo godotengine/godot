@@ -295,11 +295,8 @@
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
 		</member>
-		<member name="gui_embedding_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
-			Allow others windows to be embedded.
-		</member>
-		<member name="gui_force_embedding_subwindows" type="bool" setter="set_force_embedding_subwindows" getter="is_force_embedding_subwindows" default="false">
-			If [code]true[/code], children windows will ignore embedded variabile, and will to find parent viewport with embedding_windows, if it no viewport with embedding_windows will create a window.
+		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
+			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they can appear as separate windows handled by the operating system.
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled" default="true">
 			If [code]true[/code], the GUI controls on the viewport will lay pixel perfectly.

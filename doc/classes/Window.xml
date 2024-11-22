@@ -590,6 +590,9 @@
 			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
 			Needs [member transient] enabled to work.
 		</member>
+		<member name="native_hint" type="bool" setter="set_native_hint" getter="is_native_hint" default="true">
+			If [code]true[/code], the [Window] can be native if [member Viewport.gui_embed_subwindows] is [code]false[/code]
+		</member>
 		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
 			[b]Note:[/b] This property is implemented only on macOS.

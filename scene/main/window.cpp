@@ -603,6 +603,115 @@ bool Window::is_in_edited_scene_root() const {
 #endif
 }
 
+void Window::_init_window() {
+	if (is_in_edited_scene_root()) {
+		if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
+		}
+	}
+
+	bool embedded = false;
+	{
+		embedder = get_embedder();
+		if (embedder) {
+			embedded = true;
+			if (!visible) {
+				embedder = nullptr; // Not yet since not visible.
+			}
+		}
+	}
+
+	if (embedded) {
+		// Create as embedded.
+		if (embedder) {
+			if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+				if (is_in_edited_scene_root()) {
+					Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+					position = (screen_size - size) / 2;
+				} else {
+					position = (embedder->get_visible_rect().size - size) / 2;
+				}
+			}
+			embedder->_sub_window_register(this);
+			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
+			_update_window_size();
+		}
+
+	} else {
+		if (!get_parent()) {
+			// It's the root window!
+			visible = true; // Always visible.
+			window_id = DisplayServer::MAIN_WINDOW_ID;
+			DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+			_update_from_window();
+			// Since this window already exists (created on start), we must update pos and size from it.
+			{
+				position = DisplayServer::get_singleton()->window_get_position(window_id);
+				size = DisplayServer::get_singleton()->window_get_size(window_id);
+				focused = DisplayServer::get_singleton()->window_is_focused(window_id);
+			}
+			_update_window_size(); // Inform DisplayServer of minimum and maximum size.
+			_update_viewport_size(); // Then feed back to the viewport.
+			_update_window_callbacks();
+			// Simulate mouse-enter event when mouse is over the window, since OS event might arrive before setting callbacks.
+			if (!mouse_in_window && Rect2(position, size).has_point(DisplayServer::get_singleton()->mouse_get_position())) {
+				_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_ENTER);
+			}
+			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
+			if (DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(FLAG_TRANSPARENT), window_id)) {
+				set_transparent_background(true);
+			}
+		} else {
+			// Create.
+			if (visible) {
+				_make_window();
+			}
+		}
+	}
+
+	if (transient && !transient_to_focused) {
+		_make_transient();
+	}
+	if (visible) {
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
+		emit_signal(SceneStringName(visibility_changed));
+		RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+	}
+
+	// Emits NOTIFICATION_THEME_CHANGED internally.
+	set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
+}
+
+void Window::_deinit_window() {
+	if (ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
+		ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Window::_settings_changed));
+	}
+
+	set_theme_context(nullptr, false);
+
+	if (transient) {
+		_clear_transient();
+	}
+
+	if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
+		if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+			_update_window_callbacks();
+		} else {
+			_clear_window();
+		}
+	} else {
+		if (embedder) {
+			embedder->_sub_window_remove(this);
+			embedder = nullptr;
+			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
+		}
+		_update_viewport_size(); //called by clear and make, which does not happen here
+	}
+
+	RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+}
+
 void Window::_make_window() {
 	ERR_FAIL_COND(window_id != DisplayServer::INVALID_WINDOW_ID);
 
@@ -1024,6 +1133,20 @@ bool Window::is_exclusive() const {
 	return exclusive;
 }
 
+void Window::set_native_hint(bool p_native_hint) {
+	if (is_inside_tree()) {
+		_deinit_window();
+		native_hint = p_native_hint;
+		_init_window();
+	} else {
+		native_hint = p_native_hint;
+	}
+}
+
+bool Window::is_native_hint() const {
+	return native_hint;
+}
+
 bool Window::is_visible() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return visible;
@@ -1269,7 +1392,7 @@ Viewport *Window::get_embedder() const {
 	Viewport *vp = get_parent_viewport();
 
 	while (vp) {
-		if (vp->is_embedding_subwindows()) {
+		if (!native_hint || vp->is_embedding_subwindows()) {
 			return vp;
 		}
 
@@ -1301,82 +1424,7 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			if (is_in_edited_scene_root()) {
-				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
-					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
-				}
-			}
-
-			bool embedded = false;
-			{
-				embedder = get_embedder();
-				if (embedder) {
-					embedded = true;
-					if (!visible) {
-						embedder = nullptr; // Not yet since not visible.
-					}
-				}
-			}
-
-			if (embedded) {
-				// Create as embedded.
-				if (embedder) {
-					if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
-						if (is_in_edited_scene_root()) {
-							Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
-							position = (screen_size - size) / 2;
-						} else {
-							position = (embedder->get_visible_rect().size - size) / 2;
-						}
-					}
-					embedder->_sub_window_register(this);
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
-					_update_window_size();
-				}
-
-			} else {
-				if (!get_parent()) {
-					// It's the root window!
-					visible = true; // Always visible.
-					window_id = DisplayServer::MAIN_WINDOW_ID;
-					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
-					_update_from_window();
-					// Since this window already exists (created on start), we must update pos and size from it.
-					{
-						position = DisplayServer::get_singleton()->window_get_position(window_id);
-						size = DisplayServer::get_singleton()->window_get_size(window_id);
-						focused = DisplayServer::get_singleton()->window_is_focused(window_id);
-					}
-					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
-					_update_viewport_size(); // Then feed back to the viewport.
-					_update_window_callbacks();
-					// Simulate mouse-enter event when mouse is over the window, since OS event might arrive before setting callbacks.
-					if (!mouse_in_window && Rect2(position, size).has_point(DisplayServer::get_singleton()->mouse_get_position())) {
-						_event_callback(DisplayServer::WINDOW_EVENT_MOUSE_ENTER);
-					}
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
-					if (DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(FLAG_TRANSPARENT), window_id)) {
-						set_transparent_background(true);
-					}
-				} else {
-					// Create.
-					if (visible) {
-						_make_window();
-					}
-				}
-			}
-
-			if (transient && !transient_to_focused) {
-				_make_transient();
-			}
-			if (visible) {
-				notification(NOTIFICATION_VISIBILITY_CHANGED);
-				emit_signal(SceneStringName(visibility_changed));
-				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
-			}
-
-			// Emits NOTIFICATION_THEME_CHANGED internally.
-			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
+			_init_window();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1428,33 +1476,7 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
-				ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Window::_settings_changed));
-			}
-
-			set_theme_context(nullptr, false);
-
-			if (transient) {
-				_clear_transient();
-			}
-
-			if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
-				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
-					_update_window_callbacks();
-				} else {
-					_clear_window();
-				}
-			} else {
-				if (embedder) {
-					embedder->_sub_window_remove(this);
-					embedder = nullptr;
-					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
-				}
-				_update_viewport_size(); //called by clear and make, which does not happen here
-			}
-
-			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+			_deinit_window();
 		} break;
 
 		case NOTIFICATION_VP_MOUSE_ENTER: {
@@ -2842,6 +2864,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
 
+	ClassDB::bind_method(D_METHOD("set_native_hint", "native_hint"), &Window::set_native_hint);
+	ClassDB::bind_method(D_METHOD("is_native_hint"), &Window::is_native_hint);
+
 	ClassDB::bind_method(D_METHOD("set_unparent_when_invisible", "unparent"), &Window::set_unparent_when_invisible);
 
 	ClassDB::bind_method(D_METHOD("can_draw"), &Window::can_draw);
@@ -2974,6 +2999,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient_to_focused"), "set_transient_to_focused", "is_transient_to_focused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "native_hint"), "set_native_hint", "is_native_hint");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);

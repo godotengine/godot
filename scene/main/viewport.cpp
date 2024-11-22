@@ -976,12 +976,10 @@ void Viewport::update_canvas_items() {
 		return;
 	}
 
-	if (is_embedding_subwindows()) {
-		for (Viewport::SubWindow w : gui.sub_windows) {
-			if (w.window && !w.pending_window_update) {
-				w.pending_window_update = true;
-				callable_mp(this, &Viewport::_sub_window_update).call_deferred(w.window);
-			}
+	for (Viewport::SubWindow w : gui.sub_windows) {
+		if (w.window && !w.pending_window_update) {
+			w.pending_window_update = true;
+			callable_mp(this, &Viewport::_sub_window_update).call_deferred(w.window);
 		}
 	}
 	_update_canvas_items(this);
@@ -2926,7 +2924,7 @@ void Viewport::_update_mouse_over() {
 void Viewport::_update_mouse_over(Vector2 p_pos) {
 	gui.last_mouse_pos = p_pos; // Necessary, because mouse cursor can be over Viewports that are not reached by the InputEvent.
 	// Look for embedded windows at mouse position.
-	if (is_embedding_subwindows()) {
+	if (!gui.sub_windows.is_empty()) {
 		for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
 			Window *sw = gui.sub_windows[i].window;
 			Rect2 swrect = Rect2(sw->get_position(), sw->get_size());
@@ -3155,7 +3153,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		_update_mouse_over();
 	}
 
-	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
+	if (_sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
 	}
