@@ -148,7 +148,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	} else if (p_msg == "enable_audio") { // Enable/disable audio
 		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		bool enable = p_args[0];
-		AudioServer::get_singleton()->set_bus_mute(0, !enable);
+		AudioServer::get_singleton()->set_mute(!enable);
 
 	} else if (p_msg == "override_cameras") { // Camera
 		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
