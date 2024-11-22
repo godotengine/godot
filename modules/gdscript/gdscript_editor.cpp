@@ -662,6 +662,19 @@ static int _get_method_location(const StringName &p_class, const StringName &p_m
 	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
 }
 
+static int _get_method_location(Ref<Script> p_script, const StringName &p_method) {
+	int depth = 0;
+	Ref<Script> scr = p_script;
+	while (scr.is_valid()) {
+		if (scr->get_member_line(p_method) != -1) {
+			return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+		}
+		depth++;
+		scr = scr->get_base_script();
+	}
+	return depth + _get_method_location(p_script->get_instance_base_type(), p_method);
+}
+
 static int _get_enum_constant_location(const StringName &p_class, const StringName &p_enum_constant) {
 	if (!ClassDB::get_integer_constant_enum(p_class, p_enum_constant)) {
 		return ScriptLanguage::LOCATION_OTHER;
@@ -1239,7 +1252,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							if (E.name.begins_with("@")) {
 								continue;
 							}
-							int location = p_recursion_depth + _get_method_location(scr->get_class_name(), E.name);
+							int location = p_recursion_depth + _get_method_location(scr, E.name);
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
 							if (E.arguments.size()) {
 								option.insert_text += "(";
@@ -1412,6 +1425,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				return;
 			} break;
 		}
+		// Not recursion strictly speaking, but we need to keep track of how deep a type is in the inheritance chain,
+		// to sort options correctly.
+		p_recursion_depth++;
 	}
 }
 

@@ -52,6 +52,23 @@
 
 namespace GDScriptTests {
 
+struct OptionCompare {
+	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &p_lhs, const ScriptLanguage::CodeCompletionOption &p_rhs) const {
+		return p_lhs.location < p_rhs.location;
+	}
+};
+
+struct OptionBucket {
+	List<Dictionary> options;
+	int highest_location = -1;
+
+	void apply_location(const ScriptLanguage::CodeCompletionOption &p_element) {
+		if (highest_location < p_element.location) {
+			highest_location = p_element.location;
+		}
+	}
+};
+
 static bool match_option(const Dictionary p_expected, const ScriptLanguage::CodeCompletionOption p_got) {
 	if (p_expected.get("display", p_got.display) != p_got.display) {
 		return false;
@@ -60,9 +77,6 @@ static bool match_option(const Dictionary p_expected, const ScriptLanguage::Code
 		return false;
 	}
 	if (p_expected.get("kind", p_got.kind) != Variant(p_got.kind)) {
-		return false;
-	}
-	if (p_expected.get("location", p_got.location) != Variant(p_got.location)) {
 		return false;
 	}
 	return true;
@@ -127,7 +141,7 @@ static void test_directory(const String &p_dir) {
 				next = dir->get_next();
 				continue;
 			}
-#endif
+#endif // MODULE_MONO_ENABLED
 
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_node_path_literals", conf.get_value("input", "add_node_path_literals", false));
@@ -138,6 +152,20 @@ static void test_directory(const String &p_dir) {
 
 			List<Dictionary> exclude;
 			to_dict_list(conf.get_value("output", "exclude", Array()), exclude);
+
+			// Split the options to include into buckets. Elements of a bucket can appear in any order but have to be behind previous buckets.
+			List<OptionBucket> include_buckets;
+			OptionBucket constructing_bucket;
+			for (const Dictionary &E : include) {
+				if (E.get("after", false).booleanize() && !constructing_bucket.options.is_empty()) {
+					include_buckets.push_back(constructing_bucket);
+					constructing_bucket = OptionBucket();
+				}
+				constructing_bucket.options.push_back(E);
+			}
+			if (!constructing_bucket.options.is_empty()) {
+				include_buckets.push_back(constructing_bucket);
+			}
 
 			List<ScriptLanguage::CodeCompletionOption> options;
 			String call_hint;
@@ -160,6 +188,7 @@ static void test_directory(const String &p_dir) {
 				owner = scene->get_node(conf.get_value("input", "node_path", "."));
 			}
 
+			ERR_PRINT_OFF
 			if (owner != nullptr) {
 				// Remove the line which contains the sentinel char, to get a valid script.
 				Ref<GDScript> scr;
@@ -183,37 +212,99 @@ static void test_directory(const String &p_dir) {
 			}
 
 			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
-			String contains_excluded;
-			for (ScriptLanguage::CodeCompletionOption &option : options) {
+			ERR_PRINT_ON
+
+			options.sort_custom<OptionCompare>();
+
+			List<ScriptLanguage::CodeCompletionOption>::Element *current_option_element = options.front();
+			List<OptionBucket>::Element *current_bucket_element = include_buckets.front();
+
+			if (is_print_verbose_enabled()) {
+				print_line("\nDumping autocompletion suggestions for " + path.path_join(next) + ":");
+			}
+
+			while (current_option_element != nullptr) {
+				ScriptLanguage::CodeCompletionOption option = current_option_element->get();
+
+				if (is_print_verbose_enabled()) {
+					print_line("{ display: '" + option.display + "', insert_text: '" + option.insert_text + "', kind: " + itos(option.kind) + ", location: " + itos(option.location) + " }");
+				}
+
 				for (const Dictionary &E : exclude) {
 					if (match_option(E, option)) {
-						contains_excluded = option.display;
-						break;
+						FAIL("Autocompletion suggests illegal option: { display: '", option.display, "', insert_text: '", option.insert_text, "', kind: ", itos(option.kind), " } for '", path.path_join(next), "'.");
 					}
-				}
-				if (!contains_excluded.is_empty()) {
-					break;
 				}
 
-				for (const Dictionary &E : include) {
-					if (match_option(E, option)) {
-						include.erase(E);
-						break;
+				if (current_bucket_element != nullptr && current_bucket_element->prev() != nullptr && current_bucket_element->prev()->get().highest_location >= option.location) {
+					// Fast forward to the next location.
+					current_option_element = current_option_element->next();
+					continue;
+				}
+
+				if (current_bucket_element != nullptr) {
+					OptionBucket bucket = current_bucket_element->get();
+
+					for (const Dictionary &E : bucket.options) {
+						if (match_option(E, option)) {
+							bucket.options.erase(E);
+							bucket.apply_location(option);
+							break;
+						}
+					}
+					current_bucket_element->set(bucket);
+					if (bucket.options.is_empty()) {
+						current_bucket_element = current_bucket_element->next();
 					}
 				}
+
+				current_option_element = current_option_element->next();
 			}
-			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", path.path_join(next), "'.");
-			CHECK(include.is_empty());
+			CHECK_MESSAGE(current_bucket_element == nullptr, "Autocompletion for '", path.path_join(next), "' did not yield a matching option for: '", Variant(current_bucket_element->get().options.back()->get()).to_json_string(), "'. (Or the option wasn't emitted in the right order.)");
 
 			String expected_call_hint = conf.get_value("output", "call_hint", call_hint);
-			bool expected_forced = conf.get_value("output", "forced", forced);
+			CHECK_MESSAGE(expected_call_hint == call_hint, "Autocompletion produced wrong call hint '", call_hint, "' for '", path.path_join(next), "'.");
 
-			CHECK(expected_call_hint == call_hint);
-			CHECK(expected_forced == forced);
+			bool expected_forced = conf.get_value("output", "forced", forced);
+			CHECK_MESSAGE(expected_forced == forced, "Autocompletion did not force the popup correctly for '", path.path_join(next), "'.");
 
 			if (scene) {
 				memdelete(scene);
 			}
+		}
+		next = dir->get_next();
+	}
+}
+
+static void setup_global_classes(const String &p_dir) {
+	Error err = OK;
+	Ref<DirAccess> dir = DirAccess::open(p_dir, &err);
+
+	if (err != OK) {
+		FAIL("Invalid test directory.");
+		return;
+	}
+
+	String path = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	while (!next.is_empty()) {
+		if (dir->current_is_dir() && next != "." && next != "..") {
+			setup_global_classes(path.path_join(next));
+		} else if (next.ends_with(".gd")) {
+			String base_type;
+			String source_file = path.path_join(next);
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type);
+			if (class_name.is_empty()) {
+				next = dir->get_next();
+				continue;
+			}
+			ERR_FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
+					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
+
+			ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), source_file);
 		}
 		next = dir->get_next();
 	}
@@ -225,11 +316,14 @@ TEST_SUITE("[Modules][GDScript][Completion]") {
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
 		init_language("modules/gdscript/tests/scripts");
 
+		setup_global_classes("modules/gdscript/tests/scripts/completion");
 		test_directory("modules/gdscript/tests/scripts/completion");
+
+		finish_language();
 	}
 }
 } // namespace GDScriptTests
 
-#endif
+#endif // TOOLS_ENABLED
 
 #endif // TEST_COMPLETION_H
