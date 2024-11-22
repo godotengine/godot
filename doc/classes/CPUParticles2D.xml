@@ -150,6 +150,9 @@
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles2D.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
+		<member name="emission_circle_mode" type="int" setter="set_emission_circle_mode" getter="get_emission_circle_mode" enum="CPUParticles2D.EmissionCircleMode">
+			The order [enum EmissionCircleMode] in which points are emitted for [constant EMISSION_SHAPE_CIRCLE]
+		</member>
 		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
@@ -368,8 +371,20 @@
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_CIRCLE" value="6" enum="EmissionShape">
+			Particles will be emitted from a circle of [member emission_sphere_radius] radius.
+		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
+		</constant>
+		<constant name="EMISSION_CIRCLE_MODE_RANDOM" value="0" enum="EmissionCircleMode">
+			Particles emitted in random order
+		</constant>
+		<constant name="EMISSION_CIRCLE_MODE_CW" value="1" enum="EmissionCircleMode">
+			Particles emitted in a clockwise order
+		</constant>
+		<constant name="EMISSION_CIRCLE_MODE_CCW" value="2" enum="EmissionCircleMode">
+			Particles emitted in a counter clockwise order
 		</constant>
 	</constants>
 </class>
