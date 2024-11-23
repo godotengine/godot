@@ -34,6 +34,10 @@
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/fsr2.h"
+#ifdef METAL_ENABLED
+#include "servers/rendering/renderer_rd/effects/metal_fx.h"
+#endif
+#include "servers/rendering/renderer_rd/effects/motion_vectors_store.h"
 #include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/taa.h"
@@ -91,6 +95,9 @@ public:
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
 		RendererRD::FSR2Context *fsr2_context = nullptr;
+#ifdef METAL_ENABLED
+		RendererRD::MFXTemporalContext *mfx_temporal_context = nullptr;
+#endif
 
 	public:
 		ClusterBuilderRD *cluster_builder = nullptr;
@@ -133,6 +140,11 @@ public:
 
 		void ensure_fsr2(RendererRD::FSR2Effect *p_effect);
 		RendererRD::FSR2Context *get_fsr2_context() const { return fsr2_context; }
+
+#ifdef METAL_ENABLED
+		bool ensure_mfx_temporal(RendererRD::MFXTemporalEffect *p_effect);
+		RendererRD::MFXTemporalContext *get_mfx_temporal_context() const { return mfx_temporal_context; }
+#endif
 
 		RID get_color_only_fb();
 		RID get_color_pass_fb(uint32_t p_color_pass_flags);
@@ -633,6 +645,11 @@ private:
 	RendererRD::TAA *taa = nullptr;
 	RendererRD::FSR2Effect *fsr2_effect = nullptr;
 	RendererRD::SSEffects *ss_effects = nullptr;
+
+#ifdef METAL_ENABLED
+	RendererRD::MFXTemporalEffect *mfx_temporal_effect = nullptr;
+#endif
+	RendererRD::MotionVectorsStore *motion_vectors_store = nullptr;
 
 	/* Cluster builder */
 

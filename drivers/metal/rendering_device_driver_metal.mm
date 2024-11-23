@@ -3982,6 +3982,10 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return (uint64_t)limits.subgroupSupportedShaderStages;
 		case LIMIT_SUBGROUP_OPERATIONS:
 			return (uint64_t)limits.subgroupSupportedOperations;
+		case LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE:
+			return (uint64_t)((1.0 / limits.temporalScalerInputContentMaxScale) * 1000'000);
+		case LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE:
+			return (uint64_t)((1.0 / limits.temporalScalerInputContentMinScale) * 1000'000);
 		UNKNOWN(LIMIT_VRS_TEXEL_WIDTH);
 		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
 		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_WIDTH);
@@ -4017,6 +4021,10 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return false;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
+		case SUPPORTS_METALFX_SPATIAL:
+			return device_properties->features.metal_fx_spatial;
+		case SUPPORTS_METALFX_TEMPORAL:
+			return device_properties->features.metal_fx_temporal;
 		default:
 			return false;
 	}

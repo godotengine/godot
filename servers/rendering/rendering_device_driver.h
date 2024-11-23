@@ -722,6 +722,12 @@ public:
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
 
+	/******************/
+	/**** CALLBACK ****/
+	/******************/
+
+	typedef void (*DriverCallback)(RenderingDeviceDriver *p_driver, CommandBufferID p_command_buffer, void *p_userdata);
+
 	/*****************/
 	/**** QUERIES ****/
 	/*****************/
