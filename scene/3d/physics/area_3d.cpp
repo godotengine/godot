@@ -241,6 +241,9 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
+	if (node == get_parent()) {
+		return;
+	}
 
 	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(objid);
 
