@@ -4667,7 +4667,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 	if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
 		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base), true, p_is_assignment);
 	} else if (p_subscript->base->type == GDScriptParser::Node::SUBSCRIPT) {
-		reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_subscript->base), true, p_is_assignment);
+		reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_subscript->base), true, false);
 	} else {
 		reduce_expression(p_subscript->base);
 	}

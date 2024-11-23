@@ -58,6 +58,8 @@ class Foo:
         print("Foo3")
 
 class Bar extends Foo:
+    readonly var f = Foo.new()
+
     public func bar():
         a = 100
         print(a)
@@ -109,3 +111,5 @@ func test():
 
     var t2 = Test.new()
     t2.test()
+
+    t.f.a = 11111
