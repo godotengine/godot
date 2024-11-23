@@ -26,10 +26,12 @@ void CharacterCheckArea3D::set_body_main(class CharacterBodyMain* p_mainBody)
     if(mainBody)
     {        
         areaCollision = memnew(Area3D);    
+        areaCollision->set_name(p_mainBody->get_name().str() + "@Area3D#" + String::num_int64(areaCollisionID));
         mainBody->add_child(areaCollision);
         areaCollision->set_owner(mainBody);
         areaCollision->connect(SceneStringName(body_entered),callable_mp(this,&CharacterCheckArea3D::on_body_enter_area));
         areaCollision->connect(SceneStringName(body_exited),callable_mp(this,&CharacterCheckArea3D::on_body_exit_area));
+        
         areaCollision->set_collision_layer(mainBody->get_collision_layer());
         areaCollision->set_collision_mask(collision_check_mask);
         areaCollisionID = areaCollision->get_instance_id();
@@ -88,5 +90,12 @@ void CharacterCheckArea3D::get_bound_other_character_by_angle(TypedArray<Charact
         {
             _array.push_back(node.value);
         }
+    }
+}
+void CharacterCheckArea3D::on_owenr_chaanged_collision_layer() 
+{
+    Area3D* areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
+    if(areaCollision != nullptr) {
+        areaCollision->set_collision_layer(mainBody->get_collision_layer());
     }
 }

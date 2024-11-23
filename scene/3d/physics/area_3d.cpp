@@ -198,6 +198,7 @@ void Area3D::_body_enter_tree(ObjectID p_id) {
 	ERR_FAIL_COND(E->value.in_tree);
 
 	E->value.in_tree = true;
+	print_line("_body_enter_tree:" + node->get_name());
 	emit_signal(SceneStringName(body_entered), node);
 	for (int i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringName(body_shape_entered), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
@@ -212,6 +213,7 @@ void Area3D::_body_exit_tree(ObjectID p_id) {
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
 	E->value.in_tree = false;
+	print_line("_body_exit_tree:" + node->get_name());
 	emit_signal(SceneStringName(body_exited), node);
 	for (int i = 0; i < E->value.shapes.size(); i++) {
 		emit_signal(SceneStringName(body_shape_exited), E->value.rid, node, E->value.shapes[i].body_shape, E->value.shapes[i].area_shape);
@@ -821,3 +823,5 @@ Area3D::Area3D() :
 
 Area3D::~Area3D() {
 }
+
+/***************************************************************************************************************************************************************************/

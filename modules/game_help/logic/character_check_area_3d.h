@@ -133,9 +133,13 @@ class CharacterCheckArea3D : public RefCounted
         ClassDB::bind_method(D_METHOD("set_area_shape", "shape"), &CharacterCheckArea3D::set_area_shape);
         ClassDB::bind_method(D_METHOD("get_area_shape"), &CharacterCheckArea3D::get_area_shape);
 
+        ClassDB::bind_method(D_METHOD("set_collision_check_mask", "mask"), &CharacterCheckArea3D::set_collision_check_mask);
+        ClassDB::bind_method(D_METHOD("get_collision_check_mask"), &CharacterCheckArea3D::get_collision_check_mask);
+
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
         ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_size"), "set_cell_size", "get_cell_size");
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "area_shape", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CollisionObject3DConnectionShape")), "set_area_shape", "get_area_shape");
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_check_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_check_mask", "get_collision_check_mask");
     }
 public:
     
@@ -179,6 +183,19 @@ public:
     {
         return cell_size;
     }
+
+    void set_collision_check_mask(int p_mask)
+    {
+        collision_check_mask = p_mask;
+        Area3D* areaCollision = Object::cast_to<Area3D>(ObjectDB::get_instance(areaCollisionID));
+        if(areaCollision != nullptr) {
+            areaCollision->set_collision_layer(collision_check_mask);
+        }
+    }
+    int get_collision_check_mask()
+    {
+        return collision_check_mask;
+    }
     
 
     void on_body_enter_area(Node3D *p_area)
@@ -214,6 +231,7 @@ public:
     {
         return area_shape;
     }
+    void on_owenr_chaanged_collision_layer() ;
 
     void init();
     CharacterCheckArea3D()
@@ -225,6 +243,7 @@ public:
         set_body_main(nullptr);
     }
  protected:
+ protected:
     CellPos s_world_move;
     int cell_size = 2;
     CellPos world_page;
@@ -235,7 +254,7 @@ public:
     class CharacterBodyMain* mainBody = nullptr;
     ObjectID areaCollisionID;
 	TypedArray<CollisionObject3DConnectionShape> area_shape;
-    uint32_t collision_check_mask = 0;
+    uint32_t collision_check_mask = 0xFFFFFFFF;
     bool is_update_coord = true;
 
 };

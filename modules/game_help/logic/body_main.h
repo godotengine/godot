@@ -323,6 +323,12 @@ public:
         }
         return ret;
     }
+	virtual void change_collision_layer(uint32_t p_layer) override {
+        for(uint32_t i = 0;i<check_area.size();i++)
+        {
+            check_area[i]->on_owenr_chaanged_collision_layer();
+        }     
+    }
 
 public:
     

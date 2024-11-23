@@ -138,6 +138,7 @@ void CollisionObject3D::_notification(int p_what) {
 
 void CollisionObject3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
+	change_collision_layer(p_layer);
 	if (area) {
 		PhysicsServer3D::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
 	} else {

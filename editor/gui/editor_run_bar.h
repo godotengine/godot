@@ -50,6 +50,7 @@ class EditorRunBar : public MarginContainer {
 		RUN_MAIN,
 		RUN_CURRENT,
 		RUN_CUSTOM,
+		RUN_EDITOR,
 	};
 
 	PanelContainer *main_panel = nullptr;
@@ -67,6 +68,9 @@ class EditorRunBar : public MarginContainer {
 	PanelContainer *write_movie_panel = nullptr;
 	Button *write_movie_button = nullptr;
 
+	bool is_run_editor = false;
+	Button* run_editor_button = nullptr;
+
 	RunMode current_mode = RunMode::STOPPED;
 	String run_custom_filename;
 	String run_current_filename;
@@ -82,6 +86,8 @@ class EditorRunBar : public MarginContainer {
 
 	void _run_scene(const String &p_scene_path = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
+
+	void _run_editor(bool p_enabled);
 
 protected:
 	void _notification(int p_what);
