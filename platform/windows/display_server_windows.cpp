@@ -3253,6 +3253,10 @@ void DisplayServerWindows::process_events() {
 	}
 	_THREAD_SAFE_UNLOCK_
 
+	if (tts) {
+		tts->process_events();
+	}
+
 	if (!drop_events) {
 		_process_key_events();
 		Input::get_singleton()->flush_buffered_events();

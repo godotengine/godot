@@ -268,6 +268,10 @@ uint64_t FileAccess::get_64() const {
 	return data;
 }
 
+float FileAccess::get_half() const {
+	return Math::half_to_float(get_16());
+}
+
 float FileAccess::get_float() const {
 	MarshallFloat m;
 	m.i = get_32();
@@ -525,6 +529,10 @@ void FileAccess::store_real(real_t p_real) {
 	} else {
 		store_double(p_real);
 	}
+}
+
+void FileAccess::store_half(float p_dest) {
+	store_16(Math::make_half_float(p_dest));
 }
 
 void FileAccess::store_float(float p_dest) {
@@ -833,6 +841,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_16"), &FileAccess::get_16);
 	ClassDB::bind_method(D_METHOD("get_32"), &FileAccess::get_32);
 	ClassDB::bind_method(D_METHOD("get_64"), &FileAccess::get_64);
+	ClassDB::bind_method(D_METHOD("get_half"), &FileAccess::get_half);
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
@@ -851,6 +860,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_16", "value"), &FileAccess::store_16);
 	ClassDB::bind_method(D_METHOD("store_32", "value"), &FileAccess::store_32);
 	ClassDB::bind_method(D_METHOD("store_64", "value"), &FileAccess::store_64);
+	ClassDB::bind_method(D_METHOD("store_half", "value"), &FileAccess::store_half);
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
