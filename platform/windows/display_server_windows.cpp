@@ -496,7 +496,11 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 				String str = String(";").join(exts);
 				filter_exts.push_back(str.utf16());
 				if (tokens.size() == 2) {
-					filter_names.push_back(tokens[1].strip_edges().utf16());
+					String name = tokens[1].strip_edges();
+					if (ds->os_ver.dwBuildNumber < 22000 && str == "*.*" && name.ends_with(" (*)")) {
+						name = name.rstrip(" (*)");
+					}
+					filter_names.push_back(name.utf16());
 				} else {
 					filter_names.push_back(str.utf16());
 				}
@@ -505,7 +509,11 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 	if (filter_names.is_empty()) {
 		filter_exts.push_back(String("*.*").utf16());
-		filter_names.push_back((RTR("All Files") + " (*)").utf16());
+		if (ds->os_ver.dwBuildNumber < 22000) {
+			filter_names.push_back((RTR("All Files")).utf16());
+		} else {
+			filter_names.push_back((RTR("All Files") + " (*)").utf16());
+		}
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
@@ -6037,7 +6045,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	// Load Windows version info.
-	OSVERSIONINFOW os_ver;
 	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 

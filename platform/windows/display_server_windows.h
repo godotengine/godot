@@ -454,6 +454,8 @@ class DisplayServerWindows : public DisplayServer {
 	TTS_Windows *tts = nullptr;
 	NativeMenuWindows *native_menu = nullptr;
 
+	OSVERSIONINFOW os_ver;
+
 	struct WindowData {
 		HWND hWnd;
 
