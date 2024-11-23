@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  fsr.h                                                                 */
+/*  motion_vectors_store.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FSR_RD_H
-#define FSR_RD_H
+#ifndef MOTION_VECTORS_STORE_RD_H
+#define MOTION_VECTORS_STORE_RD_H
 
-#include "spatial_upscaler.h"
-
-#include "../storage_rd/render_scene_buffers_rd.h"
-#include "servers/rendering/renderer_rd/shaders/effects/fsr_upscale.glsl.gen.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/motion_vectors_store.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering_server.h"
 
 namespace RendererRD {
-
-class FSR : public SpatialUpscaler {
-	String name = "FSR 1.0 Upscale";
-
-public:
-	FSR();
-	~FSR();
-
-	virtual String get_label() const final { return name; }
-	virtual void ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) final {}
-	virtual void process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) final;
-
-private:
-	enum FSRUpscalePass {
-		FSR_UPSCALE_PASS_EASU = 0,
-		FSR_UPSCALE_PASS_RCAS = 1
+class MotionVectorsStore {
+	struct PushConstant {
+		float reprojection_matrix[16];
+		float resolution[2];
+		uint32_t pad[2];
 	};
 
-	struct FSRUpscalePushConstant {
-		float resolution_width;
-		float resolution_height;
-		float upscaled_width;
-		float upscaled_height;
-		float sharpness;
-		int pass;
-		int _unused0, _unused1;
-	};
-
-	FsrUpscaleShaderRD fsr_shader;
+	MotionVectorsStoreShaderRD motion_shader;
 	RID shader_version;
 	RID pipeline;
+
+public:
+	MotionVectorsStore();
+	~MotionVectorsStore();
+
+	void process(Ref<RenderSceneBuffersRD> p_render_buffers,
+			const Projection &p_current_projection, const Transform3D &p_current_transform,
+			const Projection &p_previous_projection, const Transform3D &p_previous_transform);
 };
+} //namespace RendererRD
 
-} // namespace RendererRD
-
-#endif // FSR_RD_H
+#endif // MOTION_VECTORS_STORE_RD_H
