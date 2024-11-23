@@ -53,6 +53,7 @@ enum DownloadsAvailability {
 	DOWNLOADS_AVAILABLE,
 	DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE,
 	DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS,
+	DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS,
 };
 
 static DownloadsAvailability _get_downloads_availability() {
@@ -68,6 +69,10 @@ static DownloadsAvailability _get_downloads_availability() {
 			String(GODOT_VERSION_STATUS) == String("rc")) {
 		return DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS;
 	}
+
+#ifdef REAL_T_IS_DOUBLE
+	return DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS;
+#endif
 
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
 		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
@@ -739,6 +744,20 @@ void ExportTemplateManager::popup_manager() {
 
 			enable_online_hb->hide();
 		} break;
+
+		case DOWNLOADS_NOT_AVAILABLE_FOR_DOUBLE_BUILDS: {
+			current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
+
+			mirrors_list->clear();
+			mirrors_list->add_item(TTR("No templates for double-precision builds"), 0);
+			mirrors_list->set_disabled(true);
+			mirrors_list->set_tooltip_text(TTR("Official export templates aren't available for double-precision builds."));
+
+			mirror_options_button->set_disabled(true);
+
+			download_current_button->set_disabled(true);
+			download_current_button->set_tooltip_text(TTR("Official export templates aren't available for double-precision builds."));
+		}
 	}
 
 	popup_centered(Size2(720, 280) * EDSCALE);
