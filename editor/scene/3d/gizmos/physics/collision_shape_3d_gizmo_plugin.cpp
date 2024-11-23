@@ -35,6 +35,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -48,6 +49,8 @@
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
 	helper.instantiate();
+
+	show_only_when_selected = EDITOR_GET("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected");
 
 	create_collision_material("shape_material", 2.0);
 	create_collision_material("shape_material_arraymesh", 0.0625);
@@ -304,6 +307,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<Shape3D> s = cs->get_shape();
 	if (s.is_null()) {
+		return;
+	}
+
+	if (show_only_when_selected && !p_gizmo->is_selected()) {
 		return;
 	}
 
@@ -666,4 +673,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> lines = hms->get_debug_mesh_lines();
 		p_gizmo->add_lines(lines, material, false, collision_color);
 	}
+}
+
+void CollisionShape3DGizmoPlugin::set_show_only_when_selected(bool p_enabled) {
+	show_only_when_selected = p_enabled;
 }
