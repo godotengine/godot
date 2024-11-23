@@ -154,21 +154,27 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 		emit_signal(SNAME("files_selected"), files);
 	} else {
 		if (mode == FILE_MODE_SAVE_FILE) {
-			if (p_filter >= 0 && p_filter < filters.size()) {
+			if (p_filter != 0 && p_filter != filter->get_item_count() - 1) {
 				bool valid = false;
-				String flt = filters[p_filter].get_slice(";", 0);
-				int filter_slice_count = flt.get_slice_count(",");
-				for (int j = 0; j < filter_slice_count; j++) {
-					String str = (flt.get_slice(",", j).strip_edges());
-					if (f.matchn(str)) {
-						valid = true;
-						break;
-					}
+				int idx = p_filter;
+				if (filters.size() > 1) {
+					idx--;
 				}
+				if (idx >= 0 && idx < filters.size()) {
+					String flt = filters[idx].get_slice(";", 0);
+					int filter_slice_count = flt.get_slice_count(",");
+					for (int j = 0; j < filter_slice_count; j++) {
+						String str = (flt.get_slice(",", j).strip_edges());
+						if (f.match(str)) {
+							valid = true;
+							break;
+						}
+					}
 
-				if (!valid && filter_slice_count > 0) {
-					String str = (flt.get_slice(",", 0).strip_edges());
-					f += str.substr(1, str.length() - 1);
+					if (!valid && filter_slice_count > 0) {
+						String str = (flt.get_slice(",", 0).strip_edges());
+						f += str.substr(1, str.length() - 1);
+					}
 				}
 			}
 			emit_signal(SNAME("file_selected"), f);
@@ -509,8 +515,8 @@ void FileDialog::_action_pressed() {
 			}
 			if (idx >= 0 && idx < filters.size()) {
 				String flt = filters[idx].get_slice(";", 0);
-				int filterSliceCount = flt.get_slice_count(",");
-				for (int j = 0; j < filterSliceCount; j++) {
+				int filter_slice_count = flt.get_slice_count(",");
+				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
 					if (f.matchn(str)) {
 						valid = true;
@@ -518,7 +524,7 @@ void FileDialog::_action_pressed() {
 					}
 				}
 
-				if (!valid && filterSliceCount > 0) {
+				if (!valid && filter_slice_count > 0) {
 					String str = (flt.get_slice(",", 0).strip_edges());
 					f += str.substr(1, str.length() - 1);
 					file->set_text(f.get_file());
