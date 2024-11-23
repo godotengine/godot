@@ -254,6 +254,8 @@ void VisualShaderGroup::_update_group() {
 	global_code = global_code_builder.as_string();
 	// TODO: Insert global code per func
 	code = code_builder.as_string();
+
+	emit_changed();
 }
 
 bool VisualShaderGroup::_set(const StringName &p_name, const Variant &p_value) {
@@ -630,6 +632,7 @@ void VisualShaderNodeGroup::set_group(const Ref<VisualShaderGroup> &p_group) {
 		return;
 	}
 	group = p_group;
+	group->connect_changed(callable_mp(this, &VisualShaderNodeGroup::_emit_changed));
 	emit_changed();
 }
 
