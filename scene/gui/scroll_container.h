@@ -91,6 +91,7 @@ protected:
 	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
 	void _scroll_moved(float);
+	virtual void _scroll_changed(float) {}
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;

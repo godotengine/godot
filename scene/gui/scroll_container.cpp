@@ -459,8 +459,9 @@ void ScrollContainer::update_scrollbars() {
 	callable_mp(this, &ScrollContainer::_update_scrollbar_position).call_deferred();
 }
 
-void ScrollContainer::_scroll_moved(float) {
+void ScrollContainer::_scroll_moved(float v) {
 	queue_sort();
+	_scroll_changed(v);
 }
 
 void ScrollContainer::set_h_scroll(int p_pos) {

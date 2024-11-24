@@ -39,6 +39,7 @@
 #include "modules/game_help/Terrain3D/src/register_types.h"
 #include "modules/game_help/foliage_manager/register_types.h"
 #include "modules/game_help/game_gui/game_gui_compoent.h"
+#include "modules/game_help/game_gui/item_box.h"
 #include "modules/game_help/logic/character_ai/character_ai.h"
 #include "modules/game_help/logic/character_ai/animator_condition.h"
 #include "modules/game_help/logic/character_ai/condition/animator_condition_bool.h"
@@ -158,6 +159,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 		ClassDB::register_class<DataTableManager>();
 		ClassDB::register_class<PathManager>();
+		ClassDB::register_class<ItemBox>();
 
 		ClassDB::register_class<CharacterManager>();
 		ClassDB::register_class<MessageManager>();
