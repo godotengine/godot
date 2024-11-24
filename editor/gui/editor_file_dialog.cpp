@@ -1193,7 +1193,7 @@ void EditorFileDialog::update_filters() {
 		}
 	}
 
-	String f = TTR("All Files (*)");
+	String f = TTR("All Files") + " (*.*)";
 	filter->add_item(f);
 	processed_filters.push_back("*.*;" + f);
 }

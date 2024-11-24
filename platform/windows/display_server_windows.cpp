@@ -505,7 +505,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 	if (filter_names.is_empty()) {
 		filter_exts.push_back(String("*.*").utf16());
-		filter_names.push_back((RTR("All Files") + " (*)").utf16());
+		filter_names.push_back((RTR("All Files") + " (*.*)").utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;

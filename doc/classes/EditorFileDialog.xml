@@ -40,7 +40,7 @@
 		<method name="clear_filters">
 			<return type="void" />
 			<description>
-				Removes all filters except for "All Files (*)".
+				Removes all filters except for "All Files (*.*)".
 			</description>
 		</method>
 		<method name="get_line_edit">
