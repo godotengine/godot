@@ -68,6 +68,8 @@ public:
 
 	void set_selection_visible(bool p_visible);
 
+	void set_audio_enabled(bool p_enabled);
+
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
 
@@ -115,6 +117,8 @@ class GameView : public VBoxContainer {
 
 	Button *hide_selection = nullptr;
 
+	Button *enable_audio_button = nullptr;
+
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
 
@@ -152,6 +156,8 @@ class GameView : public VBoxContainer {
 	void _update_arguments_for_instance(int p_idx, Array p_arguments);
 
 	void _hide_selection_toggled(bool p_pressed);
+
+	void _enable_audio_button_toggled(bool p_pressed);
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);

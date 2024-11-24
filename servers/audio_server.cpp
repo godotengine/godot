@@ -295,7 +295,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			// The destination start for data will be the same in all cases.
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
-			if (master->channels[k].active) {
+			if (master->channels[k].active && !mute) {
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
@@ -764,6 +764,14 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 	} else {
 		return 0;
 	}
+}
+
+void AudioServer::set_mute(bool p_mute) {
+	mute = p_mute;
+}
+
+bool AudioServer::get_mute() const {
+	return mute;
 }
 
 void AudioServer::set_bus_count(int p_count) {
