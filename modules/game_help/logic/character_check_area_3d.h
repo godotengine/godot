@@ -200,6 +200,10 @@ public:
 
     void on_body_enter_area(Node3D *p_area)
     {
+		if (Object::cast_to<CharacterBodyMain>(p_area)) {
+			// 只支持角色类型
+			return;
+		}
         Ref<CharacterCheckArea3DResult> result ;
         result.instantiate();
         result->character = p_area->get_instance_id();
@@ -209,6 +213,10 @@ public:
     }
     void on_body_exit_area(Node3D *p_area)
     {
+		if (Object::cast_to<CharacterBodyMain>(p_area)) {
+			// 只支持角色类型
+			return;
+		}
         boundOtherCharacter.erase(p_area);
         is_update_coord = true;
 		print_line("*on_body_exit_area:" + p_area->get_name());

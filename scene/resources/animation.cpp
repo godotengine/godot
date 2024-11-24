@@ -4180,6 +4180,12 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_group", "group"), &Animation::set_animation_group);
 	ClassDB::bind_method(D_METHOD("get_animation_group"), &Animation::get_animation_group);
 
+	ClassDB::bind_method(D_METHOD("set_preview_prefab_path", "path"), &Animation::set_preview_prefab_path);
+	ClassDB::bind_method(D_METHOD("get_preview_prefab_path"), &Animation::get_preview_prefab_path);
+
+	ClassDB::bind_method(D_METHOD("set_show_name", "show_name"), &Animation::set_show_name);
+	ClassDB::bind_method(D_METHOD("get_show_name"), &Animation::get_show_name);
+
 	ClassDB::bind_method(D_METHOD("editor_get_animation_Group"), &Animation::editor_get_animation_Group);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
@@ -4200,6 +4206,8 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "human_bone_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_human_bone_mask", "get_human_bone_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "preview_prefab_path", PROPERTY_HINT_DIR), "set_preview_prefab_path", "get_preview_prefab_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "show_name"), "set_show_name", "get_show_name");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);

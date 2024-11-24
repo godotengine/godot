@@ -33,6 +33,7 @@ private:
 	struct ThemeCache {
 		Ref<Texture2D> trash_icon;
 		Ref<Texture2D> grab_icon;
+		Ref<Texture2D> drag_icon;
 		Ref<StyleBoxFlat> odd_style;
 		Ref<StyleBoxFlat> even_style;
 		Ref<StyleBoxFlat> header_style;

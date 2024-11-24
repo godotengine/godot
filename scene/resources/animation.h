@@ -379,6 +379,10 @@ public:
 	bool is_human_animation = false;
 	Vector<uint8_t> human_bone_mask;
 	StringName animation_group;
+	// 预览预制体路径
+	String preview_prefab_path;
+	// 显示的名称
+	String show_name;
 
 	template <typename T>
 	void _clear(T &p_keys);
@@ -691,6 +695,19 @@ public:
 	}
 	StringName get_animation_group() const {
 		return animation_group;
+	}
+	void set_preview_prefab_path(String p_path) {
+		preview_prefab_path = p_path;
+	}
+	String get_preview_prefab_path() const {
+		return preview_prefab_path;
+	}
+
+	void set_show_name(String p_show_name) {
+		show_name = p_show_name;
+	}
+	String get_show_name() const {
+		return show_name;
 	}
 
 	void clear();

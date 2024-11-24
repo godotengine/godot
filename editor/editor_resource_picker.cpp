@@ -751,8 +751,9 @@ bool EditorResourcePicker::_is_custom_type_script() const {
 }
 
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	if (edited_resource.is_valid()) {
-		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+	Ref<Resource> res = edited_resource;
+	if (res.is_valid()) {
+		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(res, p_from);
 		drag_data["source_picker"] = get_instance_id();
 		return drag_data;
 	}

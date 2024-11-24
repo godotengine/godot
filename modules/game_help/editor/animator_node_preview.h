@@ -17,7 +17,13 @@ class AnimationNodePreview : public SubViewportContainer
         PS_Pause,
         PS_Stop
     };
+    enum PreviewType {
+      PT_AnimationNode,
+      PT_CharacterBodyPrefab,
+      PT_Animation,  
+    };
     Play_State play_state = PS_Stop;
+    PreviewType preview_type = PT_AnimationNode;
 
 	SubViewport *viewport = nullptr;
 	Node3D *rotation = nullptr;
@@ -32,17 +38,24 @@ class AnimationNodePreview : public SubViewportContainer
     Button *pause_button = nullptr;
     Button *stop_button = nullptr;
 
+    Button* drag_button = nullptr;
+
     Label* time_scale_lablel = nullptr;
     HSlider* time_scale_slider = nullptr;
     Label* animation_time_position_label = nullptr;
     Label* animator_time_label = nullptr;
 
 	Ref<CharacterAnimatorNodeBase> node;
+    Ref<Animation> animation;
+    Ref<CharacterBodyPrefab> prefab;
 	CharacterBodyMain *preview_character = nullptr;
+    bool preview_animation = true;
+
 
 	struct ThemeCache {
 		Ref<Texture2D> light_1_icon;
 		Ref<Texture2D> light_2_icon;
+		Ref<Texture2D> drag_icon;
 	} theme_cache;
 
     void _on_light_1_switch_pressed() {
@@ -73,15 +86,28 @@ class AnimationNodePreview : public SubViewportContainer
     }
 public:
     void play() {
+        if(preview_type == PT_CharacterBodyPrefab) {
+            return;            
+        }
         play_state = PS_Play;
         preview_character->set_editor_pause_animation(false);
-        if(node.is_valid()) {
-            preview_character->get_animator()->editor_play_animation(node);
-        }
+        if(preview_type == PT_Animation) {
+            if(animation.is_valid()) {
+                preview_character->get_animator()->editor_play_animation(animation);
+            }
+            return;
+        } else if(preview_type == PT_AnimationNode) {
+            if(node.is_valid()) {
+                preview_character->get_animator()->editor_play_animation(node);
+            }
+        } 
         update_play_state();
     }
 
     void pause() {
+        if(preview_type == PT_CharacterBodyPrefab) {
+            return;            
+        }
         play_state = PS_Pause;
         preview_character->set_editor_pause_animation(!preview_character->get_editor_pause_animation());
         if(preview_character->get_editor_pause_animation()) {
@@ -97,6 +123,9 @@ public:
     }
 
     void stop() {
+        if(preview_type == PT_CharacterBodyPrefab) {
+            return;            
+        }
         play_state = PS_Stop;
         preview_character->set_editor_pause_animation(false);
         preview_character->get_animator()->editor_stop_animation();
@@ -127,6 +156,15 @@ public:
 
 protected:
     void update_play_state() {
+        if(preview_type == PT_CharacterBodyPrefab) {
+            play_button->set_visible(false);
+            pause_button->set_visible(false);
+            stop_button->set_visible(false);
+            return;
+        }
+        play_button->set_visible(true);
+        pause_button->set_visible(true);
+        stop_button->set_visible(true);
         switch (play_state)
         {
         case PS_Play:
@@ -168,8 +206,10 @@ protected:
 		EditorBottomPanel* p_control = EditorNode::get_bottom_panel();
         theme_cache.light_1_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
         theme_cache.light_2_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
+        theme_cache.drag_icon = p_control->get_editor_theme_icon(SNAME("ExternalLink"));
 		light_1_switch->set_button_icon(theme_cache.light_1_icon);
 		light_2_switch->set_button_icon(theme_cache.light_2_icon);
+        drag_button->set_button_icon(theme_cache.drag_icon);
     }
 	void _notification(int p_what) {
         switch (p_what) {
@@ -188,12 +228,44 @@ protected:
             edit(prefab);            
         }
 
-		Ref<BlackboardPlan> blackboard = get_preview_blackboard();
-		if (preview_character->get_blackboard_plan() != blackboard)
-		{
-			preview_character->set_blackboard_plan(blackboard);
-		}
+        if(preview_type != PT_Animation) {
+            Ref<BlackboardPlan> blackboard = get_preview_blackboard();
+            if (preview_character->get_blackboard_plan() != blackboard)
+            {
+                preview_character->set_blackboard_plan(blackboard);
+            }
+
+        }
         
+    }
+    Variant get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+        Ref<Resource> res;
+        switch (preview_type)
+        {
+        case PT_AnimationNode:
+            res = node;
+            break;
+        case PT_CharacterBodyPrefab:
+            res = prefab;
+            break;
+        case PT_Animation:
+            res = animation;
+            break;
+        }
+        if(res.is_null()) {
+            return Variant();
+        }
+		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(res, p_from);
+        drag_data["source_picker"] = get_instance_id();
+        return drag_data;
+    }
+
+    bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+        return false;
+    }
+    void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from)  {
+
     }
 	Ref<BlackboardPlan> get_preview_blackboard() {
 		CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
@@ -208,6 +280,17 @@ protected:
 		return get_globle_preview_blackboard();
 	}
 	Ref<CharacterBodyPrefab> get_preview_prefab() {
+        if(preview_type == PT_CharacterBodyPrefab) {
+            return prefab;
+        }
+        if(preview_type == PT_Animation) {
+            if(animation.is_valid()) {
+                Ref<CharacterBodyPrefab> prefab = ResourceLoader::load(animation->get_preview_prefab_path());
+                if(prefab.is_valid()) {
+                    return prefab;
+                }                  
+            }         
+        }
 		CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
 		if (body_main != nullptr)
 		{
@@ -253,8 +336,20 @@ protected:
         }
     }
 public:
+    void set_prefab(Ref<CharacterBodyPrefab> p_prefab) {
+        preview_type = PT_CharacterBodyPrefab;
+    }
     void set_animator_node(Ref<CharacterAnimatorNodeBase> p_node) {
+        preview_type = PT_AnimationNode;
         node = p_node;
+        if(node.is_valid()) {
+            node->set_blackboard_plan(get_preview_blackboard());
+        }
+        stop();
+    }
+    void set_animator(Ref<Animation> p_animation) {
+        preview_type = PT_Animation;
+        animation = p_animation;
         if(node.is_valid()) {
             node->set_blackboard_plan(get_preview_blackboard());
         }
@@ -375,6 +470,13 @@ public:
             animator_time_label = memnew(Label);
             animator_time_label->set_text(L"播放时间:");
             hb->add_child(animator_time_label);
+
+            drag_button = memnew(Button);
+            drag_button->set_custom_minimum_size(Size2(48.0, 48.0) * EDSCALE);
+            drag_button->set_button_icon(theme_cache.drag_icon);
+            drag_button->set_tooltip_text(L"按住鼠标左键,拖拽我呀!八格牙路!");
+            SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
+            vb->add_child(drag_button);
 
         }
 

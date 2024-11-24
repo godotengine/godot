@@ -317,6 +317,7 @@ void BlackboardPlanEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			theme_cache.trash_icon = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
 			theme_cache.grab_icon = get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons"));
+			theme_cache.drag_icon = get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons"));
 
 			add_var_tool->set_button_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 
