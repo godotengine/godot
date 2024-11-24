@@ -316,6 +316,7 @@ void SpriteBase3D::set_flip_h(bool p_flip) {
 	}
 
 	hflip = p_flip;
+	emit_signal("flipped_horizontally", hflip);
 	_queue_redraw();
 }
 
@@ -329,6 +330,7 @@ void SpriteBase3D::set_flip_v(bool p_flip) {
 	}
 
 	vflip = p_flip;
+	emit_signal("flipped_vertically", vflip);
 	_queue_redraw();
 }
 
@@ -639,10 +641,16 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
+	ADD_SIGNAL(MethodInfo("flipped_horizontally", PropertyInfo(Variant::BOOL, "flipped", PROPERTY_HINT_NONE)));
+	ADD_SIGNAL(MethodInfo("flipped_vertically", PropertyInfo(Variant::BOOL, "flipped", PROPERTY_HINT_NONE)));
+
+	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
+	ADD_GROUP("Flip", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");

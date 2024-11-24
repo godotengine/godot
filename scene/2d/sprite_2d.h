@@ -100,6 +100,18 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
+	void set_flip_h_as_parent(const bool p_flip_as_parent);
+	bool is_flip_h_as_parent() const;
+
+	void set_flip_v_as_parent(const bool p_flip_as_parent);
+	bool is_flip_v_as_parent() const;
+
+	void set_flip_h_is_reflection(const bool p_flip_is_reflection);
+	bool is_flip_h_reflection() const;
+
+	void set_flip_v_is_reflection(const bool p_flip_is_reflection);
+	bool is_flip_v_reflection() const;
+
 	void set_region_enabled(bool p_enabled);
 	bool is_region_enabled() const;
 

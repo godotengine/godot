@@ -189,6 +189,7 @@ void Sprite2D::set_flip_h(bool p_flip) {
 	}
 
 	hflip = p_flip;
+	emit_signal("flipped_horizontally", hflip);
 	queue_redraw();
 }
 
@@ -202,6 +203,7 @@ void Sprite2D::set_flip_v(bool p_flip) {
 	}
 
 	vflip = p_flip;
+	emit_signal("flipped_vertically", vflip);
 	queue_redraw();
 }
 
@@ -479,11 +481,14 @@ void Sprite2D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
+	ADD_SIGNAL(MethodInfo("flipped_horizontally", PropertyInfo(Variant::BOOL, "flipped", PROPERTY_HINT_NONE)));
+	ADD_SIGNAL(MethodInfo("flipped_vertically", PropertyInfo(Variant::BOOL, "flipped", PROPERTY_HINT_NONE)));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
+	ADD_GROUP("Flip", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_GROUP("Animation", "");
