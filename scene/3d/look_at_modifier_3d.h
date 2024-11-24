@@ -64,7 +64,7 @@ private:
 	bool use_secondary_rotation = true;
 
 	OriginFrom origin_from = ORIGIN_FROM_SELF;
-	int origin_bone = -1;
+	int origin_bone = 0;
 	NodePath origin_external_node;
 
 	Vector3 origin_offset;
