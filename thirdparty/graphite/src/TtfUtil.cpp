@@ -1675,7 +1675,7 @@ bool IsDeepComposite(gid16 nGlyphId, const void * pGlyf, const void * pLoca,
 
     void * pSimpleGlyf = GlyfLookup(nGlyphId, pGlyf, pLoca, lGlyfSize, lLocaSize, pHead);
     if (pSimpleGlyf == NULL)
-        return false; // no way to really indicate an error occured here
+        return false; // no way to really indicate an error occurred here
 
     if (GlyfContourCount(pSimpleGlyf) >= 0)
         return false;

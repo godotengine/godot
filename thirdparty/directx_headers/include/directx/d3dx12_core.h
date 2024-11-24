@@ -1443,7 +1443,7 @@ inline bool operator!=( const D3D12_RESOURCE_DESC1& l, const D3D12_RESOURCE_DESC
 //------------------------------------------------------------------------------------------------
 // Fills in the mipmap and alignment values of pDesc when either members are zero
 // Used to replace an implicit field to an explicit (0 mip map = max mip map level)
-// If expansion has occured, returns LclDesc, else returns the original pDesc
+// If expansion has occurred, returns LclDesc, else returns the original pDesc
 inline const CD3DX12_RESOURCE_DESC1* D3DX12ConditionallyExpandAPIDesc(
     CD3DX12_RESOURCE_DESC1& LclDesc,
     const CD3DX12_RESOURCE_DESC1* pDesc)
