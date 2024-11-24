@@ -612,7 +612,7 @@ FT_BEGIN_HEADER
    *
    * @return:
    *   Value~1 if a ClipBox is found.  If no clip box is found or an
-   *   error occurred, value~0 is returned.
+   *   error occured, value~0 is returned.
    */
   typedef FT_Bool
   ( *TT_Get_Color_Glyph_ClipBox_Func )( TT_Face      face,
@@ -707,7 +707,7 @@ FT_BEGIN_HEADER
    *
    * @return:
    *   Value~1 if everything is OK.  Value~0 if no details can be found for
-   *   this paint or any other error occurred.
+   *   this paint or any other error occured.
    */
   typedef FT_Bool
   ( *TT_Get_Paint_Func )( TT_Face         face,

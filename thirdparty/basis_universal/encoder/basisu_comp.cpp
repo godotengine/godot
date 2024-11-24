@@ -3478,7 +3478,7 @@ namespace basisu
 				// TODO: Remove this flag entirely
 				params.m_multithreading = true; 
 				
-				// Stop using OpenCL if a failure ever occurrs.
+				// Stop using OpenCL if a failure ever occurs.
 				if (opencl_failed)
 					params.m_use_opencl = false;
 
@@ -3524,7 +3524,7 @@ namespace basisu
 		jpool.wait_for_all();
 
 		if (opencl_failed)
-			error_printf("An OpenCL error occurred sometime during compression. The compressor fell back to CPU processing after the failure.\n");
+			error_printf("An OpenCL error occured sometime during compression. The compressor fell back to CPU processing after the failure.\n");
 
 		return result;
 	}
@@ -3864,5 +3864,6 @@ namespace basisu
 	}
 
 } // namespace basisu
+
 
 
