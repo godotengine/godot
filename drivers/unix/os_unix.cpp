@@ -117,7 +117,7 @@ static void _setup_clock() {
 	kern_return_t ret = mach_timebase_info(&info);
 	ERR_FAIL_COND_MSG(ret != 0, "OS CLOCK IS NOT WORKING!");
 	_clock_scale = ((double)info.numer / (double)info.denom) / 1000.0;
-	_clock_start = mach_absolute_time() * _clock_scale;
+	_clock_start = mach_absolute_time();
 }
 #else
 #if defined(CLOCK_MONOTONIC_RAW) && !defined(WEB_ENABLED) // This is a better clock on Linux.
@@ -377,17 +377,17 @@ void OS_Unix::delay_usec(uint32_t p_usec) const {
 
 uint64_t OS_Unix::get_ticks_usec() const {
 #if defined(__APPLE__)
-	uint64_t longtime = mach_absolute_time() * _clock_scale;
+	uint64_t elapsed_ticks = mach_absolute_time() - _clock_start;
+	return elapsed_ticks * _clock_scale;
 #else
 	// Unchecked return. Static analyzers might complain.
 	// If _setup_clock() succeeded, we assume clock_gettime() works.
 	struct timespec tv_now = { 0, 0 };
 	clock_gettime(GODOT_CLOCK, &tv_now);
 	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
-#endif
 	longtime -= _clock_start;
-
 	return longtime;
+#endif
 }
 
 Dictionary OS_Unix::get_memory_info() const {

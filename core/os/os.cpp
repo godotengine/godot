@@ -589,6 +589,48 @@ void OS::close_midi_inputs() {
 	}
 }
 
+void OS::precise_delay_usec(uint32_t p_usec) const {
+	static double estimate = 5000.0;
+	static double mean = 5000.0;
+	static double m2 = 0.0;
+	static uint64_t count = 1;
+
+	uint64_t t0 = get_ticks_usec();
+	uint64_t target_time = t0 + p_usec;
+	double usec_d = p_usec;
+
+	// Perform coarse sleep while the remaining time exceeds the estimate.
+	while (usec_d > estimate) {
+		uint64_t sleep_start = get_ticks_usec();
+		delay_usec(1000);
+		uint64_t sleep_end = get_ticks_usec();
+
+		// Compute observed time and limit to 1 second.
+		double observed = sleep_end - sleep_start;
+		usec_d -= observed;
+		observed = MIN(observed, 1000000.0);
+
+		// Update statistical estimates for mean and standard deviation.
+		if (unlikely(count > 1000000)) {
+			mean = (mean + observed) / 2;
+			m2 = 0.0;
+			count = 1;
+		}
+
+		++count;
+		double delta = observed - mean;
+		mean += delta / count;
+		m2 += delta * (observed - mean);
+		double stddev = Math::sqrt(m2 / (count - 1));
+		estimate = mean + stddev;
+	}
+
+	// Spin-wait for the remaining time.
+	while (get_ticks_usec() < target_time) {
+		_cpu_pause();
+	}
+}
+
 void OS::add_frame_delay(bool p_can_draw) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
@@ -596,7 +638,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 		// the actual frame time into account.
 		// Due to the high fluctuation of the actual sleep duration, it's not recommended
 		// to use this as a FPS limiter.
-		delay_usec(frame_delay * 1000);
+		precise_delay_usec(frame_delay * 1000);
 	}
 
 	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
@@ -616,7 +658,7 @@ void OS::add_frame_delay(bool p_can_draw) {
 		uint64_t current_ticks = get_ticks_usec();
 
 		if (current_ticks < target_ticks) {
-			delay_usec(target_ticks - current_ticks);
+			precise_delay_usec(target_ticks - current_ticks);
 		}
 
 		current_ticks = get_ticks_usec();
