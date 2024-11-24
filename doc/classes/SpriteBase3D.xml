@@ -105,6 +105,22 @@
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
 		</member>
 	</members>
+	<signals>
+		<signal name="flipped_horizontally">
+			<param index="0" name="flipped" type="bool" />
+			<description>
+				Emitted when the [member flip_h] changes.
+				This is useful for flipping a group of (animated) sprites horizontally, and reflecting their "X position" in a plane as if their "X scales in 2D" were negative.
+			</description>
+		</signal>
+		<signal name="flipped_vertically">
+			<param index="0" name="flipped" type="bool" />
+			<description>
+				Emitted when the [member flip_v] changes.
+				This is useful for flipping a group of (animated) sprites vertically, and reflecting their "Y position" in a plane as if their "Y scales in 2D" were negative.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="FLAG_TRANSPARENT" value="0" enum="DrawFlags">
 			If set, the texture's transparency and the opacity are used to make those parts of the sprite invisible.
@@ -137,20 +153,4 @@
 			This mode draws cuts off all values below a spatially-deterministic threshold, the rest will remain opaque.
 		</constant>
 	</constants>
-	<signals>
-		<signal name="flipped_horizontally">
-			<param index="0" name="flipped" type="bool" />
-			<description>
-				Emitted when the [member flip_h] changes.
-				This is useful for flipping a group of (animated) sprites horizontally, and reflecting their "X position" in a plane as if their "X scales in 2D" were negative.
-			</description>
-		</signal>
-		<signal name="flipped_vertically">
-			<param index="0" name="flipped" type="bool" />
-			<description>
-				Emitted when the [member flip_v] changes.
-				This is useful for flipping a group of (animated) sprites vertically, and reflecting their "Y position" in a plane as if their "Y scales in 2D" were negative.
-			</description>
-		</signal>
-	</signals>
 </class>
