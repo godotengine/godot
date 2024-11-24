@@ -116,15 +116,7 @@ class NavMap : public NavRid {
 	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
-	int pm_region_count = 0;
-	int pm_agent_count = 0;
-	int pm_link_count = 0;
-	int pm_polygon_count = 0;
-	int pm_edge_count = 0;
-	int pm_edge_merge_count = 0;
-	int pm_edge_connection_count = 0;
-	int pm_edge_free_count = 0;
-	int pm_obstacle_count = 0;
+	gd::PerformanceData performance_data;
 
 	HashMap<NavRegion *, LocalVector<gd::Edge::Connection>> region_external_connections;
 
@@ -220,15 +212,15 @@ public:
 	void dispatch_callbacks();
 
 	// Performance Monitor
-	int get_pm_region_count() const { return pm_region_count; }
-	int get_pm_agent_count() const { return pm_agent_count; }
-	int get_pm_link_count() const { return pm_link_count; }
-	int get_pm_polygon_count() const { return pm_polygon_count; }
-	int get_pm_edge_count() const { return pm_edge_count; }
-	int get_pm_edge_merge_count() const { return pm_edge_merge_count; }
-	int get_pm_edge_connection_count() const { return pm_edge_connection_count; }
-	int get_pm_edge_free_count() const { return pm_edge_free_count; }
-	int get_pm_obstacle_count() const { return pm_obstacle_count; }
+	int get_pm_region_count() const { return performance_data.pm_region_count; }
+	int get_pm_agent_count() const { return performance_data.pm_agent_count; }
+	int get_pm_link_count() const { return performance_data.pm_link_count; }
+	int get_pm_polygon_count() const { return performance_data.pm_polygon_count; }
+	int get_pm_edge_count() const { return performance_data.pm_edge_count; }
+	int get_pm_edge_merge_count() const { return performance_data.pm_edge_merge_count; }
+	int get_pm_edge_connection_count() const { return performance_data.pm_edge_connection_count; }
+	int get_pm_edge_free_count() const { return performance_data.pm_edge_free_count; }
+	int get_pm_obstacle_count() const { return performance_data.pm_obstacle_count; }
 
 	int get_region_connections_count(NavRegion *p_region) const;
 	Vector3 get_region_connection_pathway_start(NavRegion *p_region, int p_connection_id) const;

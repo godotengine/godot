@@ -356,16 +356,10 @@ Vector3 NavMap::get_random_point(uint32_t p_navigation_layers, bool p_uniformly)
 void NavMap::sync() {
 	RWLockWrite write_lock(map_rwlock);
 
-	// Performance Monitor
-	int _new_pm_region_count = regions.size();
-	int _new_pm_agent_count = agents.size();
-	int _new_pm_link_count = links.size();
-	int _new_pm_polygon_count = pm_polygon_count;
-	int _new_pm_edge_count = pm_edge_count;
-	int _new_pm_edge_merge_count = pm_edge_merge_count;
-	int _new_pm_edge_connection_count = pm_edge_connection_count;
-	int _new_pm_edge_free_count = pm_edge_free_count;
-	int _new_pm_obstacle_count = obstacles.size();
+	performance_data.pm_region_count = regions.size();
+	performance_data.pm_agent_count = agents.size();
+	performance_data.pm_link_count = links.size();
+	performance_data.pm_obstacle_count = obstacles.size();
 
 	// Check if we need to update the links.
 	if (regenerate_polygons) {
@@ -388,11 +382,11 @@ void NavMap::sync() {
 	}
 
 	if (regenerate_links) {
-		_new_pm_polygon_count = 0;
-		_new_pm_edge_count = 0;
-		_new_pm_edge_merge_count = 0;
-		_new_pm_edge_connection_count = 0;
-		_new_pm_edge_free_count = 0;
+		performance_data.pm_polygon_count = 0;
+		performance_data.pm_edge_count = 0;
+		performance_data.pm_edge_merge_count = 0;
+		performance_data.pm_edge_connection_count = 0;
+		performance_data.pm_edge_free_count = 0;
 
 		// Remove regions connections.
 		region_external_connections.clear();
@@ -424,7 +418,7 @@ void NavMap::sync() {
 			}
 		}
 
-		_new_pm_polygon_count = polygon_count;
+		performance_data.pm_polygon_count = polygon_count;
 
 		// Group all edges per key.
 		connection_pairs_map.clear();
@@ -439,7 +433,7 @@ void NavMap::sync() {
 				HashMap<gd::EdgeKey, ConnectionPair, gd::EdgeKey>::Iterator pair_it = connection_pairs_map.find(ek);
 				if (!pair_it) {
 					pair_it = connection_pairs_map.insert(ek, ConnectionPair());
-					_new_pm_edge_count += 1;
+					performance_data.pm_edge_count += 1;
 					++free_edges_count;
 				}
 				ConnectionPair &pair = pair_it->value;
@@ -476,7 +470,7 @@ void NavMap::sync() {
 				c1.polygon->edges[c1.edge].connections.push_back(c2);
 				c2.polygon->edges[c2.edge].connections.push_back(c1);
 				// Note: The pathway_start/end are full for those connection and do not need to be modified.
-				_new_pm_edge_merge_count += 1;
+				performance_data.pm_edge_merge_count += 1;
 			} else {
 				CRASH_COND_MSG(pair.size != 1, vformat("Number of connection != 1. Found: %d", pair.size));
 				if (use_edge_connections && pair.connections[0].polygon->owner->get_use_edge_connections()) {
@@ -492,7 +486,7 @@ void NavMap::sync() {
 		// to be connected, create new polygons to remove that small gap is
 		// not really useful and would result in wasteful computation during
 		// connection, integration and path finding.
-		_new_pm_edge_free_count = free_edges.size();
+		performance_data.pm_edge_free_count = free_edges.size();
 
 		const real_t edge_connection_margin_squared = edge_connection_margin * edge_connection_margin;
 
@@ -549,7 +543,7 @@ void NavMap::sync() {
 
 				// Add the connection to the region_connection map.
 				region_external_connections[(NavRegion *)free_edge.polygon->owner].push_back(new_connection);
-				_new_pm_edge_connection_count += 1;
+				performance_data.pm_edge_connection_count += 1;
 			}
 		}
 
@@ -687,17 +681,6 @@ void NavMap::sync() {
 	regenerate_links = false;
 	obstacles_dirty = false;
 	agents_dirty = false;
-
-	// Performance Monitor.
-	pm_region_count = _new_pm_region_count;
-	pm_agent_count = _new_pm_agent_count;
-	pm_link_count = _new_pm_link_count;
-	pm_polygon_count = _new_pm_polygon_count;
-	pm_edge_count = _new_pm_edge_count;
-	pm_edge_merge_count = _new_pm_edge_merge_count;
-	pm_edge_connection_count = _new_pm_edge_connection_count;
-	pm_edge_free_count = _new_pm_edge_free_count;
-	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void NavMap::_update_rvo_obstacles_tree_2d() {
