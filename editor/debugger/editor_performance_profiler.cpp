@@ -88,7 +88,11 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + TTR("ms");
 		}
 		default: {
-			return TS->format_number(rtos(p_value));
+			String ret = TS->format_number(rtos(p_value));
+			if (ret.ends_with(".0")) {
+				ret = ret.pad_decimals(0);
+			}
+			return ret;
 		}
 	}
 }
