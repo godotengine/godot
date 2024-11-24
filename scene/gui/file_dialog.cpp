@@ -896,7 +896,7 @@ void FileDialog::update_filters() {
 		}
 	}
 
-	String f = atr(ETR("All Files")) + " (*)";
+	String f = atr(ETR("All Files")) + " (*.*)";
 	filter->add_item(f);
 	processed_filters.push_back("*.*;" + f);
 }
