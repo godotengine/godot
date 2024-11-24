@@ -1868,6 +1868,8 @@ int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShader
 			return ShaderLanguage::TYPE_SAMPLER3D;
 		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE:
 			return ShaderLanguage::TYPE_SAMPLERCUBE;
+		case RS::GLOBAL_VAR_TYPE_SAMPLEREXT:
+			return ShaderLanguage::TYPE_SAMPLEREXT;
 		default:
 			return ShaderLanguage::TYPE_MAX; // Invalid or not found.
 	}
