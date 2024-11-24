@@ -1815,6 +1815,14 @@
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
+		<method name="window_start_drag">
+			<return type="void" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Starts a drag operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
@@ -1894,6 +1902,9 @@
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG_FILE_EXTRA" value="26" enum="Feature">
 			The display server supports all features of [constant FEATURE_NATIVE_DIALOG_FILE], with the added functionality of Options and native dialog file access to [code]res://[/code] and [code]user://[/code] paths. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+		</constant>
+		<constant name="FEATURE_WINDOW_DRAG" value="27" enum="Feature">
+			The display server supports initiating window drag operation on demand. See [method window_start_drag].
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
