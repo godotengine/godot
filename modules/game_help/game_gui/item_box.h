@@ -71,6 +71,7 @@ public:
         
         for(auto it : items) {
             if(it->get_child(0) == item) {
+				view_root->remove_child(it);
                 it->queue_free();
                 items.erase(it);
                 break;
@@ -85,6 +86,14 @@ public:
     }
     Vector2 get_item_size() {
         return item_size;
+    }
+
+    void clear() {
+        for(auto it : items) {
+            view_root->remove_child(it);
+            it->queue_free();
+        }
+        items.clear();
     }
 protected:
     HFlowContainer *view_root = nullptr;
