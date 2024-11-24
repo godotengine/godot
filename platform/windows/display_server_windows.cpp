@@ -572,10 +572,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			}
 		}
 		dir = dir.simplify_path();
-		dir = dir.replace("/", "\\");
-		if (!dir.is_network_share_path() && !dir.begins_with(R"(\\?\)")) {
-			dir = R"(\\?\)" + dir;
-		}
+		dir = dir.trim_prefix(R"(\\?\)").replace("/", "\\");
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);

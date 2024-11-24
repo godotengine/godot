@@ -207,6 +207,7 @@ private:
 	Vector<Option> options;
 	Dictionary selected_options;
 	bool options_dirty = false;
+	String full_dir;
 
 	void update_dir();
 	void update_file_name();

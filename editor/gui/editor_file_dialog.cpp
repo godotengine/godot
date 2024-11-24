@@ -117,6 +117,12 @@ void EditorFileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_file
 	selected_options = p_selected_options;
 
 	String f = files[0];
+
+	filter->select(p_filter);
+	dir->set_text(f.get_base_dir());
+	file->set_text(f.get_file());
+	_dir_submitted(f.get_base_dir());
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		emit_signal(SNAME("files_selected"), files);
 	} else {
@@ -145,9 +151,6 @@ void EditorFileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_file
 			emit_signal(SNAME("dir_selected"), f);
 		}
 	}
-	file->set_text(f);
-	dir->set_text(f.get_base_dir());
-	filter->select(p_filter);
 }
 
 void EditorFileDialog::popup_file_dialog() {
@@ -365,6 +368,7 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 }
 
 void EditorFileDialog::update_dir() {
+	full_dir = dir_access->get_current_dir();
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
