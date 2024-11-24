@@ -56,7 +56,7 @@ void NavMap::set_up(Vector3 p_up) {
 		return;
 	}
 	up = p_up;
-	regenerate_polygons = true;
+	map_settings_dirty = true;
 }
 
 void NavMap::set_cell_size(real_t p_cell_size) {
@@ -65,7 +65,7 @@ void NavMap::set_cell_size(real_t p_cell_size) {
 	}
 	cell_size = p_cell_size;
 	_update_merge_rasterizer_cell_dimensions();
-	regenerate_polygons = true;
+	map_settings_dirty = true;
 }
 
 void NavMap::set_cell_height(real_t p_cell_height) {
@@ -74,7 +74,7 @@ void NavMap::set_cell_height(real_t p_cell_height) {
 	}
 	cell_height = p_cell_height;
 	_update_merge_rasterizer_cell_dimensions();
-	regenerate_polygons = true;
+	map_settings_dirty = true;
 }
 
 void NavMap::set_merge_rasterizer_cell_scale(float p_value) {
@@ -83,7 +83,7 @@ void NavMap::set_merge_rasterizer_cell_scale(float p_value) {
 	}
 	merge_rasterizer_cell_scale = p_value;
 	_update_merge_rasterizer_cell_dimensions();
-	regenerate_polygons = true;
+	map_settings_dirty = true;
 }
 
 void NavMap::set_use_edge_connections(bool p_enabled) {
@@ -91,7 +91,7 @@ void NavMap::set_use_edge_connections(bool p_enabled) {
 		return;
 	}
 	use_edge_connections = p_enabled;
-	regenerate_links = true;
+	iteration_dirty = true;
 }
 
 void NavMap::set_edge_connection_margin(real_t p_edge_connection_margin) {
@@ -99,7 +99,7 @@ void NavMap::set_edge_connection_margin(real_t p_edge_connection_margin) {
 		return;
 	}
 	edge_connection_margin = p_edge_connection_margin;
-	regenerate_links = true;
+	iteration_dirty = true;
 }
 
 void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
@@ -107,7 +107,7 @@ void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
 		return;
 	}
 	link_connection_radius = p_link_connection_radius;
-	regenerate_links = true;
+	iteration_dirty = true;
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
@@ -183,27 +183,27 @@ gd::ClosestPointQueryResult NavMap::get_closest_point_info(const Vector3 &p_poin
 
 void NavMap::add_region(NavRegion *p_region) {
 	regions.push_back(p_region);
-	regenerate_links = true;
+	iteration_dirty = true;
 }
 
 void NavMap::remove_region(NavRegion *p_region) {
 	int64_t region_index = regions.find(p_region);
 	if (region_index >= 0) {
 		regions.remove_at_unordered(region_index);
-		regenerate_links = true;
+		iteration_dirty = true;
 	}
 }
 
 void NavMap::add_link(NavLink *p_link) {
 	links.push_back(p_link);
-	regenerate_links = true;
+	iteration_dirty = true;
 }
 
 void NavMap::remove_link(NavLink *p_link) {
 	int64_t link_index = links.find(p_link);
 	if (link_index >= 0) {
 		links.remove_at_unordered(link_index);
-		regenerate_links = true;
+		iteration_dirty = true;
 	}
 }
 
@@ -361,27 +361,9 @@ void NavMap::sync() {
 	performance_data.pm_link_count = links.size();
 	performance_data.pm_obstacle_count = obstacles.size();
 
-	// Check if we need to update the links.
-	if (regenerate_polygons) {
-		for (NavRegion *region : regions) {
-			region->scratch_polygons();
-		}
-		regenerate_links = true;
-	}
+	_sync_dirty_map_update_requests();
 
-	for (NavRegion *region : regions) {
-		if (region->sync()) {
-			regenerate_links = true;
-		}
-	}
-
-	for (NavLink *link : links) {
-		if (link->check_dirty()) {
-			regenerate_links = true;
-		}
-	}
-
-	if (regenerate_links) {
+	if (iteration_dirty) {
 		performance_data.pm_polygon_count = 0;
 		performance_data.pm_edge_count = 0;
 		performance_data.pm_edge_merge_count = 0;
@@ -659,26 +641,19 @@ void NavMap::sync() {
 		iteration_id = iteration_id % UINT32_MAX + 1;
 	}
 
-	// Do we have modified obstacle positions?
-	for (NavObstacle *obstacle : obstacles) {
-		if (obstacle->check_dirty()) {
-			obstacles_dirty = true;
-		}
-	}
-	// Do we have modified agent arrays?
-	for (NavAgent *agent : agents) {
-		if (agent->check_dirty()) {
-			agents_dirty = true;
-		}
-	}
+	map_settings_dirty = false;
+	iteration_dirty = false;
 
-	// Update avoidance worlds.
+	_sync_avoidance();
+}
+
+void NavMap::_sync_avoidance() {
+	_sync_dirty_avoidance_update_requests();
+
 	if (obstacles_dirty || agents_dirty) {
 		_update_rvo_simulation();
 	}
 
-	regenerate_polygons = false;
-	regenerate_links = false;
 	obstacles_dirty = false;
 	agents_dirty = false;
 }
@@ -887,6 +862,104 @@ Vector3 NavMap::get_region_connection_pathway_end(NavRegion *p_region, int p_con
 	}
 
 	return Vector3();
+}
+
+void NavMap::add_region_sync_dirty_request(SelfList<NavRegion> *p_sync_request) {
+	if (p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.regions.add(p_sync_request);
+}
+
+void NavMap::add_link_sync_dirty_request(SelfList<NavLink> *p_sync_request) {
+	if (p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.links.add(p_sync_request);
+}
+
+void NavMap::add_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request) {
+	if (p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.agents.add(p_sync_request);
+}
+
+void NavMap::add_obstacle_sync_dirty_request(SelfList<NavObstacle> *p_sync_request) {
+	if (p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.obstacles.add(p_sync_request);
+}
+
+void NavMap::remove_region_sync_dirty_request(SelfList<NavRegion> *p_sync_request) {
+	if (!p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.regions.remove(p_sync_request);
+}
+
+void NavMap::remove_link_sync_dirty_request(SelfList<NavLink> *p_sync_request) {
+	if (!p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.links.remove(p_sync_request);
+}
+
+void NavMap::remove_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request) {
+	if (!p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.agents.remove(p_sync_request);
+}
+
+void NavMap::remove_obstacle_sync_dirty_request(SelfList<NavObstacle> *p_sync_request) {
+	if (!p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.obstacles.remove(p_sync_request);
+}
+
+void NavMap::_sync_dirty_map_update_requests() {
+	// If entire map settings changed make all regions dirty.
+	if (map_settings_dirty) {
+		for (NavRegion *region : regions) {
+			region->scratch_polygons();
+		}
+		iteration_dirty = true;
+	}
+
+	if (!iteration_dirty) {
+		iteration_dirty = sync_dirty_requests.regions.first() || sync_dirty_requests.links.first();
+	}
+
+	// Sync NavRegions.
+	for (SelfList<NavRegion> *element = sync_dirty_requests.regions.first(); element; element = element->next()) {
+		element->self()->sync();
+	}
+	sync_dirty_requests.regions.clear();
+
+	// Sync NavLinks.
+	for (SelfList<NavLink> *element = sync_dirty_requests.links.first(); element; element = element->next()) {
+		element->self()->sync();
+	}
+	sync_dirty_requests.links.clear();
+}
+
+void NavMap::_sync_dirty_avoidance_update_requests() {
+	// Sync NavAgents.
+	agents_dirty = sync_dirty_requests.agents.first();
+	for (SelfList<NavAgent> *element = sync_dirty_requests.agents.first(); element; element = element->next()) {
+		element->self()->sync();
+	}
+	sync_dirty_requests.agents.clear();
+
+	// Sync NavObstacles.
+	obstacles_dirty = sync_dirty_requests.obstacles.first();
+	for (SelfList<NavObstacle> *element = sync_dirty_requests.obstacles.first(); element; element = element->next()) {
+		element->self()->sync();
+	}
+	sync_dirty_requests.obstacles.clear();
 }
 
 NavMap::NavMap() {
