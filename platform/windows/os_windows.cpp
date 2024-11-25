@@ -1739,7 +1739,7 @@ String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
 	data.resize(p_buffer_size);
 	DWORD count = 0;
 	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
-		return String::utf8((const char *)data.ptr(), count);
+		return String::utf8((const char *)data.ptr(), count).replace("\r\n", "\n").rstrip("\n");
 	}
 
 	return String();
