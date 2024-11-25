@@ -646,6 +646,9 @@
 		<member name="debug/settings/stdout/print_gpu_profile" type="bool" setter="" getter="" default="false">
 			Print GPU profile information to standard output every second. This includes how long each frame takes the GPU to render on average, broken down into different steps of the render pipeline, such as CanvasItems, shadows, glow, etc.
 		</member>
+		<member name="debug/settings/stdout/print_node_configuration_warnings" type="bool" setter="" getter="" default="true">
+			Print Node Configuration Warnings to the debug output when starting the project. This includes the warnings that show up next to nodes in the scene tree.
+		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>

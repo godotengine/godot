@@ -223,6 +223,15 @@ void Node::_notification(int p_notification) {
 			}
 
 			GDVIRTUAL_CALL(_ready);
+
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+			if (!Engine::get_singleton()->is_editor_hint() && GLOBAL_GET("debug/settings/stdout/print_node_configuration_warnings")) {
+				PackedStringArray warnings = get_configuration_warnings();
+				for (const String &warning : warnings) {
+					WARN_PRINT(warning);
+				}
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {
