@@ -32,6 +32,10 @@
 
 #include "core/config/engine.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	_set_texture(&under, p_texture);
 }
@@ -535,8 +539,9 @@ void TextureProgressBar::_notification(int p_what) {
 								}
 							}
 
-							// Draw a reference cross.
-							if (Engine::get_singleton()->is_editor_hint()) {
+#ifdef TOOLS_ENABLED
+							// Draw a reference cross when the node is selected in the editor.
+							if (Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton()->get_editor_selection()->is_selected(this)) {
 								Point2 p;
 
 								if (nine_patch_stretch) {
@@ -547,10 +552,11 @@ void TextureProgressBar::_notification(int p_what) {
 
 								p *= get_relative_center();
 								p += progress_offset;
-								p = p.floor();
-								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
-								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);
+								// Draw the cross with a shadow for each line, for better visibility on mixed backgrounds.
+								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5));
+								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5));
 							}
+#endif
 						} break;
 						case FILL_BILINEAR_LEFT_AND_RIGHT: {
 							Rect2 region = Rect2(progress_offset + Point2(s.x / 2 - s.x * get_as_ratio() / 2, 0), Size2(s.x * get_as_ratio(), s.y));
@@ -742,4 +748,11 @@ void TextureProgressBar::_bind_methods() {
 
 TextureProgressBar::TextureProgressBar() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Required to only show the gizmo when the node is selected.
+		EditorNode::get_singleton()->get_editor_selection()->connect(SNAME("selection_changed"), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	}
+#endif
 }
