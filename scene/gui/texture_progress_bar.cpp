@@ -536,7 +536,7 @@ void TextureProgressBar::_notification(int p_what) {
 							}
 
 							// Draw a reference cross.
-							if (Engine::get_singleton()->is_editor_hint()) {
+							if (is_part_of_edited_scene()) {
 								Point2 p;
 
 								if (nine_patch_stretch) {
