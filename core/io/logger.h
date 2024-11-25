@@ -114,4 +114,67 @@ public:
 	virtual ~CompositeLogger();
 };
 
+class UserLogManagerLogger : public Logger {
+	static UserLogManagerLogger *singleton;
+
+	Vector<Dictionary> buffered_logs;
+
+	// Stored as Vector so we can iterate over it in a thread-safe manner without holding a lock
+	// Deleted items are replaced by Callable(), with the slot later reused, to avoid problems with in-flight iterators
+	// This technically means adding and removing a capture is O(n^2) but it's hard to imagine any sensible scenario where n>4
+	Vector<Callable> captures_non_thread_safe;
+	Vector<Callable> captures_buffered;
+
+	enum State {
+		STATE_OFF, // log messages are not processed in any way
+		STATE_PASSTHROUGH, // log messages are processed but sent straight to non_thread_safe
+		STATE_BUFFERING, // log messages are processed and buffered until the next flush (and maybe sent straight to non_thread_safe also)
+	};
+	SafeNumeric<State> state;
+
+	// whether we're in the first-frame Prebuffering mode or not
+	SafeFlag pre_buffering;
+
+	// This is expected to be called from multiple threads.
+	// Right now we have a single mutex that applies to any access of any collection, as well as `state` transitions.
+	// It's possible this should be split into multiple contextual states, but, man, good luck figuring out the details on that one.
+	// You *must* release this mutex before calling any of the callables!
+	// They might add log messages or add/remove callables of their own!
+	Mutex mutex;
+
+public:
+	UserLogManagerLogger();
+	~UserLogManagerLogger();
+
+	static UserLogManagerLogger *get_singleton() { return singleton; }
+
+	// Log input interface
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR) override;
+
+	// Callback registration/unregistration (via LogManager)
+	// Must be called from the main thread
+	void register_log_capture_non_thread_safe(const Callable &p_callable);
+	void unregister_log_capture_non_thread_safe(const Callable &p_callable);
+	void register_log_capture_buffered(const Callable &p_callable);
+	void unregister_log_capture_buffered(const Callable &p_callable);
+
+	// Buffer flush notification (currently on a per-frame basis)
+	// Must be called from the main thread
+	void flush();
+
+private:
+	void process(const Dictionary &p_message);
+
+	static void dispatch_message(const Dictionary &p_message, const Callable &p_callable);
+
+	// General "figure out what you should be doing" callback.
+	// `mutex` *must* be held when calling this.
+	void recalculate_state();
+
+	// small utility functions for our sparse vector behavior, assumes the mutex is already held
+	static void register_callable(Vector<Callable> &p_vector, const Callable &p_callable);
+	static void unregister_callable(Vector<Callable> &p_vector, const Callable &p_callable);
+};
+
 #endif // LOGGER_H
