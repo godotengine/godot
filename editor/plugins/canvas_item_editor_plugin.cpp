@@ -1995,15 +1995,14 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				}
 			}
 
+			Transform2D edit_transform;
+			bool using_temp_pivot = !Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y);
+			if (using_temp_pivot) {
+				edit_transform = Transform2D(drag_selection.front()->get()->_edit_get_rotation(), temp_pivot);
+			} else {
+				edit_transform = drag_selection.front()->get()->_edit_get_transform();
+			}
 			for (CanvasItem *ci : drag_selection) {
-				Transform2D edit_transform;
-				bool using_temp_pivot = !Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y);
-				if (using_temp_pivot) {
-					edit_transform = Transform2D(ci->_edit_get_rotation(), temp_pivot);
-				} else {
-					edit_transform = ci->_edit_get_transform();
-				}
-
 				Transform2D parent_xform = ci->get_global_transform_with_canvas() * ci->get_transform().affine_inverse();
 				Transform2D unscaled_transform = (transform * parent_xform * edit_transform).orthonormalized();
 				Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
