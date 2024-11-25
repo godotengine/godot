@@ -3129,21 +3129,22 @@ void RichTextLabel::add_text(const String &p_text) {
 	}
 
 	int pos = 0;
+	String t = p_text.replace("\r\n", "\n");
 
-	while (pos < p_text.length()) {
-		int end = p_text.find_char('\n', pos);
+	while (pos < t.length()) {
+		int end = t.find_char('\n', pos);
 		String line;
 		bool eol = false;
 		if (end == -1) {
-			end = p_text.length();
+			end = t.length();
 		} else {
 			eol = true;
 		}
 
-		if (pos == 0 && end == p_text.length()) {
-			line = p_text;
+		if (pos == 0 && end == t.length()) {
+			line = t;
 		} else {
-			line = p_text.substr(pos, end - pos);
+			line = t.substr(pos, end - pos);
 		}
 
 		if (line.length() > 0) {
@@ -3575,7 +3576,7 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	ItemDropcap *item = memnew(ItemDropcap);
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
-	item->text = p_string;
+	item->text = p_string.replace("\r\n", "\n");
 	item->font = p_font;
 	item->font_size = p_size;
 	item->color = p_color;
@@ -4288,21 +4289,23 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	bool after_list_open_tag = false;
 	bool after_list_close_tag = false;
 
-	while (pos <= p_bbcode.length()) {
-		int brk_pos = p_bbcode.find_char('[', pos);
+	String bbcode = p_bbcode.replace("\r\n", "\n");
+
+	while (pos <= bbcode.length()) {
+		int brk_pos = bbcode.find_char('[', pos);
 
 		if (brk_pos < 0) {
-			brk_pos = p_bbcode.length();
+			brk_pos = bbcode.length();
 		}
 
-		String txt = brk_pos > pos ? p_bbcode.substr(pos, brk_pos - pos) : "";
+		String txt = brk_pos > pos ? bbcode.substr(pos, brk_pos - pos) : "";
 
 		// Trim the first newline character, it may be added later as needed.
 		if (after_list_close_tag || after_list_open_tag) {
 			txt = txt.trim_prefix("\n");
 		}
 
-		if (brk_pos == p_bbcode.length()) {
+		if (brk_pos == bbcode.length()) {
 			// For tags that are not properly closed.
 			if (txt.is_empty() && after_list_open_tag) {
 				txt = "\n";
@@ -4314,16 +4317,16 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			break; //nothing else to add
 		}
 
-		int brk_end = _find_unquoted(p_bbcode, ']', brk_pos + 1);
+		int brk_end = _find_unquoted(bbcode, ']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			//no close, add the rest
-			txt += p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos);
+			txt += bbcode.substr(brk_pos);
 			add_text(txt);
 			break;
 		}
 
-		String tag = p_bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 		Vector<String> split_tag_block = _split_unquoted(tag, ' ');
 
 		// Find optional parameters.
@@ -4781,11 +4784,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag == "url") {
-			int end = p_bbcode.find_char('[', brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
-				end = p_bbcode.length();
+				end = bbcode.length();
 			}
-			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1).unquote();
+			String url = bbcode.substr(brk_end + 1, end - brk_end - 1).unquote();
 			push_meta(url, META_UNDERLINE_ALWAYS);
 
 			pos = brk_end + 1;
@@ -4877,12 +4880,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				outline_color = Color::from_string(outline_color_option->value, outline_color);
 			}
 
-			int end = p_bbcode.find_char('[', brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
-				end = p_bbcode.length();
+				end = bbcode.length();
 			}
 
-			String dc_txt = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String dc_txt = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
 			push_dropcap(dc_txt, f, fs, dropcap_margins, color, outline_size, outline_color);
 
@@ -4922,12 +4925,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				}
 			}
 
-			int end = p_bbcode.find_char('[', brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
-				end = p_bbcode.length();
+				end = bbcode.length();
 			}
 
-			String image = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
 			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
 			if (texture.is_valid()) {
