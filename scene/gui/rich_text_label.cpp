@@ -5963,7 +5963,11 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 	stack_externally_modified = false;
 
 	text = p_bbcode;
-	_apply_translation();
+	if (text.is_empty()) {
+		clear();
+	} else {
+		_apply_translation();
+	}
 }
 
 void RichTextLabel::_apply_translation() {
