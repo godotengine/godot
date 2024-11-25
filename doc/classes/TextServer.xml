@@ -1929,6 +1929,7 @@
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.
+			[b]Note:[/b] In this mode, trimmed text is not processed at all. It is not accounted for in line breaking and size calculations.
 		</constant>
 		<constant name="VC_CHARS_AFTER_SHAPING" value="1" enum="VisibleCharactersBehavior">
 			Displays glyphs that are mapped to the first [member Label.visible_characters] or [member RichTextLabel.visible_characters] characters from the beginning of the text.
