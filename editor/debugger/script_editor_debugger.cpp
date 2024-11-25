@@ -1033,6 +1033,9 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
 
+	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
+	_put_msg("scene:setup_scene", quit_keys);
+
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		profiler->set_profiling(true);
 	}
@@ -1168,6 +1171,12 @@ String ScriptEditorDebugger::get_var_value(const String &p_var) const {
 		return String();
 	}
 	return inspector->get_stack_variable(p_var);
+}
+
+void ScriptEditorDebugger::_resources_reimported(const PackedStringArray &p_resources) {
+	Array msg;
+	msg.push_back(p_resources);
+	_put_msg("scene:reload_cached_files", msg);
 }
 
 int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
@@ -1818,6 +1827,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
+	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &ScriptEditorDebugger::_resources_reimported));
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);

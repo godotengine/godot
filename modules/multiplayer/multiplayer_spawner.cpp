@@ -97,7 +97,13 @@ PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 
 void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
-	sc.path = p_path;
+	if (p_path.begins_with("uid://")) {
+		sc.uid = p_path;
+		sc.path = ResourceUID::uid_to_path(p_path);
+	} else {
+		sc.uid = ResourceUID::path_to_uid(p_path);
+		sc.path = p_path;
+	}
 	if (Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_COND(!ResourceLoader::exists(p_path));
 	}
@@ -139,7 +145,7 @@ Vector<String> MultiplayerSpawner::_get_spawnable_scenes() const {
 	Vector<String> ss;
 	ss.resize(spawnable_scenes.size());
 	for (int i = 0; i < ss.size(); i++) {
-		ss.write[i] = spawnable_scenes[i].path;
+		ss.write[i] = spawnable_scenes[i].uid;
 	}
 	return ss;
 }

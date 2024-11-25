@@ -426,13 +426,8 @@ void NavMap::sync() {
 
 		_new_pm_polygon_count = polygon_count;
 
-		struct ConnectionPair {
-			gd::Edge::Connection connections[2];
-			int size = 0;
-		};
-
 		// Group all edges per key.
-		HashMap<gd::EdgeKey, ConnectionPair, gd::EdgeKey> connection_pairs_map;
+		connection_pairs_map.clear();
 		connection_pairs_map.reserve(polygons.size());
 		int free_edges_count = 0; // How many ConnectionPairs have only one Connection.
 
@@ -469,7 +464,7 @@ void NavMap::sync() {
 			}
 		}
 
-		LocalVector<gd::Edge::Connection> free_edges;
+		free_edges.clear();
 		free_edges.reserve(free_edges_count);
 
 		for (const KeyValue<gd::EdgeKey, ConnectionPair> &pair_it : connection_pairs_map) {

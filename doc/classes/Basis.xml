@@ -25,6 +25,7 @@
 			<return type="Basis" />
 			<description>
 				Constructs a [Basis] identical to the [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Basis] with all of its components set to [constant Vector3.ZERO].
 			</description>
 		</constructor>
 		<constructor name="Basis">
@@ -303,7 +304,7 @@
 			<param index="1" name="weight" type="float" />
 			<description>
 				Performs a spherical-linear interpolation with the [param to] basis, given a [param weight]. Both this basis and [param to] should represent a rotation.
-				[b]Example:[/b] Smoothly rotate a [Node3D] to the target basis over time, with a [Tween].
+				[b]Example:[/b] Smoothly rotate a [Node3D] to the target basis over time, with a [Tween]:
 				[codeblock]
 				var start_basis = Basis.IDENTITY
 				var target_basis = Basis.IDENTITY.rotated(Vector3.UP, TAU / 2)

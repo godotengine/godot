@@ -178,6 +178,10 @@ public:
 	void set_auto_capture_ease_type(Tween::EaseType p_auto_capture_ease_type);
 	Tween::EaseType get_auto_capture_ease_type() const;
 
+#ifdef TOOLS_ENABLED
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_section_with_markers(const StringName &p_name = StringName(), const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_section(const StringName &p_name = StringName(), double p_start_time = -1, double p_end_time = -1, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);

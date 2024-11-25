@@ -991,8 +991,8 @@
 				[codeblock]
 				var a = rand_from_seed(4)
 
-				print(a[0])	# Prints 2879024997
-				print(a[1])	# Prints 4
+				print(a[0]) # Prints 2879024997
+				print(a[1]) # Prints 4
 				[/codeblock]
 			</description>
 		</method>
@@ -2941,7 +2941,10 @@
 			[/codeblock]
 			[b]Note:[/b] A [Callable] cannot be properly serialized and stored in a file, so it is recommended to use [constant PROPERTY_USAGE_EDITOR] instead of [constant PROPERTY_USAGE_DEFAULT].
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ONESHOT" value="40" enum="PropertyHint">
+			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="41" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
@@ -2981,7 +2984,7 @@
 			Editing the property prompts the user for restarting the editor.
 		</constant>
 		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is a script variable which should be serialized and saved in the scene file.
+			The property is a script variable. [constant PROPERTY_USAGE_SCRIPT_VARIABLE] can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, [constant PROPERTY_USAGE_SCRIPT_VARIABLE] is [b]not[/b] applied to variables that are created by overriding [method Object._get_property_list] in a script.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
 			The property value of type [Object] will be stored even if its value is [code]null[/code].
@@ -2992,7 +2995,7 @@
 		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true" deprecated="This flag is not used by the engine.">
 		</constant>
 		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an enum, i.e. it only takes named integer constants from its associated enumeration.
+			The property is a variable of enum type, i.e. it only takes named integer constants from its associated enumeration.
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
 			If property has [code]nil[/code] as default value, its type will be [Variant].

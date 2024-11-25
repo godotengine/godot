@@ -246,27 +246,27 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 			base = base.substr(pos + 3, base.length() - pos - 3);
 		}
 	}
-	pos = base.find("#");
+	pos = base.find_char('#');
 	// Fragment
 	if (pos != -1) {
 		r_fragment = base.substr(pos + 1);
 		base = base.substr(0, pos);
 	}
-	pos = base.find("/");
+	pos = base.find_char('/');
 	// Path
 	if (pos != -1) {
 		r_path = base.substr(pos, base.length() - pos);
 		base = base.substr(0, pos);
 	}
 	// Host
-	pos = base.find("@");
+	pos = base.find_char('@');
 	if (pos != -1) {
 		// Strip credentials
 		base = base.substr(pos + 1, base.length() - pos - 1);
 	}
 	if (base.begins_with("[")) {
 		// Literal IPv6
-		pos = base.rfind("]");
+		pos = base.rfind_char(']');
 		if (pos == -1) {
 			return ERR_INVALID_PARAMETER;
 		}
@@ -277,7 +277,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 		if (base.get_slice_count(":") > 2) {
 			return ERR_INVALID_PARAMETER;
 		}
-		pos = base.rfind(":");
+		pos = base.rfind_char(':');
 		if (pos == -1) {
 			r_host = base;
 			base = "";
@@ -2641,7 +2641,7 @@ int64_t String::to_int() const {
 		return 0;
 	}
 
-	int to = (find(".") >= 0) ? find(".") : length();
+	int to = (find_char('.') >= 0) ? find_char('.') : length();
 
 	int64_t integer = 0;
 	int64_t sign = 1;
@@ -3387,7 +3387,7 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
-int String::find_char(const char32_t &p_char, int p_from) const {
+int String::find_char(char32_t p_char, int p_from) const {
 	return _cowdata.find(p_char, p_from);
 }
 
@@ -3624,6 +3624,10 @@ int String::rfind(const char *p_str, int p_from) const {
 	return -1;
 }
 
+int String::rfind_char(char32_t p_char, int p_from) const {
+	return _cowdata.rfind(p_char, p_from);
+}
+
 int String::rfindn(const String &p_str, int p_from) const {
 	// establish a limit
 	int limit = length() - p_str.length();
@@ -3835,6 +3839,15 @@ bool String::is_subsequence_ofn(const String &p_string) const {
 
 bool String::is_quoted() const {
 	return is_enclosed_in("\"") || is_enclosed_in("'");
+}
+
+bool String::is_lowercase() const {
+	for (const char32_t *str = &operator[](0); *str; str++) {
+		if (is_unicode_upper_case(*str)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
@@ -4567,7 +4580,7 @@ String String::simplify_path() const {
 			if (p == -1) {
 				p = s.find(":\\");
 			}
-			if (p != -1 && p < s.find("/")) {
+			if (p != -1 && p < s.find_char('/')) {
 				drive = s.substr(0, p + 2);
 				s = s.substr(p + 2);
 			}
@@ -5012,7 +5025,7 @@ String String::xml_unescape() const {
 
 String String::pad_decimals(int p_digits) const {
 	String s = *this;
-	int c = s.find(".");
+	int c = s.find_char('.');
 
 	if (c == -1) {
 		if (p_digits <= 0) {
@@ -5036,7 +5049,7 @@ String String::pad_decimals(int p_digits) const {
 
 String String::pad_zeros(int p_digits) const {
 	String s = *this;
-	int end = s.find(".");
+	int end = s.find_char('.');
 
 	if (end == -1) {
 		end = s.length();
@@ -5303,7 +5316,7 @@ String String::validate_filename() const {
 }
 
 bool String::is_valid_ip_address() const {
-	if (find(":") >= 0) {
+	if (find_char(':') >= 0) {
 		Vector<String> ip = split(":");
 		for (int i = 0; i < ip.size(); i++) {
 			const String &n = ip[i];
@@ -5373,13 +5386,13 @@ String String::get_base_dir() const {
 	// Windows UNC network share path.
 	if (end == 0) {
 		if (is_network_share_path()) {
-			basepos = find("/", 2);
+			basepos = find_char('/', 2);
 			if (basepos == -1) {
-				basepos = find("\\", 2);
+				basepos = find_char('\\', 2);
 			}
-			int servpos = find("/", basepos + 1);
+			int servpos = find_char('/', basepos + 1);
 			if (servpos == -1) {
-				servpos = find("\\", basepos + 1);
+				servpos = find_char('\\', basepos + 1);
 			}
 			if (servpos != -1) {
 				end = servpos + 1;
@@ -5403,7 +5416,7 @@ String String::get_base_dir() const {
 		rs = *this;
 	}
 
-	int sep = MAX(rs.rfind("/"), rs.rfind("\\"));
+	int sep = MAX(rs.rfind_char('/'), rs.rfind_char('\\'));
 	if (sep == -1) {
 		return base;
 	}
@@ -5412,7 +5425,7 @@ String String::get_base_dir() const {
 }
 
 String String::get_file() const {
-	int sep = MAX(rfind("/"), rfind("\\"));
+	int sep = MAX(rfind_char('/'), rfind_char('\\'));
 	if (sep == -1) {
 		return *this;
 	}
@@ -5421,8 +5434,8 @@ String String::get_file() const {
 }
 
 String String::get_extension() const {
-	int pos = rfind(".");
-	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
+	int pos = rfind_char('.');
+	if (pos < 0 || pos < MAX(rfind_char('/'), rfind_char('\\'))) {
 		return "";
 	}
 
@@ -5520,8 +5533,8 @@ String String::validate_node_name() const {
 }
 
 String String::get_basename() const {
-	int pos = rfind(".");
-	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
+	int pos = rfind_char('.');
+	if (pos < 0 || pos < MAX(rfind_char('/'), rfind_char('\\'))) {
 		return *this;
 	}
 

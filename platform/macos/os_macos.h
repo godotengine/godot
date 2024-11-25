@@ -114,6 +114,8 @@ public:
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
 
+	virtual String get_model_name() const override;
+
 	virtual bool is_sandboxed() const override;
 	virtual Vector<String> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;

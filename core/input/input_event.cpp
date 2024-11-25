@@ -35,6 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
+const int InputEvent::DEVICE_ID_EMULATION = -1;
+const int InputEvent::DEVICE_ID_INTERNAL = -2;
+
 void InputEvent::set_device(int p_device) {
 	device = p_device;
 	emit_changed();
@@ -1097,7 +1100,7 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
-	pressed = Math::abs(axis_value) >= 0.5f;
+	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_DEADZONE;
 	emit_changed();
 }
 

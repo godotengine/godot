@@ -464,7 +464,7 @@ void RayCast3D::_create_debug_shape() {
 	}
 
 	if (debug_mesh.is_null()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+		debug_mesh.instantiate();
 	}
 }
 

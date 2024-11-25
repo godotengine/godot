@@ -451,6 +451,15 @@ String EditorExportPreset::get_enc_ex_filter() const {
 	return enc_ex_filters;
 }
 
+void EditorExportPreset::set_seed(uint64_t p_seed) {
+	seed = p_seed;
+	EditorExport::singleton->save_presets();
+}
+
+uint64_t EditorExportPreset::get_seed() const {
+	return seed;
+}
+
 void EditorExportPreset::set_enc_pck(bool p_enabled) {
 	enc_pck = p_enabled;
 	EditorExport::singleton->save_presets();

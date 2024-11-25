@@ -946,6 +946,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 
 		RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
 		tracker->texture_driver_id = texture.shared_fallback->texture;
+		tracker->texture_size = Size2i(texture.width, texture.height);
 		tracker->texture_subresources = texture.barrier_range();
 		tracker->texture_usage = alias_format.usage_bits;
 		tracker->reference_count = 1;
@@ -1125,6 +1126,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 
 		RDG::ResourceTracker *tracker = RDG::resource_tracker_create();
 		tracker->texture_driver_id = texture.shared_fallback->texture;
+		tracker->texture_size = Size2i(texture.width, texture.height);
 		tracker->texture_subresources = slice_range;
 		tracker->texture_usage = slice_format.usage_bits;
 		tracker->reference_count = 1;
@@ -5272,14 +5274,13 @@ void RenderingDevice::_wait_for_transfer_worker(TransferWorker *p_transfer_worke
 		p_transfer_worker->operations_processed = p_transfer_worker->operations_submitted;
 	}
 
-	if (!p_transfer_worker->texture_barriers.is_empty()) {
-		MutexLock transfer_worker_lock(transfer_worker_pool_mutex);
-		_flush_barriers_for_transfer_worker(p_transfer_worker);
-	}
+	_flush_barriers_for_transfer_worker(p_transfer_worker);
 }
 
 void RenderingDevice::_flush_barriers_for_transfer_worker(TransferWorker *p_transfer_worker) {
+	// Caller must have already acquired the mutex for the worker.
 	if (!p_transfer_worker->texture_barriers.is_empty()) {
+		MutexLock transfer_worker_lock(transfer_worker_pool_texture_barriers_mutex);
 		for (uint32_t i = 0; i < p_transfer_worker->texture_barriers.size(); i++) {
 			transfer_worker_pool_texture_barriers.push_back(p_transfer_worker->texture_barriers[i]);
 		}
@@ -5352,8 +5353,11 @@ void RenderingDevice::_submit_transfer_workers(RDD::CommandBufferID p_draw_comma
 			}
 		}
 	}
+}
 
-	if (p_draw_command_buffer && !transfer_worker_pool_texture_barriers.is_empty()) {
+void RenderingDevice::_submit_transfer_barriers(RDD::CommandBufferID p_draw_command_buffer) {
+	MutexLock transfer_worker_lock(transfer_worker_pool_texture_barriers_mutex);
+	if (!transfer_worker_pool_texture_barriers.is_empty()) {
 		driver->command_pipeline_barrier(p_draw_command_buffer, RDD::PIPELINE_STAGE_COPY_BIT, RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, {}, {}, transfer_worker_pool_texture_barriers);
 		transfer_worker_pool_texture_barriers.clear();
 	}
@@ -5413,6 +5417,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 						draw_tracker = RDG::resource_tracker_create();
 						draw_tracker->parent = owner_texture->draw_tracker;
 						draw_tracker->texture_driver_id = p_texture->driver_id;
+						draw_tracker->texture_size = Size2i(p_texture->width, p_texture->height);
 						draw_tracker->texture_subresources = p_texture->barrier_range();
 						draw_tracker->texture_usage = p_texture->usage_flags;
 						draw_tracker->texture_slice_or_dirty_rect = p_texture->slice_rect;
@@ -5435,6 +5440,7 @@ bool RenderingDevice::_texture_make_mutable(Texture *p_texture, RID p_texture_id
 			// Regular texture.
 			p_texture->draw_tracker = RDG::resource_tracker_create();
 			p_texture->draw_tracker->texture_driver_id = p_texture->driver_id;
+			p_texture->draw_tracker->texture_size = Size2i(p_texture->width, p_texture->height);
 			p_texture->draw_tracker->texture_subresources = p_texture->barrier_range();
 			p_texture->draw_tracker->texture_usage = p_texture->usage_flags;
 			p_texture->draw_tracker->reference_count = 1;
@@ -5953,6 +5959,7 @@ void RenderingDevice::_end_frame() {
 	// The command buffer must be copied into a stack variable as the driver workarounds can change the command buffer in use.
 	RDD::CommandBufferID command_buffer = frames[frame].command_buffer;
 	_submit_transfer_workers(command_buffer);
+	_submit_transfer_barriers(command_buffer);
 
 	draw_graph.end(RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS, command_buffer, frames[frame].command_buffer_pool);
 	driver->command_buffer_end(command_buffer);

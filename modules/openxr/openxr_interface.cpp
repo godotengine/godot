@@ -1134,6 +1134,12 @@ void OpenXRInterface::process() {
 	if (head.is_valid()) {
 		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
 	}
+
+	if (reference_stage_changing) {
+		// Now that we have updated tracking information in our updated reference space, trigger our pose recentered signal.
+		emit_signal(SNAME("pose_recentered"));
+		reference_stage_changing = false;
+	}
 }
 
 void OpenXRInterface::pre_render() {
@@ -1315,8 +1321,8 @@ void OpenXRInterface::on_state_exiting() {
 	emit_signal(SNAME("instance_exiting"));
 }
 
-void OpenXRInterface::on_pose_recentered() {
-	emit_signal(SNAME("pose_recentered"));
+void OpenXRInterface::on_reference_space_change_pending() {
+	reference_stage_changing = true;
 }
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {

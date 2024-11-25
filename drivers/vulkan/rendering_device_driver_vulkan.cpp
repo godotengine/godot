@@ -2392,7 +2392,9 @@ RDD::CommandQueueFamilyID RenderingDeviceDriverVulkan::command_queue_family_get(
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(picked_family_index >= queue_family_properties.size(), CommandQueueFamilyID(), "A queue family with the requested bits could not be found.");
+	if (picked_family_index >= queue_family_properties.size()) {
+		return CommandQueueFamilyID();
+	}
 
 	// Since 0 is a valid index and we use 0 as the error case, we make the index start from 1 instead.
 	return CommandQueueFamilyID(picked_family_index + 1);
@@ -2611,7 +2613,10 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		// it'll lead to very low performance in Android by entering an endless loop where it'll always resize the swap chain
 		// every frame.
 
-		ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR, FAILED);
+		ERR_FAIL_COND_V_MSG(
+				err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR,
+				FAILED,
+				"QueuePresentKHR failed with error: " + get_vulkan_result(err));
 	}
 
 	return OK;
@@ -3029,13 +3034,10 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
-		const double max_fps = Engine::get_singleton()->get_max_fps();
-		const uint64_t max_time = max_fps > 0 ? uint64_t((1000.0 * 1000.0 * 1000.0) / max_fps) : 0;
-
 		SwappyVk_initAndGetRefreshCycleDuration(get_jni_env(), static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity(), physical_device,
 				vk_device, swap_chain->vk_swapchain, &swap_chain->refresh_duration);
 		SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, static_cast<OS_Android *>(OS::get_singleton())->get_native_window());
-		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, MAX(swap_chain->refresh_duration, max_time));
+		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, swap_chain->refresh_duration);
 
 		enum SwappyModes {
 			PIPELINE_FORCED_ON,
@@ -5432,6 +5434,23 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	}
 #endif
 	on_device_lost();
+}
+
+inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
+		return "VK_ERROR_OUT_OF_HOST_MEMORY";
+	} else if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		return "VK_ERROR_OUT_OF_DEVICE_MEMORY";
+	} else if (err == VK_ERROR_DEVICE_LOST) {
+		return "VK_ERROR_DEVICE_LOST";
+	} else if (err == VK_ERROR_SURFACE_LOST_KHR) {
+		return "VK_ERROR_SURFACE_LOST_KHR";
+	} else if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
+		return "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT";
+	}
+#endif
+	return itos(err);
 }
 
 /********************/

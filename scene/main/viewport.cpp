@@ -330,7 +330,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->theme_cache.close_h_offset;
 		int close_v_ofs = p_window->theme_cache.close_v_offset;
 
-		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size);
+		TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
 		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
 		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		int x = (r.size.width - title_text.get_size().x) / 2;
@@ -1213,7 +1213,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		}
 	} else {
 		WARN_PRINT("Invalid world_2d");
-		world_2d = Ref<World2D>(memnew(World2D));
+		world_2d.instantiate();
 	}
 
 	world_2d->register_viewport(this);
@@ -1931,21 +1931,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				// If the tooltip timer isn't running, start it.
-				// Otherwise, only reset the timer if the mouse has moved more than 5 pixels.
-				if (!is_tooltip_shown && over->can_process() &&
-						(gui.tooltip_timer.is_null() ||
-								Math::is_zero_approx(gui.tooltip_timer->get_time_left()) ||
-								mm->get_relative().length() > 5.0)) {
-					if (gui.tooltip_timer.is_valid()) {
-						gui.tooltip_timer->release_connections();
-						gui.tooltip_timer = Ref<SceneTreeTimer>();
+				// Reset the timer if the mouse has moved more than 5 pixels or has entered a new control.
+				if (!is_tooltip_shown && over->can_process()) {
+					Vector2 new_tooltip_pos = over->get_screen_transform().xform(pos);
+					if (over != gui.tooltip_control || gui.tooltip_pos.distance_squared_to(new_tooltip_pos) > 25) {
+						if (gui.tooltip_timer.is_valid()) {
+							gui.tooltip_timer->release_connections();
+						}
+						gui.tooltip_control = over;
+						gui.tooltip_pos = new_tooltip_pos;
+						gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
+						gui.tooltip_timer->set_ignore_time_scale(true);
+						gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
 					}
-					gui.tooltip_control = over;
-					gui.tooltip_pos = over->get_screen_transform().xform(pos);
-					gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
-					gui.tooltip_timer->set_ignore_time_scale(true);
-					gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
 				}
 			}
 
@@ -3061,6 +3059,14 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 				v->notification(NOTIFICATION_VP_MOUSE_ENTER);
 			}
 			v->_update_mouse_over(v->get_final_transform().affine_inverse().xform(pos));
+		}
+
+		Viewport *section_root = get_section_root_viewport();
+		if (section_root && c->is_consume_drag_and_drop_enabled()) {
+			// Evaluating `consume_drag_and_drop` and adjusting target_control needs to happen
+			// after `_update_mouse_over` in the SubViewports, because otherwise physics picking
+			// would not work inside SubViewports.
+			section_root->gui.target_control = over;
 		}
 	}
 }
@@ -4386,7 +4392,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
-			own_world_3d = Ref<World3D>(memnew(World3D));
+			own_world_3d.instantiate();
 		}
 	}
 
@@ -4437,7 +4443,7 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
-			own_world_3d = Ref<World3D>(memnew(World3D));
+			own_world_3d.instantiate();
 		}
 	} else {
 		own_world_3d = Ref<World3D>();
@@ -4963,7 +4969,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 }
 
 Viewport::Viewport() {
-	world_2d = Ref<World2D>(memnew(World2D));
+	world_2d.instantiate();
 	world_2d->register_viewport(this);
 
 	viewport = RenderingServer::get_singleton()->viewport_create();

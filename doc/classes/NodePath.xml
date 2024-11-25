@@ -57,7 +57,7 @@
 			<description>
 				Constructs a [NodePath] from a [String]. The created path is absolute if prefixed with a slash (see [method is_absolute]).
 				The "subnames" optionally included after the path to the target node can point to properties, and can also be nested.
-				Examples of strings that could be node paths:
+				The following strings can be valid node paths:
 				[codeblock]
 				# Points to the Sprite2D node.
 				"Level/RigidBody2D/Sprite2D"

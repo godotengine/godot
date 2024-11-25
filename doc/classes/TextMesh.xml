@@ -37,7 +37,7 @@
 			Language code used for text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
-			Vertical space between lines in multiline [TextMesh].
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The text drawing offset (in pixels).

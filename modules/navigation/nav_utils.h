@@ -94,7 +94,7 @@ struct Edge {
 	};
 
 	/// Connections from this edge to other polygons.
-	Vector<Connection> connections;
+	LocalVector<Connection> connections;
 };
 
 struct Polygon {

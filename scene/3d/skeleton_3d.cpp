@@ -1032,6 +1032,10 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 	return skin_ref;
 }
 
+void Skeleton3D::force_update_deferred() {
+	_make_dirty();
+}
+
 void Skeleton3D::force_update_all_dirty_bones() {
 	if (!dirty) {
 		return;

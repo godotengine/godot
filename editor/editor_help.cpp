@@ -148,7 +148,7 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 
 	// Here equal length + begins_with from above implies p_class_specifier == p_edited_class :)
 	if (p_class_specifier.length() == p_edited_class.length()) {
-		int rfind = p_class_specifier.rfind(".");
+		int rfind = p_class_specifier.rfind_char('.');
 		if (rfind == -1) { // Single identifier
 			return p_class_specifier;
 		}
@@ -234,7 +234,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			enum_class_name = "@GlobalScope";
 			enum_name = link;
 		} else {
-			const int dot_pos = link.rfind(".");
+			const int dot_pos = link.rfind_char('.');
 			if (dot_pos >= 0) {
 				enum_class_name = link.left(dot_pos);
 				enum_name = link.substr(dot_pos + 1);
@@ -3252,7 +3252,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 				enum_class_name = "@GlobalScope";
 				enum_name = property.enumeration;
 			} else {
-				const int dot_pos = property.enumeration.rfind(".");
+				const int dot_pos = property.enumeration.rfind_char('.');
 				if (dot_pos >= 0) {
 					enum_class_name = property.enumeration.left(dot_pos);
 					enum_name = property.enumeration.substr(dot_pos + 1);
@@ -3619,7 +3619,7 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			enum_class_name = "@GlobalScope";
 			enum_name = link;
 		} else {
-			const int dot_pos = link.rfind(".");
+			const int dot_pos = link.rfind_char('.');
 			if (dot_pos >= 0) {
 				enum_class_name = link.left(dot_pos);
 				enum_name = link.substr(dot_pos + 1);
@@ -3868,7 +3868,7 @@ void EditorHelpBitTooltip::show_tooltip(EditorHelpBit *p_help_bit, Control *p_ta
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
 	p_help_bit->connect("request_hide", callable_mp(tooltip, &EditorHelpBitTooltip::_safe_queue_free));
 	tooltip->add_child(p_help_bit);
-	p_target->get_viewport()->add_child(tooltip);
+	p_target->add_child(tooltip);
 	p_help_bit->update_content_height();
 	tooltip->popup_under_cursor();
 }

@@ -21,6 +21,7 @@
 			<return type="Transform3D" />
 			<description>
 				Constructs a [Transform3D] identical to the [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Transform3D] with its [member origin] and the components of its [member basis] set to [constant Vector3.ZERO].
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
@@ -128,7 +129,7 @@
 			<param index="1" name="angle" type="float" />
 			<description>
 				Returns a copy of this transform rotated around the given [param axis] by the given [param angle] (in radians).
-				The [param axis] must be a normalized vector.
+				The [param axis] must be a normalized vector in the transform's local coordinate system. For example, to rotate around the local X-axis, use [constant Vector3.RIGHT].
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
