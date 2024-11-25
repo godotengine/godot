@@ -215,13 +215,13 @@ See the [release announcement](https://godotengine.org/article/godot-3-6-finally
 
 - bullet updated to 3.25.
 - Embree updated to version 3.13.5.
-- libpng updated to version 1.6.39.
-- libwebp updated to version 1.2.4.
-- MbedTLS updated to version 2.28.2.
-- miniupnpc updated to version 2.2.3.
-- zlib/minizip updated to version 1.2.13.
-- zstd updated to version 1.5.2.
-- CA root certificates updated to 2022.10 bundle from Mozilla.
+- libpng updated to version 1.6.43.
+- libwebp updated to version 1.3.2.
+- MbedTLS updated to version 2.28.8.
+- miniupnpc updated to version 2.2.7.
+- zlib/minizip updated to version 1.3.1.
+- zstd updated to version 1.5.5.
+- CA root certificates updated to 2024.03 bundle from Mozilla.
 - SDL GameControllerDB updated to 2023-02-27 git snapshot.
 
 #### XR
