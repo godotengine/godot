@@ -70,7 +70,7 @@ Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) 
 	struct stat st = {};
 	int err = stat(path.utf8().get_data(), &st);
 	if (err) {
-		if (mkfifo(path.utf8().get_data(), 0666) != 0) {
+		if (mkfifo(path.utf8().get_data(), 0600) != 0) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
