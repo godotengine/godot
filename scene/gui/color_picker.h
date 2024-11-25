@@ -372,6 +372,7 @@ public:
 	void set_hex_visible(bool p_visible);
 	bool is_hex_visible() const;
 
+	Button *get_pick_btn();
 	void set_focus_on_line_edit();
 
 	ColorPicker();
@@ -382,8 +383,8 @@ class ColorPickerPopupPanel : public PopupPanel {
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 };
 
-class ColorPickerButton : public Button {
-	GDCLASS(ColorPickerButton, Button);
+class ColorPickerButton : public OptionButton {
+	GDCLASS(ColorPickerButton, OptionButton);
 
 	// Initialization is now done deferred,
 	// this improves performance in the inspector as the color picker
@@ -421,7 +422,7 @@ public:
 	bool is_editing_alpha() const;
 
 	ColorPicker *get_picker();
-	PopupPanel *get_popup();
+	PopupPanel *get_popup_panel();
 
 	ColorPickerButton(const String &p_text = String());
 };
