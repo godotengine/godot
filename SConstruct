@@ -91,11 +91,12 @@ platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
 platform_exporters = []
 platform_apis = []
+platform_buildable = []
 
 time_at_start = time.time()
 
 for x in sorted(glob.glob("platform/*")):
-    if not os.path.isdir(x) or not os.path.exists(x + "/detect.py"):
+    if not os.path.exists(x + "/detect.py"):
         continue
     tmppath = "./" + x
 
@@ -108,23 +109,22 @@ for x in sorted(glob.glob("platform/*")):
         doc_path = detect.get_doc_path()
         for c in doc_classes:
             platform_doc_class_path[c] = x.replace("\\", "/") + "/" + doc_path
-    except Exception:
+    except AttributeError:
         pass
 
     platform_name = x[9:]
-
+    platform_list.append(platform_name)
+    if detect.can_build():
+        platform_buildable.append(platform_name)
     if os.path.exists(x + "/export/export.cpp"):
         platform_exporters.append(platform_name)
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(platform_name)
-    if detect.can_build():
-        x = x.replace("platform/", "")  # rest of world
-        x = x.replace("platform\\", "")  # win32
-        platform_list += [x]
-        platform_opts[x] = detect.get_opts()
-        platform_flags[x] = detect.get_flags()
-        if isinstance(platform_flags[x], list):  # backwards compatibility
-            platform_flags[x] = {flag[0]: flag[1] for flag in platform_flags[x]}
+    platform_opts[platform_name] = detect.get_opts()
+    platform_flags[platform_name] = detect.get_flags()
+    if isinstance(platform_flags[platform_name], list):  # backwards compatibility
+        platform_flags[platform_name] = {flag[0]: flag[1] for flag in platform_flags[platform_name]}
+
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
@@ -177,22 +177,26 @@ env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).ab
 
 # Build options
 
-customs = ["custom.py"]
-
-profile = ARGUMENTS.get("profile", "")
-if profile:
-    if os.path.isfile(profile):
-        customs.append(profile)
-    elif os.path.isfile(profile + ".py"):
-        customs.append(profile + ".py")
-
+customs = str(ARGUMENTS.get("profile", "custom.py")).split(",")
 opts = Variables(customs, ARGUMENTS)
+
+if env.scons_version <= (4, 8, 1):
+    # Earlier SCons versions must manually parse profiles to track unknown variables.
+    profile_args = {}
+    for profile in customs:
+        if not os.path.isfile(profile):
+            continue
+        locals = {}  # type: ignore[var-annotated]
+        with open(profile, encoding="utf-8") as file:
+            exec(file.read(), {}, locals)
+        profile_args.update(locals)
+    opts.Update(env, profile_args)
 
 # Target build options
 if env.scons_version >= (4, 3):
-    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_buildable), "")
 else:
-    opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add("platform", "Target platform (%s)" % "|".join(platform_buildable), "")
     opts.Add("p", "Alias for 'platform'", "")
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
@@ -253,6 +257,8 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
+opts.Add(BoolVariable("vsproj_gen_only", "Only generate Visual Studio files without further building", True))
+opts.Add(BoolVariable("vsproj_props_only", "Only regenerate `.props` file without touching solutions/projects", False))
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
@@ -272,6 +278,7 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add("profile", "A comma-separated list of files to override build arguments", "custom.py")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -367,8 +374,8 @@ if env["platform"] in compatibility_platform_aliases:
 if env["platform"] in ["linux", "bsd"]:
     env["platform"] = "linuxbsd"
 
-if env["platform"] not in platform_list:
-    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
+if env["platform"] not in platform_buildable:
+    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_buildable))
     text += "Please run SCons again and select a valid platform: platform=<string>."
 
     if env["platform"] == "list":
@@ -454,6 +461,27 @@ env.modules_detected = modules_detected
 # Update the environment again after all the module options are added.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
+
+# Warn user on invalid options.
+unknown_opts = {key: value for key, value in opts.UnknownVariables().items() if key not in env}
+foreign_platform_opts = {platform: {} for platform in platform_list}  # type: ignore[var-annotated]
+for key, value in unknown_opts.copy().items():
+    for platform in platform_list:
+        if key in [opt[0] for opt in platform_opts[platform]]:
+            foreign_platform_opts[platform][key] = unknown_opts.pop(key, value)
+
+if unknown_opts:
+    print_warning(
+        "Unknown SCons variables were passed and will be ignored:"
+        + "".join([f"\n\t{key} = {value}" for key, value in unknown_opts.items()])
+    )
+
+for platform in foreign_platform_opts:
+    if foreign_platform_opts[platform]:
+        print_warning(
+            f'Platform-specific SCons variables not defined for "{env["platform"]}", but are defined for "{platform}", were passed and will be ignored:'
+            + "".join([f"\n\t{key} = {value}" for key, value in foreign_platform_opts[platform].items()])
+        )
 
 # add default include paths
 
