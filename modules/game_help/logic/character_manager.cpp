@@ -111,13 +111,50 @@ void CharacterManager::update_finish()
 static void animation_get_groups(Array* arr) {
     CharacterManager::get_singleton()->get_animation_groups(arr);
 }
+static void animation_get_tags(Array* arr) {
+    CharacterManager::get_singleton()->get_animation_tags(arr);
+}
 CharacterManager::CharacterManager() {
+    animation_groups.insert(StringName(L"人形"));
     animation_groups.insert(StringName(L"人形"));
     animation_groups.insert(StringName(L"马"));
     animation_groups.insert(StringName(L"龙"));
     animation_groups.insert(StringName(L"狗"));
 
+    animation_tags.insert(StringName(L"走路"));
+    animation_tags.insert(StringName(L"休闲"));
+    animation_tags.insert(StringName(L"跑步"));
+
+    
+    animation_tags.insert(StringName(L"醉.走路"));
+    animation_tags.insert(StringName(L"醉.休闲"));
+    animation_tags.insert(StringName(L"醉.跑步"));
+
+    
+    animation_tags.insert(StringName(L"僵尸.走路"));
+    animation_tags.insert(StringName(L"僵尸.休闲"));
+    animation_tags.insert(StringName(L"僵尸.跑步"));
+
+    
+    animation_tags.insert(StringName(L"跳跃"));
+
+    
+    animation_tags.insert(StringName(L"左手.攻击"));
+    animation_tags.insert(StringName(L"右手.攻击"));
+    animation_tags.insert(StringName(L"双手.攻击"));
+
+    
+    animation_tags.insert(StringName(L"受击"));
+
+
+    animation_tags.insert(StringName(L"舞蹈"));
+
+    Animation::set_pf_get_animation_group_names(animation_get_groups);
+    Animation::set_pf_get_animation_tags(animation_get_tags);
+
 }
 CharacterManager::~CharacterManager() {
+    Animation::set_pf_get_animation_group_names(nullptr);
+    Animation::set_pf_get_animation_tags(nullptr);
     
 }

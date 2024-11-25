@@ -72,11 +72,20 @@ public:
             arr->push_back(group);
         }
     }
+    
+    void get_animation_tags(Array *arr)
+    {
+        for(const StringName& group : animation_tags)
+        {
+            arr->push_back(group);
+        }
+    }
     CharacterManager();
     ~CharacterManager();
 protected:
     HashSet<class CharacterBodyMain*> characters;
     HashSet<StringName> animation_groups;
+    HashSet<StringName> animation_tags;
     ObjectID main_player_id;
     Ref<TaskJobHandle> task_handle;
     String mesh_root_path = "res://Assets/public/meshs";

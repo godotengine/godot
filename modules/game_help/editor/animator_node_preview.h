@@ -5,6 +5,7 @@
 #include "scene/main/viewport.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/filesystem_dock.h"
 
 #include "scene/gui/slider.h"
 
@@ -46,8 +47,20 @@ class AnimationNodePreview : public SubViewportContainer
     Label* animator_time_label = nullptr;
 
 	Ref<CharacterAnimatorNodeBase> node;
+    String node_path;
+    bool node_path_is_load = false;
+
+
     Ref<Animation> animation;
+    String animation_path;
+    bool animation_path_is_load = false;
+
+
     Ref<CharacterBodyPrefab> prefab;
+    String prefab_path;
+    bool prefab_path_is_load = false;
+
+
 	CharacterBodyMain *preview_character = nullptr;
     bool preview_animation = true;
 
@@ -78,11 +91,56 @@ class AnimationNodePreview : public SubViewportContainer
         stop();
     }
 
+    void _on_drag_button_pressed() {
+        
+        Ref<Resource> res;
+        switch (preview_type)
+        {
+        case PT_AnimationNode:
+            res = node;
+            break;
+        case PT_CharacterBodyPrefab:
+            res = prefab;
+            break;
+        case PT_Animation:
+            res = animation;
+            break;
+        }
+        if(res.is_null()) {
+            return ;
+        }
+		FileSystemDock::get_singleton()->navigate_to_path(res->get_path());
+    }
+    
+
 	void _update_rotation(){
         Transform3D t;
         t.basis.rotate(Vector3(0, 1, 0), -rot_y);
         t.basis.rotate(Vector3(1, 0, 0), -rot_x);
         rotation->set_transform(t);
+    }
+
+	virtual void on_visilbe_changed(bool p_visible) override {
+        if(!p_visible) {
+            switch (preview_type)
+            {
+            case PT_AnimationNode:
+                node = Ref<CharacterAnimatorNodeBase>();
+                node_path_is_load = false;
+                break;
+            case PT_CharacterBodyPrefab:
+                prefab = Ref<CharacterBodyPrefab>();
+                prefab_path_is_load = false;
+                break;
+            case PT_Animation:
+                animation = Ref<Animation>();
+                animation_path_is_load = false;
+                break;
+            }
+
+            stop();
+        }
+
     }
 public:
     void play() {
@@ -92,11 +150,20 @@ public:
         play_state = PS_Play;
         preview_character->set_editor_pause_animation(false);
         if(preview_type == PT_Animation) {
+            
+            if(!animation_path_is_load && animation.is_null()) {
+                animation = ResourceLoader::load(animation_path);
+                animation_path_is_load = true;
+            }
             if(animation.is_valid()) {
                 preview_character->get_animator()->editor_play_animation(animation);
             }
             return;
         } else if(preview_type == PT_AnimationNode) {
+            if(!node_path_is_load && node.is_null()) {
+                node = ResourceLoader::load(node_path);
+                node_path_is_load = true;
+            }
             if(node.is_valid()) {
                 preview_character->get_animator()->editor_play_animation(node);
             }
@@ -281,9 +348,17 @@ protected:
 	}
 	Ref<CharacterBodyPrefab> get_preview_prefab() {
         if(preview_type == PT_CharacterBodyPrefab) {
+            if(!prefab_path_is_load && prefab.is_null()) {
+                prefab = ResourceLoader::load(prefab_path);
+                prefab_path_is_load = true;
+            }
             return prefab;
         }
         if(preview_type == PT_Animation) {
+            if(!animation_path_is_load && animation.is_null()) {
+                animation = ResourceLoader::load(animation_path);
+                animation_path_is_load = true;
+            }
             if(animation.is_valid()) {
                 Ref<CharacterBodyPrefab> prefab = ResourceLoader::load(animation->get_preview_prefab_path());
                 if(prefab.is_valid()) {
@@ -337,24 +412,61 @@ protected:
     }
 public:
     void set_prefab(Ref<CharacterBodyPrefab> p_prefab) {
+        prefab = p_prefab;
+        prefab_path = p_prefab->get_path();
         preview_type = PT_CharacterBodyPrefab;
     }
+    void set_prefab_path(String p_path) {
+        prefab_path = p_path;
+        prefab_path_is_load = false;
+        prefab.unref();
+        preview_type = PT_CharacterBodyPrefab;
+    }
+
+
     void set_animator_node(Ref<CharacterAnimatorNodeBase> p_node) {
         preview_type = PT_AnimationNode;
         node = p_node;
+        node_path = p_node->get_path();
         if(node.is_valid()) {
             node->set_blackboard_plan(get_preview_blackboard());
         }
         stop();
     }
-    void set_animator(Ref<Animation> p_animation) {
+	void set_animator_node_path(String p_path) {
+		node_path = p_path;
+		node_path_is_load = false;
+		node.unref();
+		preview_type = PT_AnimationNode;
+		if (node.is_valid()) {
+			node->set_blackboard_plan(get_preview_blackboard());
+		}
+		stop();
+	}
+
+
+
+    void set_animation(Ref<Animation> p_animation) {
         preview_type = PT_Animation;
         animation = p_animation;
+        animation_path = p_animation->get_path();
         if(node.is_valid()) {
             node->set_blackboard_plan(get_preview_blackboard());
         }
         stop();
     }
+    void set_animation_path(String p_path) {
+        animation_path = p_path;
+        animation_path_is_load = false;
+        animation.unref();
+        preview_type = PT_Animation;
+        if(node.is_valid()) {
+            node->set_blackboard_plan(get_preview_blackboard());
+        }
+        stop();
+        
+    }
+
 	AnimationNodePreview()
     {
         
@@ -474,7 +586,8 @@ public:
             drag_button = memnew(Button);
             drag_button->set_custom_minimum_size(Size2(48.0, 48.0) * EDSCALE);
             drag_button->set_button_icon(theme_cache.drag_icon);
-            drag_button->set_tooltip_text(L"按住鼠标左键,拖拽我呀!八格牙路!");
+            drag_button->set_tooltip_text(L"鼠标左键点击定位资源,按住鼠标左键,拖拽我呀!八格牙路!");
+            drag_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_drag_button_pressed));
             SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
             vb->add_child(drag_button);
 

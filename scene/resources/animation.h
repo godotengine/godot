@@ -42,9 +42,11 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 	typedef void (*pf_get_animation_group_names)(Array* p_names);
 	static pf_get_animation_group_names get_animation_group_names_func;
+	static pf_get_animation_group_names get_animation_tags_func;
 public:
 	typedef uint32_t TypeHash;
 	static void set_pf_get_animation_group_names(pf_get_animation_group_names p_func) { get_animation_group_names_func = p_func; }
+	static void set_pf_get_animation_tags(pf_get_animation_group_names p_func) { get_animation_tags_func = p_func; }
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 
@@ -378,7 +380,10 @@ public:
 	Vector<Track *> tracks;
 	bool is_human_animation = false;
 	Vector<uint8_t> human_bone_mask;
+	// 动画分组:人形,怪物
 	StringName animation_group;
+	// 动画标签: 走路,跑步,飞行
+	StringName animation_tag;
 	// 预览预制体路径
 	String preview_prefab_path;
 	// 显示的名称
@@ -690,6 +695,7 @@ public:
 	void get_node_names(HashSet<String>& p_bone_names);
 
 	Array editor_get_animation_Group() const;
+	Array editor_get_animation_tags() const;
 	void set_animation_group(StringName p_animation_group) {
 		animation_group = p_animation_group;
 	}
@@ -708,6 +714,12 @@ public:
 	}
 	String get_show_name() const {
 		return show_name;
+	}
+	void set_animation_tag(StringName p_tag) {
+		animation_tag = p_tag;
+	}
+	StringName get_animation_tag() const {
+		return animation_tag;
 	}
 
 	void clear();

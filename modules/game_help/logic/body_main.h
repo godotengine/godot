@@ -594,6 +594,7 @@ public:
 
 
 	Array get_animation_Group() const;
+	Array get_animation_Tags() const;
     void set_editor_form_mesh_file_path(const String& p_file_path)
     {
 		editor_form_mesh_file_path = ResourceUID::ensure_path(p_file_path);

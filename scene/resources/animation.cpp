@@ -36,6 +36,7 @@
 #include "scene/scene_string_names.h"
 #include "scene/3d/skeleton_3d.h"
 Animation::pf_get_animation_group_names Animation::get_animation_group_names_func = nullptr;
+Animation::pf_get_animation_group_names Animation::get_animation_tags_func = nullptr;
 HumanAnimationBoneNameMapping* HumanAnimationBoneNameMapping::singleton = nullptr;
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
@@ -4186,7 +4187,12 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_name", "show_name"), &Animation::set_show_name);
 	ClassDB::bind_method(D_METHOD("get_show_name"), &Animation::get_show_name);
 
+	ClassDB::bind_method(D_METHOD("set_animation_tag"), &Animation::set_animation_tag);
+	ClassDB::bind_method(D_METHOD("get_animation_tag"), &Animation::get_animation_tag);
+
 	ClassDB::bind_method(D_METHOD("editor_get_animation_Group"), &Animation::editor_get_animation_Group);
+
+	ClassDB::bind_method(D_METHOD("editor_get_animation_tags"), &Animation::editor_get_animation_tags);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
 	ClassDB::bind_method(D_METHOD("copy_track", "track_idx", "to_animation"), &Animation::copy_track);
@@ -4208,6 +4214,7 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "preview_prefab_path", PROPERTY_HINT_DIR), "set_preview_prefab_path", "get_preview_prefab_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "show_name"), "set_show_name", "get_show_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_tag",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_tags"), "set_animation_tag", "get_animation_tag");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
@@ -6601,6 +6608,38 @@ Array Animation::editor_get_animation_Group() const {
     arr.append(L"马");
     arr.append(L"龙");
     arr.append(L"狗");
+	return arr;
+}
+Array Animation::editor_get_animation_tags() const {
+	Array arr;
+	if(get_animation_group_names_func != nullptr) {
+		get_animation_group_names_func(&arr);
+		return arr;
+	}
+
+    
+    arr.append(StringName(L"醉.走路"));
+    arr.append(StringName(L"醉.休闲"));
+    arr.append(StringName(L"醉.跑步"));
+
+    
+    arr.append(StringName(L"僵尸.走路"));
+    arr.append(StringName(L"僵尸.休闲"));
+    arr.append(StringName(L"僵尸.跑步"));
+
+    
+    arr.append(StringName(L"跳跃"));
+
+    
+    arr.append(StringName(L"左手.攻击"));
+    arr.append(StringName(L"右手.攻击"));
+    arr.append(StringName(L"双手.攻击"));
+
+    
+    arr.append(StringName(L"受击"));
+
+
+    arr.append(StringName(L"舞蹈"));
 	return arr;
 }
 

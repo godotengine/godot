@@ -422,6 +422,7 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_audio_player"), &CharacterBodyMain::get_audio_player);
 
     ClassDB::bind_method(D_METHOD("get_animation_Group"), &CharacterBodyMain::get_animation_Group);
+    ClassDB::bind_method(D_METHOD("get_animation_Tags", "tag"), &CharacterBodyMain::get_animation_Tags);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -714,6 +715,12 @@ Array CharacterBodyMain::get_animation_Group() const {
     Array arr;
     CharacterManager::get_singleton()->get_animation_groups(&arr);
     return arr;
+}
+Array CharacterBodyMain::get_animation_Tags() const {
+    Array arr;
+    CharacterManager::get_singleton()->get_animation_tags(&arr);
+    return arr;
+    
 }
 
 

@@ -244,6 +244,7 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 	bool is_visible_in_tree() const;
+	virtual void on_visilbe_changed(bool p_visible) {}
 	void show();
 	void hide();
 

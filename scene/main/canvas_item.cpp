@@ -109,6 +109,7 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 		}
 	}
 	_unblock();
+	on_visilbe_changed(p_visible);
 }
 
 void CanvasItem::show() {
