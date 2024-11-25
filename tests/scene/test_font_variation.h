@@ -55,12 +55,26 @@ TEST_CASE("[FontVariation] Create font variation") {
 
 	font_variation->set_base_font(font_file);
 	font_variation->get_base_font()->set_name(font_file->get_font_name());
-	font_variation->set_variation_embolden(1.2);
 
 	// Check font_variation data.
 	CHECK_MESSAGE(font_variation->get_base_font().is_valid() == true, "FontVariation base font should be valid.");
 	CHECK_MESSAGE(font_variation->get_base_font()->get_name() == "Noto Sans", "Loaded correct font name.");
 
+	font_variation->set_variation_embolden(1.2);
+
+	CHECK_MESSAGE(font_file->get_embolden(0) == 0.0f, "FontFile embolden should be default 0.0.");
+	CHECK_MESSAGE(font_file->get_embolden(0) != font_variation->get_variation_embolden(), "FontFile embolden should be different than FontVariation embolden.");
+	CHECK_MESSAGE(font_variation->get_variation_embolden() == 1.2f, "FontVariation embolden should be 1.2.");
+
+	Dictionary p_coords;
+	p_coords.get_or_add("wght", 900);
+	p_coords["custom_hght"] = 1000;
+	font_variation->set_variation_opentype(p_coords);
+
+	CHECK_MESSAGE(font_variation->get_variation_opentype().size() == 2, "FontVariation opentype size should be 2.");
+
+	CHECK_MESSAGE(int(font_variation->get_variation_opentype().get_valid("wght")) == 900, "FontVariation wght should be 900.");
+	CHECK_MESSAGE(int(font_variation->get_variation_opentype()["custom_hght"]) == 1000, "FontVariation custom_hght should be 1000.");
 #endif
 }
 
