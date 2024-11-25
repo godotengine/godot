@@ -817,22 +817,10 @@ double OS_Windows::get_unix_time() const {
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	constexpr uint32_t tolerance = 1000 + 20;
-
-	uint64_t t0 = get_ticks_usec();
-	uint64_t target_time = t0 + p_usec;
-
-	// Calculate sleep duration with a tolerance for fine-tuning.
-	if (p_usec > tolerance) {
-		uint32_t coarse_sleep_usec = p_usec - tolerance;
-		if (coarse_sleep_usec >= 1000) {
-			Sleep(coarse_sleep_usec / 1000);
-		}
-	}
-
-	// Spin-wait until we reach the precise target time.
-	while (get_ticks_usec() < target_time) {
-		YieldProcessor();
+	if (p_usec < 1000) {
+		Sleep(1);
+	} else {
+		Sleep(p_usec / 1000);
 	}
 }
 
