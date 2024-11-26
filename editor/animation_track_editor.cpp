@@ -5755,9 +5755,6 @@ void AnimationTrackEditor::_update_key_edit() {
 		key_edit->hint = _find_hint_for_track(key_edit->track, np);
 		key_edit->base = np;
 
-		// This is what tells editor modes to turn off which users have reported being annoying
-		// EditorNode::get_singleton()->push_item(key_edit);
-
 		// Highlighting skeleton3D bone gizmo if keyframe is modifying a bone
 		Animation::TrackType track_type = animation->track_get_type(key_edit->track);
 		Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
@@ -5767,7 +5764,7 @@ void AnimationTrackEditor::_update_key_edit() {
 			NodePath path = animation->track_get_path(key_edit->track);
 			// Node *root_path = nullptr;
 			Node *node = root->get_node_or_null(path);
-			if (!node) {			
+			if (!node) {
 				return;
 			}
 
@@ -5779,7 +5776,6 @@ void AnimationTrackEditor::_update_key_edit() {
 			}
 
 			// If cast was successful, find bone idx we were modifying
-			// NOTE: can bones ever be nested under other bones? If so this breaks
 			int bone_idx = skeleton->find_bone(path.get_subname(0));
 
 			// Clear current selection
@@ -5828,9 +5824,6 @@ void AnimationTrackEditor::_update_key_edit() {
 		multi_key_edit->hint = _find_hint_for_track(first_track, base_map[first_track]);
 		multi_key_edit->use_fps = timeline->is_using_fps();
 		multi_key_edit->root_path = root;
-
-		// This is what tells editor modes to turn off which users have reported being annoying
-		// EditorNode::get_singleton()->push_item(multi_key_edit);
 	}
 }
 
