@@ -65,6 +65,8 @@ void EditorExportPreset::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has", "property"), &EditorExportPreset::has);
 
+	ClassDB::bind_method(D_METHOD("get_platform"), &EditorExportPreset::get_platform);
+
 	ClassDB::bind_method(D_METHOD("get_files_to_export"), &EditorExportPreset::get_files_to_export);
 	ClassDB::bind_method(D_METHOD("get_customized_files"), &EditorExportPreset::get_customized_files);
 	ClassDB::bind_method(D_METHOD("get_customized_files_count"), &EditorExportPreset::get_customized_files_count);

@@ -83,6 +83,12 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
+		<method name="get_editor_export" qualifiers="const">
+			<return type="EditorExport" />
+			<description>
+				Returns the [EditorExport] singleton.
+			</description>
+		</method>
 		<method name="get_editor_main_screen" qualifiers="const">
 			<return type="VBoxContainer" />
 			<description>
