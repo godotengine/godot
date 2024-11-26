@@ -2645,7 +2645,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
-	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
+	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed), CONNECT_DEFERRED);
 	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(picker->get_picker()));
 	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }
