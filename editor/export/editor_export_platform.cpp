@@ -1213,6 +1213,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	// for continue statements without accidentally skipping an increment.
 	int idx = total > 0 ? -1 : 0;
 
+	HashSet<String> skipped_paths;
 	for (const String &E : paths) {
 		idx++;
 		String path = E;
@@ -1268,6 +1269,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 			if (export_plugins[i]->skipped) {
 				do_export = false;
+				skipped_paths.insert(path);
 			}
 			export_plugins.write[i]->_clear();
 
@@ -1497,7 +1499,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	for (int i = 0; i < forced_export.size(); i++) {
 		Vector<uint8_t> array;
 		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
-			array = _filter_extension_list_config_file(forced_export[i], paths);
+			array = _filter_extension_list_config_file(forced_export[i], paths, skipped_paths);
 			if (array.size() == 0) {
 				continue;
 			}
@@ -1542,7 +1544,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	return OK;
 }
 
-Vector<uint8_t> EditorExportPlatform::_filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths) {
+Vector<uint8_t> EditorExportPlatform::_filter_extension_list_config_file(const String &p_config_path, const HashSet<String> &p_paths, const HashSet<String> &p_skipped_paths) {
 	Ref<FileAccess> f = FileAccess::open(p_config_path, FileAccess::READ);
 	if (f.is_null()) {
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_config_path) + "'.");
@@ -1550,7 +1552,7 @@ Vector<uint8_t> EditorExportPlatform::_filter_extension_list_config_file(const S
 	Vector<uint8_t> data;
 	while (!f->eof_reached()) {
 		String l = f->get_line().strip_edges();
-		if (p_paths.has(l)) {
+		if (p_paths.has(l) && !p_skipped_paths.has(l)) {
 			data.append_array(l.to_utf8_buffer());
 			data.append('\n');
 		}
