@@ -6642,6 +6642,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_SCALE_SELECTION:
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			scale->get_line_edit()->grab_focus();
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -7889,9 +7890,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scale->set_min(-99999);
 	scale->set_max(99999);
 	scale->set_step(0.001);
+	scale->set_select_all_on_focus(true);
 	vbc->add_margin_child(TTR("Scale Ratio:"), scale);
-	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM));
+	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM), CONNECT_DEFERRED);
 	add_child(scale_dialog);
+
+	scale_dialog->register_text_enter(scale->get_line_edit());
 
 	//
 	ease_dialog = memnew(ConfirmationDialog);
