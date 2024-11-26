@@ -5190,7 +5190,8 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 		_close_save_scene_progress();
 		accept->set_ok_button_text(p_title);
 		accept->set_text(p_text);
-		EditorInterface::get_singleton()->popup_dialog_centered(accept);
+		accept->reset_size();
+		EditorInterface::get_singleton()->popup_dialog_centered_clamped(accept, Size2i(), 0.0);
 	}
 }
 
@@ -5200,7 +5201,8 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 		_close_save_scene_progress();
 		save_accept->set_ok_button_text(p_title);
 		save_accept->set_text(p_text);
-		EditorInterface::get_singleton()->popup_dialog_centered(save_accept);
+		save_accept->reset_size();
+		EditorInterface::get_singleton()->popup_dialog_centered_clamped(save_accept, Size2i(), 0.0);
 	}
 }
 
@@ -5209,7 +5211,8 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 		_close_save_scene_progress();
 		warning->set_text(p_text);
 		warning->set_title(p_title);
-		EditorInterface::get_singleton()->popup_dialog_centered(warning);
+		warning->reset_size();
+		EditorInterface::get_singleton()->popup_dialog_centered_clamped(warning, Size2i(), 0.0);
 	} else {
 		WARN_PRINT(p_title + " " + p_text);
 	}
