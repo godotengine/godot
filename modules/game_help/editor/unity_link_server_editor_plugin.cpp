@@ -45,6 +45,7 @@
 #include "editor_property_bb_param.h"
 #include "editor_property_variable_name.h"
 #include "blackboard_plan_editor.h"
+#include "resource_editor/resource_editor_tool.h"
 #endif
 class CharacterBodyMainLable : public HBoxContainer
 {
@@ -572,6 +573,7 @@ UnityLinkServerEditorPlugin::UnityLinkServerEditorPlugin() {
 	EditorInspectorPluginBBParam *param_plugin = memnew(EditorInspectorPluginBBParam);
 	add_inspector_plugin(param_plugin);
 	add_inspector_plugin(var_plugin);
+	add_control_to_bottom_panel(memnew(ResourceEditorTool),L"资源编辑器工具");
 
 	EditorNode::get_log()->add_message("register:GameHelpInspectorPlugin");
 }

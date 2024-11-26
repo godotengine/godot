@@ -121,7 +121,8 @@ class AnimationNodePreview : public SubViewportContainer
     }
 
 	virtual void on_visilbe_changed(bool p_visible) override {
-        if(!p_visible) {
+        
+        if(!is_visible_in_tree()) {
             switch (preview_type)
             {
             case PT_AnimationNode:

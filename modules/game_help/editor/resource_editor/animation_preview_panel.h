@@ -6,11 +6,14 @@
 #include "scene/resources/animation.h"
 #include "scene/gui/check_box.h"
 #include "core/io/json.h"
+#include "core/io/file_access.h"
+#include "core/io/dir_access.h"
 #include  "../../logic/body_main.h"
+#include "resource_editor_tool_item.h"
 
 
 class AnimationPreviewPanel : public VBoxContainer {
-    GDCLASS(AnimationPreviewPanel, ItemBox);
+    GDCLASS(AnimationPreviewPanel, VBoxContainer);
 public:
     AnimationPreviewPanel() {
         set_h_size_flags(SIZE_EXPAND_FILL);
@@ -64,7 +67,7 @@ protected:
 
     void _on_update_animation_resource() {
         animations.clear();
-        for(auto& it : animations_paths) {
+        for(auto& it : animation_list_paths) {
             parse_animation_path(it);
         }
         save_animation_config();
@@ -94,27 +97,27 @@ protected:
             parse_animation_path(path.path_join(sub_dir[i]));
         }
     }
-    struct AnimationInfo : RefCounted{
-        Ref<Animation> animation;
-        String animation_path;
-        StringName animation_group;
-        StringName animation_tag;
-        bool load(Dictionary& p_dict) {
-            animation_path = p_dict["animation_path"];
-            animation_group = p_dict["animation_group"];
-            animation_tag = p_dict["animation_tag"];
-            return FileAccess::exists(animation_path);
-        }
-        void save(Dictionary& p_dict) {
-            p_dict["animation_path"] = animation_path;
-            p_dict["animation_group"] = animation_group;
-            p_dict["animation_tag"] = animation_tag;
-        }
-    }
+	struct AnimationInfo : RefCounted {
+		Ref<Animation> animation;
+		String animation_path;
+		StringName animation_group;
+		StringName animation_tag;
+		bool load(Dictionary& p_dict) {
+			animation_path = p_dict["animation_path"];
+			animation_group = p_dict["animation_group"];
+			animation_tag = p_dict["animation_tag"];
+			return FileAccess::exists(animation_path);
+		}
+		void save(Dictionary& p_dict) {
+			p_dict["animation_path"] = animation_path;
+			p_dict["animation_group"] = animation_group;
+			p_dict["animation_tag"] = animation_tag;
+		}
+	};
     void load_animation_config() {
         
         Ref<JSON> json = memnew(JSON);
-        String config_path = "res://Assets/public/animation_config.json";
+        String config_path = "res://.godot/animation_config.json";
         Ref<FileAccess> f = FileAccess::open(config_path, FileAccess::READ);
         if (!f->is_open()) {
             _on_update_animation_resource();
@@ -126,21 +129,22 @@ protected:
         Array arr = json->get_data();
         for (int i = 0; i < arr.size(); i++) {
             Dictionary dict = arr[i];
-            AnimationInfo animation_info;
-            if (animation_info.load(dict)) {
-                animations_paths.push_back(animation_info.animation_path);
+            Ref<AnimationInfo> animation_info;
+			animation_info.instantiate();
+            if (animation_info->load(dict)) {
+				animations.push_back(animation_info);
             }
         }
     }
     void save_animation_config() {
         Array arr;
-        for(auto& it : animations_paths) {
+        for(auto& it : animations) {
             Dictionary dict;
             it->save(dict);
             arr.push_back(dict);
         }
         String json_str = JSON::stringify(arr);
-        Ref<FileAccess> f = FileAccess::open("res://Assets/public/animation_config.json", FileAccess::WRITE);
+        Ref<FileAccess> f = FileAccess::open("res://.godot/animation_config.json", FileAccess::WRITE);
         f->store_string(json_str);        
         
     }
@@ -151,7 +155,29 @@ protected:
     TabBar* animation_group= nullptr;
     VFlowContainer* animation_tag_list= nullptr;
     ItemBox* animation_list= nullptr;
-    List<String> animation_list_paths = {"res://Assets/public/animation/", "res://Assets/public/human_animation/"};
-    List<Ref<AnimationInfo>> animations_paths;
+    LocalVector<String> animation_list_paths = {"res://Assets/public/animation/", "res://Assets/public/human_animation/"};
+    List<Ref<AnimationInfo>> animations;
     List<Ref<AnimationInfo>> curr_show_animations;
+};
+
+class AnimationPreviewPanelItem : public ResourceEditorToolItem {
+    GDCLASS(AnimationPreviewPanelItem, ResourceEditorToolItem);
+    static void _bind_methods() {}
+
+    virtual String get_name() const { return String(L"动画浏览"); }
+    virtual Control *get_control() {
+
+		return Object::cast_to< AnimationPreviewPanel>(ObjectDB::get_instance(control_id));
+	}
+	AnimationPreviewPanelItem() {
+		AnimationPreviewPanel* c = memnew(AnimationPreviewPanel);
+		control_id = c->get_instance_id();
+	}
+	~AnimationPreviewPanelItem() {
+		Control* c = get_control();
+		if (c != nullptr) {
+			c->queue_free();
+		}
+	}
+	ObjectID control_id;
 };

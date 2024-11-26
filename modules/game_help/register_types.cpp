@@ -30,6 +30,9 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/plugins/editor_plugin.h"
+#include "./editor/resource_editor/resource_editor_tool.h"
+#include "./editor/resource_editor/resource_editor_tool_item.h"
+#include "./editor/resource_editor/animation_preview_panel.h"
 #include "editor/unity_link_server_editor_plugin.h"
 #endif
 #include "register_types.h"
@@ -150,6 +153,10 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		data_table_manager = memnew(DataTableManager);
 		path_manager = memnew(PathManager);
+#ifdef TOOLS_ENABLED
+		ClassDB::register_class<ResourceEditorToolItem>();
+		ClassDB::register_class<AnimationPreviewPanelItem>();
+#endif
 
 		ClassDB::register_class<CSVData>();
 		initialize_mterrain_module(p_level);
