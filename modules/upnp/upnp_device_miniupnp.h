@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  voxel_gi_editor_plugin.h                                              */
+/*  upnp_device_miniupnp.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VOXEL_GI_EDITOR_PLUGIN_H
-#define VOXEL_GI_EDITOR_PLUGIN_H
+#ifndef UPNP_DEVICE_MINIUPNP_H
+#define UPNP_DEVICE_MINIUPNP_H
 
-#include "editor/plugins/editor_plugin.h"
-#include "scene/3d/voxel_gi.h"
-#include "scene/resources/material.h"
+#ifndef WEB_ENABLED
 
-class EditorFileDialog;
-struct EditorProgress;
-class HBoxContainer;
+#include "upnp_device.h"
 
-class VoxelGIEditorPlugin : public EditorPlugin {
-	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);
+class UPNPDeviceMiniUPNP : public UPNPDevice {
+	GDCLASS(UPNPDeviceMiniUPNP, UPNPDevice);
 
-	VoxelGI *voxel_gi = nullptr;
+private:
+	static UPNPDevice *_create(bool p_notify_postinitialize) { return static_cast<UPNPDevice *>(ClassDB::creator<UPNPDeviceMiniUPNP>(p_notify_postinitialize)); }
 
-	HBoxContainer *bake_hb = nullptr;
-	Button *bake = nullptr;
-
-	EditorFileDialog *probe_file = nullptr;
-
-	static EditorProgress *tmp_progress;
-	static void bake_func_begin();
-	static bool bake_func_step(int p_progress, const String &p_description);
-	static void bake_func_end();
-
-	void _bake();
-	void _voxel_gi_save_path_and_bake(const String &p_path);
-
-protected:
-	void _notification(int p_what);
+	String description_url;
+	String service_type;
+	String igd_control_url;
+	String igd_service_type;
+	String igd_our_addr;
+	IGDStatus igd_status = IGD_STATUS_UNKNOWN_ERROR;
 
 public:
-	virtual String get_name() const override { return "VoxelGI"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	static void make_default();
 
-	VoxelGIEditorPlugin();
-	~VoxelGIEditorPlugin();
+	virtual void set_description_url(const String &url) override;
+	virtual String get_description_url() const override;
+
+	virtual void set_service_type(const String &type) override;
+	virtual String get_service_type() const override;
+
+	virtual void set_igd_control_url(const String &url) override;
+	virtual String get_igd_control_url() const override;
+
+	virtual void set_igd_service_type(const String &type) override;
+	virtual String get_igd_service_type() const override;
+
+	virtual void set_igd_our_addr(const String &addr) override;
+	virtual String get_igd_our_addr() const override;
+
+	virtual void set_igd_status(IGDStatus status) override;
+	virtual IGDStatus get_igd_status() const override;
+
+	virtual bool is_valid_gateway() const override;
+	virtual String query_external_address() const override;
+	virtual int add_port_mapping(int port, int port_internal = 0, String desc = "", String proto = "UDP", int duration = 0) const override;
+	virtual int delete_port_mapping(int port, String proto = "UDP") const override;
+
+	UPNPDeviceMiniUPNP() {}
+	virtual ~UPNPDeviceMiniUPNP() {}
 };
 
-#endif // VOXEL_GI_EDITOR_PLUGIN_H
+#endif // WEB_ENABLED
+
+#endif // UPNP_DEVICE_MINIUPNP_H

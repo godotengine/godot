@@ -102,6 +102,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
         subdir = os.path.dirname(files)
         subdir = subdir if subdir == "" else subdir + "/"
         section_name = self.Dir(subdir).tpath
+        section_name = section_name.replace("\\", "/")  # win32
         # if the section name is in the hash table?
         # i.e. is it part of the SCU build?
         global _scu_folders

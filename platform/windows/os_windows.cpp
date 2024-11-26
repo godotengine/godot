@@ -817,22 +817,10 @@ double OS_Windows::get_unix_time() const {
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	constexpr uint32_t tolerance = 1000 + 20;
-
-	uint64_t t0 = get_ticks_usec();
-	uint64_t target_time = t0 + p_usec;
-
-	// Calculate sleep duration with a tolerance for fine-tuning.
-	if (p_usec > tolerance) {
-		uint32_t coarse_sleep_usec = p_usec - tolerance;
-		if (coarse_sleep_usec >= 1000) {
-			Sleep(coarse_sleep_usec / 1000);
-		}
-	}
-
-	// Spin-wait until we reach the precise target time.
-	while (get_ticks_usec() < target_time) {
-		YieldProcessor();
+	if (p_usec < 1000) {
+		Sleep(1);
+	} else {
+		Sleep(p_usec / 1000);
 	}
 }
 
@@ -1751,7 +1739,7 @@ String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
 	data.resize(p_buffer_size);
 	DWORD count = 0;
 	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
-		return String::utf8((const char *)data.ptr(), count);
+		return String::utf8((const char *)data.ptr(), count).replace("\r\n", "\n").rstrip("\n");
 	}
 
 	return String();
