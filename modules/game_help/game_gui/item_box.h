@@ -16,11 +16,11 @@ public:
         }
 		Control* parent = Object::cast_to<Control>(parent_node);
         if(parent) {
-            bool visible = parent->get_global_rect().intersects(get_global_rect());
+            bool _visible = parent->get_global_rect().intersects(get_global_rect());
             for(int i = 0; i < get_child_count(); i++) {
 				Control* child = Object::cast_to<Control>(get_child(i));
 				if (child != nullptr) {
-					child->set_visible(visible);
+					child->set_visible(_visible);
 				}
             }
 

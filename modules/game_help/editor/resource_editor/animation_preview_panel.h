@@ -10,6 +10,8 @@
 #include "core/io/dir_access.h"
 #include  "../../logic/body_main.h"
 #include "resource_editor_tool_item.h"
+#include "../animator_node_preview.h"
+#include "../../logic/character_manager.h"
 
 
 class AnimationPreviewPanel : public VBoxContainer {
@@ -61,6 +63,11 @@ public:
 
     }
 protected:
+    void _notification(int what) {
+        if (what == NOTIFICATION_ENTER_TREE) {
+            load_animation_config();
+        }
+    }
     void _on_tab_changed(int index) {
 
     }
@@ -71,6 +78,7 @@ protected:
             parse_animation_path(it);
         }
         save_animation_config();
+		refresh_animation_list();
         
     }
     void parse_animation_path(String path) {
@@ -113,6 +121,15 @@ protected:
 			p_dict["animation_group"] = animation_group;
 			p_dict["animation_tag"] = animation_tag;
 		}
+        bool is_show(const StringName& group, const Dictionary& p_select_tag) {
+            if(animation_group != group) {
+                return false;
+            }
+            if(!p_select_tag.get(animation_tag,false)) {
+                return false;
+            }
+            return true;            
+        }
 	};
     void load_animation_config() {
         
@@ -126,7 +143,8 @@ protected:
         String json_str = f->get_as_text();
         json->parse(json_str);
 
-        Array arr = json->get_data();
+        Dictionary dict = json->get_data();
+        Array arr = dict["animations"];
         for (int i = 0; i < arr.size(); i++) {
             Dictionary dict = arr[i];
             Ref<AnimationInfo> animation_info;
@@ -135,21 +153,99 @@ protected:
 				animations.push_back(animation_info);
             }
         }
+        last_select_group = dict["last_select_group"];
+        last_select_tag = dict["last_select_tag"];
+        refresh_animation_list();
+    }
+    void refresh_animation_list() {
+        animation_group_list.clear();
+        animation_tags_list.clear();
+        CharacterManager* character_manager = CharacterManager::get_singleton();
+        character_manager->get_animation_groups(&animation_group_list);
+        character_manager->get_animation_tags(&animation_tags_list);
+
+        while(animation_tag_list->get_child_count() > 0) {
+            Node* child = animation_tag_list->get_child(0);
+            animation_tag_list->remove_child(child);
+            child->queue_free();
+        }
+
+        while (animation_group->get_child_count() > 0)
+        {
+            Node* child = animation_group->get_child(0);
+            animation_group->remove_child(child);
+            child->queue_free();
+        }
+
+        for(auto& it : animation_group_list) {
+            StringName name = it;
+            Button* btn = memnew(Button);
+            btn->set_text(name.str());
+            if(last_select_group == name) {
+                btn->set_pressed(true);   
+                btn->set_modulate(Color(0.349727, 0.355482, 0.26278, 1));             
+            }
+            else {
+                btn->set_pressed(false);
+                btn->set_modulate(Color(1, 1, 1, 1));
+            }
+            btn->set_toggle_mode(true);
+            animation_group->add_child(btn);
+        }
+
+        for(auto& it : animation_tags_list) {
+            StringName name = it;
+            CheckBox* btn = memnew(CheckBox);
+            btn->set_text(name.str());
+            bool check = last_select_tag.get(name, false);
+            btn->set_pressed(check);
+        }
+
+        // 获取动画列表
+        curr_show_animations.clear();
+        animation_list->clear();
+        for(auto& it : animations) {
+            if(it->is_show(last_select_group, last_select_tag)) {
+                AnimationNodePreview* preview = memnew(AnimationNodePreview);
+                preview->set_animation_path(it->animation_path);
+                curr_show_animations.push_back(it);
+            }
+        }
+        
+        
     }
     void save_animation_config() {
+        Dictionary dict;
         Array arr;
         for(auto& it : animations) {
             Dictionary dict;
             it->save(dict);
             arr.push_back(dict);
         }
+        dict["animations"] = arr;
+        dict["last_select_group"] = last_select_group;
+        dict["last_select_tag"] = last_select_tag;
         String json_str = JSON::stringify(arr);
         Ref<FileAccess> f = FileAccess::open("res://.godot/animation_config.json", FileAccess::WRITE);
-        f->store_string(json_str);        
+        f->store_string(json_str);    
+
+        curr_show_animations.clear();    
+        animation_list->clear();
+
+        for(auto& it : animations) {
+            if(it->animation_group == last_select_group) {
+                curr_show_animations.push_back(it);
+            }
+        }
         
     }
     
 protected:
+    String last_select_group = "";
+    Dictionary last_select_tag;
+    bool last_inv_select = false;
+    Array animation_group_list ;
+    Array animation_tags_list;
     CheckBox* revert_show = nullptr;
     Button* update_animation_resource = nullptr;
     TabBar* animation_group= nullptr;
