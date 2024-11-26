@@ -4528,7 +4528,7 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->finalize_core();
 
 	FramebufferCacheRD::reset();
-	Object::initialized = false; // TODO: create a proper Object::finalize() method
+	Object::initialized = false;
 	Main::version++;
 	AudioDriverManager::reset();
 }
