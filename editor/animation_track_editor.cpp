@@ -5784,7 +5784,6 @@ void AnimationTrackEditor::_update_key_edit() {
 			// Select new bone
 			se->select_bone(bone_idx);
 		}
-		
 	} else if (selection.size() > 1) {
 		multi_key_edit = memnew(AnimationMultiTrackKeyEdit);
 		multi_key_edit->animation = animation;
