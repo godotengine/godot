@@ -103,6 +103,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/export/export_template_manager.h"
 #include "editor/export/project_export.h"
+#include "editor/export/project_zip_packer.h"
 #include "editor/fbx_importer_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_bottom_panel.h"
@@ -2204,6 +2205,15 @@ void EditorNode::_dialog_action(String p_file) {
 
 		} break;
 
+		case PROJECT_PACK_AS_ZIP: {
+			ProjectZIPPacker::pack_project_zip(p_file);
+			{
+				Ref<FileAccess> f = FileAccess::open(p_file, FileAccess::READ);
+				ERR_FAIL_COND_MSG(f.is_null(), vformat("Unable to create ZIP file at: %s. Check for write permissions and whether you have enough disk space left.", p_file));
+			}
+
+		} break;
+
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 			ERR_FAIL_COND(saving_resource.is_null());
@@ -2867,6 +2877,20 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case PROJECT_EXPORT: {
 			project_export->popup_export();
+		} break;
+
+		case PROJECT_PACK_AS_ZIP: {
+			String resource_path = ProjectSettings::get_singleton()->get_resource_path();
+			const String base_path = resource_path.substr(0, resource_path.rfind_char('/')) + "/";
+
+			file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+			file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file->clear_filters();
+			file->set_current_path(base_path);
+			file->set_current_file(ProjectZIPPacker::get_project_zip_safe_name());
+			file->add_filter("*.zip", "ZIP Archive");
+			file->set_title(TTR("Pack Project as ZIP..."));
+			file->popup_file_dialog();
 		} break;
 
 		case FILE_UNDO: {
@@ -7367,6 +7391,7 @@ EditorNode::EditorNode() {
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTRC("Export..."), Key::NONE, TTRC("Export")), PROJECT_EXPORT);
+	project_menu->add_item(TTR("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
 #ifndef ANDROID_ENABLED
 	project_menu->add_item(TTR("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
 	project_menu->add_item(TTR("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
