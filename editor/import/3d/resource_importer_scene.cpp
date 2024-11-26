@@ -2312,6 +2312,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 		}
 	}
 
+	// TODO: If there are more than 2 or equal get_internal_option_visibility method, visibility state is broken.
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_internal_option_visibility(EditorScenePostImportPlugin::InternalImportCategory(p_category), _scene_import_type, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
