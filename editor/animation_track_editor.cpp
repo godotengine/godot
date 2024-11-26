@@ -5755,7 +5755,7 @@ void AnimationTrackEditor::_update_key_edit() {
 		key_edit->hint = _find_hint_for_track(key_edit->track, np);
 		key_edit->base = np;
 
-		// This is what tells editor modes to turn off which users have reported being annoying 
+		// This is what tells editor modes to turn off which users have reported being annoying
 		// EditorNode::get_singleton()->push_item(key_edit);
 
 		// Highlighting skeleton3D bone gizmo if keyframe is modifying a bone
@@ -5768,12 +5768,12 @@ void AnimationTrackEditor::_update_key_edit() {
 			// Node *root_path = nullptr;
 			Node *node = root->get_node_or_null(path);
 			if (!node) {			
-				return ;
+				return;
 			}
 
 			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 
-			// if skeleton isnt valid or isn't refering to skeleton in skeleton 3D editor
+			// If skeleton isn't valid or isn't referring to skeleton in skeleton 3D editor
 			if (!skeleton || skeleton != se->get_skeleton()) {
 				return;
 			}
@@ -5829,7 +5829,7 @@ void AnimationTrackEditor::_update_key_edit() {
 		multi_key_edit->use_fps = timeline->is_using_fps();
 		multi_key_edit->root_path = root;
 
-		// This is what tells editor modes to turn off which users have reported being annoying 
+		// This is what tells editor modes to turn off which users have reported being annoying
 		// EditorNode::get_singleton()->push_item(multi_key_edit);
 	}
 }
