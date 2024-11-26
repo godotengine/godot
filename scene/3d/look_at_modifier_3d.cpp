@@ -534,7 +534,7 @@ void LookAtModifier3D::_process_modification() {
 		} else {
 			origin_tr = bone_rest_space;
 		}
-		forward_vector = bone_rest_space.basis.xform_inv((target->get_global_position() - origin_tr.translated_local(origin_offset).origin));
+		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv((target->get_global_position() - origin_tr.translated_local(origin_offset).origin));
 		forward_vector_nrm = forward_vector.normalized();
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);
