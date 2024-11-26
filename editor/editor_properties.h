@@ -674,7 +674,7 @@ class EditorPropertyResource : public EditorProperty {
 	EditorInspector *sub_inspector = nullptr;
 	bool opened_editor = false;
 
-	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
+	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open = false);
 	void _resource_changed(const Ref<Resource> &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);
