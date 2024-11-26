@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LobbyClient" inherits="BlaziumClient" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A node used to connect to a blazium lobby websocket server.
+	</brief_description>
+	<description>
+		A node used to connect to a lobby server. It can be used to do matchmaking. You care do operations such as create lobbys, join lobbys, etc.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="connect_to_lobby">
+			<return type="bool" />
+			<param index="0" name="game_id" type="String" />
+			<description>
+				Connect to a Blazium Lobby Server using a game id.
+			</description>
+		</method>
+		<method name="create_lobby">
+			<return type="CreateLobbyResponse" />
+			<param index="0" name="max_players" type="int" default="4" />
+			<param index="1" name="password" type="String" default="&quot;&quot;" />
+			<description>
+				Create a lobby and become host. If you are already in a lobby, you cannot create one. You need to leave first.
+				Will generate either error signal or lobby_created.
+			</description>
+		</method>
+		<method name="join_lobby">
+			<return type="LobbyResponse" />
+			<param index="0" name="lobby_name" type="String" />
+			<param index="1" name="password" type="String" default="&quot;&quot;" />
+			<description>
+				Joint a lobby. If you are already in a lobby, you cannot join another one. You need to leave first.
+				Will generate either error signal or lobby_joined.
+			</description>
+		</method>
+		<method name="kick_peer">
+			<return type="LobbyResponse" />
+			<param index="0" name="peer_id" type="String" />
+			<description>
+				Kick a peer. You need to be host to do so.
+			</description>
+		</method>
+		<method name="leave_lobby">
+			<return type="LobbyResponse" />
+			<description>
+				Leave a lobby. You need to be in a lobby to leave one.
+				Will generate either error signal or lobby_left.
+			</description>
+		</method>
+		<method name="list_lobby">
+			<return type="ListLobbyResponse" />
+			<param index="0" name="start" type="int" default="0" />
+			<param index="1" name="count" type="int" default="10" />
+			<description>
+				Lists all lobbies.
+				Will generate either error signal or lobby_list.
+			</description>
+		</method>
+		<method name="lobby_data">
+			<return type="LobbyResponse" />
+			<param index="0" name="data" type="String" />
+			<description>
+				Send data either to the host, or if you are host send data to all peers.
+				Generates received_data signal.
+			</description>
+		</method>
+		<method name="lobby_data_to">
+			<return type="LobbyResponse" />
+			<param index="0" name="data" type="String" />
+			<param index="1" name="target_peer" type="String" />
+			<description>
+				Send data either to a peer, works only if you are host.
+				Generates received_data_to signal.
+			</description>
+		</method>
+		<method name="lobby_ready">
+			<return type="LobbyResponse" />
+			<description>
+				Ready up in the lobby. You need to be in a lobby and unready to run this.
+				Will generate either error signal or peer_ready.
+			</description>
+		</method>
+		<method name="lobby_unready">
+			<return type="LobbyResponse" />
+			<description>
+				Ready up in the lobby. You need to be in a lobby and ready to run this.
+				Will generate either error signal or peer_unready.
+			</description>
+		</method>
+		<method name="seal_lobby">
+			<return type="LobbyResponse" />
+			<description>
+				Seals the lobby. You need to be the host to do this and the lobby needs to be unsealed.
+				Will generate either error signal or lobby_sealed.
+			</description>
+		</method>
+		<method name="unseal_lobby">
+			<return type="LobbyResponse" />
+			<description>
+				Unseals the lobby. You need to be the host to do this and the lobby needs to be sealed.
+				Will generate either error signal or lobby_unsealed.
+			</description>
+		</method>
+		<method name="view_lobby">
+			<return type="ViewLobbyResponse" />
+			<param index="0" name="lobby_name" type="String" />
+			<param index="1" name="password" type="String" default="&quot;&quot;" />
+			<description>
+				View data from a lobby. Returns lobby settings and peers.
+				Will generate either error signal or lobby_view.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="server_url" type="String" setter="set_server_url" getter="get_server_url" default="&quot;wss://lobby.blazium.app/connect&quot;">
+			Set to what url this lobby should connect to.
+		</member>
+	</members>
+	<signals>
+		<signal name="append_log">
+			<param index="0" name="action" type="String" />
+			<param index="1" name="info" type="String" />
+			<param index="2" name="logs" type="String" />
+			<description>
+				Signals a log from a command.
+			</description>
+		</signal>
+		<signal name="lobby_created">
+			<param index="0" name="lobby" type="String" />
+			<description>
+				Signal generated after a lobby is created.
+			</description>
+		</signal>
+		<signal name="lobby_joined">
+			<param index="0" name="lobby" type="String" />
+			<description>
+				Signal generated after you joint a lobby.
+			</description>
+		</signal>
+		<signal name="lobby_left">
+			<description>
+				Signal generated after you leave a lobby.
+			</description>
+		</signal>
+		<signal name="lobby_sealed">
+			<description>
+				Signal generated after the host seals the lobby.
+			</description>
+		</signal>
+		<signal name="lobby_unsealed">
+			<description>
+				Signal generated after the host unseals the lobby.
+			</description>
+		</signal>
+		<signal name="peer_joined">
+			<param index="0" name="peer" type="String" />
+			<description>
+				Signal generated after a peer joins the lobby.
+			</description>
+		</signal>
+		<signal name="peer_left">
+			<param index="0" name="peer" type="String" />
+			<param index="1" name="kicked" type="bool" />
+			<description>
+				Signal generated after a peer leaves the lobby.
+			</description>
+		</signal>
+		<signal name="peer_named">
+			<param index="0" name="peer" type="String" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Signal generated after a peer names himself.
+			</description>
+		</signal>
+		<signal name="peer_ready">
+			<param index="0" name="peer" type="String" />
+			<description>
+				Signal generated after a peer is ready.
+			</description>
+		</signal>
+		<signal name="peer_unready">
+			<param index="0" name="peer" type="String" />
+			<description>
+				Signal generated after a peer is unready.
+			</description>
+		</signal>
+		<signal name="received_data">
+			<param index="0" name="data" type="String" />
+			<description>
+				Signal generated after a lobby_data call.
+			</description>
+		</signal>
+		<signal name="received_data_to">
+			<param index="0" name="data" type="String" />
+			<description>
+				Signal generated after a data_to call.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LobbyInfo" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Lobby information returned after a view lobby request.
+	</brief_description>
+	<description>
+		Lobby information returned after a view lobby request.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="host" type="String" setter="" getter="get_host" default="&quot;&quot;">
+			The host id of the lobby.
+		</member>
+		<member name="max_players" type="int" setter="" getter="get_max_players" default="0">
+			The maximum number of players allowed in the lobby.
+		</member>
+		<member name="sealed" type="bool" setter="" getter="is_sealed" default="false">
+			Whether the lobby is sealed.
+		</member>
+	</members>
+</class>

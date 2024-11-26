@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LobbyPeer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Lobby peers information returned after a view lobby request.
+	</brief_description>
+	<description>
+		Lobby peers information returned after a view lobby request.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="id" type="String" setter="" getter="get_id" default="&quot;&quot;">
+			Identifier of the peer.
+		</member>
+		<member name="name" type="String" setter="" getter="get_name" default="&quot;&quot;">
+			Name of the peer.
+		</member>
+		<member name="ready" type="bool" setter="" getter="is_ready" default="false">
+			Whether the peer is ready.
+		</member>
+	</members>
+</class>

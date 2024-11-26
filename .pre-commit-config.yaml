@@ -144,6 +144,7 @@ repos:
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
             platform/android/java/editor/src/main/java/com/android/.*|
             platform/android/java/lib/src/com/.*|
+            modules/blazium_sdk/.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java$|
             platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java$|
             platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix\.java$

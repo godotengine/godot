@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ViewLobbyResult" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A result from a [ViewLobbyResponse].
+	</brief_description>
+	<description>
+		A result from a [ViewLobbyResponse]. Contains either result or error.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_lobby_info" qualifiers="const">
+			<return type="LobbyInfo" />
+			<description>
+				Gets the lobby info.
+			</description>
+		</method>
+		<method name="has_error" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if there is an error.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="error" type="String" setter="" getter="get_error" default="&quot;&quot;">
+			Gets the error message.
+		</member>
+		<member name="peers" type="LobbyPeer[]" setter="" getter="get_peers" default="[]">
+			Gets the peers.
+		</member>
+	</members>
+</class>
