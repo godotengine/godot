@@ -545,6 +545,8 @@ void LookAtModifier3D::_process_modification() {
 	}
 
 	// Detect flipping.
+	bool is_not_max_influence = influence < 1.0;
+	bool is_flippable = use_angle_limitation || is_not_max_influence;
 	Vector3::Axis current_forward_axis = get_axis_from_bone_axis(forward_axis);
 	if (is_intersecting_axis(prev_forward_vector, forward_vector, current_forward_axis, secondary_rotation_axis) ||
 			is_intersecting_axis(prev_forward_vector, forward_vector, primary_rotation_axis, primary_rotation_axis, true) ||
@@ -552,16 +554,20 @@ void LookAtModifier3D::_process_modification() {
 			(prev_forward_vector != Vector3(0, 0, 0) && forward_vector == Vector3(0, 0, 0)) ||
 			(prev_forward_vector == Vector3(0, 0, 0) && forward_vector != Vector3(0, 0, 0))) {
 		init_transition();
-	} else if (use_angle_limitation && signbit(prev_forward_vector[secondary_rotation_axis]) != signbit(forward_vector[secondary_rotation_axis])) {
+	} else if (is_flippable && signbit(prev_forward_vector[secondary_rotation_axis]) != signbit(forward_vector[secondary_rotation_axis])) {
 		// Flipping by angle_limitation can be detected by sign of secondary rotation axes during forward_vector is rotated more than 90 degree from forward_axis (means dot production is negative).
 		Vector3 prev_forward_vector_nrm = forward_vector.normalized();
 		Vector3 rest_forward_vector = get_vector_from_bone_axis(forward_axis);
 		if (symmetry_limitation) {
-			if (!Math::is_equal_approx(primary_limit_angle, (float)Math_TAU) && prev_forward_vector_nrm.dot(rest_forward_vector) < 0 && forward_vector_nrm.dot(rest_forward_vector) < 0) {
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math_TAU)) &&
+					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
+					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		} else {
-			if (!Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math_TAU) && prev_forward_vector_nrm.dot(rest_forward_vector) < 0 && forward_vector_nrm.dot(rest_forward_vector) < 0) {
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math_TAU)) &&
+					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
+					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		}
@@ -576,7 +582,7 @@ void LookAtModifier3D::_process_modification() {
 			delta = get_physics_process_delta_time();
 		}
 		remaining = MAX(0, remaining - time_step * delta);
-		if (use_angle_limitation) {
+		if (is_flippable) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
 			Quaternion rest = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
 			float weight = Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0);
