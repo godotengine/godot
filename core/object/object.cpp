@@ -42,6 +42,8 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
+bool Object::initialized = false;
+
 #ifdef DEBUG_ENABLED
 
 struct _ObjectDebugLock {
@@ -1504,14 +1506,15 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	static bool initialized = false;
-	if (initialized) {
+	static int local_version = -1;
+	if (Main::version == local_version) {
 		return;
 	}
 	ClassDB::_add_class<Object>();
 	_bind_methods();
 	_bind_compatibility_methods();
 	initialized = true;
+	local_version++;
 }
 
 String Object::tr(const StringName &p_message, const StringName &p_context) const {
@@ -2319,7 +2322,11 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
 
+	slot_count = 0;
+	slot_max = 0;
+	object_slots = nullptr;
 	spin_lock.unlock();
 }

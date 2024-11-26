@@ -232,6 +232,7 @@ ZipArchive::~ZipArchive() {
 	}
 
 	packages.clear();
+	instance = nullptr;
 }
 
 Error FileAccessZip::open_internal(const String &p_path, int p_mode_flags) {

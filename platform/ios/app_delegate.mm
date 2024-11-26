@@ -66,6 +66,10 @@ static ViewController *mainViewController = nil;
 	return mainViewController;
 }
 
++ (void)setViewController:(ViewController *)newVC {
+	mainViewController = newVC;
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	// TODO: might be required to make an early return, so app wouldn't crash because of timeout.
 	// TODO: logo screen is not displayed while shaders are compiling
@@ -181,6 +185,14 @@ static ViewController *mainViewController = nil;
 
 - (void)dealloc {
 	self.window = nil;
+}
+
++ (void)focusIn {
+    OS_IOS::get_singleton()->on_focus_in();
+}
+
++ (void)focusOut {
+    OS_IOS::get_singleton()->on_focus_out();
 }
 
 @end
