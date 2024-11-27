@@ -9308,6 +9308,24 @@ void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
 	spatial_editor->set_state(p_state);
 }
 
+Size2i Node3DEditor::get_camera_viewport_size(Camera3D *p_camera) {
+	Viewport *viewport = p_camera->get_viewport();
+
+	Window *window = Object::cast_to<Window>(viewport);
+	if (window) {
+		return window->get_size();
+	}
+
+	SubViewport *sub_viewport = Object::cast_to<SubViewport>(viewport);
+	ERR_FAIL_NULL_V(sub_viewport, Size2i());
+
+	if (sub_viewport == EditorNode::get_singleton()->get_scene_root()) {
+		return Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	}
+
+	return sub_viewport->get_size();
+}
+
 Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 	if (is_snap_enabled()) {
 		real_t snap = get_translate_snap();
