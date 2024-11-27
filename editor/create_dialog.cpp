@@ -288,10 +288,17 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
-		String script_path = ScriptServer::get_global_class_path(p_type);
-		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
 
+		String script_path = ScriptServer::get_global_class_path(p_type);
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		String suffix = script_path.get_file();
+		if (scr.is_valid() && scr->has_meta("script_suffix")) {
+			suffix = String(scr->get_meta("script_suffix", suffix)).strip_edges();
+		}
+		if (!suffix.is_empty()) {
+			r_item->set_suffix(0, vformat(R"((%s))", suffix));
+		}
+
 		ERR_FAIL_COND(!scr.is_valid());
 		is_abstract = scr->is_abstract();
 	} else {
