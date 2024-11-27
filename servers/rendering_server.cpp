@@ -2354,6 +2354,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_get_surface_count", "mesh"), &RenderingServer::mesh_get_surface_count);
 	ClassDB::bind_method(D_METHOD("mesh_set_custom_aabb", "mesh", "aabb"), &RenderingServer::mesh_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("mesh_get_custom_aabb", "mesh"), &RenderingServer::mesh_get_custom_aabb);
+	ClassDB::bind_method(D_METHOD("mesh_surface_remove", "mesh", "surface"), &RenderingServer::mesh_surface_remove);
 	ClassDB::bind_method(D_METHOD("mesh_clear", "mesh"), &RenderingServer::mesh_clear);
 
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_vertex_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_vertex_region);

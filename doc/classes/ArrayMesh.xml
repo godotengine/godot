@@ -165,6 +165,13 @@
 				Returns the primitive type of the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
+		<method name="surface_remove">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Removes a surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+			</description>
+		</method>
 		<method name="surface_set_name">
 			<return type="void" />
 			<param index="0" name="surf_idx" type="int" />

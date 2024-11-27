@@ -88,6 +88,25 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		CHECK(mesh->get_blend_shape_count() == 0);
 	}
 
+	SUBCASE("Adding blend shapes once all surfaces have been removed is allowed") {
+		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
+		Array cylinder_array{};
+		cylinder_array.resize(Mesh::ARRAY_MAX);
+		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
+
+		mesh->surface_remove(0);
+		ERR_PRINT_OFF
+		mesh->add_blend_shape(name_a);
+		ERR_PRINT_ON
+		CHECK(mesh->get_blend_shape_count() == 0);
+
+		mesh->surface_remove(0);
+		mesh->add_blend_shape(name_a);
+		CHECK(mesh->get_blend_shape_count() == 1);
+	}
+
 	SUBCASE("Change blend shape name after adding.") {
 		mesh->add_blend_shape(name_a);
 		mesh->set_blend_shape_name(0, name_b);
@@ -110,6 +129,35 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		mesh->add_blend_shape(name_b);
 		CHECK(mesh->get_blend_shape_count() == 2);
 
+		mesh->clear_blend_shapes();
+		CHECK(mesh->get_blend_shape_count() == 0);
+	}
+
+	SUBCASE("Clearing all blend shapes once all surfaces have been removed is allowed") {
+		mesh->add_blend_shape(name_a);
+		mesh->add_blend_shape(name_b);
+		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
+		Array cylinder_array{};
+		cylinder_array.resize(Mesh::ARRAY_MAX);
+		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
+		Array blend_shape{};
+		blend_shape.resize(Mesh::ARRAY_MAX);
+		blend_shape[Mesh::ARRAY_VERTEX] = cylinder_array[Mesh::ARRAY_VERTEX];
+		blend_shape[Mesh::ARRAY_NORMAL] = cylinder_array[Mesh::ARRAY_NORMAL];
+		blend_shape[Mesh::ARRAY_TANGENT] = cylinder_array[Mesh::ARRAY_TANGENT];
+		Array blend_shapes{};
+		blend_shapes.push_back(blend_shape);
+		blend_shapes.push_back(blend_shape);
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
+
+		mesh->surface_remove(0);
+		ERR_PRINT_OFF
+		mesh->clear_blend_shapes();
+		ERR_PRINT_ON
+		CHECK(mesh->get_blend_shape_count() == 2);
+
+		mesh->surface_remove(0);
 		mesh->clear_blend_shapes();
 		CHECK(mesh->get_blend_shape_count() == 0);
 	}
@@ -249,13 +297,16 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 	Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
 	Array cylinder_array{};
 	cylinder_array.resize(Mesh::ARRAY_MAX);
-	cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
+	constexpr float cylinder_radius = 3.f;
+	constexpr float cylinder_height = 5.f;
+	cylinder->create_mesh_array(cylinder_array, cylinder_radius, cylinder_radius, cylinder_height);
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
 
 	Ref<BoxMesh> box = memnew(BoxMesh);
 	Array box_array{};
 	box_array.resize(Mesh::ARRAY_MAX);
-	box->create_mesh_array(box_array, Vector3(2.f, 1.2f, 1.6f));
+	const Vector3 box_size = Vector3(2.f, 1.2f, 1.6f);
+	box->create_mesh_array(box_array, box_size);
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, box_array);
 
 	SUBCASE("Set the shadow mesh.") {
@@ -336,6 +387,43 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 		CHECK(mesh2->surface_get_primitive_type(0) == Mesh::PRIMITIVE_TRIANGLES);
 		CHECK((mesh2->surface_get_format(0) & surface_data.format) != 0);
 		CHECK(mesh2->get_aabb().is_equal_approx(surface_data.aabb));
+	}
+
+	SUBCASE("Removing a surface decreases surface count.") {
+		REQUIRE(mesh->get_surface_count() == 2);
+		mesh->surface_remove(0);
+		CHECK(mesh->get_surface_count() == 1);
+		mesh->surface_remove(0);
+		CHECK(mesh->get_surface_count() == 0);
+	}
+
+	SUBCASE("Remove the first surface and check the mesh's AABB.") {
+		REQUIRE(mesh->get_surface_count() >= 1);
+		mesh->surface_remove(0);
+		const AABB box_aabb = AABB(-box_size / 2, box_size);
+		CHECK(mesh->get_aabb().is_equal_approx(box_aabb));
+	}
+
+	SUBCASE("Remove the last surface and check the mesh's AABB.") {
+		REQUIRE(mesh->get_surface_count() >= 1);
+		mesh->surface_remove(mesh->get_surface_count() - 1);
+		const AABB cylinder_aabb = AABB(Vector3(-cylinder_radius, -cylinder_height / 2, -cylinder_radius),
+				Vector3(2 * cylinder_radius, cylinder_height, 2 * cylinder_radius));
+		CHECK(mesh->get_aabb().is_equal_approx(cylinder_aabb));
+	}
+
+	SUBCASE("Remove all surfaces and check the mesh's AABB.") {
+		while (mesh->get_surface_count()) {
+			mesh->surface_remove(0);
+		}
+		CHECK(mesh->get_aabb() == AABB());
+	}
+
+	SUBCASE("Removing a non-existent surface causes error.") {
+		ERR_PRINT_OFF
+		mesh->surface_remove(42);
+		ERR_PRINT_ON
+		CHECK(mesh->get_surface_count() == 2);
 	}
 }
 
