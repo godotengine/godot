@@ -2737,13 +2737,13 @@ float BaseMaterial3D::get_grow() const {
 	return grow;
 }
 
-static Plane _get_texture_mask(BaseMaterial3D::TextureChannel p_channel) {
-	static const Plane masks[5] = {
-		Plane(1, 0, 0, 0),
-		Plane(0, 1, 0, 0),
-		Plane(0, 0, 1, 0),
-		Plane(0, 0, 0, 1),
-		Plane(0.3333333, 0.3333333, 0.3333333, 0),
+static Vector4 _get_texture_mask(BaseMaterial3D::TextureChannel p_channel) {
+	static const Vector4 masks[5] = {
+		Vector4(1, 0, 0, 0),
+		Vector4(0, 1, 0, 0),
+		Vector4(0, 0, 1, 0),
+		Vector4(0, 0, 0, 1),
+		Vector4(0.3333333, 0.3333333, 0.3333333, 0),
 	};
 
 	return masks[p_channel];
