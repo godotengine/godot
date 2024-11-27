@@ -579,6 +579,9 @@ bool AudioStreamPlayer3D::is_playing() const {
 }
 
 float AudioStreamPlayer3D::get_playback_position() {
+	if (setplay.get() >= 0) {
+		return setplay.get(); // play() has been called this frame, but no playback exists just yet.
+	}
 	return internal->get_playback_position();
 }
 
