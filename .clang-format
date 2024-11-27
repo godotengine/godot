@@ -1,6 +1,6 @@
 # Commented out parameters are those with the same value as base LLVM style.
 # We can uncomment them if we want to change their value, or enforce the
-# chosen value in case the base style changes (last sync: Clang 19.1.0).
+# chosen value in case the base style changes (last sync: Clang 17.0.6).
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
@@ -10,56 +10,30 @@ AlignAfterOpenBracket: DontAlign
 #   AcrossEmptyLines: false
 #   AcrossComments: false
 #   AlignCompound: false
-#   AlignFunctionPointers: false
 #   PadOperators: true
 # AlignConsecutiveBitFields:
 #   Enabled: false
 #   AcrossEmptyLines: false
 #   AcrossComments: false
 #   AlignCompound: false
-#   AlignFunctionPointers: false
 #   PadOperators: false
 # AlignConsecutiveDeclarations:
 #   Enabled: false
 #   AcrossEmptyLines: false
 #   AcrossComments: false
 #   AlignCompound: false
-#   AlignFunctionPointers: false
 #   PadOperators: false
 # AlignConsecutiveMacros:
 #   Enabled: false
 #   AcrossEmptyLines: false
 #   AcrossComments: false
 #   AlignCompound: false
-#   AlignFunctionPointers: false
 #   PadOperators: false
 # AlignConsecutiveShortCaseStatements:
 #   Enabled: false
 #   AcrossEmptyLines: false
 #   AcrossComments: false
-#   AlignCaseArrows: false
 #   AlignCaseColons: false
-# AlignConsecutiveTableGenBreakingDAGArgColons:
-#   Enabled: false
-#   AcrossEmptyLines: false
-#   AcrossComments: false
-#   AlignCompound: false
-#   AlignFunctionPointers: false
-#   PadOperators: false
-# AlignConsecutiveTableGenCondOperatorColons:
-#   Enabled: false
-#   AcrossEmptyLines: false
-#   AcrossComments: false
-#   AlignCompound: false
-#   AlignFunctionPointers: false
-#   PadOperators: false
-# AlignConsecutiveTableGenDefinitionColons:
-#   Enabled: false
-#   AcrossEmptyLines: false
-#   AcrossComments: false
-#   AlignCompound: false
-#   AlignFunctionPointers: false
-#   PadOperators: false
 # AlignEscapedNewlines: Right
 AlignOperands: DontAlign
 AlignTrailingComments:
@@ -67,17 +41,17 @@ AlignTrailingComments:
   OverEmptyLines: 0
 # AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
-# AllowBreakBeforeNoexceptSpecifier: Never
 # AllowShortBlocksOnASingleLine: Never
-# AllowShortCaseExpressionOnASingleLine: true
 # AllowShortCaseLabelsOnASingleLine: false
-# AllowShortCompoundRequirementOnASingleLine: true
 # AllowShortEnumsOnASingleLine: true
 # AllowShortFunctionsOnASingleLine: All
 # AllowShortIfStatementsOnASingleLine: Never
 # AllowShortLambdasOnASingleLine: All
 # AllowShortLoopsOnASingleLine: false
+# AlwaysBreakAfterDefinitionReturnType: None
+# AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
+# AlwaysBreakTemplateDeclarations: MultiLine
 # AttributeMacros:
 #   - __capability
 # BinPackArguments: true
@@ -102,10 +76,8 @@ AllowAllParametersOfDeclarationOnNextLine: false
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
 #   SplitEmptyNamespace: true
-# BreakAdjacentStringLiterals: true
-# BreakAfterAttributes: Leave
+# BreakAfterAttributes: Never
 # BreakAfterJavaFieldAnnotations: false
-# BreakAfterReturnType: None
 # BreakArrays: true
 # BreakBeforeBinaryOperators: None
 # BreakBeforeBraces: Attach
@@ -113,10 +85,8 @@ AllowAllParametersOfDeclarationOnNextLine: false
 # BreakBeforeInlineASMColon: OnlyMultiline
 # BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
-# BreakFunctionDefinitionParameters: false
 # BreakInheritanceList: BeforeColon
 # BreakStringLiterals: true
-# BreakTemplateDeclarations: MultiLine
 ColumnLimit: 0
 # CommentPragmas: '^ IWYU pragma:'
 # CompactNamespaces: false
@@ -174,16 +144,13 @@ JavaImportGroups:
   - javax
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
-KeepEmptyLines:
-  AtEndOfFile: false
-  AtStartOfBlock: false
-  AtStartOfFile: false
+# KeepEmptyLinesAtEOF: false
+KeepEmptyLinesAtTheStartOfBlocks: false
 # LambdaBodyIndentation: Signature
 # Language: Cpp
 # LineEnding: DeriveLF
 # MacroBlockBegin: ''
 # MacroBlockEnd: ''
-# MainIncludeChar: Quote
 # MaxEmptyLinesToKeep: 1
 # NamespaceIndentation: None
 # ObjCBinPackProtocolList: Auto
@@ -198,7 +165,6 @@ PackConstructorInitializers: NextLine
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
 # PenaltyBreakOpenParenthesis: 0
-# PenaltyBreakScopeResolution: 500
 # PenaltyBreakString: 1000
 # PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
@@ -215,7 +181,6 @@ RemoveSemicolon: true
 # RequiresExpressionIndentation: OuterScope
 # SeparateDefinitionBlocks: Leave
 # ShortNamespaceLines: 1
-# SkipMacroDefinitionBody: false
 # SortIncludes: CaseSensitive
 # SortJavaStaticImport: Before
 # SortUsingDeclarations: LexicographicNumeric
@@ -229,6 +194,7 @@ RemoveSemicolon: true
 # SpaceBeforeCtorInitializerColon: true
 # SpaceBeforeInheritanceColon: true
 # SpaceBeforeJsonColon: false
+# SpaceBeforeParens: ControlStatements
 # SpaceBeforeParensOptions:
 #   AfterControlStatements: true
 #   AfterForeachMacros: true
@@ -236,7 +202,6 @@ RemoveSemicolon: true
 #   AfterFunctionDefinitionName: false
 #   AfterIfMacros: true
 #   AfterOverloadedOperator: false
-#   AfterPlacementOperator: true
 #   AfterRequiresInClause: false
 #   AfterRequiresInExpression: false
 #   BeforeNonEmptyParentheses: false
@@ -251,7 +216,6 @@ SpacesInLineCommentPrefix:
   Maximum: -1
 # SpacesInParens: Never
 # SpacesInParensOptions:
-#   ExceptDoubleParentheses: false
 #   InConditionalStatements: false
 #   InCStyleCasts: false
 #   InEmptyParentheses: false
@@ -264,7 +228,6 @@ Standard: c++20
 #   - Q_UNUSED
 #   - QT_REQUIRE_VERSION
 TabWidth: 4
-# TableGenBreakInsideDAGArg: DontBreak
 UseTab: Always
 # VerilogBreakBetweenInstancePorts: true
 # WhitespaceSensitiveMacros:
