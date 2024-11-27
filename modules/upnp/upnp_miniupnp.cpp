@@ -34,8 +34,8 @@
 
 #include "upnp_device_miniupnp.h"
 
-#include <miniwget.h>
-#include <upnpcommands.h>
+#include <miniupnpc/miniwget.h>
+#include <miniupnpc/upnpcommands.h>
 
 #include <stdlib.h>
 

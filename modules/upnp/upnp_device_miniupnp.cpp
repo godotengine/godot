@@ -34,7 +34,7 @@
 
 #include "upnp_miniupnp.h"
 
-#include <upnpcommands.h>
+#include <miniupnpc/upnpcommands.h>
 
 void UPNPDeviceMiniUPNP::make_default() {
 	UPNPDevice::_create = UPNPDeviceMiniUPNP::_create;
