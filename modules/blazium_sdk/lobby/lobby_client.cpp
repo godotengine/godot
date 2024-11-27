@@ -71,7 +71,7 @@ void LobbyClient::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("peer_left", PropertyInfo(Variant::STRING, "peer"), PropertyInfo(Variant::BOOL, "kicked")));
 	ADD_SIGNAL(MethodInfo("peer_ready", PropertyInfo(Variant::STRING, "peer")));
 	ADD_SIGNAL(MethodInfo("peer_unready", PropertyInfo(Variant::STRING, "peer")));
-	ADD_SIGNAL(MethodInfo("append_log", PropertyInfo(Variant::STRING, "action"), PropertyInfo(Variant::STRING, "info"), PropertyInfo(Variant::STRING, "logs")));
+	ADD_SIGNAL(MethodInfo("append_log", PropertyInfo(Variant::STRING, "command"), PropertyInfo(Variant::STRING, "info"), PropertyInfo(Variant::STRING, "logs")));
 }
 
 bool LobbyClient::connect_to_lobby(const String &game_id) {
@@ -94,7 +94,7 @@ String LobbyClient::_increment_counter() {
 Ref<LobbyClient::CreateLobbyResponse> LobbyClient::create_lobby(int max_players, const String &password) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "create_lobby";
+	command["command"] = "create_lobby";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["max_players"] = max_players;
@@ -113,7 +113,7 @@ Ref<LobbyClient::CreateLobbyResponse> LobbyClient::create_lobby(int max_players,
 Ref<LobbyClient::LobbyResponse> LobbyClient::join_lobby(const String &lobby_name, const String &password) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "join_lobby";
+	command["command"] = "join_lobby";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["lobby_name"] = lobby_name;
@@ -132,7 +132,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::join_lobby(const String &lobby_name
 Ref<LobbyClient::LobbyResponse> LobbyClient::leave_lobby() {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "leave_lobby";
+	command["command"] = "leave_lobby";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["id"] = id;
@@ -149,7 +149,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::leave_lobby() {
 Ref<LobbyClient::ListLobbyResponse> LobbyClient::list_lobby(int start, int count) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "list_lobby";
+	command["command"] = "list_lobby";
 	Dictionary data_dict;
 	data_dict["id"] = id;
 	data_dict["start"] = start;
@@ -168,7 +168,7 @@ Ref<LobbyClient::ListLobbyResponse> LobbyClient::list_lobby(int start, int count
 Ref<LobbyClient::ViewLobbyResponse> LobbyClient::view_lobby(const String &lobby_name, const String &password) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "view_lobby";
+	command["command"] = "view_lobby";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["lobby_name"] = lobby_name;
@@ -187,7 +187,7 @@ Ref<LobbyClient::ViewLobbyResponse> LobbyClient::view_lobby(const String &lobby_
 Ref<LobbyClient::LobbyResponse> LobbyClient::kick_peer(const String &peer_id) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "kick_peer";
+	command["command"] = "kick_peer";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["peer_id"] = peer_id;
@@ -205,7 +205,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::kick_peer(const String &peer_id) {
 Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_ready() {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "lobby_ready";
+	command["command"] = "lobby_ready";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["id"] = id;
@@ -222,7 +222,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_ready() {
 Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_unready() {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "lobby_unready";
+	command["command"] = "lobby_unready";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["id"] = id;
@@ -239,7 +239,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_unready() {
 Ref<LobbyClient::LobbyResponse> LobbyClient::set_peer_name(const String &peer_name) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "set_name";
+	command["command"] = "set_name";
 	Dictionary data_dict;
 	data_dict["peer_name"] = peer_name;
 	data_dict["id"] = id;
@@ -257,7 +257,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::set_peer_name(const String &peer_na
 Ref<LobbyClient::LobbyResponse> LobbyClient::seal_lobby() {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "seal_lobby";
+	command["command"] = "seal_lobby";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["id"] = id;
@@ -274,7 +274,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::seal_lobby() {
 Ref<LobbyClient::LobbyResponse> LobbyClient::unseal_lobby() {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "unseal_lobby";
+	command["command"] = "unseal_lobby";
 	Dictionary data_dict;
 	command["data"] = data_dict;
 	data_dict["id"] = id;
@@ -291,7 +291,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::unseal_lobby() {
 Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_data(const String &peer_data) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "lobby_data";
+	command["command"] = "lobby_data";
 	Dictionary data_dict;
 	data_dict["peer_data"] = peer_data;
 	data_dict["id"] = id;
@@ -309,7 +309,7 @@ Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_data(const String &peer_data)
 Ref<LobbyClient::LobbyResponse> LobbyClient::lobby_data_to(const String &peer_data, const String &target_peer) {
 	String id = _increment_counter();
 	Dictionary command;
-	command["action"] = "data_to";
+	command["command"] = "data_to";
 	Dictionary data_dict;
 	data_dict["peer_data"] = peer_data;
 	data_dict["target_peer"] = target_peer;
@@ -358,7 +358,7 @@ void LobbyClient::_send_data(const Dictionary &data_dict) {
 }
 
 void LobbyClient::_receive_data(const Dictionary &dict) {
-	String command = dict.get("action", "error");
+	String command = dict.get("command", "error");
 	String message = dict.get("message", command);
 	Dictionary data_dict = dict.get("data", Dictionary());
 	String message_id = data_dict.get("id", "");
