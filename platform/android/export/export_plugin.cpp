@@ -790,9 +790,10 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
-	String dst_path = p_path.replace_first("res://", "assets/");
+	const String path = ResourceUID::ensure_path(p_path);
+	const String dst_path = path.replace_first("res://", "assets/");
 
-	store_in_apk(ed, dst_path, p_data, _should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0);
+	store_in_apk(ed, dst_path, p_data, _should_compress_asset(path, p_data) ? Z_DEFLATED : 0);
 	return OK;
 }
 
@@ -1564,7 +1565,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 				str = get_project_name(package_name);
 
 			} else {
-				String lang = str.substr(str.rfind("-") + 1, str.length()).replace("-", "_");
+				String lang = str.substr(str.rfind_char('-') + 1, str.length()).replace("-", "_");
 				if (appnames.has(lang)) {
 					str = appnames[lang];
 				} else {
@@ -2528,7 +2529,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Check for the bin directory.
 		Ref<DirAccess> da = DirAccess::open(java_sdk_path.path_join("bin"), &errn);
 		if (errn != OK) {
-			err += TTR("Invalid Java SDK path in Editor Settings.");
+			err += TTR("Invalid Java SDK path in Editor Settings.") + " ";
 			err += TTR("Missing 'bin' directory!");
 			err += "\n";
 			valid = false;
@@ -2536,7 +2537,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			// Check for the `java` command.
 			String java_path = get_java_path();
 			if (!FileAccess::exists(java_path)) {
-				err += TTR("Unable to find 'java' command using the Java SDK path.");
+				err += TTR("Unable to find 'java' command using the Java SDK path.") + " ";
 				err += TTR("Please check the Java SDK directory specified in Editor Settings.");
 				err += "\n";
 				valid = false;
@@ -2553,7 +2554,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Check for the platform-tools directory.
 		Ref<DirAccess> da = DirAccess::open(sdk_path.path_join("platform-tools"), &errn);
 		if (errn != OK) {
-			err += TTR("Invalid Android SDK path in Editor Settings.");
+			err += TTR("Invalid Android SDK path in Editor Settings.") + " ";
 			err += TTR("Missing 'platform-tools' directory!");
 			err += "\n";
 			valid = false;
@@ -2562,7 +2563,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Validate that adb is available.
 		String adb_path = get_adb_path();
 		if (!FileAccess::exists(adb_path)) {
-			err += TTR("Unable to find Android SDK platform-tools' adb command.");
+			err += TTR("Unable to find Android SDK platform-tools' adb command.") + " ";
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
 			err += "\n";
 			valid = false;
@@ -2571,7 +2572,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Check for the build-tools directory.
 		Ref<DirAccess> build_tools_da = DirAccess::open(sdk_path.path_join("build-tools"), &errn);
 		if (errn != OK) {
-			err += TTR("Invalid Android SDK path in Editor Settings.");
+			err += TTR("Invalid Android SDK path in Editor Settings.") + " ";
 			err += TTR("Missing 'build-tools' directory!");
 			err += "\n";
 			valid = false;
@@ -2584,7 +2585,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Validate that apksigner is available.
 		String apksigner_path = get_apksigner_path(target_sdk_version.to_int());
 		if (!FileAccess::exists(apksigner_path)) {
-			err += TTR("Unable to find Android SDK build-tools' apksigner command.");
+			err += TTR("Unable to find Android SDK build-tools' apksigner command.") + " ";
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
 			err += "\n";
 			valid = false;

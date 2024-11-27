@@ -52,6 +52,7 @@
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/grid_container.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
@@ -463,10 +464,12 @@ void EditorPropertyPath::_set_read_only(bool p_read_only) {
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
-	ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
 
-	if (id != ResourceUID::INVALID_ID) {
-		full_path = ResourceUID::get_singleton()->id_to_text(id);
+	if (!global) {
+		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
+		if (id != ResourceUID::INVALID_ID) {
+			full_path = ResourceUID::get_singleton()->id_to_text(id);
+		}
 	}
 
 	emit_changed(get_edited_property(), full_path);
@@ -476,7 +479,7 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 String EditorPropertyPath::_get_path_text() {
 	String full_path = get_edited_property_value();
 	if (full_path.begins_with("uid://")) {
-		full_path = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(full_path));
+		full_path = ResourceUID::uid_to_path(full_path);
 	}
 
 	return full_path;
@@ -2643,7 +2646,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
-	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
+	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed), CONNECT_DEFERRED);
 	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(picker->get_picker()));
 	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }

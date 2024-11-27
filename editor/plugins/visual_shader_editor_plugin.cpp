@@ -59,6 +59,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
@@ -4125,6 +4126,7 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 
 	int from = p_from.to_int();
 	int to = p_to.to_int();
+	bool swap = last_to_node != -1 && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 
 	if (!visual_shader->can_connect_nodes(type, from, p_from_index, to, p_to_index)) {
 		return;
@@ -4142,6 +4144,14 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
 			undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
 			undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
+
+			if (swap) {
+				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, E.from_node, E.from_port, last_to_node, last_to_port);
+				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, last_to_node, last_to_port);
+				undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, E.from_node, E.from_port, last_to_node, last_to_port);
+				undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, last_to_node, last_to_port);
+			}
+			break;
 		}
 	}
 
@@ -4155,6 +4165,9 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, to);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, to);
 	undo_redo->commit_action();
+
+	last_to_node = -1;
+	last_to_port = -1;
 }
 
 void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index) {
@@ -4165,6 +4178,11 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 	int from = p_from.to_int();
 	int to = p_to.to_int();
 
+	last_to_node = to;
+	last_to_port = p_to_index;
+
+	info_label->show();
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Nodes Disconnected"));
 	undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
@@ -4174,6 +4192,10 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, to);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, to);
 	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_connection_drag_ended() {
+	info_label->hide();
 }
 
 void VisualShaderEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
@@ -5080,8 +5102,11 @@ void VisualShaderEditor::_param_property_changed(const String &p_property, const
 void VisualShaderEditor::_update_current_param() {
 	if (current_prop != nullptr) {
 		String name = current_prop->get_meta("id");
-		preview_material->set("shader_parameter/" + name, visual_shader->_get_preview_shader_parameter(name));
-
+		if (visual_shader->_has_preview_shader_parameter(name)) {
+			preview_material->set("shader_parameter/" + name, visual_shader->_get_preview_shader_parameter(name));
+		} else {
+			preview_material->set("shader_parameter/" + name, Variant());
+		}
 		current_prop->update_property();
 		current_prop->update_editor_property_status();
 		current_prop->update_cache();
@@ -6367,6 +6392,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
+	graph->connect("connection_drag_ended", callable_mp(this, &VisualShaderEditor::_connection_drag_ended));
 	graph->connect(SceneStringName(visibility_changed), callable_mp(this, &VisualShaderEditor::_visibility_changed));
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR_INT);
@@ -6426,6 +6452,13 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_TRANSFORM);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SAMPLER, VisualShaderNode::PORT_TYPE_SAMPLER);
+
+	info_label = memnew(Label);
+	info_label->set_text(vformat(TTR("Hold %s Key To Swap Connections"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)));
+	info_label->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_WIDE, PRESET_MODE_MINSIZE, 20);
+	info_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	info_label->hide();
+	graph->get_top_layer()->add_child(info_label);
 
 	PanelContainer *toolbar_panel = static_cast<PanelContainer *>(graph->get_menu_hbox()->get_parent());
 	toolbar_panel->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE, PRESET_MODE_MINSIZE, 10);
@@ -6847,8 +6880,10 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Grayscale function."), { VisualShaderNodeColorFunc::FUNC_GRAYSCALE }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("HSV2RGB", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts HSV vector to RGB equivalent."), { VisualShaderNodeColorFunc::FUNC_HSV2RGB, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("LinearToSRGB", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts color from linear to sRGB color space."), { VisualShaderNodeColorFunc::FUNC_LINEAR_TO_SRGB }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("RGB2HSV", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts RGB vector to HSV equivalent."), { VisualShaderNodeColorFunc::FUNC_RGB2HSV, VisualShaderNodeVectorFunc::OP_TYPE_VECTOR_3D }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Sepia function."), { VisualShaderNodeColorFunc::FUNC_SEPIA }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("SRGBToLinear", "Color/Functions", "VisualShaderNodeColorFunc", TTR("Converts color from sRGB to linear color space."), { VisualShaderNodeColorFunc::FUNC_SRGB_TO_LINEAR }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	add_options.push_back(AddOption("Burn", "Color/Operators", "VisualShaderNodeColorOp", TTR("Burn operator."), { VisualShaderNodeColorOp::OP_BURN }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Darken", "Color/Operators", "VisualShaderNodeColorOp", TTR("Darken operator."), { VisualShaderNodeColorOp::OP_DARKEN }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
@@ -6994,7 +7029,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("NodePositionView", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "node_position_view", "NODE_POSITION_VIEW"), { "node_position_view" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("NodePositionWorld", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "node_position_world", "NODE_POSITION_WORLD"), { "node_position_world" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("PointCoord", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "point_coord", "POINT_COORD"), { "point_coord" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
-	add_options.push_back(AddOption("ScreenUV", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_shader_mode, "screen_uv", "SCREEN_UV"), { "screen_uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ScreenUV", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "screen_uv", "SCREEN_UV"), { "screen_uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Tangent", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "tangent", "TANGENT"), { "tangent" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Vertex", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "vertex", "VERTEX"), { "vertex" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("View", "Input/Fragment", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "view", "VIEW"), { "view" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
@@ -7012,6 +7047,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("LightIsDirectional", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "light_is_directional", "LIGHT_IS_DIRECTIONAL"), { "light_is_directional" }, VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Metallic", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "metallic", "METALLIC"), { "metallic" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Roughness", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "roughness", "ROUGHNESS"), { "roughness" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ScreenUV", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "screen_uv", "SCREEN_UV"), { "screen_uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Specular", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "specular", "SPECULAR_LIGHT"), { "specular" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("View", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "view", "VIEW"), { "view" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 

@@ -759,6 +759,7 @@ Error Main::test_setup() {
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
 	// From `Main::setup2()`.
+	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
 
@@ -1631,7 +1632,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg.ends_with("project.godot")) {
 			String path;
 			String file = arg;
-			int sep = MAX(file.rfind("/"), file.rfind("\\"));
+			int sep = MAX(file.rfind_char('/'), file.rfind_char('\\'));
 			if (sep == -1) {
 				path = ".";
 			} else {
@@ -1834,13 +1835,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
-			if (!FileAccess::exists(arg) && !DirAccess::exists(arg)) {
-				// Warn if the argument isn't recognized by Godot *and* the file/folder
-				// specified by a positional argument doesn't exist.
-				// This allows projects to read file or folder paths as a positional argument
-				// without printing a warning, as this scenario can't make use of user command line arguments.
-				WARN_PRINT(vformat("Unknown command line argument \"%s\". User arguments should be passed after a -- or ++ separator, e.g. \"-- %s\".", arg, arg));
-			}
 			main_args.push_back(arg);
 		}
 
@@ -1909,12 +1903,55 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
 		Engine::get_singleton()->set_extension_reloading_enabled(true);
+
+		main_args.push_back("--editor");
+		if (!init_windowed && !init_fullscreen) {
+			init_maximized = true;
+			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+		}
+	}
+
+	if (!project_manager && !editor) {
+		// If we didn't find a project, we fall back to the project manager.
+		project_manager = !found_project && !cmdline_tool;
+	}
+
+	if (project_manager) {
+		Engine::get_singleton()->set_project_manager_hint(true);
 	}
 #endif
+
+	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
+
+	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
+	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
+	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
+	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
+	if (max_fps >= 0) {
+		Engine::get_singleton()->set_max_fps(max_fps);
+	}
 
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
 
+	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
+	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
+			GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater"), 6900)); // Roughly 144 FPS
+
+	GLOBAL_DEF("application/run/delta_smoothing", true);
+	if (!delta_smoothing_override) {
+		OS::get_singleton()->set_delta_smoothing(GLOBAL_GET("application/run/delta_smoothing"));
+	}
+
+	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
+	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
+	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
+	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
+		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
+	}
+
+	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
@@ -1939,20 +1976,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		packed_data->set_disabled(true);
-		main_args.push_back("--editor");
-		if (!init_windowed && !init_fullscreen) {
-			init_maximized = true;
-			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
-		}
-	}
-
-	if (!project_manager && !editor) {
-		// If we didn't find a project, we fall back to the project manager.
-		project_manager = !found_project && !cmdline_tool;
-	}
-
-	if (project_manager) {
-		Engine::get_singleton()->set_project_manager_hint(true);
 	}
 #endif
 
@@ -2023,8 +2046,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Logger::set_flush_stdout_on_print(GLOBAL_GET("application/run/flush_stdout_on_print"));
-
-	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
 	{
 		String driver_hints = "";
@@ -2584,24 +2605,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			window_vsync_mode = DisplayServer::VSyncMode::VSYNC_DISABLED;
 		}
 	}
-	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
-	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
-	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/output_latency", PROPERTY_HINT_RANGE, "1,100,1"), 15);
 	// Use a safer default output_latency for web to avoid audio cracking on low-end devices, especially mobile.
 	GLOBAL_DEF_RST("audio/driver/output_latency.web", 50);
 
 	Engine::get_singleton()->set_audio_output_latency(GLOBAL_GET("audio/driver/output_latency"));
-
-	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
-	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
-	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
-	GLOBAL_DEF("debug/settings/physics_interpolation/enable_warnings", true);
-
-	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
-		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
-	}
 
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	OS::get_singleton()->set_environment("MVK_CONFIG_LOG_LEVEL", OS::get_singleton()->_verbose_stdout ? "3" : "1"); // 1 = Errors only, 3 = Info
@@ -2616,15 +2625,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (audio_output_latency >= 1) {
 		Engine::get_singleton()->set_audio_output_latency(audio_output_latency);
-	}
-
-	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
-	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
-			GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater"), 6900)); // Roughly 144 FPS
-
-	GLOBAL_DEF("application/run/delta_smoothing", true);
-	if (!delta_smoothing_override) {
-		OS::get_singleton()->set_delta_smoothing(GLOBAL_GET("application/run/delta_smoothing"));
 	}
 
 	GLOBAL_DEF("display/window/ios/allow_high_refresh_rate", true);
@@ -3053,10 +3053,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 	}
 
 	// Max FPS needs to be set after the DisplayServer is created.
-	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
-
-	if (max_fps >= 0) {
-		Engine::get_singleton()->set_max_fps(max_fps);
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	if (rd) {
+		rd->_set_max_fps(engine->get_max_fps());
 	}
 
 #ifdef TOOLS_ENABLED
@@ -3495,7 +3494,7 @@ void Main::setup_boot_logo() {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-		const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
+		const String boot_logo_path = ResourceUID::ensure_path(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
 		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
 
@@ -4190,7 +4189,7 @@ int Main::start() {
 						local_game_path = "res://" + local_game_path;
 
 					} else {
-						int sep = local_game_path.rfind("/");
+						int sep = local_game_path.rfind_char('/');
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);

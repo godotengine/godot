@@ -1048,7 +1048,12 @@ void Skeleton3D::force_update_all_bone_transforms() {
 	for (int i = 0; i < parentless_bones.size(); i++) {
 		force_update_bone_children_transforms(parentless_bones[i]);
 	}
-	rest_dirty = false;
+	if (rest_dirty) {
+		rest_dirty = false;
+		emit_signal(SNAME("rest_updated"));
+	} else {
+		rest_dirty = false;
+	}
 	dirty = false;
 	if (updating) {
 		return;
@@ -1258,6 +1263,7 @@ void Skeleton3D::_bind_methods() {
 	ADD_GROUP("Modifier", "modifier_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "modifier_callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");
 
+	ADD_SIGNAL(MethodInfo("rest_updated"));
 	ADD_SIGNAL(MethodInfo("pose_updated"));
 	ADD_SIGNAL(MethodInfo("skeleton_updated"));
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));

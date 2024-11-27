@@ -384,6 +384,9 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 }
 
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "emitting") {
+		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+	}
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -818,7 +821,7 @@ void GPUParticles2D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");

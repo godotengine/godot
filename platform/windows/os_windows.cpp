@@ -43,6 +43,7 @@
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/file_access_windows_pipe.h"
+#include "drivers/windows/ip_windows.h"
 #include "drivers/windows/net_socket_winsock.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
@@ -69,6 +70,7 @@
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+__declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 }
 
 // Workaround mingw-w64 < 4.0 bug
@@ -274,7 +276,7 @@ void OS_Windows::initialize() {
 	current_pi.pi.hProcess = GetCurrentProcess();
 	process_map->insert(GetCurrentProcessId(), current_pi);
 
-	IPUnix::make_default();
+	IPWindows::make_default();
 	main_loop = nullptr;
 
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
@@ -986,7 +988,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	pi.si.StartupInfo.hStdOutput = pipe_out[1];
 	pi.si.StartupInfo.hStdError = pipe_err[1];
 
-	size_t attr_list_size = 0;
+	SIZE_T attr_list_size = 0;
 	InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
 	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
 	if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
@@ -1082,7 +1084,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			pi.si.StartupInfo.hStdError = pipe[1];
 		}
 
-		size_t attr_list_size = 0;
+		SIZE_T attr_list_size = 0;
 		InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
 		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
 		if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
@@ -1526,7 +1528,8 @@ DWRITE_FONT_STRETCH OS_Windows::_stretch_to_dw(int p_stretch) const {
 }
 
 Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
-	if (!dwrite2_init) {
+	// This may be called before TextServerManager has been created, which would cause a crash downstream if we do not check here
+	if (!dwrite2_init || !TextServerManager::get_singleton()) {
 		return Vector<String>();
 	}
 
@@ -1737,7 +1740,7 @@ String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
 	data.resize(p_buffer_size);
 	DWORD count = 0;
 	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
-		return String::utf8((const char *)data.ptr(), count);
+		return String::utf8((const char *)data.ptr(), count).replace("\r\n", "\n").rstrip("\n");
 	}
 
 	return String();

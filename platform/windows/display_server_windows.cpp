@@ -505,7 +505,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 	if (filter_names.is_empty()) {
 		filter_exts.push_back(String("*.*").utf16());
-		filter_names.push_back(RTR("All Files").utf16());
+		filter_names.push_back((RTR("All Files") + " (*)").utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
@@ -2167,6 +2167,10 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	r_style_ex |= WS_EX_ACCEPTFILES;
+
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "d3d12") {
+		r_style_ex |= WS_EX_NOREDIRECTIONBITMAP;
+	}
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
@@ -3243,6 +3247,10 @@ void DisplayServerWindows::process_events() {
 		DispatchMessageW(&msg);
 	}
 	_THREAD_SAFE_UNLOCK_
+
+	if (tts) {
+		tts->process_events();
+	}
 
 	if (!drop_events) {
 		_process_key_events();

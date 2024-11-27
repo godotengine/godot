@@ -194,7 +194,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		return cwd.replace_first(res_path, "res://");
 	} else {
-		int sep = path.rfind("/");
+		int sep = path.rfind_char('/');
 		if (sep == -1) {
 			return "res://" + path;
 		}
@@ -262,6 +262,12 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 			return p_path.replace("res:/", resource_path);
 		}
 		return p_path.replace("res://", "");
+	} else if (p_path.begins_with("uid://")) {
+		const String path = ResourceUID::uid_to_path(p_path);
+		if (!resource_path.is_empty()) {
+			return path.replace("res:/", resource_path);
+		}
+		return path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (!data_dir.is_empty()) {
@@ -300,7 +306,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		{ // Feature overrides.
-			int dot = p_name.operator String().find(".");
+			int dot = p_name.operator String().find_char('.');
 			if (dot != -1) {
 				Vector<String> s = p_name.operator String().split(".");
 
@@ -435,7 +441,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const _VCSort &E : vclist) {
 		String prop_info_name = E.name;
-		int dot = prop_info_name.find(".");
+		int dot = prop_info_name.find_char('.');
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
 			prop_info_name = prop_info_name.substr(0, dot);
 		}
@@ -508,16 +514,19 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 			}
 		}
 	}
-	if (p_from_version <= 5) {
-		// Converts the device in events from -1 (emulated events) to -3 (all events).
+	if (p_from_version == 5) {
+		// Converts the device in events from -3 to -1.
+		// -3 was introduced in GH-97707 as a way to prevent a clash in device IDs, but as reported in GH-99243, this leads to problems.
+		// -3 was used during dev-releases, so this conversion helps to revert such affected projects.
+		// This conversion doesn't affect any other projects, since -3 is not used otherwise.
 		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
 			if (String(E.key).begins_with("input/")) {
 				Dictionary action = E.value.variant;
 				Array events = action["events"];
 				for (int i = 0; i < events.size(); i++) {
 					Ref<InputEvent> ev = events[i];
-					if (ev.is_valid() && ev->get_device() == -1) { // -1 was the previous value (GH-97707).
-						ev->set_device(InputEvent::DEVICE_ID_ALL_DEVICES);
+					if (ev.is_valid() && ev->get_device() == -3) {
+						ev->set_device(-1);
 					}
 				}
 			}
@@ -1092,7 +1101,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		String category = E.name;
 		String name = E.name;
 
-		int div = category.find("/");
+		int div = category.find_char('/');
 
 		if (div < 0) {
 			category = "";

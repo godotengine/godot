@@ -40,7 +40,6 @@
 #include "core/input/input.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
-#include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio_server.h"
@@ -356,6 +355,10 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
 } SHC_PROCESS_DPI_AWARENESS;
+
+#ifndef WS_EX_NOREDIRECTIONBITMAP
+#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
+#endif
 
 class DropTargetWindows;
 
