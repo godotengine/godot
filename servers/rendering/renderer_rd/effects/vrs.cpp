@@ -132,7 +132,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 #ifndef XR_DISABLED
 		} else if (vrs_mode == RS::VIEWPORT_VRS_XR) {
 			Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
-			if (interface.is_valid()) {
+			if (interface.is_valid() && interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_UNIFIED) {
 				RID vrs_texture = interface->get_vrs_texture();
 				if (vrs_texture.is_valid()) {
 					RID rd_texture = texture_storage->texture_get_rd_texture(vrs_texture);
