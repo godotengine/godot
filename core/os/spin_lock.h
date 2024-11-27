@@ -82,26 +82,18 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 #endif
 }
 
-static_assert(std::atomic_bool::is_always_lock_free);
-
 class alignas(Thread::CACHE_LINE_BYTES) SpinLock {
-	mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
+	mutable std::atomic_flag locked{};
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
-		while (true) {
-			bool expected = false;
-			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
-				break;
-			}
-			do {
-				_cpu_pause();
-			} while (locked.load(std::memory_order_relaxed));
+		while (locked.test_and_set(std::memory_order_acquire)) {
+			_cpu_pause();
 		}
 	}
 
 	_ALWAYS_INLINE_ void unlock() const {
-		locked.store(false, std::memory_order_release);
+		locked.clear(std::memory_order_release);
 	}
 };
 
