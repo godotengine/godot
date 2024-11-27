@@ -31,6 +31,7 @@ public:
         revert_show->set_text(L"反向选择");
         revert_show->set_tooltip_text(L"反向选择,用来定位哪些没有分类的动画");
         revert_show->set_h_size_flags(SIZE_EXPAND_FILL);
+        revert_show->connect("toggled", callable_mp(this, &AnimationPreviewPanel::_on_revert_show_toggled));
         add_child(revert_show);
         
         animation_group = memnew(TabBar);
@@ -68,8 +69,18 @@ protected:
             load_animation_config();
         }
     }
-    void _on_tab_changed(int index) {
+    void _on_revert_show_toggled(bool pressed) {
+        last_inv_select = pressed;
+		refresh_animation_list(false);
+    }
+    void _on_group_pressed(String animation_group) {
+        last_select_group = animation_group;
+		refresh_animation_list(false);
 
+    }
+    void _on_tag_pressed(String animation_tag) {
+        last_select_tag = animation_tag;
+        refresh_animation_list(false);
     }
 
     void _on_update_animation_resource() {
@@ -121,14 +132,12 @@ protected:
 			p_dict["animation_group"] = animation_group;
 			p_dict["animation_tag"] = animation_tag;
 		}
-        bool is_show(const StringName& group, const Dictionary& p_select_tag) {
-            if(animation_group != group) {
-                return false;
+        bool is_show(const StringName& group, const Dictionary& p_select_tag,bool is_revert_show) {            
+            bool _is_show = animation_group == group && p_select_tag.get(animation_tag,false);
+            if(_is_show && !is_revert_show) {
+                return true;
             }
-            if(!p_select_tag.get(animation_tag,false)) {
-                return false;
-            }
-            return true;            
+            return false;            
         }
 	};
     void load_animation_config() {
@@ -157,55 +166,62 @@ protected:
         last_select_tag = dict["last_select_tag"];
         refresh_animation_list();
     }
-    void refresh_animation_list() {
-        animation_group_list.clear();
-        animation_tags_list.clear();
-        CharacterManager* character_manager = CharacterManager::get_singleton();
-        character_manager->get_animation_groups(&animation_group_list);
-        character_manager->get_animation_tags(&animation_tags_list);
+    void refresh_animation_list(bool update_ui = true) {
 
-        while(animation_tag_list->get_child_count() > 0) {
-            Node* child = animation_tag_list->get_child(0);
-            animation_tag_list->remove_child(child);
-            child->queue_free();
-        }
+        if(update_ui) {
+            animation_group_list.clear();
+            animation_tags_list.clear();
+            CharacterManager* character_manager = CharacterManager::get_singleton();
+            character_manager->get_animation_groups(&animation_group_list);
+            character_manager->get_animation_tags(&animation_tags_list);
 
-        while (animation_group->get_child_count() > 0)
-        {
-            Node* child = animation_group->get_child(0);
-            animation_group->remove_child(child);
-            child->queue_free();
-        }
-
-        for(auto& it : animation_group_list) {
-            StringName name = it;
-            Button* btn = memnew(Button);
-            btn->set_text(name.str());
-            if(last_select_group == name) {
-                btn->set_pressed(true);   
-                btn->set_modulate(Color(0.349727, 0.355482, 0.26278, 1));             
+            while(animation_tag_list->get_child_count() > 0) {
+                Node* child = animation_tag_list->get_child(0);
+                animation_tag_list->remove_child(child);
+                child->queue_free();
             }
-            else {
-                btn->set_pressed(false);
-                btn->set_modulate(Color(1, 1, 1, 1));
-            }
-            btn->set_toggle_mode(true);
-            animation_group->add_child(btn);
-        }
 
-        for(auto& it : animation_tags_list) {
-            StringName name = it;
-            CheckBox* btn = memnew(CheckBox);
-            btn->set_text(name.str());
-            bool check = last_select_tag.get(name, false);
-            btn->set_pressed(check);
+            while (animation_group->get_child_count() > 0)
+            {
+                Node* child = animation_group->get_child(0);
+                animation_group->remove_child(child);
+                child->queue_free();
+            }
+
+            for(auto& it : animation_group_list) {
+                StringName name = it;
+                Button* btn = memnew(Button);
+                btn->set_text(name.str());
+                if(last_select_group == name) {
+                    btn->set_pressed(true);   
+                    btn->set_modulate(Color(0.349727, 0.355482, 0.26278, 1));             
+                }
+                else {
+                    btn->set_pressed(false);
+                    btn->set_modulate(Color(1, 1, 1, 1));
+                }
+                btn->set_toggle_mode(true);
+                btn->connect("pressed", callable_mp(this, &AnimationPreviewPanel::_on_group_pressed).bind(name));
+                animation_group->add_child(btn);
+            }
+
+            for(auto& it : animation_tags_list) {
+                StringName name = it;
+                CheckBox* btn = memnew(CheckBox);
+                btn->set_text(name.str());
+                bool check = last_select_tag.get(name, false);
+                btn->set_pressed(check);
+                btn->connect("pressed", callable_mp(this, &AnimationPreviewPanel::_on_tag_pressed).bind(name));
+                animation_tag_list->add_child(btn);
+            }
+            revert_show->set_pressed(last_inv_select);
         }
 
         // 获取动画列表
         curr_show_animations.clear();
         animation_list->clear();
         for(auto& it : animations) {
-            if(it->is_show(last_select_group, last_select_tag)) {
+            if(it->is_show(last_select_group, last_select_tag,last_inv_select)) {
                 AnimationNodePreview* preview = memnew(AnimationNodePreview);
                 preview->set_animation_path(it->animation_path);
                 curr_show_animations.push_back(it);
