@@ -34,12 +34,12 @@ public:
         revert_show->connect("toggled", callable_mp(this, &AnimationPreviewPanel::_on_revert_show_toggled));
         add_child(revert_show);
         
-        animation_group = memnew(TabBar);
-        animation_group->set_self_modulate(Color(0.958148, 0.603324, 0.533511, 1));
-        animation_group->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-        animation_group->set_max_tab_width(80);
-        animation_group->connect("tab_changed", callable_mp(this, &AnimationPreviewPanel::_on_tab_changed));
-        add_child(animation_group);
+		animation_group_tab = memnew(TabBar);
+		animation_group_tab->set_self_modulate(Color(0.958148, 0.603324, 0.533511, 1));
+		animation_group_tab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
+		animation_group_tab->set_max_tab_width(80);
+		animation_group_tab->connect("tab_changed", callable_mp(this, &AnimationPreviewPanel::_on_tab_changed));
+        add_child(animation_group_tab);
 
         HSeparator* separator = memnew(HSeparator);
         separator->set_self_modulate(Color(0.349727, 0.355482, 0.26278, 1));
@@ -73,13 +73,13 @@ protected:
         last_inv_select = pressed;
 		refresh_animation_list(false);
     }
-    void _on_group_pressed(String animation_group) {
-        last_select_group = animation_group;
+    void _on_tab_changed(int p_tab_idx) {
+        last_select_group = animation_group_list[p_tab_idx];
 		refresh_animation_list(false);
 
     }
-    void _on_tag_pressed(String animation_tag) {
-        last_select_tag = animation_tag;
+    void _on_tag_pressed(bool value,String animation_tag) {
+		last_select_tag[StringName(animation_tag)] = value;
         refresh_animation_list(false);
     }
 
@@ -180,29 +180,11 @@ protected:
                 animation_tag_list->remove_child(child);
                 child->queue_free();
             }
-
-            while (animation_group->get_child_count() > 0)
-            {
-                Node* child = animation_group->get_child(0);
-                animation_group->remove_child(child);
-                child->queue_free();
-            }
+			animation_group_tab->clear_tabs();
 
             for(auto& it : animation_group_list) {
                 StringName name = it;
-                Button* btn = memnew(Button);
-                btn->set_text(name.str());
-                if(last_select_group == name) {
-                    btn->set_pressed(true);   
-                    btn->set_modulate(Color(0.349727, 0.355482, 0.26278, 1));             
-                }
-                else {
-                    btn->set_pressed(false);
-                    btn->set_modulate(Color(1, 1, 1, 1));
-                }
-                btn->set_toggle_mode(true);
-                btn->connect("pressed", callable_mp(this, &AnimationPreviewPanel::_on_group_pressed).bind(name));
-                animation_group->add_child(btn);
+				animation_group_tab->add_tab(name);
             }
 
             for(auto& it : animation_tags_list) {
@@ -211,7 +193,7 @@ protected:
                 btn->set_text(name.str());
                 bool check = last_select_tag.get(name, false);
                 btn->set_pressed(check);
-                btn->connect("pressed", callable_mp(this, &AnimationPreviewPanel::_on_tag_pressed).bind(name));
+                btn->connect("toggled", callable_mp(this, &AnimationPreviewPanel::_on_tag_pressed).bind(name));
                 animation_tag_list->add_child(btn);
             }
             revert_show->set_pressed(last_inv_select);
@@ -264,7 +246,7 @@ protected:
     Array animation_tags_list;
     CheckBox* revert_show = nullptr;
     Button* update_animation_resource = nullptr;
-    TabBar* animation_group= nullptr;
+    TabBar* animation_group_tab= nullptr;
     VFlowContainer* animation_tag_list= nullptr;
     ItemBox* animation_list= nullptr;
     LocalVector<String> animation_list_paths = {"res://Assets/public/animation/", "res://Assets/public/human_animation/"};
