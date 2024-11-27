@@ -1546,6 +1546,11 @@ RID OpenXRInterface::get_vrs_texture() {
 		return RID();
 	}
 
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return density_map;
+	}
+
 	PackedVector2Array eye_foci;
 
 	Size2 target_size = get_render_target_size();
@@ -1559,6 +1564,19 @@ RID OpenXRInterface::get_vrs_texture() {
 	xr_vrs.set_vrs_render_region(get_render_region());
 
 	return xr_vrs.make_vrs_texture(target_size, eye_foci);
+}
+
+XRInterface::VRSTextureFormat OpenXRInterface::get_vrs_texture_format() {
+	if (!openxr_api) {
+		return XR_VRS_TEXTURE_FORMAT_UNIFIED;
+	}
+
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP;
+	}
+
+	return XR_VRS_TEXTURE_FORMAT_UNIFIED;
 }
 
 void OpenXRInterface::set_cpu_level(PerfSettingsLevel p_level) {

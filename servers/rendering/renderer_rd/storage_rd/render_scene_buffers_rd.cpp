@@ -168,6 +168,8 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	ERR_FAIL_COND_MSG(view_count == 0, "Must have at least 1 view");
 
+	vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
+
 	update_samplers();
 
 	// cleanout any old buffers we had.
@@ -194,7 +196,6 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// VRS (note, our vrs object will only be set if VRS is supported)
 	RID vrs_texture;
-	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
 		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, get_vrs_format(), get_vrs_usage_bits(), RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
 	}

@@ -429,7 +429,7 @@ public:
 	void texture_set_discardable(RID p_texture, bool p_discardable);
 	bool texture_is_discardable(RID p_texture);
 
-private:
+public:
 	/*************/
 	/**** VRS ****/
 	/*************/
@@ -440,6 +440,7 @@ private:
 		VRS_METHOD_FRAGMENT_DENSITY_MAP,
 	};
 
+private:
 	VRSMethod vrs_method = VRS_METHOD_NONE;
 	DataFormat vrs_format = DATA_FORMAT_MAX;
 	Size2i vrs_texel_size;
@@ -450,6 +451,7 @@ private:
 	void _vrs_detect_method();
 
 public:
+	VRSMethod vrs_get_method() const;
 	DataFormat vrs_get_format() const;
 	Size2i vrs_get_texel_size() const;
 

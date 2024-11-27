@@ -183,7 +183,15 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	uint32_t view_count = render_buffers->get_view_count();
 
 	RID vrs_texture;
-	if (render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
+#ifndef XR_DISABLED
+	if (render_buffers->get_vrs_mode() == RS::VIEWPORT_VRS_XR) {
+		Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
+		if (interface.is_valid() && RD::get_singleton()->vrs_get_method() == RD::VRS_METHOD_FRAGMENT_DENSITY_MAP && interface->get_vrs_texture_format() == XRInterface::XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP) {
+			vrs_texture = interface->get_vrs_texture();
+		}
+	}
+#endif // XR_DISABLED
+	if (vrs_texture.is_null() && render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
 		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 	}
 
