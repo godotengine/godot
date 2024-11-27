@@ -404,6 +404,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	monitor_tree->connect("item_edited", callable_mp(this, &EditorPerformanceProfiler::_monitor_select));
 	monitor_tree->create_item();
 	monitor_tree->set_hide_root(true);
+	monitor_tree->set_theme_type_variation("TreeSecondary");
 	add_child(monitor_tree);
 
 	monitor_draw = memnew(Control);

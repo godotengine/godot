@@ -1922,6 +1922,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		stack_dump->set_column_title(0, TTR("Stack Frames"));
 		stack_dump->set_hide_root(true);
 		stack_dump->set_v_size_flags(SIZE_EXPAND_FILL);
+		stack_dump->set_theme_type_variation("TreeSecondary");
 		stack_dump->connect("cell_selected", callable_mp(this, &ScriptEditorDebugger::_stack_dump_frame_selected));
 		stack_vb->add_child(stack_dump);
 
@@ -1957,6 +1958,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->set_allow_reselect(true);
 		breakpoints_tree->set_allow_rmb_select(true);
 		breakpoints_tree->set_hide_root(true);
+		breakpoints_tree->set_theme_type_variation("TreeSecondary");
 		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
 		breakpoints_tree->create_item();
 

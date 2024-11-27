@@ -1294,6 +1294,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list->set_columns(2); // Commit msg, author
 	commit_list->set_column_custom_minimum_width(0, 40);
 	commit_list->set_column_custom_minimum_width(1, 20);
+	commit_list->set_theme_type_variation("TreeSecondary");
 	commit_list->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(commit_list));
 	version_commit_dock->add_child(commit_list);
 
