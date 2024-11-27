@@ -67,6 +67,7 @@ if ARGUMENTS.get("target", "editor") == "editor":
 # Scan possible build platforms
 
 platform_list = []  # list of platforms
+platform_tools = {}  # SCons custom tools for each platform
 platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
@@ -100,6 +101,10 @@ for x in sorted(glob.glob("platform/*")):
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
         platform_list += [x]
+        try:  # Custom tools is optional
+            platform_tools[x] = detect.get_tools()
+        except Exception:
+            platform_tools[x] = ["default"]
         platform_opts[x] = detect.get_opts()
         platform_flags[x] = detect.get_flags()
         if isinstance(platform_flags[x], list):  # backwards compatibility
@@ -107,22 +112,14 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
-custom_tools = ["default"]
+# Define main SCons Environment
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
-
-if platform_arg == "android":
-    custom_tools = ["clang", "clang++", "as", "ar", "link"]
-elif platform_arg == "web":
-    # Use generic POSIX build toolchain for Emscripten.
-    custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
-elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
-    custom_tools = ["mingw"]
+env = Environment(tools=platform_tools[platform_arg])
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env = Environment(tools=custom_tools)
 env.PrependENVPath("PATH", os.getenv("PATH"))
 env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.

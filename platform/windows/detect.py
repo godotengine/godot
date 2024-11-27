@@ -155,6 +155,13 @@ def detect_build_env_arch():
     return ""
 
 
+def get_tools():
+    if os.name != "nt" or methods.get_cmdline_bool("use_mingw", False):
+        return ["mingw"]
+    else:
+        return ["default"]
+
+
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
