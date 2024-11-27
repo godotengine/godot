@@ -44,8 +44,6 @@ class StringBuilder {
 	// a natural number means C string.
 	LocalVector<int32_t> appended_strings;
 
-	mutable LocalVector<char32_t> buffer_persist;
-
 public:
 	StringBuilder &append(const String &p_string);
 	StringBuilder &append(const char *p_cstring);
