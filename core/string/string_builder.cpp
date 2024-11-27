@@ -68,7 +68,7 @@ String StringBuilder::as_string() const {
 		return "";
 	}
 
-	String buffer = String();
+	String buffer;
 	buffer.resize(string_length + 1);
 
 	int current_position = 0;
