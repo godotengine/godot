@@ -133,9 +133,6 @@ jobs:
           python-version: 3.8
           scons-version: 4.0
 
-      - name: Setup GCC problem matcher
-        uses: ammaraskar/gcc-problem-matcher@master
-
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
@@ -158,6 +155,9 @@ jobs:
       - name: Build .NET solutions
         if: matrix.build-mono
         run: |
+          # FIXME: C# warnings should be properly handled eventually, but we don't want to clutter
+          # the GitHub Actions annotations, so remove the associated problem matcher for now.
+          echo "::remove-matcher owner=msvc::"
           ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
 
       - name: Prepare artifact

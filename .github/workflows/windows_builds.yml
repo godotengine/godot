@@ -86,14 +86,6 @@ jobs:
       - name: Extract pre-built ANGLE static libraries
         run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
 
-      - name: Setup MSVC problem matcher
-        if: matrix.compiler == 'msvc'
-        uses: ammaraskar/msvc-problem-matcher@master
-
-      - name: Setup GCC problem matcher
-        if: matrix.compiler != 'msvc'
-        uses: ammaraskar/gcc-problem-matcher@master
-
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
