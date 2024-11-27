@@ -33,6 +33,7 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
+#include "core/templates/pair.h"
 #include "core/variant/array.h"
 
 class Variant;
@@ -112,6 +113,7 @@ public:
 
 	Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
 	Dictionary(const Dictionary &p_from);
+	Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init);
 	Dictionary();
 	~Dictionary();
 };
