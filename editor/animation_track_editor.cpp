@@ -1400,12 +1400,26 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 		undo_redo->add_undo_method(this, "update_values");
 		undo_redo->commit_action();
 	} else {
-		String base_path = animation->get_path();
-		if (FileAccess::exists(base_path + ".import")) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from imported scene."));
-		} else {
-			EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another scene."));
+		String base = animation->get_path();
+		int srpos = base.find("::");
+		if (srpos != -1) {
+			base = animation->get_path().substr(0, srpos);
 		}
+
+		if (FileAccess::exists(base + ".import")) {
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from an imported scene.\n\nTo change this animation's loop mode, navigate to the scene's Advanced Import settings and select the animation.\nYou can then change the loop mode from the inspector menu."));
+			} else {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from an imported resource."));
+			}
+		} else {
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another scene.\n\nYou must open this scene and change the animation's loop mode from there."));
+			} else {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another resource."));
+			}
+		}
+
 		update_values();
 	}
 }
@@ -6628,6 +6642,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_SCALE_SELECTION:
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			scale->get_line_edit()->grab_focus();
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -7875,9 +7890,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scale->set_min(-99999);
 	scale->set_max(99999);
 	scale->set_step(0.001);
+	scale->set_select_all_on_focus(true);
 	vbc->add_margin_child(TTR("Scale Ratio:"), scale);
-	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM));
+	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM), CONNECT_DEFERRED);
 	add_child(scale_dialog);
+
+	scale_dialog->register_text_enter(scale->get_line_edit());
 
 	//
 	ease_dialog = memnew(ConfirmationDialog);

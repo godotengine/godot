@@ -298,6 +298,19 @@ private:
 		}
 	}
 };
+
+struct PerformanceData {
+	int pm_region_count = 0;
+	int pm_agent_count = 0;
+	int pm_link_count = 0;
+	int pm_polygon_count = 0;
+	int pm_edge_count = 0;
+	int pm_edge_merge_count = 0;
+	int pm_edge_connection_count = 0;
+	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
+};
+
 } // namespace gd
 
 #endif // NAV_UTILS_H

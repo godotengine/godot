@@ -93,6 +93,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/sky_material.h"
@@ -8826,7 +8827,12 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), Key::O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), Key::F);
 	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTR("Align Transform with View"),
-			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::KP_0), int32_t(KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::M) });
+			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::KP_0),
+					int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::M),
+					int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::G) });
+	ED_SHORTCUT_OVERRIDE_ARRAY("spatial_editor/align_transform_with_view", "macos",
+			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::META | Key::KP_0),
+					int32_t(KeyModifierMask::ALT | KeyModifierMask::META | Key::G) });
 	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTR("Align Rotation with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTR("Toggle Freelook"), KeyModifierMask::SHIFT + Key::F);
 	ED_SHORTCUT("spatial_editor/decrease_fov", TTR("Decrease Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::EQUAL); // Usually direct access key for `KEY_PLUS`.
