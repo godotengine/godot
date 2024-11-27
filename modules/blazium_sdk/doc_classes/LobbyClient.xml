@@ -119,7 +119,7 @@
 	</members>
 	<signals>
 		<signal name="append_log">
-			<param index="0" name="action" type="String" />
+			<param index="0" name="command" type="String" />
 			<param index="1" name="info" type="String" />
 			<param index="2" name="logs" type="String" />
 			<description>
