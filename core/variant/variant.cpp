@@ -176,6 +176,18 @@ String Variant::get_type_name(Variant::Type p_type) {
 	return "";
 }
 
+Variant::Type Variant::get_type_by_name(const String &p_type_name) {
+	static HashMap<String, Type> type_names;
+	if (unlikely(type_names.is_empty())) {
+		for (int i = 0; i < VARIANT_MAX; i++) {
+			type_names[get_type_name((Type)i)] = (Type)i;
+		}
+	}
+
+	const Type *ptr = type_names.getptr(p_type_name);
+	return (ptr == nullptr) ? VARIANT_MAX : *ptr;
+}
+
 bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	if (p_type_from == p_type_to) {
 		return true;
