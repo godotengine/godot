@@ -145,7 +145,7 @@ protected:
         Ref<JSON> json = memnew(JSON);
         String config_path = "res://.godot/animation_config.json";
         Ref<FileAccess> f = FileAccess::open(config_path, FileAccess::READ);
-        if (!f->is_open()) {
+        if (f.is_null()) {
             _on_update_animation_resource();
             return;
         }

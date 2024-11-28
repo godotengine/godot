@@ -126,14 +126,17 @@ protected:
 public:
     void set_prefab(Ref<CharacterBodyPrefab> p_prefab);
     void set_prefab_path(String p_path);
+    String get_prefab_path() { return prefab_path; }
 
     void set_animator_node(Ref<CharacterAnimatorNodeBase> p_node);
 	void set_animator_node_path(String p_path);
+    String get_animator_node_path() { return node_path; }
 
 
 
     void set_animation(Ref<Animation> p_animation) ;
     void set_animation_path(String p_path) ;
+    String get_animation_path() { return animation_path; }
 
 	AnimationNodePreview();
 

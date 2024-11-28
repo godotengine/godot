@@ -47,8 +47,6 @@ public:
         view_root->set_h_size_flags(SIZE_EXPAND_FILL);
         view_root->set_v_size_flags(SIZE_EXPAND_FILL);
         add_child(view_root);
-
-		connect(SceneStringName(sort_children), callable_mp(this, &ItemBox::scroll_changed));
     }
 
     void scroll_changed(float ) {

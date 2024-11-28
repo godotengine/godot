@@ -12,88 +12,119 @@ class AnimationProcessPanel : public VBoxContainer {
 
 public:
     AnimationProcessPanel() {
+        HBoxContainer* hb = memnew(HBoxContainer);
+        hb->set_h_size_flags(SIZE_EXPAND_FILL);
+        add_child(hb);
         {
-            Label* label = memnew(Label);
-            label->set_h_size_flags(SIZE_EXPAND_FILL);
-            label->set_text(L"单个动画处理");
-            label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-            add_child(label);
+            VBoxContainer* vb = memnew(VBoxContainer);
+            vb->set_custom_minimum_size(Vector2(300, 0));
+            hb->add_child(vb);
 
-            HBoxContainer* hb = memnew(HBoxContainer);
-            hb->set_h_size_flags(SIZE_EXPAND_FILL);
-            add_child(hb);
+            preview_prefab_path = memnew(EditorPropertyPath);
+            preview_prefab_path->set_object_and_property(this, SNAME("preview_prefab_path"));
+            preview_prefab_path->setup({ "res", "tres" }, false, false);
+            vb->add_child(preview_prefab_path);
 
-            HSeparator* sep = memnew(HSeparator);
-            hb->add_child(sep);
-
-            single_path = memnew(EditorPropertyPath);
-			single_path->setup({ "res", "tres" }, false, false);
-            hb->add_child(single_path);
-
-            single_animation_group = memnew(EditorPropertyTextEnum);
-            single_animation_group->set_name(L"动画组");
-            single_animation_group->set_custom_minimum_size(Vector2(100, 0));
-            single_animation_group->set_object_and_property(this, "single_animation_group");
-            single_animation_group->set_dynamic(true, "get_animation_groups");
-            hb->add_child(single_animation_group);
-
-            single_animation_tags = memnew(EditorPropertyTextEnum);
-            single_animation_tags->set_name(L"动画标签");
-            single_animation_tags->set_custom_minimum_size(Vector2(100, 0));
-            single_animation_tags->set_object_and_property(this, "single_animation_tags");
-            single_animation_tags->set_dynamic(true, "get_animation_tags");
-            hb->add_child(single_animation_tags);
-
-            conver_single_button = memnew(Button);
-            conver_single_button->set_text(L"转换");
-            conver_single_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationProcessPanel::_on_conver_single_pressed));
-            hb->add_child(conver_single_button);
+            preview = memnew(AnimationNodePreview);
+            preview->set_custom_minimum_size(Vector2(300, 300));
+            vb->add_child(preview);
         }
 
-
-
         {
+            VBoxContainer* vb = memnew(VBoxContainer);
+            vb->set_h_size_flags(SIZE_EXPAND_FILL);
+            vb->set_custom_minimum_size(Vector2(300, 0));
+            hb->add_child(vb);
+
+            {
+                Label* label = memnew(Label);
+                label->set_h_size_flags(SIZE_EXPAND_FILL);
+                label->set_text(L"单个动画处理");
+                label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+                vb->add_child(label);
+
+                HBoxContainer* hb = memnew(HBoxContainer);
+                hb->set_h_size_flags(SIZE_EXPAND_FILL);
+                vb->add_child(hb);
+
+                HSeparator* sep = memnew(HSeparator);
+                hb->add_child(sep);
+
+                single_path = memnew(EditorPropertyPath);
+                single_path->setup({ "res", "tres" }, false, false);
+                vb->add_child(single_path);
+
+                single_animation_group = memnew(EditorPropertyTextEnum);
+                single_animation_group->set_name(L"动画组");
+                single_animation_group->set_h_size_flags(SIZE_EXPAND_FILL);
+                single_animation_group->set_custom_minimum_size(Vector2(100, 0));
+                single_animation_group->set_object_and_property(this, "single_animation_group");
+                single_animation_group->set_dynamic(true, "get_animation_groups");
+                vb->add_child(single_animation_group);
+
+                single_animation_tags = memnew(EditorPropertyTextEnum);
+                single_animation_tags->set_name(L"动画标签");
+                single_animation_tags->set_custom_minimum_size(Vector2(100, 0));
+                single_animation_tags->set_object_and_property(this, "single_animation_tags");
+                single_animation_tags->set_dynamic(true, "get_animation_tags");
+                vb->add_child(single_animation_tags);
+
+                conver_single_button = memnew(Button);
+                conver_single_button->set_text(L"转换");
+                conver_single_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationProcessPanel::_on_conver_single_pressed));
+                vb->add_child(conver_single_button);
+            }
+
+
+
+            {
                 Label* label = memnew(Label);
                 label->set_h_size_flags(SIZE_EXPAND_FILL);
                 label->set_text(L"多个动画处理");
                 label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-                add_child(label);
+                vb->add_child(label);
 
-                HBoxContainer* hb = memnew(HBoxContainer);
+                HBoxContainer* hhb = memnew(HBoxContainer);
                 hb->set_h_size_flags(SIZE_EXPAND_FILL);
-                add_child(hb);
+                vb->add_child(hhb);
 
                 HSeparator* sep2 = memnew(HSeparator);
-                hb->add_child(sep2);
+                hhb->add_child(sep2);
 
                 multe_path = memnew(EditorPropertyPath);
+                multe_path->set_object_and_property(this, "mult_animation_file_path");
+                multe_path->set_h_size_flags(SIZE_EXPAND_FILL);
                 multe_path->setup(Vector<String>(), true, false);
-                hb->add_child(multe_path);
+                hhb->add_child(multe_path);
 
                 multe_animation_group = memnew(EditorPropertyTextEnum);
                 multe_animation_group->set_name(L"动画组");
                 multe_animation_group->set_custom_minimum_size(Vector2(100, 0));
                 multe_animation_group->set_object_and_property(this, "multe_animation_group");
                 multe_animation_group->set_dynamic(true, "get_animation_groups");
-                hb->add_child(multe_animation_group);
+                hhb->add_child(multe_animation_group);
 
                 multe_animation_tags = memnew(EditorPropertyTextEnum);
                 multe_animation_tags->set_name(L"动画标签");
                 multe_animation_tags->set_custom_minimum_size(Vector2(100, 0));
                 multe_animation_tags->set_object_and_property(this, "multe_animation_tags");
                 multe_animation_tags->set_dynamic(true, "get_animation_tags");
-                hb->add_child(multe_animation_tags);
+                hhb->add_child(multe_animation_tags);
 
                 conver_multe_button = memnew(Button);
                 conver_multe_button->set_text(L"转换");
                 conver_multe_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationProcessPanel::_on_conver_multe_pressed));
-                hb->add_child(conver_multe_button);
+                hhb->add_child(conver_multe_button);
+
+            }
 
         }
 
-
     }
     static void _bind_methods() {
+        ClassDB::bind_method(D_METHOD("set_preview_prefab_path", "path"), &AnimationProcessPanel::set_preview_prefab_path);
+        ClassDB::bind_method(D_METHOD("get_preview_prefab_path"), &AnimationProcessPanel::get_preview_prefab_path);
+
         ClassDB::bind_method(D_METHOD("get_animation_groups"), &AnimationProcessPanel::get_animation_groups);
         ClassDB::bind_method(D_METHOD("get_animation_tags"), &AnimationProcessPanel::get_animation_tags);
 
@@ -112,6 +143,7 @@ public:
         ClassDB::bind_method(D_METHOD("set_multe_animation_tags", "tag"), &AnimationProcessPanel::set_multe_animation_tags);
         ClassDB::bind_method(D_METHOD("get_multe_animation_tags"), &AnimationProcessPanel::get_multe_animation_tags);
 
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "preview_prefab_path"), "set_preview_prefab_path", "get_preview_prefab_path");
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "single_animation_file_path"), "set_single_animation_file_path", "get_single_animation_file_path");
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "single_animation_group"), "set_single_animation_group", "get_single_animation_group");
@@ -123,6 +155,19 @@ public:
 
 
     }
+
+    void set_preview_prefab_path(const String& path) {
+        if(preview != nullptr) {
+            preview->set_prefab_path(path);
+        }
+    }
+    String get_preview_prefab_path() {
+        if(preview != nullptr) {
+			return preview->get_prefab_path();
+        }
+		return "";
+    }
+
     void set_single_animation_file_path(const String& path) {
         single_animation_file_path = path;
     }
@@ -181,8 +226,7 @@ protected:
         
     }
 public:
-    String animation_preview_prefab_path;
-    EditorPropertyPath* single_path = nullptr;
+    EditorPropertyPath* preview_prefab_path = nullptr;
     // 预览预制体查看面板
     AnimationNodePreview* preview = nullptr;
 
