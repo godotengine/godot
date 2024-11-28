@@ -58,7 +58,9 @@ public:
 		ProfilingAdd add = nullptr;
 		ProfilingTick tick = nullptr;
 		void *data = nullptr;
+#ifdef DEBUGGER_ENABLED
 		bool active = false;
+#endif
 
 	public:
 		Profiler() {}
@@ -85,12 +87,14 @@ public:
 	};
 
 private:
+#ifdef DEBUGGER_ENABLED
 	double frame_time = 0.0;
 	double process_time = 0.0;
 	double physics_time = 0.0;
 	double physics_frame_time = 0.0;
 
 	uint32_t poll_every = 0;
+#endif
 
 protected:
 	static EngineDebugger *singleton;
@@ -126,13 +130,7 @@ public:
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
 
-	void line_poll() {
-		// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught.
-		if (unlikely(poll_every % 2048) == 0) {
-			poll_events(false);
-		}
-		poll_every++;
-	}
+	void line_poll();
 
 	virtual void poll_events(bool p_is_idle) {}
 	virtual void send_message(const String &p_msg, const Array &p_data) = 0;

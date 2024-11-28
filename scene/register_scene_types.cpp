@@ -1239,7 +1239,9 @@ void register_scene_types() {
 		GraphEdit::init_shaders();
 	}
 
+#ifdef DEBUGGER_ENABLED
 	SceneDebugger::initialize();
+#endif
 
 	OS::get_singleton()->benchmark_end_measure("Scene", "Register Types");
 }
@@ -1247,7 +1249,9 @@ void register_scene_types() {
 void unregister_scene_types() {
 	OS::get_singleton()->benchmark_begin_measure("Scene", "Unregister Types");
 
+#ifdef DEBUGGER_ENABLED
 	SceneDebugger::deinitialize();
+#endif
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();

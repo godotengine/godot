@@ -18,7 +18,8 @@ env.add_source_files(env.servers_sources, "text_server.cpp")
 
 SConscript("audio/SCsub")
 SConscript("camera/SCsub")
-SConscript("debugger/SCsub")
+if env["enable_engine_debugger"]:
+    SConscript("debugger/SCsub")
 SConscript("display/SCsub")
 SConscript("extensions/SCsub")
 SConscript("movie_writer/SCsub")

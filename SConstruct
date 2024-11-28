@@ -259,6 +259,7 @@ opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and be
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
+opts.Add(BoolVariable("enable_engine_debugger", "Enable engine-specific debugging features", True))
 opts.Add(
     "system_certs_path",
     "Use this path as TLS certificates default for editor and Linux/BSD export templates (for package maintainers)",
@@ -500,6 +501,14 @@ if env.dev_build:
 else:
     # Disable assert() for production targets (only used in thirdparty code).
     env.Append(CPPDEFINES=["NDEBUG"])
+
+env["enable_engine_debugger"] = methods.get_cmdline_bool("enable_engine_debugger", env.debug_features)
+
+if env["enable_engine_debugger"]:
+    env.Append(CPPDEFINES=["DEBUGGER_ENABLED"])
+elif env.editor_build:
+    print_error(f'Engine debugger is required for editor builds.')
+    Exit(255)
 
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.

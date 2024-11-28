@@ -17,7 +17,8 @@ SConscript("2d/SCsub")
 SConscript("animation/SCsub")
 SConscript("audio/SCsub")
 SConscript("resources/SCsub")
-SConscript("debugger/SCsub")
+if env["enable_engine_debugger"]:
+    SConscript("debugger/SCsub")
 SConscript("theme/SCsub")
 
 # Build it all as a library

@@ -247,7 +247,9 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(MovieWriter);
 
+#ifdef DEBUGGER_ENABLED
 	ServersDebugger::initialize();
+#endif
 
 	// Physics 2D
 	GDREGISTER_CLASS(PhysicsServer2DManager);
@@ -337,7 +339,9 @@ void register_server_types() {
 void unregister_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Unregister Extensions");
 
+#ifdef DEBUGGER_ENABLED
 	ServersDebugger::deinitialize();
+#endif
 	memdelete(shader_types);
 	memdelete(writer_mjpeg);
 	memdelete(writer_pngwav);

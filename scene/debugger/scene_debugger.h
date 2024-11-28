@@ -55,7 +55,6 @@ public:
 
 	~SceneDebugger();
 
-#ifdef DEBUG_ENABLED
 private:
 	static void _handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut);
 
@@ -70,10 +69,8 @@ public:
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
 	static void reload_cached_files(const PackedStringArray &p_files);
-#endif
 };
 
-#ifdef DEBUG_ENABLED
 class SceneDebuggerObject {
 private:
 	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
@@ -322,6 +319,5 @@ public:
 
 	~RuntimeNodeSelect();
 };
-#endif
 
 #endif // SCENE_DEBUGGER_H

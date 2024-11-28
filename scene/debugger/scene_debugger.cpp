@@ -56,16 +56,13 @@
 SceneDebugger::SceneDebugger() {
 	singleton = this;
 
-#ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
-#endif
 }
 
 SceneDebugger::~SceneDebugger() {
-#ifdef DEBUG_ENABLED
 	if (LiveEditor::singleton) {
 		EngineDebugger::unregister_message_capture("scene");
 		memdelete(LiveEditor::singleton);
@@ -76,7 +73,6 @@ SceneDebugger::~SceneDebugger() {
 		memdelete(RuntimeNodeSelect::singleton);
 		RuntimeNodeSelect::singleton = nullptr;
 	}
-#endif
 
 	singleton = nullptr;
 }
@@ -93,7 +89,6 @@ void SceneDebugger::deinitialize() {
 	}
 }
 
-#ifdef DEBUG_ENABLED
 void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !k->is_echo() && p_shortcut->matches_event(k)) {
@@ -2156,4 +2151,3 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 	SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(CAMERA_BASE_FOV * cursor.fov_scale, CAMERA_ZNEAR, CAMERA_ZFAR);
 }
 #endif // _3D_DISABLED
-#endif

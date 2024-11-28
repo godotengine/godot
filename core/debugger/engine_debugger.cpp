@@ -45,6 +45,16 @@ HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
 
 void (*EngineDebugger::allow_focus_steal_fn)();
 
+#ifdef DEBUGGER_ENABLED
+
+void EngineDebugger::line_poll() {
+	// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught.
+	if (unlikely(poll_every % 2048) == 0) {
+		poll_events(false);
+	}
+	poll_every++;
+}
+
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
 	ERR_FAIL_COND_MSG(profilers.has(p_name), vformat("Profiler already registered: '%s'.", p_name));
 	profilers.insert(p_name, p_func);
@@ -193,6 +203,60 @@ void EngineDebugger::deinitialize() {
 	captures.clear();
 	protocols.clear();
 }
+
+#else
+
+void EngineDebugger::line_poll() {
+}
+
+void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
+}
+
+void EngineDebugger::unregister_profiler(const StringName &p_name) {
+}
+
+void EngineDebugger::register_message_capture(const StringName &p_name, Capture p_func) {
+}
+
+void EngineDebugger::unregister_message_capture(const StringName &p_name) {
+}
+
+void EngineDebugger::register_uri_handler(const String &p_protocol, CreatePeerFunc p_func) {
+}
+
+void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts) {
+}
+
+void EngineDebugger::profiler_add_frame_data(const StringName &p_name, const Array &p_data) {
+}
+
+bool EngineDebugger::is_profiling(const StringName &p_name) {
+	return false;
+}
+
+bool EngineDebugger::has_profiler(const StringName &p_name) {
+	return false;
+}
+
+bool EngineDebugger::has_capture(const StringName &p_name) {
+	return false;
+}
+
+Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured) {
+	r_captured = false;
+	return ERR_UNAVAILABLE;
+}
+
+void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {
+}
+
+void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
+}
+
+void EngineDebugger::deinitialize() {
+}
+
+#endif
 
 EngineDebugger::~EngineDebugger() {
 	if (script_debugger) {
