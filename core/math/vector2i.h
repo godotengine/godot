@@ -143,9 +143,9 @@ struct [[nodiscard]] Vector2i {
 	operator Vector2() const;
 
 	inline Vector2i() {}
-	inline Vector2i(int32_t p) {
-		x = p;
-		y = p;
+	inline Vector2i(int32_t p_value) {
+		x = p_value;
+		y = p_value;
 	}
 	inline Vector2i(int32_t p_x, int32_t p_y) {
 		x = p_x;

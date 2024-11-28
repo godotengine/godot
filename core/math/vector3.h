@@ -187,10 +187,10 @@ struct [[nodiscard]] Vector3 {
 	operator Vector3i() const;
 
 	_FORCE_INLINE_ Vector3() {}
-	_FORCE_INLINE_ Vector3(real_t p) {
-		x = p;
-		y = p;
-		z = p;
+	_FORCE_INLINE_ Vector3(real_t p_value) {
+		x = p_value;
+		y = p_value;
+		z = p_value;
 	}
 	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;
