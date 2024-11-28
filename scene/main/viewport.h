@@ -515,6 +515,7 @@ public:
 	void set_global_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_global_canvas_transform() const;
 
+	Transform2D get_stretch_transform() const;
 	virtual Transform2D get_final_transform() const;
 
 	void gui_set_root_order_dirty();
