@@ -36,6 +36,13 @@
 		</constructor>
 		<constructor name="Vector2i">
 			<return type="Vector2i" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Constructs a new [Vector2i] from the given [param value] where every component is equal to [param value].
+			</description>
+		</constructor>
+		<constructor name="Vector2i">
+			<return type="Vector2i" />
 			<param index="0" name="x" type="int" />
 			<param index="1" name="y" type="int" />
 			<description>
