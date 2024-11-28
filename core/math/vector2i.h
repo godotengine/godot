@@ -143,6 +143,10 @@ struct [[nodiscard]] Vector2i {
 	operator Vector2() const;
 
 	inline Vector2i() {}
+	inline Vector2i(real_t p) {
+		x = p;
+		y = p;
+	}
 	inline Vector2i(int32_t p_x, int32_t p_y) {
 		x = p_x;
 		y = p_y;

@@ -38,10 +38,14 @@ namespace TestVector4i {
 
 TEST_CASE("[Vector4i] Constructor methods") {
 	const Vector4i vector_empty = Vector4i();
+	const Vector4i vector_one = Vector4i(0);
 	const Vector4i vector_zero = Vector4i(0, 0, 0, 0);
 	CHECK_MESSAGE(
 			vector_empty == vector_zero,
 			"Vector4i Constructor with no inputs should return a zero Vector4i.");
+	CHECK_MESSAGE(
+			vector_one == vector_zero,
+			"Vector4i Constructor with one input should work as expected.");
 }
 
 TEST_CASE("[Vector4i] Axis methods") {
