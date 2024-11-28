@@ -2771,6 +2771,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"enum",
 		"extends",
 		"func",
+		"let",
 		"namespace", // Reserved for potential future use.
 		"signal",
 		"static",

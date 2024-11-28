@@ -2801,16 +2801,23 @@ void GDScriptAnalyzer::update_dictionary_literal_element_type(GDScriptParser::Di
 void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assignment) {
 	reduce_expression(p_assignment->assigned_value);
 
-#ifdef DEBUG_ENABLED
 	// Increment assignment count for local variables.
 	// Before we reduce the assignee because we don't want to warn about not being assigned when performing the assignment.
-	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+	if (p_assignment->assignee != nullptr && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
 		GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
 		if (id->source == GDScriptParser::IdentifierNode::LOCAL_VARIABLE && id->variable_source) {
+			// Check if we are trying to assign multiple times to an immutable local variable.
+			if (id->variable_source->is_immutable && id->variable_source->assignments >= 1) {
+				parser->push_error(vformat(R"(Cannot assign to immutable variable "%s". Change "let" to "var" make it mutable.)", id->name), p_assignment);
+				// TODO: Push an additional note to the parser which marks the variable's declaration site.
+				// Right now, we are limited to showing only one error in the script editor at a time.
+				//   e.g.        let potentially_modifiable_variable: float = 10.0
+				//               ^^^ change 'let' to 'var' to make it mutable
+			}
+
 			id->variable_source->assignments++;
 		}
 	}
-#endif
 
 	reduce_expression(p_assignment->assignee);
 
@@ -2991,6 +2998,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	if (assignee_type.is_hard_type() && assignee_type.builtin_type == Variant::INT && assigned_value_type.builtin_type == Variant::FLOAT) {
 		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::NARROWING_CONVERSION);
 	}
+
 	// Check for assignment with operation before assignment.
 	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
 		GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);

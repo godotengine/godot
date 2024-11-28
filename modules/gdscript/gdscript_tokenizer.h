@@ -125,6 +125,7 @@ public:
 			FUNC,
 			IN,
 			IS,
+			LET,
 			NAMESPACE,
 			PRELOAD,
 			SELF,
