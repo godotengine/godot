@@ -70,6 +70,7 @@ String StringBuilder::as_string() const {
 
 	String buffer;
 	buffer.resize(string_length + 1);
+	char32_t *buffer_ptr = buffer.ptrw();
 
 	int current_position = 0;
 
@@ -81,7 +82,7 @@ String StringBuilder::as_string() const {
 			// Godot string
 			const String &s = strings[godot_string_elem];
 
-			memcpy(buffer.ptrw() + current_position, s.ptr(), s.length() * sizeof(char32_t));
+			memcpy(buffer_ptr + current_position, s.ptr(), s.length() * sizeof(char32_t));
 
 			current_position += s.length();
 
@@ -90,7 +91,7 @@ String StringBuilder::as_string() const {
 			const char *s = c_strings[c_string_elem];
 
 			for (int32_t j = 0; j < appended_strings[i]; j++) {
-				buffer[current_position + j] = s[j];
+				buffer_ptr[current_position + j] = s[j];
 			}
 
 			current_position += appended_strings[i];
@@ -99,7 +100,7 @@ String StringBuilder::as_string() const {
 		}
 	}
 
-	buffer[current_position] = 0;
+	buffer_ptr[current_position] = 0;
 
 	return buffer;
 }
