@@ -182,9 +182,16 @@ void AnimationNodePreview::_update_theme_item_cache() {
     theme_cache.light_1_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
     theme_cache.light_2_icon = p_control->get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
     theme_cache.drag_icon = p_control->get_editor_theme_icon(SNAME("ExternalLink"));
+    theme_cache.play_icon = p_control->get_editor_theme_icon(SNAME("Play"));
+    theme_cache.pause_icon = p_control->get_editor_theme_icon(SNAME("Pause"));
+    theme_cache.stop_icon = p_control->get_editor_theme_icon(SNAME("Stop"));
     light_1_switch->set_button_icon(theme_cache.light_1_icon);
     light_2_switch->set_button_icon(theme_cache.light_2_icon);
     drag_button->set_button_icon(theme_cache.drag_icon);
+
+    play_button->set_button_icon(theme_cache.play_icon);
+    pause_button->set_button_icon(theme_cache.pause_icon);
+    stop_button->set_button_icon(theme_cache.stop_icon);
 }
 void AnimationNodePreview::_notification(int p_what) {
     switch (p_what) {
@@ -410,6 +417,7 @@ AnimationNodePreview::AnimationNodePreview()
 
     set_custom_minimum_size(Size2(1, 150) * EDSCALE);
     HBoxContainer *root_hb = memnew(HBoxContainer);
+    root_hb->set_modulate(Color(1, 1, 1, 0.8f));
     add_child(root_hb);
     root_hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
@@ -420,38 +428,53 @@ AnimationNodePreview::AnimationNodePreview()
         VBoxContainer *vb_light = memnew(VBoxContainer);
         vb->add_child(vb_light);
 
-        light_1_switch = memnew(Button);
-        light_1_switch->set_theme_type_variation("PreviewLightButton");
-        light_1_switch->set_toggle_mode(true);
-        light_1_switch->set_pressed(true);
-        light_1_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
-        vb_light->add_child(light_1_switch);
-        light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_1_switch_pressed));
+        // light_1_switch = memnew(Button);
+        // light_1_switch->set_theme_type_variation("PreviewLightButton");
+        // light_1_switch->set_toggle_mode(true);
+        // light_1_switch->set_pressed(true);
+        // light_1_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
+        // vb_light->add_child(light_1_switch);
+        // light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_1_switch_pressed));
 
-        light_2_switch = memnew(Button);
-        light_2_switch->set_theme_type_variation("PreviewLightButton");
-        light_2_switch->set_toggle_mode(true);
-        light_2_switch->set_pressed(true);
-        light_2_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
-        vb_light->add_child(light_2_switch);
-        light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_2_switch_pressed));
+        // light_2_switch = memnew(Button);
+        // light_2_switch->set_theme_type_variation("PreviewLightButton");
+        // light_2_switch->set_toggle_mode(true);
+        // light_2_switch->set_pressed(true);
+        // light_2_switch->set_modulate(Color(0.9, 0.9, 1, 1.0));
+        // vb_light->add_child(light_2_switch);
+        // light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_light_2_switch_pressed));
 
         play_button = memnew(Button);
         vb_light->add_child(play_button);
-        play_button->set_text(L"播放");
+        play_button->set_button_icon(theme_cache.play_icon);
+        play_button->set_tooltip_text(L"播放");
         play_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_play_button_pressed));
 
         pause_button = memnew(Button);
         vb_light->add_child(pause_button);
-        pause_button->set_text(L"暂停");
+        pause_button->set_button_icon(theme_cache.pause_icon);
+        pause_button->set_tooltip_text(L"暂停");
         pause_button->set_disabled(true);
         pause_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_pause_button_pressed));
 
         stop_button = memnew(Button);
         vb_light->add_child(stop_button);
-        stop_button->set_text(L"停止");
+        stop_button->set_button_icon(theme_cache.stop_icon);
+        stop_button->set_tooltip_text(L"停止");
         stop_button->set_disabled(true);
         stop_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_stop_button_pressed));
+
+        
+
+        animation_time_position_label = memnew(Label);
+        animation_time_position_label->set_text(L"ATime:");
+        animation_time_position_label->set_h_size_flags(SIZE_EXPAND_FILL);
+        vb_light->add_child(animation_time_position_label);
+
+        animator_time_label = memnew(Label);
+        animator_time_label->set_text(L"T Time:");
+        animator_time_label->set_h_size_flags(SIZE_EXPAND_FILL);
+        vb_light->add_child(animator_time_label);
 
     }
 
@@ -461,8 +484,9 @@ AnimationNodePreview::AnimationNodePreview()
         vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
         HBoxContainer* hb = memnew(HBoxContainer);
-        vb->add_child(hb);
         hb->set_h_size_flags(SIZE_EXPAND_FILL);
+        vb->add_child(hb);
+
 
         time_scale_lablel = memnew(Label);
         time_scale_lablel->set_text(L"时间缩放:");
@@ -480,24 +504,15 @@ AnimationNodePreview::AnimationNodePreview()
         time_scale_slider->set_ticks(10);
         time_scale_slider->set_ticks_on_borders(true);
 
-        hb = memnew(HBoxContainer);
-        vb->add_child(hb);
-        hb->set_h_size_flags(SIZE_EXPAND_FILL);
-        animation_time_position_label = memnew(Label);
-        animation_time_position_label->set_text(L"动画时间:");
-        hb->add_child(animation_time_position_label);
-
-        animator_time_label = memnew(Label);
-        animator_time_label->set_text(L"播放时间:");
-        hb->add_child(animator_time_label);
 
         drag_button = memnew(Button);
-        drag_button->set_custom_minimum_size(Size2(48.0, 48.0) * EDSCALE);
+        drag_button->set_custom_minimum_size(Size2(28.0, 28.0) * EDSCALE);
         drag_button->set_button_icon(theme_cache.drag_icon);
         drag_button->set_tooltip_text(L"鼠标左键点击定位资源,按住鼠标左键,拖拽我呀!八格牙路!");
         drag_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_drag_button_pressed));
         SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
-        vb->add_child(drag_button);
+        hb->add_child(drag_button);
+
 
     }
 

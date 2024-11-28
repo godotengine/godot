@@ -69,6 +69,9 @@ class AnimationNodePreview : public SubViewportContainer
 		Ref<Texture2D> light_1_icon;
 		Ref<Texture2D> light_2_icon;
 		Ref<Texture2D> drag_icon;
+        Ref<Texture2D> play_icon;
+        Ref<Texture2D> pause_icon;
+        Ref<Texture2D> stop_icon;
 	} theme_cache;
 
     void _on_light_1_switch_pressed() {

@@ -21,17 +21,19 @@ public:
             hb->add_child(vb);
 
             preview_prefab_path = memnew(EditorPropertyPath);
+            preview_prefab_path->set_label(L"選擇预制件：");
             preview_prefab_path->set_object_and_property(this, SNAME("preview_prefab_path"));
             preview_prefab_path->setup({ "res", "tres" }, false, false);
+            preview_prefab_path->set_h_size_flags(SIZE_EXPAND_FILL);
             vb->add_child(preview_prefab_path);
 
             preview = memnew(AnimationNodePreview);
-            preview->set_custom_minimum_size(Vector2(300, 300));
+            preview->set_custom_minimum_size(Vector2(400, 400));
             vb->add_child(preview);
         }
 
         {
-            VBoxContainer* vb = memnew(VBoxContainer);
+            HBoxContainer* vb = memnew(HBoxContainer);
             vb->set_h_size_flags(SIZE_EXPAND_FILL);
             vb->set_custom_minimum_size(Vector2(300, 0));
             hb->add_child(vb);
@@ -99,14 +101,14 @@ public:
 
                 multe_animation_group = memnew(EditorPropertyTextEnum);
                 multe_animation_group->set_name(L"动画组");
-                multe_animation_group->set_custom_minimum_size(Vector2(100, 0));
+                multe_animation_group->set_custom_minimum_size(Vector2(200, 0));
                 multe_animation_group->set_object_and_property(this, "multe_animation_group");
                 multe_animation_group->set_dynamic(true, "get_animation_groups");
                 hhb->add_child(multe_animation_group);
 
                 multe_animation_tags = memnew(EditorPropertyTextEnum);
                 multe_animation_tags->set_name(L"动画标签");
-                multe_animation_tags->set_custom_minimum_size(Vector2(100, 0));
+                multe_animation_tags->set_custom_minimum_size(Vector2(200, 0));
                 multe_animation_tags->set_object_and_property(this, "multe_animation_tags");
                 multe_animation_tags->set_dynamic(true, "get_animation_tags");
                 hhb->add_child(multe_animation_tags);
