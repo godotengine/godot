@@ -50,7 +50,7 @@
 #include "core/variant/variant.h"
 
 #ifdef DEBUG_ENABLED
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #endif
 
 class GDScriptParser {
@@ -1612,7 +1612,7 @@ public:
 	class TreePrinter {
 		int indent_level = 0;
 		String indent;
-		StringBuilder printed;
+		StringBuffer<> printed;
 		bool pending_indent = false;
 
 		void increase_indent();

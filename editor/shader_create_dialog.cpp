@@ -148,7 +148,7 @@ void ShaderCreateDialog::_create_new() {
 			text_shader.instantiate();
 			shader = text_shader;
 
-			StringBuilder code;
+			StringBuffer<> code;
 			code += vformat("shader_type %s;\n", mode_menu->get_text().to_snake_case());
 
 			if (current_template == 0) { // Default template.

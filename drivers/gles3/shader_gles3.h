@@ -33,7 +33,7 @@
 
 #include "core/math/projection.h"
 #include "core/os/mutex.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_map.h"
@@ -158,7 +158,7 @@ private:
 
 	StageTemplate stage_templates[STAGE_TYPE_MAX];
 
-	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
+	void _build_variant_code(StringBuffer<> &p_builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
 
 	void _add_stage(const char *p_code, StageType p_stage_type);
 

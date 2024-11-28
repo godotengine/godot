@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -949,7 +949,7 @@ void CodeTextEditor::_line_col_changed() {
 		}
 	}
 
-	StringBuilder sb;
+	StringBuffer<> sb;
 	sb.append(itos(text_editor->get_caret_line() + 1).lpad(4));
 	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));

@@ -70,6 +70,7 @@ public:
 	int length() const;
 
 	String as_string();
+	String as_string() const; // Const variant.
 
 	double as_double();
 	int64_t as_int();
@@ -88,7 +89,20 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(char32_
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const String &p_string) {
-	return append(p_string.get_data());
+	const int rhs_len = p_string.length();
+	if (rhs_len == 0) {
+		return *this;
+	}
+
+	reserve(string_length + rhs_len + 1);
+
+	const char32_t *src = p_string.ptr();
+	char32_t *dst = current_buffer_ptr() + string_length;
+
+	memcpy(dst, src, rhs_len * sizeof(char32_t));
+	string_length += rhs_len;
+
+	return *this;
 }
 
 template <int SHORT_BUFFER_SIZE>
@@ -96,10 +110,12 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 	int len = strlen(p_str);
 	reserve(string_length + len + 1);
 
-	char32_t *buf = current_buffer_ptr();
-	for (const char *c_ptr = p_str; *c_ptr; ++c_ptr) {
-		buf[string_length++] = *c_ptr;
+	char32_t *buf = current_buffer_ptr() + string_length;
+	for (int i = 0; i < len; i++) {
+		buf[i] = p_str[i];
 	}
+
+	string_length += len;
 	return *this;
 }
 
@@ -144,6 +160,15 @@ String StringBuffer<SHORT_BUFFER_SIZE>::as_string() {
 	} else {
 		buffer.resize(string_length + 1);
 		return buffer;
+	}
+}
+
+template <int SHORT_BUFFER_SIZE>
+String StringBuffer<SHORT_BUFFER_SIZE>::as_string() const {
+	if (buffer.is_empty()) {
+		return String(short_buffer, string_length);
+	} else {
+		return buffer.substr(0, string_length);
 	}
 }
 

@@ -33,7 +33,7 @@
 #include "gdscript.h"
 #include "gdscript_function.h"
 
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
@@ -101,7 +101,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 #define DADDR(m_ip) (_disassemble_address(_script, *this, _code_ptr[ip + m_ip]))
 
 	for (int ip = 0; ip < _code_size;) {
-		StringBuilder text;
+		StringBuffer<> text;
 		int incr = 0;
 
 		text += " ";
@@ -1284,7 +1284,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 		}
 
 		ip += incr;
-		if (text.get_string_length() > 0) {
+		if (text.length() > 0) {
 			print_line(text.as_string());
 		}
 	}

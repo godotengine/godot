@@ -1490,10 +1490,10 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	ERR_FAIL_COND_V(p_port < 0 || p_port >= node->get_expanded_output_port_count(), String());
 	ERR_FAIL_COND_V(node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_TRANSFORM, String());
 
-	StringBuilder global_code;
-	StringBuilder global_code_per_node;
-	HashMap<Type, StringBuilder> global_code_per_func;
-	StringBuilder shader_code;
+	StringBuffer<> global_code;
+	StringBuffer<> global_code_per_node;
+	HashMap<Type, StringBuffer<>> global_code_per_func;
+	StringBuffer<> shader_code;
 	HashSet<StringName> classes;
 
 	global_code += String() + "shader_type canvas_item;\n";
@@ -1956,7 +1956,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<VisualShader::DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const {
+Error VisualShader::_write_node(Type type, StringBuffer<> *p_global_code, StringBuffer<> *p_global_code_per_node, HashMap<Type, StringBuffer<>> *p_global_code_per_func, StringBuffer<> &r_code, Vector<VisualShader::DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const {
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[p_node].node;
 
 	if (vsnode->is_disabled()) {
@@ -2537,10 +2537,10 @@ void VisualShader::_update_shader() const {
 
 	dirty.clear();
 
-	StringBuilder global_code;
-	StringBuilder global_code_per_node;
-	HashMap<Type, StringBuilder> global_code_per_func;
-	StringBuilder shader_code;
+	StringBuffer<> global_code;
+	StringBuffer<> global_code_per_node;
+	HashMap<Type, StringBuffer<>> global_code_per_func;
+	StringBuffer<> shader_code;
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
 	HashSet<StringName> classes;
 	HashMap<int, int> insertion_pos;
@@ -2706,7 +2706,7 @@ void VisualShader::_update_shader() const {
 		VMap<ConnectionKey, const List<Connection>::Element *> input_connections;
 		VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
 
-		StringBuilder func_code;
+		StringBuffer<> func_code;
 		HashSet<int> processed;
 
 		bool is_empty_func = false;
@@ -2790,7 +2790,7 @@ void VisualShader::_update_shader() const {
 		if (shader_mode != Shader::MODE_PARTICLES) {
 			func_code += "\nvoid " + String(func_name[i]) + "() {\n";
 		}
-		insertion_pos.insert(i, shader_code.get_string_length() + func_code.get_string_length());
+		insertion_pos.insert(i, shader_code.length() + func_code.length());
 
 		Error err = _write_node(Type(i), &global_code, &global_code_per_node, &global_code_per_func, func_code, default_tex_params, input_connections, output_connections, NODE_ID_OUTPUT, processed, false, classes);
 		ERR_FAIL_COND(err != OK);

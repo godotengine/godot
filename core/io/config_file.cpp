@@ -32,7 +32,7 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "core/variant/variant_parser.h"
 
 PackedStringArray ConfigFile::_get_sections() const {
@@ -132,7 +132,7 @@ void ConfigFile::erase_section_key(const String &p_section, const String &p_key)
 }
 
 String ConfigFile::encode_to_text() const {
-	StringBuilder sb;
+	StringBuffer<> sb;
 	bool first = true;
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
 		if (first) {

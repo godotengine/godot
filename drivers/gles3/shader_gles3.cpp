@@ -129,7 +129,7 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	feedbacks = p_feedback;
 	feedback_count = p_feedback_count;
 
-	StringBuilder tohash;
+	StringBuffer<> tohash;
 	/*
 	tohash.append("[SpirvCacheKey]");
 	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
@@ -160,7 +160,7 @@ RID ShaderGLES3::version_create() {
 	return version_owner.make_rid(version);
 }
 
-void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization) {
+void ShaderGLES3::_build_variant_code(StringBuffer<> &builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization) {
 	if (RasterizerGLES3::is_gles_over_gl()) {
 		builder.append("#version 330\n");
 		builder.append("#define USE_GLES_OVER_GL\n");
@@ -315,11 +315,11 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 
 	//vertex stage
 	{
-		StringBuilder builder;
-		_build_variant_code(builder, p_variant, p_version, STAGE_TYPE_VERTEX, p_specialization);
+		StringBuffer<> buffer;
+		_build_variant_code(buffer, p_variant, p_version, STAGE_TYPE_VERTEX, p_specialization);
 
 		spec.vert_id = glCreateShader(GL_VERTEX_SHADER);
-		String builder_string = builder.as_string();
+		String builder_string = buffer.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
 		glShaderSource(spec.vert_id, 1, &cstr, nullptr);
@@ -363,11 +363,11 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 
 	//fragment stage
 	{
-		StringBuilder builder;
-		_build_variant_code(builder, p_variant, p_version, STAGE_TYPE_FRAGMENT, p_specialization);
+		StringBuffer<> buffer;
+		_build_variant_code(buffer, p_variant, p_version, STAGE_TYPE_FRAGMENT, p_specialization);
 
 		spec.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-		String builder_string = builder.as_string();
+		String builder_string = buffer.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
 		glShaderSource(spec.frag_id, 1, &cstr, nullptr);
@@ -484,24 +484,24 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 		//vertex stage
 
 		{
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, STAGE_TYPE_VERTEX, specialization_default_mask);
+			StringBuffer<> buffer;
+			_build_variant_code(buffer, i, version, STAGE_TYPE_VERTEX, specialization_default_mask);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
-			stage.code = builder.as_string();
+			stage.code = buffer.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
 
 		//fragment stage
 		{
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, STAGE_TYPE_FRAGMENT, specialization_default_mask);
+			StringBuffer<> buffer;
+			_build_variant_code(buffer, i, version, STAGE_TYPE_FRAGMENT, specialization_default_mask);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
-			stage.code = builder.as_string();
+			stage.code = buffer.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
@@ -511,7 +511,7 @@ RS::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_ver
 }
 
 String ShaderGLES3::_version_get_sha1(Version *p_version) const {
-	StringBuilder hash_build;
+	StringBuffer<> hash_build;
 
 	hash_build.append("[uniforms]");
 	hash_build.append(p_version->uniforms.get_data());
@@ -781,7 +781,7 @@ void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture
 	_init();
 
 	if (shader_cache_dir != String()) {
-		StringBuilder hash_build;
+		StringBuffer<> hash_build;
 
 		hash_build.append("[base_hash]");
 		hash_build.append(base_sha256);

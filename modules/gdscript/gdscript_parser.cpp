@@ -41,7 +41,7 @@
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "servers/text_server.h"
 #endif
 

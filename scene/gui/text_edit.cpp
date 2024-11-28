@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
@@ -3454,7 +3454,7 @@ void TextEdit::set_text(const String &p_text) {
 }
 
 String TextEdit::get_text() const {
-	StringBuilder ret_text;
+	StringBuffer<> ret_text;
 	const int text_size = text.size();
 	for (int i = 0; i < text_size; i++) {
 		ret_text += text[i];
@@ -5198,7 +5198,7 @@ int TextEdit::get_caret_wrap_index(int p_caret) const {
 String TextEdit::get_word_under_caret(int p_caret) const {
 	ERR_FAIL_COND_V(p_caret >= carets.size() || p_caret < -1, "");
 
-	StringBuilder selected_text;
+	StringBuffer<> selected_text;
 	for (int c = 0; c < carets.size(); c++) {
 		if (p_caret != -1 && p_caret != c) {
 			continue;
@@ -5464,7 +5464,7 @@ String TextEdit::get_selected_text(int p_caret) {
 		return _base_get_text(get_selection_from_line(p_caret), get_selection_from_column(p_caret), get_selection_to_line(p_caret), get_selection_to_column(p_caret));
 	}
 
-	StringBuilder selected_text;
+	StringBuffer<> selected_text;
 	Vector<int> sorted_carets = get_sorted_carets();
 	for (int i = 0; i < sorted_carets.size(); i++) {
 		int caret_index = sorted_carets[i];
@@ -5472,7 +5472,7 @@ String TextEdit::get_selected_text(int p_caret) {
 		if (!has_selection(caret_index)) {
 			continue;
 		}
-		if (selected_text.get_string_length() != 0) {
+		if (selected_text.length() != 0) {
 			selected_text += "\n";
 		}
 		selected_text += _base_get_text(get_selection_from_line(caret_index), get_selection_from_column(caret_index), get_selection_to_line(caret_index), get_selection_to_column(caret_index));
@@ -7280,7 +7280,7 @@ void TextEdit::_copy_internal(int p_caret) {
 	}
 
 	// Copy full lines.
-	StringBuilder clipboard;
+	StringBuffer<> clipboard;
 	Vector<Point2i> line_ranges;
 	if (p_caret == -1) {
 		// When there are multiple carets on a line, only copy it once.
@@ -8507,7 +8507,7 @@ String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_lin
 	ERR_FAIL_COND_V(p_to_line < p_from_line, String()); // 'from > to'.
 	ERR_FAIL_COND_V(p_to_line == p_from_line && p_to_column < p_from_column, String()); // 'from > to'.
 
-	StringBuilder ret;
+	StringBuffer<> ret;
 
 	for (int i = p_from_line; i <= p_to_line; i++) {
 		int begin = (i == p_from_line) ? p_from_column : 0;
