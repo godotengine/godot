@@ -69,6 +69,7 @@ void Material::set_render_priority(int p_priority) {
 	if (material.is_valid()) {
 		RS::get_singleton()->material_set_render_priority(material, p_priority);
 	}
+	notify_property_list_changed();
 }
 
 int Material::get_render_priority() const {
@@ -472,6 +473,7 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 			RS::get_singleton()->material_set_param(material_rid, p_param, p_value);
 		}
 	}
+	notify_property_list_changed();
 }
 
 Variant ShaderMaterial::get_shader_parameter(const StringName &p_param) const {
@@ -1959,12 +1961,14 @@ void BaseMaterial3D::_check_material_rid() {
 		}
 
 		pending_params.clear();
+		notify_property_list_changed();
 	}
 }
 
 void BaseMaterial3D::_material_set_param(const StringName &p_name, const Variant &p_value) {
 	if (_get_material().is_valid()) {
 		RS::get_singleton()->material_set_param(_get_material(), p_name, p_value);
+		notify_property_list_changed();
 	} else {
 		pending_params[p_name] = p_value;
 	}
@@ -2172,6 +2176,7 @@ void BaseMaterial3D::set_detail_uv(DetailUV p_detail_uv) {
 
 	detail_uv = p_detail_uv;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::DetailUV BaseMaterial3D::get_detail_uv() const {
@@ -2185,6 +2190,7 @@ void BaseMaterial3D::set_blend_mode(BlendMode p_mode) {
 
 	blend_mode = p_mode;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::BlendMode BaseMaterial3D::get_blend_mode() const {
@@ -2194,6 +2200,7 @@ BaseMaterial3D::BlendMode BaseMaterial3D::get_blend_mode() const {
 void BaseMaterial3D::set_detail_blend_mode(BlendMode p_mode) {
 	detail_blend_mode = p_mode;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::BlendMode BaseMaterial3D::get_detail_blend_mode() const {
@@ -2249,6 +2256,7 @@ void BaseMaterial3D::set_depth_draw_mode(DepthDrawMode p_mode) {
 
 	depth_draw_mode = p_mode;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::DepthDrawMode BaseMaterial3D::get_depth_draw_mode() const {
@@ -2262,6 +2270,7 @@ void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
 
 	cull_mode = p_mode;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::CullMode BaseMaterial3D::get_cull_mode() const {
@@ -2275,6 +2284,7 @@ void BaseMaterial3D::set_diffuse_mode(DiffuseMode p_mode) {
 
 	diffuse_mode = p_mode;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::DiffuseMode BaseMaterial3D::get_diffuse_mode() const {
@@ -2288,6 +2298,7 @@ void BaseMaterial3D::set_specular_mode(SpecularMode p_mode) {
 
 	specular_mode = p_mode;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::SpecularMode BaseMaterial3D::get_specular_mode() const {
@@ -2374,6 +2385,7 @@ Ref<Texture2D> BaseMaterial3D::get_texture_by_name(const StringName &p_name) con
 void BaseMaterial3D::set_texture_filter(TextureFilter p_filter) {
 	texture_filter = p_filter;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::TextureFilter BaseMaterial3D::get_texture_filter() const {
@@ -2763,6 +2775,7 @@ void BaseMaterial3D::set_roughness_texture_channel(TextureChannel p_channel) {
 	ERR_FAIL_INDEX(p_channel, 5);
 	roughness_texture_channel = p_channel;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::TextureChannel BaseMaterial3D::get_roughness_texture_channel() const {
@@ -2913,6 +2926,7 @@ void BaseMaterial3D::set_emission_operator(EmissionOperator p_op) {
 	}
 	emission_op = p_op;
 	_mark_dirty();
+	notify_property_list_changed();
 }
 
 BaseMaterial3D::EmissionOperator BaseMaterial3D::get_emission_operator() const {
