@@ -271,7 +271,7 @@
 				    if export_image_tex == null:
 				        return ERR_SCRIPT_FAILED
 
-				    ...
+				    # ...
 				[/gdscript]
 				[csharp]
 				public partial class MyEditorImportPlugin : EditorImportPlugin
@@ -308,7 +308,7 @@
 				            return Error.ScriptFailed;
 				        }
 
-				        ...
+				        // ...
 				    }
 				}
 				[/csharp]
