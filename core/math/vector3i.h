@@ -133,7 +133,7 @@ struct [[nodiscard]] Vector3i {
 	operator Vector3() const;
 
 	_FORCE_INLINE_ Vector3i() {}
-	_FORCE_INLINE_ Vector3i(real_t p) {
+	_FORCE_INLINE_ Vector3i(int32_t p) {
 		x = p;
 		y = p;
 		z = p;

@@ -135,7 +135,7 @@ struct [[nodiscard]] Vector4i {
 	operator Vector4() const;
 
 	_FORCE_INLINE_ Vector4i() {}
-	_FORCE_INLINE_ Vector4i(real_t p) {
+	_FORCE_INLINE_ Vector4i(int32_t p) {
 		x = p;
 		y = p;
 		z = p;
