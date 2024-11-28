@@ -165,13 +165,6 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		aabb.position = -size / 2;
 		aabb.size = size;
 
-		for (int i = 0; i < 12; i++) {
-			Vector3 a, b;
-			aabb.get_edge(i, a, b);
-			lines.push_back(a);
-			lines.push_back(b);
-		}
-
 		for (int i = 0; i < 8; i++) {
 			Vector3 ep = aabb.get_endpoint(i);
 			internal_lines.push_back(probe->get_origin_offset());

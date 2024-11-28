@@ -185,8 +185,8 @@ ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {
 
 AABB ReflectionProbe::get_aabb() const {
 	AABB aabb;
-	aabb.position = -origin_offset;
-	aabb.size = origin_offset + size / 2;
+	aabb.position = -size / 2;
+	aabb.size = size;
 	return aabb;
 }
 
