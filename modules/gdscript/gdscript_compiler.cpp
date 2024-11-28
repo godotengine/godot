@@ -2188,7 +2188,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					initialized = true;
 				} else if ((local_type.has_type && local_type.kind == GDScriptDataType::BUILTIN) || codegen.generator->is_local_dirty(local)) {
 					// Initialize with default for the type. Built-in types must always be cleared (they cannot be `null`).
-					// Objects and untyped variables are assigned to `null` only if the stack address has been re-used and not cleared.
+					// Objects and untyped variables are assigned to `null` only if the stack address has been reused and not cleared.
 					codegen.generator->clear_address(local);
 					initialized = true;
 				}

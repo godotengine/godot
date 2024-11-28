@@ -3364,169 +3364,169 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 
 	// FLOAT_OP
 	{
-		VisualShaderNodeFloatOp *floatOp = Object::cast_to<VisualShaderNodeFloatOp>(p_node);
+		VisualShaderNodeFloatOp *float_op = Object::cast_to<VisualShaderNodeFloatOp>(p_node);
 
-		if (floatOp) {
+		if (float_op) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			floatOp->set_operator((VisualShaderNodeFloatOp::Operator)(int)p_ops[0]);
+			float_op->set_operator((VisualShaderNodeFloatOp::Operator)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// FLOAT_FUNC
 	{
-		VisualShaderNodeFloatFunc *floatFunc = Object::cast_to<VisualShaderNodeFloatFunc>(p_node);
+		VisualShaderNodeFloatFunc *float_func = Object::cast_to<VisualShaderNodeFloatFunc>(p_node);
 
-		if (floatFunc) {
+		if (float_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			floatFunc->set_function((VisualShaderNodeFloatFunc::Function)(int)p_ops[0]);
+			float_func->set_function((VisualShaderNodeFloatFunc::Function)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// VECTOR_OP
 	{
-		VisualShaderNodeVectorOp *vecOp = Object::cast_to<VisualShaderNodeVectorOp>(p_node);
+		VisualShaderNodeVectorOp *vec_op = Object::cast_to<VisualShaderNodeVectorOp>(p_node);
 
-		if (vecOp) {
+		if (vec_op) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
 			ERR_FAIL_COND(p_ops[1].get_type() != Variant::INT);
-			vecOp->set_operator((VisualShaderNodeVectorOp::Operator)(int)p_ops[0]);
-			vecOp->set_op_type((VisualShaderNodeVectorOp::OpType)(int)p_ops[1]);
+			vec_op->set_operator((VisualShaderNodeVectorOp::Operator)(int)p_ops[0]);
+			vec_op->set_op_type((VisualShaderNodeVectorOp::OpType)(int)p_ops[1]);
 			return;
 		}
 	}
 
 	// VECTOR_FUNC
 	{
-		VisualShaderNodeVectorFunc *vecFunc = Object::cast_to<VisualShaderNodeVectorFunc>(p_node);
+		VisualShaderNodeVectorFunc *vec_func = Object::cast_to<VisualShaderNodeVectorFunc>(p_node);
 
-		if (vecFunc) {
+		if (vec_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
 			ERR_FAIL_COND(p_ops[1].get_type() != Variant::INT);
-			vecFunc->set_function((VisualShaderNodeVectorFunc::Function)(int)p_ops[0]);
-			vecFunc->set_op_type((VisualShaderNodeVectorFunc::OpType)(int)p_ops[1]);
+			vec_func->set_function((VisualShaderNodeVectorFunc::Function)(int)p_ops[0]);
+			vec_func->set_op_type((VisualShaderNodeVectorFunc::OpType)(int)p_ops[1]);
 			return;
 		}
 	}
 
 	// COLOR_OP
 	{
-		VisualShaderNodeColorOp *colorOp = Object::cast_to<VisualShaderNodeColorOp>(p_node);
+		VisualShaderNodeColorOp *color_op = Object::cast_to<VisualShaderNodeColorOp>(p_node);
 
-		if (colorOp) {
+		if (color_op) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			colorOp->set_operator((VisualShaderNodeColorOp::Operator)(int)p_ops[0]);
+			color_op->set_operator((VisualShaderNodeColorOp::Operator)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// COLOR_FUNC
 	{
-		VisualShaderNodeColorFunc *colorFunc = Object::cast_to<VisualShaderNodeColorFunc>(p_node);
+		VisualShaderNodeColorFunc *color_func = Object::cast_to<VisualShaderNodeColorFunc>(p_node);
 
-		if (colorFunc) {
+		if (color_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			colorFunc->set_function((VisualShaderNodeColorFunc::Function)(int)p_ops[0]);
+			color_func->set_function((VisualShaderNodeColorFunc::Function)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// INT_OP
 	{
-		VisualShaderNodeIntOp *intOp = Object::cast_to<VisualShaderNodeIntOp>(p_node);
+		VisualShaderNodeIntOp *int_op = Object::cast_to<VisualShaderNodeIntOp>(p_node);
 
-		if (intOp) {
+		if (int_op) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			intOp->set_operator((VisualShaderNodeIntOp::Operator)(int)p_ops[0]);
+			int_op->set_operator((VisualShaderNodeIntOp::Operator)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// INT_FUNC
 	{
-		VisualShaderNodeIntFunc *intFunc = Object::cast_to<VisualShaderNodeIntFunc>(p_node);
+		VisualShaderNodeIntFunc *int_func = Object::cast_to<VisualShaderNodeIntFunc>(p_node);
 
-		if (intFunc) {
+		if (int_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			intFunc->set_function((VisualShaderNodeIntFunc::Function)(int)p_ops[0]);
+			int_func->set_function((VisualShaderNodeIntFunc::Function)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// UINT_OP
 	{
-		VisualShaderNodeUIntOp *uintOp = Object::cast_to<VisualShaderNodeUIntOp>(p_node);
+		VisualShaderNodeUIntOp *uint_op = Object::cast_to<VisualShaderNodeUIntOp>(p_node);
 
-		if (uintOp) {
+		if (uint_op) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			uintOp->set_operator((VisualShaderNodeUIntOp::Operator)(int)p_ops[0]);
+			uint_op->set_operator((VisualShaderNodeUIntOp::Operator)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// UINT_FUNC
 	{
-		VisualShaderNodeUIntFunc *uintFunc = Object::cast_to<VisualShaderNodeUIntFunc>(p_node);
+		VisualShaderNodeUIntFunc *uint_func = Object::cast_to<VisualShaderNodeUIntFunc>(p_node);
 
-		if (uintFunc) {
+		if (uint_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			uintFunc->set_function((VisualShaderNodeUIntFunc::Function)(int)p_ops[0]);
+			uint_func->set_function((VisualShaderNodeUIntFunc::Function)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// TRANSFORM_OP
 	{
-		VisualShaderNodeTransformOp *matOp = Object::cast_to<VisualShaderNodeTransformOp>(p_node);
+		VisualShaderNodeTransformOp *mat_op = Object::cast_to<VisualShaderNodeTransformOp>(p_node);
 
-		if (matOp) {
+		if (mat_op) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			matOp->set_operator((VisualShaderNodeTransformOp::Operator)(int)p_ops[0]);
+			mat_op->set_operator((VisualShaderNodeTransformOp::Operator)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// TRANSFORM_FUNC
 	{
-		VisualShaderNodeTransformFunc *matFunc = Object::cast_to<VisualShaderNodeTransformFunc>(p_node);
+		VisualShaderNodeTransformFunc *mat_func = Object::cast_to<VisualShaderNodeTransformFunc>(p_node);
 
-		if (matFunc) {
+		if (mat_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			matFunc->set_function((VisualShaderNodeTransformFunc::Function)(int)p_ops[0]);
+			mat_func->set_function((VisualShaderNodeTransformFunc::Function)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// VECTOR_COMPOSE
 	{
-		VisualShaderNodeVectorCompose *vecCompose = Object::cast_to<VisualShaderNodeVectorCompose>(p_node);
+		VisualShaderNodeVectorCompose *vec_compose = Object::cast_to<VisualShaderNodeVectorCompose>(p_node);
 
-		if (vecCompose) {
+		if (vec_compose) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			vecCompose->set_op_type((VisualShaderNodeVectorCompose::OpType)(int)p_ops[0]);
+			vec_compose->set_op_type((VisualShaderNodeVectorCompose::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// VECTOR_DECOMPOSE
 	{
-		VisualShaderNodeVectorDecompose *vecDecompose = Object::cast_to<VisualShaderNodeVectorDecompose>(p_node);
+		VisualShaderNodeVectorDecompose *vec_decompose = Object::cast_to<VisualShaderNodeVectorDecompose>(p_node);
 
-		if (vecDecompose) {
+		if (vec_decompose) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			vecDecompose->set_op_type((VisualShaderNodeVectorDecompose::OpType)(int)p_ops[0]);
+			vec_decompose->set_op_type((VisualShaderNodeVectorDecompose::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// UV_FUNC
 	{
-		VisualShaderNodeUVFunc *uvFunc = Object::cast_to<VisualShaderNodeUVFunc>(p_node);
+		VisualShaderNodeUVFunc *uv_func = Object::cast_to<VisualShaderNodeUVFunc>(p_node);
 
-		if (uvFunc) {
+		if (uv_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			uvFunc->set_function((VisualShaderNodeUVFunc::Function)(int)p_ops[0]);
+			uv_func->set_function((VisualShaderNodeUVFunc::Function)(int)p_ops[0]);
 			return;
 		}
 	}
@@ -3566,13 +3566,13 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 
 	// DERIVATIVE
 	{
-		VisualShaderNodeDerivativeFunc *derFunc = Object::cast_to<VisualShaderNodeDerivativeFunc>(p_node);
+		VisualShaderNodeDerivativeFunc *der_func = Object::cast_to<VisualShaderNodeDerivativeFunc>(p_node);
 
-		if (derFunc) {
+		if (der_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
 			ERR_FAIL_COND(p_ops[1].get_type() != Variant::INT);
-			derFunc->set_function((VisualShaderNodeDerivativeFunc::Function)(int)p_ops[0]);
-			derFunc->set_op_type((VisualShaderNodeDerivativeFunc::OpType)(int)p_ops[1]);
+			der_func->set_function((VisualShaderNodeDerivativeFunc::Function)(int)p_ops[0]);
+			der_func->set_op_type((VisualShaderNodeDerivativeFunc::OpType)(int)p_ops[1]);
 			return;
 		}
 	}
@@ -3590,32 +3590,32 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 
 	// CLAMP
 	{
-		VisualShaderNodeClamp *clampFunc = Object::cast_to<VisualShaderNodeClamp>(p_node);
+		VisualShaderNodeClamp *clamp_func = Object::cast_to<VisualShaderNodeClamp>(p_node);
 
-		if (clampFunc) {
+		if (clamp_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			clampFunc->set_op_type((VisualShaderNodeClamp::OpType)(int)p_ops[0]);
+			clamp_func->set_op_type((VisualShaderNodeClamp::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// SWITCH
 	{
-		VisualShaderNodeSwitch *switchFunc = Object::cast_to<VisualShaderNodeSwitch>(p_node);
+		VisualShaderNodeSwitch *switch_func = Object::cast_to<VisualShaderNodeSwitch>(p_node);
 
-		if (switchFunc) {
+		if (switch_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			switchFunc->set_op_type((VisualShaderNodeSwitch::OpType)(int)p_ops[0]);
+			switch_func->set_op_type((VisualShaderNodeSwitch::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// FACEFORWARD
 	{
-		VisualShaderNodeFaceForward *faceForward = Object::cast_to<VisualShaderNodeFaceForward>(p_node);
-		if (faceForward) {
+		VisualShaderNodeFaceForward *face_forward = Object::cast_to<VisualShaderNodeFaceForward>(p_node);
+		if (face_forward) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			faceForward->set_op_type((VisualShaderNodeFaceForward::OpType)(int)p_ops[0]);
+			face_forward->set_op_type((VisualShaderNodeFaceForward::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
@@ -3632,33 +3632,33 @@ void VisualShaderEditor::_setup_node(VisualShaderNode *p_node, const Vector<Vari
 
 	// SMOOTHSTEP
 	{
-		VisualShaderNodeSmoothStep *smoothStepFunc = Object::cast_to<VisualShaderNodeSmoothStep>(p_node);
+		VisualShaderNodeSmoothStep *smooth_step_func = Object::cast_to<VisualShaderNodeSmoothStep>(p_node);
 
-		if (smoothStepFunc) {
+		if (smooth_step_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			smoothStepFunc->set_op_type((VisualShaderNodeSmoothStep::OpType)(int)p_ops[0]);
+			smooth_step_func->set_op_type((VisualShaderNodeSmoothStep::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// STEP
 	{
-		VisualShaderNodeStep *stepFunc = Object::cast_to<VisualShaderNodeStep>(p_node);
+		VisualShaderNodeStep *step_func = Object::cast_to<VisualShaderNodeStep>(p_node);
 
-		if (stepFunc) {
+		if (step_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			stepFunc->set_op_type((VisualShaderNodeStep::OpType)(int)p_ops[0]);
+			step_func->set_op_type((VisualShaderNodeStep::OpType)(int)p_ops[0]);
 			return;
 		}
 	}
 
 	// MULTIPLY_ADD
 	{
-		VisualShaderNodeMultiplyAdd *fmaFunc = Object::cast_to<VisualShaderNodeMultiplyAdd>(p_node);
+		VisualShaderNodeMultiplyAdd *fma_func = Object::cast_to<VisualShaderNodeMultiplyAdd>(p_node);
 
-		if (fmaFunc) {
+		if (fma_func) {
 			ERR_FAIL_COND(p_ops[0].get_type() != Variant::INT);
-			fmaFunc->set_op_type((VisualShaderNodeMultiplyAdd::OpType)(int)p_ops[0]);
+			fma_func->set_op_type((VisualShaderNodeMultiplyAdd::OpType)(int)p_ops[0]);
 		}
 	}
 
