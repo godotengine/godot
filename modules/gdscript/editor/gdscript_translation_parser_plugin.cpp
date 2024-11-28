@@ -211,7 +211,16 @@ void GDScriptEditorTranslationParserPlugin::_traverse_block(const GDScriptParser
 			} break;
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_node = static_cast<const GDScriptParser::IfNode *>(statement);
-				_assess_expression(if_node->condition);
+				const List<GDScriptParser::Node *>::Element *E = if_node->conditions.front();
+				while (E) {
+					const GDScriptParser::Node *node = E->get();
+					if (node->is_expression()) {
+						_assess_expression(static_cast<const GDScriptParser::ExpressionNode *>(node));
+					} else if (node->type == GDScriptParser::Node::VARIABLE) {
+						_assess_expression(static_cast<const GDScriptParser::VariableNode *>(node)->initializer);
+					}
+					E = E->next();
+				}
 				_traverse_block(if_node->true_block);
 				_traverse_block(if_node->false_block);
 			} break;

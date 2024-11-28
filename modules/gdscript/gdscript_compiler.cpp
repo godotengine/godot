@@ -251,6 +251,45 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 	return true;
 }
 
+Error GDScriptCompiler::_parse_variable(CodeGen &codegen, const GDScriptParser::VariableNode *p_variable, const GDScriptParser::SuiteNode *p_block) {
+	GDScriptCodeGenerator *gen = codegen.generator;
+
+	// Should be already in stack when the block began.
+	GDScriptCodeGenerator::Address local = codegen.locals[p_variable->identifier->name];
+	GDScriptDataType local_type = _gdtype_from_datatype(p_variable->get_datatype(), codegen.script);
+
+	Error err = OK;
+
+	bool initialized = false;
+	if (p_variable->initializer != nullptr) {
+		GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, err, p_variable->initializer);
+		if (err) {
+			return err;
+		}
+		if (p_variable->use_conversion_assign) {
+			gen->write_assign_with_conversion(local, src_address);
+		} else {
+			gen->write_assign(local, src_address);
+		}
+		if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+			codegen.generator->pop_temporary();
+		}
+		initialized = true;
+	} else if ((local_type.has_type && local_type.kind == GDScriptDataType::BUILTIN) || codegen.generator->is_local_dirty(local)) {
+		// Initialize with default for the type. Built-in types must always be cleared (they cannot be `null`).
+		// Objects and untyped variables are assigned to `null` only if the stack address has been re-used and not cleared.
+		codegen.generator->clear_address(local);
+		initialized = true;
+	}
+
+	// Don't check `is_local_dirty()` since the variable must be assigned to `null` **on each iteration**.
+	if (!initialized && p_block->is_in_loop) {
+		codegen.generator->clear_address(local);
+	}
+
+	return err;
+}
+
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer) {
 	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS)) {
 		return codegen.add_constant(p_expression->reduced_value);
@@ -1878,6 +1917,72 @@ void GDScriptCompiler::_clear_block_locals(CodeGen &codegen, const List<GDScript
 	}
 }
 
+Error GDScriptCompiler::_parse_if(CodeGen &codegen, const GDScriptParser::IfNode *if_n) {
+	Error err = OK;
+	GDScriptCodeGenerator *gen = codegen.generator;
+	List<GDScriptCodeGenerator::Address> block_locals;
+
+	gen->clear_temporaries();
+	codegen.start_block();
+	block_locals = _add_block_locals(codegen, if_n->condition_block);
+
+	int count = 0;
+	const List<GDScriptParser::Node *>::Element *E = if_n->conditions.front();
+	while (E) {
+		const GDScriptParser::Node *condition_n = E->get();
+		if (condition_n->is_expression()) {
+			const GDScriptParser::ExpressionNode *expression_n = static_cast<const GDScriptParser::ExpressionNode *>(condition_n);
+
+			GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, expression_n);
+			if (err) {
+				return err;
+			}
+			gen->write_if(condition);
+
+			if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				codegen.generator->pop_temporary();
+			}
+
+			count++;
+		} else if (condition_n->type == GDScriptParser::Node::VARIABLE) {
+			const GDScriptParser::VariableNode *variable_n = static_cast<const GDScriptParser::VariableNode *>(condition_n);
+
+			err = _parse_variable(codegen, variable_n, if_n->condition_block);
+			if (err) {
+				return err;
+			}
+
+			gen->clear_temporaries();
+		}
+		E = E->next();
+	}
+
+	err = _parse_block(codegen, if_n->true_block);
+	if (err) {
+		return err;
+	}
+
+	_clear_block_locals(codegen, block_locals);
+	codegen.end_block();
+
+	if (if_n->false_block) {
+		gen->write_else(count);
+
+		err = _parse_block(codegen, if_n->false_block);
+		if (err) {
+			return err;
+		}
+
+		gen->write_endif();
+	} else {
+		for (int i = 0; i < count; i++) {
+			gen->write_endif();
+		}
+	}
+
+	return OK;
+}
+
 Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals, bool p_clear_locals) {
 	Error err = OK;
 	GDScriptCodeGenerator *gen = codegen.generator;
@@ -1935,7 +2040,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				for (int j = 0; j < match->branches.size(); j++) {
 					if (j > 0) {
 						// Use `else` to not check the next branch after matching.
-						gen->write_else();
+						gen->write_else(1);
 					}
 
 					const GDScriptParser::MatchBranchNode *branch = match->branches[j];
@@ -2004,32 +2109,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			} break;
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
-				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
+				err = _parse_if(codegen, if_n);
 				if (err) {
 					return err;
 				}
-
-				gen->write_if(condition);
-
-				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
-
-				err = _parse_block(codegen, if_n->true_block);
-				if (err) {
-					return err;
-				}
-
-				if (if_n->false_block) {
-					gen->write_else();
-
-					err = _parse_block(codegen, if_n->false_block);
-					if (err) {
-						return err;
-					}
-				}
-
-				gen->write_endif();
 			} break;
 			case GDScriptParser::Node::FOR: {
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);
@@ -2166,36 +2249,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 #endif
 			} break;
 			case GDScriptParser::Node::VARIABLE: {
-				const GDScriptParser::VariableNode *lv = static_cast<const GDScriptParser::VariableNode *>(s);
-				// Should be already in stack when the block began.
-				GDScriptCodeGenerator::Address local = codegen.locals[lv->identifier->name];
-				GDScriptDataType local_type = _gdtype_from_datatype(lv->get_datatype(), codegen.script);
-
-				bool initialized = false;
-				if (lv->initializer != nullptr) {
-					GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, err, lv->initializer);
-					if (err) {
-						return err;
-					}
-					if (lv->use_conversion_assign) {
-						gen->write_assign_with_conversion(local, src_address);
-					} else {
-						gen->write_assign(local, src_address);
-					}
-					if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						codegen.generator->pop_temporary();
-					}
-					initialized = true;
-				} else if ((local_type.has_type && local_type.kind == GDScriptDataType::BUILTIN) || codegen.generator->is_local_dirty(local)) {
-					// Initialize with default for the type. Built-in types must always be cleared (they cannot be `null`).
-					// Objects and untyped variables are assigned to `null` only if the stack address has been re-used and not cleared.
-					codegen.generator->clear_address(local);
-					initialized = true;
-				}
-
-				// Don't check `is_local_dirty()` since the variable must be assigned to `null` **on each iteration**.
-				if (!initialized && p_block->is_in_loop) {
-					codegen.generator->clear_address(local);
+				const GDScriptParser::VariableNode *variable_n = static_cast<const GDScriptParser::VariableNode *>(s);
+				err = _parse_variable(codegen, variable_n, p_block);
+				if (err) {
+					return err;
 				}
 			} break;
 			case GDScriptParser::Node::CONSTANT: {

@@ -922,7 +922,8 @@ public:
 	};
 
 	struct IfNode : public Node {
-		ExpressionNode *condition = nullptr;
+		List<Node *> conditions;
+		SuiteNode *condition_block = nullptr;
 		SuiteNode *true_block = nullptr;
 		SuiteNode *false_block = nullptr;
 
@@ -1520,7 +1521,7 @@ private:
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
-	VariableNode *parse_variable(bool p_is_static, bool p_allow_property);
+	VariableNode *parse_variable(bool p_is_static, bool p_allow_property, bool p_is_if_condition = false);
 	VariableNode *parse_property(VariableNode *p_variable, bool p_need_indent);
 	void parse_property_getter(VariableNode *p_variable);
 	void parse_property_setter(VariableNode *p_variable);

@@ -1080,7 +1080,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static) {
 	return parse_variable(p_is_static, true);
 }
 
-GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property) {
+GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, bool p_allow_property, bool p_is_if_condition) {
 	VariableNode *variable = alloc_node<VariableNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected variable name after "var".)")) {
@@ -1139,7 +1139,10 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 	}
 
 	complete_extents(variable);
-	end_statement("variable declaration");
+
+	if (p_is_if_condition == false) {
+		end_statement("variable declaration");
+	}
 
 	return variable;
 }
@@ -2091,21 +2094,73 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 }
 
 GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
-	IfNode *n_if = alloc_node<IfNode>();
+	SuiteNode *condition_block = alloc_node<SuiteNode>();
+	condition_block->parent_block = current_suite;
+	condition_block->parent_function = current_function;
+	SuiteNode *saved_suite = current_suite;
+	current_suite = condition_block;
 
-	n_if->condition = parse_expression(false);
-	if (n_if->condition == nullptr) {
-		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
-	}
+	List<Node *> conditions;
+	do {
+		if (match(GDScriptTokenizer::Token::VAR)) {
+			// Variable declaration
+			VariableNode *variable = parse_variable(false, false, true);
+			if (variable == nullptr) {
+				push_error(vformat(R"(Expected variable definition after "%s".)", p_token));
+				break;
+			} else if (variable->initializer == nullptr) {
+				push_error(R"(Expected expression for variable initial value.)");
+				break;
+			} else {
+				const SuiteNode::Local &local = current_suite->get_local(variable->identifier->name);
+				if (local.type != SuiteNode::Local::UNDEFINED) {
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name), variable->identifier);
+					break;
+				}
+				condition_block->add_local(variable, current_function);
+
+				IdentifierNode *identifier = alloc_node<IdentifierNode>();
+				identifier->name = variable->identifier->name;
+				identifier->suite = condition_block;
+				identifier->source = IdentifierNode::Source::LOCAL_VARIABLE;
+				const SuiteNode::Local &declaration = condition_block->get_local(identifier->name);
+				identifier->variable_source = declaration.variable;
+				declaration.variable->usages++;
+				complete_extents(identifier);
+
+				condition_block->statements.push_back(variable);
+
+				conditions.push_back(variable);
+				conditions.push_back(identifier);
+			}
+		} else {
+			// Expression
+			ExpressionNode *expression = parse_expression(false);
+			if (expression == nullptr) {
+				push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
+				break;
+			} else {
+				conditions.push_back(expression);
+			}
+		}
+	} while (match(GDScriptTokenizer::Token::COMMA));
 
 	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after "%s" condition.)", p_token));
 
-	n_if->true_block = parse_suite(vformat(R"("%s" block)", p_token));
-	n_if->true_block->parent_if = n_if;
+	SuiteNode *true_block = parse_suite(vformat(R"("%s" block)", p_token));
 
-	if (n_if->true_block->has_continue) {
-		current_suite->has_continue = true;
-	}
+	complete_extents(condition_block);
+	current_suite = saved_suite;
+
+	IfNode *n_if = alloc_node<IfNode>();
+
+	true_block->parent_function = current_function;
+	true_block->parent_block = condition_block;
+	true_block->parent_if = n_if;
+
+	n_if->conditions = conditions;
+	n_if->condition_block = condition_block;
+	n_if->true_block = true_block;
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
@@ -2127,10 +2182,10 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	}
 	complete_extents(n_if);
 
-	if (n_if->false_block != nullptr && n_if->false_block->has_return && n_if->true_block->has_return) {
+	if ((n_if->false_block != nullptr && n_if->false_block->has_return) && n_if->true_block->has_return) {
 		current_suite->has_return = true;
 	}
-	if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
+	if ((n_if->false_block != nullptr && n_if->false_block->has_continue) || n_if->true_block->has_continue) {
 		current_suite->has_continue = true;
 	}
 
@@ -4791,10 +4846,30 @@ bool GDScriptParser::warning_annotations(AnnotationNode *p_annotation, Node *p_t
 
 				// Contain bodies.
 				SIMPLE_CASE(Node::FOR, ForNode, list)
-				SIMPLE_CASE(Node::IF, IfNode, condition)
 				SIMPLE_CASE(Node::MATCH, MatchNode, test)
 				SIMPLE_CASE(Node::WHILE, WhileNode, condition)
 #undef SIMPLE_CASE
+
+				case Node::IF: {
+					IfNode *if_n = static_cast<IfNode *>(p_target);
+					GDScriptParser::ExpressionNode *expression = nullptr;
+					List<GDScriptParser::Node *>::Element *E = if_n->conditions.front();
+					while (E) {
+						GDScriptParser::Node *condition = E->get();
+						if (condition->is_expression()) {
+							expression = static_cast<GDScriptParser::ExpressionNode *>(condition);
+						} else if (condition->type == GDScriptParser::Node::VARIABLE) {
+							expression = static_cast<GDScriptParser::VariableNode *>(condition)->initializer;
+							E = E->next();
+						}
+						E = E->next();
+					}
+					if (expression) {
+						end_line = expression->end_line;
+					} else {
+						end_line = if_n->start_line;
+					}
+				} break;
 
 				case Node::CLASS: {
 					end_line = p_target->start_line;
@@ -5748,7 +5823,27 @@ void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
 	} else {
 		push_text("If ");
 	}
-	print_expression(p_if->condition);
+	List<Node *>::Element *E = p_if->conditions.front();
+	bool first = true;
+	while (E) {
+		if (first) {
+			first = false;
+		} else {
+			push_text(", ");
+		}
+		Node *node = E->get();
+		if (node->is_expression()) {
+			print_expression(static_cast<ExpressionNode *>(node));
+		} else if (node->type == Node::VARIABLE) {
+			print_variable(static_cast<VariableNode *>(node));
+			// Skip next identifier condition
+			E = E->next();
+		} else {
+			ERR_PRINT("BUG: invalid condition");
+		}
+		E = E->next();
+	}
+
 	push_line(" :");
 
 	increase_indent();
