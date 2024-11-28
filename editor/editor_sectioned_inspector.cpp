@@ -353,6 +353,7 @@ SectionedInspector::SectionedInspector() :
 	sections->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
+	sections->set_theme_type_variation("TreeSecondary");
 
 	left_vb->add_child(sections, true);
 

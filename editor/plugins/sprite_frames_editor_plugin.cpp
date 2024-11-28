@@ -1956,6 +1956,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
+	animations->set_theme_type_variation("TreeSecondary");
 	animations->set_allow_reselect(true);
 
 	add_anim->set_shortcut_context(animations);
