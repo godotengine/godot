@@ -1034,10 +1034,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 }
 
 Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
-	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
-		return OK;
-	}
-
 	List<MethodInfo> _signals;
 	p_node->get_signal_list(&_signals);
 	_signals.sort();
@@ -1088,29 +1084,49 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 			}
 
 			//find if this connection already exists
-			Node *common_parent = target->find_common_parent_with(p_node);
+			Node *common_owner = target->find_common_owner_with(p_node);
 
-			ERR_CONTINUE(!common_parent);
+			ERR_CONTINUE(!common_owner);
 
-			if (common_parent != p_owner && common_parent->get_scene_file_path().is_empty()) {
-				common_parent = common_parent->get_owner();
+			if (common_owner != p_owner && common_owner->get_scene_file_path().is_empty()) {
+				common_owner = common_owner->get_owner();
 			}
 
 			bool exists = false;
 
 			//go through ownership chain to see if this exists
-			while (common_parent) {
+			while (common_owner) {
 				Ref<SceneState> ps;
 
-				if (common_parent == p_owner) {
-					ps = common_parent->get_scene_inherited_state();
+				if (Engine::get_singleton()->is_editor_hint()) {
+					if (common_owner == p_owner) {
+						ps = common_owner->get_scene_inherited_state();
+					} else {
+						ps = common_owner->get_scene_instance_state();
+					}
 				} else {
-					ps = common_parent->get_scene_instance_state();
+					if (node_map.has(common_owner)) {
+						NodeData common_owner_nd = nodes[node_map[common_owner]];
+						for (KeyValue<Variant, int> M : variant_map) {
+							if (M.value == common_owner_nd.instance) {
+								Ref<PackedScene> scene = M.key;
+								if (scene.is_valid()) {
+									ps = scene->get_state();
+								}
+								break;
+							}
+						}
+					} else {
+						Ref<PackedScene> scene = ResourceLoader::load(common_owner->get_scene_file_path());
+						if (scene.is_valid()) {
+							ps = scene->get_state();
+						}
+					}
 				}
 
 				if (ps.is_valid()) {
-					NodePath signal_from = common_parent->get_path_to(p_node);
-					NodePath signal_to = common_parent->get_path_to(target);
+					NodePath signal_from = common_owner->get_path_to(p_node);
+					NodePath signal_to = common_owner->get_path_to(target);
 
 					if (ps->has_connection(signal_from, c.signal.get_name(), signal_to, base_callable.get_method())) {
 						exists = true;
@@ -1118,63 +1134,15 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 					}
 				}
 
-				if (common_parent == p_owner) {
+				if (common_owner == p_owner) {
 					break;
 				} else {
-					common_parent = common_parent->get_owner();
+					common_owner = common_owner->get_owner();
 				}
 			}
 
 			if (exists) { //already exists (comes from instance or inheritance), so don't save
 				continue;
-			}
-
-			{
-				Node *nl = p_node;
-
-				bool exists2 = false;
-
-				while (nl) {
-					if (nl == p_owner) {
-						Ref<SceneState> state = nl->get_scene_inherited_state();
-						if (state.is_valid()) {
-							int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-							int to_node = state->find_node_by_path(nl->get_path_to(target));
-
-							if (from_node >= 0 && to_node >= 0) {
-								//this one has state for this node, save
-								if (state->is_connection(from_node, c.signal.get_name(), to_node, base_callable.get_method())) {
-									exists2 = true;
-									break;
-								}
-							}
-						}
-
-						nl = nullptr;
-					} else {
-						if (!nl->get_scene_file_path().is_empty()) {
-							//is an instance
-							Ref<SceneState> state = nl->get_scene_instance_state();
-							if (state.is_valid()) {
-								int from_node = state->find_node_by_path(nl->get_path_to(p_node));
-								int to_node = state->find_node_by_path(nl->get_path_to(target));
-
-								if (from_node >= 0 && to_node >= 0) {
-									//this one has state for this node, save
-									if (state->is_connection(from_node, c.signal.get_name(), to_node, base_callable.get_method())) {
-										exists2 = true;
-										break;
-									}
-								}
-							}
-						}
-						nl = nl->get_owner();
-					}
-				}
-
-				if (exists2) {
-					continue;
-				}
 			}
 
 			int src_id;
@@ -1220,8 +1188,33 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 		}
 	}
 
+	if (!p_node->get_scene_file_path().is_empty()) {
+		// If editable children is not enabled, its child nodes do not need to be parsed.
+		if (p_owner == p_node) {
+			if (p_node->get_owner() && !p_node->get_owner()->is_editable_instance(p_node)) {
+				return OK;
+			}
+		} else if (!p_owner->is_editable_instance(p_node)) {
+			return OK;
+		}
+	}
+
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
+
+		bool in_ownership_chain = false;
+		Node *owner = c->get_owner();
+		while (owner) {
+			if (owner == p_owner) {
+				in_ownership_chain = true;
+			}
+			owner = owner->get_owner();
+		}
+
+		if (!in_ownership_chain) {
+			return OK; // Does not belong to this scene or its descendant scene.
+		}
+
 		Error err = _parse_connections(p_owner, c, name_map, variant_map, node_map, nodepath_map);
 		if (err) {
 			return err;
@@ -1449,39 +1442,6 @@ bool SceneState::disable_placeholders = false;
 
 void SceneState::set_disable_placeholders(bool p_disable) {
 	disable_placeholders = p_disable;
-}
-
-bool SceneState::is_connection(int p_node, const StringName &p_signal, int p_to_node, const StringName &p_to_method) const {
-	ERR_FAIL_COND_V(p_node < 0, false);
-	ERR_FAIL_COND_V(p_to_node < 0, false);
-
-	if (p_node < nodes.size() && p_to_node < nodes.size()) {
-		int signal_idx = -1;
-		int method_idx = -1;
-		for (int i = 0; i < names.size(); i++) {
-			if (names[i] == p_signal) {
-				signal_idx = i;
-			} else if (names[i] == p_to_method) {
-				method_idx = i;
-			}
-		}
-
-		if (signal_idx >= 0 && method_idx >= 0) {
-			//signal and method strings are stored..
-
-			for (int i = 0; i < connections.size(); i++) {
-				if (connections[i].from == p_node && connections[i].to == p_to_node && connections[i].signal == signal_idx && connections[i].method == method_idx) {
-					return true;
-				}
-			}
-		}
-	}
-
-	if (base_scene_node_remap.has(p_node) && base_scene_node_remap.has(p_to_node)) {
-		return get_base_scene_state()->is_connection(base_scene_node_remap[p_node], p_signal, base_scene_node_remap[p_to_node], p_to_method);
-	}
-
-	return false;
 }
 
 void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {

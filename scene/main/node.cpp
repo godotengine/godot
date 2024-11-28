@@ -2215,7 +2215,7 @@ void Node::_clean_up_owner() {
 	data.OW = nullptr;
 }
 
-Node *Node::find_common_parent_with(const Node *p_node) const {
+Node *Node::find_common_owner_with(const Node *p_node) const {
 	if (this == p_node) {
 		return const_cast<Node *>(p_node);
 	}
@@ -2226,23 +2226,23 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 
 	while (n) {
 		visited.insert(n);
-		n = n->data.parent;
+		n = n->data.owner;
 	}
 
-	const Node *common_parent = p_node;
+	const Node *common_owner = p_node;
 
-	while (common_parent) {
-		if (visited.has(common_parent)) {
+	while (common_owner) {
+		if (visited.has(common_owner)) {
 			break;
 		}
-		common_parent = common_parent->data.parent;
+		common_owner = common_owner->data.owner;
 	}
 
-	if (!common_parent) {
+	if (!common_owner) {
 		return nullptr;
 	}
 
-	return const_cast<Node *>(common_parent);
+	return const_cast<Node *>(common_owner);
 }
 
 NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
