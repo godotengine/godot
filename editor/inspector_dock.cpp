@@ -736,7 +736,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	HBoxContainer *property_tools_hb = memnew(HBoxContainer);
 	add_child(property_tools_hb);
 
-	search = memnew(LineEdit);
+	search = memnew(DebouncedLineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTR("Filter Properties"));
 	search->set_clear_button_enabled(true);

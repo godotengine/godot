@@ -846,7 +846,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(hbc);
 
-	search_box = memnew(LineEdit);
+	search_box = memnew(DebouncedLineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);

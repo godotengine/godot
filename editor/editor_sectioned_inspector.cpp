@@ -303,10 +303,10 @@ void SectionedInspector::update_category_list() {
 	inspector->update_tree();
 }
 
-void SectionedInspector::register_search_box(LineEdit *p_box) {
+void SectionedInspector::register_search_box(DebouncedLineEdit *p_box) {
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect(SceneStringName(text_changed), callable_mp(this, &SectionedInspector::_search_changed));
+	p_box->connect("debounce_timeout", callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::register_advanced_toggle(CheckButton *p_toggle) {
@@ -315,9 +315,9 @@ void SectionedInspector::register_advanced_toggle(CheckButton *p_toggle) {
 	_advanced_toggled(advanced_toggle->is_pressed());
 }
 
-void SectionedInspector::_search_changed(const String &p_what) {
+void SectionedInspector::_search_changed() {
 	if (advanced_toggle) {
-		if (p_what.is_empty()) {
+		if (search_box->get_text().is_empty()) {
 			advanced_toggle->set_pressed_no_signal(!restrict_to_basic);
 			advanced_toggle->set_disabled(false);
 			advanced_toggle->set_tooltip_text(String());

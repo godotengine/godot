@@ -35,6 +35,7 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -1101,14 +1102,6 @@ void EditorAssetLibrary::_search(int p_page) {
 	_api_request("asset", REQUESTING_SEARCH, args);
 }
 
-void EditorAssetLibrary::_search_text_changed(const String &p_text) {
-	filter_debounce_timer->start();
-}
-
-void EditorAssetLibrary::_filter_debounce_timer_timeout() {
-	_search();
-}
-
 void EditorAssetLibrary::_request_current_config() {
 	_repository_changed(repository->get_selected());
 }
@@ -1595,7 +1588,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_main->add_child(search_hb);
 	library_main->add_theme_constant_override("separation", 10 * EDSCALE);
 
-	filter = memnew(LineEdit);
+	filter = memnew(DebouncedLineEdit);
 	if (templates_only) {
 		filter->set_placeholder(TTR("Search Templates, Projects, and Demos"));
 	} else {
@@ -1604,15 +1597,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect(SceneStringName(text_changed), callable_mp(this, &EditorAssetLibrary::_search_text_changed));
-
-	// Perform a search automatically if the user hasn't entered any text for a certain duration.
-	// This way, the user doesn't need to press Enter to initiate their search.
-	filter_debounce_timer = memnew(Timer);
-	filter_debounce_timer->set_one_shot(true);
-	filter_debounce_timer->set_wait_time(0.25);
-	filter_debounce_timer->connect("timeout", callable_mp(this, &EditorAssetLibrary::_filter_debounce_timer_timeout));
-	search_hb->add_child(filter_debounce_timer);
+	filter->connect("debounce_timeout", callable_mp(this, &EditorAssetLibrary::_search).bind(0));
 
 	if (!p_templates_only) {
 		search_hb->add_child(memnew(VSeparator));

@@ -37,7 +37,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
@@ -50,6 +49,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/main/http_request.h"
 
+class DebouncedLineEdit;
 class EditorFileDialog;
 class MenuButton;
 
@@ -200,8 +200,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _set_library_message(const String &p_message);
 	void _set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action);
 
-	LineEdit *filter = nullptr;
-	Timer *filter_debounce_timer = nullptr;
+	DebouncedLineEdit *filter = nullptr;
 	OptionButton *categories = nullptr;
 	OptionButton *repository = nullptr;
 	OptionButton *sort = nullptr;
@@ -303,11 +302,9 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _search(int p_page = 0);
 	void _rerun_search(int p_ignore);
-	void _search_text_changed(const String &p_text = "");
 	void _search_text_submitted(const String &p_text = "");
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
-	void _filter_debounce_timer_timeout();
 	void _request_current_config();
 	EditorAssetLibraryItemDownload *_get_asset_in_progress(int p_asset_id) const;
 

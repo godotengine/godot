@@ -35,6 +35,7 @@
 #include "scene/gui/dialogs.h"
 
 class CheckButton;
+class DebouncedLineEdit;
 class PanelContainer;
 class SectionedInspector;
 class TabContainer;
@@ -51,7 +52,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;
 
-	LineEdit *search_box = nullptr;
+	DebouncedLineEdit *search_box = nullptr;
 	CheckButton *advanced_switch = nullptr;
 	LineEdit *shortcut_search_box = nullptr;
 	EventListenerLineEdit *shortcut_search_by_event = nullptr;

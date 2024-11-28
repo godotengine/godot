@@ -34,6 +34,7 @@
 #include "editor/add_metadata_dialog.h"
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
 
 class AcceptDialog;
@@ -42,7 +43,6 @@ class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
 class HSeparator;
-class LineEdit;
 class MarginContainer;
 class OptionButton;
 class PanelContainer;
@@ -599,7 +599,6 @@ class EditorInspector : public ScrollContainer {
 
 	void _keying_changed();
 
-	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped);
 
 	void _vscroll_changed(double);
@@ -689,6 +688,21 @@ public:
 	Variant get_property_clipboard() const;
 
 	EditorInspector();
+};
+
+class DebouncedLineEdit : public LineEdit {
+	GDCLASS(DebouncedLineEdit, LineEdit);
+
+	Timer *debounce_timer = nullptr;
+
+	void _start_timer();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	DebouncedLineEdit();
 };
 
 #endif // EDITOR_INSPECTOR_H
