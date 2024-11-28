@@ -41,7 +41,8 @@ class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
 
 	SpinBox *layer = nullptr;
-	Label *info = nullptr;
+	Label *filename_label = nullptr;
+	Label *metadata_label = nullptr;
 	Ref<TextureLayered> texture;
 
 	Ref<Shader> shaders[3];
@@ -68,6 +69,8 @@ class TextureLayeredEditor : public Control {
 	void _texture_rect_draw();
 
 	void _update_gui();
+
+	void _update_filename_label_text();
 
 protected:
 	void _notification(int p_what);

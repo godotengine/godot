@@ -67,9 +67,15 @@ void Texture3DEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			if (info) {
+			// Filename label.
+			{
+				Ref<Font> filename_label_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				filename_label->add_theme_font_override(SceneStringName(font), filename_label_font);
+			}
+
+			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
-				info->add_theme_font_override(SceneStringName(font), metadata_label_font);
+				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
 			}
 		} break;
 	}
@@ -144,7 +150,7 @@ void Texture3DEditor::_update_gui() {
 		const int mip_count = Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), texture->get_format());
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), texture->get_format(), true) * texture->get_depth();
 
-		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
+		metadata_label->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
 				texture->get_width(),
 				texture->get_height(),
 				texture->get_depth(),
@@ -155,13 +161,28 @@ void Texture3DEditor::_update_gui() {
 	} else {
 		const int memory = Image::get_image_data_size(texture->get_width(), texture->get_height(), texture->get_format(), false) * texture->get_depth();
 
-		info->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
+		metadata_label->set_text(vformat(String::utf8("%d×%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
 				texture->get_width(),
 				texture->get_height(),
 				texture->get_depth(),
 				format,
 				String::humanize_size(memory)));
 	}
+
+	_update_filename_label_text();
+}
+
+void Texture3DEditor::_update_filename_label_text() {
+	if (texture.is_null()) {
+		filename_label->set_tooltip_text("");
+		filename_label->set_text("");
+		filename_label->set_visible(false);
+		return;
+	}
+
+	filename_label->set_tooltip_text(texture->get_path());
+	filename_label->set_text(texture->get_path().get_file());
+	filename_label->set_visible(true);
 }
 
 void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
@@ -197,41 +218,72 @@ Texture3DEditor::Texture3DEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 256.0) * EDSCALE);
 
-	texture_rect = memnew(Control);
-	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	texture_rect->connect(SceneStringName(draw), callable_mp(this, &Texture3DEditor::_texture_rect_draw));
+	{
+		// Texture display.
+		texture_rect = memnew(Control);
+		texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		texture_rect->connect(SceneStringName(draw), callable_mp(this, &Texture3DEditor::_texture_rect_draw));
 
-	add_child(texture_rect);
+		add_child(texture_rect);
+	}
 
-	layer = memnew(SpinBox);
-	layer->set_step(1);
-	layer->set_max(100);
+	{
+		// Layer spinbox.
+		layer = memnew(SpinBox);
+		layer->set_step(1);
+		layer->set_max(100);
 
-	layer->set_modulate(Color(1, 1, 1, 0.8));
-	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	layer->set_anchor(SIDE_RIGHT, 1);
-	layer->set_anchor(SIDE_LEFT, 1);
-	layer->connect(SceneStringName(value_changed), callable_mp(this, &Texture3DEditor::_layer_changed));
+		layer->set_modulate(Color(1, 1, 1, 0.8));
+		layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+		layer->set_anchor(SIDE_RIGHT, 1);
+		layer->set_anchor(SIDE_LEFT, 1);
+		layer->connect(SceneStringName(value_changed), callable_mp(this, &Texture3DEditor::_layer_changed));
 
-	add_child(layer);
+		add_child(layer);
+	}
 
-	info = memnew(Label);
-	info->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
-	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
-	info->add_theme_font_size_override(SceneStringName(font_size), 14 * EDSCALE);
-	info->add_theme_color_override("font_outline_color", Color(0, 0, 0));
-	info->add_theme_constant_override("outline_size", 8 * EDSCALE);
+	{
+		// Filename label.
+		filename_label = memnew(Label);
 
-	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->set_h_size_flags(Control::SIZE_SHRINK_END);
-	info->set_v_size_flags(Control::SIZE_SHRINK_END);
-	info->set_anchor(SIDE_RIGHT, 1);
-	info->set_anchor(SIDE_LEFT, 1);
-	info->set_anchor(SIDE_BOTTOM, 1);
-	info->set_anchor(SIDE_TOP, 1);
+		_update_filename_label_text();
 
-	add_child(info);
+		filename_label->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
+
+		// It's okay that these colors are static since the grid color is static too.
+		filename_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+		filename_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+
+		filename_label->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
+		filename_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+		filename_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+
+		filename_label->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+		filename_label->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+
+		add_child(filename_label);
+	}
+
+	{
+		// Metadata label.
+		metadata_label = memnew(Label);
+		metadata_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+		metadata_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+		metadata_label->add_theme_font_size_override(SceneStringName(font_size), 14 * EDSCALE);
+		metadata_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+		metadata_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+
+		metadata_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+		metadata_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
+		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
+		metadata_label->set_anchor(SIDE_RIGHT, 1);
+		metadata_label->set_anchor(SIDE_LEFT, 1);
+		metadata_label->set_anchor(SIDE_BOTTOM, 1);
+		metadata_label->set_anchor(SIDE_TOP, 1);
+
+		add_child(metadata_label);
+	}
 }
 
 Texture3DEditor::~Texture3DEditor() {
