@@ -65,6 +65,7 @@ private:
 
 	Mode mode = MODE_NEW;
 	bool is_folder_empty = true;
+	ConfirmationDialog *nonempty_confirmation = nullptr;
 
 	CheckButton *create_dir = nullptr;
 	Button *project_browse = nullptr;
