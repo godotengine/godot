@@ -94,8 +94,10 @@ public:
 class JoypadWindows;
 
 class OS_Windows : public OS {
+	uint64_t target_ticks = 0;
 	uint64_t ticks_start = 0;
 	uint64_t ticks_per_second = 0;
+	uint64_t delay_resolution = 1000;
 
 	HINSTANCE hInstance;
 	MainLoop *main_loop = nullptr;
@@ -188,6 +190,7 @@ public:
 
 	virtual Error set_cwd(const String &p_cwd) override;
 
+	virtual void add_frame_delay(bool p_can_draw) override;
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
