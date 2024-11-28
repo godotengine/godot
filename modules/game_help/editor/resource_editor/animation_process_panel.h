@@ -2,7 +2,10 @@
 
 #include "scene/gui/box_container.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_resource_picker.h"
 #include "../../logic/character_manager.h"
+
+#include "../animator_node_preview.h"
 
 class AnimationProcessPanel : public VBoxContainer {
     GDCLASS(AnimationProcessPanel, VBoxContainer);
@@ -178,6 +181,11 @@ protected:
         
     }
 public:
+    String animation_preview_prefab_path;
+    EditorPropertyPath* single_path = nullptr;
+    // 预览预制体查看面板
+    AnimationNodePreview* preview = nullptr;
+
     String single_animation_file_path;
     StringName single_animation_group_name;
     StringName single_animation_tag_name;
