@@ -251,6 +251,7 @@ public:
 		Vector<DataFormat> allowed_shared_formats;
 
 		bool is_resolve_buffer = false;
+		bool is_discardable = false;
 		bool has_initial_data = false;
 
 		BitField<RDD::TextureAspectBits> read_aspect_flags;
@@ -287,6 +288,7 @@ public:
 			tf.usage_bits = usage_flags;
 			tf.shareable_formats = allowed_shared_formats;
 			tf.is_resolve_buffer = is_resolve_buffer;
+			tf.is_discardable = is_discardable;
 			return tf;
 		}
 	};
@@ -349,33 +351,8 @@ public:
 	Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
 	Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture);
 
-	/************************/
-	/**** DRAW LISTS (I) ****/
-	/************************/
-
-	enum InitialAction {
-		INITIAL_ACTION_LOAD,
-		INITIAL_ACTION_CLEAR,
-		INITIAL_ACTION_DISCARD,
-		INITIAL_ACTION_MAX,
-#ifndef DISABLE_DEPRECATED
-		INITIAL_ACTION_CLEAR_REGION = INITIAL_ACTION_CLEAR,
-		INITIAL_ACTION_CLEAR_REGION_CONTINUE = INITIAL_ACTION_CLEAR,
-		INITIAL_ACTION_KEEP = INITIAL_ACTION_LOAD,
-		INITIAL_ACTION_DROP = INITIAL_ACTION_DISCARD,
-		INITIAL_ACTION_CONTINUE = INITIAL_ACTION_LOAD,
-#endif
-	};
-
-	enum FinalAction {
-		FINAL_ACTION_STORE,
-		FINAL_ACTION_DISCARD,
-		FINAL_ACTION_MAX,
-#ifndef DISABLE_DEPRECATED
-		FINAL_ACTION_READ = FINAL_ACTION_STORE,
-		FINAL_ACTION_CONTINUE = FINAL_ACTION_STORE,
-#endif
-	};
+	void texture_set_discardable(RID p_texture, bool p_discardable);
+	bool texture_is_discardable(RID p_texture);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -523,7 +500,8 @@ private:
 		}
 	};
 
-	RDD::RenderPassID _render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
+	static RDD::RenderPassID _render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
+	static RDD::RenderPassID _render_pass_create_from_graph(RenderingDeviceDriver *p_driver, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, void *p_user_data);
 
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
@@ -538,47 +516,13 @@ private:
 	HashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
 
 	struct Framebuffer {
+		RenderingDevice *rendering_device = nullptr;
 		FramebufferFormatID format_id;
-		struct VersionKey {
-			InitialAction initial_color_action;
-			FinalAction final_color_action;
-			InitialAction initial_depth_action;
-			FinalAction final_depth_action;
-			uint32_t view_count;
-
-			bool operator<(const VersionKey &p_key) const {
-				if (initial_color_action == p_key.initial_color_action) {
-					if (final_color_action == p_key.final_color_action) {
-						if (initial_depth_action == p_key.initial_depth_action) {
-							if (final_depth_action == p_key.final_depth_action) {
-								return view_count < p_key.view_count;
-							} else {
-								return final_depth_action < p_key.final_depth_action;
-							}
-						} else {
-							return initial_depth_action < p_key.initial_depth_action;
-						}
-					} else {
-						return final_color_action < p_key.final_color_action;
-					}
-				} else {
-					return initial_color_action < p_key.initial_color_action;
-				}
-			}
-		};
-
 		uint32_t storage_mask = 0;
 		Vector<RID> texture_ids;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
-
-		struct Version {
-			RDD::FramebufferID framebuffer;
-			RDD::RenderPassID render_pass; // This one is owned.
-			uint32_t subpass_count = 1;
-		};
-
-		RBMap<VersionKey, Version> framebuffers;
+		RDG::FramebufferCache *framebuffer_cache = nullptr;
 		Size2 size;
 		uint32_t view_count;
 	};
@@ -826,6 +770,26 @@ public:
 		BARRIER_MASK_NO_BARRIER = 0x8000,
 	};
 
+	enum InitialAction {
+		INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_DISCARD,
+		INITIAL_ACTION_MAX,
+		INITIAL_ACTION_CLEAR_REGION = INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_CLEAR_REGION_CONTINUE = INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_KEEP = INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_DROP = INITIAL_ACTION_DISCARD,
+		INITIAL_ACTION_CONTINUE = INITIAL_ACTION_LOAD,
+	};
+
+	enum FinalAction {
+		FINAL_ACTION_STORE,
+		FINAL_ACTION_DISCARD,
+		FINAL_ACTION_MAX,
+		FINAL_ACTION_READ = FINAL_ACTION_STORE,
+		FINAL_ACTION_CONTINUE = FINAL_ACTION_STORE,
+	};
+
 	void barrier(BitField<BarrierMask> p_from = BARRIER_MASK_ALL_BARRIERS, BitField<BarrierMask> p_to = BARRIER_MASK_ALL_BARRIERS);
 	void full_barrier();
 	void draw_command_insert_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
@@ -854,7 +818,9 @@ private:
 
 	FramebufferFormatID _screen_get_framebuffer_format_bind_compat_87340() const;
 
-	DrawListID _draw_list_begin_bind_compat_90993(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	DrawListID _draw_list_begin_bind_compat_90993(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region);
+
+	DrawListID _draw_list_begin_bind_compat_98670(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, uint32_t p_breadcrumb);
 #endif
 
 public:
@@ -1158,8 +1124,6 @@ private:
 
 	DrawList *draw_list = nullptr;
 	uint32_t draw_list_subpass_count = 0;
-	RDD::RenderPassID draw_list_render_pass;
-	RDD::FramebufferID draw_list_vkframebuffer;
 #ifdef DEBUG_ENABLED
 	FramebufferFormatID draw_list_framebuffer_format = INVALID_ID;
 #endif
@@ -1167,16 +1131,43 @@ private:
 
 	Vector<RID> draw_list_bound_textures;
 
-	void _draw_list_insert_clear_region(DrawList *p_draw_list, Framebuffer *p_framebuffer, Point2i p_viewport_offset, Point2i p_viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil);
-	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, RDD::FramebufferID *r_framebuffer, RDD::RenderPassID *r_render_pass, uint32_t *r_subpass_count);
-	Error _draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass, uint32_t p_breadcrumb);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
 	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
 	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
 
 public:
+	enum DrawFlags {
+		DRAW_DEFAULT_ALL = 0,
+		DRAW_CLEAR_COLOR_0 = (1 << 0),
+		DRAW_CLEAR_COLOR_1 = (1 << 1),
+		DRAW_CLEAR_COLOR_2 = (1 << 2),
+		DRAW_CLEAR_COLOR_3 = (1 << 3),
+		DRAW_CLEAR_COLOR_4 = (1 << 4),
+		DRAW_CLEAR_COLOR_5 = (1 << 5),
+		DRAW_CLEAR_COLOR_6 = (1 << 6),
+		DRAW_CLEAR_COLOR_7 = (1 << 7),
+		DRAW_CLEAR_COLOR_MASK = 0xFF,
+		DRAW_CLEAR_COLOR_ALL = DRAW_CLEAR_COLOR_MASK,
+		DRAW_IGNORE_COLOR_0 = (1 << 8),
+		DRAW_IGNORE_COLOR_1 = (1 << 9),
+		DRAW_IGNORE_COLOR_2 = (1 << 10),
+		DRAW_IGNORE_COLOR_3 = (1 << 11),
+		DRAW_IGNORE_COLOR_4 = (1 << 12),
+		DRAW_IGNORE_COLOR_5 = (1 << 13),
+		DRAW_IGNORE_COLOR_6 = (1 << 14),
+		DRAW_IGNORE_COLOR_7 = (1 << 15),
+		DRAW_IGNORE_COLOR_MASK = 0xFF00,
+		DRAW_IGNORE_COLOR_ALL = DRAW_IGNORE_COLOR_MASK,
+		DRAW_CLEAR_DEPTH = (1 << 16),
+		DRAW_IGNORE_DEPTH = (1 << 17),
+		DRAW_CLEAR_STENCIL = (1 << 18),
+		DRAW_IGNORE_STENCIL = (1 << 19),
+		DRAW_CLEAR_ALL = DRAW_CLEAR_COLOR_ALL | DRAW_CLEAR_DEPTH | DRAW_CLEAR_STENCIL,
+		DRAW_IGNORE_ALL = DRAW_IGNORE_COLOR_ALL | DRAW_IGNORE_DEPTH | DRAW_IGNORE_STENCIL
+	};
+
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
@@ -1569,15 +1560,16 @@ VARIANT_ENUM_CAST(RenderingDevice::BlendFactor)
 VARIANT_ENUM_CAST(RenderingDevice::BlendOperation)
 VARIANT_BITFIELD_CAST(RenderingDevice::PipelineDynamicStateFlags)
 VARIANT_ENUM_CAST(RenderingDevice::PipelineSpecializationConstantType)
-VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
-VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
 VARIANT_ENUM_CAST(RenderingDevice::BreadcrumbMarker)
+VARIANT_BITFIELD_CAST(RenderingDevice::DrawFlags);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
+VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
+VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 #endif
 
 typedef RenderingDevice RD;

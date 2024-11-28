@@ -81,6 +81,9 @@ void EditorPerformanceProfiler::Monitor::reset() {
 
 String EditorPerformanceProfiler::_create_label(float p_value, Performance::MonitorType p_type) {
 	switch (p_type) {
+		case Performance::MONITOR_TYPE_QUANTITY: {
+			return TS->format_number(itos(p_value));
+		}
 		case Performance::MONITOR_TYPE_MEMORY: {
 			return String::humanize_size(p_value);
 		}
@@ -401,6 +404,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	monitor_tree->connect("item_edited", callable_mp(this, &EditorPerformanceProfiler::_monitor_select));
 	monitor_tree->create_item();
 	monitor_tree->set_hide_root(true);
+	monitor_tree->set_theme_type_variation("TreeSecondary");
 	add_child(monitor_tree);
 
 	monitor_draw = memnew(Control);

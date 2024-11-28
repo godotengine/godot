@@ -235,6 +235,7 @@ static FfxErrorCode create_resource_rd(FfxFsr2Interface *p_backend_interface, co
 	texture_format.height = res_desc.height;
 	texture_format.depth = res_desc.depth;
 	texture_format.mipmaps = res_desc.mipCount;
+	texture_format.is_discardable = true;
 
 	RID texture = rd->texture_create(texture_format, RD::TextureView(), initial_data);
 	ERR_FAIL_COND_V(texture.is_null(), FFX_ERROR_BACKEND_API_ERROR);

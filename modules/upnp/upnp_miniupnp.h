@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  thorvg_bounds_iterator.h                                              */
+/*  upnp_miniupnp.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THORVG_BOUNDS_ITERATOR_H
-#define THORVG_BOUNDS_ITERATOR_H
+#ifndef UPNP_MINIUPNP_H
+#define UPNP_MINIUPNP_H
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
+#ifndef WEB_ENABLED
 
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
+#include "upnp.h"
 
-using namespace godot;
+#include <miniupnpc.h>
 
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
+class UPNPMiniUPNP : public UPNP {
+	GDCLASS(UPNPMiniUPNP, UPNP);
 
-#include "core/typedefs.h"
+private:
+	static UPNP *_create(bool p_notify_postinitialize) { return static_cast<UPNP *>(ClassDB::creator<UPNPMiniUPNP>(p_notify_postinitialize)); }
 
-#include "modules/modules_enabled.gen.h" // For svg.
-#endif
+	String discover_multicast_if = "";
+	int discover_local_port = 0;
+	bool discover_ipv6 = false;
 
-#ifdef MODULE_SVG_ENABLED
+	Vector<Ref<UPNPDevice>> devices;
 
-#include <thorvg.h>
+	bool is_common_device(const String &dev) const;
+	void add_device_to_list(UPNPDev *dev, UPNPDev *devlist);
+	void parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist);
+	char *load_description(const String &url, int *size, int *status_code) const;
 
-void tvg_get_bounds(tvg::Picture *p_picture, float &r_min_x, float &r_min_y, float &r_max_x, float &r_max_y);
+public:
+	static void make_default();
 
-#endif // MODULE_SVG_ENABLED
+	static int upnp_result(int in);
 
-#endif // THORVG_BOUNDS_ITERATOR_H
+	virtual int get_device_count() const override;
+	virtual Ref<UPNPDevice> get_device(int index) const override;
+	virtual void add_device(Ref<UPNPDevice> device) override;
+	virtual void set_device(int index, Ref<UPNPDevice> device) override;
+	virtual void remove_device(int index) override;
+	virtual void clear_devices() override;
+
+	virtual Ref<UPNPDevice> get_gateway() const override;
+
+	virtual int discover(int timeout = 2000, int ttl = 2, const String &device_filter = "InternetGatewayDevice") override;
+
+	virtual String query_external_address() const override;
+
+	virtual int add_port_mapping(int port, int port_internal = 0, String desc = "", String proto = "UDP", int duration = 0) const override;
+	virtual int delete_port_mapping(int port, String proto = "UDP") const override;
+
+	virtual void set_discover_multicast_if(const String &m_if) override;
+	virtual String get_discover_multicast_if() const override;
+
+	virtual void set_discover_local_port(int port) override;
+	virtual int get_discover_local_port() const override;
+
+	virtual void set_discover_ipv6(bool ipv6) override;
+	virtual bool is_discover_ipv6() const override;
+
+	UPNPMiniUPNP() {}
+	virtual ~UPNPMiniUPNP() {}
+};
+
+#endif // WEB_ENABLED
+
+#endif // UPNP_MINIUPNP_H

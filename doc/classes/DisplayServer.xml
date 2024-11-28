@@ -1135,7 +1135,7 @@
 				Returns the scale factor of the specified screen by index.
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
-				[b]Note:[/b] This method is implemented only on macOS and Linux (Wayland).
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland).
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">

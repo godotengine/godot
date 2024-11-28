@@ -912,14 +912,10 @@ void Projection::set_light_atlas_rect(const Rect2 &p_rect) {
 }
 
 Projection::operator String() const {
-	String str;
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			str += String((j > 0) ? ", " : "\n") + rtos(columns[i][j]);
-		}
-	}
-
-	return str;
+	return "[X: " + columns[0].operator String() +
+			", Y: " + columns[1].operator String() +
+			", Z: " + columns[2].operator String() +
+			", W: " + columns[3].operator String() + "]";
 }
 
 real_t Projection::get_aspect() const {

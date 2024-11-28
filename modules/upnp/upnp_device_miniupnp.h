@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  thorvg_bounds_iterator.h                                              */
+/*  upnp_device_miniupnp.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THORVG_BOUNDS_ITERATOR_H
-#define THORVG_BOUNDS_ITERATOR_H
+#ifndef UPNP_DEVICE_MINIUPNP_H
+#define UPNP_DEVICE_MINIUPNP_H
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
+#ifndef WEB_ENABLED
 
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
+#include "upnp_device.h"
 
-using namespace godot;
+class UPNPDeviceMiniUPNP : public UPNPDevice {
+	GDCLASS(UPNPDeviceMiniUPNP, UPNPDevice);
 
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
+private:
+	static UPNPDevice *_create(bool p_notify_postinitialize) { return static_cast<UPNPDevice *>(ClassDB::creator<UPNPDeviceMiniUPNP>(p_notify_postinitialize)); }
 
-#include "core/typedefs.h"
+	String description_url;
+	String service_type;
+	String igd_control_url;
+	String igd_service_type;
+	String igd_our_addr;
+	IGDStatus igd_status = IGD_STATUS_UNKNOWN_ERROR;
 
-#include "modules/modules_enabled.gen.h" // For svg.
-#endif
+public:
+	static void make_default();
 
-#ifdef MODULE_SVG_ENABLED
+	virtual void set_description_url(const String &url) override;
+	virtual String get_description_url() const override;
 
-#include <thorvg.h>
+	virtual void set_service_type(const String &type) override;
+	virtual String get_service_type() const override;
 
-void tvg_get_bounds(tvg::Picture *p_picture, float &r_min_x, float &r_min_y, float &r_max_x, float &r_max_y);
+	virtual void set_igd_control_url(const String &url) override;
+	virtual String get_igd_control_url() const override;
 
-#endif // MODULE_SVG_ENABLED
+	virtual void set_igd_service_type(const String &type) override;
+	virtual String get_igd_service_type() const override;
 
-#endif // THORVG_BOUNDS_ITERATOR_H
+	virtual void set_igd_our_addr(const String &addr) override;
+	virtual String get_igd_our_addr() const override;
+
+	virtual void set_igd_status(IGDStatus status) override;
+	virtual IGDStatus get_igd_status() const override;
+
+	virtual bool is_valid_gateway() const override;
+	virtual String query_external_address() const override;
+	virtual int add_port_mapping(int port, int port_internal = 0, String desc = "", String proto = "UDP", int duration = 0) const override;
+	virtual int delete_port_mapping(int port, String proto = "UDP") const override;
+
+	UPNPDeviceMiniUPNP() {}
+	virtual ~UPNPDeviceMiniUPNP() {}
+};
+
+#endif // WEB_ENABLED
+
+#endif // UPNP_DEVICE_MINIUPNP_H

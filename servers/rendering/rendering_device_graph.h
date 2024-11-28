@@ -176,6 +176,7 @@ public:
 		Rect2i texture_slice_or_dirty_rect;
 		bool in_parent_dirty_list = false;
 		bool write_command_list_enabled = false;
+		bool is_discardable = false;
 
 		_FORCE_INLINE_ void reset_if_outdated(int64_t new_command_frame) {
 			if (new_command_frame != command_frame) {
@@ -193,6 +194,22 @@ public:
 		}
 	};
 
+	typedef RDD::RenderPassID (*RenderPassCreationFunction)(RenderingDeviceDriver *p_driver, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, void *p_user_data);
+
+	struct FramebufferStorage {
+		RDD::FramebufferID framebuffer;
+		RDD::RenderPassID render_pass;
+	};
+
+	struct FramebufferCache {
+		uint32_t width = 0;
+		uint32_t height = 0;
+		LocalVector<RDD::TextureID> textures;
+		LocalVector<ResourceTracker *> trackers;
+		HashMap<uint64_t, FramebufferStorage> storage_map;
+		void *render_pass_creation_user_data = nullptr;
+	};
+
 	struct CommandBufferPool {
 		// Provided by RenderingDevice.
 		RDD::CommandPoolID pool;
@@ -205,6 +222,15 @@ public:
 
 	struct WorkaroundsState {
 		bool draw_list_found = false;
+	};
+
+	enum AttachmentOperation {
+		// Loads or ignores if the attachment is discardable.
+		ATTACHMENT_OPERATION_DEFAULT,
+		// Clear the attachment to a value.
+		ATTACHMENT_OPERATION_CLEAR,
+		// Ignore any contents from the attachment.
+		ATTACHMENT_OPERATION_IGNORE,
 	};
 
 private:
@@ -230,13 +256,16 @@ private:
 	};
 
 	struct DrawInstructionList : InstructionList {
+		FramebufferCache *framebuffer_cache = nullptr;
 		RDD::RenderPassID render_pass;
 		RDD::FramebufferID framebuffer;
 		Rect2i region;
+		LocalVector<AttachmentOperation> attachment_operations;
+		LocalVector<RDD::RenderPassClearValue> attachment_clear_values;
+
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		uint32_t breadcrumb;
 #endif
-		LocalVector<RDD::RenderPassClearValue> clear_values;
 	};
 
 	struct RecordedCommandSort {
@@ -320,15 +349,18 @@ private:
 	};
 
 	struct RecordedDrawListCommand : RecordedCommand {
-		uint32_t instruction_data_size = 0;
-		RDD::RenderPassID render_pass;
+		FramebufferCache *framebuffer_cache = nullptr;
 		RDD::FramebufferID framebuffer;
+		RDD::RenderPassID render_pass;
+		uint32_t instruction_data_size = 0;
 		RDD::CommandBufferType command_buffer_type;
 		Rect2i region;
+		uint32_t clear_values_count = 0;
+		uint32_t trackers_count = 0;
+
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		uint32_t breadcrumb = 0;
 #endif
-		uint32_t clear_values_count = 0;
 
 		_FORCE_INLINE_ RDD::RenderPassClearValue *clear_values() {
 			return reinterpret_cast<RDD::RenderPassClearValue *>(&this[1]);
@@ -338,12 +370,36 @@ private:
 			return reinterpret_cast<const RDD::RenderPassClearValue *>(&this[1]);
 		}
 
+		_FORCE_INLINE_ ResourceTracker **trackers() {
+			return reinterpret_cast<ResourceTracker **>(&clear_values()[clear_values_count]);
+		}
+
+		_FORCE_INLINE_ ResourceTracker *const *trackers() const {
+			return reinterpret_cast<ResourceTracker *const *>(&clear_values()[clear_values_count]);
+		}
+
+		_FORCE_INLINE_ RDD::AttachmentLoadOp *load_ops() {
+			return reinterpret_cast<RDD::AttachmentLoadOp *>(&trackers()[trackers_count]);
+		}
+
+		_FORCE_INLINE_ const RDD::AttachmentLoadOp *load_ops() const {
+			return reinterpret_cast<const RDD::AttachmentLoadOp *>(&trackers()[trackers_count]);
+		}
+
+		_FORCE_INLINE_ RDD::AttachmentStoreOp *store_ops() {
+			return reinterpret_cast<RDD::AttachmentStoreOp *>(&load_ops()[trackers_count]);
+		}
+
+		_FORCE_INLINE_ const RDD::AttachmentStoreOp *store_ops() const {
+			return reinterpret_cast<const RDD::AttachmentStoreOp *>(&load_ops()[trackers_count]);
+		}
+
 		_FORCE_INLINE_ uint8_t *instruction_data() {
-			return reinterpret_cast<uint8_t *>(&clear_values()[clear_values_count]);
+			return reinterpret_cast<uint8_t *>(&store_ops()[trackers_count]);
 		}
 
 		_FORCE_INLINE_ const uint8_t *instruction_data() const {
-			return reinterpret_cast<const uint8_t *>(&clear_values()[clear_values_count]);
+			return reinterpret_cast<const uint8_t *>(&store_ops()[trackers_count]);
 		}
 	};
 
@@ -616,6 +672,7 @@ private:
 
 	RDD *driver = nullptr;
 	RenderingContextDriver::Device device;
+	RenderPassCreationFunction render_pass_creation_function = nullptr;
 	int64_t tracking_frame = 0;
 	LocalVector<uint8_t> command_data;
 	LocalVector<uint32_t> command_data_offsets;
@@ -660,13 +717,16 @@ private:
 	RecordedCommand *_allocate_command(uint32_t p_command_size, int32_t &r_command_index);
 	DrawListInstruction *_allocate_draw_list_instruction(uint32_t p_instruction_size);
 	ComputeListInstruction *_allocate_compute_list_instruction(uint32_t p_instruction_size);
+	void _check_discardable_attachment_dependency(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index);
 	void _add_command_to_graph(ResourceTracker **p_resource_trackers, ResourceUsage *p_resource_usages, uint32_t p_resource_count, int32_t p_command_index, RecordedCommand *r_command);
 	void _add_texture_barrier_to_command(RDD::TextureID p_texture_id, BitField<RDD::BarrierAccessBits> p_src_access, BitField<RDD::BarrierAccessBits> p_dst_access, ResourceUsage p_prev_usage, ResourceUsage p_next_usage, RDD::TextureSubresourceRange p_subresources, LocalVector<RDD::TextureBarrier> &r_barrier_vector, int32_t &r_barrier_index, int32_t &r_barrier_count);
 #if USE_BUFFER_BARRIERS
 	void _add_buffer_barrier_to_command(RDD::BufferID p_buffer_id, BitField<RDD::BarrierAccessBits> p_src_access, BitField<RDD::BarrierAccessBits> p_dst_access, int32_t &r_barrier_index, int32_t &r_barrier_count);
 #endif
 	void _run_compute_list_command(RDD::CommandBufferID p_command_buffer, const uint8_t *p_instruction_data, uint32_t p_instruction_data_size);
+	void _get_draw_list_render_pass_and_framebuffer(const RecordedDrawListCommand *p_draw_list_command, RDD::RenderPassID &r_render_pass, RDD::FramebufferID &r_framebuffer);
 	void _run_draw_list_command(RDD::CommandBufferID p_command_buffer, const uint8_t *p_instruction_data, uint32_t p_instruction_data_size);
+	void _add_draw_list_begin(FramebufferCache *p_framebuffer_cache, RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb);
 	void _run_secondary_command_buffer_task(const SecondaryCommandBuffer *p_secondary);
 	void _wait_for_secondary_command_buffer_tasks();
 	void _run_render_commands(int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool, int32_t &r_current_label_index, int32_t &r_current_label_level);
@@ -680,7 +740,7 @@ private:
 public:
 	RenderingDeviceGraph();
 	~RenderingDeviceGraph();
-	void initialize(RDD *p_driver, RenderingContextDriver::Device p_device, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
+	void initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
 	void finalize();
 	void begin();
 	void add_buffer_clear(RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_offset, uint32_t p_size);
@@ -697,7 +757,8 @@ public:
 	void add_compute_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_compute_list_end();
-	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<RDD::RenderPassClearValue> p_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0);
+	void add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0);
+	void add_draw_list_begin(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_framebuffer, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb = 0);
 	void add_draw_list_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint32_t p_offset);
 	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits);
 	void add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
@@ -729,7 +790,9 @@ public:
 	void end_label();
 	void end(bool p_reorder_commands, bool p_full_barriers, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool);
 	static ResourceTracker *resource_tracker_create();
-	static void resource_tracker_free(ResourceTracker *tracker);
+	static void resource_tracker_free(ResourceTracker *p_tracker);
+	static FramebufferCache *framebuffer_cache_create();
+	static void framebuffer_cache_free(RDD *p_driver, FramebufferCache *p_cache);
 };
 
 using RDG = RenderingDeviceGraph;

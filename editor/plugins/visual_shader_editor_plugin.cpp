@@ -59,6 +59,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
@@ -6676,6 +6677,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	parameters->set_h_size_flags(SIZE_EXPAND_FILL);
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
 	parameters->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	parameters->set_theme_type_variation("TreeSecondary");
 	parameters->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_param_selected));
 	parameters->connect("nothing_selected", callable_mp(this, &VisualShaderEditor::_param_unselected));
 	sc->add_child(parameters);
