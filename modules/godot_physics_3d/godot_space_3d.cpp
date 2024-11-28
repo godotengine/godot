@@ -468,7 +468,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 		real_t tested_len = is_best_result ? rd->best_result.len : len;
 		for (; result_index < prev_result_count - 1; ++result_index) {
 			if (tested_len > rd->other_results[result_index].len) {
-				// Re-using a previous result.
+				// Reusing a previous result.
 				rd->result_count--;
 				break;
 			}
