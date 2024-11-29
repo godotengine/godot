@@ -494,9 +494,7 @@ float CurveEdit::get_offset_without_collision(int p_current_index, float p_offse
 void CurveEdit::add_point(Vector2 p_pos) {
 	ERR_FAIL_COND(curve.is_null());
 
-	// Add a point to get its index, then remove it immediately. Trick to feed the UndoRedo.
-	int new_idx = curve->add_point(p_pos);
-	curve->remove_point(new_idx);
+	int new_idx = curve->predict_insertion_index(p_pos);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Curve Point"));
