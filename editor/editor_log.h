@@ -98,8 +98,6 @@ private:
 			toggle_button->set_pressed(true);
 			toggle_button->set_text(itos(message_count));
 			toggle_button->set_tooltip_text(TTR(p_tooltip));
-			// Don't tint the icon even when in "pressed" state.
-			toggle_button->add_theme_color_override("icon_color_pressed", Color(1, 1, 1, 1));
 			toggle_button->set_focus_mode(FOCUS_NONE);
 			// When toggled call the callback and pass the MessageType this button is for.
 			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
