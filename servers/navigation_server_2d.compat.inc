@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_path_query_result_2d.h                                     */
+/*  navigation_server_2d.compat.inc                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_PATH_QUERY_RESULT_2D_H
-#define NAVIGATION_PATH_QUERY_RESULT_2D_H
+#ifndef DISABLE_DEPRECATED
 
-#include "core/object/ref_counted.h"
-#include "servers/navigation/navigation_utilities.h"
+Vector<Vector2> NavigationServer2D::_map_get_path_bind_compat_100129(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
+	return const_cast<NavigationServer2D *>(this)->map_get_path(p_map, p_origin, p_destination, p_optimize, p_navigation_layers);
+}
 
-class NavigationPathQueryResult2D : public RefCounted {
-	GDCLASS(NavigationPathQueryResult2D, RefCounted);
+void NavigationServer2D::_query_path_bind_compat_100129(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const {
+	return const_cast<NavigationServer2D *>(this)->query_path(p_query_parameters, p_query_result, Callable());
+}
 
-	Vector<Vector2> path;
-	Vector<int32_t> path_types;
-	TypedArray<RID> path_rids;
-	Vector<int64_t> path_owner_ids;
+void NavigationServer2D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize", "navigation_layers"), &NavigationServer2D::_map_get_path_bind_compat_100129, DEFVAL(1));
+	ClassDB::bind_compatibility_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer2D::_query_path_bind_compat_100129);
+}
 
-protected:
-	static void _bind_methods();
-
-public:
-	enum PathSegmentType {
-		PATH_SEGMENT_TYPE_REGION = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION,
-		PATH_SEGMENT_TYPE_LINK = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK,
-	};
-
-	void set_path(const Vector<Vector2> &p_path);
-	const Vector<Vector2> &get_path() const;
-
-	void set_path_types(const Vector<int32_t> &p_path_types);
-	const Vector<int32_t> &get_path_types() const;
-
-	void set_path_rids(const TypedArray<RID> &p_path_rids);
-	TypedArray<RID> get_path_rids() const;
-
-	void set_path_owner_ids(const Vector<int64_t> &p_path_owner_ids);
-	const Vector<int64_t> &get_path_owner_ids() const;
-
-	void reset();
-};
-
-VARIANT_ENUM_CAST(NavigationPathQueryResult2D::PathSegmentType);
-
-#endif // NAVIGATION_PATH_QUERY_RESULT_2D_H
+#endif // DISABLE_DEPRECATED

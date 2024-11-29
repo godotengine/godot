@@ -145,6 +145,15 @@ struct NavigationPoly {
 	bool operator!=(const NavigationPoly &p_other) const {
 		return !(*this == p_other);
 	}
+
+	void reset() {
+		poly = nullptr;
+		traversable_poly_index = UINT32_MAX;
+		back_navigation_poly_id = -1;
+		back_navigation_edge = -1;
+		traveled_distance = 0.0;
+		distance_to_destination = 0.0;
+	}
 };
 
 struct NavPolyTravelCostGreaterThan {

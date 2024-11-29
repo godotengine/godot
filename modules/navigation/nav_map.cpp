@@ -35,8 +35,6 @@
 #include "nav_obstacle.h"
 #include "nav_region.h"
 
-#include "3d/nav_mesh_queries_3d.h"
-
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
 
@@ -123,16 +121,40 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
+void NavMap::query_path(NavMeshQueries3D::NavMeshPathQueryTask3D &p_query_task) {
 	RWLockRead read_lock(map_rwlock);
 	if (iteration_id == 0) {
-		NAVMAP_ITERATION_ZERO_ERROR_MSG();
-		return Vector<Vector3>();
+		return;
 	}
 
-	return NavMeshQueries3D::polygons_get_path(
-			polygons, p_origin, p_destination, p_optimize, p_navigation_layers,
-			r_path_types, r_path_rids, r_path_owners, up, link_polygons.size());
+	path_query_slots_semaphore.wait();
+
+	path_query_slots_mutex.lock();
+	for (NavMeshQueries3D::PathQuerySlot &p_path_query_slot : path_query_slots) {
+		if (!p_path_query_slot.in_use) {
+			p_path_query_slot.in_use = true;
+			p_query_task.path_query_slot = &p_path_query_slot;
+			break;
+		}
+	}
+	path_query_slots_mutex.unlock();
+
+	if (p_query_task.path_query_slot == nullptr) {
+		path_query_slots_semaphore.post();
+		ERR_FAIL_NULL_MSG(p_query_task.path_query_slot, "No unused NavMap path query slot found! This should never happen :(.");
+	}
+
+	p_query_task.map_up = get_up();
+
+	NavMeshQueries3D::query_task_polygons_get_path(p_query_task, polygons, up, link_polygons.size());
+
+	path_query_slots_mutex.lock();
+	uint32_t used_slot_index = p_query_task.path_query_slot->slot_index;
+	path_query_slots[used_slot_index].in_use = false;
+	p_query_task.path_query_slot = nullptr;
+	path_query_slots_mutex.unlock();
+
+	path_query_slots_semaphore.post();
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -639,6 +661,15 @@ void NavMap::sync() {
 
 		// Some code treats 0 as a failure case, so we avoid returning 0 and modulo wrap UINT32_MAX manually.
 		iteration_id = iteration_id % UINT32_MAX + 1;
+
+		path_query_slots_mutex.lock();
+		for (NavMeshQueries3D::PathQuerySlot &p_path_query_slot : path_query_slots) {
+			p_path_query_slot.path_corridor.clear();
+			p_path_query_slot.path_corridor.resize(polygons.size() + link_polygons.size());
+			p_path_query_slot.traversable_polys.clear();
+			p_path_query_slot.traversable_polys.reserve(polygons.size() * 0.25);
+		}
+		path_query_slots_mutex.unlock();
 	}
 
 	map_settings_dirty = false;
@@ -969,6 +1000,26 @@ void NavMap::_sync_dirty_avoidance_update_requests() {
 NavMap::NavMap() {
 	avoidance_use_multiple_threads = GLOBAL_GET("navigation/avoidance/thread_model/avoidance_use_multiple_threads");
 	avoidance_use_high_priority_threads = GLOBAL_GET("navigation/avoidance/thread_model/avoidance_use_high_priority_threads");
+
+	path_query_slots_max = GLOBAL_GET("navigation/pathfinding/max_threads");
+
+	int processor_count = OS::get_singleton()->get_processor_count();
+	if (path_query_slots_max < 0) {
+		path_query_slots_max = processor_count;
+	}
+	if (processor_count < path_query_slots_max) {
+		path_query_slots_max = processor_count;
+	}
+	if (path_query_slots_max < 1) {
+		path_query_slots_max = 1;
+	}
+
+	path_query_slots.resize(path_query_slots_max);
+	for (uint32_t i = 0; i < path_query_slots.size(); i++) {
+		path_query_slots[i].slot_index = i;
+	}
+
+	path_query_slots_semaphore.post(path_query_slots_max);
 }
 
 NavMap::~NavMap() {

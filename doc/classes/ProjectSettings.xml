@@ -2162,6 +2162,9 @@
 		<member name="navigation/baking/use_crash_prevention_checks" type="bool" setter="" getter="" default="true">
 			If enabled, and baking would potentially lead to an engine crash, the baking will be interrupted and an error message with explanation will be raised.
 		</member>
+		<member name="navigation/pathfinding/max_threads" type="int" setter="" getter="" default="4">
+			Maximum number of threads that can run pathfinding queries simultaneously on the same pathfinding graph, for example the same navigation map. Additional threads increase memory consumption and synchronization time due to the need for extra data copies prepared for each thread. A value of [code]-1[/code] means unlimited and the maximum available OS processor count is used. Defaults to [code]1[/code] when the OS does not support threads.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>

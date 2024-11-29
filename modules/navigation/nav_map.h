@@ -31,6 +31,7 @@
 #ifndef NAV_MAP_H
 #define NAV_MAP_H
 
+#include "3d/nav_mesh_queries_3d.h"
 #include "nav_rid.h"
 #include "nav_utils.h"
 
@@ -135,6 +136,11 @@ class NavMap : public NavRid {
 		SelfList<NavObstacle>::List obstacles;
 	} sync_dirty_requests;
 
+	LocalVector<NavMeshQueries3D::PathQuerySlot> path_query_slots;
+	int path_query_slots_max = 4;
+	Mutex path_query_slots_mutex;
+	Semaphore path_query_slots_semaphore;
+
 public:
 	NavMap();
 	~NavMap();
@@ -176,7 +182,8 @@ public:
 
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
 
-	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
+	void query_path(NavMeshQueries3D::NavMeshPathQueryTask3D &p_query_task);
+
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
 	Vector3 get_closest_point(const Vector3 &p_point) const;
 	Vector3 get_closest_point_normal(const Vector3 &p_point) const;
