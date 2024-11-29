@@ -814,9 +814,13 @@ void Label::set_text(const String &p_string) {
 	text = p_string;
 	xl_text = atr(p_string);
 	dirty = true;
-	if (visible_ratio < 1) {
-		visible_chars = get_total_character_count() * visible_ratio;
+
+	if (visible_chars > -1 && get_total_character_count() > 0) {
+		visible_ratio = (float)visible_chars / (float)get_total_character_count();
+	} else {
+		visible_ratio = 1.0;
 	}
+
 	queue_redraw();
 	update_minimum_size();
 	update_configuration_warnings();
