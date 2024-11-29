@@ -76,6 +76,10 @@ bool AbstractPolygon2DEditor::_is_line() const {
 	return false;
 }
 
+bool AbstractPolygon2DEditor::_is_closed_line() const {
+	return false;
+}
+
 bool AbstractPolygon2DEditor::_has_uv() const {
 	return false;
 }
@@ -500,12 +504,12 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 	}
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
-	// All polygon points are sharp, so use the sharp handle icon
+	// All polygon points are sharp, so use the sharp handle icon.
 	const Ref<Texture2D> handle = get_editor_theme_icon(SNAME("EditorPathSharpHandle"));
 
 	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
-	const bool is_closed = !_is_line();
+	const bool is_closed = !_is_line() || _is_closed_line();
 
 	for (int j = -1; j < n_polygons; j++) {
 		if (wip_active && wip_destructive && j != -1) {
@@ -527,9 +531,9 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 		}
 
 		if (!wip_active && j == edited_point.polygon && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
-			const Color col = Color(0.5, 0.5, 0.5); // FIXME polygon->get_outline_color();
+			const Color col = Color(0.5, 0.5, 0.5);
 			const int n = pre_move_edit.size();
-			for (int i = 0; i < n - (is_closed ? 0 : 1); i++) {
+			for (int i = 0; i < (is_closed ? n : n - 1); i++) {
 				Vector2 p, p2;
 				p = pre_move_edit[i] + offset;
 				p2 = pre_move_edit[(i + 1) % n] + offset;
@@ -537,7 +541,11 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
 
-				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+				if (_is_closed_line() && i == n - 1) {
+					p_overlay->draw_dashed_line(point, next_point, Color(col, 0.8), Math::round(2 * EDSCALE), 6.0);
+				} else {
+					p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+				}
 			}
 		}
 
@@ -560,7 +568,11 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				}
 
 				const Vector2 next_point = xform.xform(p2);
-				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+				if (_is_closed_line() && i == n_points - 1) {
+					p_overlay->draw_dashed_line(point, next_point, Color(col, 0.8), Math::round(2 * EDSCALE), 6.0);
+				} else {
+					p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+				}
 			}
 		}
 
@@ -693,7 +705,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 		Vector<Vector2> points = _get_polygon(j);
 		const Vector2 offset = _get_offset(j);
 		const int n_points = points.size();
-		const int n_segments = n_points - (_is_line() ? 1 : 0);
+		const int n_segments = (_is_line() & !_is_closed_line()) ? n_points - 1 : n_points;
 
 		for (int i = 0; i < n_segments; i++) {
 			Vector2 segment[2] = { xform.xform(points[i] + offset),
