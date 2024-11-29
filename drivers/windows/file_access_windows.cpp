@@ -525,6 +525,9 @@ void FileAccessWindows::initialize() {
 		invalid_files.insert(reserved_files[reserved_file_index]);
 		reserved_file_index++;
 	}
+
+	_setmaxstdio(8192);
+	print_verbose(vformat("Maximum number of file handles: %d", _getmaxstdio()));
 }
 
 void FileAccessWindows::finalize() {
