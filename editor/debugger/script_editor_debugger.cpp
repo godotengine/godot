@@ -1920,6 +1920,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
+		stack_dump->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 		stack_dump->set_allow_reselect(true);
 		stack_dump->set_columns(1);
 		stack_dump->set_column_titles_visible(true);
@@ -1931,6 +1932,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		stack_vb->add_child(stack_dump);
 
 		VBoxContainer *inspector_vbox = memnew(VBoxContainer);
+		inspector_vbox->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 		inspector_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		sc->add_child(inspector_vbox);
 
@@ -1956,6 +1958,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector_vbox->add_child(inspector);
 
 		breakpoints_tree = memnew(Tree);
+		breakpoints_tree->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		breakpoints_tree->set_h_size_flags(SIZE_EXPAND_FILL);
 		breakpoints_tree->set_column_titles_visible(true);
 		breakpoints_tree->set_column_title(0, TTR("Breakpoints"));
