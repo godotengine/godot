@@ -89,6 +89,8 @@ public:
     }
 
     AnimationProcessPanel() {
+        load_animation_config();
+
         HBoxContainer* hb = memnew(HBoxContainer);
         hb->set_h_size_flags(SIZE_EXPAND_FILL);
         add_child(hb);
@@ -97,16 +99,19 @@ public:
             vb->set_custom_minimum_size(Vector2(300, 0));
             hb->add_child(vb);
 
-            preview_prefab_path = memnew(EditorPropertyPath);
-            preview_prefab_path->set_label(L"選擇预制件：");
-            preview_prefab_path->set_object_and_property(this, SNAME("preview_prefab_path"));
-            preview_prefab_path->setup({ "res", "tres" }, false, false);
+            property_preview_prefab_path = memnew(EditorPropertyPath);
+            property_preview_prefab_path->set_label(L"選擇预制件：");
+            property_preview_prefab_path->set_object_and_property(this, SNAME("preview_prefab_path"));
+            property_preview_prefab_path->setup({ "res", "tres" }, false, false);
             preview_prefab_path->set_h_size_flags(SIZE_EXPAND_FILL);
-            vb->add_child(preview_prefab_path);
+            vb->add_child(property_preview_prefab_path);
 
             preview = memnew(AnimationNodePreview);
             preview->set_custom_minimum_size(Vector2(400, 400));
             vb->add_child(preview);
+            if(preview_prefab_path != "") {
+                preview->set_prefab_path(preview_prefab_path);
+            }
         }
 
         {
@@ -122,8 +127,11 @@ public:
                 label->set_h_size_flags(SIZE_EXPAND_FILL);
                 label->set_text(L"单个动画处理");
                 label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+                label->set_modulate(Color(1,0.8,0.7,1));
                 vb->add_child(create_line(  label,true));
                                         
+                VSeparator* sep = memnew(VSeparator);
+                vb->add_child(sep);
 
                 {
                     single_path = memnew(EditorPropertyPath);
@@ -134,16 +142,17 @@ public:
 
                     single_animation_group = memnew(EditorPropertyTextEnum);
                     single_animation_group->set_label(L"动画组");
-                    single_animation_group->set_h_size_flags(SIZE_EXPAND_FILL);
                     single_animation_group->set_custom_minimum_size(Vector2(300, 0));
                     single_animation_group->set_object_and_property(this, "single_animation_group");
                     single_animation_group->set_dynamic(true, "get_animation_groups");
+					single_animation_group->setup(Vector<String>());
 
                     single_animation_tags = memnew(EditorPropertyTextEnum);
                     single_animation_tags->set_label(L"动画标签");
                     single_animation_tags->set_custom_minimum_size(Vector2(300, 0));
                     single_animation_tags->set_object_and_property(this, "single_animation_tags");
                     single_animation_tags->set_dynamic(true, "get_animation_tags");
+					single_animation_tags->setup(Vector<String>());
 
                     conver_single_button = memnew(Button);
                     conver_single_button->set_text(L"转换");
@@ -151,7 +160,9 @@ public:
 
 
                     
-                    vb->add_child(create_line(  single_path,single_animation_group,single_animation_tags,conver_single_button));
+                    vb->add_child(create_line(  single_path,single_animation_group,single_animation_tags));
+
+                    vb->add_child(conver_single_button);
                 }
 
             
@@ -164,8 +175,12 @@ public:
                 label->set_h_size_flags(SIZE_EXPAND_FILL);
                 label->set_text(L"多个动画处理");
                 label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+                label->set_modulate(Color(1,0.8,0.7,1));
 
                 vb->add_child(create_line(label,true));
+                                        
+                VSeparator* sep = memnew(VSeparator);
+                vb->add_child(sep);
                 {
                     multe_path = memnew(EditorPropertyPath);
                     multe_path->set_label(L"选择文件夹");
@@ -178,18 +193,22 @@ public:
                     multe_animation_group->set_custom_minimum_size(Vector2(300, 0));
                     multe_animation_group->set_object_and_property(this, "multe_animation_group");
                     multe_animation_group->set_dynamic(true, "get_animation_groups");
+					multe_animation_group->setup(Vector<String>());
 
                     multe_animation_tags = memnew(EditorPropertyTextEnum);
                     multe_animation_tags->set_label(L"动画标签");
                     multe_animation_tags->set_custom_minimum_size(Vector2(300, 0));
                     multe_animation_tags->set_object_and_property(this, "multe_animation_tags");
                     multe_animation_tags->set_dynamic(true, "get_animation_tags");
+					multe_animation_tags->setup(Vector<String>());
 
                     conver_multe_button = memnew(Button);
                     conver_multe_button->set_text(L"转换");
                     conver_multe_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationProcessPanel::_on_conver_multe_pressed));
                     
-                    vb->add_child(create_line(  multe_path,multe_animation_group,multe_animation_tags,conver_multe_button));
+                    vb->add_child(create_line(  multe_path,multe_animation_group,multe_animation_tags));
+
+                    vb->add_child(conver_multe_button);
 
                 }
 
@@ -237,31 +256,33 @@ public:
     }
 
     void set_preview_prefab_path(const String& path) {
+        preview_prefab_path = path;
         if(preview != nullptr) {
             preview->set_prefab_path(path);
         }
+        save_animation_config();
     }
     String get_preview_prefab_path() {
-        if(preview != nullptr) {
-			return preview->get_prefab_path();
-        }
-		return "";
+		return preview_prefab_path;
     }
 
     void set_single_animation_file_path(const String& path) {
         single_animation_file_path = path;
+        save_animation_config();
     }
     String get_single_animation_file_path() {
         return single_animation_file_path;
     }
     void set_single_animation_group(const String& group) {
-        single_animation_group_name = group;        
+        single_animation_group_name = group;     
+        save_animation_config();   
     }
     StringName get_single_animation_group() {
         return single_animation_group_name;
     }
     void set_single_animation_tags(const String& tag) {
         single_animation_tag_name = tag;
+        save_animation_config();
         
     }
     StringName get_single_animation_tags() {
@@ -271,18 +292,21 @@ public:
 
     void set_multe_animation_file_path(const String& path) {
         multe_animation_file_path = path;
+        save_animation_config();
     }
     String get_multe_animation_file_path() {
         return multe_animation_file_path;
     }
     void set_multe_animation_group(const String& group) {
         multe_animation_group_name = group;
+        save_animation_config();
     }
     StringName get_multe_animation_group() {
         return multe_animation_group_name;
     }
     void set_multe_animation_tags(const String& tag) {
         multe_animation_tag_name = tag;
+        save_animation_config();
     }
     StringName get_multe_animation_tags() {
         return multe_animation_tag_name;
@@ -305,8 +329,48 @@ protected:
     void _on_conver_multe_pressed() {
         
     }
+    void save_animation_config() {
+        String path = "ref://.godot/animation_process_panel_config.json";
+
+        Dictionary dict;
+        dict["preview_prefab_path"] = preview_prefab_path;
+
+        dict["single_animation_file_path"] = single_animation_file_path;
+        dict["single_animation_group"] = single_animation_group_name;
+        dict["single_animation_tags"] = single_animation_tag_name;
+
+        dict["multe_animation_file_path"] = multe_animation_file_path;
+        dict["multe_animation_group"] = multe_animation_group_name;
+        dict["multe_animation_tags"] = multe_animation_tag_name;
+
+        FileAccess* file = FileAccess::open(path, FileAccess::WRITE);
+        file->store_string(JSON::stringify(dict));
+        file->close();
+    }
+
+    void load_animation_config() {
+        String path = "ref://.godot/animation_process_panel_config.json";
+        FileAccess* file = FileAccess::open(path, FileAccess::READ);
+        if (file == nullptr) {
+            return;
+        }
+        String json = file->get_as_text();
+        file->close();
+        Dictionary dict = JSON::parse_string(json);
+
+        preview_prefab_path = dict["preview_prefab_path"];
+
+        single_animation_file_path = dict["single_animation_file_path"];
+        single_animation_group_name = dict["single_animation_group"];
+        single_animation_tag_name = dict["single_animation_tags"];
+
+        multe_animation_file_path = dict["multe_animation_file_path"];
+        multe_animation_group_name = dict["multe_animation_group"];
+        multe_animation_tag_name = dict["multe_animation_tags"];
+    }
 public:
-    EditorPropertyPath* preview_prefab_path = nullptr;
+    String preview_prefab_path;
+    EditorPropertyPath* property_preview_prefab_path = nullptr;
     // 预览预制体查看面板
     AnimationNodePreview* preview = nullptr;
 
