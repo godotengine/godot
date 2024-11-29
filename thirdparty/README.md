@@ -640,7 +640,8 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 
 Files extracted from upstream source:
 
-- Copy `miniupnpc/src` and `miniupnpc/include` to `thirdparty/miniupnpc`
+- `miniupnpc/src/` as `src/`
+- `miniupnpc/include/` as `include/miniupnpc/`
 - Remove the following test or sample files:
   `listdevices.c,minihttptestserver.c,miniupnpcmodule.c,upnpc.c,upnperrors.*,test*`
 - `LICENSE`
