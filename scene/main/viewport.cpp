@@ -1638,9 +1638,11 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 	}
 }
 
+// `gui_find_control` doesn't take embedded windows into account. So the caller of this function
+// needs to make sure, that there is no embedded window at the specified position.
 Control *Viewport::gui_find_control(const Point2 &p_global) {
 	ERR_MAIN_THREAD_GUARD_V(nullptr);
-	// Handle subwindows.
+
 	_gui_sort_roots();
 
 	for (List<Control *>::Element *E = gui.roots.back(); E; E = E->prev()) {
