@@ -117,7 +117,6 @@ CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
 		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n"); // COPY_TO_FB_COPY_PANORAMA_TO_DP
 		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_COPY2
 		copy_modes.push_back("\n#define MODE_SET_COLOR\n"); // COPY_TO_FB_SET_COLOR
-		copy_modes.push_back("\n#define MODE_OCCLUSION_CULLING_BUFFER\n"); // COPY_TO_FB_OCCLUSION_CULLING_BUFFER
 
 		copy_modes.push_back("\n#define USE_MULTIVIEW\n"); // COPY_TO_FB_MULTIVIEW
 		copy_modes.push_back("\n#define USE_MULTIVIEW\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_MULTIVIEW_WITH_DEPTH
@@ -628,6 +627,10 @@ void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffe
 		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_NORMAL;
 	}
 
+	if (p_occlusion_culling_buffer) {
+		copy_to_fb.push_constant.flags |= COPY_TO_FB_FLAG_OCCLUSION_CULLING_BUFFER;
+	}
+
 	if (p_src_rect != Rect2()) {
 		copy_to_fb.push_constant.section[0] = p_src_rect.position.x;
 		copy_to_fb.push_constant.section[1] = p_src_rect.position.y;
@@ -646,10 +649,6 @@ void CopyEffects::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffe
 		mode = p_secondary.is_valid() ? COPY_TO_FB_MULTIVIEW_WITH_DEPTH : COPY_TO_FB_MULTIVIEW;
 	} else {
 		mode = p_secondary.is_valid() ? COPY_TO_FB_COPY2 : COPY_TO_FB_COPY;
-
-		if (p_occlusion_culling_buffer) {
-			mode = COPY_TO_FB_OCCLUSION_CULLING_BUFFER;
-		}
 	}
 
 	RID shader = copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, mode);

@@ -201,6 +201,7 @@ private:
 		COPY_TO_FB_FLAG_LINEAR = (1 << 6),
 		COPY_TO_FB_FLAG_NORMAL = (1 << 7),
 		COPY_TO_FB_FLAG_USE_SRC_SECTION = (1 << 8),
+		COPY_TO_FB_FLAG_OCCLUSION_CULLING_BUFFER = (1 << 9),
 	};
 
 	struct CopyToFbPushConstant {
