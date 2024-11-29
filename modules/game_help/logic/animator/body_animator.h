@@ -233,7 +233,7 @@ public:
     // 处理动画
     void _process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     // 处理动画
-    void _process_animation(const Ref<Blackboard> &p_playback_info,CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight, double p_delta,bool is_first = true);
+    void _process_animation(const Ref<Blackboard> &p_playback_info,CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight, double p_delta,bool is_using_root_motion,bool is_first = true);
 
     void finish_update();
 
@@ -534,7 +534,7 @@ public:
 			layer->_process_animator(p_playback_info, p_delta, is_first);
 		}
 	}
-	void _process_animation(const Ref<Blackboard>& p_playback_info,CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight, double p_delta, bool is_first = true)
+	void _process_animation(const Ref<Blackboard>& p_playback_info,CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight, double p_delta, bool p_is_root_motion, bool is_first = true)
 	{
 		if (layer == nullptr)
 		{
@@ -543,7 +543,7 @@ public:
 
 		if (layer->is_active())
 		{
-			layer->_process_animation(p_playback_info,root_motion, bone_blend_weight,p_delta, is_first);
+			layer->_process_animation(p_playback_info,root_motion, bone_blend_weight,p_delta, p_is_root_motion, is_first);
 		}
 	}
 	void finish_update()
@@ -595,6 +595,7 @@ class CharacterAnimator : public RefCounted
 	HashMap<String,float> bone_blend_weight;
 	class CharacterBodyMain* m_Body = nullptr;
     double time_delta = 0.0;
+    bool is_using_root_motion = true;
 public:
 
     void set_body(class CharacterBodyMain* p_body);
@@ -605,6 +606,13 @@ public:
 
     double get_time_delta() {
         return time_delta;
+    }
+
+    void set_is_using_root_motion(bool p_is_root_motion) {
+        is_using_root_motion = p_is_root_motion;
+    }
+    bool get_is_using_root_motion() {
+        return is_using_root_motion;
     }
 
     void _thread_update_animation(float delta);

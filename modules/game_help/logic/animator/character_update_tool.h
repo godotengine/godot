@@ -153,7 +153,7 @@ public:
     void add_animation_instance(AnimationMixer::AnimationInstance& ai);
     void process_animations() ;
 
-    void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight,float blend_weight);
+    void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight,float blend_weight,bool is_using_root_motion);
 protected:
 
     int get_bone_index(const Dictionary& p_bone_map, const NodePath& path) ;
