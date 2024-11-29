@@ -39,6 +39,95 @@
 #include "core/typedefs.h"
 #include "core/variant/array.h"
 
+#ifdef GODOT_SHOW_STR_DEPRECATIONS
+#define GODOT_STR_CONSTRUCTOR_DEPRECATED [[deprecated("Use a known-length constructor or String::from_c_str(x).")]]
+#define GODOT_STR_CONVERSION_DEPRECATED [[deprecated("Implicit conversion deprecated, use StrRange conversions or .get_data().")]]
+#else
+#define GODOT_STR_CONSTRUCTOR_DEPRECATED
+#define GODOT_STR_CONVERSION_DEPRECATED
+#endif
+
+/*************************************************************************/
+/*  Utility Functions                                                    */
+/*************************************************************************/
+
+// Not defined by std.
+// strlen equivalent function for char32_t * arguments.
+constexpr size_t strlen(const char16_t *p_str) {
+	const char16_t *ptr = p_str;
+	while (*ptr != 0) {
+		++ptr;
+	}
+	return ptr - p_str;
+}
+
+constexpr size_t strlen(const char32_t *p_str) {
+	const char32_t *ptr = p_str;
+	while (*ptr != 0) {
+		++ptr;
+	}
+	return ptr - p_str;
+}
+
+constexpr size_t _strlen_clipped(const char *p_str, int p_clip_to_len) {
+	if (p_clip_to_len < 0) {
+		return strlen(p_str);
+	}
+
+	int len = 0;
+	while (len < p_clip_to_len && *(p_str++) != 0) {
+		len++;
+	}
+	return len;
+}
+
+constexpr size_t _strlen_clipped(const char32_t *p_str, int p_clip_to_len) {
+	if (p_clip_to_len < 0) {
+		return strlen(p_str);
+	}
+
+	int len = 0;
+	while (len < p_clip_to_len && *(p_str++) != 0) {
+		len++;
+	}
+	return len;
+}
+
+constexpr size_t strlen(const wchar_t *str) {
+	// Use static_cast twice because reinterpret_cast is not allowed in constexpr
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	return strlen(static_cast<const char16_t *>(static_cast<const void *>(str)));
+#else
+	// wchar_t is 32-bit
+	return strlen(static_cast<const char32_t *>(static_cast<const void *>(str)));
+#endif
+}
+
+/*************************************************************************/
+/*  StrRange                                                             */
+/*************************************************************************/
+
+template <typename Element>
+struct StrRange {
+	const Element *c_str;
+	size_t len;
+
+	explicit StrRange(const std::nullptr_t p_cstring) :
+			c_str(nullptr), len(0) {}
+
+	explicit StrRange(const Element *p_cstring, const size_t p_len) :
+			c_str(p_cstring), len(p_len) {}
+
+	template <size_t len>
+	explicit StrRange(const Element (&p_cstring)[len]) :
+			c_str(p_cstring), len(strlen(p_cstring)) {}
+
+	static StrRange from_c_str(const Element *p_cstring) {
+		return StrRange(p_cstring, p_cstring ? strlen(p_cstring) : 0);
+	}
+};
+
 /*************************************************************************/
 /*  CharProxy                                                            */
 /*************************************************************************/
@@ -118,7 +207,8 @@ public:
 	Char16String &operator+=(char16_t p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char16_t *get_data() const;
-	operator const char16_t *() const { return get_data(); }
+	GODOT_STR_CONVERSION_DEPRECATED operator const char16_t *() const { return get_data(); }
+	explicit operator const StrRange<char16_t>() const { return StrRange(get_data(), length()); }
 
 protected:
 	void copy_from(const char16_t *p_cstr);
@@ -160,7 +250,8 @@ public:
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
-	operator const char *() const { return get_data(); }
+	GODOT_STR_CONVERSION_DEPRECATED operator const char *() const { return get_data(); }
+	explicit operator const StrRange<char>() const { return StrRange(get_data(), length()); }
 
 protected:
 	void copy_from(const char *p_cstr);
@@ -170,31 +261,49 @@ protected:
 /*  String                                                               */
 /*************************************************************************/
 
-struct StrRange {
-	const char32_t *c_str;
-	int len;
-
-	StrRange(const char32_t *p_c_str = nullptr, int p_len = 0) {
-		c_str = p_c_str;
-		len = p_len;
-	}
-};
-
 class String {
 	CowData<char32_t> _cowdata;
 	static const char32_t _null;
 	static const char32_t _replacement_char;
 
-	void copy_from(const char *p_cstr);
-	void copy_from(const char *p_cstr, const int p_clip_to);
-	void copy_from(const wchar_t *p_cstr);
-	void copy_from(const wchar_t *p_cstr, const int p_clip_to);
-	void copy_from(const char32_t *p_cstr);
-	void copy_from(const char32_t *p_cstr, const int p_clip_to);
-
+	// Known-length copy.
+	void copy_from(const StrRange<char> &p_cstr);
+	void copy_from(const StrRange<wchar_t> &p_cstr);
+	void copy_from(const StrRange<char32_t> &p_cstr);
 	void copy_from(const char32_t &p_char);
-
 	void copy_from_unchecked(const char32_t *p_char, const int p_length);
+
+	// Legacy for NULL-terminated c string.
+	void copy_from(const char *p_cstr) {
+		copy_from(StrRange<char>::from_c_str(p_cstr));
+	}
+	void copy_from(const char *p_cstr, const int p_clip_to) {
+		copy_from(StrRange(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
+	}
+	void copy_from(const char32_t *p_cstr) {
+		copy_from(StrRange<char32_t>::from_c_str(p_cstr));
+	}
+	void copy_from(const char32_t *p_cstr, const int p_clip_to) {
+		copy_from(StrRange(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
+	}
+	void copy_from(const wchar_t *p_cstr) {
+#ifdef WINDOWS_ENABLED
+		// wchar_t is 16-bit, parse as UTF-16
+		parse_utf16((const char16_t *)p_cstr);
+#else
+		// wchar_t is 32-bit, copy directly
+		copy_from((const char32_t *)p_cstr);
+#endif
+	}
+	void copy_from(const wchar_t *p_cstr, const int p_clip_to) {
+#ifdef WINDOWS_ENABLED
+		// wchar_t is 16-bit, parse as UTF-16
+		parse_utf16((const char16_t *)p_cstr, p_clip_to);
+#else
+		// wchar_t is 32-bit, copy directly
+		copy_from((const char32_t *)p_cstr, p_clip_to);
+#endif
+	}
 
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
@@ -227,6 +336,8 @@ public:
 	}
 	_FORCE_INLINE_ CharProxy<char32_t> operator[](int p_index) { return CharProxy<char32_t>(p_index, _cowdata); }
 
+	/* Compatibility Operators */
+
 	bool operator==(const String &p_str) const;
 	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
@@ -238,16 +349,10 @@ public:
 	String &operator+=(const wchar_t *p_str);
 	String &operator+=(const char32_t *p_str);
 
-	/* Compatibility Operators */
-
-	void operator=(const char *p_str);
-	void operator=(const wchar_t *p_str);
-	void operator=(const char32_t *p_str);
-
 	bool operator==(const char *p_str) const;
 	bool operator==(const wchar_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
-	bool operator==(const StrRange &p_str_range) const;
+	bool operator==(const StrRange<char32_t> &p_str_range) const;
 
 	bool operator!=(const char *p_str) const;
 	bool operator!=(const wchar_t *p_str) const;
@@ -492,13 +597,65 @@ public:
 	Vector<uint8_t> to_utf32_buffer() const;
 	Vector<uint8_t> to_wchar_buffer() const;
 
-	String(const char *p_str);
-	String(const wchar_t *p_str);
-	String(const char32_t *p_str);
-	String(const char *p_str, int p_clip_to_len);
-	String(const wchar_t *p_str, int p_clip_to_len);
-	String(const char32_t *p_str, int p_clip_to_len);
-	String(const StrRange &p_range);
+	// Constructors from known-length strings.
+	String(const StrRange<char> &p_str) {
+		copy_from(p_str);
+	}
+	String(const StrRange<wchar_t> &p_str) {
+		copy_from(p_str);
+	}
+	String(const StrRange<char32_t> &p_str) {
+		copy_from(p_str);
+	}
+
+	// Constructor for string literals.
+	template <typename Element, size_t len>
+	String(const Element (&p_str)[len]) :
+			String(StrRange(p_str, strlen(p_str))) {}
+
+	// Constructor for string literals.
+	template <typename Element, size_t len>
+	String(const Element (&p_str)[len], int p_clip_to) :
+			String(StrRange(p_str, p_clip_to < 0 ? strlen(p_str) : MIN(strlen(p_str), (size_t)p_clip_to))) {}
+
+	// Legacy constructor from a NULL terminated c-string, which is automatically parsed to find the length.
+	template <typename Element, typename = std::enable_if_t<std::is_pointer_v<Element>>, typename = std::enable_if_t<std::is_fundamental_v<std::remove_pointer_t<Element>>>, typename = std::enable_if_t<std::negation_v<std::is_array<Element>>>>
+	GODOT_STR_CONSTRUCTOR_DEPRECATED String(const Element &p_str, int p_clip_t = -1) {
+		copy_from(p_str, p_clip_t);
+	}
+
+	static String from_c_str(const char *p_c_str) {
+		return String(StrRange<char>::from_c_str(p_c_str));
+	}
+
+	static String from_c_str(const wchar_t *p_c_str) {
+		String s;
+		s.copy_from(p_c_str);
+		return s;
+	}
+
+	static String from_c_str(const char32_t *p_c_str) {
+		return String(StrRange<char32_t>::from_c_str(p_c_str));
+	}
+
+	// Copy assignment for known-length strings.
+	void operator=(const StrRange<char> &p_str);
+	void operator=(const StrRange<wchar_t> &p_str);
+	void operator=(const StrRange<char32_t> &p_str);
+
+	// Copy assignment for string literals.
+	template <typename Element, size_t len>
+	void operator=(const Element (&p_str)[len]) {
+		operator=(StrRange(p_str, strlen(p_str)));
+	}
+
+	// Legacy copy assignment from a NULL terminated c-string, which is automatically parsed to find the length.
+	template <typename Element, typename = std::enable_if_t<std::is_pointer_v<Element>>, typename = std::enable_if_t<std::is_fundamental_v<std::remove_pointer_t<Element>>>, typename = std::enable_if_t<std::negation_v<std::is_array<Element>>>>
+	GODOT_STR_CONSTRUCTOR_DEPRECATED void operator=(const Element &p_str) {
+		copy_from(p_str);
+	}
+
+	explicit operator const StrRange<char32_t>() const { return StrRange(get_data(), length()); }
 };
 
 bool operator==(const char *p_chr, const String &p_str);
