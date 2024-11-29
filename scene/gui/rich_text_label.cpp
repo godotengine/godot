@@ -4931,6 +4931,38 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						height = bbcode_value.substr(sep + 1).to_int();
 					}
 				} else {
+					OptionMap::Iterator align_option = bbcode_options.find("align");
+					if (align_option) {
+						Vector<String> subtag = _split_unquoted(align_option->value, U',');
+						_normalize_subtags(subtag);
+
+						if (subtag.size() > 1) {
+							if (subtag[0] == "top" || subtag[0] == "t") {
+								alignment = INLINE_ALIGNMENT_TOP_TO;
+							} else if (subtag[0] == "center" || subtag[0] == "c") {
+								alignment = INLINE_ALIGNMENT_CENTER_TO;
+							} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+								alignment = INLINE_ALIGNMENT_BOTTOM_TO;
+							}
+							if (subtag[1] == "top" || subtag[1] == "t") {
+								alignment |= INLINE_ALIGNMENT_TO_TOP;
+							} else if (subtag[1] == "center" || subtag[1] == "c") {
+								alignment |= INLINE_ALIGNMENT_TO_CENTER;
+							} else if (subtag[1] == "baseline" || subtag[1] == "l") {
+								alignment |= INLINE_ALIGNMENT_TO_BASELINE;
+							} else if (subtag[1] == "bottom" || subtag[1] == "b") {
+								alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
+							}
+						} else if (subtag.size() > 0) {
+							if (subtag[0] == "top" || subtag[0] == "t") {
+								alignment = INLINE_ALIGNMENT_TOP;
+							} else if (subtag[0] == "center" || subtag[0] == "c") {
+								alignment = INLINE_ALIGNMENT_CENTER;
+							} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+								alignment = INLINE_ALIGNMENT_BOTTOM;
+							}
+						}
+					}
 					OptionMap::Iterator width_option = bbcode_options.find("width");
 					if (width_option) {
 						width = width_option->value.to_int();
