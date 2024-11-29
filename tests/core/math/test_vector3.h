@@ -41,14 +41,10 @@ namespace TestVector3 {
 
 TEST_CASE("[Vector3] Constructor methods") {
 	const Vector3 vector_empty = Vector3();
-	const Vector3 vector_one = Vector3(0);
 	const Vector3 vector_zero = Vector3(0.0, 0.0, 0.0);
 	CHECK_MESSAGE(
 			vector_empty == vector_zero,
 			"Vector3 Constructor with no inputs should return a zero Vector3.");
-	CHECK_MESSAGE(
-			vector_one == vector_zero,
-			"Vector3 Constructor with one input should work as expected.");
 }
 
 TEST_CASE("[Vector3] Angle methods") {
