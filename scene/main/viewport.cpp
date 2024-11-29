@@ -3772,19 +3772,9 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		}
 
 		if (allow_change) {
-			Vector<int> wl = DisplayServer::get_singleton()->get_window_list();
-			for (int index = 0; index < wl.size(); index++) {
-				DisplayServer::WindowID wid = wl[index];
-				if (wid == DisplayServer::INVALID_WINDOW_ID) {
-					continue;
-				}
-
-				ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-				if (woid.is_null()) {
-					continue;
-				}
-
-				Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
+			Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+			for (const DisplayServer::WindowID &window_id : wl) {
+				const Window *w = Window::get_from_id(window_id);
 				if (w && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
 					allow_change = false;

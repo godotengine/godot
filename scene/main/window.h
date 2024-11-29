@@ -271,6 +271,7 @@ public:
 	};
 
 	static void set_root_layout_direction(int p_root_dir);
+	static Window *get_from_id(DisplayServer::WindowID p_window_id);
 
 	void set_title(const String &p_title);
 	String get_title() const;
