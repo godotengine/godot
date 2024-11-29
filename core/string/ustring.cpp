@@ -65,6 +65,15 @@ const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
 const char32_t String::_replacement_char = 0xfffd;
 
+// strlen equivalent function for char32_t * arguments.
+_FORCE_INLINE_ size_t strlen(const char32_t *p_str) {
+	const char32_t *ptr = p_str;
+	while (*ptr != 0) {
+		++ptr;
+	}
+	return ptr - p_str;
+}
+
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
 	int beg = CLAMP(p_col, 0, s.length());
@@ -424,11 +433,7 @@ void String::copy_from(const char32_t *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char32_t *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const int len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -629,12 +634,7 @@ String &String::operator+=(char32_t p_char) {
 
 bool String::operator==(const char *p_str) const {
 	// compare Latin-1 encoded c-string
-	int len = 0;
-	const char *aux = p_str;
-
-	while (*(aux++) != 0) {
-		len++;
-	}
+	int len = strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -668,12 +668,7 @@ bool String::operator==(const wchar_t *p_str) const {
 }
 
 bool String::operator==(const char32_t *p_str) const {
-	int len = 0;
-	const char32_t *aux = p_str;
-
-	while (*(aux++) != 0) {
-		len++;
-	}
+	const int len = strlen(p_str);
 
 	if (length() != len) {
 		return false;
