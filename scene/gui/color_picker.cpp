@@ -1601,18 +1601,12 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		// Add the Texture of each Window to the Image.
 		Vector<DisplayServer::WindowID> wl = ds->get_window_list();
 		// FIXME: sort windows by visibility.
-		for (int index = 0; index < wl.size(); index++) {
-			DisplayServer::WindowID wid = wl[index];
-			if (wid == DisplayServer::INVALID_WINDOW_ID) {
+		for (const DisplayServer::WindowID &window_id : wl) {
+			Window *w = Window::get_from_id(window_id);
+			if (!w) {
 				continue;
 			}
 
-			ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-			if (woid == ObjectID()) {
-				continue;
-			}
-
-			Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
 			Ref<Image> img = w->get_texture()->get_image();
 			if (!img.is_valid() || img->is_empty()) {
 				continue;
