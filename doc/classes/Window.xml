@@ -727,7 +727,7 @@
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 				[codeblock]
 				func _ready():
-				    get_viewport().files_dropped.connect(on_files_dropped)
+				    get_window().files_dropped.connect(on_files_dropped)
 
 				func on_files_dropped(files):
 				    print(files)
