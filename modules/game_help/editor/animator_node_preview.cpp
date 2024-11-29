@@ -185,8 +185,8 @@ void AnimationNodePreview::_update_theme_item_cache() {
     theme_cache.play_icon = p_control->get_editor_theme_icon(SNAME("Play"));
     theme_cache.pause_icon = p_control->get_editor_theme_icon(SNAME("Pause"));
     theme_cache.stop_icon = p_control->get_editor_theme_icon(SNAME("Stop"));
-    light_1_switch->set_button_icon(theme_cache.light_1_icon);
-    light_2_switch->set_button_icon(theme_cache.light_2_icon);
+    //light_1_switch->set_button_icon(theme_cache.light_1_icon);
+    //light_2_switch->set_button_icon(theme_cache.light_2_icon);
     drag_button->set_button_icon(theme_cache.drag_icon);
 
     play_button->set_button_icon(theme_cache.play_icon);
