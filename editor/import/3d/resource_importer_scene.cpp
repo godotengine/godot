@@ -876,11 +876,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		if (mesh.is_valid()) {
 			Vector<Ref<Shape3D>> shapes;
 			String fixed_name;
+			bool debug_fill = true;
+
 			if (r_collision_map.has(mesh)) {
 				shapes = r_collision_map[mesh];
 			} else if (_teststr(name, "col")) {
 				_pre_gen_shape_list(mesh, shapes, false);
 				r_collision_map[mesh] = shapes;
+				debug_fill = false;
 			} else if (_teststr(name, "convcol")) {
 				_pre_gen_shape_list(mesh, shapes, true);
 				r_collision_map[mesh] = shapes;
@@ -903,7 +906,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				mi->add_child(col, true);
 				col->set_owner(mi->get_owner());
 
-				_add_shapes(col, shapes);
+				_add_shapes(col, shapes, debug_fill);
 			}
 		}
 
@@ -1001,12 +1004,15 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		Ref<ImporterMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 			Vector<Ref<Shape3D>> shapes;
+			bool debug_fill = true;
+
 			if (r_collision_map.has(mesh)) {
 				shapes = r_collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
 				_pre_gen_shape_list(mesh, shapes, false);
 				r_collision_map[mesh] = shapes;
 				mesh->set_name(_fixstr(mesh->get_name(), "col"));
+				debug_fill = false;
 			} else if (_teststr(mesh->get_name(), "convcol")) {
 				_pre_gen_shape_list(mesh, shapes, true);
 				r_collision_map[mesh] = shapes;
@@ -1023,7 +1029,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				p_node->add_child(col, true);
 				col->set_owner(p_node->get_owner());
 
-				_add_shapes(col, shapes);
+				_add_shapes(col, shapes, debug_fill);
 			}
 		}
 	}
@@ -2646,10 +2652,13 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 	return p_node;
 }
 
-void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes) {
+void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes, bool p_debug_fill) {
 	for (const Ref<Shape3D> &E : p_shapes) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(E);
+#ifdef DEBUG_ENABLED
+		cshape->set_debug_fill_enabled(p_debug_fill);
+#endif
 		p_node->add_child(cshape, true);
 
 		cshape->set_owner(p_node->get_owner());

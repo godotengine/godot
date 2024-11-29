@@ -140,6 +140,9 @@ void CSGShapeEditor::_create_baked_collision_shape() {
 
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
+#ifdef DEBUG_ENABLED
+	cshape->set_debug_fill_enabled(false);
+#endif
 	cshape->set_name("CSGBakedCollisionShape3D");
 	cshape->set_transform(node->get_transform());
 	ur->add_do_method(node, "add_sibling", cshape, true);

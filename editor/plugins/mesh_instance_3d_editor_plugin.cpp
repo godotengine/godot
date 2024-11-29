@@ -177,6 +177,9 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			for (Ref<Shape3D> shape : shapes) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
+#ifdef DEBUG_ENABLED
+				cshape->set_debug_fill_enabled(shape_type_option != SHAPE_TYPE_TRIMESH);
+#endif
 				body->add_child(cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
@@ -189,6 +192,9 @@ void MeshInstance3DEditor::_create_collision_shape() {
 				cshape->set_shape(shape);
 				cshape->set_name("CollisionShape3D");
 				cshape->set_transform(node->get_transform());
+#ifdef DEBUG_ENABLED
+				cshape->set_debug_fill_enabled(shape_type_option != SHAPE_TYPE_TRIMESH);
+#endif
 				ur->add_do_method(E, "add_sibling", cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);

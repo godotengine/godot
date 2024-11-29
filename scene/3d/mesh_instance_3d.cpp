@@ -236,6 +236,9 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
+#ifdef DEBUG_ENABLED
+	cshape->set_debug_fill_enabled(false);
+#endif
 	static_body->add_child(cshape, true);
 	return static_body;
 }
