@@ -65,6 +65,10 @@ void SpinBox::_update_text(bool p_keep_line_edit) {
 
 	line_edit->set_text_with_selection(value);
 	last_updated_text = value;
+
+	if (line_edit->is_expand_to_text_length_enabled()) {
+		emit_signal(SNAME("minimum_size_changed"));
+	}
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -116,6 +120,9 @@ LineEdit *SpinBox::get_line_edit() {
 }
 
 void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
+	if (line_edit->is_expand_to_text_length_enabled()) {
+		emit_signal(SNAME("minimum_size_changed"));
+	}
 }
 
 void SpinBox::_range_click_timeout() {
