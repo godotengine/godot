@@ -657,15 +657,65 @@ gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(co
 	real_t closest_point_distance_squared = FLT_MAX;
 
 	for (const gd::Polygon &polygon : p_polygons) {
-		for (size_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
-			const Face3 face(polygon.points[0].pos, polygon.points[point_id - 1].pos, polygon.points[point_id].pos);
-			const Vector3 closest_point_on_face = face.get_closest_point_to(p_point);
-			const real_t distance_squared_to_point = closest_point_on_face.distance_squared_to(p_point);
-			if (distance_squared_to_point < closest_point_distance_squared) {
-				result.point = closest_point_on_face;
-				result.normal = face.get_plane().normal;
+		Vector3 plane_normal = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
+		Vector3 closest_on_polygon;
+		real_t closest = FLT_MAX;
+		bool inside = true;
+		Vector3 previous = polygon.points[polygon.points.size() - 1].pos;
+		for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
+			Vector3 edge = polygon.points[point_id].pos - previous;
+			Vector3 to_point = p_point - previous;
+			Vector3 edge_to_point_pormal = edge.cross(to_point);
+			bool clockwise = edge_to_point_pormal.dot(plane_normal) > 0;
+			// If we are not clockwise, the point will never be inside the polygon and so the closest point will be on an edge.
+			if (!clockwise) {
+				inside = false;
+				real_t point_projected_on_edge = edge.dot(to_point);
+				real_t edge_square = edge.length_squared();
+
+				if (point_projected_on_edge > edge_square) {
+					real_t distance = polygon.points[point_id].pos.distance_squared_to(p_point);
+					if (distance < closest) {
+						closest_on_polygon = polygon.points[point_id].pos;
+						closest = distance;
+					}
+				} else if (point_projected_on_edge < 0.f) {
+					real_t distance = previous.distance_squared_to(p_point);
+					if (distance < closest) {
+						closest_on_polygon = previous;
+						closest = distance;
+					}
+				} else {
+					// If we project on this edge, this will be the closest point.
+					real_t percent = point_projected_on_edge / edge_square;
+					closest_on_polygon = previous + percent * edge;
+					break;
+				}
+			}
+			previous = polygon.points[point_id].pos;
+		}
+
+		if (inside) {
+			Vector3 plane_normalized = plane_normal.normalized();
+			real_t distance = plane_normalized.dot(p_point - polygon.points[0].pos);
+			real_t distance_squared = distance * distance;
+			if (distance_squared < closest_point_distance_squared) {
+				closest_point_distance_squared = distance_squared;
+				result.point = p_point - plane_normalized * distance;
+				result.normal = plane_normal;
 				result.owner = polygon.owner->get_self();
-				closest_point_distance_squared = distance_squared_to_point;
+
+				if (Math::is_zero_approx(distance)) {
+					break;
+				}
+			}
+		} else {
+			real_t distance = closest_on_polygon.distance_squared_to(p_point);
+			if (distance < closest_point_distance_squared) {
+				closest_point_distance_squared = distance;
+				result.point = closest_on_polygon;
+				result.normal = plane_normal;
+				result.owner = polygon.owner->get_self();
 			}
 		}
 	}
