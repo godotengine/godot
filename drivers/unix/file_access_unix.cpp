@@ -295,10 +295,10 @@ void FileAccessUnix::flush() {
 	fflush(f);
 }
 
-void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-	ERR_FAIL_COND(!p_src && p_length > 0);
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+bool FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, false, "File must be opened before use.");
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+	return fwrite(p_src, 1, p_length, f) == p_length;
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
