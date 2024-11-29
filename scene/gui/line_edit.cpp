@@ -619,6 +619,45 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// Open context menu.
+	if (context_menu_enabled) {
+		if (k->is_action("ui_menu", true)) {
+			_update_context_menu();
+			Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
+			menu->set_position(get_screen_position() + pos);
+			menu->reset_size();
+			menu->popup();
+			menu->grab_focus();
+
+			accept_event();
+			return;
+		}
+	}
+
+	if (is_shortcut_keys_enabled()) {
+		if (k->is_action("ui_copy", true)) {
+			copy_text();
+			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_text_select_all", true)) {
+			select();
+			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_cut", true)) {
+			if (editable) {
+				cut_text();
+			} else {
+				copy_text();
+			}
+			accept_event();
+			return;
+		}
+	}
+
 	if (!editing) {
 		return;
 	}
@@ -727,21 +766,6 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	// Open context menu.
-	if (context_menu_enabled) {
-		if (k->is_action("ui_menu", true)) {
-			_update_context_menu();
-			Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
-			menu->set_position(get_screen_position() + pos);
-			menu->reset_size();
-			menu->popup();
-			menu->grab_focus();
-
-			accept_event();
-			return;
-		}
-	}
-
 	// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
 	if (k->is_action_pressed("ui_text_submit")) {
 		emit_signal(SceneStringName(text_submitted), text);
@@ -769,25 +793,6 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (is_shortcut_keys_enabled()) {
-		if (k->is_action("ui_copy", true)) {
-			copy_text();
-			accept_event();
-			return;
-		}
-
-		if (k->is_action("ui_text_select_all", true)) {
-			select();
-			accept_event();
-			return;
-		}
-
-		// Cut / Paste
-		if (k->is_action("ui_cut", true)) {
-			cut_text();
-			accept_event();
-			return;
-		}
-
 		if (k->is_action("ui_paste", true)) {
 			paste_text();
 			accept_event();
