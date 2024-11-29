@@ -216,6 +216,7 @@ xcuserdata/
 *.xcscmblueprint
 *.xccheckout
 *.xcodeproj/*
+!misc/misc/dist/ios_xcode/godot_ios.xcodeproj/project.pbxproj
 
 ##############################
 ### Visual Studio specific ###
