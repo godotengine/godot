@@ -553,7 +553,7 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	setplay.set(p_from_pos);
 
 	// Sample handling.
-	if (stream_playback->get_is_sample()) {
+	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
 		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
 		sample_playback->offset = p_from_pos;
 		sample_playback->bus = _get_actual_bus();
@@ -563,10 +563,7 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
-	if (is_playing()) {
-		stop();
-		play(p_seconds);
-	}
+	internal->seek(p_seconds);
 }
 
 void AudioStreamPlayer3D::stop() {
