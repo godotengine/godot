@@ -233,6 +233,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
 	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
+	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
 	AABB scene_aabb;
