@@ -265,7 +265,15 @@ void OS_Windows::initialize() {
 
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
-	timeBeginPeriod(1);
+	TIMECAPS time_caps;
+	if (timeGetDevCaps(&time_caps, sizeof(time_caps)) == MMSYSERR_NOERROR) {
+		delay_resolution = time_caps.wPeriodMin * 1000;
+		timeBeginPeriod(time_caps.wPeriodMin);
+	} else {
+		ERR_PRINT("Unable to detect sleep timer resolution.");
+		delay_resolution = 1000;
+		timeBeginPeriod(1);
+	}
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -2221,6 +2229,46 @@ String OS_Windows::get_system_ca_certificates() {
 	}
 	CertCloseStore(cert_store, 0);
 	return certs;
+}
+
+void OS_Windows::add_frame_delay(bool p_can_draw) {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		delay_usec(frame_delay * 1000);
+	}
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
+		uint64_t current_ticks = get_ticks_usec();
+
+		// The minimum sleep resolution on windows is 1 ms on most systems.
+		if (current_ticks < (target_ticks - delay_resolution)) {
+			delay_usec((target_ticks - delay_resolution) - current_ticks);
+		}
+		// Busy wait for the remainder of time.
+		while (get_ticks_usec() < target_ticks) {
+			YieldProcessor();
+		}
+
+		current_ticks = get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
+	}
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
