@@ -341,6 +341,19 @@ void EditorNode::_update_title() {
 	}
 }
 
+void EditorNode::input(const Ref<InputEvent> &p_event) {
+	// EditorNode::get_singleton()->set_process_input is set to true in ProgressDialog
+	// only when the progress dialog is visible.
+	// We need to discard all key events to disable all shortcuts while the progress
+	// dialog is displayed, simulating an exclusive popup. Mouse events are
+	// captured by a full-screen container in front of the EditorNode in ProgressDialog,
+	// allowing interaction with the actual dialog where a Cancel button may be visible.
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+		get_tree()->get_root()->set_input_as_handled();
+	}
+}
+
 void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -7079,7 +7092,7 @@ EditorNode::EditorNode() {
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
 	progress_dialog = memnew(ProgressDialog);
-	progress_dialog->set_unparent_when_invisible(true);
+	add_child(progress_dialog);
 	progress_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_progress_dialog_visibility_changed));
 
 	gui_base = memnew(Panel);
