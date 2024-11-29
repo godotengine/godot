@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Godot.Bridge;
 
@@ -13,7 +14,7 @@ public static partial class ScriptManagerBridge
 {
     private class ScriptTypeBiMap
     {
-        public readonly object ReadWriteLock = new();
+        public readonly ReaderWriterLockSlim ReadWriteLock = new(LockRecursionPolicy.SupportsRecursion);
         private System.Collections.Generic.Dictionary<IntPtr, Type> _scriptTypeMap = new();
         private System.Collections.Generic.Dictionary<Type, IntPtr> _typeScriptMap = new();
 
