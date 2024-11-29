@@ -2722,7 +2722,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
 		load_default = true;
 		if (importer.is_null()) {
-			ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
+			ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "BUG: File '" + p_file + "' queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
 		}
 	}
 
@@ -3205,7 +3205,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 }
 
 Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
-	ERR_FAIL_COND_V_MSG(!importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
+	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_tests_hint() && !importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
 	Vector<String> reloads;
 	reloads.append(p_file);
 

@@ -85,6 +85,7 @@ private:
 	HashMap<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint = false;
+	bool tests_hint = false;
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
 
@@ -157,6 +158,9 @@ public:
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
 
+	_FORCE_INLINE_ void set_tests_hint(bool p_enabled) { tests_hint = p_enabled; }
+	_FORCE_INLINE_ bool is_tests_hint() const { return tests_hint; }
+
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
 
@@ -165,6 +169,9 @@ public:
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
+
+	_FORCE_INLINE_ void set_tests_hint(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_tests_hint() const { return false; }
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
