@@ -565,7 +565,7 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.parse_utf8((const char *)w, -1, p_skip_cr);
+	s.parse_utf8((const char *)w, len, p_skip_cr);
 	return s;
 }
 
@@ -724,7 +724,7 @@ String FileAccess::get_pascal_string() {
 	cs[sl] = 0;
 
 	String ret;
-	ret.parse_utf8(cs.ptr());
+	ret.parse_utf8(cs.ptr(), sl);
 	return ret;
 }
 
