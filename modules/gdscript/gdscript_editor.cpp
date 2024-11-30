@@ -35,6 +35,7 @@
 #include "gdscript_utility_functions.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/doc/editor_help.h"
 #include "editor/gdscript_docgen.h"
 #include "editor/gdscript_editor_language.h"
 #include "editor/script_templates/templates.gen.h"
@@ -1138,11 +1139,18 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 		r_result.insert(variant_option.display, variant_option);
 	}
 
+	const HashMap<String, DocData::ClassDoc> *class_doc_map = EditorHelp::get_doc_data() ? &EditorHelp::get_doc_data()->class_list : nullptr;
+
 	LocalVector<StringName> native_types;
 	ClassDB::get_class_list(native_types);
 	for (const StringName &type : native_types) {
 		if (ClassDB::is_class_exposed(type) && !Engine::get_singleton()->has_singleton(type)) {
+			// Native class, when used as a type.
+			// 		var my_var: No...  # <-- will suggest `Node2D`
 			EditorLanguage::CompletionOption option(type, EditorLanguage::CompletionKind::CLASS);
+			if (class_doc_map && class_doc_map->has(type)) {
+				option.deprecated = class_doc_map->get(type).is_deprecated;
+			}
 			r_result.insert(option.display, option);
 		}
 	}
@@ -1150,11 +1158,18 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	// TODO: Unify with _find_identifiers_in_class.
 	if (p_context.current_class) {
 		if (!p_inherit_only && p_context.current_class->base_type.is_set()) {
-			// Native enums from base class
+			// Native enum from parent class, when used as a type.
+			//		extends AnimationPlayer
+			//		...
+			// 		var i: Anim...  # <-- Will suggest `AnimationProcessCallback`
 			List<StringName> enums;
-			ClassDB::get_enum_list(p_context.current_class->base_type.native_type, &enums);
+			const String base_native_type = p_context.current_class->base_type.native_type;
+			ClassDB::get_enum_list(base_native_type, &enums);
 			for (const StringName &E : enums) {
 				EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::ENUM);
+				if (class_doc_map && class_doc_map->has(base_native_type) && class_doc_map->get(base_native_type).enums.has(E)) {
+					option.deprecated = class_doc_map->get(base_native_type).enums.get(E).is_deprecated;
+				}
 				r_result.insert(option.display, option);
 			}
 		}
@@ -1166,18 +1181,36 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 			for (const GDScriptParser::ClassNode::Member &member : current->members) {
 				switch (member.type) {
 					case GDScriptParser::ClassNode::Member::CLASS: {
+						// Inner class (that is, class within this class file defined
+						// with `class`), when used to define a variable's type.
+						// 		var inner_inst: InnerCl...  # <-- will suggest `InnerClass`
 						EditorLanguage::CompletionOption option(member.m_class->identifier->name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::LOCAL + location_offset);
+						option.deprecated = member.m_class->doc_data.is_deprecated;
 						r_result.insert(option.display, option);
 					} break;
 					case GDScriptParser::ClassNode::Member::ENUM: {
 						if (!p_inherit_only) {
+							// Named enum within this class, when used to define
+							// a variable's type.
+							// e.g.,
+							// 		var current_state: MyEn...  # <-- will suggest `MyEnum`
 							EditorLanguage::CompletionOption option(member.m_enum->identifier->name, EditorLanguage::CompletionKind::ENUM, EditorLanguage::CompletionLocation::LOCAL + location_offset);
+							option.deprecated = member.m_enum->doc_data.is_deprecated;
 							r_result.insert(option.display, option);
 						}
 					} break;
 					case GDScriptParser::ClassNode::Member::CONSTANT: {
 						if (member.constant->type_constraint.is_meta_type) {
+							// Preloaded type within this script.
+							// const MyType = preload("res://my_type.gd")
+							// var m: MyT... # <-- will suggest MyType
 							EditorLanguage::CompletionOption option(member.constant->identifier->name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::LOCAL + location_offset);
+
+							bool held_class_is_deprecated = false;
+							if (member.constant->type_constraint.class_type) {
+								held_class_is_deprecated = member.constant->type_constraint.class_type->doc_data.is_deprecated;
+							}
+							option.deprecated = held_class_is_deprecated || member.constant->doc_data.is_deprecated;
 							r_result.insert(option.display, option);
 						}
 					} break;
@@ -1194,7 +1227,13 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	LocalVector<StringName> global_classes;
 	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
+		// Global classes (that is, classes defined with `class_name`), when used
+		// as a type declaration.
+		// 		var my_var: SomeCl...  # <-- will suggest `SomeClass`
 		EditorLanguage::CompletionOption option(class_name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::OTHER_USER_CODE);
+		if (class_doc_map && class_doc_map->has(class_name)) {
+			option.deprecated = class_doc_map->get(class_name).is_deprecated;
+		}
 		r_result.insert(option.display, option);
 	}
 
@@ -1209,7 +1248,12 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 		if (!info.is_singleton || !info.path.has_extension("gd")) {
 			continue;
 		}
+		// Autoload global variable names, when used as a type declaration.
+		// 		var my_autoload: GameAu...  # <-- will suggest `GameAutoload`
 		EditorLanguage::CompletionOption option(info.name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::OTHER_USER_CODE);
+		if (class_doc_map && class_doc_map->has(info.name)) {
+			option.deprecated = class_doc_map->get(info.name).is_deprecated;
+		}
 		r_result.insert(option.display, option);
 	}
 }
@@ -1221,8 +1265,12 @@ static void _find_identifiers_in_suite(const GDScriptParser::SuiteNode *p_suite,
 		if (local.type == GDScriptParser::SuiteNode::Local::CONSTANT) {
 			option = EditorLanguage::CompletionOption(local.name, EditorLanguage::CompletionKind::CONSTANT, location);
 			option.default_value = local.constant->initializer->reduced_value;
+			option.deprecated = local.constant->doc_data.is_deprecated;
 		} else {
 			option = EditorLanguage::CompletionOption(local.name, EditorLanguage::CompletionKind::VARIABLE, location);
+			if (local.type == GDScriptParser::SuiteNode::Local::VARIABLE) {
+				option.deprecated = local.variable->doc_data.is_deprecated;
+			}
 		}
 		r_result.insert(option.display, option);
 	}
@@ -1249,43 +1297,83 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						if (p_types_only || p_only_functions || outer || (p_static && !member.variable->is_static)) {
 							continue;
 						}
+						// Property of a class.
+						// 		var my_var = 3
+						//		func _ready():
+						// 			print(my_v...  # <-- will suggest `my_var`.
 						option = EditorLanguage::CompletionOption(member.variable->identifier->name, EditorLanguage::CompletionKind::MEMBER_VARIABLE, location);
+						option.deprecated = member.variable->doc_data.is_deprecated;
 						break;
-					case GDScriptParser::ClassNode::Member::CONSTANT:
+					case GDScriptParser::ClassNode::Member::CONSTANT: {
 						if ((p_types_only && !member.constant->type_constraint.is_meta_type) || p_only_functions) {
 							continue;
 						}
 						if (r_result.has(member.constant->identifier->name)) {
 							continue;
 						}
+						// Constant in a class.
+						// 		const MY_CONST = 3
+						//		func _ready():
+						// 			print(MY_CON...  # <-- will suggest `MY_CONST`
 						option = EditorLanguage::CompletionOption(member.constant->identifier->name, EditorLanguage::CompletionKind::CONSTANT, location);
+
+						// This constant holds a script class, so we should check
+						// if the script class is itself deprecated.
+						bool held_class_is_deprecated = false;
+						if (member.constant->type_constraint.is_meta_type && member.constant->type_constraint.class_type) {
+							held_class_is_deprecated = member.constant->type_constraint.class_type->doc_data.is_deprecated;
+						}
+						option.deprecated = held_class_is_deprecated || member.constant->doc_data.is_deprecated;
 						if (member.constant->initializer) {
 							option.default_value = member.constant->initializer->reduced_value;
 						}
 						break;
+					}
 					case GDScriptParser::ClassNode::Member::CLASS:
 						if (p_only_functions) {
 							continue;
 						}
+						// Inner class in a class.
+						// 		class MyInnerClass:
+						//			pass
+						//		func _ready():
+						// 			print(MyInn...  # <-- will suggest `MyInnerClass`
 						option = EditorLanguage::CompletionOption(member.m_class->identifier->name, EditorLanguage::CompletionKind::CLASS, location);
+						option.deprecated = member.m_class->doc_data.is_deprecated;
 						break;
 					case GDScriptParser::ClassNode::Member::ENUM_VALUE:
 						if (p_types_only || p_only_functions) {
 							continue;
 						}
+						// Value from an anonymous enum in a class.
+						// 		enum { ONE, TWO }
+						//		func _ready():
+						// 			print(ON...  # <-- will suggest `ONE`
 						option = EditorLanguage::CompletionOption(member.enum_value.identifier->name, EditorLanguage::CompletionKind::CONSTANT, location);
+						option.deprecated = member.enum_value.doc_data.is_deprecated;
 						break;
 					case GDScriptParser::ClassNode::Member::ENUM:
 						if (p_only_functions) {
 							continue;
 						}
+						// Name of an enum in a class.
+						// 		enum MyEnum { ONE, TWO }
+						//		func _ready():
+						// 			print(MyEn...  # <-- will suggest `MyEnum`
 						option = EditorLanguage::CompletionOption(member.m_enum->identifier->name, EditorLanguage::CompletionKind::ENUM, location);
+						option.deprecated = member.m_enum->doc_data.is_deprecated;
 						break;
 					case GDScriptParser::ClassNode::Member::FUNCTION:
 						if (p_types_only || outer || (p_static && !member.function->is_static) || member.function->identifier->name.string().begins_with("@")) {
 							continue;
 						}
+						// Method in a class.
+						// 		func say_hello():
+						//			print("Hello!")
+						//		func _ready():
+						// 			print(say_he...  # <-- will suggest `say_hello()`
 						option = EditorLanguage::CompletionOption(member.function->identifier->name, EditorLanguage::CompletionKind::FUNCTION, location);
+						option.deprecated = member.function->doc_data.is_deprecated;
 						if (p_add_braces) {
 							if (member.function->parameters.size() > 0 || (member.function->info.flags & METHOD_FLAG_VARARG)) {
 								option.insert_text += "(";
@@ -1300,7 +1388,12 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						if (p_types_only || p_only_functions || outer || p_static) {
 							continue;
 						}
+						// Signal in a class.
+						// 		signal something_happened
+						//		func _ready():
+						// 			something_hap...  # <-- will suggest `something_happened`
 						option = EditorLanguage::CompletionOption(member.signal->identifier->name, EditorLanguage::CompletionKind::SIGNAL, location);
+						option.deprecated = member.signal->doc_data.is_deprecated;
 						break;
 					case GDScriptParser::ClassNode::Member::GROUP:
 						break; // No-op, but silences warnings.
@@ -1332,7 +1425,11 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 	GDScriptParser::DataType base_type = p_base.type;
 
+	const HashMap<String, DocData::ClassDoc> *class_doc_map = EditorHelp::get_doc_data() ? &EditorHelp::get_doc_data()->class_list : nullptr;
+
 	if (!p_types_only && base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM) {
+		// Constructor for a class.
+		// 		var i = AnimatedSprite2D.n...  # <-- will suggest `new(...)`
 		EditorLanguage::CompletionOption option("new", EditorLanguage::CompletionKind::FUNCTION, EditorLanguage::CompletionLocation::LOCAL);
 		if (p_add_braces) {
 			option.insert_text += "(";
@@ -1342,6 +1439,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 	}
 
 	while (!base_type.has_no_type()) {
+		// This HashSet is declared up here because it works across both
+		// the ENUM and BUILTIN cases.
+		HashSet<String> deprecated_values;
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
 				_find_identifiers_in_class(base_type.class_type, p_only_functions, p_types_only, base_type.is_meta_type, false, p_add_braces, r_result, p_recursion_depth);
@@ -1357,6 +1457,17 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						if (!base_type.is_meta_type) {
 							List<PropertyInfo> members;
 							scr->get_script_property_list(&members);
+
+							HashSet<StringName> deprecated_properties;
+
+							if (class_doc_map && class_doc_map->has(scr->get_doc_class_name())) {
+								for (const DocData::PropertyDoc &property : class_doc_map->get(scr->get_doc_class_name()).properties) {
+									if (property.is_deprecated) {
+										deprecated_properties.insert(property.name);
+									}
+								}
+							}
+
 							for (const PropertyInfo &E : members) {
 								if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
 									continue;
@@ -1365,26 +1476,55 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 									continue;
 								}
 								int location = p_recursion_depth + _get_property_location(scr, E.name);
+
+								// Property in a Script type (such as a C# script).
 								EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::MEMBER_VARIABLE, location);
+								option.deprecated = deprecated_properties.has(E.name);
 								r_result.insert(option.display, option);
 							}
 
 							List<MethodInfo> signals;
 							scr->get_script_signal_list(&signals);
+
+							HashSet<StringName> deprecated_signals;
+							if (class_doc_map && class_doc_map->has(scr->get_doc_class_name())) {
+								for (const DocData::MethodDoc &signal_doc : class_doc_map->get(scr->get_doc_class_name()).signals) {
+									if (signal_doc.is_deprecated) {
+										deprecated_signals.insert(signal_doc.name);
+									}
+								}
+							}
+
 							for (const MethodInfo &E : signals) {
 								if (E.name.begins_with("_")) {
 									continue;
 								}
 								int location = p_recursion_depth + _get_signal_location(scr, E.name);
+
+								// Signal in a Script type (such as a C# script).
 								EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::SIGNAL, location);
+								option.deprecated = deprecated_signals.has(E.name);
 								r_result.insert(option.display, option);
 							}
 						}
 						HashMap<StringName, Variant> constants;
 						scr->get_constants(&constants);
+
+						HashSet<StringName> deprecated_consts;
+						if (class_doc_map && class_doc_map->has(scr->get_doc_class_name())) {
+							for (const DocData::ConstantDoc &constant_doc : class_doc_map->get(scr->get_doc_class_name()).constants) {
+								if (constant_doc.is_deprecated) {
+									deprecated_consts.insert(constant_doc.name);
+								}
+							}
+						}
+
 						for (const KeyValue<StringName, Variant> &E : constants) {
 							int location = p_recursion_depth + _get_constant_location(scr, E.key);
+
+							// Constant in a Script type (such as a C# script).
 							EditorLanguage::CompletionOption option(E.key.string(), EditorLanguage::CompletionKind::CONSTANT, location);
+							option.deprecated = deprecated_consts.has(E.key.string());
 							r_result.insert(option.display, option);
 						}
 					}
@@ -1397,6 +1537,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 								continue;
 							}
 							int location = p_recursion_depth + _get_method_location(scr->get_class_name(), E.name);
+
+							// Method in a Script type (such as a C# script).
 							EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::FUNCTION, location);
 							if (p_add_braces) {
 								if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
@@ -1433,6 +1575,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				ClassDB::get_enum_list(type, &enums);
 				for (const StringName &E : enums) {
 					int location = p_recursion_depth + _get_enum_location(type, E);
+					// Enum names for a native class.
+					//		TextureRe...  # <-- will suggest `TextureRepeat`
+					// 		AnimationPlayer.AnimationPro...  # <-- will suggest `AnimationProcessCallback`
 					EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::ENUM, location);
 					r_result.insert(option.display, option);
 				}
@@ -1443,16 +1588,47 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				if (!p_only_functions) {
 					List<String> constants;
+
+					HashSet<String> deprecated_consts;
+					if (class_doc_map) {
+						if (!class_doc_map->has(type)) {
+							print_error(vformat(R"(Class "%s" couldn't be found in doc data.)", type));
+						} else {
+							for (const DocData::ConstantDoc &constant_doc : class_doc_map->get(type).constants) {
+								if (constant_doc.is_deprecated) {
+									deprecated_consts.insert(constant_doc.name);
+								}
+							}
+						}
+					}
+
 					ClassDB::get_integer_constant_list(type, &constants);
 					for (const String &E : constants) {
 						int location = p_recursion_depth + _get_constant_location(type, StringName(E));
+						// Constant in a native class.
+						// 		NOTIFICATION_DR...  # <-- Will suggest `NOTIFICATION_DRAW`
 						EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::CONSTANT, location);
+						option.deprecated = deprecated_consts.has(E);
 						r_result.insert(option.display, option);
 					}
 
 					if (!base_type.is_meta_type || Engine::get_singleton()->has_singleton(type)) {
 						List<PropertyInfo> pinfo;
 						ClassDB::get_property_list(type, &pinfo);
+
+						HashSet<String> deprecated_properties;
+						if (class_doc_map) {
+							if (!class_doc_map->has(type)) {
+								print_error(vformat(R"(Class "%s" couldn't be found in doc data.)", type));
+							} else {
+								for (const DocData::PropertyDoc &property_doc : class_doc_map->get(type).properties) {
+									if (property_doc.is_deprecated) {
+										deprecated_properties.insert(property_doc.name);
+									}
+								}
+							}
+						}
+
 						for (const PropertyInfo &E : pinfo) {
 							if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
 								continue;
@@ -1461,18 +1637,42 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 								continue;
 							}
 							int location = p_recursion_depth + _get_property_location(type, E.name);
+
+							// Property in a native class.
+							// 		var my_node = Node2D.new()
+							// 		my_node.pos...  # <-- will suggest `position`
 							EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::MEMBER_VARIABLE, location);
+							option.deprecated = deprecated_properties.has(E.name);
 							r_result.insert(option.display, option);
 						}
 
 						List<MethodInfo> signals;
 						ClassDB::get_signal_list(type, &signals);
+
+						HashSet<String> deprecated_signals;
+						if (class_doc_map) {
+							if (!class_doc_map->has(type)) {
+								print_error(vformat(R"(Class "%s" couldn't be found in doc data.)", type));
+							} else {
+								for (const DocData::MethodDoc &signal_doc : class_doc_map->get(type).signals) {
+									if (signal_doc.is_deprecated) {
+										deprecated_signals.insert(signal_doc.name);
+									}
+								}
+							}
+						}
+
 						for (const MethodInfo &E : signals) {
 							if (E.name.begins_with("_")) {
 								continue;
 							}
 							int location = p_recursion_depth + _get_signal_location(type, StringName(E.name));
+
+							// Signal in a native class.
+							// 		var my_node = AnimatedSprite2D.new()
+							// 		my_node.anim...  # <-- will suggest `animation_changed`
 							EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::SIGNAL, location);
+							option.deprecated = deprecated_signals.has(E.name);
 							r_result.insert(option.display, option);
 						}
 					}
@@ -1500,6 +1700,21 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				List<MethodInfo> methods;
 				ClassDB::get_method_list(type, &methods, false);
+
+				// Assemble a set of deprecated method names.
+				HashSet<String> deprecated_methods;
+				if (class_doc_map) {
+					if (!class_doc_map->has(type)) {
+						print_error(vformat(R"(Class "%s" couldn't be found in doc data.)", type));
+					} else {
+						for (const DocData::MethodDoc &method_doc : class_doc_map->get(type).methods) {
+							if (method_doc.is_deprecated) {
+								deprecated_methods.insert(method_doc.name);
+							}
+						}
+					}
+				}
+
 				for (const MethodInfo &E : methods) {
 					if (only_static && (E.flags & METHOD_FLAG_STATIC) == 0) {
 						continue;
@@ -1511,7 +1726,12 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						continue;
 					}
 					int location = p_recursion_depth + _get_method_location(type, E.name);
+
+					// Method name in a native class.
+					// 		var my_node = AnimatedSprite2D.new()
+					// 		my_node.get_pl...  # <-- will suggest `get_playing_speed`
 					EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::FUNCTION, location);
+					option.deprecated = deprecated_methods.has(E.name);
 					if (p_add_braces) {
 						if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
 							option.insert_text += "(";
@@ -1543,9 +1763,34 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						ClassDB::get_enum_constants(type, type_enum, &enum_values);
 					}
 
+					if (base_type.class_type && base_type.kind == GDScriptParser::DataType::ENUM) {
+						const GDScriptParser::EnumNode *_enum = base_type.class_type->get_member(type_enum).m_enum;
+						for (const GDScriptParser::EnumNode::Value &enum_value : _enum->values) {
+							if (enum_value.doc_data.is_deprecated) {
+								deprecated_values.insert(enum_value.identifier->name);
+							}
+						}
+					} else {
+						if (class_doc_map) {
+							if (!class_doc_map->has(type)) {
+								print_error(vformat(R"(Class "%s" couldn't be found in doc data.)", type));
+							} else {
+								for (const DocData::ConstantDoc &constant_doc : class_doc_map->get(type).constants) {
+									if (constant_doc.is_deprecated) {
+										deprecated_values.insert(constant_doc.name);
+									}
+								}
+							}
+						}
+					}
+
 					for (const StringName &E : enum_values) {
 						int location = p_recursion_depth + _get_enum_constant_location(type, E);
+
+						// Enum value from a named enum in another class.
+						// 		CanvasItem.ClipChildrenMode.CLI...  # <-- will suggest `CLIP_CHILDREN_DISABLED`
 						EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::CONSTANT, location);
+						option.deprecated = deprecated_values.has(E);
 						r_result.insert(option.display, option);
 					}
 				} else if (CoreConstants::is_global_enum(base_type.enum_type)) {
@@ -1582,6 +1827,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						tmp.get_property_list(&members);
 					}
 
+					// Handles members from Variant types. Since named enums are
+					// internally the Dictionary type, they are also handled here.
 					for (const PropertyInfo &E : members) {
 						if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
 							continue;
@@ -1591,6 +1838,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							if (base_type.kind == GDScriptParser::DataType::ENUM) {
 								// Sort enum members in their declaration order.
 								location += 1;
+								option.deprecated = deprecated_values.has(E.name);
 							}
 							if (GDScriptParser::theme_color_names.has(E.name)) {
 								option.theme_color_name = GDScriptParser::theme_color_names[E.name];
@@ -1602,12 +1850,29 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				List<MethodInfo> methods;
 				tmp.get_method_list(&methods);
+
+				HashSet<String> deprecated_methods;
+				if (class_doc_map) {
+					if (!class_doc_map->has(Variant::get_type_name(base_type.builtin_type))) {
+						print_error(vformat(R"(Variant "%s" couldn't be found in doc data.)", Variant::get_type_name(base_type.builtin_type)));
+					} else {
+						for (const DocData::MethodDoc &method_doc : class_doc_map->get(Variant::get_type_name(base_type.builtin_type)).methods) {
+							if (method_doc.is_deprecated) {
+								deprecated_methods.insert(method_doc.name);
+							}
+						}
+					}
+				}
+
 				for (const MethodInfo &E : methods) {
 					if (base_type.kind == GDScriptParser::DataType::ENUM && base_type.is_meta_type && !(E.flags & METHOD_FLAG_CONST)) {
 						// Enum types are static and cannot change, therefore we skip non-const dictionary methods.
 						continue;
 					}
+					// Method for a built-in type.
+					// 		"Hello".beg...  # <-- will suggest `begins_with(...)`
 					EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::FUNCTION, location);
+					option.deprecated = deprecated_methods.has(E.name);
 					if (p_add_braces) {
 						if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
 							option.insert_text += "(";
@@ -1642,9 +1907,28 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	List<StringName> functions;
 	GDScriptUtilityFunctions::get_function_list(&functions);
 
+	const HashMap<String, DocData::ClassDoc> *class_doc_map = EditorHelp::get_doc_data() ? &EditorHelp::get_doc_data()->class_list : nullptr;
+
+	HashSet<String> deprecated_methods;
+	if (class_doc_map) {
+		if (!class_doc_map->has("@GDScript")) {
+			print_error(R"(Class "@GDScript" couldn't be found in doc data.)");
+		} else {
+			for (const DocData::MethodDoc &method_doc : class_doc_map->get("@GDScript").methods) {
+				if (method_doc.is_deprecated) {
+					deprecated_methods.insert(method_doc.name);
+				}
+			}
+		}
+	}
+
 	for (const StringName &E : functions) {
 		MethodInfo function = GDScriptUtilityFunctions::get_function_info(E);
+		// Method in the `@GDScript` namespace/class.
+		// 		Col...  # <-- will suggest `Color8(...)`
+
 		EditorLanguage::CompletionOption option(String(E), EditorLanguage::CompletionKind::FUNCTION);
+		option.deprecated = deprecated_methods.has(String(E));
 		if (p_add_braces) {
 			if (function.arguments.size() || (function.flags & METHOD_FLAG_VARARG)) {
 				option.insert_text += "(";
@@ -1671,6 +1955,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kw = _keywords;
 	while (*kw) {
+		// Keyword with no arguments or operands.
+		// 		tr...  # <-- will suggest `true`
 		EditorLanguage::CompletionOption option(*kw, EditorLanguage::CompletionKind::KEYWORD);
 		r_result.insert(option.display, option);
 		kw++;
@@ -1684,6 +1970,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kws = _keywords_with_space;
 	while (*kws) {
+		// Keyword separated from its arguments/operands by spaces.
+		// 		class_n...  # <-- will suggest `class_name`
 		EditorLanguage::CompletionOption option(*kws, EditorLanguage::CompletionKind::KEYWORD);
 		option.insert_text += " ";
 		r_result.insert(option.display, option);
@@ -1697,6 +1985,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kwa = _keywords_with_args;
 	while (*kwa) {
+		// Keyword that takes its arguments inside parentheses, similarly to functions.
+		// 		prel...  # <-- will suggest `preload(...)`
 		EditorLanguage::CompletionOption option(*kwa, EditorLanguage::CompletionKind::FUNCTION);
 		if (p_add_braces) {
 			option.insert_text += "(";
@@ -1710,6 +2000,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	Variant::get_utility_function_list(&utility_func_names);
 
 	for (const StringName &util_func_name : utility_func_names) {
+		// Function in the global scope.
+		// 		pri...  # <-- will suggest `print(...)`
 		EditorLanguage::CompletionOption option(util_func_name, EditorLanguage::CompletionKind::FUNCTION);
 		if (p_add_braces) {
 			option.insert_text += "(";
@@ -1722,17 +2014,44 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		if (!E.value.is_singleton) {
 			continue;
 		}
+
+		// Autoload with a global variable name.
+		// 		MyAu...  # <-- will suggest `MyAutoload` (if the user has set that in Project Settings > Globals).
 		EditorLanguage::CompletionOption option(E.key, EditorLanguage::CompletionKind::CONSTANT);
+		if (class_doc_map && class_doc_map->has(E.key)) {
+			option.deprecated = class_doc_map->get(E.key).is_deprecated;
+		}
 		r_result.insert(option.display, option);
 	}
 
 	// Native classes and global constants.
 	for (const KeyValue<StringName, int> &E : GDScriptLanguage::get_singleton()->get_global_map()) {
 		EditorLanguage::CompletionOption option;
+		String name = E.key.string();
 		if (GDScriptAnalyzer::class_exists(E.key) || Engine::get_singleton()->has_singleton(E.key)) {
-			option = EditorLanguage::CompletionOption(E.key.string(), EditorLanguage::CompletionKind::CLASS);
+			// Native class name.
+			// 		Ani...  # <-- will suggest `AnimationPlayer`
+			option = EditorLanguage::CompletionOption(name, EditorLanguage::CompletionKind::CLASS);
+			if (class_doc_map && class_doc_map->has(name)) {
+				option.deprecated = class_doc_map->get(name).is_deprecated;
+			}
 		} else {
-			option = EditorLanguage::CompletionOption(E.key.string(), EditorLanguage::CompletionKind::CONSTANT);
+			// Global constants.
+			// 		SIDE_LE...  # <-- will suggest `SIDE_LEFT`
+			option = EditorLanguage::CompletionOption(name, EditorLanguage::CompletionKind::CONSTANT);
+
+			if (class_doc_map) {
+				if (!class_doc_map->has("@GlobalScope")) {
+					print_error(R"(Class "@GlobalScope" couldn't be found in doc data.)");
+				} else {
+					for (const DocData::ConstantDoc &constant_doc : class_doc_map->get("@GlobalScope").constants) {
+						if (constant_doc.name == name) {
+							option.deprecated = constant_doc.is_deprecated;
+							break;
+						}
+					}
+				}
+			}
 		}
 		r_result.insert(option.display, option);
 	}
@@ -1744,7 +2063,12 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	LocalVector<StringName> global_classes;
 	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
+		// Classes registered using `class_name`.
+		// 		MyCl...  # <-- will suggest `MyClass`, if the user has written `class_name MyClass` in a script
 		EditorLanguage::CompletionOption option(class_name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::OTHER_USER_CODE);
+		if (class_doc_map && class_doc_map->has(class_name)) {
+			option.deprecated = class_doc_map->get(class_name).is_deprecated;
+		}
 		r_result.insert(option.display, option);
 	}
 }
@@ -3006,19 +3330,33 @@ static bool _guess_expecting_callable(GDScriptParser::CompletionContext &p_conte
 }
 
 static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_context, const String &p_enum_hint, HashMap<String, EditorLanguage::CompletionOption> &r_result) {
+	const HashMap<String, DocData::ClassDoc> *class_doc_map = EditorHelp::get_doc_data() ? &EditorHelp::get_doc_data()->class_list : nullptr;
+
 	if (!p_enum_hint.contains_char('.')) {
 		// Global constant or in the current class.
 		StringName current_enum = p_enum_hint;
 		if (p_context.current_class && p_context.current_class->has_member(current_enum) && p_context.current_class->get_member(current_enum).type == GDScriptParser::ClassNode::Member::ENUM) {
 			const GDScriptParser::EnumNode *_enum = p_context.current_class->get_member(current_enum).m_enum;
 			for (const GDScriptParser::EnumNode::Value &value : _enum->values) {
+				// Enum value when the enum belongs to the current class.
+				// 		class_name MyClass
+				//		enum MyEnum { ONE, TWO }
+				//		func print_enum(v: MyEnum): print(v)
+				//		func _ready():
+				//			print_enum(...  # <-- should suggest `ONE`, `TWO`
 				EditorLanguage::CompletionOption option(value.identifier->name, EditorLanguage::CompletionKind::ENUM);
+				option.deprecated = _enum->doc_data.is_deprecated;
 				r_result.insert(option.display, option);
 			}
 		} else {
 			for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 				if (CoreConstants::get_global_constant_enum(i) == current_enum) {
+					// Global constant enum value for a native class's method.
+					// 		my_control.set_anchor(...  # <-- will suggest `SIDE_BOTTOM` and others from `@GlobalScope.Side`
 					EditorLanguage::CompletionOption option(CoreConstants::get_global_constant_name(i), EditorLanguage::CompletionKind::ENUM);
+					if (class_doc_map && class_doc_map->has("@GlobalScope") && class_doc_map->get("@GlobalScope").enums.has(CoreConstants::get_global_constant_name(i))) {
+						option.deprecated = class_doc_map->get("@GlobalScope").enums.get(CoreConstants::get_global_constant_name(i)).is_deprecated;
+					}
 					r_result.insert(option.display, option);
 				}
 			}
@@ -3033,10 +3371,30 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 
 		List<StringName> enum_constants;
 		ClassDB::get_enum_constants(class_name, enum_name, &enum_constants);
+
+		// Build set of deprecated enum constants.
+		HashSet<String> deprecated_consts;
+		if (class_doc_map) {
+			if (!class_doc_map->has(class_name)) {
+				print_error(vformat(R"(Class "%s" couldn't be found in doc data.)", class_name));
+			} else {
+				for (const DocData::ConstantDoc &constant_doc : class_doc_map->get(class_name).constants) {
+					if (constant_doc.is_deprecated) {
+						deprecated_consts.insert(constant_doc.name);
+					}
+				}
+			}
+		}
+
 		for (const StringName &E : enum_constants) {
 			String candidate = class_name + "." + E;
 			int location = _get_enum_constant_location(class_name, E);
+			// Native enum value for a context with a native enum type.
+			// 		extends Control
+			//		func _ready():
+			//			set_anchors_and_offsets_preset(...  # <-- will suggest `Control.PRESET_TOP_LEFT` and others from `Control.LayoutPreset`
 			EditorLanguage::CompletionOption option(candidate, EditorLanguage::CompletionKind::ENUM, location);
+			option.deprecated = deprecated_consts.has(E);
 			r_result.insert(option.display, option);
 		}
 	}
@@ -3494,6 +3852,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	}
 	bool is_function = false;
 
+	const HashMap<String, DocData::ClassDoc> *class_doc_map = EditorHelp::get_doc_data() ? &EditorHelp::get_doc_data()->class_list : nullptr;
+
 	switch (completion_context.type) {
 		case GDScriptParser::COMPLETION_NONE:
 		case GDScriptParser::COMPLETION_DECLARATION:
@@ -3523,6 +3883,18 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			{
 				List<StringName> constants;
 				Variant::get_constants_for_type(completion_context.builtin_type, &constants);
+				const String variant_name = Variant::get_type_name(completion_context.builtin_type);
+
+				// Create set of deprecated constants within this Variant.
+				HashSet<String> deprecated_consts;
+				if (class_doc_map) {
+					for (const DocData::ConstantDoc &constant_doc : class_doc_map->get(variant_name).constants) {
+						if (constant_doc.is_deprecated) {
+							deprecated_consts.insert(constant_doc.name);
+						}
+					}
+				}
+
 				for (const StringName &E : constants) {
 					EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::CONSTANT);
 					bool valid = false;
@@ -3530,6 +3902,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					if (valid) {
 						option.default_value = default_value;
 					}
+					option.deprecated = deprecated_consts.has(E);
 					options.insert(option.display, option);
 				}
 			}
@@ -3537,6 +3910,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			{
 				List<StringName> methods;
 				Variant::get_builtin_method_list(completion_context.builtin_type, &methods);
+
 				for (const StringName &E : methods) {
 					if (Variant::is_builtin_method_static(completion_context.builtin_type, E)) {
 						EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::FUNCTION);
