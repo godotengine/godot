@@ -215,7 +215,12 @@ public:
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
+
+	/// Number of the underlying `char32_t` elements, including the null terminator.
+	/// Note that an empty string has a size of 0.
+	/// To get the number of characters in the string, use `length()` instead.
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
