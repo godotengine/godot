@@ -787,6 +787,18 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	List<AnimationNode::ChildNode> children;
 	p_node->get_child_nodes(&children);
 
+	Ref<AnimationNodeExternal> external = p_node;
+	if (external.is_valid()) {
+		String external_node_path = p_base_path + "external_node";
+		external_properties.push_back(external_node_path);
+		if (property_map.has(external_node_path)) {
+			Ref<AnimationRootNode> external_node = property_map[external_node_path].first;
+			if (external_node.is_valid()) {
+				_update_properties_for_node(p_base_path, external_node);
+			}
+		}
+	}
+
 	for (const AnimationNode::ChildNode &E : children) {
 		_update_properties_for_node(p_base_path + E.name + "/", E.node);
 	}
@@ -798,6 +810,7 @@ void AnimationTree::_update_properties() {
 	}
 
 	properties.clear();
+	external_properties.clear();
 	property_reference_map.clear();
 	property_parent_map.clear();
 	input_activity_map.clear();
@@ -911,6 +924,13 @@ bool AnimationTree::_set(const StringName &p_name, const Variant &p_value) {
 			return false; // Prevent to set property by user.
 		}
 		property_map[p_name].first = p_value;
+
+		for (int i = 0; i < external_properties.size(); i++) {
+			if (external_properties.get(i) == p_name) {
+				properties_dirty = true;
+			}
+		}
+
 		return true;
 	}
 

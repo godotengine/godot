@@ -151,6 +151,7 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
+	friend class AnimationNodeExternal;
 
 	// The time information is passed from upstream to downstream by AnimationMixer::PlaybackInfo::p_playback_info until AnimationNodeAnimation processes it.
 	// Conversely, AnimationNodeAnimation returns the processed result as NodeTimeInfo from downstream to upstream.
@@ -253,6 +254,35 @@ public:
 	AnimationRootNode() {}
 };
 
+class AnimationNodeExternal : public AnimationRootNode {
+	GDCLASS(AnimationNodeExternal, AnimationRootNode);
+
+public:
+	void get_parameter_list(List<PropertyInfo> *r_list) const override {
+		r_list->push_back(PropertyInfo(Variant::OBJECT, "external_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
+	}
+
+	virtual String get_caption() const override {
+		return "External";
+	}
+
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override {
+		Ref<AnimationRootNode> node = get_parameter("external_node");
+		if (node.is_valid()) {
+			node->node_state = node_state;
+			node->process_state = process_state;
+			NodeTimeInfo node_time_info = node->_process(p_playback_info, p_test_only);
+			node->process_state = nullptr;
+
+			return node_time_info;
+		}
+
+		return NodeTimeInfo();
+	}
+
+	AnimationNodeExternal() {}
+};
+
 class AnimationNodeStartState : public AnimationRootNode {
 	GDCLASS(AnimationNodeStartState, AnimationRootNode);
 };
@@ -285,6 +315,7 @@ private:
 	friend class AnimationNode;
 
 	List<PropertyInfo> properties;
+	List<StringName> external_properties;
 	AHashMap<StringName, AHashMap<StringName, StringName>> property_parent_map;
 	AHashMap<ObjectID, StringName> property_reference_map;
 	AHashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
