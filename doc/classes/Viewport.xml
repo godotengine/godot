@@ -268,6 +268,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="anisotropic_filtering_level" type="int" setter="set_anisotropic_filtering_level" getter="get_anisotropic_filtering_level" enum="Viewport.AnisotropicFiltering" default="2">
+			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+			The anisotropic filtering level also affects decals and light projectors if they are configured to use anisotropic filtering. See [member ProjectSettings.rendering/textures/decals/filter] and [member ProjectSettings.rendering/textures/light_projectors/filter].
+			[b]Note:[/b] In 3D, for this setting to have an effect, set [member BaseMaterial3D.texture_filter] to [constant BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on materials.
+			[b]Note:[/b] In 2D, for this setting to have an effect, set [member CanvasItem.texture_filter] to [constant CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on the [CanvasItem] node displaying the texture (or in [CanvasTexture]). However, anisotropic filtering is rarely useful in 2D, so only enable it for textures in 2D if it makes a meaningful visual difference.
+		</member>
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
@@ -514,6 +520,24 @@
 		</constant>
 		<constant name="MSAA_MAX" value="4" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
+		</constant>
+		<constant name="ANISOTROPY_DISABLED" value="0" enum="AnisotropicFiltering">
+			Anisotropic filtering is disabled.
+		</constant>
+		<constant name="ANISOTROPY_2X" value="1" enum="AnisotropicFiltering">
+			Use 2× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_4X" value="2" enum="AnisotropicFiltering">
+			Use 4× anisotropic filtering. This is the default value.
+		</constant>
+		<constant name="ANISOTROPY_8X" value="3" enum="AnisotropicFiltering">
+			Use 8× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_16X" value="4" enum="AnisotropicFiltering">
+			Use 16× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_MAX" value="5" enum="AnisotropicFiltering">
+			Represents the size of the [enum AnisotropicFiltering] enum.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
 			Do not perform any antialiasing in the full screen post-process.

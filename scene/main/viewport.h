@@ -123,6 +123,15 @@ public:
 		MSAA_MAX
 	};
 
+	enum AnisotropicFiltering {
+		ANISOTROPY_DISABLED,
+		ANISOTROPY_2X,
+		ANISOTROPY_4X,
+		ANISOTROPY_8X,
+		ANISOTROPY_16X,
+		ANISOTROPY_MAX
+	};
+
 	enum ScreenSpaceAA {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
@@ -303,6 +312,7 @@ private:
 	float scaling_3d_scale = 1.0;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
+	AnisotropicFiltering anisotropic_filtering_level = ANISOTROPY_4X;
 	bool use_debanding = false;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
@@ -560,6 +570,9 @@ public:
 
 	void set_texture_mipmap_bias(float p_texture_mipmap_bias);
 	float get_texture_mipmap_bias() const;
+
+	void set_anisotropic_filtering_level(AnisotropicFiltering p_anisotropic_filtering_level);
+	AnisotropicFiltering get_anisotropic_filtering_level() const;
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
@@ -862,6 +875,7 @@ VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::AnisotropicFiltering);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);

@@ -4623,6 +4623,21 @@ float Viewport::get_texture_mipmap_bias() const {
 	return texture_mipmap_bias;
 }
 
+void Viewport::set_anisotropic_filtering_level(AnisotropicFiltering p_anisotropic_filtering_level) {
+	ERR_MAIN_THREAD_GUARD;
+	if (anisotropic_filtering_level == p_anisotropic_filtering_level) {
+		return;
+	}
+
+	anisotropic_filtering_level = p_anisotropic_filtering_level;
+	RS::get_singleton()->viewport_set_anisotropic_filtering_level(viewport, (RS::ViewportAnisotropicFiltering)(int)p_anisotropic_filtering_level);
+}
+
+Viewport::AnisotropicFiltering Viewport::get_anisotropic_filtering_level() const {
+	ERR_READ_THREAD_GUARD_V(ANISOTROPY_DISABLED);
+	return anisotropic_filtering_level;
+}
+
 #endif // _3D_DISABLED
 
 void Viewport::_propagate_world_2d_changed(Node *p_node) {
@@ -4808,6 +4823,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_mipmap_bias", "texture_mipmap_bias"), &Viewport::set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("get_texture_mipmap_bias"), &Viewport::get_texture_mipmap_bias);
 
+	ClassDB::bind_method(D_METHOD("set_anisotropic_filtering_level", "anisotropic_filtering_level"), &Viewport::set_anisotropic_filtering_level);
+	ClassDB::bind_method(D_METHOD("get_anisotropic_filtering_level"), &Viewport::get_anisotropic_filtering_level);
+
 	ClassDB::bind_method(D_METHOD("set_vrs_mode", "mode"), &Viewport::set_vrs_mode);
 	ClassDB::bind_method(D_METHOD("get_vrs_mode"), &Viewport::get_vrs_mode);
 
@@ -4843,6 +4861,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow)"), "set_scaling_3d_mode", "get_scaling_3d_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scaling_3d_scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), "set_scaling_3d_scale", "get_scaling_3d_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16x (Slow)")), "set_anisotropic_filtering_level", "get_anisotropic_filtering_level");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
 	ADD_GROUP("Variable Rate Shading", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR"), "set_vrs_mode", "get_vrs_mode");
@@ -4901,6 +4920,13 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(MSAA_4X);
 	BIND_ENUM_CONSTANT(MSAA_8X);
 	BIND_ENUM_CONSTANT(MSAA_MAX);
+
+	BIND_ENUM_CONSTANT(ANISOTROPY_DISABLED);
+	BIND_ENUM_CONSTANT(ANISOTROPY_2X);
+	BIND_ENUM_CONSTANT(ANISOTROPY_4X);
+	BIND_ENUM_CONSTANT(ANISOTROPY_8X);
+	BIND_ENUM_CONSTANT(ANISOTROPY_16X);
+	BIND_ENUM_CONSTANT(ANISOTROPY_MAX);
 
 	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_DISABLED);
 	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_FXAA);
@@ -5027,6 +5053,7 @@ Viewport::Viewport() {
 	set_scaling_3d_scale(GLOBAL_GET("rendering/scaling_3d/scale"));
 	set_fsr_sharpness((float)GLOBAL_GET("rendering/scaling_3d/fsr_sharpness"));
 	set_texture_mipmap_bias((float)GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias"));
+	set_anisotropic_filtering_level((Viewport::AnisotropicFiltering)(int)GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 #endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); // Set to server.
