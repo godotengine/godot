@@ -153,7 +153,7 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 				int filter_slice_count = flt.get_slice_count(",");
 				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
-					if (f.match(str)) {
+					if (f.matchn(str)) {
 						valid = true;
 						break;
 					}
@@ -236,14 +236,14 @@ void FileDialog::_notification(int p_what) {
 			dir_prev->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			dir_prev->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			dir_prev->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
-			dir_prev->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+			dir_prev->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
 			dir_prev->end_bulk_theme_override();
 
 			dir_next->begin_bulk_theme_override();
 			dir_next->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
 			dir_next->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			dir_next->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
-			dir_next->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+			dir_next->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
 			dir_next->end_bulk_theme_override();
 
 			refresh->begin_bulk_theme_override();
@@ -488,7 +488,7 @@ void FileDialog::_action_pressed() {
 				String flt = filters[i].get_slice(";", 0);
 				for (int j = 0; j < flt.get_slice_count(","); j++) {
 					String str = flt.get_slice(",", j).strip_edges();
-					if (f.match(str)) {
+					if (f.matchn(str)) {
 						valid = true;
 						break;
 					}
@@ -507,7 +507,7 @@ void FileDialog::_action_pressed() {
 				int filterSliceCount = flt.get_slice_count(",");
 				for (int j = 0; j < filterSliceCount; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
-					if (f.match(str)) {
+					if (f.matchn(str)) {
 						valid = true;
 						break;
 					}

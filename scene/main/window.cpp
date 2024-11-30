@@ -270,6 +270,13 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 //
 
+Window *Window::get_from_id(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return nullptr;
+	}
+	return Object::cast_to<Window>(ObjectDB::get_instance(DisplayServer::get_singleton()->window_get_attached_instance_id(p_window_id)));
+}
+
 void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -912,7 +919,7 @@ void Window::_make_transient() {
 	if (!is_embedded() && transient_to_focused) {
 		DisplayServer::WindowID focused_window_id = DisplayServer::get_singleton()->get_focused_window();
 		if (focused_window_id != DisplayServer::INVALID_WINDOW_ID) {
-			window = Object::cast_to<Window>(ObjectDB::get_instance(DisplayServer::get_singleton()->window_get_attached_instance_id(focused_window_id)));
+			window = Window::get_from_id(focused_window_id);
 		}
 	}
 

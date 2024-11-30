@@ -417,8 +417,8 @@ void FileAccessPack::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL();
+bool FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_V(false);
 }
 
 bool FileAccessPack::file_exists(const String &p_name) {

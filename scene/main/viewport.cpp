@@ -682,8 +682,9 @@ void Viewport::_process_picking() {
 	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
 	}
-	if (!gui.mouse_in_viewport) {
-		// Clear picking events if mouse has left viewport.
+	if (!gui.mouse_in_viewport || gui.subwindow_over) {
+		// Clear picking events if the mouse has left the viewport or is over an embedded window.
+		// These are locations, that are expected to not trigger physics picking.
 		physics_picking_events.clear();
 		return;
 	}
@@ -3066,8 +3067,8 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 		}
 
 		Viewport *section_root = get_section_root_viewport();
-		if (section_root && c->is_consume_drag_and_drop_enabled()) {
-			// Evaluating `consume_drag_and_drop` and adjusting target_control needs to happen
+		if (section_root && c->is_mouse_target_enabled()) {
+			// Evaluating `mouse_target` and adjusting target_control needs to happen
 			// after `_update_mouse_over` in the SubViewports, because otherwise physics picking
 			// would not work inside SubViewports.
 			section_root->gui.target_control = over;
@@ -3771,19 +3772,9 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		}
 
 		if (allow_change) {
-			Vector<int> wl = DisplayServer::get_singleton()->get_window_list();
-			for (int index = 0; index < wl.size(); index++) {
-				DisplayServer::WindowID wid = wl[index];
-				if (wid == DisplayServer::INVALID_WINDOW_ID) {
-					continue;
-				}
-
-				ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-				if (woid.is_null()) {
-					continue;
-				}
-
-				Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
+			Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+			for (const DisplayServer::WindowID &window_id : wl) {
+				const Window *w = Window::get_from_id(window_id);
 				if (w && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
 					allow_change = false;
