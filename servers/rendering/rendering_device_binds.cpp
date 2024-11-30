@@ -39,7 +39,13 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility backend.");
 
 	Vector<String> lines = p_text.split("\n");
+	versions.clear();
+	base_error = "";
 
+	return _parse_sectioned_text(lines, p_defines, p_include_func, p_include_func_userdata);
+}
+
+Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
 	bool reading_versions = false;
 	bool stage_found[RD::SHADER_STAGE_MAX] = { false, false, false, false, false };
 	RD::ShaderStage stage = RD::SHADER_STAGE_MAX;
@@ -54,11 +60,8 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	int stages_found = 0;
 	HashMap<StringName, String> version_texts;
 
-	versions.clear();
-	base_error = "";
-
-	for (int lidx = 0; lidx < lines.size(); lidx++) {
-		String line = lines[lidx];
+	for (int lidx = 0; lidx < p_lines.size(); lidx++) {
+		String line = p_lines[lidx];
 
 		{
 			String ls = line.strip_edges();
