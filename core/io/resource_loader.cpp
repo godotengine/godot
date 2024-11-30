@@ -182,10 +182,14 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 void ResourceFormatLoader::load_meta(const Ref<Resource> &p_resource, const String &p_path) {
 	// FIXME
 	// Don't have acquaintance with multi-thread programming sorry :(
+	if (!FileAccess::exists(p_path + ".gdmeta")) {
+		return;
+	}
+
 	Ref<ConfigFile> cfg = memnew(ConfigFile);
 	Error err = cfg->load(p_path + ".gdmeta");
 
-	ERR_FAIL_COND_MSG(err, "Could not load the metadata of the file '" + p_path + "'.");
+	ERR_FAIL_COND_MSG(err != OK, "Could not load the metadata of the file '" + p_path + "'.");
 
 	// To prevent from throwing the error of not having section "".
 	// Also, remove the empty gdmeta file to save more spaces.
