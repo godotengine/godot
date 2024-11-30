@@ -120,6 +120,12 @@ void EditorProperty::emit_changed(const StringName &p_property, const Variant &p
 
 	cache[p_property] = p_value;
 	emit_signalp(SNAME("property_changed"), (const Variant **)argptrs, 4);
+	if (is_custom_property) {
+		Object* obj = get_edited_object();
+		if (obj != nullptr) {
+			obj->set(p_property, p_value);
+		}
+	}
 }
 
 void EditorProperty::_notification(int p_what) {

@@ -510,7 +510,7 @@ void CharacterBodyMain::_bind_methods()
 
     
 
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"tres,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"*.res,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "get_animation_Group",PROPERTY_USAGE_EDITOR), "set_editor_animation_group", "get_editor_animation_group");
@@ -779,6 +779,8 @@ static void save_fbx_tres( const String& group_name,const String& sub_path,const
 	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
     save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
 }
+
+
 static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 {
 

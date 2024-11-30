@@ -51,6 +51,10 @@ protected:
     void save_animation_config() ;
 
     void load_animation_config() ;
+
+    
+    void editor_build_animation_form_path(String p_file_path, const StringName& animation_group, const StringName& animation_tag);
+
 public:
     String preview_prefab_path;
     EditorPropertyPath* property_preview_prefab_path = nullptr;

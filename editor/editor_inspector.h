@@ -86,6 +86,7 @@ private:
 	String doc_path;
 	bool internal = false;
 	bool has_doc_tooltip = false;
+	bool is_custom_property = false;
 
 	int property_usage;
 
@@ -167,6 +168,8 @@ public:
 
 	void set_read_only(bool p_read_only);
 	bool is_read_only() const;
+
+	void set_custom_property(bool v) { is_custom_property = v; }
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;

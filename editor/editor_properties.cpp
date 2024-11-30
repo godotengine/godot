@@ -254,6 +254,7 @@ void EditorPropertyTextEnum::_emit_changed_value(const String &p_string) {
 	} else {
 		emit_changed(get_edited_property(), p_string);
 	}
+	Object* obj = get_edited_object();
 }
 
 void EditorPropertyTextEnum::_option_selected(int p_which) {
