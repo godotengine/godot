@@ -127,6 +127,30 @@ void DocData::property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_propert
 	p_property.overridden = false;
 }
 
+void DocData::struct_doc_from_structinfo(DocData::StructDoc &p_struct, const StructInfo &p_structinfo) {
+	p_struct.name = p_structinfo.name;
+	// TODO: what about description?
+
+	p_struct.properties.resize(p_structinfo.count);
+	for (int i = 0; i < p_structinfo.count; i++) {
+		PropertyDoc property_doc;
+		property_doc.name = p_structinfo.names[i];
+		Variant::Type type = p_structinfo.types[i];
+		if (type == Variant::OBJECT) {
+			property_doc.type = p_structinfo.class_names[i];
+		} else if (type == Variant::NIL) {
+			property_doc.type = "Variant";
+		} else {
+			property_doc.type = Variant::get_type_name(type);
+		}
+		if (type != Variant::OBJECT) {
+			property_doc.default_value = get_default_value_string(p_structinfo.default_values[i]);
+		}
+		// TODO: what about description?
+		p_struct.properties.write[i] = property_doc;
+	}
+}
+
 void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc) {
 	p_method.name = p_methodinfo.name;
 	p_method.description = p_desc;
