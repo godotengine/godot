@@ -126,28 +126,9 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 
 			if (stage != RD::SHADER_STAGE_MAX) {
 				if (line.strip_edges().begins_with("#include")) {
-					if (p_include_func) {
-						//process include
-						String include = line.replace("#include", "").strip_edges();
-						if (!include.begins_with("\"") || !include.ends_with("\"")) {
-							base_error = "Malformed #include syntax, expected #include \"<path>\", found instead: " + include;
-							break;
-						}
-						include = include.substr(1, include.length() - 2).strip_edges();
-
-						String include_code = ShaderIncludeDB::get_built_in_include_file(include);
-						if (!include_code.is_empty()) {
-							stage_code[stage] += "\n" + include_code + "\n";
-						} else {
-							String include_text = p_include_func(include, p_include_func_userdata);
-							if (!include_text.is_empty()) {
-								stage_code[stage] += "\n" + include_text + "\n";
-							} else {
-								base_error = "#include failed for file '" + include + "'.";
-							}
-						}
-					} else {
-						base_error = "#include used, but no include function provided.";
+					stage_code[stage] += _expand_include(line, p_include_func, p_include_func_userdata) + "\n";
+					if (!base_error.is_empty()) {
+						break;
 					}
 				} else {
 					stage_code[stage] += line + "\n";
@@ -224,4 +205,32 @@ String RDShaderFile::_stage_to_str(const RD::ShaderStage s) {
 		return "<invalid>";
 	}
 	return _stage_str[s];
+}
+
+String RDShaderFile::_expand_include(const String &p_line, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
+	if (!p_line.strip_edges().begins_with("#include ")) {
+		return p_line;
+	}
+
+	if (!p_include_func) {
+		base_error = "#include used, but no include function provided.";
+		return "";
+	}
+
+	String include = p_line.trim_prefix("#include ").strip_edges();
+	if (!include.is_quoted()) {
+		base_error = "Malformed #include syntax, expected #include \"<path>\", found instead: " + include;
+		return "";
+	}
+	include = include.unquote();
+
+	String include_text = ShaderIncludeDB::get_built_in_include_file(include);
+	if (include_text.is_empty()) {
+		include_text = p_include_func(include, p_include_func_userdata);
+	}
+	if (include_text.is_empty()) {
+		base_error = "#include failed for file '" + include + "'";
+		return "";
+	}
+	return include_text;
 }
