@@ -2817,6 +2817,11 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 			id->variable_source->assignments++;
 		}
+
+		if (id->source == GDScriptParser::IdentifierNode::FUNCTION_PARAMETER && id->parameter_source && id->parameter_source->is_immutable) {
+			// Check if we are trying to assign to an immutable function parameter.
+			parser->push_error(vformat(R"(Cannot assign to immutable function parameter "%s". Remove the "let" to make it mutable.)", id->name), p_assignment);
+		}
 	}
 
 	reduce_expression(p_assignment->assignee);

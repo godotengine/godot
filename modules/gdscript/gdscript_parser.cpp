@@ -1543,10 +1543,20 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 				// Allow for trailing comma.
 				break;
 			}
+
+			bool is_immutable= false;
+			if (match(GDScriptTokenizer::Token::LET)) {
+				// Allow immutable variable in function signature by using optional let. e.g. `func foo(let bar)`
+				is_immutable = true;
+			}
+
 			ParameterNode *parameter = parse_parameter();
 			if (parameter == nullptr) {
 				break;
 			}
+
+			parameter->is_immutable = is_immutable;
+
 			if (parameter->initializer != nullptr) {
 				default_used = true;
 			} else {
