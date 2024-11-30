@@ -140,6 +140,9 @@ class DisplayServerWayland : public DisplayServer {
 #if DBUS_ENABLED
 	FreeDesktopPortalDesktop *portal_desktop = nullptr;
 
+	IndicatorID indicator_id_counter = 0;
+	HashSet<IndicatorID> indicators;
+
 	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool screensaver_inhibited = false;
 #endif
@@ -285,6 +288,12 @@ public:
 
 	virtual void release_rendering_thread() override;
 	virtual void swap_buffers() override;
+
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	virtual void set_context(Context p_context) override;
 

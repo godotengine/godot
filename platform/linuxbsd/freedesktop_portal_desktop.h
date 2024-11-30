@@ -35,11 +35,14 @@
 
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "scene/resources/texture.h"
 #include "servers/display_server.h"
 
-struct DBusMessage;
-struct DBusConnection;
-struct DBusMessageIter;
+#ifdef SOWRAP_ENABLED
+#include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
 
 class FreeDesktopPortalDesktop : public Object {
 private:
@@ -75,15 +78,61 @@ private:
 	};
 	List<FileDialogCallback> pending_cbs;
 
-	Mutex file_dialog_mutex;
+	Mutex dbus_mutex;
 	Vector<FileDialogData> file_dialogs;
 	Thread monitor_thread;
 	SafeFlag monitor_thread_abort;
 	DBusConnection *monitor_connection = nullptr;
 
+	Vector<DBusWatch *> dbus_watches;
+
 	String theme_path;
 	Callable system_theme_changed;
+
+	struct StatusNotifierItem {
+		DisplayServer::IndicatorID id = DisplayServer::INVALID_INDICATOR_ID;
+		String name;
+		String tooltip;
+		Callable activate_callback;
+		Size2i icon_size;
+		Vector<uint8_t> icon_data;
+	};
+
+	HashMap<DisplayServer::IndicatorID, StatusNotifierItem> indicators;
+	HashMap<String, DisplayServer::IndicatorID> indicator_id_map;
+
+	Size2i icon_image_size;
+	Vector<uint8_t> icon_image_data;
+
+	struct DBusObjectPathVTable status_indicator_item_vtable = {
+		_status_notifier_item_unregister, // unregister_function
+		_status_notifier_item_handle_message, // message_function
+		_dbus_arg_noop, // dbus_internal_pad1
+		_dbus_arg_noop, // dbus_internal_pad2
+		_dbus_arg_noop, // dbus_internal_pad3
+		_dbus_arg_noop, // dbus_internal_pad4
+	};
+
+	static void _dbus_connection_reply_error(DBusConnection *p_connection, DBusMessage *p_message, String p_error_message);
 	void _system_theme_changed_callback();
+
+	static void _dbus_arg_noop(void *arg) {}
+
+	// Useful for responding to property requests.
+	static dbus_bool_t _dbus_messsage_iter_append_basic_variant(DBusMessageIter *p_iter, int p_type, const void *p_value);
+	static dbus_bool_t _dbus_message_iter_append_bool_variant(DBusMessageIter *p_iter, bool p_bool);
+	static dbus_bool_t _dbus_message_iter_append_uint32_variant(DBusMessageIter *p_iter, uint32_t p_uint32);
+
+	// Implements the StatusNotifierItem icon spec.
+	static dbus_bool_t _dbus_message_iter_append_pixmap(DBusMessageIter *p_iter, Size2i p_size, Vector<uint8_t> p_data);
+
+	static DBusHandlerResult _handle_message(DBusConnection *connection, DBusMessage *message, void *user_data);
+	static dbus_bool_t _handle_add_watch(DBusWatch *watch, void *data);
+	static void _handle_remove_watch(DBusWatch *watch, void *data);
+	static void _handle_watch_toggled(DBusWatch *watch, void *data);
+
+	static void _status_notifier_item_unregister(DBusConnection *connection, void *user_data);
+	static DBusHandlerResult _status_notifier_item_handle_message(DBusConnection *connection, DBusMessage *message, void *user_data);
 
 	static void _thread_monitor(void *p_ud);
 
@@ -104,6 +153,13 @@ public:
 	void set_system_theme_change_callback(const Callable &p_system_theme_changed) {
 		system_theme_changed = p_system_theme_changed;
 	}
+
+	bool indicator_register(DisplayServer::IndicatorID p_id);
+	bool indicator_create(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon);
+	Error indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Texture2D> &p_icon);
+	void indicator_set_tooltip(DisplayServer::IndicatorID p_id, const String &p_tooltip);
+	void indicator_set_callback(DisplayServer::IndicatorID p_id, const Callable &p_callback);
+	void indicator_destroy(DisplayServer::IndicatorID p_id);
 };
 
 #endif // DBUS_ENABLED
