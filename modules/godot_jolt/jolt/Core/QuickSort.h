@@ -16,13 +16,13 @@ inline void QuickSortMedianOfThree(Iterator inFirst, Iterator inMiddle, Iterator
 	JPH_ASSERT(inFirst != inMiddle && inMiddle != inLast);
 
 	if (inCompare(*inMiddle, *inFirst))
-		swap(*inFirst, *inMiddle);
+		std::swap(*inFirst, *inMiddle);
 
 	if (inCompare(*inLast, *inFirst))
-		swap(*inFirst, *inLast);
+		std::swap(*inFirst, *inLast);
 
 	if (inCompare(*inLast, *inMiddle))
-		swap(*inMiddle, *inLast);
+		std::swap(*inMiddle, *inLast);
 }
 
 /// Helper function for QuickSort using the Ninther method, will move the pivot element to inMiddle.
@@ -94,7 +94,7 @@ inline void QuickSort(Iterator inBegin, Iterator inEnd, Compare inCompare)
 				break;
 
 			// Swap the elements
-			swap(*i, *j);
+			std::swap(*i, *j);
 
 			// Note that the first while loop in this function should
 			// have been do i++ while (...) but since we cannot decrement

@@ -17,6 +17,7 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Core/ARMNeon.h
 	${JOLT_PHYSICS_ROOT}/Core/Array.h
 	${JOLT_PHYSICS_ROOT}/Core/Atomics.h
+	${JOLT_PHYSICS_ROOT}/Core/BinaryHeap.h
 	${JOLT_PHYSICS_ROOT}/Core/ByteBuffer.h
 	${JOLT_PHYSICS_ROOT}/Core/Color.cpp
 	${JOLT_PHYSICS_ROOT}/Core/Color.h
@@ -289,6 +290,8 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/Shape/TriangleShape.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/ShapeCast.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/ShapeFilter.h
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/SimShapeFilter.h
+	${JOLT_PHYSICS_ROOT}/Physics/Collision/SimShapeFilterWrapper.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/SortReverseAndStore.h
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/TransformedShape.cpp
 	${JOLT_PHYSICS_ROOT}/Physics/Collision/TransformedShape.h

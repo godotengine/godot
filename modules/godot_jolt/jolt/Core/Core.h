@@ -425,7 +425,6 @@ JPH_SUPPRESS_WARNINGS_STD_END
 JPH_NAMESPACE_BEGIN
 
 // Commonly used STL types
-using std::pair;
 using std::min;
 using std::max;
 using std::abs;
@@ -435,17 +434,11 @@ using std::floor;
 using std::trunc;
 using std::round;
 using std::fmod;
-using std::swap;
-using std::size;
-using std::string;
 using std::string_view;
 using std::function;
 using std::numeric_limits;
 using std::isfinite;
 using std::isnan;
-using std::is_trivial;
-using std::is_trivially_constructible;
-using std::is_trivially_destructible;
 using std::ostream;
 using std::istream;
 

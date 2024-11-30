@@ -31,6 +31,6 @@ public:
 	float				y;
 };
 
-static_assert(is_trivial<Float2>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivial<Float2>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END

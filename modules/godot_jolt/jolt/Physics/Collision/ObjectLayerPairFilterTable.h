@@ -18,7 +18,7 @@ private:
 	{
 		// We store the lower left half only, so swap the inputs when trying to access the top right half
 		if (inLayer1 > inLayer2)
-			swap(inLayer1, inLayer2);
+			std::swap(inLayer1, inLayer2);
 
 		JPH_ASSERT(inLayer2 < mNumObjectLayers);
 

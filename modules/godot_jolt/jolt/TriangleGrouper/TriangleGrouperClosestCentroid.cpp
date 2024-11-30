@@ -54,7 +54,7 @@ void TriangleGrouperClosestCentroid::Group(const VertexList &inVertices, const I
 		}
 
 		// Make this triangle the first in a new batch
-		swap(*batch_begin, *lowest_iter);
+		std::swap(*batch_begin, *lowest_iter);
 		Vec3 first_centroid = centroids[*batch_begin];
 
 		// Sort remaining triangles in batch on distance to first triangle

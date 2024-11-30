@@ -205,8 +205,8 @@ JPH_INLINE void TaperedCylinderShape::GetScaled(Vec3Arg inScale, float &outTop, 
 	// Negative Y-scale flips the top and bottom
 	if (outBottom > outTop)
 	{
-		swap(outTop, outBottom);
-		swap(outTopRadius, outBottomRadius);
+		std::swap(outTop, outBottom);
+		std::swap(outTopRadius, outBottomRadius);
 	}
 }
 

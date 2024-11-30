@@ -143,7 +143,7 @@ private:
 
 	static_assert(sizeof(atomic<float>) == 4, "Assuming that an atomic doesn't add any additional storage");
 	static_assert(sizeof(atomic<uint32>) == 4, "Assuming that an atomic doesn't add any additional storage");
-	static_assert(is_trivially_destructible<Node>(), "Assuming that we don't have a destructor");
+	static_assert(std::is_trivially_destructible<Node>(), "Assuming that we don't have a destructor");
 
 public:
 	/// Class that allocates tree nodes, can be shared between multiple trees

@@ -107,7 +107,11 @@ public:
 
 		JPH_IF_ENABLE_ASSERTS(mGJKTolerance = inTolerance;)
 
-		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points
+		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points.
+		//
+		// Note that if the assert below triggers, it is very likely that you have a MeshShape that contains a degenerate triangle (e.g. a sliver).
+		// Go up a couple of levels in the call stack to see if we're indeed testing a triangle and if it is degenerate.
+		// If this is the case then fix the triangles you supply to the MeshShape.
 		JPH_ASSERT(!ioV.IsNearZero());
 
 		// Get closest points

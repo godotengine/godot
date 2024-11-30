@@ -23,6 +23,7 @@ ProfileThread::~ProfileThread()
 // ProfileMeasurement
 //////////////////////////////////////////////////////////////////////////////////////////
 
+JPH_TSAN_NO_SANITIZE // TSAN reports a race on sOutOfSamplesReported, however the worst case is that we report the out of samples message multiple times
 ProfileMeasurement::ProfileMeasurement(const char *inName, uint32 inColor)
 {
 	ProfileThread *current_thread = ProfileThread::sGetInstance();
@@ -48,8 +49,8 @@ ProfileMeasurement::ProfileMeasurement(const char *inName, uint32 inColor)
 		// Out of samples
 		if (!sOutOfSamplesReported)
 		{
-			Trace("ProfileMeasurement: Too many samples, some data will be lost!");
 			sOutOfSamplesReported = true;
+			Trace("ProfileMeasurement: Too many samples, some data will be lost!");
 		}
 		mSample = nullptr;
 	}

@@ -11,6 +11,7 @@
 //#define JPH_EPA_CONVEX_BUILDER_DRAW
 
 #include <Jolt/Core/NonCopyable.h>
+#include <Jolt/Core/BinaryHeap.h>
 
 #ifdef JPH_EPA_CONVEX_BUILDER_DRAW
 	#include <Jolt/Renderer/DebugRenderer.h>
@@ -197,7 +198,7 @@ public:
 			inT->mInQueue = true;
 
 			// Resort heap
-			std::push_heap(begin(), end(), sTriangleSorter);
+			BinaryHeapPush(begin(), end(), sTriangleSorter);
 		}
 
 		/// Peek the next closest triangle without removing it
@@ -210,7 +211,7 @@ public:
 		Triangle *		PopClosest()
 		{
 			// Move closest to end
-			std::pop_heap(begin(), end(), sTriangleSorter);
+			BinaryHeapPop(begin(), end(), sTriangleSorter);
 
 			// Remove last triangle
 			Triangle *t = back();

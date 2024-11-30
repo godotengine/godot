@@ -116,8 +116,8 @@ void PlaneShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDir
 	// Reverse if scale is inside out
 	if (ScaleHelpers::IsInsideOut(inScale))
 	{
-		swap(vertices[0], vertices[3]);
-		swap(vertices[1], vertices[2]);
+		std::swap(vertices[0], vertices[3]);
+		std::swap(vertices[1], vertices[2]);
 	}
 
 	// Transform them to world space
@@ -137,8 +137,8 @@ void PlaneShape::Draw(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransfo
 	// Reverse if scale is inside out
 	if (ScaleHelpers::IsInsideOut(inScale))
 	{
-		swap(local_vertices[0], local_vertices[3]);
-		swap(local_vertices[1], local_vertices[2]);
+		std::swap(local_vertices[0], local_vertices[3]);
+		std::swap(local_vertices[1], local_vertices[2]);
 	}
 
 	// Transform them to world space
@@ -400,8 +400,8 @@ void PlaneShape::GetTrianglesStart(GetTrianglesContext &ioContext, const AABox &
 	// Reverse if scale is inside out
 	if (ScaleHelpers::IsInsideOut(inScale))
 	{
-		swap(vertices[0], vertices[3]);
-		swap(vertices[1], vertices[2]);
+		std::swap(vertices[0], vertices[3]);
+		std::swap(vertices[1], vertices[2]);
 	}
 
 	// Transform them to world space

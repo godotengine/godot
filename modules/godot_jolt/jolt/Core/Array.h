@@ -79,30 +79,30 @@ private:
 	{
 		JPH_ASSERT(inNewCapacity > 0 && inNewCapacity >= mSize);
 
-		pointer pointer;
+		pointer ptr;
 		if constexpr (AllocatorHasReallocate<Allocator>::sValue)
 		{
 			// Reallocate data block
-			pointer = get_allocator().reallocate(mElements, mCapacity, inNewCapacity);
+			ptr = get_allocator().reallocate(mElements, mCapacity, inNewCapacity);
 		}
 		else
 		{
 			// Copy data to a new location
-			pointer = get_allocator().allocate(inNewCapacity);
+			ptr = get_allocator().allocate(inNewCapacity);
 			if (mElements != nullptr)
 			{
-				move(pointer, mElements, mSize);
+				move(ptr, mElements, mSize);
 				get_allocator().deallocate(mElements, mCapacity);
 			}
 		}
-		mElements = pointer;
+		mElements = ptr;
 		mCapacity = inNewCapacity;
 	}
 
 	/// Destruct elements [inStart, inEnd - 1]
 	inline void				destruct(size_type inStart, size_type inEnd)
 	{
-		if constexpr (!is_trivially_destructible<T>())
+		if constexpr (!std::is_trivially_destructible<T>())
 			if (inStart < inEnd)
 				for (T *element = mElements + inStart, *element_end = mElements + inEnd; element < element_end; ++element)
 					element->~T();
@@ -122,7 +122,7 @@ public:
 		destruct(inNewSize, mSize);
 		reserve(inNewSize);
 
-		if constexpr (!is_trivially_constructible<T>())
+		if constexpr (!std::is_trivially_constructible<T>())
 			for (T *element = mElements + mSize, *element_end = mElements + inNewSize; element < element_end; ++element)
 				::new (element) T;
 		mSize = inNewSize;

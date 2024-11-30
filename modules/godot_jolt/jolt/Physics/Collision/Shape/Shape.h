@@ -131,11 +131,11 @@ static constexpr EShapeSubType sCompoundSubShapeTypes[] = { EShapeSubType::Stati
 static constexpr EShapeSubType sDecoratorSubShapeTypes[] = { EShapeSubType::RotatedTranslated, EShapeSubType::Scaled, EShapeSubType::OffsetCenterOfMass };
 
 /// How many shape types we support
-static constexpr uint NumSubShapeTypes = uint(size(sAllSubShapeTypes));
+static constexpr uint NumSubShapeTypes = uint(std::size(sAllSubShapeTypes));
 
 /// Names of sub shape types
 static constexpr const char *sSubShapeTypeNames[] = { "Sphere", "Box", "Triangle", "Capsule", "TaperedCapsule", "Cylinder", "ConvexHull", "StaticCompound", "MutableCompound", "RotatedTranslated", "Scaled", "OffsetCenterOfMass", "Mesh", "HeightField", "SoftBody", "User1", "User2", "User3", "User4", "User5", "User6", "User7", "User8", "UserConvex1", "UserConvex2", "UserConvex3", "UserConvex4", "UserConvex5", "UserConvex6", "UserConvex7", "UserConvex8", "Plane", "TaperedCylinder", "Empty" };
-static_assert(size(sSubShapeTypeNames) == NumSubShapeTypes);
+static_assert(std::size(sSubShapeTypeNames) == NumSubShapeTypes);
 
 /// Class that can construct shapes and that is serializable using the ObjectStream system.
 /// Can be used to store shape data in 'uncooked' form (i.e. in a form that is still human readable and authorable).

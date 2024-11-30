@@ -41,7 +41,8 @@ public:
 		return true;
 	}
 
-	/// Set by the collision detection functions to the body ID of the body that we're colliding against before calling the ShouldCollide function
+	/// Used during NarrowPhase queries and TransformedShape queries. Set to the body ID of inShape2 before calling ShouldCollide.
+	/// Provides context to the filter to indicate which body is colliding.
 	mutable BodyID			mBodyID2;
 };
 

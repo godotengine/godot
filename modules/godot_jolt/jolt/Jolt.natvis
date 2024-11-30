@@ -24,6 +24,9 @@
 	<Type Name="JPH::UVec4">
 		<DisplayString>{mU32[0]}, {mU32[1]}, {mU32[2]}, {mU32[3]}</DisplayString>
 	</Type>
+	<Type Name="JPH::BVec16">
+		<DisplayString>{uint(mU8[0])}, {uint(mU8[1])}, {uint(mU8[2])}, {uint(mU8[3])}, {uint(mU8[4])}, {uint(mU8[5])}, {uint(mU8[6])}, {uint(mU8[7])}, {uint(mU8[8])}, {uint(mU8[9])}, {uint(mU8[10])}, {uint(mU8[11])}, {uint(mU8[12])}, {uint(mU8[13])}, {uint(mU8[14])}, {uint(mU8[15])}</DisplayString>
+	</Type>
 	<Type Name="JPH::Quat">
 		<DisplayString>{mValue}</DisplayString>
 	</Type>
@@ -92,6 +95,19 @@
 				<Size>mSize</Size>
 				<ValuePointer>mElements</ValuePointer>
 			</ArrayItems>
+		</Expand>
+	</Type>
+	<Type Name="JPH::HashTable&lt;*&gt;">
+		<DisplayString>size={mSize}</DisplayString>
+		<Expand>
+			<Item Name="[size]" ExcludeView="simple">mSize</Item>
+			<Item Name="[bucket_count]" ExcludeView="simple">mMaxSize</Item>
+			<IndexListItems Condition="mData != nullptr">
+				<Size>mMaxSize</Size>
+				<ValueNode Condition="mControl[$i] &amp; 0x80">mData[$i]</ValueNode>
+				<ValueNode Condition="mControl[$i] == 0">"--Empty--"</ValueNode>
+				<ValueNode Condition="mControl[$i] == 0x7f">"--Deleted--"</ValueNode>
+			</IndexListItems>
 		</Expand>
 	</Type>
 	<Type Name="JPH::StridedPtr&lt;*&gt;">

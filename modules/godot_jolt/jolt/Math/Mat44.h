@@ -236,7 +236,7 @@ private:
 	Vec4						mCol[4];												///< Column
 };
 
-static_assert(is_trivial<Mat44>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivial<Mat44>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

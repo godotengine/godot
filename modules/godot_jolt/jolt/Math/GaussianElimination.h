@@ -64,9 +64,9 @@ bool GaussianElimination(MatrixA &ioA, MatrixB &ioB, float inTolerance = 1.0e-16
 		if (pivot_row != pivot_col)
 		{
 			for (uint j = 0; j < n; ++j)
-				swap(ioA(pivot_row, j), ioA(pivot_col, j));
+				std::swap(ioA(pivot_row, j), ioA(pivot_col, j));
 			for (uint j = 0; j < m; ++j)
-				swap(ioB(pivot_row, j), ioB(pivot_col, j));
+				std::swap(ioB(pivot_row, j), ioB(pivot_col, j));
 		}
 
 		// Get diagonal element that we are about to set to 1

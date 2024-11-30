@@ -64,6 +64,9 @@ bool Factory::Register(const RTTI *inRTTI)
 
 bool Factory::Register(const RTTI **inRTTIs, uint inNumber)
 {
+	mClassHashMap.reserve(mClassHashMap.size() + inNumber);
+	mClassNameMap.reserve(mClassNameMap.size() + inNumber);
+
 	for (const RTTI **rtti = inRTTIs; rtti < inRTTIs + inNumber; ++rtti)
 		if (!Register(*rtti))
 			return false;

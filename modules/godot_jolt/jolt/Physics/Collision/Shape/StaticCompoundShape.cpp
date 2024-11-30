@@ -133,8 +133,8 @@ void StaticCompoundShape::sPartition(uint *ioBodyIdx, AABox *ioBounds, int inNum
 		if (start < end)
 		{
 			// Swap the two elements
-			swap(ioBodyIdx[start], ioBodyIdx[end - 1]);
-			swap(ioBounds[start], ioBounds[end - 1]);
+			std::swap(ioBodyIdx[start], ioBodyIdx[end - 1]);
+			std::swap(ioBounds[start], ioBounds[end - 1]);
 			++start;
 			--end;
 		}

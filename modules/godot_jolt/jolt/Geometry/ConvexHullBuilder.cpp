@@ -10,9 +10,11 @@
 #include <Jolt/Core/StringTools.h>
 #include <Jolt/Core/UnorderedSet.h>
 
+#ifdef JPH_CONVEX_BUILDER_DUMP_SHAPE
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <fstream>
 JPH_SUPPRESS_WARNINGS_STD_END
+#endif // JPH_CONVEX_BUILDER_DUMP_SHAPE
 
 #ifdef JPH_CONVEX_BUILDER_DEBUG
 	#include <Jolt/Renderer/DebugRenderer.h>
@@ -466,7 +468,7 @@ ConvexHullBuilder::EResult ConvexHullBuilder::Initialize(int inMaxVertices, floa
 
 	// Ensure the planes are facing outwards
 	if (max_dist < 0.0f)
-		swap(idx2, idx3);
+		std::swap(idx2, idx3);
 
 	// Create tetrahedron
 	Face *t1 = CreateTriangle(idx1, idx2, idx4);
@@ -552,7 +554,7 @@ ConvexHullBuilder::EResult ConvexHullBuilder::Initialize(int inMaxVertices, floa
 				}
 
 				// Swap it to the end
-				swap(mCoplanarList[best_idx], mCoplanarList.back());
+				std::swap(mCoplanarList[best_idx], mCoplanarList.back());
 
 				// Remove it
 				furthest_point_idx = mCoplanarList.back().mPositionIdx;

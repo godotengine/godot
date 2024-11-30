@@ -1417,8 +1417,8 @@ void ContactConstraintManager::OnCCDContactAdded(ContactAllocator &ioContactAllo
 		// If we swapped body1 and body2 we need to swap the mass scales back
 		if (manifold == &temp)
 		{
-			swap(outSettings.mInvMassScale1, outSettings.mInvMassScale2);
-			swap(outSettings.mInvInertiaScale1, outSettings.mInvInertiaScale2);
+			std::swap(outSettings.mInvMassScale1, outSettings.mInvMassScale2);
+			std::swap(outSettings.mInvInertiaScale1, outSettings.mInvInertiaScale2);
 			// Note we do not need to negate the relative surface velocity as it is not applied by the CCD collision constraint
 		}
 	}

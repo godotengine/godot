@@ -47,7 +47,7 @@ private:
 
 		// We store the lower left half only, so swap the inputs when trying to access the top right half
 		if (inSubGroup1 > inSubGroup2)
-			swap(inSubGroup1, inSubGroup2);
+			std::swap(inSubGroup1, inSubGroup2);
 
 		JPH_ASSERT(inSubGroup2 < mNumSubGroups);
 

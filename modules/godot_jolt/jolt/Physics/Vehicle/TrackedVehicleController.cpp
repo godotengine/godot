@@ -144,7 +144,7 @@ TrackedVehicleController::TrackedVehicleController(const TrackedVehicleControlle
 	JPH_ASSERT(inSettings.mTransmission.mShiftUpRPM > inSettings.mTransmission.mShiftDownRPM);
 
 	// Copy track settings
-	for (uint i = 0; i < size(mTracks); ++i)
+	for (uint i = 0; i < std::size(mTracks); ++i)
 	{
 		const VehicleTrackSettings &d = inSettings.mTracks[i];
 		static_cast<VehicleTrackSettings &>(mTracks[i]) = d;
@@ -167,7 +167,7 @@ void TrackedVehicleController::PreCollide(float inDeltaTime, PhysicsSystem &inPh
 	Wheels &wheels = mConstraint.GetWheels();
 
 	// Fill in track index
-	for (size_t t = 0; t < size(mTracks); ++t)
+	for (size_t t = 0; t < std::size(mTracks); ++t)
 		for (uint w : mTracks[t].mWheels)
 			static_cast<WheelTV *>(wheels[w])->mTrackIndex = (uint)t;
 
@@ -261,7 +261,7 @@ void TrackedVehicleController::PostCollide(float inDeltaTime, PhysicsSystem &inP
 	if (transmission_torque != 0.0f)
 	{
 		// Apply the transmission torque to the wheels
-		for (uint i = 0; i < size(mTracks); ++i)
+		for (uint i = 0; i < std::size(mTracks); ++i)
 		{
 			VehicleTrack &t = mTracks[i];
 

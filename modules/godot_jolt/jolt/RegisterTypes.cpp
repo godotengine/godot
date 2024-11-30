@@ -172,7 +172,7 @@ void RegisterTypesInternal(uint64 inVersionID)
 	};
 
 	// Register them all
-	Factory::sInstance->Register(types, (uint)size(types));
+	Factory::sInstance->Register(types, (uint)std::size(types));
 
 	// Initialize default physics material
 	if (PhysicsMaterial::sDefault == nullptr)

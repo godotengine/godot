@@ -10,15 +10,12 @@
 #include <Jolt/Core/UnorderedSet.h>
 
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <queue>
 #include <fstream>
 JPH_SUPPRESS_WARNINGS_STD_END
 
 #ifdef JPH_OBJECT_STREAM
 
 JPH_NAMESPACE_BEGIN
-
-template <class T> using Queue = std::queue<T, std::deque<T, STLAllocator<T>>>;
 
 /// ObjectStreamOut contains all logic for writing an object to disk. It is the base
 /// class for the text and binary output streams (ObjectStreamTextOut and ObjectStreamBinaryOut).
@@ -89,8 +86,8 @@ private:
 
 	using IdentifierMap = UnorderedMap<const void *, ObjectInfo>;
 	using ClassSet = UnorderedSet<const RTTI *>;
-	using ObjectQueue = Queue<const void *>;
-	using ClassQueue = Queue<const RTTI *>;
+	using ObjectQueue = Array<const void *>;
+	using ClassQueue = Array<const RTTI *>;
 
 	Identifier					mNextIdentifier = sNullIdentifier + 1;						///< Next free identifier for this stream
 	IdentifierMap				mIdentifierMap;												///< Links object pointer to an identifier

@@ -66,7 +66,7 @@ JPH_SUPPRESS_WARNINGS_STD_BEGIN
 
 namespace std
 {
-	/// Declare std::hash for SubShapeIDPair, note that std::hash is platform dependent and we need this one to be consistent because we sort on it in the ContactConstraintManager
+	/// Declare std::hash for SubShapeIDPair
 	template <>
 	struct hash<JPH::SubShapeIDPair>
 	{

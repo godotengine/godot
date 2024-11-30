@@ -21,6 +21,7 @@ class StateRecorder;
 class TempAllocator;
 class PhysicsStepListener;
 class SoftBodyContactListener;
+class SimShapeFilter;
 
 /// The main class for the physics system. It contains all rigid bodies and simulates them.
 ///
@@ -66,6 +67,14 @@ public:
 	/// Default method is max(restitution1, restitution1)
 	void						SetCombineRestitution(ContactConstraintManager::CombineFunction inCombineRestition) { mContactManager.SetCombineRestitution(inCombineRestition); }
 	ContactConstraintManager::CombineFunction GetCombineRestitution() const					{ return mContactManager.GetCombineRestitution(); }
+
+	/// Set/get the shape filter that will be used during simulation. This can be used to exclude shapes within a body from colliding with each other.
+	/// E.g. if you have a high detail and a low detail collision model, you can attach them to the same body in a StaticCompoundShape and use the ShapeFilter
+	/// to exclude the high detail collision model when simulating and exclude the low detail collision model when casting rays. Note that in this case
+	/// you would need to pass the inverse of inShapeFilter to the CastRay function. Pass a nullptr to disable the shape filter.
+	/// The PhysicsSystem does not own the ShapeFilter, make sure it stays alive during the lifetime of the PhysicsSystem.
+	void						SetSimShapeFilter(const SimShapeFilter *inShapeFilter)		{ mSimShapeFilter = inShapeFilter; }
+	const SimShapeFilter *		GetSimShapeFilter() const									{ return mSimShapeFilter; }
 
 	/// Control the main constants of the physics simulation
 	void						SetPhysicsSettings(const PhysicsSettings &inSettings)		{ mPhysicsSettings = inSettings; }
@@ -293,6 +302,9 @@ private:
 
 	/// The soft body contact listener
 	SoftBodyContactListener *	mSoftBodyContactListener = nullptr;
+
+	/// The shape filter that is used to filter out sub shapes during simulation
+	const SimShapeFilter *		mSimShapeFilter = nullptr;
 
 	/// Simulation settings
 	PhysicsSettings				mPhysicsSettings;

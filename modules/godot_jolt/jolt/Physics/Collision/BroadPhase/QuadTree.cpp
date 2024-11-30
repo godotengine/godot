@@ -433,8 +433,8 @@ void QuadTree::sPartition(NodeID *ioNodeIDs, Vec3 *ioNodeCenters, int inNumber, 
 		if (start < end)
 		{
 			// Swap the two elements
-			swap(ioNodeIDs[start], ioNodeIDs[end - 1]);
-			swap(ioNodeCenters[start], ioNodeCenters[end - 1]);
+			std::swap(ioNodeIDs[start], ioNodeIDs[end - 1]);
+			std::swap(ioNodeCenters[start], ioNodeCenters[end - 1]);
 			++start;
 			--end;
 		}

@@ -38,7 +38,7 @@ public:
 	bool				IsEqual(StateRecorderImpl &inReference);
 
 	/// Convert the binary data to a string
-	string				GetData() const												{ return mStream.str(); }
+	std::string			GetData() const												{ return mStream.str(); }
 
 	/// Get size of the binary data in bytes
 	size_t				GetDataSize()												{ return size_t(mStream.tellp()); }

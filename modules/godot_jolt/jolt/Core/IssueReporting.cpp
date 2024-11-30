@@ -4,10 +4,6 @@
 
 #include <Jolt/Jolt.h>
 
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <fstream>
-JPH_SUPPRESS_WARNINGS_STD_END
-
 JPH_NAMESPACE_BEGIN
 
 static void DummyTrace([[maybe_unused]] const char *inFMT, ...)

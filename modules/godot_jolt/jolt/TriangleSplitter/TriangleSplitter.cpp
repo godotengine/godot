@@ -42,7 +42,7 @@ bool TriangleSplitter::SplitInternal(const Range &inTriangles, uint inDimension,
 		if (start < end)
 		{
 			// Swap the two elements
-			swap(mSortedTriangleIdx[start], mSortedTriangleIdx[end - 1]);
+			std::swap(mSortedTriangleIdx[start], mSortedTriangleIdx[end - 1]);
 			++start;
 			--end;
 		}

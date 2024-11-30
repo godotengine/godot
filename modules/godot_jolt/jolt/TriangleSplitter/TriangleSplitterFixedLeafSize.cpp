@@ -149,7 +149,7 @@ bool TriangleSplitterFixedLeafSize::Split(const Range &inTriangles, Range &outLe
 		{
 			// Swap the two elements
 			for (uint g = 0; g < mLeafSize; ++g)
-				swap(mSortedTriangleIdx[start + g], mSortedTriangleIdx[end - mLeafSize + g]);
+				std::swap(mSortedTriangleIdx[start + g], mSortedTriangleIdx[end - mLeafSize + g]);
 			start += mLeafSize;
 			end -= mLeafSize;
 		}

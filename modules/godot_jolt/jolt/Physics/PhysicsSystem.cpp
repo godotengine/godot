@@ -19,6 +19,7 @@
 #include <Jolt/Physics/Collision/CollideConvexVsTriangles.h>
 #include <Jolt/Physics/Collision/ManifoldBetweenTwoFaces.h>
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
+#include <Jolt/Physics/Collision/SimShapeFilterWrapper.h>
 #include <Jolt/Physics/Collision/InternalEdgeRemovingCollector.h>
 #include <Jolt/Physics/Constraints/CalculateSolverSteps.h>
 #include <Jolt/Physics/Constraints/ConstraintPart/AxisConstraintPart.h>
@@ -227,7 +228,7 @@ EPhysicsUpdateError PhysicsSystem::Update(float inDeltaTime, int inCollisionStep
 			step.mUpdateBroadphaseFinalize = inJobSystem->CreateJob("UpdateBroadPhaseFinalize", cColorUpdateBroadPhaseFinalize, [&context, &step]()
 				{
 					// Validate that all find collision jobs have stopped
-					JPH_ASSERT(step.mActiveFindCollisionJobs == 0);
+					JPH_ASSERT(step.mActiveFindCollisionJobs.load(memory_order_relaxed) == 0);
 
 					// Finalize the broadphase update
 					context.mPhysicsSystem->mBroadPhase->UpdateFinalize(step.mBroadPhaseUpdateState);
@@ -254,7 +255,7 @@ EPhysicsUpdateError PhysicsSystem::Update(float inDeltaTime, int inCollisionStep
 			// This job will find all collisions
 			step.mBodyPairQueues.resize(max_concurrency);
 			step.mMaxBodyPairsPerQueue = mPhysicsSettings.mMaxInFlightBodyPairs / max_concurrency;
-			step.mActiveFindCollisionJobs = ~PhysicsUpdateContext::JobMask(0) >> (sizeof(PhysicsUpdateContext::JobMask) * 8 - num_find_collisions_jobs);
+			step.mActiveFindCollisionJobs.store(~PhysicsUpdateContext::JobMask(0) >> (sizeof(PhysicsUpdateContext::JobMask) * 8 - num_find_collisions_jobs), memory_order_release);
 			step.mFindCollisions.resize(num_find_collisions_jobs);
 			for (int i = 0; i < num_find_collisions_jobs; ++i)
 			{
@@ -354,7 +355,7 @@ EPhysicsUpdateError PhysicsSystem::Update(float inDeltaTime, int inCollisionStep
 			step.mFinalizeIslands = inJobSystem->CreateJob("FinalizeIslands", cColorFinalizeIslands, [&context, &step]()
 				{
 					// Validate that all find collision jobs have stopped
-					JPH_ASSERT(step.mActiveFindCollisionJobs == 0);
+					JPH_ASSERT(step.mActiveFindCollisionJobs.load(memory_order_relaxed) == 0);
 
 					context.mPhysicsSystem->JobFinalizeIslands(&context);
 
@@ -767,7 +768,7 @@ void PhysicsSystem::TrySpawnJobFindCollisions(PhysicsUpdateContext::Step *ioStep
 {
 	// Get how many jobs we can spawn and check if we can spawn more
 	uint max_jobs = ioStep->mBodyPairQueues.size();
-	if (CountBits(ioStep->mActiveFindCollisionJobs) >= max_jobs)
+	if (CountBits(ioStep->mActiveFindCollisionJobs.load(memory_order_relaxed)) >= max_jobs)
 		return;
 
 	// Count how many body pairs we have waiting
@@ -784,38 +785,31 @@ void PhysicsSystem::TrySpawnJobFindCollisions(PhysicsUpdateContext::Step *ioStep
 	for (;;)
 	{
 		// Get the bit mask of active jobs and see if we can spawn more
-		PhysicsUpdateContext::JobMask current_active_jobs = ioStep->mActiveFindCollisionJobs;
-		if (CountBits(current_active_jobs) >= desired_num_jobs)
+		PhysicsUpdateContext::JobMask current_active_jobs = ioStep->mActiveFindCollisionJobs.load(memory_order_relaxed);
+		uint job_index = CountTrailingZeros(~current_active_jobs);
+		if (job_index >= desired_num_jobs)
 			break;
 
-		// Loop through all possible job indices
-		for (uint job_index = 0; job_index < max_jobs; ++job_index)
+		// Try to claim the job index
+		PhysicsUpdateContext::JobMask job_mask = PhysicsUpdateContext::JobMask(1) << job_index;
+		PhysicsUpdateContext::JobMask prev_value = ioStep->mActiveFindCollisionJobs.fetch_or(job_mask, memory_order_acquire);
+		if ((prev_value & job_mask) == 0)
 		{
-			// Test if it has been started
-			PhysicsUpdateContext::JobMask job_mask = PhysicsUpdateContext::JobMask(1) << job_index;
-			if ((current_active_jobs & job_mask) == 0)
-			{
-				// Try to claim the job index
-				PhysicsUpdateContext::JobMask prev_value = ioStep->mActiveFindCollisionJobs.fetch_or(job_mask);
-				if ((prev_value & job_mask) == 0)
+			// Add dependencies from the find collisions job to the next jobs
+			ioStep->mUpdateBroadphaseFinalize.AddDependency();
+			ioStep->mFinalizeIslands.AddDependency();
+
+			// Start the job
+			JobHandle job = ioStep->mContext->mJobSystem->CreateJob("FindCollisions", cColorFindCollisions, [step = ioStep, job_index]()
 				{
-					// Add dependencies from the find collisions job to the next jobs
-					ioStep->mUpdateBroadphaseFinalize.AddDependency();
-					ioStep->mFinalizeIslands.AddDependency();
+					step->mContext->mPhysicsSystem->JobFindCollisions(step, job_index);
+				});
 
-					// Start the job
-					JobHandle job = ioStep->mContext->mJobSystem->CreateJob("FindCollisions", cColorFindCollisions, [step = ioStep, job_index]()
-						{
-							step->mContext->mPhysicsSystem->JobFindCollisions(step, job_index);
-						});
+			// Add the job to the job barrier so the main updating thread can execute the job too
+			ioStep->mContext->mBarrier->AddJob(job);
 
-					// Add the job to the job barrier so the main updating thread can execute the job too
-					ioStep->mContext->mBarrier->AddJob(job);
-
-					// Spawn only 1 extra job at a time
-					return;
-				}
-			}
+			// Spawn only 1 extra job at a time
+			return;
 		}
 	}
 }
@@ -939,7 +933,7 @@ void PhysicsSystem::JobFindCollisions(PhysicsUpdateContext::Step *ioStep, int in
 						sFinalizeContactAllocator(*ioStep, contact_allocator);
 
 						// Mark this job as inactive
-						ioStep->mActiveFindCollisionJobs.fetch_and(~PhysicsUpdateContext::JobMask(1 << inJobIndex));
+						ioStep->mActiveFindCollisionJobs.fetch_and(~PhysicsUpdateContext::JobMask(1 << inJobIndex), memory_order_release);
 
 						// Trigger the next jobs
 						ioStep->mUpdateBroadphaseFinalize.RemoveDependency();
@@ -993,7 +987,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 	// Ensure that body1 id < body2 id when motion types are the same.
 	if (body1->GetMotionType() < body2->GetMotionType()
 		|| (body1->GetMotionType() == body2->GetMotionType() && inBodyPair.mBodyB < inBodyPair.mBodyA))
-		swap(body1, body2);
+		std::swap(body1, body2);
 
 	// Check if the contact points from the previous frame are reusable and if so copy them
 	bool pair_handled = false, constraint_created = false;
@@ -1018,6 +1012,11 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 		settings.mActiveEdgeMode = mPhysicsSettings.mCheckActiveEdges && !enhanced_active_edges? EActiveEdgeMode::CollideOnlyWithActive : EActiveEdgeMode::CollideWithAll;
 		settings.mMaxSeparationDistance = body1->IsSensor() || body2->IsSensor()? 0.0f : mPhysicsSettings.mSpeculativeContactDistance;
 		settings.mActiveEdgeMovementDirection = body1->GetLinearVelocity() - body2->GetLinearVelocity();
+
+		// Create shape filter
+		SimShapeFilterWrapperUnion shape_filter_union(mSimShapeFilter, body1);
+		SimShapeFilterWrapper &shape_filter = shape_filter_union.GetSimShapeFilterWrapper();
+		shape_filter.SetBody2(body2);
 
 		// Get transforms relative to body1
 		RVec3 offset = body1->GetCenterOfMassPosition();
@@ -1140,7 +1139,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 			// Perform collision detection between the two shapes
 			SubShapeIDCreator part1, part2;
 			auto f = enhanced_active_edges? InternalEdgeRemovingCollector::sCollideShapeVsShape : CollisionDispatch::sCollideShapeVsShape;
-			f(body1->GetShape(), body2->GetShape(), Vec3::sReplicate(1.0f), Vec3::sReplicate(1.0f), transform1, transform2, part1, part2, settings, collector, { });
+			f(body1->GetShape(), body2->GetShape(), Vec3::sReplicate(1.0f), Vec3::sReplicate(1.0f), transform1, transform2, part1, part2, settings, collector, shape_filter);
 
 			// Add the contacts
 			for (ContactManifold &manifold : collector.mManifolds)
@@ -1241,7 +1240,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const 
 			// Perform collision detection between the two shapes
 			SubShapeIDCreator part1, part2;
 			auto f = enhanced_active_edges? InternalEdgeRemovingCollector::sCollideShapeVsShape : CollisionDispatch::sCollideShapeVsShape;
-			f(body1->GetShape(), body2->GetShape(), Vec3::sReplicate(1.0f), Vec3::sReplicate(1.0f), transform1, transform2, part1, part2, settings, collector, { });
+			f(body1->GetShape(), body2->GetShape(), Vec3::sReplicate(1.0f), Vec3::sReplicate(1.0f), transform1, transform2, part1, part2, settings, collector, shape_filter);
 
 			constraint_created = collector.mConstraintCreated;
 		}
@@ -1314,7 +1313,7 @@ void PhysicsSystem::JobSolveVelocityConstraints(PhysicsUpdateContext *ioContext,
 	float warm_start_impulse_ratio = ioStep->mIsFirst? ioContext->mWarmStartImpulseRatio : 1.0f;
 
 	bool check_islands = true, check_split_islands = mPhysicsSettings.mUseLargeIslandSplitter;
-	do
+	for (;;)
 	{
 		// First try to get work from large islands
 		if (check_split_islands)
@@ -1351,8 +1350,10 @@ void PhysicsSystem::JobSolveVelocityConstraints(PhysicsUpdateContext *ioContext,
 					// We processed work, loop again
 					continue;
 				}
+
 			case LargeIslandSplitter::EStatus::WaitingForBatch:
 				break;
+
 			case LargeIslandSplitter::EStatus::AllBatchesDone:
 				check_split_islands = false;
 				break;
@@ -1435,10 +1436,22 @@ void PhysicsSystem::JobSolveVelocityConstraints(PhysicsUpdateContext *ioContext,
 			continue;
 		}
 
-		// If we didn't find any work, give up a time slice
-		std::this_thread::yield();
+		if (check_islands)
+		{
+			// If there are islands, we don't need to wait and can pick up new work
+			continue;
+		}
+		else if (check_split_islands)
+		{
+			// If there are split islands, but we did't do any work, give up a time slice
+			std::this_thread::yield();
+		}
+		else
+		{
+			// No more work
+			break;
+		}
 	}
-	while (check_islands || check_split_islands);
 }
 
 JPH_SUPPRESS_WARNING_POP
@@ -1814,12 +1827,13 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
 		class CCDBroadPhaseCollector : public CastShapeBodyCollector
 		{
 		public:
-										CCDBroadPhaseCollector(const CCDBody &inCCDBody, const Body &inBody1, const RShapeCast &inShapeCast, ShapeCastSettings &inShapeCastSettings, CCDNarrowPhaseCollector &ioCollector, const BodyManager &inBodyManager, PhysicsUpdateContext::Step *inStep, float inDeltaTime) :
+										CCDBroadPhaseCollector(const CCDBody &inCCDBody, const Body &inBody1, const RShapeCast &inShapeCast, ShapeCastSettings &inShapeCastSettings, SimShapeFilterWrapper &inShapeFilter, CCDNarrowPhaseCollector &ioCollector, const BodyManager &inBodyManager, PhysicsUpdateContext::Step *inStep, float inDeltaTime) :
 				mCCDBody(inCCDBody),
 				mBody1(inBody1),
 				mBody1Extent(inShapeCast.mShapeWorldBounds.GetExtent()),
 				mShapeCast(inShapeCast),
 				mShapeCastSettings(inShapeCastSettings),
+				mShapeFilter(inShapeFilter),
 				mCollector(ioCollector),
 				mBodyManager(inBodyManager),
 				mStep(inStep),
@@ -1871,12 +1885,15 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
 				mCollector.mValidateBodyPair = true;
 				mCollector.mRejectAll = false;
 
+				// Set body ID on shape filter
+				mShapeFilter.SetBody2(&body2);
+
 				// Provide direction as hint for the active edges algorithm
 				mShapeCastSettings.mActiveEdgeMovementDirection = direction;
 
 				// Do narrow phase collision check
 				RShapeCast relative_cast(mShapeCast.mShape, mShapeCast.mScale, mShapeCast.mCenterOfMassStart, direction, mShapeCast.mShapeWorldBounds);
-				body2.GetTransformedShape().CastShape(relative_cast, mShapeCastSettings, mShapeCast.mCenterOfMassStart.GetTranslation(), mCollector);
+				body2.GetTransformedShape().CastShape(relative_cast, mShapeCastSettings, mShapeCast.mCenterOfMassStart.GetTranslation(), mCollector, mShapeFilter);
 
 				// Update early out fraction based on narrow phase collector
 				if (!mCollector.mRejectAll)
@@ -1888,15 +1905,20 @@ void PhysicsSystem::JobFindCCDContacts(const PhysicsUpdateContext *ioContext, Ph
 			Vec3						mBody1Extent;
 			RShapeCast					mShapeCast;
 			ShapeCastSettings &			mShapeCastSettings;
+			SimShapeFilterWrapper &		mShapeFilter;
 			CCDNarrowPhaseCollector &	mCollector;
 			const BodyManager &			mBodyManager;
 			PhysicsUpdateContext::Step *mStep;
 			float						mDeltaTime;
 		};
 
+		// Create shape filter
+		SimShapeFilterWrapperUnion shape_filter_union(mSimShapeFilter, &body);
+		SimShapeFilterWrapper &shape_filter = shape_filter_union.GetSimShapeFilterWrapper();
+
 		// Check if we collide with any other body. Note that we use the non-locking interface as we know the broadphase cannot be modified at this point.
 		RShapeCast shape_cast(body.GetShape(), Vec3::sReplicate(1.0f), body.GetCenterOfMassTransform(), ccd_body.mDeltaPosition);
-		CCDBroadPhaseCollector bp_collector(ccd_body, body, shape_cast, settings, np_collector, mBodyManager, ioStep, ioContext->mStepDeltaTime);
+		CCDBroadPhaseCollector bp_collector(ccd_body, body, shape_cast, settings, shape_filter, np_collector, mBodyManager, ioStep, ioContext->mStepDeltaTime);
 		mBroadPhase->CastAABoxNoLock({ shape_cast.mShapeWorldBounds, shape_cast.mDirection }, bp_collector, broadphase_layer_filter, object_layer_filter);
 
 		// Check if there was a hit
@@ -2352,7 +2374,7 @@ void PhysicsSystem::JobSolvePositionConstraints(PhysicsUpdateContext *ioContext,
 	BodiesToSleep bodies_to_sleep(mBodyManager, (BodyID *)JPH_STACK_ALLOC(BodiesToSleep::cBodiesToSleepSize * sizeof(BodyID)));
 
 	bool check_islands = true, check_split_islands = mPhysicsSettings.mUseLargeIslandSplitter;
-	do
+	for (;;)
 	{
 		// First try to get work from large islands
 		if (check_split_islands)
@@ -2377,8 +2399,10 @@ void PhysicsSystem::JobSolvePositionConstraints(PhysicsUpdateContext *ioContext,
 
 				// We processed work, loop again
 				continue;
+
 			case LargeIslandSplitter::EStatus::WaitingForBatch:
 				break;
+
 			case LargeIslandSplitter::EStatus::AllBatchesDone:
 				check_split_islands = false;
 				break;
@@ -2431,10 +2455,22 @@ void PhysicsSystem::JobSolvePositionConstraints(PhysicsUpdateContext *ioContext,
 			continue;
 		}
 
-		// If we didn't find any work, give up a time slice
-		std::this_thread::yield();
+		if (check_islands)
+		{
+			// If there are islands, we don't need to wait and can pick up new work
+			continue;
+		}
+		else if (check_split_islands)
+		{
+			// If there are split islands, but we did't do any work, give up a time slice
+			std::this_thread::yield();
+		}
+		else
+		{
+			// No more work
+			break;
+		}
 	}
-	while (check_islands || check_split_islands);
 }
 
 void PhysicsSystem::JobSoftBodyPrepare(PhysicsUpdateContext *ioContext, PhysicsUpdateContext::Step *ioStep)

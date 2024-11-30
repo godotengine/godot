@@ -27,7 +27,7 @@ JPH_INLINE float RaySphere(Vec3Arg inRayOrigin, Vec3Arg inRayDirection, Vec3Arg 
 
 	// Sort so that the smallest is first
 	if (fraction1 > fraction2)
-		swap(fraction1, fraction2);
+		std::swap(fraction1, fraction2);
 
 	// Test solution with lowest fraction, this will be the ray entering the sphere
 	if (fraction1 >= 0.0f)
@@ -85,7 +85,7 @@ JPH_INLINE int RaySphere(Vec3Arg inRayOrigin, Vec3Arg inRayDirection, Vec3Arg in
 
 		// Sort so that the smallest is first
 		if (fraction1 > fraction2)
-			swap(fraction1, fraction2);
+			std::swap(fraction1, fraction2);
 
 		outMinFraction = fraction1;
 		outMaxFraction = fraction2;

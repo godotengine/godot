@@ -12,6 +12,7 @@ JPH_NAMESPACE_BEGIN
 class Body;
 class SoftBodyMotionProperties;
 class SoftBodyContactListener;
+class SimShapeFilter;
 
 /// Temporary data used by the update of a soft body
 class SoftBodyUpdateContext : public NonCopyable
@@ -24,6 +25,7 @@ public:
 	Body *								mBody;										///< Body that is being updated
 	SoftBodyMotionProperties *			mMotionProperties;							///< Motion properties of that body
 	SoftBodyContactListener *			mContactListener;							///< Contact listener to fire callbacks to
+	const SimShapeFilter *				mSimShapeFilter;							///< Shape filter to use for collision detection
 	RMat44								mCenterOfMassTransform;						///< Transform of the body relative to the soft body
 	Vec3								mGravity;									///< Gravity vector in local space of the soft body
 	Vec3								mDisplacementDueToGravity;					///< Displacement of the center of mass due to gravity in the current time step

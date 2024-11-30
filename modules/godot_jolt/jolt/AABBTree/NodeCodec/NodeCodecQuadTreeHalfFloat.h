@@ -10,7 +10,6 @@
 
 JPH_NAMESPACE_BEGIN
 
-template <int Alignment>
 class NodeCodecQuadTreeHalfFloat
 {
 public:
@@ -23,6 +22,8 @@ public:
 		Float3							mRootBoundsMin;
 		Float3							mRootBoundsMax;
 		uint32							mRootProperties;
+		uint8							mBlockIDBits;			///< Number of bits to address a triangle block
+		uint8							mPadding[3] = { 0 };
 	};
 
 	/// Size of the header (an empty struct is always > 0 bytes so this needs a separate variable)
@@ -61,26 +62,30 @@ public:
 	class EncodingContext
 	{
 	public:
-		/// Get an upper bound on the amount of bytes needed for a node tree with inNodeCount nodes
-		uint							GetPessimisticMemoryEstimate(uint inNodeCount) const
+		/// Mimics the size a call to NodeAllocate() would add to the buffer
+		void							PrepareNodeAllocate(const AABBTreeBuilder::Node *inNode, uint64 &ioBufferSize) const
 		{
-			return inNodeCount * (sizeof(Node) + Alignment - 1);
+			// We don't emit nodes for leafs
+			if (!inNode->HasChildren())
+				return;
+
+			// Add size of node
+			ioBufferSize += sizeof(Node);
 		}
 
 		/// Allocate a new node for inNode.
 		/// Algorithm can modify the order of ioChildren to indicate in which order children should be compressed
 		/// Algorithm can enlarge the bounding boxes of the children during compression and returns these in outChildBoundsMin, outChildBoundsMax
 		/// inNodeBoundsMin, inNodeBoundsMax is the bounding box if inNode possibly widened by compressing the parent node
-		/// Returns uint(-1) on error and reports the error in outError
-		uint							NodeAllocate(const AABBTreeBuilder::Node *inNode, Vec3Arg inNodeBoundsMin, Vec3Arg inNodeBoundsMax, Array<const AABBTreeBuilder::Node *> &ioChildren, Vec3 outChildBoundsMin[NumChildrenPerNode], Vec3 outChildBoundsMax[NumChildrenPerNode], ByteBuffer &ioBuffer, const char *&outError) const
+		/// Returns size_t(-1) on error and reports the error in outError
+		size_t							NodeAllocate(const AABBTreeBuilder::Node *inNode, Vec3Arg inNodeBoundsMin, Vec3Arg inNodeBoundsMax, Array<const AABBTreeBuilder::Node *> &ioChildren, Vec3 outChildBoundsMin[NumChildrenPerNode], Vec3 outChildBoundsMax[NumChildrenPerNode], ByteBuffer &ioBuffer, const char *&outError) const
 		{
 			// We don't emit nodes for leafs
 			if (!inNode->HasChildren())
-				return (uint)ioBuffer.size();
+				return ioBuffer.size();
 
-			// Align the buffer
-			ioBuffer.Align(Alignment);
-			uint node_start = (uint)ioBuffer.size();
+			// Remember the start of the node
+			size_t node_start = ioBuffer.size();
 
 			// Fill in bounds
 			Node *node = ioBuffer.Allocate<Node>();
@@ -104,7 +109,7 @@ public:
 					if (this_node->GetTriangleCount() >= TRIANGLE_COUNT_MASK)
 					{
 						outError = "NodeCodecQuadTreeHalfFloat: Too many triangles";
-						return uint(-1);
+						return size_t(-1);
 					}
 				}
 				else
@@ -133,7 +138,7 @@ public:
 		}
 
 		/// Once all nodes have been added, this call finalizes all nodes by patching in the offsets of the child nodes (that were added after the node itself was added)
-		bool						NodeFinalize(const AABBTreeBuilder::Node *inNode, uint inNodeStart, uint inNumChildren, const uint *inChildrenNodeStart, const uint *inChildrenTrianglesStart, ByteBuffer &ioBuffer, const char *&outError) const
+		bool						NodeFinalize(const AABBTreeBuilder::Node *inNode, size_t inNodeStart, uint inNumChildren, const size_t *inChildrenNodeStart, const size_t *inChildrenTrianglesStart, ByteBuffer &ioBuffer, const char *&outError)
 		{
 			if (!inNode->HasChildren())
 				return true;
@@ -141,46 +146,64 @@ public:
 			Node *node = ioBuffer.Get<Node>(inNodeStart);
 			for (uint i = 0; i < inNumChildren; ++i)
 			{
-				// If there are triangles, use the triangle offset otherwise use the node offset
-				uint offset = node->mNodeProperties[i] != 0? inChildrenTrianglesStart[i] : inChildrenNodeStart[i];
+				size_t offset;
+				if (node->mNodeProperties[i] != 0)
+				{
+					// This is a triangle block
+					offset = inChildrenTrianglesStart[i];
+
+					// Store highest block with triangles so we can count the number of bits we need
+					mHighestTriangleBlock = max(mHighestTriangleBlock, offset);
+				}
+				else
+				{
+					// This is a node block
+					offset = inChildrenNodeStart[i];
+				}
+
+				// Store offset of next node / triangles
 				if (offset & OFFSET_NON_SIGNIFICANT_MASK)
 				{
 					outError = "NodeCodecQuadTreeHalfFloat: Internal Error: Offset has non-significant bits set";
 					return false;
 				}
 				offset >>= OFFSET_NON_SIGNIFICANT_BITS;
-				if (offset & ~OFFSET_MASK)
+				if (offset > OFFSET_MASK)
 				{
 					outError = "NodeCodecQuadTreeHalfFloat: Offset too large. Too much data.";
 					return false;
 				}
-
-				// Store offset of next node / triangles
-				node->mNodeProperties[i] |= offset;
+				node->mNodeProperties[i] |= uint32(offset);
 			}
 
 			return true;
 		}
 
 		/// Once all nodes have been finalized, this will finalize the header of the nodes
-		bool						Finalize(Header *outHeader, const AABBTreeBuilder::Node *inRoot, uint inRootNodeStart, uint inRootTrianglesStart, const char *&outError) const
+		bool						Finalize(Header *outHeader, const AABBTreeBuilder::Node *inRoot, size_t inRootNodeStart, size_t inRootTrianglesStart, const char *&outError) const
 		{
-			uint offset = inRoot->HasChildren()? inRootNodeStart : inRootTrianglesStart;
+			// Check if we can address the root node
+			size_t offset = inRoot->HasChildren()? inRootNodeStart : inRootTrianglesStart;
 			if (offset & OFFSET_NON_SIGNIFICANT_MASK)
 			{
 				outError = "NodeCodecQuadTreeHalfFloat: Internal Error: Offset has non-significant bits set";
 				return false;
 			}
 			offset >>= OFFSET_NON_SIGNIFICANT_BITS;
-			if (offset & ~OFFSET_MASK)
+			if (offset > OFFSET_MASK)
 			{
 				outError = "NodeCodecQuadTreeHalfFloat: Offset too large. Too much data.";
 				return false;
 			}
 
+			// If the root has triangles, we need to take that offset instead since the mHighestTriangleBlock will be zero
+			size_t highest_triangle_block = inRootTrianglesStart != size_t(-1)? inRootTrianglesStart : mHighestTriangleBlock;
+			highest_triangle_block >>= OFFSET_NON_SIGNIFICANT_BITS;
+
 			inRoot->mBounds.mMin.StoreFloat3(&outHeader->mRootBoundsMin);
 			inRoot->mBounds.mMax.StoreFloat3(&outHeader->mRootBoundsMax);
-			outHeader->mRootProperties = offset + (inRoot->GetTriangleCount() << TRIANGLE_COUNT_SHIFT);
+			outHeader->mRootProperties = uint32(offset) + (inRoot->GetTriangleCount() << TRIANGLE_COUNT_SHIFT);
+			outHeader->mBlockIDBits = uint8(32 - CountLeadingZeros(uint32(highest_triangle_block)));
 			if (inRoot->GetTriangleCount() >= TRIANGLE_COUNT_MASK)
 			{
 				outError = "NodeCodecQuadTreeHalfFloat: Too many triangles";
@@ -189,6 +212,9 @@ public:
 
 			return true;
 		}
+
+	private:
+		size_t						mHighestTriangleBlock = 0;
 	};
 
 	/// This class decodes and decompresses quad tree nodes
@@ -196,9 +222,9 @@ public:
 	{
 	public:
 		/// Get the amount of bits needed to store an ID to a triangle block
-		inline static uint			sTriangleBlockIDBits(const ByteBuffer &inTree)
+		inline static uint			sTriangleBlockIDBits(const Header *inHeader)
 		{
-			return 32 - CountLeadingZeros((uint32)inTree.size()) - OFFSET_NON_SIGNIFICANT_BITS;
+			return inHeader->mBlockIDBits;
 		}
 
 		/// Convert a triangle block ID to the start of the triangle buffer

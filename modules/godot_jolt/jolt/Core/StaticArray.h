@@ -43,7 +43,7 @@ public:
 	/// Destruct all elements
 						~StaticArray()
 	{
-		if constexpr (!is_trivially_destructible<T>())
+		if constexpr (!std::is_trivially_destructible<T>())
 			for (T *e = reinterpret_cast<T *>(mElements), *end = e + mSize; e < end; ++e)
 				e->~T();
 	}
@@ -51,7 +51,7 @@ public:
 	/// Destruct all elements and set length to zero
 	void				clear()
 	{
-		if constexpr (!is_trivially_destructible<T>())
+		if constexpr (!std::is_trivially_destructible<T>())
 			for (T *e = reinterpret_cast<T *>(mElements), *end = e + mSize; e < end; ++e)
 				e->~T();
 		mSize = 0;
@@ -101,10 +101,10 @@ public:
 	void				resize(size_type inNewSize)
 	{
 		JPH_ASSERT(inNewSize <= N);
-		if constexpr (!is_trivially_constructible<T>())
+		if constexpr (!std::is_trivially_constructible<T>())
 			for (T *element = reinterpret_cast<T *>(mElements) + mSize, *element_end = reinterpret_cast<T *>(mElements) + inNewSize; element < element_end; ++element)
 				::new (element) T;
-		if constexpr (!is_trivially_destructible<T>())
+		if constexpr (!std::is_trivially_destructible<T>())
 			for (T *element = reinterpret_cast<T *>(mElements) + inNewSize, *element_end = reinterpret_cast<T *>(mElements) + mSize; element < element_end; ++element)
 				element->~T();
 		mSize = inNewSize;

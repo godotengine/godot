@@ -1501,7 +1501,7 @@ void HeightFieldShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg
 
 	// Flip triangle if scaled inside out
 	if (ScaleHelpers::IsInsideOut(inScale))
-		swap(outVertices[1], outVertices[2]);
+		std::swap(outVertices[1], outVertices[2]);
 
 	// Transform to world space
 	Mat44 transform = inCenterOfMassTransform.PreScaled(inScale);

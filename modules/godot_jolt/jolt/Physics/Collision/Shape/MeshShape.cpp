@@ -59,7 +59,7 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(MeshShapeSettings)
 
 // Codecs this mesh shape is using
 using TriangleCodec = TriangleCodecIndexed8BitPackSOA4Flags;
-using NodeCodec = NodeCodecQuadTreeHalfFloat<1>;
+using NodeCodec = NodeCodecQuadTreeHalfFloat;
 
 // Get header for tree
 static JPH_INLINE const NodeCodec::Header *sGetNodeHeader(const ByteBuffer &inTree)
@@ -195,7 +195,7 @@ MeshShape::MeshShape(const MeshShapeSettings &inSettings, ShapeResult &outResult
 	// Build tree
 	AABBTreeBuilder builder(splitter, inSettings.mMaxTrianglesPerLeaf);
 	AABBTreeBuilderStats builder_stats;
-	AABBTreeBuilder::Node *root = builder.Build(builder_stats);
+	const AABBTreeBuilder::Node *root = builder.Build(builder_stats);
 
 	// Convert to buffer
 	AABBTreeToBuffer<TriangleCodec, NodeCodec> buffer;
@@ -203,7 +203,6 @@ MeshShape::MeshShape(const MeshShapeSettings &inSettings, ShapeResult &outResult
 	if (!buffer.Convert(builder.GetTriangles(), builder.GetNodes(), inSettings.mTriangleVertices, root, inSettings.mPerTriangleUserData, error))
 	{
 		outResult.SetError(error);
-		delete root;
 		return;
 	}
 
@@ -361,7 +360,7 @@ void MeshShape::DecodeSubShapeID(const SubShapeID &inSubShapeID, const void *&ou
 {
 	// Get block
 	SubShapeID triangle_idx_subshape_id;
-	uint32 block_id = inSubShapeID.PopID(NodeCodec::DecodingContext::sTriangleBlockIDBits(mTree), triangle_idx_subshape_id);
+	uint32 block_id = inSubShapeID.PopID(NodeCodec::DecodingContext::sTriangleBlockIDBits(sGetNodeHeader(mTree)), triangle_idx_subshape_id);
 	outTriangleBlock = NodeCodec::DecodingContext::sGetTriangleBlockStart(&mTree[0], block_id);
 
 	// Fetch the triangle index
@@ -421,7 +420,7 @@ void MeshShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg inDire
 
 	// Flip triangle if scaled inside out
 	if (ScaleHelpers::IsInsideOut(inScale))
-		swap(outVertices[1], outVertices[2]);
+		std::swap(outVertices[1], outVertices[2]);
 
 	// Calculate transform with scale
 	Mat44 transform = inCenterOfMassTransform.PreScaled(inScale);
@@ -439,7 +438,7 @@ AABox MeshShape::GetLocalBounds() const
 
 uint MeshShape::GetSubShapeIDBitsRecursive() const
 {
-	return NodeCodec::DecodingContext::sTriangleBlockIDBits(mTree) + NumTriangleBits;
+	return NodeCodec::DecodingContext::sTriangleBlockIDBits(sGetNodeHeader(mTree)) + NumTriangleBits;
 }
 
 template <class Visitor>
@@ -513,7 +512,7 @@ JPH_INLINE void MeshShape::WalkTreePerTriangle(const SubShapeIDCreator &inSubSha
 		uint				mTriangleBlockIDBits;
 	};
 
-	ChainedVisitor visitor(ioVisitor, inSubShapeIDCreator2, NodeCodec::DecodingContext::sTriangleBlockIDBits(mTree));
+	ChainedVisitor visitor(ioVisitor, inSubShapeIDCreator2, NodeCodec::DecodingContext::sTriangleBlockIDBits(sGetNodeHeader(mTree)));
 	WalkTree(visitor);
 }
 
@@ -715,7 +714,7 @@ bool MeshShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShap
 	visitor.mRayOrigin = inRay.mOrigin;
 	visitor.mRayDirection = inRay.mDirection;
 	visitor.mRayInvDirection.Set(inRay.mDirection);
-	visitor.mTriangleBlockIDBits = NodeCodec::DecodingContext::sTriangleBlockIDBits(mTree);
+	visitor.mTriangleBlockIDBits = NodeCodec::DecodingContext::sTriangleBlockIDBits(sGetNodeHeader(mTree));
 	visitor.mSubShapeIDCreator = inSubShapeIDCreator;
 	WalkTree(visitor);
 

@@ -113,7 +113,7 @@ void Shape::SaveWithChildren(StreamOut &inStream, ShapeToIDMap &ioShapeMap, Mate
 	if (shape_id_iter == ioShapeMap.end())
 	{
 		// Write shape ID of this shape
-		uint32 shape_id = (uint32)ioShapeMap.size();
+		uint32 shape_id = ioShapeMap.size();
 		ioShapeMap[this] = shape_id;
 		inStream.Write(shape_id);
 

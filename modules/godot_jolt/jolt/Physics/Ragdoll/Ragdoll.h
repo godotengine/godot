@@ -73,7 +73,7 @@ public:
 	/// Calculate the map needed for GetConstraintIndexToBodyIdxPair()
 	void								CalculateConstraintIndexToBodyIdxPair();
 
-	using BodyIdxPair = pair<int, int>;
+	using BodyIdxPair = std::pair<int, int>;
 
 	/// Table that maps a constraint index (index in mConstraints) to the indices of the bodies that the constraint is connected to (index in mBodyIDs)
 	const Array<BodyIdxPair> &			GetConstraintIndexToBodyIdxPair() const							{ return mConstraintIndexToBodyIdxPair; }

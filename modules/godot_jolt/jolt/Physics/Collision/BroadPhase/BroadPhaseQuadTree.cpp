@@ -383,7 +383,7 @@ void BroadPhaseQuadTree::NotifyBodiesLayerChanged(BodyID *ioBodies, int inNumber
 			mTracking[index].mObjectLayer = body->GetObjectLayer();
 
 			// Move the body to the end, layer didn't change
-			swap(*body_id, ioBodies[inNumber - 1]);
+			std::swap(*body_id, ioBodies[inNumber - 1]);
 			--inNumber;
 		}
 	}

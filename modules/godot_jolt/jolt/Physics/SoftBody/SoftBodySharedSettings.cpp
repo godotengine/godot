@@ -12,14 +12,9 @@
 #include <Jolt/Core/QuickSort.h>
 #include <Jolt/Core/UnorderedMap.h>
 #include <Jolt/Core/UnorderedSet.h>
-
-JPH_SUPPRESS_WARNINGS_STD_BEGIN
-#include <queue>
-JPH_SUPPRESS_WARNINGS_STD_END
+#include <Jolt/Core/BinaryHeap.h>
 
 JPH_NAMESPACE_BEGIN
-
-template<class T, class Container = Array<T>, class Compare = std::less<typename Container::value_type>> using PriorityQueue = std::priority_queue<T, Container, Compare>;
 
 JPH_IMPLEMENT_SERIALIZABLE_NON_VIRTUAL(SoftBodySharedSettings::Vertex)
 {
@@ -131,21 +126,26 @@ void SoftBodySharedSettings::CalculateClosestKinematic()
 	};
 
 	// Start with all kinematic elements
-	PriorityQueue<Open> to_visit;
+	Array<Open> to_visit;
 	for (uint32 v = 0; v < mVertices.size(); ++v)
 		if (mVertices[v].mInvMass == 0.0f)
 		{
 			mClosestKinematic[v].mVertex = v;
 			mClosestKinematic[v].mDistance = 0.0f;
-			to_visit.push({ v, 0.0f });
+			to_visit.push_back({ v, 0.0f });
+			BinaryHeapPush(to_visit.begin(), to_visit.end(), std::less<Open> { });
 		}
 
 	// Visit all vertices remembering the closest kinematic vertex and its distance
+	JPH_IF_ENABLE_ASSERTS(float last_closest = 0.0f;)
 	while (!to_visit.empty())
 	{
 		// Pop element from the open list
-		Open current = to_visit.top();
-		to_visit.pop();
+		BinaryHeapPop(to_visit.begin(), to_visit.end(), std::less<Open> { });
+		Open current = to_visit.back();
+		to_visit.pop_back();
+		JPH_ASSERT(current.mDistance >= last_closest);
+		JPH_IF_ENABLE_ASSERTS(last_closest = current.mDistance;)
 
 		// Loop through all of its connected vertices
 		for (uint32 v : connectivity[current.mVertex])
@@ -157,7 +157,8 @@ void SoftBodySharedSettings::CalculateClosestKinematic()
 				// Remember new closest vertex
 				mClosestKinematic[v].mVertex = mClosestKinematic[current.mVertex].mVertex;
 				mClosestKinematic[v].mDistance = new_distance;
-				to_visit.push({ v, new_distance });
+				to_visit.push_back({ v, new_distance });
+				BinaryHeapPush(to_visit.begin(), to_visit.end(), std::less<Open> { });
 			}
 		}
 	}
@@ -496,7 +497,7 @@ void SoftBodySharedSettings::Optimize(OptimizationResults &outResults)
 				if (!found)
 					connectivity[inV1].push_back({ inV2, 1 });
 
-				swap(inV1, inV2);
+				std::swap(inV1, inV2);
 			}
 		};
 	for (const Edge &c : mEdgeConstraints)

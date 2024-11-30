@@ -107,7 +107,7 @@ static void sIndexifyVerticesRecursively(const TriangleList &inTriangles, uint32
 		{
 			// Vertex is on the wrong side, swap with the last vertex
 			--v_end;
-			swap(*v_read, *v_end);
+			std::swap(*v_read, *v_end);
 		}
 		else
 		{

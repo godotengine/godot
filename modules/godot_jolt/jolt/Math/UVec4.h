@@ -213,7 +213,7 @@ public:
 	};
 };
 
-static_assert(is_trivial<UVec4>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivial<UVec4>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

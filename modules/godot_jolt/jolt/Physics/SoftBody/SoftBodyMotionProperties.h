@@ -7,6 +7,7 @@
 #include <Jolt/Geometry/AABox.h>
 #include <Jolt/Physics/Body/BodyID.h>
 #include <Jolt/Physics/Body/MotionProperties.h>
+#include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Physics/SoftBody/SoftBodySharedSettings.h>
 #include <Jolt/Physics/SoftBody/SoftBodyVertex.h>
 #include <Jolt/Physics/SoftBody/SoftBodyUpdateContext.h>
@@ -162,6 +163,17 @@ private:
 	// SoftBodyManifold needs to have access to CollidingShape
 	friend class SoftBodyManifold;
 
+	// Information about a leaf shape that we're colliding with
+	struct LeafShape
+	{
+										LeafShape() = default;
+										LeafShape(Mat44Arg inTransform, Vec3Arg inScale, const Shape *inShape) : mTransform(inTransform), mScale(inScale), mShape(inShape) { }
+
+		Mat44							mTransform;									///< Transform of the shape relative to the soft body
+		Vec3							mScale;										///< Scale of the shape
+		RefConst<Shape>					mShape;										///< Shape
+	};
+
 	// Collect information about the colliding bodies
 	struct CollidingShape
 	{
@@ -172,7 +184,7 @@ private:
 		}
 
 		Mat44							mCenterOfMassTransform;						///< Transform of the body relative to the soft body
-		RefConst<Shape>					mShape;										///< Shape of the body we hit
+		Array<LeafShape>				mShapes;									///< Leaf shapes of the body we hit
 		BodyID							mBodyID;									///< Body ID of the body we hit
 		EMotionType						mMotionType;								///< Motion type of the body we hit
 		float							mInvMass;									///< Inverse mass of the body we hit
@@ -191,7 +203,7 @@ private:
 	struct CollidingSensor
 	{
 		Mat44							mCenterOfMassTransform;						///< Transform of the body relative to the soft body
-		RefConst<Shape>					mShape;										///< Shape of the body we hit
+		Array<LeafShape>				mShapes;									///< Leaf shapes of the body we hit
 		BodyID							mBodyID;									///< Body ID of the body we hit
 		bool							mHasContact;								///< If the sensor collided with the soft body
 	};

@@ -319,7 +319,7 @@ private:
 	/// Define a map that maps SubShapeIDPair -> manifold
 	using ManifoldMap = LockFreeHashMap<SubShapeIDPair, CachedManifold>;
 	using MKeyValue = ManifoldMap::KeyValue;
-	using MKVAndCreated = pair<MKeyValue *, bool>;
+	using MKVAndCreated = std::pair<MKeyValue *, bool>;
 
 	/// Start of list of contact points for a particular pair of bodies
 	class CachedBodyPair
