@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_device_binds.h"
+#include "core/string/string_builder.h"
 
 #include "shader_include_db.h"
 
@@ -160,18 +161,9 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 					continue;
 				}
 				code = code.replace("VERSION_DEFINES", E.value);
-				String error;
-				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
-				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
-				if (!error.is_empty()) {
-					error += String() + "\n\nStage '" + _stage_to_str(RD::ShaderStage(i)) + "' source code: \n\n";
-					Vector<String> sclines = code.split("\n");
-					for (int j = 0; j < sclines.size(); j++) {
-						error += itos(j + 1) + "\t\t" + sclines[j] + "\n";
-					}
+				if (!_compile_shader(RD::ShaderStage(i), code, bytecode)) {
 					errors_found = true;
 				}
-				bytecode->set_stage_compile_error(RD::ShaderStage(i), error);
 			}
 
 			set_bytecode(bytecode, E.key);
@@ -205,6 +197,23 @@ String RDShaderFile::_stage_to_str(const RD::ShaderStage s) {
 		return "<invalid>";
 	}
 	return _stage_str[s];
+}
+
+bool RDShaderFile::_compile_shader(const RD::ShaderStage p_stage, const String &p_code, Ref<RDShaderSPIRV> p_bytecode) {
+	String error;
+	Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(p_stage, p_code, RD::SHADER_LANGUAGE_GLSL, &error, false);
+	p_bytecode->set_stage_bytecode(p_stage, spirv);
+	if (!error.is_empty()) {
+		StringBuilder errb;
+		errb.append(error);
+		errb.append(vformat("\n\nStage '%s' source code:\n\n", _stage_to_str(p_stage)));
+		Vector<String> lines = p_code.split("\n");
+		for (int i = 0; i < lines.size(); i++) {
+			errb.append(vformat("%d\t\t%s\n", i + 1, lines[i]));
+		}
+		p_bytecode->set_stage_compile_error(p_stage, errb.as_string());
+	}
+	return error.is_empty();
 }
 
 String RDShaderFile::_expand_include(const String &p_line, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {

@@ -412,6 +412,7 @@ protected:
 	Error _parse_sectioned_text(const Vector<String> &p_lines, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata);
 	RD::ShaderStage _str_to_stage(const String &s);
 	String _stage_to_str(const RD::ShaderStage s);
+	bool _compile_shader(const RD::ShaderStage p_stage, const String &p_code, Ref<RDShaderSPIRV> p_bytecode);
 	String _expand_include(const String &p_line, OpenIncludeFunction p_include_func, void *p_include_func_userdata);
 
 	Dictionary _get_versions() const {
