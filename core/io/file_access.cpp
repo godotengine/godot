@@ -495,56 +495,56 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	return s;
 }
 
-void FileAccess::store_8(uint8_t p_dest) {
-	store_buffer(&p_dest, sizeof(uint8_t));
+bool FileAccess::store_8(uint8_t p_dest) {
+	return store_buffer(&p_dest, sizeof(uint8_t));
 }
 
-void FileAccess::store_16(uint16_t p_dest) {
+bool FileAccess::store_16(uint16_t p_dest) {
 	if (big_endian) {
 		p_dest = BSWAP16(p_dest);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
+	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
 }
 
-void FileAccess::store_32(uint32_t p_dest) {
+bool FileAccess::store_32(uint32_t p_dest) {
 	if (big_endian) {
 		p_dest = BSWAP32(p_dest);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
+	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
 }
 
-void FileAccess::store_64(uint64_t p_dest) {
+bool FileAccess::store_64(uint64_t p_dest) {
 	if (big_endian) {
 		p_dest = BSWAP64(p_dest);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
+	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
 }
 
-void FileAccess::store_real(real_t p_real) {
+bool FileAccess::store_real(real_t p_real) {
 	if constexpr (sizeof(real_t) == 4) {
-		store_float(p_real);
+		return store_float(p_real);
 	} else {
-		store_double(p_real);
+		return store_double(p_real);
 	}
 }
 
-void FileAccess::store_half(float p_dest) {
-	store_16(Math::make_half_float(p_dest));
+bool FileAccess::store_half(float p_dest) {
+	return store_16(Math::make_half_float(p_dest));
 }
 
-void FileAccess::store_float(float p_dest) {
+bool FileAccess::store_float(float p_dest) {
 	MarshallFloat m;
 	m.f = p_dest;
-	store_32(m.i);
+	return store_32(m.i);
 }
 
-void FileAccess::store_double(double p_dest) {
+bool FileAccess::store_double(double p_dest) {
 	MarshallDouble m;
 	m.d = p_dest;
-	store_64(m.l);
+	return store_64(m.l);
 }
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
@@ -628,19 +628,18 @@ Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
 	return err;
 }
 
-void FileAccess::store_string(const String &p_string) {
+bool FileAccess::store_string(const String &p_string) {
 	if (p_string.length() == 0) {
-		return;
+		return true;
 	}
 
 	CharString cs = p_string.utf8();
-	store_buffer((uint8_t *)&cs[0], cs.length());
+	return store_buffer((uint8_t *)&cs[0], cs.length());
 }
 
-void FileAccess::store_pascal_string(const String &p_string) {
+bool FileAccess::store_pascal_string(const String &p_string) {
 	CharString cs = p_string.utf8();
-	store_32(cs.length());
-	store_buffer((uint8_t *)&cs[0], cs.length());
+	return store_32(cs.length()) && store_buffer((uint8_t *)&cs[0], cs.length());
 }
 
 String FileAccess::get_pascal_string() {
@@ -655,13 +654,12 @@ String FileAccess::get_pascal_string() {
 	return ret;
 }
 
-void FileAccess::store_line(const String &p_line) {
-	store_string(p_line);
-	store_8('\n');
+bool FileAccess::store_line(const String &p_line) {
+	return store_string(p_line) && store_8('\n');
 }
 
-void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
-	ERR_FAIL_COND(p_delim.length() != 1);
+bool FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
+	ERR_FAIL_COND_V(p_delim.length() != 1, false);
 
 	String line = "";
 	int size = p_values.size();
@@ -678,30 +676,43 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 		line += value;
 	}
 
-	store_line(line);
+	return store_line(line);
 }
 
-void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
+bool FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
+	if (len == 0) {
+		return true;
+	}
+
 	const uint8_t *r = p_buffer.ptr();
 
-	store_buffer(r, len);
+	return store_buffer(r, len);
 }
 
-void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
+bool FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+	for (uint64_t i = 0; i < p_length; i++) {
+		if (unlikely(!store_8(p_src[i]))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
-	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
+	ERR_FAIL_COND_V_MSG(err != OK, false, "Error when trying to encode Variant.");
 
 	Vector<uint8_t> buff;
 	buff.resize(len);
 
 	uint8_t *w = buff.ptrw();
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
-	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
+	ERR_FAIL_COND_V_MSG(err != OK, false, "Error when trying to encode Variant.");
 
-	store_32(len);
-	store_buffer(buff);
+	return store_32(len) && store_buffer(buff);
 }
 
 Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
@@ -864,7 +875,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (void(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
