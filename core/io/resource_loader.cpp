@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
