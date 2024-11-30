@@ -1031,7 +1031,7 @@
 		</member>
 		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
 			If [code]true[/code], set accent color based on system settings.
-			[b]Note:[/b] This setting is only effective on Windows and MacOS.
+			[b]Note:[/b] This setting is only effective on Windows, MacOS, and Android.
 		</member>
 		<member name="interface/touchscreen/enable_long_press_as_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], long press on touchscreen is treated as right click.

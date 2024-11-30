@@ -334,10 +334,10 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	int vertices_size = occ->vertices.size();
 
 	// Embree requires the last element to be readable by a 16-byte SSE load instruction, so we add padding to be safe.
-	occ_inst->xformed_vertices.resize(vertices_size + 1);
+	occ_inst->xformed_vertices.resize(3 * vertices_size + 3);
 
 	const Vector3 *read_ptr = occ->vertices.ptr();
-	Vector3 *write_ptr = occ_inst->xformed_vertices.ptr();
+	float *write_ptr = occ_inst->xformed_vertices.ptr();
 
 	if (vertices_size > 1024) {
 		TransformThreadData td;
@@ -365,9 +365,14 @@ void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_threa
 	_transform_vertices_range(p_data->read, p_data->write, p_data->xform, from, to);
 }
 
-void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to) {
+void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, float *p_write, const Transform3D &p_xform, int p_from, int p_to) {
+	float *floats_w = p_write;
 	for (int i = p_from; i < p_to; i++) {
-		p_write[i] = p_xform.xform(p_read[i]);
+		const Vector3 p = p_xform.xform(p_read[i]);
+		floats_w[0] = p.x;
+		floats_w[1] = p.y;
+		floats_w[2] = p.z;
+		floats_w += 3;
 	}
 }
 
@@ -458,7 +463,7 @@ void RaycastOcclusionCull::Scenario::update() {
 		}
 
 		RTCGeometry geom = rtcNewGeometry(raycast_singleton->ebr_device, RTC_GEOMETRY_TYPE_TRIANGLE);
-		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, occ_inst->xformed_vertices.ptr(), 0, sizeof(Vector3), occ_inst->xformed_vertices.size());
+		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, occ_inst->xformed_vertices.ptr(), 0, sizeof(float) * 3, occ_inst->xformed_vertices.size() / 3);
 		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, occ_inst->indices.ptr(), 0, sizeof(uint32_t) * 3, occ_inst->indices.size() / 3);
 		rtcCommitGeometry(geom);
 		rtcAttachGeometry(next_scene, geom);

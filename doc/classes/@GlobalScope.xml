@@ -370,7 +370,7 @@
 				Returns an "eased" value of [param x] based on an easing function defined with [param curve]. This easing function is based on an exponent. The [param curve] can be any floating-point number, with specific values leading to the following behaviors:
 				[codeblock lang=text]
 				- Lower than -1.0 (exclusive): Ease in-out
-				- 1.0: Linear
+				- -1.0: Linear
 				- Between -1.0 and 0.0 (exclusive): Ease out-in
 				- 0.0: Constant
 				- Between 0.0 to 1.0 (exclusive): Ease out
