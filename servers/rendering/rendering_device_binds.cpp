@@ -49,13 +49,6 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 	bool reading_versions = false;
 	bool stage_found[RD::SHADER_STAGE_MAX] = { false, false, false, false, false };
 	RD::ShaderStage stage = RD::SHADER_STAGE_MAX;
-	static const char *stage_str[RD::SHADER_STAGE_MAX] = {
-		"vertex",
-		"fragment",
-		"tesselation_control",
-		"tesselation_evaluation",
-		"compute",
-	};
 	String stage_code[RD::SHADER_STAGE_MAX];
 	int stages_found = 0;
 	HashMap<StringName, String> version_texts;
@@ -74,27 +67,19 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 					}
 					reading_versions = true;
 				} else {
-					for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
-						if (section == stage_str[i]) {
-							if (stage_found[i]) {
-								base_error = "Invalid shader file, stage appears twice: " + section;
-								break;
-							}
-
-							stage_found[i] = true;
-							stages_found++;
-
-							stage = RD::ShaderStage(i);
-							reading_versions = false;
-							break;
-						}
+					stage = _str_to_stage(section);
+					if (stage == RD::SHADER_STAGE_MAX) {
+						continue;
 					}
-
-					if (!base_error.is_empty()) {
+					if (stage_found[stage]) {
+						base_error = "Invalid shader file, stage appears twice: " + section;
 						break;
 					}
-				}
 
+					stage_found[stage] = true;
+					stages_found++;
+					reading_versions = false;
+				}
 				continue;
 			}
 		}
@@ -198,7 +183,7 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
 				if (!error.is_empty()) {
-					error += String() + "\n\nStage '" + stage_str[i] + "' source code: \n\n";
+					error += String() + "\n\nStage '" + _stage_to_str(RD::ShaderStage(i)) + "' source code: \n\n";
 					Vector<String> sclines = code.split("\n");
 					for (int j = 0; j < sclines.size(); j++) {
 						error += itos(j + 1) + "\t\t" + sclines[j] + "\n";
@@ -215,4 +200,28 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 	} else {
 		return ERR_PARSE_ERROR;
 	}
+}
+
+const char *RDShaderFile::_stage_str[RD::SHADER_STAGE_MAX] = {
+	"vertex",
+	"fragment",
+	"tesselation_control",
+	"tesselation_evaluation",
+	"compute",
+};
+
+RD::ShaderStage RDShaderFile::_str_to_stage(const String &s) {
+	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+		if (s == _stage_str[i]) {
+			return RD::ShaderStage(i);
+		}
+	}
+	return RD::SHADER_STAGE_MAX;
+}
+
+String RDShaderFile::_stage_to_str(const RD::ShaderStage s) {
+	if (s < 0 || s >= RD::SHADER_STAGE_MAX) {
+		return "<invalid>";
+	}
+	return _stage_str[s];
 }
