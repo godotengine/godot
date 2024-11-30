@@ -2409,6 +2409,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.always_on_top;
 		} break;
+		case WINDOW_FLAG_SHARP_CORNERS: {
+			return wd.sharp_corners;
+		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;
 		} break;
