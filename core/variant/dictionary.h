@@ -118,7 +118,6 @@ public:
 	Dictionary(const Dictionary &p_from);
 	Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init);
 	Dictionary();
-	Dictionary(std::initializer_list<KeyValue<Variant,Variant>> p_from);
 	~Dictionary();
 };
 
