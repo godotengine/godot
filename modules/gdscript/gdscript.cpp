@@ -3103,7 +3103,7 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	}
 
 	if (save_meta(p_resource, p_path) != OK) {
-		ERR_PRINT("Could not save the metadata of the file '" + p_path + "' successfully.");
+		ERR_PRINT("Could not save the metadata of GDScript file '" + p_path + "' successfully.");
 	}
 
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {

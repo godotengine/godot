@@ -2862,6 +2862,8 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 		*r_error = OK;
 	}
 
+	load_meta(scr, p_original_path);
+
 	return scr;
 }
 
@@ -2903,6 +2905,10 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;
 		}
+	}
+
+	if (save_meta(p_resource, p_path) != OK) {
+		ERR_PRINT("Could not save the metadata of C# script file '" + p_path + "' successfully.");
 	}
 
 #ifdef TOOLS_ENABLED
