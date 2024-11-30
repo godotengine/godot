@@ -34,6 +34,7 @@
 #include "core/core_bind.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
 #include "core/os/condition_variable.h"
@@ -176,6 +177,28 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 	}
 
 	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
+}
+
+void ResourceFormatLoader::load_meta(const Ref<Resource> &p_resource, const String &p_path) {
+	// FIXME
+	// Don't have acquaintance with multi-thread programming sorry :(
+	Ref<ConfigFile> cfg = memnew(ConfigFile);
+	Error err = cfg->load(p_path + ".gdmeta");
+
+	ERR_FAIL_COND_MSG(err, "Could not load the metadata of the file '" + p_path + "'.");
+
+	// To prevent from throwing the error of not having section "".
+	// Also, remove the empty gdmeta file to save more spaces.
+	if (cfg->encode_to_text().is_empty()) {
+		DirAccess::remove_absolute(p_path + ".gdmeta");
+		return;
+	}
+
+	List<String> keys;
+	cfg->get_section_keys("", &keys);
+	for (const List<String>::Element *E = keys.front(); E; E = E->next()) {
+		p_resource->set_meta(E->get(), cfg->get_value("", E->get()));
+	}
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {

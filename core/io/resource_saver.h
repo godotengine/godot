@@ -48,6 +48,7 @@ protected:
 
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual Error save_meta(const Ref<Resource> &p_resource, const String &p_path);
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;

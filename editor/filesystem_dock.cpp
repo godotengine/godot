@@ -1453,6 +1453,13 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
+		if (p_item.is_file && FileAccess::exists(old_path + ".gdmeta")) {
+			err = da->rename(old_path + ".gdmeta", new_path + ".gdmeta");
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".gdmeta\n");
+			}
+		}
+
 		// Update scene if it is open.
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);

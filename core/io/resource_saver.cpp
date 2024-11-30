@@ -31,6 +31,8 @@
 #include "resource_saver.h"
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 
@@ -45,6 +47,23 @@ Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p
 	Error err = ERR_METHOD_NOT_FOUND;
 	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, err);
 	return err;
+}
+
+Error ResourceFormatSaver::save_meta(const Ref<Resource> &p_resource, const String &p_path) {
+	List<StringName> metalist;
+	p_resource->get_meta_list(&metalist);
+
+	if (metalist.is_empty() && FileAccess::exists(p_path + ".gdmeta")) {
+		DirAccess::remove_absolute(p_path + ".gdmeta");
+		return OK;
+	}
+
+	Ref<ConfigFile> cfg = memnew(ConfigFile);
+	for (const List<StringName>::Element *E = metalist.front(); E; E = E->next()) {
+		cfg->set_value("", E->get(), p_resource->get_meta(E->get(), Variant()));
+	}
+
+	return cfg->save(p_path + ".gdmeta");
 }
 
 Error ResourceFormatSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
