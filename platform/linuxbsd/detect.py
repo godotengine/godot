@@ -224,11 +224,12 @@ def configure(env: "SConsEnvironment"):
         env["builtin_zlib"],
         env["builtin_graphite"],
         env["builtin_harfbuzz"],
+        env["builtin_icu4c"],
     ]
     if (not all(ft_linked_deps)) and any(ft_linked_deps):  # All or nothing.
         print_error(
             "These libraries should be either all builtin, or all system provided:\n"
-            "freetype, libpng, zlib, graphite, harfbuzz.\n"
+            "freetype, libpng, zlib, graphite, harfbuzz, icu4c.\n"
             "Please specify `builtin_<name>=no` for all of them, or none."
         )
         sys.exit(255)
