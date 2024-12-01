@@ -2814,10 +2814,8 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 				//   e.g.        let potentially_modifiable_variable: float = 10.0
 				//               ^^^ change 'let' to 'var' to make it mutable
 			}
-
 			id->variable_source->assignments++;
 		}
-
 		if (id->source == GDScriptParser::IdentifierNode::FUNCTION_PARAMETER && id->parameter_source && id->parameter_source->is_immutable) {
 			// Check if we are trying to assign to an immutable function parameter.
 			parser->push_error(vformat(R"(Cannot assign to immutable function parameter "%s". Remove the "let" to make it mutable.)", id->name), p_assignment);
@@ -2825,6 +2823,19 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 
 	reduce_expression(p_assignment->assignee);
+
+	// Do this after we reduce the assignee because `variable_source` is only set after the above reduction.
+	if (p_assignment->assignee != nullptr && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+		GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
+		const bool is_class_level_variable = (id->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || id->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE || id->source == GDScriptParser::IdentifierNode::STATIC_VARIABLE);
+		if (is_class_level_variable && id->variable_source) {
+			// Check if we are trying to assign multiple times to an immutable class member / inherited / static variables
+			if (id->variable_source->is_immutable && id->variable_source->assignments >= 1) {
+				parser->push_error(vformat(R"(Cannot assign to an immutable variable "%s". Change "let" to "var" to make it mutable.)", id->name), p_assignment);
+			}
+			id->variable_source->assignments++;
+		}
+	}
 
 #ifdef DEBUG_ENABLED
 	{

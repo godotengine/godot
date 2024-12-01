@@ -997,6 +997,12 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 					current_class->has_static_data = true;
 				}
 				break;
+			case GDScriptTokenizer::Token::LET:
+				parse_class_member(&GDScriptParser::parse_immutable_variable, AnnotationInfo::VARIABLE, "variable", next_is_static);
+				if (next_is_static) {
+					current_class->has_static_data = true;
+				}
+				break;
 			case GDScriptTokenizer::Token::CONST:
 				parse_class_member(&GDScriptParser::parse_constant, AnnotationInfo::CONSTANT, "constant");
 				break;
@@ -1015,8 +1021,8 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::STATIC: {
 				advance();
 				next_is_static = true;
-				if (!check(GDScriptTokenizer::Token::FUNC) && !check(GDScriptTokenizer::Token::VAR)) {
-					push_error(R"(Expected "func" or "var" after "static".)");
+				if (!check(GDScriptTokenizer::Token::FUNC) && !check(GDScriptTokenizer::Token::VAR) && !check(GDScriptTokenizer::Token::LET)) {
+					push_error(R"(Expected "func", "var", or "let" after "static".)");
 				}
 			} break;
 			case GDScriptTokenizer::Token::ANNOTATION: {
@@ -1135,7 +1141,10 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 		}
 		variable->assignments++;
 	} else if (p_is_immutable) {
-		push_error(R"(Expected "=" after immutable "let" declaration. The value must be set here.)");
+		// Immutable variables must be assigned an initial value.
+		// TODO: Would be nice if we could guarantee the value is assigned to exactly once, e.g. in the constructor, or in each branch of a match statement.
+		// For now, we throw this error if it is unassigned at the declaration site.
+		push_error(R"(Expected "=" after immutable "let" declaration. The initial value must be set here.)");
 	}
 
 	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
@@ -1544,7 +1553,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 				break;
 			}
 
-			bool is_immutable= false;
+			bool is_immutable = false;
 			if (match(GDScriptTokenizer::Token::LET)) {
 				// Allow immutable variable in function signature by using optional let. e.g. `func foo(let bar)`
 				is_immutable = true;
