@@ -606,3 +606,56 @@ void AnimationProcessPanel::editor_build_animation_form_path(String p_file_path,
     p_node->queue_free();
 }
 
+
+void AnimationProcessPanel::_on_conver_single_pressed() {
+    if( !DirAccess::exists(single_animation_file_path) ) {
+        return;
+    }
+    if(single_animation_group_name.str().is_empty()) {
+        WARN_PRINT("请先设置动画组名");
+        return;
+    }
+    if(single_animation_tag_name.str().is_empty()) {
+        WARN_PRINT("请先设置动画标签名");
+        return;
+    }
+    editor_build_animation_form_path(single_animation_file_path,single_animation_group_name,single_animation_tag_name);    
+}
+
+
+
+void AnimationProcessPanel::editor_convert_animations(String p_file_path, const StringName& animation_group, const StringName& animation_tag)
+{
+
+    PackedStringArray files = DirAccess::get_files_at(p_file_path);
+
+    for (int i = 0; i < files.size(); ++i) {
+        String file = files[i];
+        String ext = file.get_extension().to_lower();
+        if (ext == "fbx" || ext == "gltf" || ext == "glb") {
+            editor_build_animation_form_path(p_file_path.path_join(file), animation_group, animation_tag);
+        }
+    }
+    PackedStringArray dirs = DirAccess::get_directories_at(p_file_path);
+    for (int i = 0; i < dirs.size(); ++i) {
+        String dir = p_file_path.path_join(dirs[i]);
+        editor_convert_animations(dir, animation_group, animation_tag);
+    }
+
+}
+
+void AnimationProcessPanel::_on_conver_multe_pressed() {
+    if( !DirAccess::exists(multe_animation_file_path) ) {
+        return;
+    }
+    if(multe_animation_group_name.str().is_empty()) {
+        WARN_PRINT("请先设置动画组名");
+        return;
+    }
+    if(multe_animation_tag_name.str().is_empty()) {
+        WARN_PRINT("请先设置动画标签名");
+        return;
+    }
+    editor_convert_animations(multe_animation_file_path,multe_animation_group_name,multe_animation_tag_name);
+    
+}

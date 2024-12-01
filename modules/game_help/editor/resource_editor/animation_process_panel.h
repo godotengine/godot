@@ -42,12 +42,9 @@ public:
     Array get_animation_groups() ;
     Array get_animation_tags();
 protected:
-    void _on_conver_single_pressed() {
-        
-    }
-    void _on_conver_multe_pressed() {
-        
-    }
+    void _on_conver_single_pressed() ;
+    void _on_conver_multe_pressed() ;
+
     void save_animation_config() ;
 
     void load_animation_config() ;
@@ -55,6 +52,7 @@ protected:
     
     void editor_build_animation_form_path(String p_file_path, const StringName& animation_group, const StringName& animation_tag);
 
+    void editor_convert_animations(String p_file_path, const StringName& animation_group, const StringName& animation_tag);
 public:
     String preview_prefab_path;
     EditorPropertyPath* property_preview_prefab_path = nullptr;
