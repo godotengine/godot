@@ -6,9 +6,9 @@
   </a>
 </p>
 
-## 2D and 3D cross-platform game engine
+## Godot Egnine is a super experimental fork, i only take in all the new and interesting stuff!
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
+**[Godot / Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
 game engine to create 2D and 3D games from a unified interface.** It provides a
 comprehensive set of [common tools](https://godotengine.org/features), so that
 users can focus on making games without having to reinvent the wheel. Games can

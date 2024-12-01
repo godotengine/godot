@@ -22,7 +22,7 @@ BEGIN
             VALUE "FileVersion",            VERSION_NUMBER
             VALUE "ProductName",            VERSION_NAME " (Console)"
             VALUE "Licence",                "MIT"
-            VALUE "LegalCopyright",         "(c) 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
+            VALUE "LegalCopyright",         "(c) 2007-present Juan Linietsky, Ariel Manzur and Godot & Godot Engine contributors"
             VALUE "Info",                   "https://godotengine.org"
             VALUE "ProductVersion",         VERSION_FULL_BUILD
         END

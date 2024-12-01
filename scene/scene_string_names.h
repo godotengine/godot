@@ -80,6 +80,7 @@ public:
 	StringName mouse_shape_exited;
 	StringName focus_entered;
 	StringName focus_exited;
+	StringName position_changed;
 
 	StringName pre_sort_children;
 	StringName sort_children;

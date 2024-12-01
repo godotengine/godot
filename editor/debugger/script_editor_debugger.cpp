@@ -1487,6 +1487,17 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 	}
 }
 
+bool ScriptEditorDebugger::get_audio_enabled() const {
+	return audio_enabled;
+}
+
+void ScriptEditorDebugger::set_audio_enabled(bool p_enabled) {
+	Array msg;
+	msg.push_back(p_enabled);
+	_put_msg("scene:enable_audio", msg);
+	audio_enabled = p_enabled;
+}
+
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
 	return camera_override;
 }

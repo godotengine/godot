@@ -24,6 +24,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: Editor (target=editor tests=yes)
+            cache-name: linux-editor
+            target: editor
+            bin: ./bin/godot.linuxbsd.editor.x86_64
+            build-mono: false
+            tests: true
+            doc-test: true
+            proj-conv: true
+            api-compat: true
+            artifact: true
+
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor

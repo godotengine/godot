@@ -183,6 +183,8 @@ private:
 
 	void _select_thread(int p_index);
 
+	bool audio_enabled = true;
+
 	EditorDebuggerNode::CameraOverride camera_override;
 
 	void _stack_dump_frame_selected();
@@ -298,6 +300,9 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
+
+	bool get_audio_enabled() const;
+	void set_audio_enabled(bool p_enabled);
 
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);

@@ -760,6 +760,11 @@
 				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
+		<signal name="position_changed">
+			<description>
+				Emitted when the [Window] moved.
+			</description>
+		</signal>
 		<signal name="theme_changed">
 			<description>
 				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
@@ -853,7 +858,11 @@
 			[b]Note:[/b] This flag has no effect in embedded windows.
 			[b]Note:[/b] This flag is implemented only on Windows (11).
 		</constant>
-		<constant name="FLAG_MAX" value="9" enum="Flags">
+		<constant name="FLAG_HIDDEN" value="9" enum="Flags">
+			The window is hidden but not destroyed.
+			[b]Note:[/b] This flag is implemented only on Windows and Linux (X11).
+		</constant>
+		<constant name="FLAG_MAX" value="10" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">

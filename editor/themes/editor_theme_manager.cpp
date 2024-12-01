@@ -316,10 +316,34 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				// The contrast rate value is irrelevant on a fully black theme.
 				preset_contrast = 0.0;
 				preset_draw_extra_borders = true;
+			} else if (config.preset == "Indigo") {
+				preset_accent_color = Color(0.37, 0.54, 0.91);
+				preset_base_color = Color(0.24, 0.25, 0.28);
+				preset_contrast = 0.4;
+			} else if (config.preset == "Godot") {
+				preset_accent_color = Color(0.867, 0.318, 0.522);
+				preset_base_color = Color(0.118, 0.118, 0.18);
+				preset_contrast = 0.2;
+			} else if (config.preset == "Catppuccin - Macchiato") {
+				preset_accent_color = Color(0.09, 0.573, 0.6);
+				preset_base_color = Color(0.141, 0.153, 0.227);
+				preset_contrast = 0.2;
+			} else if (config.preset == "Catppuccin - Mocha") {
+				preset_accent_color = Color(0.447, 0.529, 0.992);
+				preset_base_color = Color(0.118, 0.118, 0.18);
+				preset_contrast = 0.3;
+			} else if (config.preset == "eppz!") {
+				preset_accent_color = Color(0.255, 0.251, 0.243);
+				preset_base_color = Color(0.169, 0.176, 0.208);
+				preset_contrast = 0.3;
+			} else if (config.preset == "Godot-Dash") {
+				preset_accent_color = Color(0.388235, 0.478431, 0.996078);
+				preset_base_color = Color(0.0823529, 0.0901961, 0.101961);
+				preset_contrast = 0.2;
 			} else { // Default
-				preset_accent_color = Color(0.44, 0.73, 0.98);
-				preset_base_color = Color(0.21, 0.24, 0.29);
-				preset_contrast = config.default_contrast;
+				preset_accent_color = Color(0.867, 0.318, 0.522);
+				preset_base_color = Color(0.118, 0.118, 0.18);
+				preset_contrast = 0.2;
 			}
 
 			config.accent_color = preset_accent_color;
@@ -526,17 +550,18 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 		p_theme->set_color("box_selection_fill_color", EditorStringName(Editor), p_config.accent_color * Color(1, 1, 1, 0.3));
 		p_theme->set_color("box_selection_stroke_color", EditorStringName(Editor), p_config.accent_color * Color(1, 1, 1, 0.8));
 
-		p_theme->set_color("axis_x_color", EditorStringName(Editor), Color(0.96, 0.20, 0.32));
-		p_theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.53, 0.84, 0.01));
-		p_theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.16, 0.55, 0.96));
+		p_theme->set_color("axis_x_color", EditorStringName(Editor), Color(0.792, 0.165, 0.004));
+		p_theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.404, 0.655, 0.004));
+		p_theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.188, 0.49, 0.925));
 		p_theme->set_color("axis_w_color", EditorStringName(Editor), Color(0.55, 0.55, 0.55));
 
-		const float prop_color_saturation = p_config.accent_color.get_s() * 0.75;
+		//Unused
+		const float prop_color_saturation = p_config.accent_color.get_s() * 1.5;
 		const float prop_color_value = p_config.accent_color.get_v();
 
-		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+		p_theme->set_color("property_color_x", EditorStringName(Editor), Color().from_hsv(0.033, 0.99, 0.79));
+		p_theme->set_color("property_color_y", EditorStringName(Editor), Color().from_hsv(0.231, 0.99, 0.65));
+		p_theme->set_color("property_color_z", EditorStringName(Editor), Color().from_hsv(0.597, 0.79, 0.92));
 		p_theme->set_color("property_color_w", EditorStringName(Editor), Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 
 		// Special colors for rendering methods.
@@ -650,8 +675,8 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 
 			// Prevent corner artifacts between window title and body.
 			p_config.dialog_style = p_config.base_style->duplicate();
-			p_config.dialog_style->set_corner_radius(CORNER_TOP_LEFT, 0);
-			p_config.dialog_style->set_corner_radius(CORNER_TOP_RIGHT, 0);
+			p_config.dialog_style->set_corner_radius(CORNER_TOP_LEFT, 10);
+			p_config.dialog_style->set_corner_radius(CORNER_TOP_RIGHT, 10);
 			p_config.dialog_style->set_content_margin_all(p_config.popup_margin);
 			// Prevent visible line between window title and body.
 			p_config.dialog_style->set_expand_margin(SIDE_BOTTOM, 2 * EDSCALE);
@@ -672,8 +697,8 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 			p_config.content_panel_style->set_border_color(p_config.dark_color_3);
 			p_config.content_panel_style->set_border_width_all(p_config.border_width);
 			p_config.content_panel_style->set_border_width(Side::SIDE_TOP, 0);
-			p_config.content_panel_style->set_corner_radius(CORNER_TOP_LEFT, 0);
-			p_config.content_panel_style->set_corner_radius(CORNER_TOP_RIGHT, 0);
+			p_config.content_panel_style->set_corner_radius(CORNER_TOP_LEFT, 10);
+			p_config.content_panel_style->set_corner_radius(CORNER_TOP_RIGHT, 10);
 			p_config.content_panel_style->set_content_margin_individual(content_panel_margin, 2 * EDSCALE + content_panel_margin, content_panel_margin, content_panel_margin);
 
 			// Trees and similarly inset panels.
@@ -1085,8 +1110,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		style_tab_base->set_border_width_all(0);
 		// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
 		// This also makes the top highlight look better.
-		style_tab_base->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-		style_tab_base->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		style_tab_base->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+		style_tab_base->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 
 		// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
 		style_tab_base->set_expand_margin(SIDE_LEFT, -p_config.border_width);
@@ -1126,8 +1151,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		Ref<StyleBoxFlat> style_tab_focus = p_config.button_style_focus->duplicate();
 
 		Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0, p_config.corner_radius * EDSCALE);
-		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 		p_theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
 		p_theme->set_stylebox(SceneStringName(panel), "TabContainer", p_config.content_panel_style);
 
@@ -1184,8 +1209,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		Ref<StyleBoxFlat> text_editor_style = p_config.button_style->duplicate();
 
 		// Don't round the bottom corners to make the line look sharper.
-		text_editor_style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-		text_editor_style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		text_editor_style->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+		text_editor_style->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 
 		if (p_config.draw_extra_borders) {
 			text_editor_style->set_border_width_all(Math::round(EDSCALE));
@@ -1477,7 +1502,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
 		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
-		p_theme->set_constant("outline_size", "Label", 0);
+		p_theme->set_constant("outline_size", "Label", 5);
 	}
 
 	// SpinBox.
@@ -1785,24 +1810,24 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 			Ref<StyleBoxFlat> tag = p_config.button_style->duplicate();
 			tag->set_bg_color(p_config.dark_theme ? tag->get_bg_color().lightened(0.2) : tag->get_bg_color().darkened(0.2));
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius(CORNER_TOP_LEFT, 10);
+			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+			tag->set_corner_radius(CORNER_TOP_RIGHT, 10);
+			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 			p_theme->set_stylebox(CoreStringName(normal), "ProjectTag", tag);
 
 			tag = p_config.button_style_hover->duplicate();
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius(CORNER_TOP_LEFT, 10);
+			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+			tag->set_corner_radius(CORNER_TOP_RIGHT, 10);
+			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 			p_theme->set_stylebox("hover", "ProjectTag", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius(CORNER_TOP_LEFT, 10);
+			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+			tag->set_corner_radius(CORNER_TOP_RIGHT, 10);
+			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTag", tag);
 		}
 	}
@@ -2235,16 +2260,16 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			sub_inspector_bg->set_border_width_all(2 * EDSCALE);
 			sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
 			sub_inspector_bg->set_content_margin_all(4 * EDSCALE);
-			sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
-			sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
+			sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 10);
+			sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 10);
 
 			p_theme->set_stylebox("sub_inspector_bg" + itos(i + 1), EditorStringName(EditorStyles), sub_inspector_bg);
 
 			// EditorProperty background while it has a sub-inspector open.
 			Ref<StyleBoxFlat> bg_color = make_flat_stylebox(si_base_color * Color(0.7, 0.7, 0.7, 0.8), 0, 0, 0, 0, p_config.corner_radius);
 			bg_color->set_anti_aliased(false);
-			bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+			bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+			bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 
 			p_theme->set_stylebox("sub_inspector_property_bg" + itos(i + 1), EditorStringName(EditorStyles), bg_color);
 
@@ -2265,8 +2290,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		sub_inspector_bg->set_border_width_all(2 * EDSCALE);
 		sub_inspector_bg->set_border_color(p_config.dark_color_1.lerp(si_base_color, 0.15));
 		sub_inspector_bg->set_content_margin_all(4 * EDSCALE);
-		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
-		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
+		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 10);
+		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 10);
 
 		p_theme->set_stylebox("sub_inspector_bg0", EditorStringName(EditorStyles), sub_inspector_bg);
 
@@ -2280,8 +2305,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		// EditorProperty background while it has a sub-inspector open.
 		Ref<StyleBoxFlat> bg_color = make_flat_stylebox(p_config.dark_color_1.lerp(si_base_color, 0.15), 0, 0, 0, 0, p_config.corner_radius);
 		bg_color->set_anti_aliased(false);
-		bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-		bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+		bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 
 		p_theme->set_stylebox("sub_inspector_property_bg0", EditorStringName(EditorStyles), bg_color);
 
@@ -2398,8 +2423,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
 		style->set_bg_color(p_config.dark_theme ? style->get_bg_color().lightened(0.04) : style->get_bg_color().darkened(0.04));
 		style->set_border_color(p_config.dark_theme ? style->get_border_color().lightened(0.04) : style->get_border_color().darkened(0.04));
-		style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-		style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		style->set_corner_radius(CORNER_BOTTOM_LEFT, 10);
+		style->set_corner_radius(CORNER_BOTTOM_RIGHT, 10);
 
 		p_theme->set_type_variation("EditorHelpBitTitle", "RichTextLabel");
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitTitle", style);
@@ -2408,8 +2433,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	// EditorHelpBitContent.
 	{
 		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
-		style->set_corner_radius(CORNER_TOP_LEFT, 0);
-		style->set_corner_radius(CORNER_TOP_RIGHT, 0);
+		style->set_corner_radius(CORNER_TOP_LEFT, 10);
+		style->set_corner_radius(CORNER_TOP_RIGHT, 10);
 
 		p_theme->set_type_variation("EditorHelpBitContent", "RichTextLabel");
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitContent", style);

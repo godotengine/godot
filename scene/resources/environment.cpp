@@ -1120,7 +1120,12 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
-	if (p_property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
+	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_TONY_MC_MAPFACE)) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "tonemap_white" && (tone_mapper == TONE_MAPPER_LINEAR || tone_mapper == TONE_MAPPER_AGX || tone_mapper == TONE_MAPPER_AGX_PUNCHY)) {
+		// Whitepoint adjustment is not available with AgX or AgX Punchy as it's hardcoded there.
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -1274,8 +1279,14 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tonemap_white", "white"), &Environment::set_tonemap_white);
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
 
+#ifdef TONY_MC_MAPFACE_DISABLED
+	const char *tonemap_modes = "Linear,Reinhard,Filmic,ACES,AgX,AgX Punchy";
+#else
+	const char *tonemap_modes = "Linear,Reinhard,Filmic,ACES,AgX,AgX Punchy,Tony McMapface";
+#endif
+
 	ADD_GROUP("Tonemap", "tonemap_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES"), "set_tonemapper", "get_tonemapper");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, tonemap_modes), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
 
@@ -1580,6 +1591,9 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(TONE_MAPPER_REINHARDT);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(TONE_MAPPER_ACES);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_TONY_MC_MAPFACE);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_AGX);
+	BIND_ENUM_CONSTANT(TONE_MAPPER_AGX_PUNCHY);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SCREEN);
