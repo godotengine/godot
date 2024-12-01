@@ -1975,7 +1975,8 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
 	Atom utf8_string = XInternAtom(x11_display, "UTF8_STRING", false);
 	if (_net_wm_name != None && utf8_string != None) {
-		XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
+		CharString utf8_title = p_title.utf8();
+		XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)utf8_title.get_data(), utf8_title.length());
 	}
 }
 
