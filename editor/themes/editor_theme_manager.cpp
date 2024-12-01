@@ -320,7 +320,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_accent_color = Color(0.37, 0.54, 0.91);
 				preset_base_color = Color(0.24, 0.25, 0.28);
 				preset_contrast = 0.4;
-			} else if (config.preset == "Merlin") {
+			} else if (config.preset == "Godot") {
 				preset_accent_color = Color(0.867, 0.318, 0.522);
 				preset_base_color = Color(0.118, 0.118, 0.18);
 				preset_contrast = 0.2;

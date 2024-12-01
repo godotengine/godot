@@ -21,7 +21,7 @@ if sys.platform == "win32":
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
 deps_folder = os.getenv("LOCALAPPDATA")
 if deps_folder:
-    deps_folder = os.path.join(deps_folder, "Merlin", "build_deps")
+    deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
 else:
     deps_folder = os.path.join("bin", "build_deps")
 
