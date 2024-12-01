@@ -91,10 +91,12 @@ bool Label::is_uppercase() const {
 
 int Label::get_line_height(int p_line) const {
 	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+	int font_h = font->get_height(font_size);
 	if (p_line >= 0 && p_line < total_line_count) {
-		return TS->shaped_text_get_size(get_line_rid(p_line)).y;
+		return MAX(font_h, TS->shaped_text_get_size(get_line_rid(p_line)).y);
 	} else if (total_line_count > 0) {
-		int h = 0;
+		int h = font_h;
 		for (const Paragraph &para : paragraphs) {
 			for (const RID &line_rid : para.lines_rid) {
 				h = MAX(h, TS->shaped_text_get_size(line_rid).y);
@@ -102,7 +104,6 @@ int Label::get_line_height(int p_line) const {
 		}
 		return h;
 	} else {
-		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 		return font->get_height(font_size);
 	}
 }
@@ -334,6 +335,9 @@ void Label::_update_visible() const {
 	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
 	int paragraph_spacing = settings.is_valid() ? settings->get_paragraph_spacing() : theme_cache.paragraph_spacing;
 	Ref<StyleBox> style = theme_cache.normal_style;
+	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+	int font_h = font->get_height(font_size);
 	int lines_visible = total_line_count;
 
 	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
@@ -354,7 +358,7 @@ void Label::_update_visible() const {
 				break;
 			}
 			for (int i = start; i < end; i++) {
-				minsize.height += TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing;
+				minsize.height += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
 			}
 			minsize.height += paragraph_spacing;
 			line_index += para.lines_rid.size();
@@ -447,8 +451,12 @@ Rect2 Label::_get_line_rect(int p_para, int p_line) const {
 	bool rtl = TS->shaped_text_get_inferred_direction(paragraphs[p_para].text_rid) == TextServer::DIRECTION_RTL;
 	bool rtl_layout = is_layout_rtl();
 	Ref<StyleBox> style = theme_cache.normal_style;
+	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+	int font_h = font->get_height(font_size);
 	Size2 size = get_size();
 	Size2 line_size = TS->shaped_text_get_size(paragraphs[p_para].lines_rid[p_line]);
+	line_size.y = MAX(font_h, line_size.y);
 	Vector2 offset;
 	switch (horizontal_alignment) {
 		case HORIZONTAL_ALIGNMENT_FILL:
@@ -485,6 +493,9 @@ int Label::get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spac
 	// for a given line of text.
 	Size2 size = get_size();
 	Ref<StyleBox> style = theme_cache.normal_style;
+	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+	int font_h = font->get_height(font_size);
 	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
 	int paragraph_spacing = settings.is_valid() ? settings->get_paragraph_spacing() : theme_cache.paragraph_spacing;
 	float total_h = 0.0;
@@ -498,7 +509,7 @@ int Label::get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spac
 		} else {
 			int start = (line_index < lines_skipped) ? lines_skipped - line_index : 0;
 			for (int i = start; i < para.lines_rid.size(); i++) {
-				total_h += TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing;
+				total_h += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
 				if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 					break;
 				}
@@ -529,7 +540,7 @@ int Label::get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spac
 				break;
 			}
 			for (int i = start; i < end; i++) {
-				total_h += TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing;
+				total_h += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
 				total_glyphs += TS->shaped_text_get_glyph_count(para.lines_rid[i]) + TS->shaped_text_get_ellipsis_glyph_count(para.lines_rid[i]);
 			}
 			total_h += paragraph_spacing;
@@ -658,6 +669,9 @@ void Label::_notification(int p_what) {
 
 			Size2 string_size;
 			Ref<StyleBox> style = theme_cache.normal_style;
+			Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+			int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+			int font_h = font->get_height(font_size);
 			Color font_color = has_settings ? settings->get_font_color() : theme_cache.font_color;
 			Color font_shadow_color = has_settings ? settings->get_shadow_color() : theme_cache.font_shadow_color;
 			Point2 shadow_ofs = has_settings ? settings->get_shadow_offset() : theme_cache.font_shadow_offset;
@@ -697,6 +711,12 @@ void Label::_notification(int p_what) {
 						Vector2 line_offset = _get_line_rect(p, i).position;
 						ofs.x = line_offset.x;
 
+						int asc = TS->shaped_text_get_ascent(line_rid);
+						int dsc = TS->shaped_text_get_descent(line_rid);
+						if (asc + dsc < font_h) {
+							dsc = font_h - asc;
+						}
+
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(line_rid);
 						int gl_size = TS->shaped_text_get_glyph_count(line_rid);
 
@@ -706,7 +726,7 @@ void Label::_notification(int p_what) {
 						const Glyph *ellipsis_glyphs = TS->shaped_text_get_ellipsis_glyphs(line_rid);
 						int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(line_rid);
 
-						ofs.y += TS->shaped_text_get_ascent(line_rid);
+						ofs.y += asc;
 
 						// Draw shadow, outline and text. Note: Do not merge this into the single loop iteration, to prevent overlaps.
 						int processed_glyphs_step = 0;
@@ -789,7 +809,7 @@ void Label::_notification(int p_what) {
 							}
 						}
 						processed_glyphs = processed_glyphs_step;
-						ofs.y += TS->shaped_text_get_descent(line_rid) + line_spacing;
+						ofs.y += dsc + line_spacing;
 					}
 					ofs.y += paragraph_spacing;
 					line_index += para.lines_rid.size();
@@ -814,6 +834,9 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 	_ensure_shaped();
 
 	int paragraph_spacing = settings.is_valid() ? settings->get_paragraph_spacing() : theme_cache.paragraph_spacing;
+	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+	int font_h = font->get_height(font_size);
 
 	Vector2 ofs;
 	int line_spacing;
@@ -855,7 +878,7 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 					}
 					gl_off += glyphs[j].advance * glyphs[j].repeat;
 				}
-				ofs.y += TS->shaped_text_get_ascent(line_rid) + TS->shaped_text_get_descent(line_rid) + line_spacing;
+				ofs.y += MAX(font_h, TS->shaped_text_get_ascent(line_rid) + TS->shaped_text_get_descent(line_rid)) + line_spacing;
 			}
 			ofs.y += paragraph_spacing;
 			line_index += para.lines_rid.size();
@@ -909,6 +932,9 @@ int Label::get_line_count() const {
 
 int Label::get_visible_line_count() const {
 	Ref<StyleBox> style = theme_cache.normal_style;
+	Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+	int font_h = font->get_height(font_size);
 	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
 	int paragraph_spacing = settings.is_valid() ? settings->get_paragraph_spacing() : theme_cache.paragraph_spacing;
 	int lines_visible = 0;
@@ -921,7 +947,7 @@ int Label::get_visible_line_count() const {
 		} else {
 			int start = (line_index < lines_skipped) ? lines_skipped - line_index : 0;
 			for (int i = start; i < para.lines_rid.size(); i++) {
-				total_h += TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing;
+				total_h += MAX(font_h, TS->shaped_text_get_size(para.lines_rid[i]).y) + line_spacing;
 				if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 					break;
 				}
