@@ -70,7 +70,8 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 				} else {
 					stage = _str_to_stage(section);
 					if (stage == RD::SHADER_STAGE_MAX) {
-						continue;
+						base_error = "Unknown shader section type: " + section;
+						break;
 					}
 					if (stage_found[stage]) {
 						base_error = "Invalid shader file, stage appears twice: " + section;
