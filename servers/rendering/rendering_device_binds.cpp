@@ -43,7 +43,19 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	versions.clear();
 	base_error = "";
 
-	return _parse_sectioned_text(lines, p_defines, p_include_func, p_include_func_userdata);
+	// A correct shader file starts with either #[section_name] or #version XYZ,
+	// and that identifies the correct parser to use.
+	for (const String &line : lines) {
+		String stripped = line.strip_edges();
+		if (stripped.begins_with("#[")) {
+			return _parse_sectioned_text(lines, p_defines, p_include_func, p_include_func_userdata);
+		} else if (stripped.begins_with("#version")) {
+			return _parse_pragma_text(lines, p_defines, p_include_func, p_include_func_userdata);
+		}
+	}
+
+	base_error = "Invalid shader file, could not find #[section] or #version";
+	return ERR_PARSE_ERROR;
 }
 
 Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
@@ -177,6 +189,133 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 	}
 }
 
+Error RDShaderFile::_parse_pragma_text(const Vector<String> &p_lines, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
+	Vector<RD::ShaderStage> stages;
+	HashMap<String, String> normalized_versions;
+	bool pragmas_allowed = false;
+	String version_header;
+	StringBuilder codeb;
+
+	for (const String &line : p_lines) {
+		String stripped = line.strip_edges();
+
+		if (stripped.is_empty() || stripped.begins_with("//")) {
+			codeb.append(line);
+			codeb.append("\n");
+			continue;
+		}
+
+		// Note, this reorders the code slightly: #version gets hoisted above
+		// all other source lines. In a valid GLSL file, the only valid lines
+		// before #version are comments and empty lines, so this doesn't matter.
+		if (stripped.begins_with("#version")) {
+			if (!version_header.is_empty()) {
+				base_error = vformat("Duplicate #version statement: %s", stripped);
+				return ERR_PARSE_ERROR;
+			}
+			version_header = stripped + "\n";
+			pragmas_allowed = true;
+			continue;
+		}
+
+		if (stripped.begins_with("#pragma ")) {
+			String pragma;
+			Vector<String> vals;
+			Error err = _parse_godot_pragma(stripped, &pragma, &vals);
+			if (err != OK) {
+				return err;
+			} else if (pragma.is_empty()) {
+				// Non-Godot pragma, leave it for the compiler
+				codeb.append(line);
+				codeb.append("\n");
+				continue;
+			} else if (!pragmas_allowed) {
+				base_error = "Pragmas must appear after #version but before any other code.";
+				return ERR_PARSE_ERROR;
+			} else if (pragma == "godot_shader_stages") {
+				if (!stages.is_empty()) {
+					base_error = "Duplicate #pragma godot_shader_stages: " + stripped;
+					return ERR_PARSE_ERROR;
+				}
+				for (const String &value : vals) {
+					RD::ShaderStage s = _str_to_stage(value);
+					if (s == RD::SHADER_STAGE_MAX) {
+						base_error = "Unknown shader stage: " + value;
+						return ERR_PARSE_ERROR;
+					}
+					if (stages.has(s)) {
+						base_error = "Duplicate shader stage: " + value;
+						return ERR_PARSE_ERROR;
+					}
+					stages.push_back(s);
+				}
+				continue;
+			} else if (pragma == "godot_shader_versions") {
+				if (!normalized_versions.is_empty()) {
+					base_error = "Duplicate #pragma godot_shader_versions";
+					return ERR_PARSE_ERROR;
+				}
+				// We can't allow multiple versions called "foo", "FOO", "FoO" because the
+				// preprocessor symbols will be the same.
+				for (const String &version : vals) {
+					String up = version.to_upper();
+					if (normalized_versions.has(up)) {
+						base_error = "Duplicate version: " + version;
+						return ERR_PARSE_ERROR;
+					}
+					normalized_versions[up] = version;
+				}
+				continue;
+			} else {
+				base_error = "Unknown pragma: " + pragma;
+				return ERR_PARSE_ERROR;
+			}
+		}
+
+		// All the stuff that can happen before/during pragmas is handled above.
+		pragmas_allowed = false;
+		codeb.append(_expand_include(line, p_include_func, p_include_func_userdata));
+		codeb.append("\n");
+	}
+
+	if (version_header.is_empty()) {
+		base_error = "Invalid shader, missing #version statement at beginning";
+		return ERR_PARSE_ERROR;
+	}
+	if (normalized_versions.is_empty()) {
+		// Simple shaders don't need to explicitly declare a version.
+		normalized_versions[""] = "";
+	}
+	if (stages.is_empty()) {
+		base_error = "Invalid shader, #pragma godot_shader_stages not found";
+		return ERR_PARSE_ERROR;
+	}
+	if (stages.size() > 1 && stages.has(RD::SHADER_STAGE_COMPUTE)) {
+		base_error = "Compute shaders must not include other shader stages";
+		return ERR_PARSE_ERROR;
+	}
+
+	String code = codeb.as_string();
+	bool errors_found = false;
+	for (const KeyValue<String, String> &version : normalized_versions) {
+		String version_def = version.key.is_empty() ? "" : vformat("#define GODOT_VERSION_%s\n", version.key);
+		Ref<RDShaderSPIRV> bytecode;
+		bytecode.instantiate();
+
+		for (const RD::ShaderStage stage : stages) {
+			String stage_def = vformat("#define GODOT_STAGE_%s\n", _stage_to_str(stage).to_upper());
+			String src = version_header + stage_def + version_def + code;
+			if (!_compile_shader(stage, src, bytecode)) {
+				errors_found = true;
+			}
+		}
+
+		set_bytecode(bytecode, version.value);
+	}
+
+	return errors_found ? ERR_PARSE_ERROR : OK;
+}
+
 const char *RDShaderFile::_stage_str[RD::SHADER_STAGE_MAX] = {
 	"vertex",
 	"fragment",
@@ -251,4 +390,41 @@ String RDShaderFile::_expand_include(const String &p_line, OpenIncludeFunction p
 		return "";
 	}
 	return include_text;
+}
+
+Error RDShaderFile::_parse_godot_pragma(const String &p_line, String *r_pragma_name, Vector<String> *r_pragma_vals) {
+	*r_pragma_name = "";
+
+	String pragma = p_line.trim_prefix("#pragma ").strip_edges();
+	if (!pragma.begins_with("godot_")) {
+		// Not a Godot pragma, report success. Empty r_pragma_name tells the
+		// caller what happened.
+		return OK;
+	}
+
+	if (!pragma.ends_with(")") || pragma.count("(") != 1) {
+		base_error = "Malformed #pragma syntax, expected #pragma godot_pragma_name(vals), found instead: " + p_line;
+		return ERR_PARSE_ERROR;
+	}
+
+	Vector<String> parts = pragma.trim_suffix(")").split("(");
+	*r_pragma_name = parts[0].strip_edges();
+	*r_pragma_vals = parts[1].split(",");
+
+	if (!r_pragma_name->is_valid_ascii_identifier()) {
+		base_error = "Pragma names must be valid identifiers, found instead: " + *r_pragma_name;
+		return ERR_PARSE_ERROR;
+	}
+	if (r_pragma_vals->is_empty()) {
+		base_error = "Invalid empty #pragma value: " + p_line;
+		return ERR_PARSE_ERROR;
+	}
+	for (String &value : *r_pragma_vals) {
+		value = value.strip_edges();
+		if (!value.is_valid_ascii_identifier()) {
+			base_error = "Pragma values must be valid identifiers, found instead: " + value;
+			return ERR_PARSE_ERROR;
+		}
+	}
+	return OK;
 }
