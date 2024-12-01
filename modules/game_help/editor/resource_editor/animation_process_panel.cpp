@@ -106,6 +106,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
         property_preview_prefab_path->setup({ "*.res", "*.tres" }, false, false);
         property_preview_prefab_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		property_preview_prefab_path->set_custom_property(true);
+        property_preview_prefab_path->update_property();
         vb->add_child(property_preview_prefab_path);
 
         preview = memnew(AnimationNodePreview);
@@ -142,6 +143,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 single_path->setup({ "res", "tres" }, false, false);
                 single_path->set_h_size_flags(SIZE_EXPAND_FILL);
 				single_path->set_custom_property(true);
+                single_path->update_property();
 
                 single_animation_group = memnew(EditorPropertyTextEnum);
                 single_animation_group->set_label(L"动画组");
@@ -150,6 +152,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 single_animation_group->set_dynamic(true, "get_animation_groups");
                 single_animation_group->setup(Vector<String>());
 				single_animation_group->set_custom_property(true);
+                single_animation_group->update_property();
 
                 single_animation_tags = memnew(EditorPropertyTextEnum);
                 single_animation_tags->set_label(L"动画标签");
@@ -158,6 +161,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 single_animation_tags->set_dynamic(true, "get_animation_tags");
                 single_animation_tags->setup(Vector<String>());
 				single_animation_tags->set_custom_property(true);
+                single_animation_tags->update_property();
 
                 conver_single_button = memnew(Button);
                 conver_single_button->set_text(L"转换");
@@ -193,6 +197,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 multe_path->set_h_size_flags(SIZE_EXPAND_FILL);
                 multe_path->setup(Vector<String>(), true, false);
 				multe_path->set_custom_property(true);
+                multe_path->update_property();
 
                 multe_animation_group = memnew(EditorPropertyTextEnum);
                 multe_animation_group->set_label(L"动画组");
@@ -201,6 +206,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 multe_animation_group->set_dynamic(true, "get_animation_groups");
                 multe_animation_group->setup(Vector<String>());
 				multe_animation_group->set_custom_property(true);
+                multe_animation_group->update_property();
 
                 multe_animation_tags = memnew(EditorPropertyTextEnum);
                 multe_animation_tags->set_label(L"动画标签");
@@ -209,6 +215,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 multe_animation_tags->set_dynamic(true, "get_animation_tags");
                 multe_animation_tags->setup(Vector<String>());
 				multe_animation_tags->set_custom_property(true);
+                multe_animation_tags->update_property();
 
                 conver_multe_button = memnew(Button);
                 conver_multe_button->set_text(L"转换");

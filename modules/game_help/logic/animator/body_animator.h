@@ -569,7 +569,9 @@ public:
     }
 
     void editor_stop_animation() {
-        layer->editor_stop_animation();
+		if (layer != nullptr) {
+			layer->editor_stop_animation();
+		}
     }
 
 protected:

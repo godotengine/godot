@@ -106,6 +106,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
 		property_preview_mesh_path->setup({ "*.fbx", "*.gltf","*.glb" }, false, false);
         property_preview_mesh_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		property_preview_mesh_path->set_custom_property(true);
+        property_preview_mesh_path->update_property();
         vb->add_child(property_preview_mesh_path);
 
         preview = memnew(SceneViewPanel);
@@ -144,6 +145,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
                 single_charcter_prefab_group->set_dynamic(true, "get_charcter_prefab_groups");
                 single_charcter_prefab_group->setup(Vector<String>());
 				single_charcter_prefab_group->set_custom_property(true);
+                single_charcter_prefab_group->update_property();
 
                 conver_single_button = memnew(Button);
                 conver_single_button->set_text(L"转换");
@@ -187,6 +189,8 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
                 multe_charcter_prefab_group->set_dynamic(true, "get_charcter_prefab_groups");
                 multe_charcter_prefab_group->setup(Vector<String>());
 				multe_charcter_prefab_group->set_custom_property(true);
+                multe_charcter_prefab_group->update_property();
+
 
                 conver_multe_button = memnew(Button);
                 conver_multe_button->set_text(L"转换");

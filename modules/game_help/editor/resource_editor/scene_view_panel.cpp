@@ -56,6 +56,9 @@ void SceneViewPanel::update_aabb(AABB& aabb,Node3D* p_mesh) {
     
 }
 void SceneViewPanel::edit(Node3D* p_mesh) {
+    if(p_mesh == nullptr) {
+        return;
+    }
 	mesh_instance = p_mesh;
 
 	rot_x = Math::deg_to_rad(-15.0);
@@ -75,6 +78,12 @@ void SceneViewPanel::edit(Node3D* p_mesh) {
 		//xform.origin.z -= aabb.get_longest_axis_size() * 2;
 		mesh_instance->set_transform(xform);
 	}
+    while( rotation->get_child_count() > 0 ) {
+        Node3D* c = Object::cast_to<Node3D>(rotation->get_child(0)) ;
+        rotation->remove_child(c);
+        c->queue_free();
+    }
+    rotation->add_child(mesh_instance);
 }
 
 void SceneViewPanel::_on_light_1_switch_pressed() {
@@ -115,8 +124,6 @@ SceneViewPanel::SceneViewPanel() {
 
 	rotation = memnew(Node3D);
 	viewport->add_child(rotation);
-	mesh_instance = memnew(MeshInstance3D);
-	rotation->add_child(mesh_instance);
 
 	set_custom_minimum_size(Size2(1, 150) );
 
