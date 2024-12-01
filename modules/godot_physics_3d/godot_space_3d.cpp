@@ -970,6 +970,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
+				rcd.local_shape = j;
 				bool sc = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
 				if (!sc) {
 					continue;
