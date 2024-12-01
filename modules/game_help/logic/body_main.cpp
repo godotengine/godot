@@ -806,7 +806,7 @@ static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
 		get_fbx_meshs(child,meshs);
 	}
 }
-void reset_owenr(Node* node, Node* owenr)
+static void reset_owenr(Node* node, Node* owenr)
 {
 	for (int i = 0; i < node->get_child_count(); ++i)
 	{

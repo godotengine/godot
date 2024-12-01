@@ -34,6 +34,7 @@
 #include "./editor/resource_editor/resource_editor_tool_item.h"
 #include "./editor/resource_editor/animation_preview_panel.h"
 #include "./editor/resource_editor/animation_process_panel.h"
+#include "./editor/resource_editor/charcter_prefab_process_panel.h"
 
 #endif
 #include "register_types.h"
@@ -158,6 +159,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<ResourceEditorToolItem>();
 		ClassDB::register_class<AnimationPreviewPanelItem>();
 		ClassDB::register_class<AnimationProcessPanellItem>();
+		ClassDB::register_class<CharacterPrefabProcessPanellItem>();
 #endif
 
 		ClassDB::register_class<CSVData>();

@@ -45,7 +45,7 @@ void SceneViewPanel::update_aabb(AABB& aabb,Node3D* p_mesh) {
 
     MeshInstance3D* mi = Object::cast_to<MeshInstance3D>(p_mesh);
     if (mi) {
-        aabb.merge(mi->get_aabb());
+		aabb = aabb.merge(mi->get_aabb());
     }
 
     for(int i=0;i<p_mesh->get_child_count();i++)

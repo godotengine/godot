@@ -5,6 +5,7 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_resource_picker.h"
 #include "../../logic/character_manager.h"
+#include "../../logic/character_shape/character_body_prefab.h"
 #include "resource_editor_tool_item.h"
 #include "scene_view_panel.h"
 
@@ -23,8 +24,7 @@ public:
     static void _bind_methods() ;
     void set_preview_mesh_path(const String& path) ;
     String get_preview_mesh_path() ;
-    void set_single_charcter_prefab_file_path(const String& path) ;
-    String get_single_charcter_prefab_file_path() ;
+    
     void set_single_charcter_prefab_group(const String& group) ;
     StringName get_single_charcter_prefab_group() ;
 
@@ -48,16 +48,19 @@ protected:
     void editor_build_prefab_form_path(String p_file_path, const StringName& animation_group);
 
     void editor_convert_prefab(String p_file_path, const StringName& animation_group);
+
+        
+    Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path, const StringName& animation_group,bool p_is_skeleton_human);
+
+
 public:
     String preview_mesh_path;
     EditorPropertyPath* property_preview_mesh_path = nullptr;
     // 预览预制体查看面板
     SceneViewPanel* preview = nullptr;
 
-    String single_charcter_prefab_file_path;
     StringName single_charcter_prefab_group_name;
     EditorPropertyTextEnum* single_charcter_prefab_group = nullptr;
-    EditorPropertyPath* single_path = nullptr;
     Button* conver_single_button = nullptr;
 
     String multe_charcter_prefab_file_path;

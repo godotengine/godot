@@ -1,4 +1,6 @@
 #include "charcter_prefab_process_panel.h"
+#include "../../logic/animator/human_animation.h"
+#include "../../logic/animator/character_animation_node.h"
 
 #include "scene/resources/packed_scene.h"
 #include "scene/3d/skeleton_3d.h"
@@ -101,7 +103,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
         property_preview_mesh_path = memnew(EditorPropertyPath);
         property_preview_mesh_path->set_label(L"選擇预制件：");
         property_preview_mesh_path->set_object_and_property(this, SNAME("preview_mesh_path"));
-        property_preview_mesh_path->setup({ "*.res", "*.tres" }, false, false);
+		property_preview_mesh_path->setup({ "*.fbx", "*.gltf","*.glb" }, false, false);
         property_preview_mesh_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		property_preview_mesh_path->set_custom_property(true);
         vb->add_child(property_preview_mesh_path);
@@ -125,7 +127,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
         
             Label* label = memnew(Label);
             label->set_h_size_flags(SIZE_EXPAND_FILL);
-            label->set_text(L"单个动画处理");
+            label->set_text(L"单个角色处理");
             label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
             label->set_modulate(Color(1,0.8,0.7,1));
             vb->add_child(create_line(  label,true));
@@ -134,12 +136,6 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
             vb->add_child(sep);
 
             {
-                single_path = memnew(EditorPropertyPath);
-                single_path->set_label(L"选择动画文件");
-                single_path->set_object_and_property(this, SNAME("single_charcter_prefab_file_path"));
-                single_path->setup({ "res", "tres" }, false, false);
-                single_path->set_h_size_flags(SIZE_EXPAND_FILL);
-				single_path->set_custom_property(true);
 
                 single_charcter_prefab_group = memnew(EditorPropertyTextEnum);
                 single_charcter_prefab_group->set_label(L"动画组");
@@ -155,7 +151,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
 
 
                 
-                vb->add_child(create_line(  single_path,single_charcter_prefab_group));
+                vb->add_child(create_line(  single_charcter_prefab_group,true));
 
                 vb->add_child(conver_single_button);
             }
@@ -168,7 +164,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
         {
             Label* label = memnew(Label);
             label->set_h_size_flags(SIZE_EXPAND_FILL);
-            label->set_text(L"多个动画处理");
+            label->set_text(L"多个角色处理");
             label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
             label->set_modulate(Color(1,0.8,0.7,1));
 
@@ -216,8 +212,6 @@ void CharacterPrefabProcessPanel::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("get_charcter_prefab_groups"), &CharacterPrefabProcessPanel::get_charcter_prefab_groups);
 
-    ClassDB::bind_method(D_METHOD("set_single_charcter_prefab_file_path", "path"), &CharacterPrefabProcessPanel::set_single_charcter_prefab_file_path);
-    ClassDB::bind_method(D_METHOD("get_single_charcter_prefab_file_path"), &CharacterPrefabProcessPanel::get_single_charcter_prefab_file_path);
 
     ClassDB::bind_method(D_METHOD("set_single_charcter_prefab_group", "group"), &CharacterPrefabProcessPanel::set_single_charcter_prefab_group);
     ClassDB::bind_method(D_METHOD("get_single_charcter_prefab_group"), &CharacterPrefabProcessPanel::get_single_charcter_prefab_group);
@@ -229,7 +223,6 @@ void CharacterPrefabProcessPanel::_bind_methods() {
 
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "preview_mesh_path"), "set_preview_mesh_path", "get_preview_mesh_path");
 
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "single_charcter_prefab_file_path"), "set_single_charcter_prefab_file_path", "get_single_charcter_prefab_file_path");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "single_charcter_prefab_group"), "set_single_charcter_prefab_group", "get_single_charcter_prefab_group");
 
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "multe_charcter_prefab_file_path"), "set_multe_charcter_prefab_file_path", "get_multe_charcter_prefab_file_path");
@@ -239,23 +232,29 @@ void CharacterPrefabProcessPanel::_bind_methods() {
 }
 
 void CharacterPrefabProcessPanel::set_preview_mesh_path(const String& path) {
-    preview_mesh_path = path;
-    if(preview != nullptr) {
-        preview->set_scene_path(path);
+	Ref<PackedScene> scene = ResourceLoader::load(path);
+	if (scene.is_null())
+	{
+		print_line(L"SceneViewPanel: 路径不存在 :" + path);
+        return;
+	}
+	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
+    Node3D* p_mesh = Object::cast_to<Node3D>(p_node);
+    if(preview != nullptr && p_mesh != nullptr){
+        preview->edit(p_mesh);
     }
+    else {
+		print_line(L"SceneViewPanel: 请选择一个模型 :" + path);
+        p_node->queue_free();
+        return;
+    }
+    preview_mesh_path = path;
     save_charcter_prefab_config();
 }
 String CharacterPrefabProcessPanel::get_preview_mesh_path() {
     return preview_mesh_path;
 }
 
-void CharacterPrefabProcessPanel::set_single_charcter_prefab_file_path(const String& path) {
-    single_charcter_prefab_file_path = path;
-    save_charcter_prefab_config();
-}
-String CharacterPrefabProcessPanel::get_single_charcter_prefab_file_path() {
-    return single_charcter_prefab_file_path;
-}
 void CharacterPrefabProcessPanel::set_single_charcter_prefab_group(const String& group) {
     single_charcter_prefab_group_name = group;     
     save_charcter_prefab_config();   
@@ -289,6 +288,12 @@ void CharacterPrefabProcessPanel::save_charcter_prefab_config() {
     String path = "res://.godot/charcter_prefab_process_panel_config.json";
 
     Dictionary dict;
+    dict["preview_mesh_path"] = preview_mesh_path;
+
+    dict["single_charcter_prefab_group"] = single_charcter_prefab_group_name;
+
+    dict["multe_charcter_prefab_file_path"] = multe_charcter_prefab_file_path;
+    dict["multe_charcter_prefab_group"] = multe_charcter_prefab_group_name;
 
     Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE);
     file->store_string(JSON::stringify(dict));
@@ -306,6 +311,11 @@ void CharacterPrefabProcessPanel::load_charcter_prefab_config() {
     Dictionary dict = JSON::parse_string(json);
 
     preview_mesh_path = dict["preview_mesh_path"];
+
+    single_charcter_prefab_group_name = dict["single_charcter_prefab_group"];
+
+    multe_charcter_prefab_file_path = dict["multe_charcter_prefab_file_path"];
+    multe_charcter_prefab_group_name = dict["multe_charcter_prefab_group"];
 
 }
 
@@ -336,7 +346,7 @@ static void save_fbx_res(const String& group_name, const String& sub_path, const
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".res" : ".scn"));
 	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
 	ResourceCache::set_ref(save_path, p_resource.ptr());
-	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
+	print_line(L"CharacterPrefabProcessPanel.save_fbx_res: 存储资源 :" + save_path);
 	save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".res" : ".scn"));
 }
 static void save_fbx_tres(const String& group_name, const String& sub_path, const Ref<Resource>& p_resource, String& save_path, bool is_resource = true)
@@ -362,10 +372,46 @@ static void save_fbx_tres(const String& group_name, const String& sub_path, cons
 	}
 	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".tres" : ".tscn"));
 	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
-	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
+	print_line(L"CharacterPrefabProcessPanel.save_fbx_res: 存储资源 :" + save_path);
 	save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" : ".tscn"));
 }
 
+
+static void get_fbx_meshs(Node* p_node, HashMap<String, MeshInstance3D* >& meshs)
+{
+
+	for (int i = 0; i < p_node->get_child_count(); i++)
+	{
+		Node* child = p_node->get_child(i);
+		if (child->get_class() == "MeshInstance3D")
+		{
+			MeshInstance3D* mesh = Object::cast_to<MeshInstance3D>(child);
+			if (!meshs.has(mesh->get_name())) {
+				meshs[mesh->get_name()] = mesh;
+			}
+			else {
+				String name = mesh->get_name();
+				int index = 1;
+				while (meshs.has(name + "_" + itos(index))) {
+					name = mesh->get_name().str() + "_" + itos(index);
+					index++;
+				}
+				meshs[name] = mesh;
+			}
+		}
+		get_fbx_meshs(child, meshs);
+	}
+}
+
+static void reset_owenr(Node* node, Node* owenr)
+{
+	for (int i = 0; i < node->get_child_count(); ++i)
+	{
+		Node* c = node->get_child(i);
+		c->set_owner(nullptr);
+		reset_owenr(c, owenr);
+	}
+}
 
 static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_parent) {
 	int index = bode_parent;
@@ -391,14 +437,14 @@ void CharacterPrefabProcessPanel::editor_build_prefab_form_path(String p_file_pa
 
 
 void CharacterPrefabProcessPanel::_on_conver_single_pressed() {
-    if( !DirAccess::exists(single_charcter_prefab_file_path) ) {
+    if( !DirAccess::exists(preview_mesh_path) ) {
         return;
     }
     if(single_charcter_prefab_group_name.str().is_empty()) {
         WARN_PRINT("请先设置动画组名");
         return;
     }
-	editor_build_prefab_form_path(single_charcter_prefab_file_path,single_charcter_prefab_group_name);
+	editor_build_prefab_form_path(preview_mesh_path,single_charcter_prefab_group_name);
 }
 
 
@@ -434,4 +480,115 @@ void CharacterPrefabProcessPanel::_on_conver_multe_pressed() {
     editor_convert_prefab(multe_charcter_prefab_file_path,multe_charcter_prefab_group_name);
     
 }
+Ref<CharacterBodyPrefab> CharacterPrefabProcessPanel::build_prefab(const String& mesh_path, const StringName& animation_group,bool p_is_skeleton_human)
+{
+    if (!FileAccess::exists(mesh_path))
+    {
+        return Ref<CharacterBodyPrefab>();
+    }
 
+    // 加载模型
+    Ref<PackedScene> scene = ResourceLoader::load(mesh_path);
+
+    if (scene.is_null())
+    {
+        print_line(L"CharacterPrefabProcessPanel: 路径不存在 :" + mesh_path);
+        return Ref<CharacterBodyPrefab>();
+    }
+    Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
+    String p_group = mesh_path.get_file().get_basename();
+
+    Node* node = p_node->find_child("Skeleton3D");
+    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
+
+    Dictionary bone_map;
+    String ske_save_path, bone_map_save_path;
+    if (skeleton != nullptr)
+    {
+        bone_map = skeleton->get_human_bone_mapping();
+        Vector<String> bone_names = skeleton->get_bone_names();
+        
+        Ref<HumanBoneConfig> config;
+
+        skeleton->set_human_bone_mapping(bone_map);
+        
+        if(p_is_skeleton_human)
+        {
+            config.instantiate();
+            HashMap<String,String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
+            HumanAnim::HumanAnimmation::build_virtual_pose(skeleton, *config.ptr(), _bone_label);
+            skeleton->set_human_config(config);
+            config = skeleton->get_human_config();
+            config->set_name("human_config");
+            save_fbx_res("human_config", p_group, config, ske_save_path, true);
+        }
+
+        // 存储骨骼映射
+        Ref<CharacterBoneMap> bone_map_ref;
+        bone_map_ref.instantiate();
+        bone_map_ref->set_name("bone_map");
+        bone_map_ref->set_bone_map(bone_map);
+        bone_map_ref->set_bone_names(bone_names);
+        bone_map_ref->set_human_config(config);
+        bone_map_ref->set_skeleton_path(p_group.path_join("skeleton.scn" ));
+        if(p_is_skeleton_human) {
+            save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
+        }
+        else {
+            save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);            
+        }
+
+
+        skeleton->set_owner(nullptr);
+        reset_owenr(skeleton, skeleton);
+
+        // 存儲骨架信息
+        Ref<PackedScene> packed_scene;
+        packed_scene.instantiate();
+        packed_scene->pack(skeleton);
+        packed_scene->set_name("skeleton");
+        if(p_is_skeleton_human) {
+            save_fbx_res("human_skeleton", p_group, packed_scene, ske_save_path, false);
+        }
+        else {
+            save_fbx_res("skeleton", p_group, packed_scene, ske_save_path, false);
+        }
+
+    }
+    // 生成预制体
+    Ref<CharacterBodyPrefab> _body_prefab;
+    _body_prefab.instantiate();
+    _body_prefab->set_name(p_group);
+    HashMap<String, MeshInstance3D* > meshs;
+    // 便利存儲模型文件
+    get_fbx_meshs(p_node, meshs);
+    for (auto it = meshs.begin(); it != meshs.end(); ++it) {
+        Ref<CharacterBodyPart> part;
+        part.instantiate();
+        MeshInstance3D* mesh = it->value;
+        part->init_form_mesh_instance(mesh, bone_map);
+        
+        part->set_name(it->key);
+        String save_path;
+        if(p_is_skeleton_human) {
+            save_fbx_res("human_meshs", p_group, part, save_path, true);
+        }
+        else {
+            save_fbx_res("meshs", p_group, part, save_path, true);
+        }
+        _body_prefab->parts[save_path] = true;
+    }
+    // 保存预制体
+    _body_prefab->skeleton_path = ske_save_path;
+    _body_prefab->set_is_human(p_is_skeleton_human);
+    if(p_is_skeleton_human) {
+        save_fbx_res("human_prefab", p_group, _body_prefab, bone_map_save_path, true);
+    }
+    else {
+        save_fbx_res("prefab", p_group, _body_prefab, bone_map_save_path, true);
+    }
+
+
+    p_node->queue_free();
+    return _body_prefab;
+}
