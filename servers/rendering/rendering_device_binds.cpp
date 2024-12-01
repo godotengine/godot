@@ -141,7 +141,8 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 
 	if (base_error.is_empty()) {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {
-			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "When writing compute shaders, [compute] mustbe the only stage present.");
+			base_error = "When writing compute shaders, [compute] must be the only stage present.";
+			return ERR_PARSE_ERROR;
 		}
 
 		if (version_texts.is_empty()) {
