@@ -157,9 +157,15 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		path_manager = memnew(PathManager);
 #ifdef TOOLS_ENABLED
 		ClassDB::register_class<ResourceEditorToolItem>();
+
 		ClassDB::register_class<AnimationPreviewPanelItem>();
+		ClassDB::register_class<AnimationPreviewPanel>();
+
 		ClassDB::register_class<AnimationProcessPanellItem>();
+		ClassDB::register_class<AnimationProcessPanel>();
+
 		ClassDB::register_class<CharacterPrefabProcessPanellItem>();
+		ClassDB::register_class<CharacterPrefabProcessPanel>();
 #endif
 
 		ClassDB::register_class<CSVData>();

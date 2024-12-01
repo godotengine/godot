@@ -253,6 +253,8 @@ void CharacterPrefabProcessPanel::set_preview_mesh_path(const String& path) {
         return;
     }
     preview_mesh_path = path;
+    property_preview_mesh_path->update_property();
+
     save_charcter_prefab_config();
 }
 String CharacterPrefabProcessPanel::get_preview_mesh_path() {
@@ -271,6 +273,7 @@ StringName CharacterPrefabProcessPanel::get_single_charcter_prefab_group() {
 void CharacterPrefabProcessPanel::set_multe_charcter_prefab_file_path(const String& path) {
     multe_charcter_prefab_file_path = path;
     save_charcter_prefab_config();
+    multe_path->update_property();
 }
 String CharacterPrefabProcessPanel::get_multe_charcter_prefab_file_path() {
     return multe_charcter_prefab_file_path;
@@ -437,6 +440,7 @@ static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_pa
 
 void CharacterPrefabProcessPanel::editor_build_prefab_form_path(String p_file_path,const StringName& charcter_prefab_group)
 {
+
 }
 
 
@@ -448,7 +452,7 @@ void CharacterPrefabProcessPanel::_on_conver_single_pressed() {
         WARN_PRINT("请先设置动画组名");
         return;
     }
-	editor_build_prefab_form_path(preview_mesh_path,single_charcter_prefab_group_name);
+	build_prefab(preview_mesh_path,single_charcter_prefab_group_name,true);
 }
 
 
@@ -462,7 +466,7 @@ void CharacterPrefabProcessPanel::editor_convert_prefab(String p_file_path, cons
         String file = files[i];
         String ext = file.get_extension().to_lower();
         if (ext == "fbx" || ext == "gltf" || ext == "glb") {
-			editor_build_prefab_form_path(p_file_path.path_join(file), charcter_prefab_group);
+			build_prefab(p_file_path.path_join(file), charcter_prefab_group,true);
         }
     }
     PackedStringArray dirs = DirAccess::get_directories_at(p_file_path);

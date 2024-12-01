@@ -284,6 +284,7 @@ String AnimationProcessPanel::get_preview_prefab_path() {
 void AnimationProcessPanel::set_single_animation_file_path(const String& path) {
     single_animation_file_path = path;
     save_animation_config();
+    single_path->update_property();
 }
 String AnimationProcessPanel::get_single_animation_file_path() {
     return single_animation_file_path;
@@ -308,6 +309,7 @@ StringName AnimationProcessPanel::get_single_animation_tags() {
 void AnimationProcessPanel::set_multe_animation_file_path(const String& path) {
     multe_animation_file_path = path;
     save_animation_config();
+    multe_path->update_property();
 }
 String AnimationProcessPanel::get_multe_animation_file_path() {
     return multe_animation_file_path;
