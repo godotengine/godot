@@ -180,8 +180,8 @@ Error RDShaderFile::_parse_sectioned_text(const Vector<String> &p_lines, const S
 const char *RDShaderFile::_stage_str[RD::SHADER_STAGE_MAX] = {
 	"vertex",
 	"fragment",
-	"tesselation_control",
-	"tesselation_evaluation",
+	"tessellation_control",
+	"tessellation_evaluation",
 	"compute",
 };
 
@@ -190,6 +190,13 @@ RD::ShaderStage RDShaderFile::_str_to_stage(const String &s) {
 		if (s == _stage_str[i]) {
 			return RD::ShaderStage(i);
 		}
+	}
+	// Compatibility names (only one L in "tessellation" instead of two)
+	// for historical typo, so that older shaders keep working.
+	if (s == "tesselation_control") {
+		return RD::SHADER_STAGE_TESSELATION_CONTROL;
+	} else if (s == "tesselation_evaluation") {
+		return RD::SHADER_STAGE_TESSELATION_EVALUATION;
 	}
 	return RD::SHADER_STAGE_MAX;
 }
