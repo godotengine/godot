@@ -1,8 +1,8 @@
-#define MyAppName "Merlin Engine"
+#define MyAppName "Godot Engine"
 #define MyAppVersion "4.4"
-#define MyAppPublisher "Merlin Engine contributors"
+#define MyAppPublisher "Godot Engine contributors"
 #define MyAppURL "https://godotengine.org/"
-#define MyAppExeName "merlin.exe"
+#define MyAppExeName "godot.exe"
 
 [Setup]
 AppId={{60D07AAA-400E-40F5-B073-A796C34D9D78}
@@ -15,16 +15,16 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-AppComments=Merlin Engine editor
+AppComments=Godot Engine editor
 ChangesEnvironment=yes
-DefaultDirName={localappdata}\Merlin
-DefaultGroupName=Merlin Engine
+DefaultDirName={localappdata}\Godot
+DefaultGroupName=Godot Engine
 AllowNoIcons=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
 #ifdef App32Bit
-  OutputBaseFilename=merlin-setup-x86
+  OutputBaseFilename=godot-setup-x86
 #else
-  OutputBaseFilename=merlin-setup-x86_64
+  OutputBaseFilename=godot-setup-x86_64
   ArchitecturesAllowed=x64
   ArchitecturesInstallIn64BitMode=x64
 #endif
@@ -37,7 +37,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "modifypath"; Description: "Add Merlin to PATH environment variable"
+Name: "modifypath"; Description: "Add Godot to PATH environment variable"
 
 [Files]
 Source: "{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion

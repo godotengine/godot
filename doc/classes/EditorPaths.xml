@@ -18,9 +18,9 @@
 				Returns the absolute path to the user's cache folder. This folder should be used for temporary data that can be removed safely whenever the editor is closed (such as generated resource thumbnails).
 				[b]Default paths per platform:[/b]
 				[codeblock lang=text]
-				- Windows: %LOCALAPPDATA%\Merlin\
-				- macOS: ~/Library/Caches/Merlin/
-				- Linux: ~/.cache/merlin/
+				- Windows: %LOCALAPPDATA%\Godot\
+				- macOS: ~/Library/Caches/Godot/
+				- Linux: ~/.cache/godot/
 				[/codeblock]
 			</description>
 		</method>
@@ -30,9 +30,9 @@
 				Returns the absolute path to the user's configuration folder. This folder should be used for [i]persistent[/i] user configuration files.
 				[b]Default paths per platform:[/b]
 				[codeblock lang=text]
-				- Windows: %APPDATA%\Merlin\                    (same as `get_data_dir()`)
-				- macOS: ~/Library/Application Support/Merlin/  (same as `get_data_dir()`)
-				- Linux: ~/.config/merlin/
+				- Windows: %APPDATA%\Godot\                    (same as `get_data_dir()`)
+				- macOS: ~/Library/Application Support/Godot/  (same as `get_data_dir()`)
+				- Linux: ~/.config/godot/
 				[/codeblock]
 			</description>
 		</method>
@@ -42,9 +42,9 @@
 				Returns the absolute path to the user's data folder. This folder should be used for [i]persistent[/i] user data files such as installed export templates.
 				[b]Default paths per platform:[/b]
 				[codeblock lang=text]
-				- Windows: %APPDATA%\Merlin\                    (same as `get_config_dir()`)
-				- macOS: ~/Library/Application Support/Merlin/  (same as `get_config_dir()`)
-				- Linux: ~/.local/share/merlin/
+				- Windows: %APPDATA%\Godot\                    (same as `get_config_dir()`)
+				- macOS: ~/Library/Application Support/Godot/  (same as `get_config_dir()`)
+				- Linux: ~/.local/share/godot/
 				[/codeblock]
 			</description>
 		</method>
