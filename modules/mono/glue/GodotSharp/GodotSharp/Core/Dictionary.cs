@@ -485,6 +485,8 @@ namespace Godot.Collections
     /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
     [DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
     [DebuggerDisplay("Count = {Count}")]
+    [SuppressMessage("Design", "CA1001", MessageId = "Types that own disposable fields should be disposable",
+            Justification = "Known issue. Requires explicit refcount management to not dispose untyped collections.")]
     public class Dictionary<[MustBeVariant] TKey, [MustBeVariant] TValue> :
         IDictionary<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue>,

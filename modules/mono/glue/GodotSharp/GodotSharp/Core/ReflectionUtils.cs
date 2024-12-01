@@ -109,7 +109,7 @@ internal class ReflectionUtils
             // Append brackets.
             AppendArrayBrackets(sb, type);
 
-            static void AppendArrayBrackets(StringBuilder sb, Type type)
+            static void AppendArrayBrackets(StringBuilder sb, Type? type)
             {
                 while (type != null && type.IsArray)
                 {

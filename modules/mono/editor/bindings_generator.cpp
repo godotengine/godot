@@ -141,6 +141,11 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"MenuBar.TextDirection",
 	"RichTextLabel.TextDirection",
 	"TextEdit.TextDirection",
+	"VisualShaderNodeReroute.PortType",
+	// The following instances are uniquely egregious violations, hiding `GetType()` from `object`.
+	// Included for the sake of CI, with the understanding that they *deserve* warnings.
+	"GltfAccessor.GetType",
+	"GltfAccessor.MethodName.GetType",
 };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
@@ -583,7 +588,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			}
 
 			if (link_tag == "method") {
-				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "constructor") {
 				// TODO: Support constructors?
 				_append_xml_undeclared(xml_output, link_target);
@@ -591,11 +596,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				// TODO: Support operators?
 				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "member") {
-				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "signal") {
-				_append_xml_signal(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_signal(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "enum") {
-				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "constant") {
 				_append_xml_constant(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "param") {
@@ -662,14 +667,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 
 				if (target_itype) {
-					if ((!p_itype || p_itype->api_type == ClassDB::API_CORE) && target_itype->api_type == ClassDB::API_EDITOR) {
-						// Editor references in core documentation cannot be resolved,
-						// handle as standard codeblock.
-						_log("Cannot reference editor type '%s' in documentation for core type '%s'\n",
-								target_itype->proxy_name.utf8().get_data(), p_itype ? p_itype->proxy_name.utf8().get_data() : "@GlobalScope");
-						xml_output.append("<c>");
-						xml_output.append(target_itype->proxy_name);
-						xml_output.append("</c>");
+					if (!_validate_api_type(target_itype, p_itype)) {
+						_append_xml_undeclared(xml_output, target_itype->proxy_name);
 					} else {
 						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 						xml_output.append(target_itype->proxy_name);
@@ -1086,7 +1085,7 @@ void BindingsGenerator::_append_text_undeclared(StringBuilder &p_output, const S
 	p_output.append("'" + p_link_target + "'");
 }
 
-void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	if (p_link_target_parts[0] == name_cache.type_at_GlobalScope) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Cannot resolve @GlobalScope method reference in documentation: %s\n", p_link_target.utf8().get_data());
@@ -1117,35 +1116,38 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
 			if (target_imethod) {
-				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-				p_xml_output.append(p_target_itype->proxy_name);
-				p_xml_output.append(".");
-				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("(");
-				bool first_key = true;
-				for (const ArgumentInterface &iarg : target_imethod->arguments) {
-					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				const String method_name = p_target_itype->proxy_name + "." + target_imethod->proxy_name;
+				if (!_validate_api_type(p_target_itype, p_source_itype)) {
+					_append_xml_undeclared(p_xml_output, method_name);
+				} else {
+					p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+					p_xml_output.append(method_name);
+					p_xml_output.append("(");
+					bool first_key = true;
+					for (const ArgumentInterface &iarg : target_imethod->arguments) {
+						const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 
-					if (first_key) {
-						first_key = false;
-					} else {
-						p_xml_output.append(", ");
+						if (first_key) {
+							first_key = false;
+						} else {
+							p_xml_output.append(", ");
+						}
+						if (!arg_type) {
+							ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+							p_xml_output.append(iarg.type.cname);
+							continue;
+						}
+						if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+							p_xml_output.append("Nullable{");
+						}
+						String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+						p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+						if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+							p_xml_output.append("}");
+						}
 					}
-					if (!arg_type) {
-						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
-						p_xml_output.append(iarg.type.cname);
-						continue;
-					}
-					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
-						p_xml_output.append("Nullable{");
-					}
-					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
-					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
-						p_xml_output.append("}");
-					}
+					p_xml_output.append(")\"/>");
 				}
-				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
@@ -1157,7 +1159,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 	}
 }
 
-void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	if (p_link_target.contains_char('/')) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_xml_undeclared(p_xml_output, p_link_target);
@@ -1184,11 +1186,14 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 		}
 
 		if (target_iprop) {
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(current_itype->proxy_name);
-			p_xml_output.append(".");
-			p_xml_output.append(target_iprop->proxy_name);
-			p_xml_output.append("\"/>");
+			const String member_name = current_itype->proxy_name + "." + target_iprop->proxy_name;
+			if (!_validate_api_type(p_target_itype, p_source_itype)) {
+				_append_xml_undeclared(p_xml_output, member_name);
+			} else {
+				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append(member_name);
+				p_xml_output.append("\"/>");
+			}
 		} else {
 			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
@@ -1199,7 +1204,7 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 	}
 }
 
-void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	if (!p_target_itype || !p_target_itype->is_object_type) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (p_target_itype) {
@@ -1215,11 +1220,14 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 		const SignalInterface *target_isignal = p_target_itype->find_signal_by_name(p_target_cname);
 
 		if (target_isignal) {
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(p_target_itype->proxy_name);
-			p_xml_output.append(".");
-			p_xml_output.append(target_isignal->proxy_name);
-			p_xml_output.append("\"/>");
+			const String signal_name = p_target_itype->proxy_name + "." + target_isignal->proxy_name;
+			if (!_validate_api_type(p_target_itype, p_source_itype)) {
+				_append_xml_undeclared(p_xml_output, signal_name);
+			} else {
+				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append(signal_name);
+				p_xml_output.append("\"/>");
+			}
 		} else {
 			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
@@ -1230,7 +1238,7 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 	}
 }
 
-void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
 
 	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
@@ -1242,9 +1250,13 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 	if (enum_match) {
 		const TypeInterface &target_enum_itype = enum_match->value;
 
-		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-		p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
-		p_xml_output.append("\"/>");
+		if (!_validate_api_type(p_target_itype, p_source_itype)) {
+			_append_xml_undeclared(p_xml_output, target_enum_itype.proxy_name);
+		} else {
+			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+			p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
+			p_xml_output.append("\"/>");
+		}
 	} else {
 		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
@@ -1377,6 +1389,46 @@ void BindingsGenerator::_append_xml_undeclared(StringBuilder &p_xml_output, cons
 	p_xml_output.append("<c>");
 	p_xml_output.append(p_link_target);
 	p_xml_output.append("</c>");
+}
+
+bool BindingsGenerator::_validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype) {
+	static constexpr const char *api_types[5] = {
+		"Core",
+		"Editor",
+		"Extension",
+		"Editor Extension",
+		"None",
+	};
+
+	const ClassDB::APIType target_api = p_target_itype ? p_target_itype->api_type : ClassDB::API_NONE;
+	ERR_FAIL_INDEX_V((int)target_api, 5, false);
+	const ClassDB::APIType source_api = p_source_itype ? p_source_itype->api_type : ClassDB::API_NONE;
+	ERR_FAIL_INDEX_V((int)source_api, 5, false);
+	bool validate = false;
+
+	switch (target_api) {
+		case ClassDB::API_NONE:
+		case ClassDB::API_CORE:
+		default:
+			validate = true;
+			break;
+		case ClassDB::API_EDITOR:
+			validate = source_api == ClassDB::API_EDITOR || source_api == ClassDB::API_EDITOR_EXTENSION;
+			break;
+		case ClassDB::API_EXTENSION:
+			validate = source_api == ClassDB::API_EXTENSION || source_api == ClassDB::API_EDITOR_EXTENSION;
+			break;
+		case ClassDB::API_EDITOR_EXTENSION:
+			validate = source_api == ClassDB::API_EDITOR_EXTENSION;
+			break;
+	}
+	if (!validate) {
+		const String target_name = p_target_itype ? p_target_itype->proxy_name : "@GlobalScope";
+		const String source_name = p_source_itype ? p_source_itype->proxy_name : "@GlobalScope";
+		WARN_PRINT(vformat("Type '%s' has API level '%s'; it cannot be referenced by type '%s' with API level '%s'.",
+				target_name, api_types[target_api], source_name, api_types[source_api]));
+	}
+	return validate;
 }
 
 int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
@@ -2585,7 +2637,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << iprop.cname << "' property.\n"
 			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
+			   << INDENT2 "public static "
+			   << (prop_allowed_inherited_member_hiding.has(itype.proxy_name + ".PropertyName." + iprop.proxy_name) ? "new " : "")
+			   << "readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//MethodName
@@ -2609,7 +2663,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << imethod.cname << "' method.\n"
 			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
+			   << INDENT2 "public static "
+			   << (prop_allowed_inherited_member_hiding.has(itype.proxy_name + ".MethodName." + imethod.proxy_name) ? "new " : "")
+			   << "readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//SignalName
@@ -2627,7 +2683,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << isignal.cname << "' signal.\n"
 			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
+			   << INDENT2 "public static "
+			   << (prop_allowed_inherited_member_hiding.has(itype.proxy_name + ".SignalName." + isignal.proxy_name) ? "new " : "")
+			   << "readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 
@@ -3029,6 +3087,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		p_output.append(MEMBER_BEGIN);
 		p_output.append(p_imethod.is_internal ? "internal " : "public ");
+
+		if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_imethod.proxy_name)) {
+			p_output.append("new ");
+		}
 
 		if (p_itype.is_singleton || p_imethod.is_static) {
 			p_output.append("static ");
