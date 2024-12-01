@@ -5293,7 +5293,7 @@ void EditorNode::_load_editor_layout() {
 		}
 	} else {
 		ep.step(TTR("Loading docks..."), 1, true);
-		editor_dock_manager->load_docks_from_config(config, "docks");
+		editor_dock_manager->load_docks_from_config(config, "docks", true);
 
 		ep.step(TTR("Reopening scenes..."), 2, true);
 		_load_open_scenes_from_config(config);
