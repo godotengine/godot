@@ -377,9 +377,16 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	// NOTE: Deprecated.
 	if (strcmp(interface, zxdg_exporter_v1_interface.name) == 0) {
-		registry->xdg_exporter = (struct zxdg_exporter_v1 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v1_interface, 1);
-		registry->xdg_exporter_name = name;
+		registry->xdg_exporter_v1 = (struct zxdg_exporter_v1 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v1_interface, 1);
+		registry->xdg_exporter_v1_name = name;
+		return;
+	}
+
+	if (strcmp(interface, zxdg_exporter_v2_interface.name) == 0) {
+		registry->xdg_exporter_v2 = (struct zxdg_exporter_v2 *)wl_registry_bind(wl_registry, name, &zxdg_exporter_v2_interface, 1);
+		registry->xdg_exporter_v2_name = name;
 		return;
 	}
 
@@ -599,13 +606,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		return;
 	}
 
-	if (name == registry->xdg_exporter_name) {
-		if (registry->xdg_exporter) {
-			zxdg_exporter_v1_destroy(registry->xdg_exporter);
-			registry->xdg_exporter = nullptr;
+	// NOTE: Deprecated.
+	if (name == registry->xdg_exporter_v1_name) {
+		if (registry->xdg_exporter_v1) {
+			zxdg_exporter_v1_destroy(registry->xdg_exporter_v1);
+			registry->xdg_exporter_v1 = nullptr;
 		}
 
-		registry->xdg_exporter_name = 0;
+		registry->xdg_exporter_v1_name = 0;
+
+		return;
+	}
+
+	if (name == registry->xdg_exporter_v2_name) {
+		if (registry->xdg_exporter_v2) {
+			zxdg_exporter_v2_destroy(registry->xdg_exporter_v2);
+			registry->xdg_exporter_v2 = nullptr;
+		}
+
+		registry->xdg_exporter_v2_name = 0;
 
 		return;
 	}
@@ -1186,7 +1205,15 @@ void WaylandThread::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_topl
 	}
 }
 
-void WaylandThread::_xdg_exported_on_exported(void *data, zxdg_exported_v1 *exported, const char *handle) {
+// NOTE: Deprecated.
+void WaylandThread::_xdg_exported_v1_on_handle(void *data, zxdg_exported_v1 *exported, const char *handle) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	ws->exported_handle = vformat("wayland:%s", String::utf8(handle));
+}
+
+void WaylandThread::_xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
@@ -3284,9 +3311,12 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
 	wl_callback_add_listener(ws.frame_callback, &frame_wl_callback_listener, &ws);
 
-	if (registry.xdg_exporter) {
-		ws.xdg_exported = zxdg_exporter_v1_export(registry.xdg_exporter, ws.wl_surface);
-		zxdg_exported_v1_add_listener(ws.xdg_exported, &xdg_exported_listener, &ws);
+	if (registry.xdg_exporter_v2) {
+		ws.xdg_exported_v2 = zxdg_exporter_v2_export_toplevel(registry.xdg_exporter_v2, ws.wl_surface);
+		zxdg_exported_v2_add_listener(ws.xdg_exported_v2, &xdg_exported_v2_listener, &ws);
+	} else if (registry.xdg_exporter_v1) {
+		ws.xdg_exported_v1 = zxdg_exporter_v1_export(registry.xdg_exporter_v1, ws.wl_surface);
+		zxdg_exported_v1_add_listener(ws.xdg_exported_v1, &xdg_exported_v1_listener, &ws);
 	}
 
 	wl_surface_commit(ws.wl_surface);
@@ -4410,10 +4440,14 @@ void WaylandThread::destroy() {
 		xdg_wm_base_destroy(registry.xdg_wm_base);
 	}
 
-	if (registry.xdg_exporter) {
-		zxdg_exporter_v1_destroy(registry.xdg_exporter);
+	// NOTE: Deprecated.
+	if (registry.xdg_exporter_v1) {
+		zxdg_exporter_v1_destroy(registry.xdg_exporter_v1);
 	}
 
+	if (registry.xdg_exporter_v2) {
+		zxdg_exporter_v2_destroy(registry.xdg_exporter_v2);
+	}
 	if (registry.wl_shm) {
 		wl_shm_destroy(registry.wl_shm);
 	}
