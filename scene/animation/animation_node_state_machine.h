@@ -110,9 +110,6 @@ class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 public:
-	static StringName START_NODE;
-	static StringName END_NODE;
-
 	enum StateMachineType {
 		STATE_MACHINE_TYPE_ROOT,
 		STATE_MACHINE_TYPE_NESTED,
