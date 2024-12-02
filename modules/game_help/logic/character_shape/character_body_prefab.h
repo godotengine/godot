@@ -17,9 +17,15 @@ class CharacterBodyPrefab : public Resource
         ClassDB::bind_method(D_METHOD("set_is_human","p_is_human"), &CharacterBodyPrefab::set_is_human);
         ClassDB::bind_method(D_METHOD("get_is_human"), &CharacterBodyPrefab::get_is_human);
 
+        ClassDB::bind_method(D_METHOD("set_resource_group","p_resource_group"), &CharacterBodyPrefab::set_resource_group);
+        ClassDB::bind_method(D_METHOD("get_resource_group"), &CharacterBodyPrefab::get_resource_group);
+
+
+
         ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "parts", PROPERTY_HINT_ARRAY_TYPE,"String"), "set_parts", "get_parts");
         ADD_PROPERTY(PropertyInfo(Variant::STRING, "skeleton_path", PROPERTY_HINT_FILE, "*.tscn,*.scn"), "set_skeleton_path", "get_skeleton_path");
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_human"), "set_is_human", "get_is_human");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_group"), "set_resource_group", "get_resource_group");
         
     }
 
@@ -60,6 +66,10 @@ public:
     void set_is_human(bool p_is_human) { is_human = p_is_human; }
     bool get_is_human() { return is_human; }
 
+    void set_resource_group(StringName p_resource_group) { resource_group = p_resource_group; }
+    StringName get_resource_group() { return resource_group; }
+
+    StringName resource_group;
     TypedArray<CharacterBodyPart> load_part();
 
     HashMap<String,bool> parts;

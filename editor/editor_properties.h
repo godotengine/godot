@@ -142,6 +142,85 @@ public:
 	EditorPropertyTextEnum();
 };
 
+
+
+class EditorTextEnum : public HBoxContainer {
+	GDCLASS(EditorTextEnum, HBoxContainer);
+
+	Object *object = nullptr;
+	StringName property;
+	
+	HBoxContainer *default_layout = nullptr;
+	HBoxContainer *edit_custom_layout = nullptr;
+
+	OptionButton *option_button = nullptr;
+	Button *edit_button = nullptr;
+
+	LineEdit *custom_value_edit = nullptr;
+	Button *accept_button = nullptr;
+	Button *cancel_button = nullptr;
+
+	String dyn_options_method;
+
+	Vector<String> options;
+	bool string_name = false;
+	bool loose_mode = false;
+
+	bool is_dynamic_options = false;
+
+	void _emit_changed_value(const String &p_string);
+	void _option_selected(int p_which);
+
+	void _edit_custom_value();
+	void _custom_value_submitted(const String &p_value);
+	void _custom_value_accepted();
+	void _custom_value_canceled();
+
+protected:
+	virtual void _set_read_only(bool p_read_only) ;
+	void _notification(int p_what);
+	void cb_update_options(OptionButton* p_ob);
+protected:
+
+	Object *get_edited_object() {
+		return object;
+	}
+
+	StringName get_edited_property() const {
+		return property;
+	}
+	inline Variant get_edited_property_value() const { return object->get(property); }
+	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName& p_field = StringName(), bool p_changing = false) {
+		Variant args[4] = { p_property, p_value, p_field, p_changing };
+		const Variant *argptrs[4] = { &args[0], &args[1], &args[2], &args[3] };
+
+		emit_signalp(SNAME("property_changed"), (const Variant **)argptrs, 4);
+		//if (is_custom_property) 
+		{
+			Object* obj = get_edited_object();
+			if (obj != nullptr) {
+				obj->set(p_property, p_value);
+			}
+		}
+	}
+public:
+	void set_object_and_property(Object *p_object, const StringName &p_property) {
+		object = p_object;
+		property = p_property;
+
+	}
+
+public:
+	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
+	virtual void update_property() ;
+	void set_dynamic(bool p_is_dynamic, const String & p_method) {
+		is_dynamic_options = p_is_dynamic;
+		dyn_options_method = p_method;
+	}
+	EditorTextEnum();
+};
+
+
 class EditorPropertyPath : public EditorProperty {
 	GDCLASS(EditorPropertyPath, EditorProperty);
 	Vector<String> extensions;

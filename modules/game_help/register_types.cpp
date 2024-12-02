@@ -156,6 +156,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		data_table_manager = memnew(DataTableManager);
 		path_manager = memnew(PathManager);
 #ifdef TOOLS_ENABLED
+		ClassDB::register_class<AnimationNodePreview>();
 		ClassDB::register_class<ResourceEditorToolItem>();
 
 		ClassDB::register_class<AnimationPreviewPanelItem>();

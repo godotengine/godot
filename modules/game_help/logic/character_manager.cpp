@@ -115,6 +115,7 @@ static void animation_get_tags(Array* arr) {
     CharacterManager::get_singleton()->get_animation_tags(arr);
 }
 CharacterManager::CharacterManager() {
+    animation_groups.insert(StringName(L"未定义"));
     animation_groups.insert(StringName(L"人形"));
     animation_groups.insert(StringName(L"人形"));
     animation_groups.insert(StringName(L"马"));

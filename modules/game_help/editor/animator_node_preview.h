@@ -6,11 +6,29 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/filesystem_dock.h"
 #include "scene/gui/subviewport_container.h"
+#include "editor/editor_properties.h"
 
 #include "scene/gui/slider.h"
 
 class AnimationNodePreview : public SubViewportContainer
 {
+    GDCLASS(AnimationNodePreview, SubViewportContainer)
+    static void _bind_methods() {
+
+        ClassDB::bind_method(D_METHOD("get_animation_groups"),&AnimationNodePreview::get_animation_groups);
+        ClassDB::bind_method(D_METHOD("get_animation_tags"),&AnimationNodePreview::get_animation_tags);
+
+
+        ClassDB::bind_method(D_METHOD("set_group", "group"), &AnimationNodePreview::set_group);
+        ClassDB::bind_method(D_METHOD("get_group"), &AnimationNodePreview::get_group);
+
+        ClassDB::bind_method(D_METHOD("set_tag", "tag"), &AnimationNodePreview::set_tag);
+        ClassDB::bind_method(D_METHOD("get_tag"), &AnimationNodePreview::get_tag);
+
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "group"), "set_group", "get_group");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "tag"), "set_tag", "get_tag");
+    }
+public:
 	float rot_x;
 	float rot_y;
     enum Play_State {
@@ -45,6 +63,9 @@ class AnimationNodePreview : public SubViewportContainer
     HSlider* time_scale_slider = nullptr;
     Label* animation_time_position_label = nullptr;
     Label* animator_time_label = nullptr;
+
+    EditorTextEnum* group_enum = nullptr;
+    EditorTextEnum* tag_enum = nullptr;
 
 	Ref<class CharacterAnimatorNodeBase> node;
     String node_path;
@@ -113,6 +134,10 @@ public:
 	void set_globle_preview_prefab(const Ref<CharacterBodyPrefab>& p_prefab) ;
 	void set_globle_preview_blackboard(const Ref<BlackboardPlan>& p_blackboard) ;
 
+    void set_group(String p_group) ;
+    String get_group();
+    void set_tag(String p_tag)  ;
+    String get_tag() ;
 protected:
     void update_play_state();
 	virtual void _update_theme_item_cache() override ;
@@ -126,6 +151,9 @@ protected:
 	Ref<CharacterBodyPrefab> get_preview_prefab() ;
 	void gui_input(const Ref<InputEvent> &p_event) override;
 	void edit(Ref<CharacterBodyPrefab> p_prefab);
+
+    Array get_animation_groups() ;
+    Array get_animation_tags();
 public:
     void set_prefab(Ref<CharacterBodyPrefab> p_prefab);
     void set_prefab_path(String p_path);

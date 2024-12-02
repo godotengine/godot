@@ -1,6 +1,7 @@
 #include "animator_node_preview.h"
 
 #include "body_main_editor.h"
+#include "../logic/character_manager.h"
 void AnimationNodePreview::_on_drag_button_pressed() {
     
     Ref<Resource> res;
@@ -51,6 +52,8 @@ void AnimationNodePreview::on_visilbe_changed(bool p_visible) {
 
         stop();
     }
+    group_enum->update_property();
+    tag_enum->update_property();
 
 }
 void AnimationNodePreview::play() {
@@ -330,12 +333,17 @@ void AnimationNodePreview::set_prefab(Ref<CharacterBodyPrefab> p_prefab) {
     prefab = p_prefab;
     prefab_path = p_prefab->get_path();
     preview_type = PT_CharacterBodyPrefab;
+
+    group_enum->set_visible(true);
+    tag_enum->set_visible(false);
 }
 void AnimationNodePreview::set_prefab_path(String p_path) {
     prefab_path = p_path;
     prefab_path_is_load = false;
     prefab.unref();
     preview_type = PT_CharacterBodyPrefab;
+    group_enum->set_visible(true);
+    tag_enum->set_visible(false);
 }
 
 
@@ -347,6 +355,8 @@ void AnimationNodePreview::set_animator_node(Ref<CharacterAnimatorNodeBase> p_no
         node->set_blackboard_plan(get_preview_blackboard());
     }
     stop();
+    group_enum->set_visible(false);
+    tag_enum->set_visible(false);
 }
 void AnimationNodePreview::set_animator_node_path(String p_path) {
     node_path = p_path;
@@ -357,6 +367,8 @@ void AnimationNodePreview::set_animator_node_path(String p_path) {
         node->set_blackboard_plan(get_preview_blackboard());
     }
     stop();
+    group_enum->set_visible(false);
+    tag_enum->set_visible(false);
 }
 
 
@@ -369,6 +381,8 @@ void AnimationNodePreview::set_animation(Ref<Animation> p_animation) {
         node->set_blackboard_plan(get_preview_blackboard());
     }
     stop();
+    group_enum->set_visible(true);
+    tag_enum->set_visible(true);
 }
 void AnimationNodePreview::set_animation_path(String p_path) {
     animation_path = p_path;
@@ -379,6 +393,8 @@ void AnimationNodePreview::set_animation_path(String p_path) {
         node->set_blackboard_plan(get_preview_blackboard());
     }
     stop();
+    group_enum->set_visible(true);
+    tag_enum->set_visible(true);
     
 }
 
@@ -483,35 +499,60 @@ AnimationNodePreview::AnimationNodePreview()
         root_hb->add_child(vb);
         vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-        HBoxContainer* hb = memnew(HBoxContainer);
-        hb->set_h_size_flags(SIZE_EXPAND_FILL);
-        vb->add_child(hb);
+        {
+            HBoxContainer* hb = memnew(HBoxContainer);
+            hb->set_h_size_flags(SIZE_EXPAND_FILL);
+            vb->add_child(hb);
 
 
-        time_scale_lablel = memnew(Label);
-        time_scale_lablel->set_text(L"时间缩放:");
-        hb->add_child(time_scale_lablel);
+            time_scale_lablel = memnew(Label);
+            time_scale_lablel->set_text(L"时间缩放:");
+            hb->add_child(time_scale_lablel);
 
-        time_scale_slider = memnew(HSlider);
-        time_scale_slider->set_h_size_flags(SIZE_EXPAND_FILL);
-        hb->add_child(time_scale_slider);
-        time_scale_slider->set_min(0);
-        time_scale_slider->set_max(5);
-        time_scale_slider->set_step(0.01);
-        time_scale_slider->set_value(1);
-        time_scale_slider->set_allow_greater(true);
-        time_scale_slider->set_allow_lesser(true);
-        time_scale_slider->set_ticks(10);
-        time_scale_slider->set_ticks_on_borders(true);
+            time_scale_slider = memnew(HSlider);
+            time_scale_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+
+            hb->add_child(time_scale_slider);
+            time_scale_slider->set_min(0);
+            time_scale_slider->set_max(5);
+            time_scale_slider->set_step(0.01);
+            time_scale_slider->set_value(1);
+            time_scale_slider->set_allow_greater(true);
+            time_scale_slider->set_allow_lesser(true);
+            time_scale_slider->set_ticks(10);
+            time_scale_slider->set_ticks_on_borders(true);
 
 
-        drag_button = memnew(Button);
-        drag_button->set_custom_minimum_size(Size2(28.0, 28.0) * EDSCALE);
-        drag_button->set_button_icon(theme_cache.drag_icon);
-        drag_button->set_tooltip_text(L"鼠标左键点击定位资源,按住鼠标左键,拖拽我呀!八格牙路!");
-        drag_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_drag_button_pressed));
-        SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
-        hb->add_child(drag_button);
+            drag_button = memnew(Button);
+            drag_button->set_custom_minimum_size(Size2(28.0, 28.0) * EDSCALE);
+            drag_button->set_button_icon(theme_cache.drag_icon);
+            drag_button->set_tooltip_text(L"鼠标左键点击定位资源,按住鼠标左键,拖拽我呀!八格牙路!");
+            drag_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_drag_button_pressed));
+            SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
+            hb->add_child(drag_button);
+        }
+
+        {
+            HBoxContainer* hb = memnew(HBoxContainer);
+            hb->set_h_size_flags(SIZE_EXPAND_FILL);
+            vb->add_child(hb);
+
+
+            group_enum = memnew(EditorTextEnum);
+            group_enum->set_h_size_flags(SIZE_EXPAND_FILL);
+            group_enum->set_object_and_property(this, StringName("group"));
+            group_enum->setup({});
+            group_enum->set_dynamic(true, "get_animation_groups");
+            hb->add_child(group_enum);
+
+            tag_enum = memnew(EditorTextEnum);
+            tag_enum->set_h_size_flags(SIZE_EXPAND_FILL);
+            tag_enum->set_object_and_property(this, StringName("tag"));
+            tag_enum->setup({});
+            tag_enum->set_dynamic(true, "get_animation_groups");
+            hb->add_child(tag_enum);
+
+        }
 
 
     }
@@ -521,3 +562,144 @@ AnimationNodePreview::AnimationNodePreview()
 
     set_process(true);
 }
+
+Array AnimationNodePreview::get_animation_groups() {
+    Array arr;
+    CharacterManager::get_singleton()->get_animation_groups(&arr);
+    return arr;
+}
+Array AnimationNodePreview::get_animation_tags() {
+    Array arr;
+    CharacterManager::get_singleton()->get_animation_tags(&arr);
+    return arr;
+}
+
+void AnimationNodePreview::set_group(String p_group) {
+    if(!group_enum->is_visible_in_tree()) {
+        return;
+    }
+    switch (preview_type)
+    {
+    case PT_AnimationNode:
+        {
+        }
+        break;
+    case PT_CharacterBodyPrefab:   
+        if(!prefab_path_is_load && prefab.is_null()) {
+            prefab = ResourceLoader::load(prefab_path);
+            prefab_path_is_load = true;
+        }
+        if(prefab.is_valid()) {
+            prefab->set_resource_group(p_group);
+        }
+        break;
+    case PT_Animation:
+        {
+            
+            if(!animation_path_is_load && animation.is_null()) {
+                animation = ResourceLoader::load(animation_path);
+                animation_path_is_load = true;
+            }
+            if(animation.is_valid()) {
+                animation->set_animation_group(p_group);
+            }
+        }
+        break;
+    
+    default:
+        break;
+    }
+}
+
+String AnimationNodePreview::get_group() { 
+    if(!group_enum->is_visible_in_tree()) {
+        return "";
+    }
+    switch (preview_type)
+    {
+    case PT_AnimationNode:
+        {
+        }
+        break;
+    case PT_CharacterBodyPrefab:   
+        if(!prefab_path_is_load && prefab.is_null()) {
+            prefab = ResourceLoader::load(prefab_path);
+            prefab_path_is_load = true;
+        }
+        if(prefab.is_valid()) {
+            return prefab->get_resource_group();
+        }
+        break;
+    case PT_Animation:
+        {
+            
+            if(!animation_path_is_load && animation.is_null()) {
+                animation = ResourceLoader::load(animation_path);
+                animation_path_is_load = true;
+            }
+            if(animation.is_valid()) {
+                return animation->get_animation_group();
+            }
+        }
+        break;
+    
+    default:
+        break;
+    }
+    return "";        
+}
+
+void AnimationNodePreview::set_tag(String p_tag)  {
+    if(!tag_enum->is_visible_in_tree()) {
+        return;
+    }
+    switch (preview_type)
+    {
+    case PT_AnimationNode:
+        {
+        }
+        break;
+    case PT_CharacterBodyPrefab:   
+        break;
+    case PT_Animation:
+        {
+            
+            if(!animation_path_is_load && animation.is_null()) {
+                animation = ResourceLoader::load(animation_path);
+                animation_path_is_load = true;
+            }
+            if(animation.is_valid()) {
+                animation->set_animation_tag(p_tag);
+            }
+        }
+    }
+}
+
+String AnimationNodePreview::get_tag() { 
+    if(!tag_enum->is_visible_in_tree()) {
+        return "";
+    }
+    switch (preview_type)
+    {
+    case PT_AnimationNode:
+        {
+        }
+        break;
+    case PT_CharacterBodyPrefab:   
+        break;
+    case PT_Animation:
+        {
+            
+            if(!animation_path_is_load && animation.is_null()) {
+                animation = ResourceLoader::load(animation_path);
+                animation_path_is_load = true;
+            }
+            if(animation.is_valid()) {
+                return animation->get_animation_tag();    
+            }
+        }
+    }
+    return "";
+    }
+
+

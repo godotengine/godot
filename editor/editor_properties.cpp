@@ -422,6 +422,183 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	add_focusable(accept_button);
 	add_focusable(cancel_button);
 }
+//////////////////// Text Enum ////////////////////////
+
+void EditorTextEnum::_set_read_only(bool p_read_only) {
+	option_button->set_disabled(p_read_only);
+	edit_button->set_disabled(p_read_only);
+}
+
+void EditorTextEnum::_emit_changed_value(const String &p_string) {
+	if (string_name) {
+		emit_changed(get_edited_property(), StringName(p_string));
+	} else {
+		emit_changed(get_edited_property(), p_string);
+	}
+	Object* obj = get_edited_object();
+}
+
+void EditorTextEnum::_option_selected(int p_which) {
+	_emit_changed_value(option_button->get_item_text(p_which));
+}
+
+void EditorTextEnum::_edit_custom_value() {
+	default_layout->hide();
+	edit_custom_layout->show();
+	custom_value_edit->grab_focus();
+}
+
+void EditorTextEnum::_custom_value_submitted(const String &p_value) {
+	edit_custom_layout->hide();
+	default_layout->show();
+
+	_emit_changed_value(p_value.strip_edges());
+}
+
+void EditorTextEnum::_custom_value_accepted() {
+	String new_value = custom_value_edit->get_text().strip_edges();
+	_custom_value_submitted(new_value);
+}
+
+void EditorTextEnum::_custom_value_canceled() {
+	custom_value_edit->set_text(get_edited_property_value());
+
+	edit_custom_layout->hide();
+	default_layout->show();
+}
+
+void EditorTextEnum::update_property() {
+	String current_value = get_edited_property_value();
+	int default_option = options.find(current_value);
+
+	// The list can change in the loose mode.
+	if (loose_mode) {
+		custom_value_edit->set_text(current_value);
+		option_button->clear();
+
+		// Manually entered value.
+		if (default_option < 0 && !current_value.is_empty()) {
+			option_button->add_item(current_value, options.size() + 1001);
+			option_button->select(0);
+
+			option_button->add_separator();
+		}
+
+		// Add an explicit empty value for clearing the property.
+		option_button->add_item("", options.size() + 1000);
+
+		for (int i = 0; i < options.size(); i++) {
+			option_button->add_item(options[i], i);
+			if (options[i] == current_value) {
+				option_button->select(option_button->get_item_count() - 1);
+			}
+		}
+	} else {
+		option_button->select(default_option);
+	}
+}
+
+void EditorTextEnum::setup(const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
+	string_name = p_string_name;
+	loose_mode = p_loose_mode;
+
+	options.clear();
+
+	if (loose_mode) {
+		// Add an explicit empty value for clearing the property in the loose mode.
+		option_button->add_item("", options.size() + 1000);
+	}
+
+	for (int i = 0; i < p_options.size(); i++) {
+		options.append(p_options[i]);
+		option_button->add_item(p_options[i], i);
+	}
+	option_button->set_popup_pressed_cb(callable_mp(this, &EditorTextEnum::cb_update_options));
+
+	if (loose_mode) {
+		edit_button->show();
+	}
+}
+void EditorTextEnum::cb_update_options(OptionButton* p_ob)
+{
+	if (is_dynamic_options) {
+		Object* obj = get_edited_object();
+		if (obj == nullptr) {
+			return;
+		}
+		if (!obj->has_method(dyn_options_method)) {
+			return;
+		}
+
+		p_ob->clear();
+		options.clear();
+		Array options_array = obj->call(dyn_options_method);
+		for (int i = 0; i < options_array.size(); i++) {
+			String opt = options_array[i];
+			options.append(options_array[i]);
+			p_ob->add_item(options_array[i], i);
+		}
+		String current_value = get_edited_property_value();
+		int default_option = options.find(current_value);
+		option_button->select(default_option);
+	}
+}
+
+void EditorTextEnum::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			update_property();
+			edit_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+			accept_button->set_button_icon(get_editor_theme_icon(SNAME("ImportCheck")));
+			cancel_button->set_button_icon(get_editor_theme_icon(SNAME("ImportFail")));
+		} break;
+	}
+}
+
+EditorTextEnum::EditorTextEnum() {
+	HBoxContainer *hb = this;
+
+	default_layout = memnew(HBoxContainer);
+	default_layout->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(default_layout);
+
+	edit_custom_layout = memnew(HBoxContainer);
+	edit_custom_layout->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_custom_layout->hide();
+	hb->add_child(edit_custom_layout);
+
+	option_button = memnew(OptionButton);
+	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	option_button->set_clip_text(true);
+	option_button->set_flat(true);
+	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	default_layout->add_child(option_button);
+	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorTextEnum::_option_selected));
+
+	edit_button = memnew(Button);
+	edit_button->set_flat(true);
+	edit_button->hide();
+	default_layout->add_child(edit_button);
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorTextEnum::_edit_custom_value));
+
+	custom_value_edit = memnew(LineEdit);
+	custom_value_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_custom_layout->add_child(custom_value_edit);
+	custom_value_edit->connect("text_submitted", callable_mp(this, &EditorTextEnum::_custom_value_submitted));
+
+	accept_button = memnew(Button);
+	accept_button->set_flat(true);
+	edit_custom_layout->add_child(accept_button);
+	accept_button->connect(SceneStringName(pressed), callable_mp(this, &EditorTextEnum::_custom_value_accepted));
+
+	cancel_button = memnew(Button);
+	cancel_button->set_flat(true);
+	edit_custom_layout->add_child(cancel_button);
+	cancel_button->connect(SceneStringName(pressed), callable_mp(this, &EditorTextEnum::_custom_value_canceled));
+
+
+}
 
 //////////////////// LOCALE ////////////////////////
 
