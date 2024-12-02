@@ -672,6 +672,10 @@ public:
 	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
 	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
 
+#ifdef TOOLS_ENABLED
+	bool is_visible_subviewport() const;
+#endif // TOOLS_ENABLED
+
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 
 	Transform2D get_screen_transform() const;
