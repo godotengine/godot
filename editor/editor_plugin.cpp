@@ -547,6 +547,10 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 	emit_signal("resource_saved", p_resource);
 }
 
+void EditorPlugin::notify_scene_saved(const String &p_scene_filepath) {
+	emit_signal("scene_saved", p_scene_filepath);
+}
+
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
 		return get_script_instance()->call("forward_canvas_gui_input", p_event);
@@ -884,6 +888,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_MENU);
