@@ -151,6 +151,9 @@ public:
 	const StringName text_submitted = StaticCString::create("text_submitted");
 	const StringName value_changed = StaticCString::create("value_changed");
 
+	const StringName Start = StaticCString::create("Start");
+	const StringName End = StaticCString::create("End");
+
 	const StringName FlatButton = StaticCString::create("FlatButton");
 };
 
