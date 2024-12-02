@@ -845,7 +845,7 @@ void FileDialog::_filename_filter_selected() {
 	TreeItem *item = tree->get_selected();
 	if (item) {
 		file->set_text(item->get_text(0));
-		file->emit_signal("text_submitted", file->get_text());
+		file->emit_signal(SceneStringName(text_submitted), file->get_text());
 	}
 }
 
@@ -1652,10 +1652,10 @@ FileDialog::FileDialog() {
 	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), CONNECT_DEFERRED);
 	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated));
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
-	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
+	dir->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_dir_submitted));
 	filename_filter->connect(SceneStringName(text_changed), callable_mp(this, &FileDialog::_filename_filter_changed).unbind(1));
-	filename_filter->connect("text_submitted", callable_mp(this, &FileDialog::_filename_filter_selected).unbind(1));
-	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));
+	filename_filter->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_filename_filter_selected).unbind(1));
+	file->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_file_submitted));
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
