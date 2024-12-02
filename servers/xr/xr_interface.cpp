@@ -169,6 +169,19 @@ int XRInterface::get_camera_feed_id() {
 	return 0;
 }
 
+PackedVector2Array XRInterface::get_vrs_eye_foci(float p_aspect) {
+	PackedVector2Array eye_foci;
+
+	for (uint32_t v = 0; v < get_view_count(); v++) {
+		Projection cm = get_projection_for_view(v, p_aspect, 0.1, 1000.0);
+		Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
+
+		eye_foci.push_back(Vector2(center.x, center.y));
+	}
+
+	return eye_foci;
+}
+
 RID XRInterface::get_vrs_texture() {
 	return RID();
 }

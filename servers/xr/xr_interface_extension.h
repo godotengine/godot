@@ -103,6 +103,7 @@ public:
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual PackedVector2Array get_vrs_eye_foci(float p_aspect) override;
 	virtual RID get_vrs_texture() override;
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
@@ -113,6 +114,7 @@ public:
 	GDVIRTUAL0R(Transform3D, _get_camera_transform);
 	GDVIRTUAL2R(Transform3D, _get_transform_for_view, uint32_t, const Transform3D &);
 	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, double, double, double);
+	GDVIRTUAL1R(PackedVector2Array, _get_vrs_eye_foci, float);
 	GDVIRTUAL0R(RID, _get_vrs_texture);
 	GDVIRTUAL0R(RID, _get_color_texture);
 	GDVIRTUAL0R(RID, _get_depth_texture);

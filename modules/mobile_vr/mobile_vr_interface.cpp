@@ -574,18 +574,10 @@ void MobileVRInterface::process() {
 }
 
 RID MobileVRInterface::get_vrs_texture() {
-	PackedVector2Array eye_foci;
-
 	Size2 target_size = get_render_target_size();
 	real_t aspect_ratio = target_size.x / target_size.y;
-	uint32_t view_count = get_view_count();
 
-	for (uint32_t v = 0; v < view_count; v++) {
-		Projection cm = get_projection_for_view(v, aspect_ratio, 0.1, 1000.0);
-		Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
-
-		eye_foci.push_back(Vector2(center.x, center.y));
-	}
+	PackedVector2Array eye_foci = get_vrs_eye_foci(aspect_ratio);
 
 	return xr_vrs.make_vrs_texture(target_size, eye_foci);
 }

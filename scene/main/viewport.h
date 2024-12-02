@@ -211,6 +211,7 @@ public:
 		VRS_DISABLED,
 		VRS_TEXTURE,
 		VRS_XR,
+		VRS_XR_DYNAMIC,
 		VRS_MAX
 	};
 

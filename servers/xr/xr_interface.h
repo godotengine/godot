@@ -155,6 +155,7 @@ public:
 	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
 
 	/** VRS **/
+	virtual PackedVector2Array get_vrs_eye_foci(float p_aspect); /* obtain eye foci, used with VRS_XR_DYNAMIC */
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
 
 	XRInterface();

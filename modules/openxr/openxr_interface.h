@@ -285,6 +285,7 @@ public:
 	Vector3 get_hand_joint_linear_velocity(Hand p_hand, HandJoints p_joint) const;
 	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
 
+	virtual PackedVector2Array get_vrs_eye_foci(float p_aspect) override;
 	virtual RID get_vrs_texture() override;
 
 	OpenXRInterface();

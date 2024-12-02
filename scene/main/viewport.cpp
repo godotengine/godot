@@ -3672,6 +3672,9 @@ void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
 		case VRS_XR: {
 			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_XR);
 		} break;
+		case VRS_XR_DYNAMIC: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_XR_DYNAMIC);
+		} break;
 		default: {
 			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_DISABLED);
 		} break;
@@ -4831,7 +4834,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
 	ADD_GROUP("Variable Rate Shading", "vrs_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR"), "set_vrs_mode", "get_vrs_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR,XR Dynamic"), "set_vrs_mode", "get_vrs_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,Always"), "set_vrs_update_mode", "get_vrs_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_vrs_texture", "get_vrs_texture");
 #endif
@@ -4955,6 +4958,7 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(VRS_DISABLED);
 	BIND_ENUM_CONSTANT(VRS_TEXTURE);
 	BIND_ENUM_CONSTANT(VRS_XR);
+	BIND_ENUM_CONSTANT(VRS_XR_DYNAMIC);
 	BIND_ENUM_CONSTANT(VRS_MAX);
 
 	BIND_ENUM_CONSTANT(VRS_UPDATE_DISABLED);
@@ -4968,7 +4972,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
+	if ((vrs_mode == VRS_DISABLED || vrs_mode == VRS_XR_DYNAMIC) && (p_property.name == "vrs_update_mode")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
