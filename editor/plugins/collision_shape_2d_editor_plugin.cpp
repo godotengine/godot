@@ -348,6 +348,11 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		return false;
 	}
 
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
+		return false;
+	}
+
 	if (shape_type == -1) {
 		return false;
 	}
@@ -478,6 +483,11 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	}
 
 	if (!node->is_visible_in_tree()) {
+		return;
+	}
+
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
 		return;
 	}
 
