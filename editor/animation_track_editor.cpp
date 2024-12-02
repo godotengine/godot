@@ -5760,9 +5760,9 @@ void AnimationTrackEditor::_update_key_edit() {
 		Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 
 		// Only show selected gizmos if we have a skeleton3DEditor instance and it is in editor mode
-		if (track_type == Animation::TYPE_ROTATION_3D && se && se->is_edit_mode()) {
+		if ((track_type == Animation::TYPE_ROTATION_3D || track_type == Animation::TYPE_POSITION_3D || track_type == Animation::TYPE_SCALE_3D) && se && se->is_edit_mode()) {
 			NodePath path = animation->track_get_path(key_edit->track);
-			// Node *root_path = nullptr;
+
 			Node *node = root->get_node_or_null(path);
 			if (!node) {
 				return;
@@ -5777,9 +5777,6 @@ void AnimationTrackEditor::_update_key_edit() {
 
 			// If cast was successful, find bone idx we were modifying
 			int bone_idx = skeleton->find_bone(path.get_subname(0));
-
-			// Clear current selection
-			se->select_bone(-1);
 
 			// Select new bone
 			se->select_bone(bone_idx);
