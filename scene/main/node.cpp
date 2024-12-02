@@ -2780,7 +2780,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		node->data.editable_instance = data.editable_instance;
 	}
 
-	List<const Node *> hidden_roots;
+	LocalVector<const Node *> hidden_roots;
 	List<const Node *> node_tree;
 	node_tree.push_front(this);
 

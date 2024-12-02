@@ -1037,7 +1037,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 	}
 	{
 		//for textures no longer used, unregister them
-		List<StringName> to_delete;
+		LocalVector<StringName> to_delete;
 		for (KeyValue<StringName, uint64_t> &E : used_global_textures) {
 			if (E.value != global_textures_pass) {
 				to_delete.push_back(E.key);
@@ -1049,10 +1049,10 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 			}
 		}
 
-		while (to_delete.front()) {
-			used_global_textures.erase(to_delete.front()->get());
-			to_delete.pop_front();
+		for (StringName &name : to_delete) {
+			used_global_textures.erase(name);
 		}
+
 		//handle registering/unregistering global textures
 		if (uses_global_textures != (global_texture_E != nullptr)) {
 			if (uses_global_textures) {

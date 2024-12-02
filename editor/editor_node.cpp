@@ -921,7 +921,7 @@ void EditorNode::_plugin_over_self_own(EditorPlugin *p_plugin) {
 }
 
 void EditorNode::_resources_changed(const Vector<String> &p_resources) {
-	List<Ref<Resource>> changed;
+	LocalVector<Ref<Resource>> changed;
 
 	int rc = p_resources.size();
 	for (int i = 0; i < rc; i++) {
@@ -2301,7 +2301,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 	// Remove editor plugins no longer used by this editing owner. Keep the ones that can
 	// still be reused by the new edited object.
 
-	List<EditorPlugin *> to_remove;
+	LocalVector<EditorPlugin *> to_remove;
 	for (EditorPlugin *plugin : active_plugins[owner_id]) {
 		if (!available_plugins.has(plugin)) {
 			to_remove.push_back(plugin);
@@ -2414,7 +2414,7 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	} else {
 		// If no editing owner is provided, this method will go over all owners and check if they are valid.
 		// This is to sweep properties that were removed from the inspector.
-		List<ObjectID> to_remove;
+		LocalVector<ObjectID> to_remove;
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
 			Object *context = ObjectDB::get_instance(kv.key);
 			if (context) {
@@ -6234,7 +6234,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 			}
 
 			// Store all the paths for any selected nodes which are ancestors of the node we're replacing.
-			List<NodePath> selected_node_paths;
+			LocalVector<NodePath> selected_node_paths;
 			for (Node *selected_node : editor_selection->get_selected_node_list()) {
 				if (selected_node == original_node || original_node->is_ancestor_of(selected_node)) {
 					selected_node_paths.push_back(original_node->get_path_to(selected_node));

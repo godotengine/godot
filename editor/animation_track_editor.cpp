@@ -5837,7 +5837,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Animation Move Keys"));
 
-	List<_AnimMoveRestore> to_restore;
+	LocalVector<_AnimMoveRestore> to_restore;
 
 	float motion = moving_selection_offset;
 	// 1 - remove the keys.
@@ -6146,7 +6146,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, i
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Duplicate Keys"));
 
-		List<Pair<int, float>> new_selection_values;
+		LocalVector<Pair<int, float>> new_selection_values;
 
 		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 			const SelectedKey &sk = E->key();
@@ -6295,7 +6295,7 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Paste Keys"));
-		List<Pair<int, float>> new_selection_values;
+		LocalVector<Pair<int, float>> new_selection_values;
 
 		for (int i = 0; i < key_clipboard.keys.size(); i++) {
 			const KeyClipboard::Key key = key_clipboard.keys[i];
@@ -6678,7 +6678,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Animation Scale Keys"));
 
-			List<_AnimMoveRestore> to_restore;
+			LocalVector<_AnimMoveRestore> to_restore;
 
 			// 1 - Remove the keys.
 			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {

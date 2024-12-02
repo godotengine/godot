@@ -226,7 +226,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 			List<ThemeDB::ThemeItemBind> theme_items;
 			ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true, type);
 
-			List<StringName> sn;
+			LocalVector<StringName> sn;
 			for (const ThemeDB::ThemeItemBind &E : theme_items) {
 				if (E.data_type == type) {
 					sn.push_back(E.item_name);

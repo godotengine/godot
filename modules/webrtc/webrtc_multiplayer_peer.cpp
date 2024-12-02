@@ -71,8 +71,8 @@ void WebRTCMultiplayerPeer::poll() {
 		return;
 	}
 
-	List<int> remove;
-	List<int> add;
+	LocalVector<int> remove;
+	LocalVector<int> add;
 	for (KeyValue<int, Ref<ConnectedPeer>> &E : peer_map) {
 		Ref<ConnectedPeer> peer = E.value;
 		peer->connection->poll();

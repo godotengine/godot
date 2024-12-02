@@ -183,7 +183,7 @@ void ResourcePreloaderEditor::_update_library() {
 	List<StringName> rnames;
 	preloader->get_resource_list(&rnames);
 
-	List<String> names;
+	LocalVector<String> names;
 	for (const StringName &E : rnames) {
 		names.push_back(E);
 	}

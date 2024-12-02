@@ -1609,7 +1609,7 @@ void EditorSettings::list_text_editor_themes() {
 
 	Ref<DirAccess> d = DirAccess::open(EditorPaths::get_singleton()->get_text_editor_themes_dir());
 	if (d.is_valid()) {
-		List<String> custom_themes;
+		LocalVector<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (!file.is_empty()) {

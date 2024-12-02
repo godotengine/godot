@@ -1053,7 +1053,7 @@ void EditorFileDialog::update_file_list() {
 	}
 	sort_file_info_list(file_infos, file_sort);
 
-	List<String> patterns;
+	LocalVector<String> patterns;
 	// build filter
 	if (filter->get_selected() == filter->get_item_count() - 1) {
 		// match all

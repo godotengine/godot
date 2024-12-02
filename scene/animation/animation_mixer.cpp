@@ -392,7 +392,7 @@ void AnimationMixer::rename_animation_library(const StringName &p_name, const St
 }
 
 void AnimationMixer::get_animation_list(List<StringName> *p_animations) const {
-	List<String> anims;
+	LocalVector<String> anims;
 	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 		anims.push_back(E.key);
 	}

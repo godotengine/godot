@@ -2244,7 +2244,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	bool all_have_return = true;
 	bool have_wildcard = false;
 
-	List<AnnotationNode *> match_branch_annotation_stack;
+	LocalVector<AnnotationNode *> match_branch_annotation_stack;
 
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
 		if (match(GDScriptTokenizer::Token::PASS)) {

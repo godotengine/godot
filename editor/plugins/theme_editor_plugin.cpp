@@ -68,7 +68,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 	List<StringName> types;
 	List<StringName> names;
-	List<StringName> filtered_names;
+	LocalVector<StringName> filtered_names;
 	base_theme->get_type_list(&types);
 	types.sort_custom<StringName::AlphCompare>();
 

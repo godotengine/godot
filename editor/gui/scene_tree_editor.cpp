@@ -1450,7 +1450,7 @@ void SceneTreeEditor::_edited() {
 	ERR_FAIL_NULL(edited);
 
 	if (is_scene_tree_dock && tree->get_next_selected(which)) {
-		List<Node *> nodes_to_rename;
+		LocalVector<Node *> nodes_to_rename;
 		for (TreeItem *item = which; item; item = tree->get_next_selected(item)) {
 			Node *n = get_node(item->get_metadata(0));
 			ERR_FAIL_NULL(n);
@@ -1459,7 +1459,7 @@ void SceneTreeEditor::_edited() {
 		ERR_FAIL_COND(nodes_to_rename.is_empty());
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Rename Nodes"), UndoRedo::MERGE_DISABLE, nodes_to_rename.front()->get(), true);
+		undo_redo->create_action(TTR("Rename Nodes"), UndoRedo::MERGE_DISABLE, nodes_to_rename[0], true);
 
 		TreeItem *item = which;
 		String new_name = edited->get_text(0);

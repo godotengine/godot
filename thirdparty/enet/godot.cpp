@@ -335,7 +335,7 @@ public:
 			}
 		}
 
-		List<String> remove;
+		LocalVector<String> remove;
 		Error err = ERR_BUSY;
 		// TODO this needs to be fair!
 

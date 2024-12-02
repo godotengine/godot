@@ -1283,7 +1283,7 @@ RBSet<GDScript *> GDScript::get_dependencies() {
 HashMap<GDScript *, RBSet<GDScript *>> GDScript::get_all_dependencies() {
 	HashMap<GDScript *, RBSet<GDScript *>> all_dependencies;
 
-	List<GDScript *> scripts;
+	LocalVector<GDScript *> scripts;
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 
@@ -2585,7 +2585,7 @@ void GDScriptLanguage::reload_all_scripts() {
 void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
 #ifdef DEBUG_ENABLED
 
-	List<Ref<GDScript>> scripts;
+	LocalVector<Ref<GDScript>> scripts;
 	{
 		MutexLock lock(mutex);
 

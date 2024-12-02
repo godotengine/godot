@@ -890,7 +890,7 @@ void CanvasItemEditor::_restore_canvas_item_state(const List<CanvasItem *> &p_ca
 }
 
 void CanvasItemEditor::_commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones) {
-	List<CanvasItem *> modified_canvas_items;
+	LocalVector<CanvasItem *> modified_canvas_items;
 	for (CanvasItem *ci : p_canvas_items) {
 		Dictionary old_state = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci)->undo_state;
 		Dictionary new_state = ci->_edit_get_state();
@@ -3854,7 +3854,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 }
 
 void CanvasItemEditor::_draw_hover() {
-	List<Rect2> previous_rects;
+	LocalVector<Rect2> previous_rects;
 	Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	for (int i = 0; i < hovering_results.size(); i++) {
@@ -4404,7 +4404,7 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
 				//look for an IK chain
-				List<Node2D *> ik_chain;
+				LocalVector<Node2D *> ik_chain;
 
 				Node2D *n = Object::cast_to<Node2D>(n2d->get_parent_item());
 				bool has_chain = false;

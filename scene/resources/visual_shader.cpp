@@ -1604,9 +1604,6 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		return String();
 	}
 
-	List<String> input_names;
-	List<String> output_names;
-
 	for (int i = 0; i < p_node->get_input_port_count(); i++) {
 		if (!p_output && i == p_port_id) {
 			continue;
@@ -2594,7 +2591,7 @@ void VisualShader::_update_shader() const {
 
 	String global_expressions;
 	HashSet<String> used_parameter_names;
-	List<VisualShaderNodeParameter *> parameters;
+	LocalVector<VisualShaderNodeParameter *> parameters;
 	HashMap<int, List<int>> emitters;
 	HashMap<int, List<int>> varying_setters;
 
@@ -2639,7 +2636,7 @@ void VisualShader::_update_shader() const {
 	}
 
 	int idx = 0;
-	for (List<VisualShaderNodeParameter *>::Iterator itr = parameters.begin(); itr != parameters.end(); ++itr, ++idx) {
+	for (LocalVector<VisualShaderNodeParameter *>::Iterator itr = parameters.begin(); itr != parameters.end(); ++itr, ++idx) {
 		VisualShaderNodeParameter *parameter = *itr;
 		if (used_parameter_names.has(parameter->get_parameter_name())) {
 			global_code += parameter->generate_global(get_mode(), Type(idx), -1);

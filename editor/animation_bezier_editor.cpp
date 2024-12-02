@@ -1745,7 +1745,7 @@ void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs, bool p_ofs_
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Animation Duplicate Keys"));
 
-	List<Pair<int, real_t>> new_selection_values;
+	LocalVector<Pair<int, real_t>> new_selection_values;
 
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		real_t t = animation->track_get_key_time(E->get().first, E->get().second);
@@ -1883,7 +1883,7 @@ void AnimationBezierTrackEdit::paste_keys(real_t p_ofs, bool p_ofs_valid) {
 			WARN_PRINT("Pasted animation keys from multiple tracks into single Bezier track");
 		}
 
-		List<Pair<int, float>> new_selection_values;
+		LocalVector<Pair<int, float>> new_selection_values;
 		for (int i = 0; i < editor->key_clipboard.keys.size(); i++) {
 			const AnimationTrackEditor::KeyClipboard::Key key = editor->key_clipboard.keys[i];
 

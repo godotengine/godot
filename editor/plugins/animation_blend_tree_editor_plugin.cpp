@@ -543,7 +543,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 		return;
 	}
 
-	List<StringName> to_erase;
+	LocalVector<StringName> to_erase;
 
 	if (p_nodes.is_empty()) {
 		for (int i = 0; i < graph->get_child_count(); i++) {

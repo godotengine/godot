@@ -491,7 +491,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 
 	// Prepare spawn state.
 	List<NodePath> state_props;
-	List<uint32_t> sync_ids;
+	LocalVector<uint32_t> sync_ids;
 	const HashSet<ObjectID> synchronizers = tnode->synchronizers;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);

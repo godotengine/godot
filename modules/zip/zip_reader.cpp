@@ -68,7 +68,7 @@ PackedStringArray ZIPReader::get_files() {
 	err = unzGoToFirstFile(uzf);
 	ERR_FAIL_COND_V(err != UNZ_OK, PackedStringArray());
 
-	List<String> s;
+	LocalVector<String> s;
 	do {
 		unz_file_info64 file_info;
 		String filepath;
@@ -82,8 +82,8 @@ PackedStringArray ZIPReader::get_files() {
 	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
-	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
-		arr.set(idx++, E->get());
+	for (const String &E : s) {
+		arr.set(idx++, E);
 	}
 	return arr;
 }

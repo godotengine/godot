@@ -3942,8 +3942,8 @@ void Viewport::_camera_2d_set(Camera2D *p_camera_2d) {
 }
 
 void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
-	List<ObjectID> to_erase;
-	List<ObjectID> to_mouse_exit;
+	LocalVector<ObjectID> to_erase;
+	LocalVector<ObjectID> to_mouse_exit;
 
 	for (const KeyValue<ObjectID, uint64_t> &E : physics_2d_mouseover) {
 		if (!p_clean_all_frames && E.value == p_frame_reference) {
@@ -3963,14 +3963,13 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		to_erase.push_back(E.key);
 	}
 
-	while (to_erase.size()) {
-		physics_2d_mouseover.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (ObjectID &E : to_erase) {
+		physics_2d_mouseover.erase(E);
 	}
 
 	// Per-shape.
-	List<Pair<ObjectID, int>> shapes_to_erase;
-	List<Pair<ObjectID, int>> shapes_to_mouse_exit;
+	LocalVector<Pair<ObjectID, int>> shapes_to_erase;
+	LocalVector<Pair<ObjectID, int>> shapes_to_mouse_exit;
 
 	for (KeyValue<Pair<ObjectID, int>, uint64_t> &E : physics_2d_shape_mouseover) {
 		if (!p_clean_all_frames && E.value == p_frame_reference) {
@@ -3990,24 +3989,20 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		shapes_to_erase.push_back(E.key);
 	}
 
-	while (shapes_to_erase.size()) {
-		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
-		shapes_to_erase.pop_front();
+	for (Pair<ObjectID, int> &E : shapes_to_erase) {
+		physics_2d_shape_mouseover.erase(E);
 	}
 
-	while (to_mouse_exit.size()) {
-		Object *o = ObjectDB::get_instance(to_mouse_exit.front()->get());
+	for (ObjectID &E : to_mouse_exit) {
+		Object *o = ObjectDB::get_instance(E);
 		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
 		co->_mouse_exit();
-		to_mouse_exit.pop_front();
 	}
 
-	while (shapes_to_mouse_exit.size()) {
-		Pair<ObjectID, int> e = shapes_to_mouse_exit.front()->get();
-		Object *o = ObjectDB::get_instance(e.first);
+	for (Pair<ObjectID, int> &E : shapes_to_mouse_exit) {
+		Object *o = ObjectDB::get_instance(E.first);
 		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-		co->_mouse_shape_exit(e.second);
-		shapes_to_mouse_exit.pop_front();
+		co->_mouse_shape_exit(E.second);
 	}
 }
 

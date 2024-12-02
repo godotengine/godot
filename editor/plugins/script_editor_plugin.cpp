@@ -342,7 +342,7 @@ public:
 	uint32_t max_cache_size = 128;
 
 	void cleanup() {
-		List<String> to_clean;
+		LocalVector<String> to_clean;
 
 		HashMap<String, Cache>::Iterator I = cached.begin();
 		while (I) {
@@ -352,9 +352,8 @@ public:
 			++I;
 		}
 
-		while (to_clean.front()) {
-			cached.erase(to_clean.front()->get());
-			to_clean.pop_front();
+		for (String &E : to_clean) {
+			cached.erase(E);
 		}
 	}
 

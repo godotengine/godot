@@ -948,7 +948,7 @@ void EditorAssetLibrary::_update_image_queue() {
 	const int max_images = 6;
 	int current_images = 0;
 
-	List<int> to_delete;
+	LocalVector<int> to_delete;
 	for (KeyValue<int, ImageQueue> &E : image_queue) {
 		if (!E.value.active && current_images < max_images) {
 			String cache_filename_base = EditorPaths::get_singleton()->get_cache_dir().path_join("assetimage_" + E.value.image_url.md5_text());
@@ -973,10 +973,9 @@ void EditorAssetLibrary::_update_image_queue() {
 		}
 	}
 
-	while (to_delete.size()) {
-		image_queue[to_delete.front()->get()].request->queue_free();
-		image_queue.erase(to_delete.front()->get());
-		to_delete.pop_front();
+	for (const int &key : to_delete) {
+		image_queue[key].request->queue_free();
+		image_queue.erase(key);
 	}
 }
 

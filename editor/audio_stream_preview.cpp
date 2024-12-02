@@ -226,7 +226,7 @@ AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
 void AudioStreamPreviewGenerator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
-			List<ObjectID> to_erase;
+			LocalVector<ObjectID> to_erase;
 			for (KeyValue<ObjectID, Preview> &E : previews) {
 				if (!E.value.generating.is_set()) {
 					if (E.value.thread) {
@@ -240,9 +240,8 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 				}
 			}
 
-			while (to_erase.front()) {
-				previews.erase(to_erase.front()->get());
-				to_erase.pop_front();
+			for (ObjectID &E : to_erase) {
+				previews.erase(E);
 			}
 		} break;
 	}
