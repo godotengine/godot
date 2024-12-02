@@ -606,6 +606,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
 			TS->font_set_hinting(cache[p_cache_index], hinting);
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
+			TS->font_set_keep_rounding_remainders(cache[p_cache_index], keep_rounding_remainders);
 			TS->font_set_oversampling(cache[p_cache_index], oversampling);
 		}
 	}
@@ -935,6 +936,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &FontFile::set_subpixel_positioning);
 	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &FontFile::get_subpixel_positioning);
 
+	ClassDB::bind_method(D_METHOD("set_keep_rounding_remainders", "keep_rounding_remainders"), &FontFile::set_keep_rounding_remainders);
+	ClassDB::bind_method(D_METHOD("get_keep_rounding_remainders"), &FontFile::get_keep_rounding_remainders);
+
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &FontFile::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &FontFile::get_oversampling);
 
@@ -1045,6 +1049,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25", PROPERTY_USAGE_STORAGE), "set_font_stretch", "get_font_stretch");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
@@ -1412,6 +1417,7 @@ void FontFile::reset_state() {
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+	keep_rounding_remainders = true;
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
@@ -2296,6 +2302,21 @@ TextServer::SubpixelPositioning FontFile::get_subpixel_positioning() const {
 	return subpixel_positioning;
 }
 
+void FontFile::set_keep_rounding_remainders(bool p_keep_rounding_remainders) {
+	if (keep_rounding_remainders != p_keep_rounding_remainders) {
+		keep_rounding_remainders = p_keep_rounding_remainders;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_keep_rounding_remainders(cache[i], keep_rounding_remainders);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::get_keep_rounding_remainders() const {
+	return keep_rounding_remainders;
+}
+
 void FontFile::set_oversampling(real_t p_oversampling) {
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
@@ -3086,6 +3107,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &SystemFont::set_subpixel_positioning);
 	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &SystemFont::get_subpixel_positioning);
 
+	ClassDB::bind_method(D_METHOD("set_keep_rounding_remainders", "keep_rounding_remainders"), &SystemFont::set_keep_rounding_remainders);
+	ClassDB::bind_method(D_METHOD("get_keep_rounding_remainders"), &SystemFont::get_keep_rounding_remainders);
+
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &SystemFont::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &SystemFont::is_multichannel_signed_distance_field);
 
@@ -3117,6 +3141,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
@@ -3222,6 +3247,7 @@ void SystemFont::_update_base_font() {
 		file->set_allow_system_fallback(allow_system_fallback);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
+		file->set_keep_rounding_remainders(keep_rounding_remainders);
 		file->set_multichannel_signed_distance_field(msdf);
 		file->set_msdf_pixel_range(msdf_pixel_range);
 		file->set_msdf_size(msdf_size);
@@ -3265,6 +3291,7 @@ void SystemFont::reset_state() {
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+	keep_rounding_remainders = true;
 	oversampling = 0.f;
 	msdf = false;
 
@@ -3416,6 +3443,20 @@ void SystemFont::set_subpixel_positioning(TextServer::SubpixelPositioning p_subp
 
 TextServer::SubpixelPositioning SystemFont::get_subpixel_positioning() const {
 	return subpixel_positioning;
+}
+
+void SystemFont::set_keep_rounding_remainders(bool p_keep_rounding_remainders) {
+	if (keep_rounding_remainders != p_keep_rounding_remainders) {
+		keep_rounding_remainders = p_keep_rounding_remainders;
+		if (base_font.is_valid()) {
+			base_font->set_keep_rounding_remainders(keep_rounding_remainders);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::get_keep_rounding_remainders() const {
+	return keep_rounding_remainders;
 }
 
 void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
