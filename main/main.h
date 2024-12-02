@@ -46,6 +46,7 @@ class Main {
 		CLI_OPTION_AVAILABILITY_HIDDEN,
 	};
 
+	static void print_argument_error(const char *p_message);
 	static void print_header(bool p_rich);
 	static void print_help_copyright(const char *p_notice);
 	static void print_help_title(const char *p_title);
