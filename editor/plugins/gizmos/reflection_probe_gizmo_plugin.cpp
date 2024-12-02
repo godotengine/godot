@@ -47,7 +47,7 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	gizmo_color.a = 0.5;
 	create_material("reflection_internal_material", gizmo_color);
 
-	gizmo_color.a = 0.1;
+	gizmo_color.a = 0.025;
 	create_material("reflection_probe_solid_material", gizmo_color);
 
 	create_icon_material("reflection_probe_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoReflectionProbe"), EditorStringName(EditorIcons)));
@@ -165,22 +165,17 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		aabb.position = -size / 2;
 		aabb.size = size;
 
-		for (int i = 0; i < 8; i++) {
-			Vector3 ep = aabb.get_endpoint(i);
-			internal_lines.push_back(probe->get_origin_offset());
-			internal_lines.push_back(ep);
-		}
-
 		Vector<Vector3> handles = helper->box_get_handles(probe->get_size());
 
-		for (int i = 0; i < 3; i++) {
-			Vector3 orig_handle = probe->get_origin_offset();
-			orig_handle[i] -= 0.25;
-			lines.push_back(orig_handle);
-			handles.push_back(orig_handle);
+		if (probe->get_origin_offset() != Vector3(0.0, 0.0, 0.0)) {
+			for (int i = 0; i < 3; i++) {
+				Vector3 orig_handle = probe->get_origin_offset();
+				orig_handle[i] -= 0.25;
+				lines.push_back(orig_handle);
 
-			orig_handle[i] += 0.5;
-			lines.push_back(orig_handle);
+				orig_handle[i] += 0.5;
+				lines.push_back(orig_handle);
+			}
 		}
 
 		Ref<Material> material = get_material("reflection_probe_material", p_gizmo);
