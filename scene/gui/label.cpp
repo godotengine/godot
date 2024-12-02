@@ -216,9 +216,11 @@ void Label::_shape() const {
 	bool lines_hidden = visible_lines > 0 && visible_lines < total_line_count;
 
 	int line_index = 0;
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
+		minsize.width = 0.0f;
+	}
 	for (Paragraph &para : paragraphs) {
 		if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
-			minsize.width = 0.0f;
 			for (const RID &line_rid : para.lines_rid) {
 				if (minsize.width < TS->shaped_text_get_size(line_rid).x) {
 					minsize.width = TS->shaped_text_get_size(line_rid).x;
