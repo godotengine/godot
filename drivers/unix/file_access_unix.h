@@ -43,7 +43,7 @@ typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
 class FileAccessUnix : public FileAccess {
 	FILE *f = nullptr;
 	int flags = 0;
-	void check_errors() const;
+	void check_errors(bool p_write = false) const;
 	mutable Error last_error = OK;
 	String save_path;
 	String path;
