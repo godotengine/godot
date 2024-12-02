@@ -41,7 +41,7 @@
 class FileAccessWindows : public FileAccess {
 	FILE *f = nullptr;
 	int flags = 0;
-	void check_errors() const;
+	void check_errors(bool p_write = false) const;
 	mutable int prev_op = 0;
 	mutable Error last_error = OK;
 	String path;
