@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -124,7 +125,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 	}
 
 	if (is_base_type_node && p_type.operator String().begins_with("Editor")) {
-		return true; // Do not show editor nodes.
+		return true; // Do not show editor nodes or create dialog.
 	}
 
 	if (ClassDB::class_exists(p_type)) {
@@ -289,9 +290,15 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
 		String script_path = ScriptServer::get_global_class_path(p_type);
-		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
-
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		String suffix = script_path.get_file();
+		if (scr.is_valid() && custom_type_suffixes.has(p_type)) {
+			suffix = custom_type_suffixes[p_type];
+		}
+		if (!suffix.is_empty()) {
+			r_item->set_suffix(0, "(" + suffix + ")");
+		}
+		
 		ERR_FAIL_COND(!scr.is_valid());
 		is_abstract = scr->is_abstract();
 	} else {
@@ -817,4 +824,7 @@ CreateDialog::CreateDialog() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	set_clamp_to_embedder(true);
+
+	editor_create_dialog = memnew(EditorCreateDialog(this));
+	add_child(editor_create_dialog);
 }

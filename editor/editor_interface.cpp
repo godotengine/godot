@@ -774,6 +774,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
 
+	ADD_SIGNAL(MethodInfo("create_dialog_showed", PropertyInfo(Variant::OBJECT, "editor_create_dialog", PROPERTY_HINT_RESOURCE_TYPE, "EditorCreateDialog")));
+	ADD_SIGNAL(MethodInfo("create_dialog_hid", PropertyInfo(Variant::OBJECT, "editor_create_dialog", PROPERTY_HINT_RESOURCE_TYPE, "EditorCreateDialog")));
+
 	// Editor docks.
 
 	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
