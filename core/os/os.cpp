@@ -536,14 +536,9 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 
-	if (has_server_feature_callback) {
-		return has_server_feature_callback(p_feature);
+	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
+		return true;
 	}
-#ifdef DEBUG_ENABLED
-	else if (is_stdout_verbose()) {
-		WARN_PRINT_ONCE("Server features cannot be checked before RenderingServer has been created. If you are checking a server feature, consider moving your OS::has_feature call after INITIALIZATION_LEVEL_SERVERS.");
-	}
-#endif
 
 	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature)) {
 		return true;
