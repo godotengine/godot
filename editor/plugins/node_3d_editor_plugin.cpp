@@ -3097,6 +3097,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 				if (selection.size() == 1) {
 					Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+					if (!first_selected_node) {
+						_edit.mode = TRANSFORM_NONE;
+						collision_reposition = false;
+						return;
+					}
 					double snap = EDITOR_GET("interface/inspector/default_float_step");
 					int snap_step_decimals = Math::range_step_decimals(snap);
 					set_message(TTR("Translating:") + " (" + String::num(first_selected_node->get_global_position().x, snap_step_decimals) + ", " +
