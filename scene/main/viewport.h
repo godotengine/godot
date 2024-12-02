@@ -585,6 +585,7 @@ public:
 	void set_disable_input_override(bool p_disable);
 
 	Vector2 get_mouse_position() const;
+	Vector2 get_embedder_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
 	virtual void update_mouse_cursor_state();
 
