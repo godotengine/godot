@@ -664,7 +664,7 @@ public:
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
 	Viewport *get_parent_viewport() const;
-	Window *get_base_window() const;
+	Window *get_base_window();
 
 	void set_canvas_cull_mask(uint32_t p_layers);
 	uint32_t get_canvas_cull_mask() const;

@@ -488,7 +488,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 		paragraph = text_buf;
 	} else {
 		paragraph.instantiate();
-		const_cast<Button *>(this)->_shape(paragraph, p_text);
+		_shape(paragraph, p_text);
 	}
 
 	Size2 minsize = paragraph->get_size();
@@ -527,7 +527,7 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	return (theme_cache.align_to_largest_stylebox ? _get_largest_stylebox_size() : _get_current_stylebox()->get_minimum_size()) + minsize;
 }
 
-void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
+void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) const {
 	if (p_paragraph.is_null()) {
 		p_paragraph = text_buf;
 	}
