@@ -2311,10 +2311,13 @@ String RichTextLabel::get_tooltip(const Point2 &p_pos) const {
 
 	String description;
 	if (c_item && !outside) {
+		ItemMeta *meta = nullptr;
 		if (const_cast<RichTextLabel *>(this)->_find_hint(c_item, &description)) {
 			return description;
 		} else if (c_item->type == ITEM_IMAGE && !static_cast<ItemImage *>(c_item)->tooltip.is_empty()) {
 			return static_cast<ItemImage *>(c_item)->tooltip;
+		} else if (const_cast<RichTextLabel *>(this)->_find_meta(c_item, nullptr, &meta) && meta && !meta->tooltip.is_empty()) {
+			return meta->tooltip;
 		}
 	}
 
@@ -3778,7 +3781,7 @@ void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize, c
 	_add_item(item, true, true);
 }
 
-void RichTextLabel::push_meta(const Variant &p_meta, MetaUnderline p_underline_mode) {
+void RichTextLabel::push_meta(const Variant &p_meta, MetaUnderline p_underline_mode, const String &p_tooltip) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3788,6 +3791,7 @@ void RichTextLabel::push_meta(const Variant &p_meta, MetaUnderline p_underline_m
 	item->rid = items.make_rid(item);
 	item->meta = p_meta;
 	item->underline = p_underline_mode;
+	item->tooltip = p_tooltip;
 	_add_item(item, true);
 }
 
@@ -4787,6 +4791,34 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 
+		} else if (tag.begins_with("url ")) {
+			String url;
+			MetaUnderline underline = META_UNDERLINE_ALWAYS;
+			String tooltip;
+
+			OptionMap::Iterator underline_option = bbcode_options.find("underline");
+			if (underline_option) {
+				if (underline_option->value == "never") {
+					underline = META_UNDERLINE_NEVER;
+				} else if (underline_option->value == "always") {
+					underline = META_UNDERLINE_ALWAYS;
+				} else if (underline_option->value == "hover") {
+					underline = META_UNDERLINE_ON_HOVER;
+				}
+			}
+			OptionMap::Iterator tooltip_option = bbcode_options.find("tooltip");
+			if (tooltip_option) {
+				tooltip = tooltip_option->value;
+			}
+			OptionMap::Iterator href_option = bbcode_options.find("href");
+			if (href_option) {
+				url = href_option->value;
+			}
+
+			push_meta(url, underline, tooltip);
+
+			pos = brk_end + 1;
+			tag_stack.push_front("url");
 		} else if (tag.begins_with("url=")) {
 			String url = _get_tag_value(tag).unquote();
 			push_meta(url, META_UNDERLINE_ALWAYS);
@@ -6267,7 +6299,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
-	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS));
+	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode", "tooltip"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
