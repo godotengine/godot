@@ -71,6 +71,11 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
+		return false;
+	}
+
 	if (node->get_curve().is_null()) {
 		return false;
 	}
@@ -390,6 +395,11 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	if (!node || !node->is_visible_in_tree() || node->get_curve().is_null()) {
+		return;
+	}
+
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
 		return;
 	}
 

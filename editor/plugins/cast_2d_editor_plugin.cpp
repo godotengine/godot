@@ -35,6 +35,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/physics/ray_cast_2d.h"
 #include "scene/2d/physics/shape_cast_2d.h"
+#include "scene/main/viewport.h"
 
 void Cast2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -56,6 +57,11 @@ void Cast2DEditor::_node_removed(Node *p_node) {
 
 bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	if (!node || !node->is_visible_in_tree()) {
+		return false;
+	}
+
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
 		return false;
 	}
 
@@ -111,6 +117,11 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 
 void Cast2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	if (!node || !node->is_visible_in_tree()) {
+		return;
+	}
+
+	Viewport *vp = node->get_viewport();
+	if (vp && !vp->is_visible_subviewport()) {
 		return;
 	}
 

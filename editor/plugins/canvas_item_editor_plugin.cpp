@@ -618,6 +618,9 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
 		xform = cl->get_transform();
 	} else if (Viewport *vp = Object::cast_to<Viewport>(p_node)) {
+		if (!vp->is_visible_subviewport()) {
+			return;
+		}
 		xform = vp->get_popup_base_transform();
 		if (!vp->get_visible_rect().has_point(xform.xform_inv(p_pos))) {
 			return;
@@ -718,6 +721,9 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
 		xform = cl->get_transform();
 	} else if (Viewport *vp = Object::cast_to<Viewport>(p_node)) {
+		if (!vp->is_visible_subviewport()) {
+			return;
+		}
 		xform = vp->get_popup_base_transform();
 		if (!vp->get_visible_rect().intersects(xform.xform_inv(p_rect))) {
 			return;
@@ -797,6 +803,10 @@ List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool p_retrieve_lo
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
 		if (ci) {
 			if (ci->is_visible_in_tree() && (p_retrieve_locked || !_is_node_locked(ci))) {
+				Viewport *vp = ci->get_viewport();
+				if (vp && !vp->is_visible_subviewport()) {
+					continue;
+				}
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 				if (se) {
 					selection.push_back(ci);
@@ -3819,6 +3829,9 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		parent_xform = Transform2D();
 		canvas_xform = cl->get_transform();
 	} else if (Viewport *vp = Object::cast_to<Viewport>(p_node)) {
+		if (!vp->is_visible_subviewport()) {
+			return;
+		}
 		parent_xform = Transform2D();
 		canvas_xform = vp->get_popup_base_transform();
 	}
@@ -3947,10 +3960,15 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 
 	if (ci && !ci->is_set_as_top_level()) {
 		parent_xform = parent_xform * ci->get_transform();
-	} else {
-		CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+	} else if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
 		parent_xform = Transform2D();
-		canvas_xform = cl ? cl->get_transform() : p_canvas_xform;
+		canvas_xform = cl->get_transform();
+	} else if (Viewport *vp = Object::cast_to<Viewport>(p_node)) {
+		if (!vp->is_visible_subviewport()) {
+			return;
+		}
+		parent_xform = Transform2D();
+		canvas_xform = vp->get_popup_base_transform();
 	}
 
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
