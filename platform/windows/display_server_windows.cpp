@@ -786,6 +786,10 @@ void DisplayServerWindows::process_file_dialog_callbacks() {
 	}
 }
 
+void DisplayServerWindows::beep() const {
+	MessageBeep(MB_OK);
+}
+
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 

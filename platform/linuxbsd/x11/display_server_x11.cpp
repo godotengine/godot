@@ -400,6 +400,10 @@ Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, con
 
 #endif
 
+void DisplayServerX11::beep() const {
+	XBell(x11_display, 0);
+}
+
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 

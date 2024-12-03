@@ -1026,6 +1026,7 @@ Files extracted from upstream source:
 - `staging/fractional-scale/fractional-scale-v1.xml`
 - `staging/xdg-activation/README`
 - `staging/xdg-activation/xdg-activation-v1.xml`
+- `staging/xdg-system-bell/xdg-system-bell-v1.xml`
 - `unstable/idle-inhibit/README`
 - `unstable/idle-inhibit/idle-inhibit-unstable-v1.xml`
 - `unstable/pointer-constraints/README`
