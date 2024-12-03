@@ -469,7 +469,7 @@ void FileDialog::_action_pressed() {
 	String file_text = file->get_text();
 	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
-	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
+	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
 		emit_signal(SNAME("file_selected"), f);
 		hide();
 	} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
@@ -541,7 +541,7 @@ void FileDialog::_action_pressed() {
 			return;
 		}
 
-		if (dir_access->file_exists(f)) {
+		if (dir_access->file_exists(f) || dir_access->is_bundle(f)) {
 			confirm_save->set_text(vformat(atr(ETR("File \"%s\" already exists.\nDo you want to overwrite it?")), f));
 			confirm_save->popup_centered(Size2(250, 80));
 		} else {
@@ -693,6 +693,74 @@ void FileDialog::update_file_name() {
 	}
 }
 
+void FileDialog::_item_menu_id_pressed(int p_option) {
+	switch (p_option) {
+		case ITEM_MENU_SHOW_IN_EXPLORER: {
+			TreeItem *ti = tree->get_selected();
+			String path;
+			if (ti) {
+				Dictionary d = ti->get_metadata(0);
+				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir().path_join(d["name"]));
+			} else {
+				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir());
+			}
+
+			OS::get_singleton()->shell_show_in_file_manager(path, true);
+		} break;
+
+		case ITEM_MENU_SHOW_BUNDLE_CONTENT: {
+			TreeItem *ti = tree->get_selected();
+			if (!ti) {
+				return;
+			}
+			Dictionary d = ti->get_metadata(0);
+			_change_dir(d["name"]);
+			if (mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES || mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
+				file->set_text("");
+			}
+			_push_history();
+		} break;
+	}
+}
+
+void FileDialog::_empty_clicked(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button == MouseButton::RIGHT) {
+		item_menu->clear();
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		// Opening the system file manager is not supported on the Android and web editors.
+		item_menu->add_item(ETR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+
+		item_menu->set_position(tree->get_screen_position() + p_pos);
+		item_menu->reset_size();
+		item_menu->popup();
+#endif
+	}
+}
+
+void FileDialog::_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button == MouseButton::RIGHT) {
+		item_menu->clear();
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		// Opening the system file manager is not supported on the Android and web editors.
+		TreeItem *ti = tree->get_selected();
+		if (!ti) {
+			return;
+		}
+		Dictionary d = ti->get_metadata(0);
+		if (d["bundle"]) {
+			item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
+		}
+		item_menu->add_item(ETR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+
+		item_menu->set_position(tree->get_screen_position() + p_pos);
+		item_menu->reset_size();
+		item_menu->popup();
+#endif
+	} else {
+		_tree_selected();
+	}
+}
+
 void FileDialog::update_file_list() {
 	tree->clear();
 
@@ -738,26 +806,6 @@ void FileDialog::update_file_list() {
 
 	String filename_filter_lower = file_name_filter.to_lower();
 
-	while (!dirs.is_empty()) {
-		const String &dir_name = dirs.front()->get();
-
-		if (filename_filter_lower.is_empty() || dir_name.to_lower().contains(filename_filter_lower)) {
-			TreeItem *ti = tree->create_item(root);
-
-			ti->set_text(0, dir_name);
-			ti->set_icon(0, theme_cache.folder);
-			ti->set_icon_modulate(0, theme_cache.folder_icon_color);
-
-			Dictionary d;
-			d["name"] = dir_name;
-			d["dir"] = true;
-
-			ti->set_metadata(0, d);
-		}
-
-		dirs.pop_front();
-	}
-
 	List<String> patterns;
 	// build filter
 	if (filter->get_selected() == filter->get_item_count() - 1) {
@@ -782,6 +830,40 @@ void FileDialog::update_file_list() {
 				patterns.push_back(f.get_slice(",", j).strip_edges());
 			}
 		}
+	}
+
+	while (!dirs.is_empty()) {
+		const String &dir_name = dirs.front()->get();
+
+		bool bundle = dir_access->is_bundle(dir_name);
+		bool found = true;
+		if (bundle) {
+			bool match = patterns.is_empty();
+			for (const String &E : patterns) {
+				if (dir_name.matchn(E)) {
+					match = true;
+					break;
+				}
+			}
+			found = match;
+		}
+
+		if (found && (filename_filter_lower.is_empty() || dir_name.to_lower().contains(filename_filter_lower))) {
+			TreeItem *ti = tree->create_item(root);
+
+			ti->set_text(0, dir_name);
+			ti->set_icon(0, theme_cache.folder);
+			ti->set_icon_modulate(0, theme_cache.folder_icon_color);
+
+			Dictionary d;
+			d["name"] = dir_name;
+			d["dir"] = !bundle;
+			d["bundle"] = bundle;
+
+			ti->set_metadata(0, d);
+		}
+
+		dirs.pop_front();
 	}
 
 	String base_dir = dir_access->get_current_dir();
@@ -817,6 +899,7 @@ void FileDialog::update_file_list() {
 			Dictionary d;
 			d["name"] = files.front()->get();
 			d["dir"] = false;
+			d["bundle"] = false;
 			ti->set_metadata(0, d);
 
 			if (file->get_text() == files.front()->get() || match_str == files.front()->get()) {
@@ -1663,10 +1746,14 @@ FileDialog::FileDialog() {
 	_update_drives();
 
 	connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_action_pressed));
+	tree->set_allow_rmb_select(true);
 	tree->connect("multi_selected", callable_mp(this, &FileDialog::_tree_multi_selected), CONNECT_DEFERRED);
 	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), CONNECT_DEFERRED);
 	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated));
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
+	tree->connect("item_mouse_selected", callable_mp(this, &FileDialog::_rmb_select));
+	tree->connect("empty_clicked", callable_mp(this, &FileDialog::_empty_clicked));
+
 	dir->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_dir_submitted));
 	filename_filter->connect(SceneStringName(text_changed), callable_mp(this, &FileDialog::_filename_filter_changed).unbind(1));
 	filename_filter->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_filename_filter_selected).unbind(1));
@@ -1696,6 +1783,10 @@ FileDialog::FileDialog() {
 	exterr = memnew(AcceptDialog);
 	exterr->set_text(ETR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
+
+	item_menu = memnew(PopupMenu);
+	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileDialog::_item_menu_id_pressed));
+	add_child(item_menu);
 
 	update_filters();
 	update_filename_filter_gui();

@@ -82,7 +82,8 @@ private:
 		ITEM_MENU_DELETE,
 		ITEM_MENU_REFRESH,
 		ITEM_MENU_NEW_FOLDER,
-		ITEM_MENU_SHOW_IN_EXPLORER
+		ITEM_MENU_SHOW_IN_EXPLORER,
+		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 	};
 
 	ConfirmationDialog *makedialog = nullptr;
@@ -167,6 +168,7 @@ private:
 		Ref<Texture2D> parent_folder;
 		Ref<Texture2D> forward_folder;
 		Ref<Texture2D> back_folder;
+		Ref<Texture2D> open_folder;
 		Ref<Texture2D> reload;
 		Ref<Texture2D> toggle_hidden;
 		Ref<Texture2D> toggle_filename_filter;

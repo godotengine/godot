@@ -232,6 +232,14 @@
 				Returns the available space on the current directory's disk, in bytes. Returns [code]0[/code] if the platform-specific method to query the available space fails.
 			</description>
 		</method>
+		<method name="is_bundle" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the directory is a macOS bundle.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="is_case_sensitive" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
