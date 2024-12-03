@@ -77,6 +77,15 @@ void CharacterAnimationItem::_set_animation_scale_by_length(float p_length)
 /************************************************************************************************************************************************************************************************************************/
 void CharacterAnimatorNodeBase::_bind_methods()
 {
+    ClassDB::bind_method(D_METHOD("set_priview_prefab_path", "priview_prefab_path"), &CharacterAnimatorNodeBase::set_priview_prefab_path);
+    ClassDB::bind_method(D_METHOD("get_priview_prefab_path"), &CharacterAnimatorNodeBase::get_priview_prefab_path);
+
+    ClassDB::bind_method(D_METHOD("set_group", "group"), &CharacterAnimatorNodeBase::set_group);
+    ClassDB::bind_method(D_METHOD("get_group"), &CharacterAnimatorNodeBase::get_group);
+
+    ClassDB::bind_method(D_METHOD("set_tag", "tag"), &CharacterAnimatorNodeBase::set_tag);
+    ClassDB::bind_method(D_METHOD("get_tag"), &CharacterAnimatorNodeBase::get_tag);
+
     ClassDB::bind_method(D_METHOD("_get_blackbord_propertys"), &CharacterAnimatorNodeBase::_get_blackbord_propertys);
 
     
@@ -94,8 +103,14 @@ void CharacterAnimatorNodeBase::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_loop_count"), &CharacterAnimatorNodeBase::get_loop_count);
 
 
+    ADD_SUBGROUP("editor", "");
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "priview_prefab_path"), "set_priview_prefab_path", "get_priview_prefab_path");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "group"), "set_group", "get_group");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "tag"), "set_tag", "get_tag");
 
 
+    ADD_SUBGROUP("logic", "");
 
     ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_arrays", PROPERTY_HINT_ARRAY_TYPE, "CharacterAnimationItem"), "set_animation_arrays", "get_animation_arrays");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_out_time"), "set_fade_out_time", "get_fade_out_time");

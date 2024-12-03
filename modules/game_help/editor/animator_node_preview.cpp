@@ -224,7 +224,7 @@ void AnimationNodePreview::process(double delta)  {
         tag_enum->update_property();
     }
 
-    if(preview_type != PT_Animation) {
+    if(preview_type == PT_AnimationNode) {
         Ref<BlackboardPlan> blackboard = get_preview_blackboard();
         if (preview_character->get_blackboard_plan() != blackboard)
         {
@@ -369,8 +369,8 @@ void AnimationNodePreview::set_animator_node(Ref<CharacterAnimatorNodeBase> p_no
         node->set_blackboard_plan(get_preview_blackboard());
     }
     stop();
-    group_enum->set_visible(false);
-    tag_enum->set_visible(false);
+    group_enum->set_visible(true);
+    tag_enum->set_visible(true);
 }
 void AnimationNodePreview::set_animator_node_path(String p_path) {
     node_path = p_path;
@@ -381,8 +381,8 @@ void AnimationNodePreview::set_animator_node_path(String p_path) {
         node->set_blackboard_plan(get_preview_blackboard());
     }
     stop();
-    group_enum->set_visible(false);
-    tag_enum->set_visible(false);
+    group_enum->set_visible(true);
+    tag_enum->set_visible(true);
 }
 
 
@@ -602,6 +602,10 @@ void AnimationNodePreview::set_group(String p_group) {
     {
     case PT_AnimationNode:
         {
+            if(node.is_valid()) {
+                node->set_group(p_group);
+                ResourceSaver::save(node, node_path);
+            }
         }
         break;
     case PT_CharacterBodyPrefab:   
@@ -634,6 +638,9 @@ String AnimationNodePreview::get_group() {
     {
     case PT_AnimationNode:
         {
+            if(node.is_valid()) {
+                return node->get_group();
+            }
         }
         break;
     case PT_CharacterBodyPrefab:   
@@ -663,6 +670,10 @@ void AnimationNodePreview::set_tag(String p_tag)  {
     {
     case PT_AnimationNode:
         {
+            if(node.is_valid()) {
+                node->set_tag(p_tag);
+                ResourceSaver::save(node, node_path);
+            }
         }
         break;
     case PT_CharacterBodyPrefab:   
@@ -682,6 +693,9 @@ String AnimationNodePreview::get_tag() {
     {
     case PT_AnimationNode:
         {
+            if(node.is_valid()) {
+                return node->get_tag();
+            }
         }
         break;
     case PT_CharacterBodyPrefab:   

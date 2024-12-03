@@ -258,8 +258,20 @@ public:
         }
         return rs;
     }
+
+    void set_priview_prefab_path(const String& p_preview_prefab_path) { preview_prefab_path = p_preview_prefab_path; }
+    String get_priview_prefab_path() { return preview_prefab_path; }
+
+    void set_group(const StringName& p_group) { group = p_group; }
+    StringName get_group() { return group; }
+
+    void set_tag(const StringName& p_tag) { tag = p_tag; }
+    StringName get_tag() { return tag; }
 protected:
-    
+    // 预览预制体的路径
+    String preview_prefab_path;
+    StringName group;
+    StringName tag;
     Ref<BlackboardPlan> blackboard_plan;
     LocalVector<Ref<CharacterAnimationItem>>		animation_arrays;
     StringName								black_board_property;

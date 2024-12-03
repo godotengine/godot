@@ -102,6 +102,8 @@ class CharacterAnimationLibrary : public Resource
 
         ADD_GROUP(L"创建动画节点", "editor_");
 
+        ClassDB::bind_method(D_METHOD("set_base_library", "base_library"), &CharacterAnimationLibrary::set_base_library);
+        ClassDB::bind_method(D_METHOD("get_base_library"), &CharacterAnimationLibrary::get_base_library);
 
         ClassDB::bind_method(D_METHOD("set_animator_node_name", "animator_node_name"), &CharacterAnimationLibrary::set_animator_node_name);
         ClassDB::bind_method(D_METHOD("get_animator_node_name"), &CharacterAnimationLibrary::get_animator_node_name);
@@ -110,6 +112,7 @@ class CharacterAnimationLibrary : public Resource
         ClassDB::bind_method(D_METHOD("get_animator_node_type"), &CharacterAnimationLibrary::get_animator_node_type);
 
 
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_library", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimationLibrary"), "set_base_library", "get_base_library");
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animator_node_name"), "set_animator_node_name", "get_animator_node_name");
         ADD_PROPERTY(PropertyInfo(Variant::INT, "editor_animator_node_type", PROPERTY_HINT_ENUM, L"1D,2D,循环最后一个"), "set_animator_node_type", "get_animator_node_type");
         ADD_MEMBER_BUTTON(editor_create_animation_node,L"创建动画节点", CharacterAnimationLibrary);
@@ -135,10 +138,11 @@ public:
         {
             return animations[p_name];
         }
-        else
+        if(base_library.is_valid())
         {
-            ERR_PRINT(String("not find animation ") +  p_name.operator String().utf8().get_data());
+            return base_library->get_animation_by_name(p_name);
         }
+        ERR_PRINT(String("not find animation ") +  p_name.operator String().utf8().get_data());
         return Ref<CharacterAnimationLibraryItem>();
     }
     void init_animation_library()
@@ -163,6 +167,21 @@ public:
         T_CharacterAnimatorNode2D,
         T_CharacterAnimatorLoopLast,
     };
+    void set_base_library(Ref<CharacterAnimationLibrary> p_base_library) { 
+        if(p_base_library.is_valid()) {
+            Ref<CharacterAnimationLibrary> base = p_base_library;
+            while(base.is_valid()) {
+                if(base == this) {
+                    ERR_PRINT(L"循环引用 base library!");
+                    return;
+                }
+                base = base->base_library;
+            }
+        }
+        base_library = p_base_library; 
+    }
+    Ref<CharacterAnimationLibrary> get_base_library() { return base_library; }
+
     void set_animator_node_name(String p_animator_node_name) { animator_node_name = p_animator_node_name; }
     String get_animator_node_name() { return animator_node_name; }
 
@@ -173,6 +192,8 @@ public:
     int animator_node_type = T_CharacterAnimatorNode1D;
     DECL_MEMBER_BUTTON(editor_create_animation_node);
 public:
+    // 繼承的基类动作库
+    Ref<CharacterAnimationLibrary> base_library;
     TypedArray<CharacterAnimationLibraryItem> animation_library;
     HashMap<StringName, Ref<CharacterAnimationLibraryItem>> animations;
     bool is_init = false;
