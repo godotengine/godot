@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_create_dialog.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
@@ -128,6 +129,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true; // Do not show editor nodes or create dialog.
 	}
 
+	HashSet<String> &custom_type_blacklist = EditorInterface::get_singleton()->get_create_dialog()->get_type_blacklist();
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -144,6 +146,11 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		for (const StringName &E : type_blacklist) {
 			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
+			}
+		}
+		for (const StringName &E : custom_type_blacklist) {
+			if (ClassDB::is_parent_class(p_type, E)) {
+				return true; // Parent type is listed in the custom blacklist.
 			}
 		}
 	} else {
@@ -165,9 +172,18 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 			while (i > -1) {
 				const String plugin_path = script_path.substr(0, i).path_join("plugin.cfg");
 				if (FileAccess::exists(plugin_path)) {
-					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path);
+					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path); // Only the custom type by an enabled addon can display in the create dialog.
 				}
 				i = script_path.find_char('/', i + 1);
+			}
+		}
+
+		if (custom_type_blacklist.has(p_type)) {
+			return true;
+		}
+		for (const StringName &E : custom_type_blacklist) {
+			if (E == ScriptServer::get_global_class_base(p_type)|| ScriptServer::get_global_class_native_base(p_type) == E) {
+				return true; // Parent type is listed in the custom blacklist.
 			}
 		}
 	}
@@ -291,9 +307,10 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_text(0, p_type);
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		EditorCreateDialog *ecd = EditorInterface::get_singleton()->get_create_dialog();
 		String suffix = script_path.get_file();
-		if (scr.is_valid() && custom_type_suffixes.has(p_type)) {
-			suffix = custom_type_suffixes[p_type];
+		if (scr.is_valid() && ecd->has_type_custom_suffix(p_type)) {
+			suffix = ecd->get_type_custom_suffix(p_type);
 		}
 		if (!suffix.is_empty()) {
 			r_item->set_suffix(0, "(" + suffix + ")");
@@ -425,6 +442,7 @@ void CreateDialog::_confirmed() {
 	hide();
 
 	emit_signal(SNAME("create"));
+	EditorInterface::get_singleton()->get_create_dialog()->emit_signal("created");
 	_cleanup();
 }
 
@@ -460,11 +478,16 @@ void CreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			EditorCreateDialog *ecd = EditorInterface::get_singleton()->get_create_dialog();
 			if (is_visible()) {
 				callable_mp((Control *)search_box, &Control::grab_focus).call_deferred(); // Still not visible.
 				search_box->select_all();
+				ecd->set_create_dialog(this);
+				ecd->emit_signal("dialog_poped");
 			} else {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
+				ecd->emit_signal("dialog_closed");
+				ecd->set_create_dialog(nullptr);
 			}
 		} break;
 
@@ -712,6 +735,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 	}
 
 	emit_signal(SNAME("favorites_updated"));
+	EditorInterface::get_singleton()->get_create_dialog()->emit_signal("favorites_updated");
 }
 
 void CreateDialog::_load_favorites_and_history() {
@@ -824,7 +848,4 @@ CreateDialog::CreateDialog() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	set_clamp_to_embedder(true);
-
-	editor_create_dialog = memnew(EditorCreateDialog(this));
-	add_child(editor_create_dialog);
 }

@@ -38,6 +38,7 @@
 
 class Control;
 class EditorCommandPalette;
+class EditorCreateDialog;
 class EditorFileSystem;
 class EditorInspector;
 class EditorPaths;
@@ -99,6 +100,7 @@ public:
 	// Editor tools.
 
 	EditorCommandPalette *get_command_palette() const;
+	EditorCreateDialog *get_create_dialog() const;
 	EditorFileSystem *get_resource_file_system() const;
 	EditorPaths *get_editor_paths() const;
 	EditorResourcePreview *get_resource_previewer() const;

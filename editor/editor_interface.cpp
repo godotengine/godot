@@ -33,6 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_create_dialog.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -73,6 +74,10 @@ void EditorInterface::restart_editor(bool p_save) {
 
 EditorCommandPalette *EditorInterface::get_command_palette() const {
 	return EditorCommandPalette::get_singleton();
+}
+
+EditorCreateDialog *EditorInterface::get_create_dialog() const {
+	return EditorCreateDialog::get_singleton();
 }
 
 EditorFileSystem *EditorInterface::get_resource_file_system() const {
@@ -728,6 +733,7 @@ void EditorInterface::_bind_methods() {
 	// Editor tools.
 
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
+	ClassDB::bind_method(D_METHOD("get_create_dialog"), &EditorInterface::get_create_dialog);
 	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
@@ -773,9 +779,6 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
-
-	ADD_SIGNAL(MethodInfo("create_dialog_showed", PropertyInfo(Variant::OBJECT, "editor_create_dialog", PROPERTY_HINT_RESOURCE_TYPE, "EditorCreateDialog")));
-	ADD_SIGNAL(MethodInfo("create_dialog_hid", PropertyInfo(Variant::OBJECT, "editor_create_dialog", PROPERTY_HINT_RESOURCE_TYPE, "EditorCreateDialog")));
 
 	// Editor docks.
 

@@ -32,8 +32,8 @@
 
 #include "core/object/script_language.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
-#include "editor/editor_create_dialog.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_create_dialog.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_interface.h"

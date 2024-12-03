@@ -31,40 +31,56 @@
 #ifndef EDITOR_CREATE_DIALOG_H
 #define EDITOR_CREATE_DIALOG_H
 
+#include "core/object/object.h"
 #include "editor/create_dialog.h"
-#include "editor/editor_node.h"
+#include "scene/gui/tree.h"
 
-class CreateDialog;
+class EditorCreateDialog : public Object {
+	GDCLASS(EditorCreateDialog, Object);
 
-class EditorCreateDialog : public Node {
-	GDCLASS(EditorCreateDialog, Node);
-
+	static EditorCreateDialog *singleton;
 	CreateDialog *create_dialog = nullptr;
+
+	HashSet<String> custom_type_blacklist;
+	HashMap<StringName, String> custom_type_suffixes;
 
 #define CHECK_IF_NO_BOUND_CREATE_DIALOG \
 	ERR_FAIL_COND_MSG(create_dialog == nullptr, "Null create dialog is bound. It's a bug and please report it.")
 #define CHECK_IF_NO_BOUND_CREATE_DIALOG_V(m_retval) \
 	ERR_FAIL_COND_V_MSG(create_dialog == nullptr, (m_retval), "Null create dialog is bound. It's a bug and please report it.")
 
-	void _notify_visibility_changed();
-	void _notify_created();
-	void _notify_favourites_updated();
+	bool _is_type_valid(const StringName &p_type_name) const;
+
+#define CHECK_IF_TYPE_IS_VALID(m_type) \
+	ERR_FAIL_COND_MSG(!_is_type_valid((m_type)), vformat("Inexist type %s.", (m_type)));
+#define CHECK_IF_TYPE_IS_VALID_V(m_type, m_retval) \
+	ERR_FAIL_COND_V_MSG(!_is_type_valid((m_type)), (m_retval), vformat("Inexist type %s.", (m_type)));
 
 protected:
 	static void _bind_methods();
 
 public:
+	void set_create_dialog(CreateDialog *p_create_dialog);
+	CreateDialog *get_create_dialog() const;
+
+	ConfirmationDialog *get_dialog_window() const;
+
 	void add_type_to_blacklist(const StringName &p_type_name);
+	bool is_type_in_blacklist(const StringName &p_type_name) const;
+	HashSet<String> &get_type_blacklist();
 	void remove_type_from_blacklist(const StringName &p_type_name);
+	void clear_type_blacklist();
 
 	void set_type_custom_suffix(const StringName &p_type_name, const String &p_custom_suffix);
+	bool has_type_custom_suffix(const StringName &p_type_name) const;
 	String get_type_custom_suffix(const StringName &p_type_name) const;
-	void clear_all_type_custom_suffixes();
+	void clear_type_custom_suffixes();
 
 	Tree *get_search_options() const;
 
+	static EditorCreateDialog *get_singleton();
+
 	EditorCreateDialog();
-	EditorCreateDialog(CreateDialog *p_create_dialog);
 };
 
-#endif EDITOR_CREATE_DIALOG_H
+#endif // EDITOR_CREATE_DIALOG_H

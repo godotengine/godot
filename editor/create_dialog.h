@@ -31,7 +31,6 @@
 #ifndef CREATE_DIALOG_H
 #define CREATE_DIALOG_H
 
-#include "editor/editor_create_dialog.h"
 #include "editor/editor_help.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -50,7 +49,6 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
-	EditorCreateDialog *editor_create_dialog = nullptr;
 	LineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
 
@@ -68,7 +66,6 @@ class CreateDialog : public ConfirmationDialog {
 	HashMap<String, TreeItem *> search_options_types;
 	HashMap<String, String> custom_type_parents;
 	HashMap<String, int> custom_type_indices;
-	HashMap<StringName, String> custom_type_suffixes;
 	List<StringName> type_list;
 	HashSet<StringName> type_blacklist;
 
