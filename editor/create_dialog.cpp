@@ -182,7 +182,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 			return true;
 		}
 		for (const StringName &E : custom_type_blacklist) {
-			if (E == ScriptServer::get_global_class_base(p_type)|| ScriptServer::get_global_class_native_base(p_type) == E) {
+			if (E == ScriptServer::get_global_class_base(p_type) || ScriptServer::get_global_class_native_base(p_type) == E) {
 				return true; // Parent type is listed in the custom blacklist.
 			}
 		}
@@ -315,7 +315,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		if (!suffix.is_empty()) {
 			r_item->set_suffix(0, "(" + suffix + ")");
 		}
-		
+
 		ERR_FAIL_COND(!scr.is_valid());
 		is_abstract = scr->is_abstract();
 	} else {
