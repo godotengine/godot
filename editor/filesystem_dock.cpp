@@ -452,6 +452,10 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 
 	// Create the remaining of the tree.
 	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites, p_unfold_path);
+	if (!searched_tokens.is_empty()) {
+		_update_filtered_items();
+	}
+
 	tree->ensure_cursor_is_visible();
 	updating_tree = false;
 }
