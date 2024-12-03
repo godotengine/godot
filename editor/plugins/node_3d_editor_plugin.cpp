@@ -8534,8 +8534,10 @@ void Node3DEditor::_preview_settings_changed() {
 	}
 
 	{ //preview env
-		sky_material->set_sky_energy_multiplier(environ_energy->get_value());
-		Color hz_color = environ_sky_color->get_pick_color().lerp(environ_ground_color->get_pick_color(), 0.5).lerp(Color(1, 1, 1), 0.5);
+		sky_material->set_energy_multiplier(environ_energy->get_value());
+		Color hz_color = environ_sky_color->get_pick_color().lerp(environ_ground_color->get_pick_color(), 0.5);
+		float hz_lum = hz_color.get_luminance() * 3.333;
+		hz_color = hz_color.lerp(Color(hz_lum, hz_lum, hz_lum), 0.5);
 		sky_material->set_sky_top_color(environ_sky_color->get_pick_color());
 		sky_material->set_sky_horizon_color(hz_color);
 		sky_material->set_ground_bottom_color(environ_ground_color->get_pick_color());
