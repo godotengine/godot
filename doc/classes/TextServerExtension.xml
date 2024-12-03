@@ -1187,6 +1187,13 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="_get_support_data" qualifiers="virtual const">
+			<return type="PackedByteArray" />
+			<description>
+				[b]Optional.[/b]
+				Returns default TextServer database (e.g. ICU break iterators and dictionaries).
+			</description>
+		</method>
 		<method name="_get_support_data_filename" qualifiers="virtual const">
 			<return type="String" />
 			<description>
