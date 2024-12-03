@@ -57,6 +57,16 @@ public:
 		return data;
 	}
 
+	T &back() {
+		CRASH_BAD_UNSIGNED_INDEX(0, count);
+		return data[count - 1];
+	}
+
+	const T &back() const {
+		CRASH_BAD_UNSIGNED_INDEX(0, count);
+		return data[count - 1];
+	}
+
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {
 			capacity = tight ? (capacity + 1) : MAX((U)1, capacity << 1);
@@ -68,6 +78,14 @@ public:
 			memnew_placement(&data[count++], T(p_elem));
 		} else {
 			data[count++] = p_elem;
+		}
+	}
+
+	void pop_back() {
+		ERR_FAIL_COND(count == 0);
+		count--;
+		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
+			data[count].~T();
 		}
 	}
 
