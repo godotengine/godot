@@ -57,6 +57,13 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_create_dialog" qualifiers="const">
+			<return type="EditorCreateDialog" />
+			<description>
+				Returns the editor's [EditorCreateDialog] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
 		<method name="get_current_directory" qualifiers="const">
 			<return type="String" />
 			<description>

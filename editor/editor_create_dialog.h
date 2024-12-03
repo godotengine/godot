@@ -74,6 +74,7 @@ public:
 	void set_type_custom_suffix(const StringName &p_type_name, const String &p_custom_suffix);
 	bool has_type_custom_suffix(const StringName &p_type_name) const;
 	String get_type_custom_suffix(const StringName &p_type_name) const;
+	void remove_type_custom_suffix(const StringName &p_type_name);
 	void clear_type_custom_suffixes();
 
 	Tree *get_search_options() const;

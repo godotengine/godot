@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorCreateDialog" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Help manage the create dialog.
+	</brief_description>
+	<description>
+		This object helps manage the create dialog selection in the editor.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_create_dialog].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_type_to_blacklist">
+			<return type="void" />
+			<param index="0" name="type_name" type="StringName" />
+			<description>
+				Adds a type to the blacklist of the create dialog. If the type is already in the blacklist, nothing will happen. Types in the blacklist will not be shown in the create dialog.
+				[b]Note:[/b] Unlike [method EditorFeatureProfile.set_disable_class], this method allows you to hide custom types from the create dialog.
+				[b]Note:[/b] The built-in classes shouldn't be added to the blacklist, unless you know what you're doing.
+				[b]Note:[/b] For plugins that hides types from the create dialog, [method remove_type_from_blacklist] should be called for the hidden types when the plugin is unregistered. Otherwise, the type will never be displayed until the next start of the engine.
+			</description>
+		</method>
+		<method name="clear_type_blacklist">
+			<return type="void" />
+			<description>
+				Removes all blacklisted types from the blacklist of the create dialog.
+			</description>
+		</method>
+		<method name="clear_type_custom_suffixes">
+			<return type="void" />
+			<description>
+				Removes all custom suffixes for types with them.
+			</description>
+		</method>
+		<method name="get_dialog_window">
+			<return type="ConfirmationDialog" />
+			<description>
+				Returns the window of the create dialog.
+				[b]Warning:[/b] The window of the create dialog shouldn't be deleted. Trying removing and freeing this window will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_search_options">
+			<return type="Tree" />
+			<description>
+				Returns a tree of search options for the create dialog.
+				[b]Warning:[/b] The search options tree shouldn't be deleted. Trying removing and freeing this tree will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_type_custom_suffix">
+			<return type="String" />
+			<param index="0" name="type_name" type="StringName" />
+			<description>
+				Returns the custom suffix for the given type. If the type has no custom suffix, a [code]&ltsuffix not found&gt[/code] string will be returned. If the type is invalid, a [code]&ltinvalid suffix&gt[/code] string will be returned.
+			</description>
+		</method>
+		<method name="has_type_custom_suffix">
+			<return type="bool" />
+			<param index="0" name="type_name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the type has a custom suffix, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_type_in_blacklist">
+			<return type="bool" />
+			<param index="0" name="type_name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the type is in the blacklist, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="remove_type_custom_suffix">
+			<return type="void" />
+			<param index="0" name="type_name" type="StringName" />
+			<description>
+				Removes the custom suffix for the given type. If the type has no custom suffix, nothing will happen.
+				[b]Note:[/b] For plugins that adds custom suffixes to types, this method should be called in [method Node._exit_tree] of the addon script to guarantee the safe unregistration. Otherwise, the custom suffix will remain in the create dialog until the next start of the engine.
+			</description>
+		</method>
+		<method name="remove_type_from_blacklist">
+			<return type="void" />
+			<param index="0" name="type_name" type="StringName" />
+			<description>
+				Removes a type from the blacklist of the create dialog. If the type is already out of the blacklist, nothing will happen. A type removed from the blacklist will be shown in the create dialog again.
+				[b]Note:[/b] For plugins that hides types from the create dialog, this method should be called in [method Node._exit_tree] of the addon script to guarantee the safe unregistration. Otherwise, the type will never be displayed until the next start of the engine.
+				[b]Warning:[/b] Never try removing types beginning with "Editor" from the blacklist, even though this is allowed, as most of them are kernel to the editor and should keep hidden.
+			</description>
+		</method>
+		<method name="set_type_custom_suffix">
+			<return type="void" />
+			<param index="0" name="type_name" type="StringName" />
+			<param index="1" name="custom_suffix" type="String" />
+			<description>
+				Sets a custom suffix for the given type. This suffix will be appended to the type name within a pair of braces in the create dialog.
+				If the type is a global script type, the suffix will replace the file name of the script in the create dialog.
+				[b]Note:[/b] If the [param custom_suffix] is an empty string, the custom suffix for the type will be removed.
+				[b]Note:[/b] For plugins that adds custom suffixes to types, [method remove_type_custom_suffix] should be called for the types when the plugin is unregistered. Otherwise, the custom suffix will remain in the create dialog until the next start of the engine.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="created">
+			<description>
+				Emitted when an object is created via the create dialog.
+			</description>
+		</signal>
+		<signal name="dialog_closed">
+			<description>
+				Emitted when the dialog is closed.
+			</description>
+		</signal>
+		<signal name="dialog_poped">
+			<description>
+				Emitted when the dialog is popped up.
+			</description>
+		</signal>
+		<signal name="favorites_updated">
+			<description>
+				Emitted when the favorites list is updated.
+			</description>
+		</signal>
+	</signals>
+</class>
