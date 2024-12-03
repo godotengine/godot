@@ -436,7 +436,7 @@ Manifold Manifold::Compose(const std::vector<Manifold>& manifolds) {
   for (const auto& manifold : manifolds) {
     children.push_back(manifold.pNode_->ToLeafNode());
   }
-  return Manifold(std::make_shared<Impl>(CsgLeafNode::Compose(children)));
+  return Manifold(CsgLeafNode::Compose(children));
 }
 
 /**
