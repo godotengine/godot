@@ -313,7 +313,7 @@ void EditorPropertyTextEnum::update_property() {
 			}
 		}
 	} else {
-		option_button->select(default_option);
+		cb_update_options(option_button);
 	}
 }
 
@@ -494,7 +494,7 @@ void EditorTextEnum::update_property() {
 			}
 		}
 	} else {
-		option_button->select(default_option);
+		cb_update_options(option_button);
 	}
 }
 

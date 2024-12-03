@@ -189,6 +189,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
                 multe_charcter_prefab_group->set_dynamic(true, "get_charcter_prefab_groups");
                 multe_charcter_prefab_group->setup(Vector<String>());
 				multe_charcter_prefab_group->set_custom_property(true);
+                multe_charcter_prefab_group->set_modulate(Color(1,0.8,0.7,1));
                 multe_charcter_prefab_group->update_property();
 
 
@@ -437,11 +438,6 @@ static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_pa
 
 		}
 	}
-
-}
-
-void CharacterPrefabProcessPanel::editor_build_prefab_form_path(String p_file_path,const StringName& charcter_prefab_group)
-{
 
 }
 

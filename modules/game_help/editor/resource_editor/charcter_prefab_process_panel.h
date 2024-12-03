@@ -45,7 +45,6 @@ protected:
     void load_charcter_prefab_config() ;
 
     
-    void editor_build_prefab_form_path(String p_file_path, const StringName& animation_group);
 
     void editor_convert_prefab(String p_file_path, const StringName& animation_group);
 

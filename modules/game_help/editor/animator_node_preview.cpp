@@ -453,7 +453,7 @@ AnimationNodePreview::AnimationNodePreview()
 
     set_custom_minimum_size(Size2(1, 150) * EDSCALE);
     HBoxContainer *root_hb = memnew(HBoxContainer);
-    root_hb->set_modulate(Color(1, 1, 1, 0.8f));
+    root_hb->set_modulate(Color(1, 1, 1, 0.7f));
     add_child(root_hb);
     root_hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
@@ -563,11 +563,13 @@ AnimationNodePreview::AnimationNodePreview()
             group_enum->set_object_and_property(this, StringName("group"));
             group_enum->setup({});
             group_enum->set_dynamic(true, "get_animation_groups");
+            group_enum->set_modulate(Color(1,0.8,0.7,1));
             hb->add_child(group_enum);
 
             tag_enum = memnew(EditorTextEnum);
             tag_enum->set_h_size_flags(SIZE_EXPAND_FILL);
             tag_enum->set_object_and_property(this, StringName("tag"));
+            tag_enum->set_modulate(Color(1,0.8,1.0,1));
             tag_enum->setup({});
             tag_enum->set_dynamic(true, "get_animation_groups");
             hb->add_child(tag_enum);

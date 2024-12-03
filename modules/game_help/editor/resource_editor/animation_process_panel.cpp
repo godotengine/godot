@@ -206,6 +206,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 multe_animation_group->set_dynamic(true, "get_animation_groups");
                 multe_animation_group->setup(Vector<String>());
 				multe_animation_group->set_custom_property(true);
+                multe_animation_group->set_modulate(Color(1,0.8,0.7,1));
                 multe_animation_group->update_property();
 
                 multe_animation_tags = memnew(EditorPropertyTextEnum);
@@ -215,6 +216,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 multe_animation_tags->set_dynamic(true, "get_animation_tags");
                 multe_animation_tags->setup(Vector<String>());
 				multe_animation_tags->set_custom_property(true);
+                multe_animation_tags->set_modulate(Color(1,0.8,1.0,1));
                 multe_animation_tags->update_property();
 
                 conver_multe_button = memnew(Button);
