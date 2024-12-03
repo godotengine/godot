@@ -246,7 +246,6 @@ static void _pack_manifold(
 	}
 
 	manifold::MeshGL64 mesh;
-	mesh.tolerance = p_snap;
 	mesh.numProp = MANIFOLD_PROPERTY_MAX;
 	mesh.runOriginalID.reserve(faces_by_material.size());
 	mesh.runIndex.reserve(faces_by_material.size() + 1);
@@ -864,7 +863,7 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bake_collision_shape"), &CSGShape3D::bake_collision_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.000001,1,0.000001,suffix:m"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.000001,1,0.000001,suffix:m", PROPERTY_USAGE_NO_EDITOR), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
 	ADD_GROUP("Collision", "collision_");
