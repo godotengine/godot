@@ -50,7 +50,7 @@
 			<return type="String" />
 			<param index="0" name="type_name" type="StringName" />
 			<description>
-				Returns the custom suffix for the given type. If the type has no custom suffix, a [code]&ltsuffix not found&gt[/code] string will be returned. If the type is invalid, a [code]&ltinvalid suffix&gt[/code] string will be returned.
+				Returns the custom suffix for the given type. If the type has no custom suffix, a [code]suffix not found[/code] string will be returned. If the type is invalid, a [code]invalid suffix[/code] string will be returned.
 			</description>
 		</method>
 		<method name="has_type_custom_suffix">
