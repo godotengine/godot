@@ -760,6 +760,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		project_path->set_editable(true);
 
 		String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+		fav_dir = fav_dir.simplify_path();
 		if (!fav_dir.is_empty()) {
 			project_path->set_text(fav_dir);
 			install_path->set_text(fav_dir);
