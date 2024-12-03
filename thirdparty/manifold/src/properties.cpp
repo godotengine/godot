@@ -157,10 +157,11 @@ struct CheckCCW {
           "tol = %g, area2 = %g, base2*tol2 = %g\n"
           "normal = %g, %g, %g\n"
           "norm = %g, %g, %g\nverts: %d, %d, %d\n",
-          face, area / base, base, tol, area * area, base2 * tol * tol,
-          triNormal[face].x, triNormal[face].y, triNormal[face].z, norm.x,
-          norm.y, norm.z, halfedges[3 * face].startVert,
-          halfedges[3 * face + 1].startVert, halfedges[3 * face + 2].startVert);
+          static_cast<long>(face), area / base, base, tol, area * area,
+          base2 * tol * tol, triNormal[face].x, triNormal[face].y,
+          triNormal[face].z, norm.x, norm.y, norm.z,
+          halfedges[3 * face].startVert, halfedges[3 * face + 1].startVert,
+          halfedges[3 * face + 2].startVert);
     }
 #endif
     return check;

@@ -30,6 +30,9 @@
 
 #include "csg_shape.h"
 
+#ifdef DEV_ENABLED
+#include "core/io/json.h"
+#endif // DEV_ENABLED
 #include "core/math/geometry_2d.h"
 
 #include <manifold/manifold.h>
@@ -142,6 +145,7 @@ bool CSGShape3D::is_root_shape() const {
 	return !parent_shape;
 }
 
+#ifndef DISABLE_DEPRECATED
 void CSGShape3D::set_snap(float p_snap) {
 	if (snap == p_snap) {
 		return;
@@ -154,6 +158,7 @@ void CSGShape3D::set_snap(float p_snap) {
 float CSGShape3D::get_snap() const {
 	return snap;
 }
+#endif // DISABLE_DEPRECATED
 
 void CSGShape3D::_make_dirty(bool p_parent_removing) {
 	if ((p_parent_removing || is_root_shape()) && !dirty) {
@@ -232,13 +237,111 @@ static void _unpack_manifold(
 	r_mesh_merge->_regen_face_aabbs();
 }
 
+// Errors matching `thirdparty/manifold/include/manifold/manifold.h`.
+static String manifold_error_to_string(const manifold::Manifold::Error &p_error) {
+	switch (p_error) {
+		case manifold::Manifold::Error::NoError:
+			return "No Error";
+		case manifold::Manifold::Error::NonFiniteVertex:
+			return "Non Finite Vertex";
+		case manifold::Manifold::Error::NotManifold:
+			return "Not Manifold";
+		case manifold::Manifold::Error::VertexOutOfBounds:
+			return "Vertex Out Of Bounds";
+		case manifold::Manifold::Error::PropertiesWrongLength:
+			return "Properties Wrong Length";
+		case manifold::Manifold::Error::MissingPositionProperties:
+			return "Missing Position Properties";
+		case manifold::Manifold::Error::MergeVectorsDifferentLengths:
+			return "Merge Vectors Different Lengths";
+		case manifold::Manifold::Error::MergeIndexOutOfBounds:
+			return "Merge Index Out Of Bounds";
+		case manifold::Manifold::Error::TransformWrongLength:
+			return "Transform Wrong Length";
+		case manifold::Manifold::Error::RunIndexWrongLength:
+			return "Run Index Wrong Length";
+		case manifold::Manifold::Error::FaceIDWrongLength:
+			return "Face ID Wrong Length";
+		case manifold::Manifold::Error::InvalidConstruction:
+			return "Invalid Construction";
+		default:
+			return "Unknown Error";
+	}
+}
+
+#ifdef DEV_ENABLED
+static String _export_meshgl_as_json(const manifold::MeshGL64 &p_mesh) {
+	Dictionary mesh_dict;
+	mesh_dict["numProp"] = p_mesh.numProp;
+
+	Array vert_properties;
+	for (const double &val : p_mesh.vertProperties) {
+		vert_properties.append(val);
+	}
+	mesh_dict["vertProperties"] = vert_properties;
+
+	Array tri_verts;
+	for (const uint64_t &val : p_mesh.triVerts) {
+		tri_verts.append(val);
+	}
+	mesh_dict["triVerts"] = tri_verts;
+
+	Array merge_from_vert;
+	for (const uint64_t &val : p_mesh.mergeFromVert) {
+		merge_from_vert.append(val);
+	}
+	mesh_dict["mergeFromVert"] = merge_from_vert;
+
+	Array merge_to_vert;
+	for (const uint64_t &val : p_mesh.mergeToVert) {
+		merge_to_vert.append(val);
+	}
+	mesh_dict["mergeToVert"] = merge_to_vert;
+
+	Array run_index;
+	for (const uint64_t &val : p_mesh.runIndex) {
+		run_index.append(val);
+	}
+	mesh_dict["runIndex"] = run_index;
+
+	Array run_original_id;
+	for (const uint32_t &val : p_mesh.runOriginalID) {
+		run_original_id.append(val);
+	}
+	mesh_dict["runOriginalID"] = run_original_id;
+
+	Array run_transform;
+	for (const double &val : p_mesh.runTransform) {
+		run_transform.append(val);
+	}
+	mesh_dict["runTransform"] = run_transform;
+
+	Array face_id;
+	for (const uint64_t &val : p_mesh.faceID) {
+		face_id.append(val);
+	}
+	mesh_dict["faceID"] = face_id;
+
+	Array halfedge_tangent;
+	for (const double &val : p_mesh.halfedgeTangent) {
+		halfedge_tangent.append(val);
+	}
+	mesh_dict["halfedgeTangent"] = halfedge_tangent;
+
+	mesh_dict["tolerance"] = p_mesh.tolerance;
+
+	String json_string = JSON::stringify(mesh_dict);
+	return json_string;
+}
+#endif // DEV_ENABLED
+
 static void _pack_manifold(
 		const CSGBrush *const p_mesh_merge,
 		manifold::Manifold &r_manifold,
 		HashMap<int32_t, Ref<Material>> &p_mesh_materials,
-		float p_snap) {
+		CSGShape3D *p_csg_shape) {
 	ERR_FAIL_NULL_MSG(p_mesh_merge, "p_mesh_merge is null");
-
+	ERR_FAIL_NULL_MSG(p_csg_shape, "p_shape is null");
 	HashMap<uint32_t, Vector<CSGBrush::Face>> faces_by_material;
 	for (int face_i = 0; face_i < p_mesh_merge->faces.size(); face_i++) {
 		const CSGBrush::Face &face = p_mesh_merge->faces[face_i];
@@ -246,7 +349,6 @@ static void _pack_manifold(
 	}
 
 	manifold::MeshGL64 mesh;
-	mesh.tolerance = p_snap;
 	mesh.numProp = MANIFOLD_PROPERTY_MAX;
 	mesh.runOriginalID.reserve(faces_by_material.size());
 	mesh.runIndex.reserve(faces_by_material.size() + 1);
@@ -291,12 +393,22 @@ static void _pack_manifold(
 	}
 	// runIndex needs an explicit end value.
 	mesh.runIndex.push_back(mesh.triVerts.size());
+	mesh.tolerance = 2 * FLT_EPSILON;
 	ERR_FAIL_COND_MSG(mesh.vertProperties.size() % mesh.numProp != 0, "Invalid vertex properties size.");
 	mesh.Merge();
+#ifdef DEV_ENABLED
+	print_verbose(_export_meshgl_as_json(mesh));
+#endif // DEV_ENABLED
 	r_manifold = manifold::Manifold(mesh);
-	manifold::Manifold::Error err = r_manifold.Status();
-	if (err != manifold::Manifold::Error::NoError) {
-		print_error(String("Manifold creation from mesh failed:" + itos((int)err)));
+	manifold::Manifold::Error error = r_manifold.Status();
+	if (error == manifold::Manifold::Error::NoError) {
+		return;
+	}
+	if (p_csg_shape->get_owner()) {
+		NodePath path = p_csg_shape->get_owner()->get_path_to(p_csg_shape, true);
+		print_error(vformat("CSGShape3D manifold creation from mesh failed at %s: %s.", path, manifold_error_to_string(error)));
+	} else {
+		print_error(vformat("CSGShape3D manifold creation from mesh failed at .: %s.", manifold_error_to_string(error)));
 	}
 }
 
@@ -330,7 +442,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
 	manifold::Manifold root_manifold;
-	_pack_manifold(n, root_manifold, mesh_materials, get_snap());
+	_pack_manifold(n, root_manifold, mesh_materials, this);
 	manifold::OpType current_op = ManifoldOperation::convert_csg_op(get_operation());
 	std::vector<manifold::Manifold> manifolds;
 	manifolds.push_back(root_manifold);
@@ -346,7 +458,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 		CSGBrush transformed_brush;
 		transformed_brush.copy_from(*child_brush, child->get_transform());
 		manifold::Manifold child_manifold;
-		_pack_manifold(&transformed_brush, child_manifold, mesh_materials, get_snap());
+		_pack_manifold(&transformed_brush, child_manifold, mesh_materials, child);
 		manifold::OpType child_operation = ManifoldOperation::convert_csg_op(child->get_operation());
 		if (child_operation != current_op) {
 			manifold::Manifold result = manifold::Manifold::BatchBoolean(manifolds, current_op);
@@ -834,8 +946,10 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_operation", "operation"), &CSGShape3D::set_operation);
 	ClassDB::bind_method(D_METHOD("get_operation"), &CSGShape3D::get_operation);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape3D::set_snap);
 	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape3D::get_snap);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape3D::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape3D::is_using_collision);
@@ -864,7 +978,9 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bake_collision_shape"), &CSGShape3D::bake_collision_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.000001,1,0.000001,suffix:m"), "set_snap", "get_snap");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.000001,1,0.000001,suffix:m", PROPERTY_USAGE_NONE), "set_snap", "get_snap");
+#endif // DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
 	ADD_GROUP("Collision", "collision_");

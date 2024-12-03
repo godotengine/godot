@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "./iters.h"
 #if (MANIFOLD_PAR == 1)
 #include <tbb/combinable.h>
 #include <tbb/parallel_for.h>
@@ -27,7 +28,6 @@
 #include <algorithm>
 #include <numeric>
 
-#include "manifold/iters.h"
 namespace manifold {
 
 enum class ExecutionPolicy {
