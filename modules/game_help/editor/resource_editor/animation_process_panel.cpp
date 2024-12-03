@@ -292,6 +292,7 @@ String AnimationProcessPanel::get_single_animation_file_path() {
 void AnimationProcessPanel::set_single_animation_group(const String& group) {
     single_animation_group_name = group;     
     save_animation_config();   
+    single_animation_group->update_property();
 }
 StringName AnimationProcessPanel::get_single_animation_group() {
     return single_animation_group_name;
@@ -299,7 +300,7 @@ StringName AnimationProcessPanel::get_single_animation_group() {
 void AnimationProcessPanel::set_single_animation_tags(const String& tag) {
     single_animation_tag_name = tag;
     save_animation_config();
-    
+    single_animation_tags->update_property();    
 }
 StringName AnimationProcessPanel::get_single_animation_tags() {
     return single_animation_tag_name;
@@ -317,6 +318,7 @@ String AnimationProcessPanel::get_multe_animation_file_path() {
 void AnimationProcessPanel::set_multe_animation_group(const String& group) {
     multe_animation_group_name = group;
     save_animation_config();
+    multe_animation_group->update_property();
 }
 StringName AnimationProcessPanel::get_multe_animation_group() {
     return multe_animation_group_name;
@@ -324,6 +326,7 @@ StringName AnimationProcessPanel::get_multe_animation_group() {
 void AnimationProcessPanel::set_multe_animation_tags(const String& tag) {
     multe_animation_tag_name = tag;
     save_animation_config();
+    multe_animation_tags->update_property();
 }
 StringName AnimationProcessPanel::get_multe_animation_tags() {
     return multe_animation_tag_name;
@@ -628,7 +631,8 @@ void AnimationProcessPanel::_on_conver_single_pressed() {
         WARN_PRINT("请先设置动画标签名");
         return;
     }
-    editor_build_animation_form_path(single_animation_file_path,single_animation_group_name,single_animation_tag_name);    
+	String path = ResourceUID::ensure_path(single_animation_file_path);
+    editor_build_animation_form_path(path,single_animation_group_name,single_animation_tag_name);    
 }
 
 

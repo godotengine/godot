@@ -264,6 +264,7 @@ String CharacterPrefabProcessPanel::get_preview_mesh_path() {
 void CharacterPrefabProcessPanel::set_single_charcter_prefab_group(const String& group) {
     single_charcter_prefab_group_name = group;     
     save_charcter_prefab_config();   
+    single_charcter_prefab_group->update_property();
 }
 StringName CharacterPrefabProcessPanel::get_single_charcter_prefab_group() {
     return single_charcter_prefab_group_name;
@@ -281,6 +282,7 @@ String CharacterPrefabProcessPanel::get_multe_charcter_prefab_file_path() {
 void CharacterPrefabProcessPanel::set_multe_charcter_prefab_group(const String& group) {
     multe_charcter_prefab_group_name = group;
     save_charcter_prefab_config();
+    multe_charcter_prefab_group->update_property();
 }
 StringName CharacterPrefabProcessPanel::get_multe_charcter_prefab_group() {
     return multe_charcter_prefab_group_name;
@@ -453,7 +455,8 @@ void CharacterPrefabProcessPanel::_on_conver_single_pressed() {
         WARN_PRINT("请先设置动画组名");
         return;
     }
-	build_prefab(preview_mesh_path,single_charcter_prefab_group_name,true);
+	String path = ResourceUID::ensure_path(preview_mesh_path);
+	build_prefab(path,single_charcter_prefab_group_name,true);
 }
 
 
