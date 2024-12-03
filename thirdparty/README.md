@@ -549,7 +549,7 @@ in the MSVC debugger.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: 3.0.0 (5d127e57fbfb89225a8e905d0d914ccc86c139c8, 2024)
+- Version: master (36035428bc32302a9d7c9ee1ecc833fb8394a2a3, 2024)
 - License: Apache 2.0
 
 File extracted from upstream source:
