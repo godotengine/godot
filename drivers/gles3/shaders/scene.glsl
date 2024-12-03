@@ -875,6 +875,7 @@ uniform vec3 refprobe1_box_offset;
 uniform highp mat4 refprobe1_local_matrix;
 uniform bool refprobe1_exterior;
 uniform float refprobe1_intensity;
+uniform float refprobe1_blend_distance;
 uniform int refprobe1_ambient_mode;
 uniform vec4 refprobe1_ambient_color;
 
@@ -888,6 +889,7 @@ uniform vec3 refprobe2_box_offset;
 uniform highp mat4 refprobe2_local_matrix;
 uniform bool refprobe2_exterior;
 uniform float refprobe2_intensity;
+uniform float refprobe2_blend_distance;
 uniform int refprobe2_ambient_mode;
 uniform vec4 refprobe2_ambient_color;
 
@@ -1589,7 +1591,7 @@ void reflection_process(samplerCube reflection_map,
 		vec3 normal, vec3 vertex,
 		mat4 local_matrix,
 		bool use_box_project, vec3 box_extents, vec3 box_offset,
-		bool exterior, float intensity, int ref_ambient_mode, vec4 ref_ambient_color,
+		bool exterior, float intensity, float blend_distance, int ref_ambient_mode, vec4 ref_ambient_color,
 		float roughness, vec3 ambient, vec3 skybox,
 		inout highp vec4 reflection_accum, inout highp vec4 ambient_accum) {
 	vec4 reflection;
@@ -1601,10 +1603,20 @@ void reflection_process(samplerCube reflection_map,
 	}
 
 	vec3 inner_pos = abs(local_pos / box_extents);
-	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
-	blend = mix(length(inner_pos), blend, blend);
-	blend *= blend;
+	vec3 blend_axes = vec3(0.0, 0.0, 0.0);
+	float blend = 0.0;
+	if (blend_distance != 0) {
+		for (int i = 0; i < 3; i++) {
+			float axis_blend_distance = min(blend_distance, box_extents[i]);
+			blend_axes[i] = (inner_pos[i] * box_extents[i]) - box_extents[i] + axis_blend_distance;
+			blend_axes[i] = blend_axes[i] / axis_blend_distance;
+			blend_axes[i] = clamp(blend_axes[i], 0.0, 1.0);
+		}
+		blend = pow((1.0 - blend_axes.x) * (1.0 - blend_axes.y) * (1.0 - blend_axes.z), 2);
+		blend = 1 - blend;
+	}
 	blend = max(0.0, 1.0 - blend);
+	blend = clamp(blend, 0.0, 1.0);
 
 	//reflect and make local
 	vec3 ref_normal = normalize(reflect(vertex, normal));
@@ -1963,14 +1975,14 @@ void main() {
 
 		reflection_process(refprobe1_texture, normal, vertex_interp, refprobe1_local_matrix,
 				refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
-				refprobe1_exterior, refprobe1_intensity, refprobe1_ambient_mode, refprobe1_ambient_color,
+				refprobe1_exterior, refprobe1_intensity, refprobe1_blend_distance, refprobe1_ambient_mode, refprobe1_ambient_color,
 				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #ifdef SECOND_REFLECTION_PROBE
 
 		reflection_process(refprobe2_texture, normal, vertex_interp, refprobe2_local_matrix,
 				refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
-				refprobe2_exterior, refprobe2_intensity, refprobe2_ambient_mode, refprobe2_ambient_color,
+				refprobe2_exterior, refprobe2_intensity, refprobe2_blend_distance, refprobe2_ambient_mode, refprobe2_ambient_color,
 				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #endif // SECOND_REFLECTION_PROBE

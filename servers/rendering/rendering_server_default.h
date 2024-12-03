@@ -460,6 +460,7 @@ public:
 
 	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
+	FUNC2(reflection_probe_set_blend_distance, RID, float)
 	FUNC2(reflection_probe_set_ambient_color, RID, const Color &)
 	FUNC2(reflection_probe_set_ambient_energy, RID, float)
 	FUNC2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)

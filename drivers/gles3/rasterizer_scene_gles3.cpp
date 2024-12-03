@@ -3435,6 +3435,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_AMBIENT_MODE, int(probe->ambient_mode), shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_AMBIENT_COLOR, probe->ambient_color * probe->ambient_color_energy, shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_LOCAL_MATRIX, inst->reflection_probes_local_transform_cache[0], shader->version, instance_variant, spec_constants);
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_BLEND_DISTANCE, probe->blend_distance, shader->version, instance_variant, spec_constants);
 
 						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
 						glBindTexture(GL_TEXTURE_CUBE_MAP, light_storage->reflection_probe_instance_get_texture(inst->reflection_probe_rid_cache[0]));
@@ -3453,6 +3454,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_AMBIENT_MODE, int(probe->ambient_mode), shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_AMBIENT_COLOR, probe->ambient_color * probe->ambient_color_energy, shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_LOCAL_MATRIX, inst->reflection_probes_local_transform_cache[1], shader->version, instance_variant, spec_constants);
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_BLEND_DISTANCE, probe->blend_distance, shader->version, instance_variant, spec_constants);
 
 						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
 						glBindTexture(GL_TEXTURE_CUBE_MAP, light_storage->reflection_probe_instance_get_texture(inst->reflection_probe_rid_cache[1]));
