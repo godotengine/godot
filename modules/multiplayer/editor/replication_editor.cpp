@@ -236,7 +236,7 @@ ReplicationEditor::ReplicationEditor() {
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
+	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);

@@ -30,20 +30,24 @@
 
 #include "color_picker.h"
 
-#include "core/input/input.h"
 #include "core/io/image.h"
-#include "core/math/color.h"
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_mode.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
 #include "thirdparty/misc/ok_color_shader.h"
-
-List<Color> ColorPicker::preset_cache;
-List<Color> ColorPicker::recent_preset_cache;
 
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
@@ -158,10 +162,6 @@ void ColorPicker::_update_theme_item_cache() {
 
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
-
-Ref<Shader> ColorPicker::wheel_shader;
-Ref<Shader> ColorPicker::circle_shader;
-Ref<Shader> ColorPicker::circle_ok_color_shader;
 
 void ColorPicker::init_shaders() {
 	wheel_shader.instantiate();
@@ -1601,18 +1601,12 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		// Add the Texture of each Window to the Image.
 		Vector<DisplayServer::WindowID> wl = ds->get_window_list();
 		// FIXME: sort windows by visibility.
-		for (int index = 0; index < wl.size(); index++) {
-			DisplayServer::WindowID wid = wl[index];
-			if (wid == DisplayServer::INVALID_WINDOW_ID) {
+		for (const DisplayServer::WindowID &window_id : wl) {
+			Window *w = Window::get_from_id(window_id);
+			if (!w) {
 				continue;
 			}
 
-			ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-			if (woid == ObjectID()) {
-				continue;
-			}
-
-			Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
 			Ref<Image> img = w->get_texture()->get_image();
 			if (!img.is_valid() || img->is_empty()) {
 				continue;
@@ -1856,6 +1850,7 @@ ColorPicker::ColorPicker() {
 	real_vbox->add_child(sample_hbc);
 
 	btn_pick = memnew(Button);
+	btn_pick->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	sample_hbc->add_child(btn_pick);
 
 	sample = memnew(TextureRect);
@@ -1869,6 +1864,7 @@ ColorPicker::ColorPicker() {
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
+	btn_shape->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 	current_shape = SHAPE_HSV_RECTANGLE;
 
@@ -1963,7 +1959,7 @@ ColorPicker::ColorPicker() {
 	c_text->set_select_all_on_focus(true);
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
-	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
+	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 

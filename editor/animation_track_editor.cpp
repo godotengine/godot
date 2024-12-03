@@ -1298,12 +1298,12 @@ void AnimationTimelineEdit::_zoom_changed(double) {
 	double timeline_right = timeline_left + timeline_width_seconds;
 	double timeline_center = timeline_left + timeline_width_seconds / 2.0;
 
-	if (zoom_callback_occured) { // Zooming with scroll wheel will focus on the position of the mouse.
+	if (zoom_callback_occurred) { // Zooming with scroll wheel will focus on the position of the mouse.
 		double zoom_scroll_origin_norm = (zoom_scroll_origin.x - get_name_limit()) / timeline_width_pixels;
 		zoom_scroll_origin_norm = MAX(zoom_scroll_origin_norm, 0);
 		zoom_pivot = timeline_left + timeline_width_seconds * zoom_scroll_origin_norm;
 		zoom_pivot_delta = updated_timeline_width_seconds * zoom_scroll_origin_norm;
-		zoom_callback_occured = false;
+		zoom_callback_occurred = false;
 	} else { // Zooming with slider will depend on the current play position.
 		// If the play position is not in range, or exactly in the center, zoom in on the center.
 		if (get_play_position() < timeline_left || get_play_position() > timeline_left + timeline_width_seconds || get_play_position() == timeline_center) {
@@ -1400,12 +1400,26 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 		undo_redo->add_undo_method(this, "update_values");
 		undo_redo->commit_action();
 	} else {
-		String base_path = animation->get_path();
-		if (FileAccess::exists(base_path + ".import")) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from imported scene."));
-		} else {
-			EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another scene."));
+		String base = animation->get_path();
+		int srpos = base.find("::");
+		if (srpos != -1) {
+			base = animation->get_path().substr(0, srpos);
 		}
+
+		if (FileAccess::exists(base + ".import")) {
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from an imported scene.\n\nTo change this animation's loop mode, navigate to the scene's Advanced Import settings and select the animation.\nYou can then change the loop mode from the inspector menu."));
+			} else {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from an imported resource."));
+			}
+		} else {
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another scene.\n\nYou must open this scene and change the animation's loop mode from there."));
+			} else {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another resource."));
+			}
+		}
+
 		update_values();
 	}
 }
@@ -1938,7 +1952,7 @@ void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> 
 void AnimationTimelineEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	double current_zoom_value = get_zoom()->get_value();
 	zoom_scroll_origin = p_origin;
-	zoom_callback_occured = true;
+	zoom_callback_occurred = true;
 	get_zoom()->set_value(MAX(0.01, current_zoom_value - (1.0 - p_zoom_factor)));
 }
 
@@ -3110,7 +3124,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			path = memnew(LineEdit);
 			path_popup->add_child(path);
 			path->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-			path->connect("text_submitted", callable_mp(this, &AnimationTrackEdit::_path_submitted));
+			path->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
 		path->set_text(animation->track_get_path(track));
@@ -6628,6 +6642,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_SCALE_SELECTION:
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			scale->get_line_edit()->grab_focus();
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -7875,9 +7890,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scale->set_min(-99999);
 	scale->set_max(99999);
 	scale->set_step(0.001);
+	scale->set_select_all_on_focus(true);
 	vbc->add_margin_child(TTR("Scale Ratio:"), scale);
-	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM));
+	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM), CONNECT_DEFERRED);
 	add_child(scale_dialog);
+
+	scale_dialog->register_text_enter(scale->get_line_edit());
 
 	//
 	ease_dialog = memnew(ConfirmationDialog);

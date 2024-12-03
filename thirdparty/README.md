@@ -111,7 +111,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.3.0 (98db5662e8dd1808a5a7b50c5605a2289bb390e8, 2023)
+- Version: 1.4.0 (736ddb0b53d97fd5f65dd3d9bbf8a0993eaf387c, 2024)
 - License: BSL 1.0
 
 Files extracted from upstream source:
@@ -546,6 +546,18 @@ Patch `godot-node-debug-fix.patch` workarounds shadowing of Godot's Node class
 in the MSVC debugger.
 
 
+## manifold
+
+- Upstream: https://github.com/elalish/manifold
+- Version: 3.0.0 (5d127e57fbfb89225a8e905d0d914ccc86c139c8, 2024)
+- License: Apache 2.0
+
+File extracted from upstream source:
+
+- `src/`
+- `AUTHORS`, `LICENSE`
+
+
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
@@ -628,7 +640,8 @@ to solve some MSVC warnings. See the patches in the `patches` directory.
 
 Files extracted from upstream source:
 
-- Copy `miniupnpc/src` and `miniupnpc/include` to `thirdparty/miniupnpc`
+- `miniupnpc/src/` as `src/`
+- `miniupnpc/include/` as `include/miniupnpc/`
 - Remove the following test or sample files:
   `listdevices.c,minihttptestserver.c,miniupnpcmodule.c,upnpc.c,upnperrors.*,test*`
 - `LICENSE`

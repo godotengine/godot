@@ -315,7 +315,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 	ThreadDebugged &td = threads_debugged[p_thread_id];
 	_set_reason_text(td.error, MESSAGE_ERROR);
 	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump);
-	if (!td.error.is_empty()) {
+	if (!td.error.is_empty() && EDITOR_GET("debugger/auto_switch_to_stack_trace")) {
 		tabs->set_current_tab(0);
 	}
 	inspector->clear_cache(); // Take a chance to force remote objects update.
@@ -504,7 +504,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal(SNAME("output"), output_strings[i], msg_type);
+			emit_signal(SceneStringName(output), output_strings[i], msg_type);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
@@ -513,6 +513,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			frame_data.write[i] = p_data[i];
 		}
 		performance_profiler->add_profile_frame(frame_data);
+	} else if (p_msg == "visual:hardware_info") {
+		const String cpu_name = p_data[0];
+		const String gpu_name = p_data[1];
+		visual_profiler->set_hardware_info(cpu_name, gpu_name);
 	} else if (p_msg == "visual:profile_frame") {
 		ServersDebugger::VisualProfilerFrame frame;
 		frame.deserialize(p_data);
@@ -1062,6 +1066,7 @@ void ScriptEditorDebugger::_update_buttons_state() {
 	for (KeyValue<uint64_t, ThreadDebugged> &I : threads_debugged) {
 		threadss.push_back(&I.value);
 	}
+	threads->set_disabled(threadss.is_empty());
 
 	threadss.sort_custom<ThreadSort>();
 	threads->clear();
@@ -1915,16 +1920,19 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
+		stack_dump->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 		stack_dump->set_allow_reselect(true);
 		stack_dump->set_columns(1);
 		stack_dump->set_column_titles_visible(true);
 		stack_dump->set_column_title(0, TTR("Stack Frames"));
 		stack_dump->set_hide_root(true);
 		stack_dump->set_v_size_flags(SIZE_EXPAND_FILL);
+		stack_dump->set_theme_type_variation("TreeSecondary");
 		stack_dump->connect("cell_selected", callable_mp(this, &ScriptEditorDebugger::_stack_dump_frame_selected));
 		stack_vb->add_child(stack_dump);
 
 		VBoxContainer *inspector_vbox = memnew(VBoxContainer);
+		inspector_vbox->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 		inspector_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		sc->add_child(inspector_vbox);
 
@@ -1950,12 +1958,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector_vbox->add_child(inspector);
 
 		breakpoints_tree = memnew(Tree);
+		breakpoints_tree->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		breakpoints_tree->set_h_size_flags(SIZE_EXPAND_FILL);
 		breakpoints_tree->set_column_titles_visible(true);
 		breakpoints_tree->set_column_title(0, TTR("Breakpoints"));
 		breakpoints_tree->set_allow_reselect(true);
 		breakpoints_tree->set_allow_rmb_select(true);
 		breakpoints_tree->set_hide_root(true);
+		breakpoints_tree->set_theme_type_variation("TreeSecondary");
 		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
 		breakpoints_tree->create_item();
 

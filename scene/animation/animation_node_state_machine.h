@@ -223,6 +223,9 @@ public:
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
 
+	Vector<StringName> get_nodes_with_transitions_from(const StringName &p_node) const;
+	Vector<StringName> get_nodes_with_transitions_to(const StringName &p_node) const;
+
 	AnimationNodeStateMachine();
 };
 

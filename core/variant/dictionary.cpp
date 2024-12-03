@@ -693,6 +693,15 @@ Dictionary::Dictionary() {
 	_p->refcount.init();
 }
 
+Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) {
+	_p = memnew(DictionaryPrivate);
+	_p->refcount.init();
+
+	for (const KeyValue<Variant, Variant> &E : p_init) {
+		operator[](E.key) = E.value;
+	}
+}
+
 Dictionary::~Dictionary() {
 	_unref();
 }
