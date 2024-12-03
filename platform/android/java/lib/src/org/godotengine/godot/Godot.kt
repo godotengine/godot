@@ -745,6 +745,7 @@ class Godot(private val context: Context) {
 
 		runOnUiThread {
 			registerSensorsIfNeeded()
+			enableImmersiveMode(useImmersive.get(), true)
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {

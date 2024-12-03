@@ -3149,7 +3149,8 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 
 	//default render buffer and scene state uniform set
 
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	{
 		RD::Uniform u;
@@ -3334,7 +3335,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		uniforms.push_back(u);
 	}
 
-	uniforms.append_array(p_samplers.get_uniforms(12));
+	p_samplers.append_uniforms(uniforms, 12);
 
 	{
 		RD::Uniform u;
@@ -3496,7 +3497,8 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 
 RID RenderForwardClustered::_setup_hddagi_render_pass_uniform_set(RID p_albedo_texture, RID p_emission_texture, RID p_emission_aniso_texture, RID p_normal_bits_texture, const RendererRD::MaterialStorage::Samplers &p_samplers) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	{
 		RD::Uniform u;
@@ -3660,7 +3662,7 @@ RID RenderForwardClustered::_setup_hddagi_render_pass_uniform_set(RID p_albedo_t
 		uniforms.push_back(u);
 	}
 
-	uniforms.append_array(p_samplers.get_uniforms(12));
+	p_samplers.append_uniforms(uniforms, 12);
 
 	{
 		RD::Uniform u;

@@ -745,7 +745,7 @@ void AnimationTree::_animation_node_removed(const ObjectID &p_oid, const StringN
 	_update_properties();
 }
 
-void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node) {
+void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node) const {
 	ERR_FAIL_COND(p_node.is_null());
 	if (!property_parent_map.has(p_base_path)) {
 		property_parent_map[p_base_path] = AHashMap<StringName, StringName>();
@@ -792,7 +792,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	}
 }
 
-void AnimationTree::_update_properties() {
+void AnimationTree::_update_properties() const {
 	if (!properties_dirty) {
 		return;
 	}
@@ -809,7 +809,7 @@ void AnimationTree::_update_properties() {
 
 	properties_dirty = false;
 
-	notify_property_list_changed();
+	const_cast<AnimationTree *>(this)->notify_property_list_changed();
 }
 
 void AnimationTree::_notification(int p_what) {
@@ -925,7 +925,7 @@ bool AnimationTree::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 #endif // DISABLE_DEPRECATED
 	if (properties_dirty) {
-		const_cast<AnimationTree *>(this)->_update_properties();
+		_update_properties();
 	}
 
 	if (property_map.has(p_name)) {
@@ -938,7 +938,7 @@ bool AnimationTree::_get(const StringName &p_name, Variant &r_ret) const {
 
 void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (properties_dirty) {
-		const_cast<AnimationTree *>(this)->_update_properties();
+		_update_properties();
 	}
 
 	for (const PropertyInfo &E : properties) {

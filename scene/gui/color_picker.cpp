@@ -1850,6 +1850,7 @@ ColorPicker::ColorPicker() {
 	real_vbox->add_child(sample_hbc);
 
 	btn_pick = memnew(Button);
+	btn_pick->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	sample_hbc->add_child(btn_pick);
 
 	sample = memnew(TextureRect);
@@ -1863,6 +1864,7 @@ ColorPicker::ColorPicker() {
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
+	btn_shape->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 	current_shape = SHAPE_HSV_RECTANGLE;
 
@@ -1957,7 +1959,7 @@ ColorPicker::ColorPicker() {
 	c_text->set_select_all_on_focus(true);
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
-	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
+	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 

@@ -62,15 +62,17 @@ void FileDialog::_focus_file_text() {
 void FileDialog::_native_popup() {
 	// Show native dialog directly.
 	String root;
-	if (access == ACCESS_RESOURCES) {
+	if (!root_prefix.is_empty()) {
+		root = ProjectSettings::get_singleton()->globalize_path(root_prefix);
+	} else if (access == ACCESS_RESOURCES) {
 		root = ProjectSettings::get_singleton()->get_resource_path();
 	} else if (access == ACCESS_USERDATA) {
 		root = OS::get_singleton()->get_user_data_dir();
 	}
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options));
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb));
+		DisplayServer::get_singleton()->file_dialog_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb));
 	}
 }
 
@@ -143,6 +145,11 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 	selected_options = p_selected_options;
 
 	String f = files[0];
+	filter->select(p_filter);
+	dir->set_text(f.get_base_dir());
+	file->set_text(f.get_file());
+	_change_dir(f.get_base_dir());
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		emit_signal(SNAME("files_selected"), files);
 	} else {
@@ -171,9 +178,6 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 			emit_signal(SNAME("dir_selected"), f);
 		}
 	}
-	file->set_text(f);
-	dir->set_text(f.get_base_dir());
-	filter->select(p_filter);
 }
 
 VBoxContainer *FileDialog::get_vbox() {
@@ -365,6 +369,7 @@ Vector<String> FileDialog::get_selected_files() const {
 }
 
 void FileDialog::update_dir() {
+	full_dir = dir_access->get_current_dir();
 	if (root_prefix.is_empty()) {
 		dir->set_text(dir_access->get_current_dir(false));
 	} else {
@@ -845,7 +850,7 @@ void FileDialog::_filename_filter_selected() {
 	TreeItem *item = tree->get_selected();
 	if (item) {
 		file->set_text(item->get_text(0));
-		file->emit_signal("text_submitted", file->get_text());
+		file->emit_signal(SceneStringName(text_submitted), file->get_text());
 	}
 }
 
@@ -896,7 +901,7 @@ void FileDialog::update_filters() {
 		}
 	}
 
-	String f = atr(ETR("All Files")) + " (*)";
+	String f = atr(ETR("All Files")) + " (*.*)";
 	filter->add_item(f);
 	processed_filters.push_back("*.*;" + f);
 }
@@ -970,7 +975,7 @@ String FileDialog::get_filename_filter() const {
 }
 
 String FileDialog::get_current_dir() const {
-	return dir->get_text();
+	return full_dir;
 }
 
 String FileDialog::get_current_file() const {
@@ -978,7 +983,7 @@ String FileDialog::get_current_file() const {
 }
 
 String FileDialog::get_current_path() const {
-	return dir->get_text().path_join(file->get_text());
+	return full_dir.path_join(file->get_text());
 }
 
 void FileDialog::set_current_dir(const String &p_dir) {
@@ -1652,10 +1657,10 @@ FileDialog::FileDialog() {
 	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), CONNECT_DEFERRED);
 	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated));
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
-	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
+	dir->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_dir_submitted));
 	filename_filter->connect(SceneStringName(text_changed), callable_mp(this, &FileDialog::_filename_filter_changed).unbind(1));
-	filename_filter->connect("text_submitted", callable_mp(this, &FileDialog::_filename_filter_selected).unbind(1));
-	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));
+	filename_filter->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_filename_filter_selected).unbind(1));
+	file->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_file_submitted));
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);

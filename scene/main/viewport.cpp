@@ -2427,11 +2427,11 @@ void Viewport::_gui_update_mouse_over() {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-Window *Viewport::get_base_window() const {
+Window *Viewport::get_base_window() {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
-	Viewport *v = const_cast<Viewport *>(this);
+	Viewport *v = this;
 	Window *w = Object::cast_to<Window>(v);
 	while (!w) {
 		v = v->get_parent_viewport();
@@ -2456,7 +2456,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		// No need for change.
 		return;
 	}
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
+	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		emit_signal(SNAME("gui_focus_changed"), p_control);
@@ -4972,7 +4972,7 @@ Viewport::Viewport() {
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
 
 	default_texture.instantiate();
-	default_texture->vp = const_cast<Viewport *>(this);
+	default_texture->vp = this;
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);
 

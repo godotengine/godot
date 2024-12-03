@@ -315,6 +315,9 @@ public:
 	virtual void font_set_subpixel_positioning(const RID &p_font_rid, SubpixelPositioning p_subpixel) = 0;
 	virtual SubpixelPositioning font_get_subpixel_positioning(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_keep_rounding_remainders(const RID &p_font_rid, bool p_keep_rounding_remainders) = 0;
+	virtual bool font_get_keep_rounding_remainders(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_embolden(const RID &p_font_rid, double p_strength) = 0;
 	virtual double font_get_embolden(const RID &p_font_rid) const = 0;
 
@@ -534,6 +537,11 @@ public:
 	// The pen position is always placed on the baseline and moveing left to right.
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+
+#ifdef DEBUG_ENABLED
+	void debug_print_glyph(int p_idx, const Glyph &p_glyph) const;
+	void shaped_text_debug_print(const RID &p_shaped) const;
+#endif
 
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;

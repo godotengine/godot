@@ -1468,6 +1468,22 @@ TextServer::SubpixelPositioning TextServerFallback::_font_get_subpixel_positioni
 	return fd->subpixel_positioning;
 }
 
+void TextServerFallback::_font_set_keep_rounding_remainders(const RID &p_font_rid, bool p_keep_rounding_remainders) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	fd->keep_rounding_remainders = p_keep_rounding_remainders;
+}
+
+bool TextServerFallback::_font_get_keep_rounding_remainders(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->keep_rounding_remainders;
+}
+
 void TextServerFallback::_font_set_embolden(const RID &p_font_rid, double p_strength) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -3625,10 +3641,10 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
-		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
+		_shaped_text_shape(p_shaped);
 	}
 	if (!sd->justification_ops_valid) {
-		const_cast<TextServerFallback *>(this)->_shaped_text_update_justification_ops(p_shaped);
+		_shaped_text_update_justification_ops(p_shaped);
 	}
 
 	int start_pos = 0;
@@ -3734,10 +3750,10 @@ double TextServerFallback::_shaped_text_tab_align(const RID &p_shaped, const Pac
 
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
-		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
+		_shaped_text_shape(p_shaped);
 	}
 	if (!sd->line_breaks_valid) {
-		const_cast<TextServerFallback *>(this)->_shaped_text_update_breaks(p_shaped);
+		_shaped_text_update_breaks(p_shaped);
 	}
 
 	for (int i = 0; i < p_tab_stops.size(); i++) {
@@ -4007,6 +4023,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				_font_set_force_autohinter(sysf.rid, key.force_autohinter);
 				_font_set_hinting(sysf.rid, key.hinting);
 				_font_set_subpixel_positioning(sysf.rid, key.subpixel_positioning);
+				_font_set_keep_rounding_remainders(sysf.rid, key.keep_rounding_remainders);
 				_font_set_variation_coordinates(sysf.rid, var);
 				_font_set_oversampling(sysf.rid, key.oversampling);
 				_font_set_embolden(sysf.rid, key.embolden);
@@ -4444,7 +4461,7 @@ const Glyph *TextServerFallback::_shaped_text_sort_logical(const RID &p_shaped) 
 
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
-		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
+		_shaped_text_shape(p_shaped);
 	}
 
 	return sd->glyphs.ptr(); // Already in the logical order, return as is.

@@ -117,6 +117,12 @@ void EditorFileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_file
 	selected_options = p_selected_options;
 
 	String f = files[0];
+
+	filter->select(p_filter);
+	dir->set_text(f.get_base_dir());
+	file->set_text(f.get_file());
+	_dir_submitted(f.get_base_dir());
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		emit_signal(SNAME("files_selected"), files);
 	} else {
@@ -145,9 +151,6 @@ void EditorFileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_file
 			emit_signal(SNAME("dir_selected"), f);
 		}
 	}
-	file->set_text(f);
-	dir->set_text(f.get_base_dir());
-	filter->select(p_filter);
 }
 
 void EditorFileDialog::popup_file_dialog() {
@@ -365,6 +368,7 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 }
 
 void EditorFileDialog::update_dir() {
+	full_dir = dir_access->get_current_dir();
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
@@ -1204,7 +1208,7 @@ void EditorFileDialog::update_filters() {
 		}
 	}
 
-	String f = TTR("All Files (*)");
+	String f = TTR("All Files") + " (*.*)";
 	filter->add_item(f);
 	processed_filters.push_back("*.*;" + f);
 }
@@ -2511,10 +2515,10 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->connect("multi_selected", callable_mp(this, &EditorFileDialog::_multi_selected), CONNECT_DEFERRED);
 	item_list->connect("item_activated", callable_mp(this, &EditorFileDialog::_item_dc_selected).bind());
 	item_list->connect("empty_clicked", callable_mp(this, &EditorFileDialog::_items_clear_selection));
-	dir->connect("text_submitted", callable_mp(this, &EditorFileDialog::_dir_submitted));
+	dir->connect(SceneStringName(text_submitted), callable_mp(this, &EditorFileDialog::_dir_submitted));
 	filter_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileDialog::_filter_changed));
 	filter_box->connect(SceneStringName(text_submitted), callable_mp(this, &EditorFileDialog::_search_filter_selected).unbind(1));
-	file->connect("text_submitted", callable_mp(this, &EditorFileDialog::_file_submitted));
+	file->connect(SceneStringName(text_submitted), callable_mp(this, &EditorFileDialog::_file_submitted));
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);

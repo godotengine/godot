@@ -2631,7 +2631,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS:
 				if (base_type.class_type->has_function(p_method)) {
-					const GDScriptParser::FunctionNode *method = base_type.class_type->get_member(p_method).function;
+					GDScriptParser::FunctionNode *method = base_type.class_type->get_member(p_method).function;
 					if (!is_static || method->is_static) {
 						if (method->get_datatype().is_set() && !method->get_datatype().is_variant()) {
 							r_type.type = method->get_datatype();
@@ -2642,7 +2642,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 						const GDScriptParser::ExpressionNode *last_returned_value = nullptr;
 						GDScriptParser::CompletionContext c = p_context;
 						c.current_class = base_type.class_type;
-						c.current_function = const_cast<GDScriptParser::FunctionNode *>(method);
+						c.current_function = method;
 						c.current_suite = method->body;
 
 						_find_last_return_in_block(c, last_return_line, &last_returned_value);

@@ -705,6 +705,12 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_exclude_filter(current->get_exclude_filter());
 	preset->set_patches(current->get_patches());
 	preset->set_custom_features(current->get_custom_features());
+	preset->set_enc_in_filter(current->get_enc_in_filter());
+	preset->set_enc_ex_filter(current->get_enc_ex_filter());
+	preset->set_enc_pck(current->get_enc_pck());
+	preset->set_enc_directory(current->get_enc_directory());
+	preset->set_script_encryption_key(current->get_script_encryption_key());
+	preset->set_script_export_mode(current->get_script_export_mode());
 
 	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
 		preset->set(E.key, E.value);
@@ -1245,10 +1251,10 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 
 	if (invalid_path) {
 		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
+		export_project->get_line_edit()->disconnect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	} else {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
+		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	}
 }
 
@@ -1281,9 +1287,9 @@ void ProjectExportDialog::_export_project() {
 	// with _validate_export_path.
 	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
 	// disabling validation by the "text_submitted" signal.
-	if (!export_project->get_line_edit()->is_connected("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
+	if (!export_project->get_line_edit()->is_connected(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
+		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	}
 
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
