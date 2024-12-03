@@ -1114,9 +1114,16 @@ void FileDialog::set_access(Access p_access) {
 	if (access == p_access) {
 		return;
 	}
+	access = p_access;
+	root_prefix = "";
+	root_subfolder = "";
+
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+#ifdef ANDROID_ENABLED
+			set_root_subfolder(OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DESKTOP));
+#endif
 		} break;
 		case ACCESS_RESOURCES: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -1125,9 +1132,6 @@ void FileDialog::set_access(Access p_access) {
 			dir_access = DirAccess::create(DirAccess::ACCESS_USERDATA);
 		} break;
 	}
-	access = p_access;
-	root_prefix = "";
-	root_subfolder = "";
 	_update_drives();
 	invalidate();
 	update_filters();
