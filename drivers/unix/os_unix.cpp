@@ -308,6 +308,10 @@ String OS_Unix::get_version() const {
 	return "";
 }
 
+String OS_Unix::get_temp_path() const {
+	return "/tmp";
+}
+
 double OS_Unix::get_unix_time() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, nullptr);
