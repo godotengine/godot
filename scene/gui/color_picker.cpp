@@ -1601,18 +1601,12 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		// Add the Texture of each Window to the Image.
 		Vector<DisplayServer::WindowID> wl = ds->get_window_list();
 		// FIXME: sort windows by visibility.
-		for (int index = 0; index < wl.size(); index++) {
-			DisplayServer::WindowID wid = wl[index];
-			if (wid == DisplayServer::INVALID_WINDOW_ID) {
+		for (const DisplayServer::WindowID &window_id : wl) {
+			Window *w = Window::get_from_id(window_id);
+			if (!w) {
 				continue;
 			}
 
-			ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-			if (woid == ObjectID()) {
-				continue;
-			}
-
-			Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
 			Ref<Image> img = w->get_texture()->get_image();
 			if (!img.is_valid() || img->is_empty()) {
 				continue;
@@ -1856,6 +1850,7 @@ ColorPicker::ColorPicker() {
 	real_vbox->add_child(sample_hbc);
 
 	btn_pick = memnew(Button);
+	btn_pick->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	sample_hbc->add_child(btn_pick);
 
 	sample = memnew(TextureRect);
@@ -1869,6 +1864,7 @@ ColorPicker::ColorPicker() {
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
+	btn_shape->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 	current_shape = SHAPE_HSV_RECTANGLE;
 
@@ -1963,7 +1959,7 @@ ColorPicker::ColorPicker() {
 	c_text->set_select_all_on_focus(true);
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
-	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
+	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 
