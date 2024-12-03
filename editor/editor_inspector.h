@@ -496,6 +496,7 @@ class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
 	friend class EditorInspectorCategory;
+	friend class EditorPropertyResource;
 
 	enum {
 		MAX_PLUGINS = 1024
@@ -585,6 +586,7 @@ class EditorInspector : public ScrollContainer {
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
 	bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style);
+	bool _resource_properties_matches(const Ref<Resource> &p_resource, const String &p_filter);
 
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
@@ -604,7 +606,6 @@ class EditorInspector : public ScrollContainer {
 
 	void _keying_changed();
 
-	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped);
 
 	void _vscroll_changed(double);
