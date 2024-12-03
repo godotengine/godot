@@ -1976,6 +1976,42 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	int shape_sides = shape_polygon.size();
 	Vector<int> shape_faces = Geometry2D::triangulate_polygon(shape_polygon);
 	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, new_brush, "Failed to triangulate CSGPolygon. Make sure the polygon doesn't have any intersecting edges.");
+	if (mode == MODE_SPIN) {
+		// Original polygon
+		// 0, 1 -> (0, 1, 0)
+		// 1, 1 -> (1, 1, 0)
+		// 0, 0 -> (0, 0, 0)
+
+		// New polygon in mesh after spinning.
+		// (1, 0, 1)
+		// (0, 0, 1)
+		// (0, 0, 0)
+		HashMap<int32_t, Ref<Material>> mesh_materials;
+		std::vector<manifold::SimplePolygon> new_polygons;
+		for (int i = 0; i < shape_faces.size(); i += 3) {
+			manifold::SimplePolygon simple_polygon;
+			for (int j = 0; j < 3; j++) {
+				int index = shape_faces[i + j];
+				Vector3 transformed_point = get_global_transform().xform(Vector3(shape_polygon[index].x, shape_polygon[index].y, 0));
+				simple_polygon.push_back(manifold::vec2(transformed_point.x, transformed_point.y));
+			}
+			new_polygons.push_back(simple_polygon);
+		}
+		for (auto &polygon : new_polygons) {
+			std::reverse(polygon.begin(), polygon.end());
+		}
+		manifold::Manifold manifold;
+		manifold = manifold.Revolve(new_polygons, spin_sides, spin_degrees);
+		_unpack_manifold(manifold, mesh_materials, new_brush);
+		Transform3D rotation_transform(Basis().rotated(Vector3(1, 0, 0), Math::deg_to_rad(-90.0f)));
+		for (CSGBrush::Face &face : new_brush->faces) {
+			for (int i = 0; i < 3; ++i) {
+				face.vertices[i] = rotation_transform.xform(face.vertices[i]);
+			}
+		}
+
+		return new_brush;
+	}
 
 	// Get polygon enclosing Rect2.
 	Rect2 shape_rect(shape_polygon[0], Vector2());
@@ -2023,10 +2059,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			end_count = 2;
 			break;
 		case MODE_SPIN:
-			extrusions = spin_sides;
-			if (spin_degrees < 360) {
-				end_count = 2;
-			}
 			break;
 		case MODE_PATH: {
 			curve_length = curve->get_baked_length();
@@ -2076,7 +2108,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			u_step *= curve_length / path_u_distance;
 		}
 		double v_step = 1.0 / shape_sides;
-		double spin_step = Math::deg_to_rad(spin_degrees / spin_sides);
 		double extrusion_step = 1.0 / extrusions;
 		if (mode == MODE_PATH) {
 			if (path_joined) {
@@ -2154,7 +2185,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					current_xform.translate_local(Vector3(0, 0, -depth));
 				} break;
 				case MODE_SPIN: {
-					current_xform.rotate(Vector3(0, 1, 0), spin_step);
 				} break;
 				case MODE_PATH: {
 					double previous_offset = x0 * extrusion_step;
