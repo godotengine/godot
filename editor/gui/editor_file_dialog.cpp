@@ -44,7 +44,6 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -1400,11 +1399,8 @@ void EditorFileDialog::set_file_mode(FileMode p_mode) {
 		item_list->set_select_mode(ItemList::SELECT_SINGLE);
 	}
 
-	if (can_create_dir) {
-		makedir->show();
-	} else {
-		makedir->hide();
-	}
+	makedir_sep->set_visible(can_create_dir);
+	makedir->set_visible(can_create_dir);
 }
 
 EditorFileDialog::FileMode EditorFileDialog::get_file_mode() const {
@@ -1571,6 +1567,8 @@ void EditorFileDialog::_select_drive(int p_idx) {
 void EditorFileDialog::_update_drives(bool p_select) {
 	int dc = dir_access->get_drive_count();
 	if (dc == 0 || access != ACCESS_FILESYSTEM) {
+		shortcuts_container->hide();
+		drives_container->hide();
 		drives->hide();
 	} else {
 		drives->clear();
@@ -1579,6 +1577,8 @@ void EditorFileDialog::_update_drives(bool p_select) {
 			dp->remove_child(drives);
 		}
 		dp = dir_access->drives_are_shortcuts() ? shortcuts_container : drives_container;
+		shortcuts_container->set_visible(dir_access->drives_are_shortcuts());
+		drives_container->set_visible(!dir_access->drives_are_shortcuts());
 		dp->add_child(drives);
 		drives->show();
 
@@ -1768,6 +1768,9 @@ void EditorFileDialog::_update_favorites() {
 			recent->deselect_all();
 		}
 	}
+
+	fav_up->set_disabled(current_favorite < 1);
+	fav_down->set_disabled(current_favorite == -1 || favorited_paths.size() - 1 <= current_favorite);
 }
 
 void EditorFileDialog::_favorite_pressed() {
@@ -2354,7 +2357,8 @@ EditorFileDialog::EditorFileDialog() {
 	drives->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_select_drive));
 	pathhb->add_child(drives);
 
-	pathhb->add_child(memnew(VSeparator));
+	makedir_sep = memnew(VSeparator);
+	pathhb->add_child(makedir_sep);
 
 	makedir = memnew(Button);
 	makedir->set_theme_type_variation("FlatButton");
@@ -2473,7 +2477,8 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(memnew(VSeparator));
 
 	file_sort_button = memnew(MenuButton);
-	file_sort_button->set_flat(true);
+	file_sort_button->set_flat(false);
+	file_sort_button->set_theme_type_variation("FlatMenuButton");
 	file_sort_button->set_tooltip_text(TTR("Sort files"));
 
 	show_search_filter_button = memnew(Button);
