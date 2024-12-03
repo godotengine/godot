@@ -1977,15 +1977,6 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	Vector<int> shape_faces = Geometry2D::triangulate_polygon(shape_polygon);
 	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, new_brush, "Failed to triangulate CSGPolygon. Make sure the polygon doesn't have any intersecting edges.");
 	if (mode == MODE_SPIN) {
-		// Original polygon
-		// 0, 1 -> (0, 1, 0)
-		// 1, 1 -> (1, 1, 0)
-		// 0, 0 -> (0, 0, 0)
-
-		// New polygon in mesh after spinning.
-		// (1, 0, 1)
-		// (0, 0, 1)
-		// (0, 0, 0)
 		HashMap<int32_t, Ref<Material>> mesh_materials;
 		std::vector<manifold::SimplePolygon> new_polygons;
 		for (int i = 0; i < shape_faces.size(); i += 3) {
@@ -1997,8 +1988,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 			new_polygons.push_back(simple_polygon);
 		}
-		for (auto &polygon : new_polygons) {
-			std::reverse(polygon.begin(), polygon.end());
+		for (std::vector<linalg::vec<double, 2>> &new_polygon : new_polygons) {
+			std::reverse(new_polygon.begin(), new_polygon.end());
 		}
 		manifold::Manifold manifold;
 		manifold = manifold.Revolve(new_polygons, spin_sides, spin_degrees);
