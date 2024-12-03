@@ -208,6 +208,13 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	if (navigation_polygon.is_valid()) {
 		navigation_polygon->connect_changed(callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
 	}
+
+#ifdef DEBUG_ENABLED
+	if (navigation_polygon.is_null()) {
+		_free_debug();
+	}
+#endif // DEBUG_ENABLED
+
 	_navigation_polygon_changed();
 
 	update_configuration_warnings();
