@@ -132,6 +132,13 @@ void ProjectDialog::_validate_path() {
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
+
+				// Skip the __MACOSX directory created by macOS's built-in file zipper.
+				if (name.begins_with("__MACOSX")) {
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+
 				if (name.get_file() == "project.godot") {
 					break; // ret == UNZ_OK.
 				}
@@ -604,6 +611,13 @@ void ProjectDialog::ok_pressed() {
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
+
+				// Skip the __MACOSX directory created by macOS's built-in file zipper.
+				if (name.begins_with("__MACOSX")) {
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+
 				if (name.get_file() == "project.godot") {
 					zip_root = name.get_base_dir();
 					break;
@@ -636,7 +650,15 @@ void ProjectDialog::ok_pressed() {
 				ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
-				String rel_path = String::utf8(fname).trim_prefix(zip_root);
+				String name = String::utf8(fname);
+
+				// Skip the __MACOSX directory created by macOS's built-in file zipper.
+				if (name.begins_with("__MACOSX")) {
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+
+				String rel_path = name.trim_prefix(zip_root);
 				if (rel_path.is_empty()) { // Root.
 				} else if (rel_path.ends_with("/")) { // Directory.
 					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
