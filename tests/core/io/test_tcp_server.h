@@ -85,8 +85,8 @@ Error poll(Ref<StreamPeerTCP> p_client) {
 	const uint64_t time = OS::get_singleton()->get_ticks_usec();
 	Error err = p_client->poll();
 	while (err != Error::OK && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		err = p_client->poll();
 		OS::get_singleton()->delay_usec(SLEEP_DURATION);
+		err = p_client->poll();
 	}
 	return err;
 }
@@ -183,8 +183,8 @@ TEST_CASE("[TCPServer] When stopped shouldn't accept new connections") {
 	time = OS::get_singleton()->get_ticks_usec();
 	Error err = new_client->poll();
 	while (err != Error::OK && err != Error::ERR_CONNECTION_ERROR && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		err = new_client->poll();
 		OS::get_singleton()->delay_usec(SLEEP_DURATION);
+		err = new_client->poll();
 	}
 	REQUIRE((err == Error::OK || err == Error::ERR_CONNECTION_ERROR));
 	StreamPeerTCP::Status status = new_client->get_status();
@@ -210,7 +210,10 @@ TEST_CASE("[TCPServer] Should disconnect client") {
 	server->stop();
 	CHECK_FALSE(server->is_listening());
 
-	client->put_string(hello_world);
+	// Reading for a closed connection will print an error.
+	ERR_PRINT_OFF;
+	CHECK_EQ(client->get_string(), String());
+	ERR_PRINT_ON;
 	REQUIRE_EQ(poll(client), Error::OK);
 	CHECK_EQ(client->get_status(), StreamPeerTCP::STATUS_NONE);
 }
