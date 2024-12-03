@@ -34,6 +34,7 @@
 #include "display_server_web.h"
 #include "godot_js.h"
 #include "ip_web.h"
+#include "net_socket_web.h"
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -55,6 +56,7 @@ void OS_Web::alert(const String &p_alert, const String &p_title) {
 void OS_Web::initialize() {
 	OS_Unix::initialize_core();
 	IPWeb::make_default();
+	NetSocketWeb::make_default();
 	DisplayServerWeb::register_web_driver();
 }
 
