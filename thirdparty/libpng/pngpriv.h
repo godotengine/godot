@@ -140,47 +140,6 @@
     * callbacks to do this.
     */
 #  define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_neon
-
-   /* By default the 'intrinsics' code in arm/filter_neon_intrinsics.c is used
-    * if possible - if __ARM_NEON__ is set and the compiler version is not known
-    * to be broken.  This is controlled by PNG_ARM_NEON_IMPLEMENTATION which can
-    * be:
-    *
-    *    1  The intrinsics code (the default with __ARM_NEON__)
-    *    2  The hand coded assembler (the default without __ARM_NEON__)
-    *
-    * It is possible to set PNG_ARM_NEON_IMPLEMENTATION in CPPFLAGS, however
-    * this is *NOT* supported and may cease to work even after a minor revision
-    * to libpng.  It *is* valid to do this for testing purposes, e.g. speed
-    * testing or a new compiler, but the results should be communicated to the
-    * libpng implementation list for incorporation in the next minor release.
-    */
-#  ifndef PNG_ARM_NEON_IMPLEMENTATION
-#     if defined(__ARM_NEON__) || defined(__ARM_NEON)
-#        if defined(__clang__)
-            /* At present it is unknown by the libpng developers which versions
-             * of clang support the intrinsics, however some or perhaps all
-             * versions do not work with the assembler so this may be
-             * irrelevant, so just use the default (do nothing here.)
-             */
-#        elif defined(__GNUC__)
-            /* GCC 4.5.4 NEON support is known to be broken.  4.6.3 is known to
-             * work, so if this *is* GCC, or G++, look for a version >4.5
-             */
-#           if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
-#              define PNG_ARM_NEON_IMPLEMENTATION 2
-#           endif /* no GNUC support */
-#        endif /* __GNUC__ */
-#     else /* !defined __ARM_NEON__ */
-         /* The 'intrinsics' code simply won't compile without this -mfpu=neon:
-          */
-#        if !defined(__aarch64__) && !defined(_M_ARM64)
-            /* The assembler code currently does not work on ARM64 */
-#          define PNG_ARM_NEON_IMPLEMENTATION 2
-#        endif /* __aarch64__ */
-#     endif /* __ARM_NEON__ */
-#  endif /* !PNG_ARM_NEON_IMPLEMENTATION */
-
 #  ifndef PNG_ARM_NEON_IMPLEMENTATION
       /* Use the intrinsics code by default. */
 #     define PNG_ARM_NEON_IMPLEMENTATION 1
