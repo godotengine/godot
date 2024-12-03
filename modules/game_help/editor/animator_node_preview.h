@@ -46,6 +46,7 @@ public:
 
 	SubViewport *viewport = nullptr;
 	Node3D *rotation = nullptr;
+	Node3D *charcter_parent = nullptr;
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
 	Camera3D *camera = nullptr;

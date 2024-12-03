@@ -5,7 +5,7 @@
 void AnimationNodePreview::_on_drag_button_pressed() {
     
     Ref<Resource> res;
-    switch (preview_type)
+    switch (preview_type	)
     {
     case PT_AnimationNode:
         res = node;
@@ -201,7 +201,7 @@ void AnimationNodePreview::_notification(int p_what) {
         case NOTIFICATION_ENTER_TREE: {
             Ref<CharacterBodyPrefab> _prefab = get_preview_prefab();
             if (_prefab.is_valid()) {
-                preview_character->set_body_prefab(_prefab);
+                edit(_prefab);
             }
         }
         break;
@@ -325,7 +325,7 @@ void AnimationNodePreview::edit(Ref<CharacterBodyPrefab> p_prefab){
         xform.basis.scale(Vector3(m, m, m));
         xform.origin = -xform.basis.xform(ofs); //-ofs*m;
         //xform.origin.z -= aabb.get_longest_axis_size() * 2;
-        preview_character->set_transform(xform);
+        charcter_parent->set_transform(xform);
     }
 }
 
@@ -427,9 +427,15 @@ AnimationNodePreview::AnimationNodePreview()
 
     rotation = memnew(Node3D);
     viewport->add_child(rotation);
+    
+    charcter_parent = memnew(Node3D);
+    rotation->add_child(charcter_parent);
+
+
     preview_character = memnew(CharacterBodyMain);
     preview_character->init();
-    rotation->add_child(preview_character);
+    charcter_parent->add_child(preview_character);
+
 
     set_custom_minimum_size(Size2(1, 150) * EDSCALE);
     HBoxContainer *root_hb = memnew(HBoxContainer);
