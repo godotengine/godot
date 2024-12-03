@@ -3163,6 +3163,14 @@
 				If [code]true[/code], reflections will ignore sky contribution. Equivalent to [member ReflectionProbe.interior].
 			</description>
 		</method>
+		<method name="reflection_probe_set_blend_distance">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="blend_distance" type="float" />
+			<description>
+				Sets the distance in meters over which a probe blends into the scene.
+			</description>
+		</method>
 		<method name="reflection_probe_set_cull_mask">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />

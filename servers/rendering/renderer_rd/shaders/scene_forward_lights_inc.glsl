@@ -876,11 +876,20 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 	}
 
 	vec3 inner_pos = abs(local_pos / box_extents);
-	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
-	//make blend more rounded
-	blend = mix(length(inner_pos), blend, blend);
-	blend *= blend;
+	vec3 blend_axes = vec3(0.0, 0.0, 0.0);
+	float blend = 0.0;
+	if (reflections.data[ref_index].blend_distance != 0) {
+		for (int i = 0; i < 3; i++) {
+			float axis_blend_distance = min(reflections.data[ref_index].blend_distance, box_extents[i]);
+			blend_axes[i] = (inner_pos[i] * box_extents[i]) - box_extents[i] + axis_blend_distance;
+			blend_axes[i] = blend_axes[i] / axis_blend_distance;
+			blend_axes[i] = clamp(blend_axes[i], 0.0, 1.0);
+		}
+		blend = pow((1.0 - blend_axes.x) * (1.0 - blend_axes.y) * (1.0 - blend_axes.z), 2);
+		blend = 1 - blend;
+	}
 	blend = max(0.0, 1.0 - blend);
+	blend = clamp(blend, 0.0, 1.0);
 
 	if (reflections.data[ref_index].intensity > 0.0) { // compute reflection
 

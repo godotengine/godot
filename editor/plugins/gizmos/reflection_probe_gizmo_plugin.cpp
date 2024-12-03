@@ -165,6 +165,32 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		aabb.position = -size / 2;
 		aabb.size = size;
 
+		AABB blend_aabb;
+		for (int i = 0; i < 3; i++) {
+			blend_aabb.position[i] = aabb.position[i] + probe->get_blend_distance();
+			blend_aabb.size[i] = aabb.size[i] - probe->get_blend_distance() * 2.0;
+			if (blend_aabb.size[i] < blend_aabb.position[i]) {
+				blend_aabb.position[i] = aabb.position[i] + aabb.size[i] / 2.0;
+				blend_aabb.size[i] = 0.0;
+			}
+		}
+
+		if (probe->get_blend_distance() != 0.0) {
+			for (int i = 0; i < 12; i++) {
+				Vector3 a;
+				Vector3 b;
+				blend_aabb.get_edge(i, a, b);
+				lines.push_back(a);
+				lines.push_back(b);
+			}
+
+			for (int i = 0; i < 8; i++) {
+				Vector3 ep = aabb.get_endpoint(i);
+				internal_lines.push_back(blend_aabb.get_endpoint(i));
+				internal_lines.push_back(ep);
+			}
+		}
+
 		Vector<Vector3> handles = helper->box_get_handles(probe->get_size());
 
 		if (probe->get_origin_offset() != Vector3(0.0, 0.0, 0.0)) {
