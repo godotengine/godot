@@ -768,7 +768,7 @@ layout(location = 0) out mediump vec4 frag_color;
 vec4 fog_process(vec3 vertex) {
 	vec3 fog_color = scene_data_block.data.fog_light_color;
 
-	if (scene_data_block.data.fog_aerial_perspective > 0.0) {
+	if (sc_use_fog_aerial_perspective()) {
 		vec3 sky_fog_color = vec3(0.0);
 		vec3 cube_view = scene_data_block.data.radiance_inverse_xform * vertex;
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
@@ -784,7 +784,7 @@ vec4 fog_process(vec3 vertex) {
 		fog_color = mix(fog_color, sky_fog_color, scene_data_block.data.fog_aerial_perspective);
 	}
 
-	if (scene_data_block.data.fog_sun_scatter > 0.001) {
+	if (sc_use_fog_sun_scatter()) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
 		vec3 view = normalize(vertex);
@@ -806,7 +806,7 @@ vec4 fog_process(vec3 vertex) {
 		fog_amount = 1 - exp(min(0.0, -length(vertex) * scene_data_block.data.fog_density));
 	}
 
-	if (abs(scene_data_block.data.fog_height_density) >= 0.0001) {
+	if (sc_use_fog_height_density()) {
 		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
@@ -1497,9 +1497,11 @@ void main() {
 
 				pssm_coord /= pssm_coord.w;
 
-				shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * float(directional_lights.data[i].blend_splits)), pssm_coord, scene_data.taa_frame_count);
+				bool blend_split = sc_directional_light_blend_split(i);
+				float blend_split_weight = blend_split ? 1.0f : 0.0f;
+				shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * blend_split_weight), pssm_coord, scene_data.taa_frame_count);
 
-				if (directional_lights.data[i].blend_splits) {
+				if (blend_split) {
 					float pssm_blend;
 					float blur_factor2;
 
@@ -1531,7 +1533,7 @@ void main() {
 
 					pssm_coord /= pssm_coord.w;
 
-					float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * float(directional_lights.data[i].blend_splits)), pssm_coord, scene_data.taa_frame_count);
+					float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * blend_split_weight), pssm_coord, scene_data.taa_frame_count);
 					shadow = mix(shadow, shadow2, pssm_blend);
 				}
 
