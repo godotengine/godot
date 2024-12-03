@@ -617,7 +617,7 @@ void AnimationProcessPanel::editor_build_animation_form_path(String p_file_path,
 
 
 void AnimationProcessPanel::_on_conver_single_pressed() {
-    if( !DirAccess::exists(single_animation_file_path) ) {
+    if( !FileAccess::exists(single_animation_file_path) ) {
         return;
     }
     if(single_animation_group_name.str().is_empty()) {

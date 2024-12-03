@@ -445,7 +445,8 @@ void CharacterPrefabProcessPanel::editor_build_prefab_form_path(String p_file_pa
 
 
 void CharacterPrefabProcessPanel::_on_conver_single_pressed() {
-    if( !DirAccess::exists(preview_mesh_path) ) {
+    if( !FileAccess::exists(preview_mesh_path) ) {
+		WARN_PRINT("_on_conver_single_pressed : 文件路徑不存在！");
         return;
     }
     if(single_charcter_prefab_group_name.str().is_empty()) {
