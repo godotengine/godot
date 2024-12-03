@@ -571,6 +571,7 @@ Ref<CharacterBodyPrefab> CharacterPrefabProcessPanel::build_prefab(const String&
     Ref<CharacterBodyPrefab> _body_prefab;
     _body_prefab.instantiate();
     _body_prefab->set_name(p_group);
+    _body_prefab->set_resource_group(animation_group);
     HashMap<String, MeshInstance3D* > meshs;
     // 便利存儲模型文件
     get_fbx_meshs(p_node, meshs);

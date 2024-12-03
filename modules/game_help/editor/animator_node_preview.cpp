@@ -60,6 +60,9 @@ void AnimationNodePreview::play() {
     if(preview_type == PT_CharacterBodyPrefab) {
         return;            
     }
+    if(play_state == PS_Play) {
+        return;
+    }
     play_state = PS_Play;
     preview_character->set_editor_pause_animation(false);
     if(preview_type == PT_Animation) {
@@ -88,6 +91,9 @@ void AnimationNodePreview::pause() {
     if(preview_type == PT_CharacterBodyPrefab) {
         return;            
     }
+    if(play_state == PS_Pause) {
+        return;
+    }
     play_state = PS_Pause;
     preview_character->set_editor_pause_animation(!preview_character->get_editor_pause_animation());
     if(preview_character->get_editor_pause_animation()) {
@@ -105,6 +111,9 @@ void AnimationNodePreview::pause() {
 void AnimationNodePreview::stop() {
     if(preview_type == PT_CharacterBodyPrefab) {
         return;            
+    }
+    if(play_state == PS_Stop) {
+        return;
     }
     play_state = PS_Stop;
     preview_character->set_editor_pause_animation(false);
@@ -211,6 +220,8 @@ void AnimationNodePreview::process(double delta)  {
     Ref<CharacterBodyPrefab> _prefab = get_preview_prefab();
     if(preview_character->get_body_prefab() != _prefab) {
         edit(_prefab);
+        group_enum->update_property();
+        tag_enum->update_property();
     }
 
     if(preview_type != PT_Animation) {
@@ -221,6 +232,7 @@ void AnimationNodePreview::process(double delta)  {
         }
 
     }
+    play();
     
 }
 Variant AnimationNodePreview::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -327,6 +339,8 @@ void AnimationNodePreview::edit(Ref<CharacterBodyPrefab> p_prefab){
         //xform.origin.z -= aabb.get_longest_axis_size() * 2;
         charcter_parent->set_transform(xform);
     }
+	group_enum->update_property();
+	tag_enum->update_property();
 }
 
 void AnimationNodePreview::set_prefab(Ref<CharacterBodyPrefab> p_prefab) {
@@ -597,17 +611,14 @@ void AnimationNodePreview::set_group(String p_group) {
         }
         if(prefab.is_valid()) {
             prefab->set_resource_group(p_group);
+            ResourceSaver::save(prefab, prefab_path);
         }
         break;
     case PT_Animation:
         {
-            
-            if(!animation_path_is_load && animation.is_null()) {
-                animation = ResourceLoader::load(animation_path);
-                animation_path_is_load = true;
-            }
             if(animation.is_valid()) {
                 animation->set_animation_group(p_group);
+                ResourceSaver::save(animation, animation_path);
             }
         }
         break;
@@ -618,9 +629,7 @@ void AnimationNodePreview::set_group(String p_group) {
 }
 
 String AnimationNodePreview::get_group() { 
-    if(!group_enum->is_visible_in_tree()) {
-        return "";
-    }
+
     switch (preview_type)
     {
     case PT_AnimationNode:
@@ -628,21 +637,12 @@ String AnimationNodePreview::get_group() {
         }
         break;
     case PT_CharacterBodyPrefab:   
-        if(!prefab_path_is_load && prefab.is_null()) {
-            prefab = ResourceLoader::load(prefab_path);
-            prefab_path_is_load = true;
-        }
         if(prefab.is_valid()) {
             return prefab->get_resource_group();
         }
         break;
     case PT_Animation:
         {
-            
-            if(!animation_path_is_load && animation.is_null()) {
-                animation = ResourceLoader::load(animation_path);
-                animation_path_is_load = true;
-            }
             if(animation.is_valid()) {
                 return animation->get_animation_group();
             }
@@ -669,22 +669,15 @@ void AnimationNodePreview::set_tag(String p_tag)  {
         break;
     case PT_Animation:
         {
-            
-            if(!animation_path_is_load && animation.is_null()) {
-                animation = ResourceLoader::load(animation_path);
-                animation_path_is_load = true;
-            }
             if(animation.is_valid()) {
                 animation->set_animation_tag(p_tag);
+                ResourceSaver::save(animation, animation_path);
             }
         }
     }
 }
 
 String AnimationNodePreview::get_tag() { 
-    if(!tag_enum->is_visible_in_tree()) {
-        return "";
-    }
     switch (preview_type)
     {
     case PT_AnimationNode:
@@ -695,17 +688,12 @@ String AnimationNodePreview::get_tag() {
         break;
     case PT_Animation:
         {
-            
-            if(!animation_path_is_load && animation.is_null()) {
-                animation = ResourceLoader::load(animation_path);
-                animation_path_is_load = true;
-            }
             if(animation.is_valid()) {
                 return animation->get_animation_tag();    
             }
         }
     }
     return "";
-    }
+}
 
 

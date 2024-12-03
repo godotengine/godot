@@ -574,6 +574,7 @@ void AnimationProcessPanel::editor_build_animation_form_path(String p_file_path,
 			}
             new_animation->set_animation_group(animation_group);
 			new_animation->set_animation_tag(animation_tag);
+            new_animation->set_preview_prefab_path(preview_prefab_path);
             new_animation->optimize();
 #if EDITOR_OPTIMIZE_ANIMATION
             new_animation->compress();
@@ -620,7 +621,14 @@ void AnimationProcessPanel::editor_build_animation_form_path(String p_file_path,
 
 
 void AnimationProcessPanel::_on_conver_single_pressed() {
+
+    
+    if( !FileAccess::exists(preview_prefab_path) ) {
+        WARN_PRINT("请先设置预览预制体名");
+        return;
+    }
     if( !FileAccess::exists(single_animation_file_path) ) {
+        WARN_PRINT("动画文件不合法");
         return;
     }
     if(single_animation_group_name.str().is_empty()) {
@@ -658,6 +666,10 @@ void AnimationProcessPanel::editor_convert_animations(String p_file_path, const 
 }
 
 void AnimationProcessPanel::_on_conver_multe_pressed() {
+    if( !FileAccess::exists(preview_prefab_path) ) {
+        WARN_PRINT("请先设置预览预制体名");
+        return;
+    }
     if( !DirAccess::exists(multe_animation_file_path) ) {
         return;
     }

@@ -798,12 +798,23 @@ Ref<Resource> Mesh::create_placeholder() const {
 }
 
 void Mesh::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_resource_group"), &Mesh::set_resource_group);
+	ClassDB::bind_method(D_METHOD("get_resource_group"), &Mesh::get_resource_group);
+
+	ClassDB::bind_method(D_METHOD("set_resource_tag"), &Mesh::set_resource_tag);
+	ClassDB::bind_method(D_METHOD("get_resource_tag"), &Mesh::get_resource_tag);
+
+
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 	ClassDB::bind_method(D_METHOD("get_faces"), &Mesh::_get_faces);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "group"), "set_resource_group", "get_resource_group");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "tag"), "set_resource_tag", "get_resource_tag");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
+
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &Mesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &Mesh::surface_get_arrays);

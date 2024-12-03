@@ -52,6 +52,10 @@ class Mesh : public Resource {
 	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
 	mutable Vector<Vector3> debug_lines;
 	Size2i lightmap_size_hint;
+	// 资源分组:建筑,植物,墙,建筑组件,石头,装饰物
+	StringName resource_group;
+	// 动画标签: 大树,小树,花,石头,墙,桥,地板,主体建筑
+	StringName resource_tag;
 
 	Vector<Vector3> _get_faces() const;
 
@@ -206,6 +210,19 @@ public:
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;
 
 	virtual Ref<Resource> create_placeholder() const;
+
+	void set_resource_group(const StringName &p_group) {
+		resource_group = p_group;
+	}
+	StringName get_resource_group() const {
+		return resource_group;
+	}
+	void set_resource_tag(const StringName &p_tag) {
+		resource_tag = p_tag;
+	}
+	StringName get_resource_tag() const {
+		return resource_tag;
+	}
 
 	Mesh();
 };
