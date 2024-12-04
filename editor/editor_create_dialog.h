@@ -67,7 +67,7 @@ public:
 
 	void add_type_to_blacklist(const StringName &p_type_name);
 	bool is_type_in_blacklist(const StringName &p_type_name) const;
-	HashSet<String> get_type_blacklist();
+	const HashSet<String> &get_type_blacklist() const;
 	void remove_type_from_blacklist(const StringName &p_type_name);
 	void clear_type_blacklist();
 

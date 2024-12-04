@@ -129,7 +129,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true; // Do not show editor nodes or create dialog.
 	}
 
-	const HashSet<String> &custom_type_blacklist = EditorInterface::get_singleton()->get_create_dialog()->get_type_blacklist();
+	const HashSet<String> custom_type_blacklist = EditorInterface::get_singleton()->get_create_dialog()->get_type_blacklist();
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -148,8 +148,8 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 				return true; // Parent type is blacklisted.
 			}
 		}
-		for (const StringName &E : custom_type_blacklist) {
-			if (ClassDB::is_parent_class(p_type, E)) {
+		for (const StringName &F : custom_type_blacklist) {
+			if (ClassDB::is_parent_class(p_type, F)) {
 				return true; // Parent type is listed in the custom blacklist.
 			}
 		}
