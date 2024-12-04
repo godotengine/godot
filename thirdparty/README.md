@@ -902,7 +902,7 @@ folder, in order.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.8 (6c8742cc8145c8f629698cd8248900990946d6b1, 2024)
+- Version: 1.0.9 (5fcb4dcb6e3abf96214b67e5c54db1ceec6a455c, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
