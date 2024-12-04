@@ -283,7 +283,7 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.8 (5a764e5555c64337ed17444410269ff21cb617b1, 2024)
+- Version: 2.28.9 (5e146adef63b326b04282252639bebc2730939c6, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
