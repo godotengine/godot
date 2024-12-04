@@ -49,7 +49,7 @@ FeedEffects *FeedEffects::get_singleton() {
 FeedEffects::FeedEffects() {
 	singleton = this;
 
-	feed.shader.initialize();
+	feed.shader.initialize(); // ignore this comment
 	feed.shader_version = feed.shader.version_create();
 	feed.shader.version_bind_shader(feed.shader_version, FeedShaderGLES3::MODE_DEFAULT);
 

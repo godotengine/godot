@@ -304,95 +304,43 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	return OK;
 }
 
-void String::copy_from(const char *p_cstr) {
-	// copy Latin-1 encoded c-string directly
-	if (!p_cstr) {
+void String::copy_from(const StrRange<char> &p_cstr) {
+	if (p_cstr.len == 0) {
 		resize(0);
 		return;
 	}
 
-	const size_t len = strlen(p_cstr);
+	resize(p_cstr.len + 1); // include 0
 
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	resize(len + 1); // include 0
-
+	const char *src = p_cstr.c_str;
+	const char *end = src + p_cstr.len;
 	char32_t *dst = ptrw();
 
-	for (size_t i = 0; i <= len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_cstr[i];
-#else
-		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
-#endif
-		if (c == 0 && i < len) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
+	for (; src < end; ++src, ++dst) {
+		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
+		*dst = static_cast<uint8_t>(*src);
 	}
+	*dst = 0;
 }
 
-void String::copy_from(const char *p_cstr, const int p_clip_to) {
-	// copy Latin-1 encoded c-string directly
-	if (!p_cstr) {
+void String::copy_from(const StrRange<wchar_t> &p_cstr) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit, parse as UTF-16
+	// TODO parse_utf16 does not currently support passing in a known length to save time.
+	parse_utf16((const char16_t *)p_cstr.c_str);
+#else
+	// wchar_t is 32-bit, copy directly
+	copy_from((StrRange<char32_t> &)p_cstr);
+#endif
+}
+
+void String::copy_from(const StrRange<char32_t> &p_cstr) {
+	if (p_cstr.len == 0) {
 		resize(0);
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
-		len++;
-	}
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	resize(len + 1); // include 0
-
-	char32_t *dst = ptrw();
-
-	for (int i = 0; i < len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_cstr[i];
-#else
-		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
-#endif
-		if (c == 0) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
-	}
-	dst[len] = 0;
-}
-
-void String::copy_from(const wchar_t *p_cstr) {
-#ifdef WINDOWS_ENABLED
-	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr);
-#else
-	// wchar_t is 32-bit, copy directly
-	copy_from((const char32_t *)p_cstr);
-#endif
-}
-
-void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
-#ifdef WINDOWS_ENABLED
-	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr, p_clip_to);
-#else
-	// wchar_t is 32-bit, copy directly
-	copy_from((const char32_t *)p_cstr, p_clip_to);
-#endif
+	copy_from_unchecked(p_cstr.c_str, p_cstr.len);
 }
 
 void String::copy_from(const char32_t &p_char) {
@@ -418,84 +366,42 @@ void String::copy_from(const char32_t &p_char) {
 	dst[1] = 0;
 }
 
-void String::copy_from(const char32_t *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	int len = 0;
-	const char32_t *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	copy_from_unchecked(p_cstr, len);
-}
-
-void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	int len = 0;
-	const char32_t *ptr = p_cstr;
-	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
-		len++;
-	}
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	copy_from_unchecked(p_cstr, len);
-}
-
 // assumes the following have already been validated:
 // p_char != nullptr
 // p_length > 0
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
+
+	const char32_t *end = p_char + p_length;
 	char32_t *dst = ptrw();
-	dst[p_length] = 0;
 
-	for (int i = 0; i < p_length; i++) {
-		if (p_char[i] == 0) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
+	for (; p_char < end; ++p_char, ++dst) {
+		const char32_t chr = *p_char;
+		if ((chr & 0xfffff800) == 0xd800) {
+			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)chr));
+			*dst = _replacement_char;
 			continue;
 		}
-		if ((p_char[i] & 0xfffff800) == 0xd800) {
-			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char[i]));
-			dst[i] = _replacement_char;
+		if (chr > 0x10ffff) {
+			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)chr));
+			*dst = _replacement_char;
 			continue;
 		}
-		if (p_char[i] > 0x10ffff) {
-			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char[i]));
-			dst[i] = _replacement_char;
-			continue;
-		}
-		dst[i] = p_char[i];
+		*dst = chr;
 	}
+	*dst = 0;
 }
 
-void String::operator=(const char *p_str) {
+void String::operator=(const StrRange<char> &p_str) {
 	copy_from(p_str);
 }
 
-void String::operator=(const char32_t *p_str) {
+void String::operator=(const StrRange<char32_t> &p_str) {
 	copy_from(p_str);
 }
 
-void String::operator=(const wchar_t *p_str) {
+void String::operator=(const StrRange<wchar_t> &p_str) {
 	copy_from(p_str);
 }
 
@@ -629,12 +535,7 @@ String &String::operator+=(char32_t p_char) {
 
 bool String::operator==(const char *p_str) const {
 	// compare Latin-1 encoded c-string
-	int len = 0;
-	const char *aux = p_str;
-
-	while (*(aux++) != 0) {
-		len++;
-	}
+	int len = strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -668,12 +569,7 @@ bool String::operator==(const wchar_t *p_str) const {
 }
 
 bool String::operator==(const char32_t *p_str) const {
-	int len = 0;
-	const char32_t *aux = p_str;
-
-	while (*(aux++) != 0) {
-		len++;
-	}
+	const int len = strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -719,7 +615,7 @@ bool String::operator==(const String &p_str) const {
 	return true;
 }
 
-bool String::operator==(const StrRange &p_str_range) const {
+bool String::operator==(const StrRange<char32_t> &p_str_range) const {
 	int len = p_str_range.len;
 
 	if (length() != len) {
@@ -2524,37 +2420,6 @@ Char16String String::utf16() const {
 	*cdst = 0; //trailing zero
 
 	return utf16s;
-}
-
-String::String(const char *p_str) {
-	copy_from(p_str);
-}
-
-String::String(const wchar_t *p_str) {
-	copy_from(p_str);
-}
-
-String::String(const char32_t *p_str) {
-	copy_from(p_str);
-}
-
-String::String(const char *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
-}
-
-String::String(const wchar_t *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
-}
-
-String::String(const char32_t *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
-}
-
-String::String(const StrRange &p_range) {
-	if (!p_range.c_str) {
-		return;
-	}
-	copy_from(p_range.c_str, p_range.len);
 }
 
 int64_t String::hex_to_int() const {
