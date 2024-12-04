@@ -1191,7 +1191,7 @@ HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vect
 	return all_valid_conversion_to_targets;
 }
 
-void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites) {
+void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites, bool p_navigate) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
 		// Ignore a directory.
@@ -1258,7 +1258,9 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			EditorNode::get_singleton()->load_resource(fpath);
 		}
 	}
-	_navigate_to_path(fpath, p_select_in_favorites);
+	if (p_navigate) {
+		_navigate_to_path(fpath, p_select_in_favorites);
+	}
 }
 
 void FileSystemDock::_tree_activate_file() {
@@ -1272,7 +1274,7 @@ void FileSystemDock::_tree_activate_file() {
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
 		} else {
-			_select_file(file_path, is_favorite && !file_path.ends_with("/"));
+			_select_file(file_path, is_favorite && !file_path.ends_with("/"), false);
 		}
 	}
 }
