@@ -1109,17 +1109,21 @@ String String::_camelcase_to_underscore() const {
 	String new_string;
 	int start_index = 0;
 
-	for (int i = 1; i < size(); i++) {
-		bool is_prev_upper = is_unicode_upper_case(cstr[i - 1]);
-		bool is_prev_lower = is_unicode_lower_case(cstr[i - 1]);
-		bool is_prev_digit = is_digit(cstr[i - 1]);
+	if (length() == 0) {
+		return *this;
+	}
 
-		bool is_curr_upper = is_unicode_upper_case(cstr[i]);
-		bool is_curr_lower = is_unicode_lower_case(cstr[i]);
-		bool is_curr_digit = is_digit(cstr[i]);
+	bool is_prev_upper = is_unicode_upper_case(cstr[0]);
+	bool is_prev_lower = is_unicode_lower_case(cstr[0]);
+	bool is_prev_digit = is_digit(cstr[0]);
+
+	for (int i = 1; i < length(); i++) {
+		const bool is_curr_upper = is_unicode_upper_case(cstr[i]);
+		const bool is_curr_lower = is_unicode_lower_case(cstr[i]);
+		const bool is_curr_digit = is_digit(cstr[i]);
 
 		bool is_next_lower = false;
-		if (i + 1 < size()) {
+		if (i + 1 < length()) {
 			is_next_lower = is_unicode_lower_case(cstr[i + 1]);
 		}
 
@@ -1132,6 +1136,10 @@ String String::_camelcase_to_underscore() const {
 			new_string += substr(start_index, i - start_index) + "_";
 			start_index = i;
 		}
+
+		is_prev_upper = is_curr_upper;
+		is_prev_lower = is_curr_lower;
+		is_prev_digit = is_curr_digit;
 	}
 
 	new_string += substr(start_index, size() - start_index);
