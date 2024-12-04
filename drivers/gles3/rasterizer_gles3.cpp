@@ -118,8 +118,16 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 }
 
 void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
+	static const GLuint64 CLIENT_WAIT_SYNC_TIMEOUT = 1000000000; // One second
+
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
+
+		if (GLES3::Utilities::get_singleton()->get_cpu_gpu_sync_mode() == RenderingServer::CPU_GPU_SYNC_SEQUENTIAL) {
+			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, CLIENT_WAIT_SYNC_TIMEOUT);
+			glDeleteSync(fence);
+		}
 	} else {
 		glFinish();
 	}
