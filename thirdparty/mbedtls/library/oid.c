@@ -15,6 +15,7 @@
 #include "mbedtls/rsa.h"
 #include "mbedtls/error.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
