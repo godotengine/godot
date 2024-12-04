@@ -5286,7 +5286,7 @@ bool String::is_valid_html_color() const {
 }
 
 // Changes made to the set of invalid filename characters must also be reflected in the String documentation for is_valid_filename.
-static const char *invalid_filename_characters = ": / \\ ? * \" | % < >";
+static const char *invalid_filename_characters[] = { ":", "/", "\\", "?", "*", "\"", "|", "%", "<", ">" };
 
 bool String::is_valid_filename() const {
 	String stripped = strip_edges();
@@ -5298,8 +5298,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	Vector<String> chars = String(invalid_filename_characters).split(" ");
-	for (const String &ch : chars) {
+	for (const char *ch : invalid_filename_characters) {
 		if (contains(ch)) {
 			return false;
 		}
@@ -5308,10 +5307,9 @@ bool String::is_valid_filename() const {
 }
 
 String String::validate_filename() const {
-	Vector<String> chars = String(invalid_filename_characters).split(" ");
 	String name = strip_edges();
-	for (int i = 0; i < chars.size(); i++) {
-		name = name.replace(chars[i], "_");
+	for (const char *ch : invalid_filename_characters) {
+		name = name.replace(ch, "_");
 	}
 	return name;
 }
