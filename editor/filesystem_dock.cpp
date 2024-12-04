@@ -245,6 +245,8 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 	subdirectory_item->set_selectable(0, true);
 	subdirectory_item->set_metadata(0, lpath);
+	folder_map[lpath] = subdirectory_item;
+
 	if (!p_select_in_favorites && (current_path == lpath || ((display_mode != DISPLAY_MODE_TREE_ONLY) && current_path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
 		// Keep select an item when re-created a tree
@@ -371,6 +373,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	tree_update_id++;
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
+	folder_map.clear();
 
 	// Handles the favorites.
 	favorites_item = tree->create_item(root);
@@ -702,19 +705,21 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 }
 
 void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
+	bool is_directory = false;
 	if (p_path == "Favorites") {
 		current_path = p_path;
 	} else {
 		String target_path = p_path;
 		// If the path is a file, do not only go to the directory in the tree, also select the file in the file list.
 		if (target_path.ends_with("/")) {
-			target_path = target_path.substr(0, target_path.length() - 1);
+			target_path = target_path.trim_suffix("/");
 		}
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(p_path)) {
 			current_path = target_path;
 		} else if (da->dir_exists(p_path)) {
 			current_path = target_path + "/";
+			is_directory = true;
 		} else {
 			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
 		}
@@ -723,17 +728,56 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_set_current_path_line_edit_text(current_path);
 	_push_to_history();
 
-	_update_tree(get_uncollapsed_paths(), false, p_select_in_favorites, true);
+	const String file_name = is_directory ? p_path.trim_suffix("/").get_file() + "/" : p_path.get_file();
+	bool found = false;
+
+	TreeItem **base_dir_ptr;
+	{
+		const String base_dir = current_path.get_base_dir();
+		if (base_dir == "res://") {
+			base_dir_ptr = folder_map.getptr(base_dir);
+		} else if (is_directory) {
+			base_dir_ptr = folder_map.getptr(base_dir.get_base_dir() + "/");
+		} else {
+			base_dir_ptr = folder_map.getptr(base_dir + "/");
+		}
+	}
+
+	if (base_dir_ptr) {
+		TreeItem *directory = *base_dir_ptr;
+		{
+			TreeItem *entry = directory->get_first_child();
+			while (entry) {
+				if (entry->get_metadata(0).operator String().ends_with(file_name)) {
+					tree->deselect_all();
+					entry->select(0);
+					found = true;
+					break;
+				}
+				entry = entry->get_next();
+			}
+		}
+
+		while (directory) {
+			directory->set_collapsed(false);
+			directory = directory->get_parent();
+		}
+	}
+
+	if (!found) {
+		return;
+	}
+
+	tree->ensure_cursor_is_visible();
 	if (display_mode != DISPLAY_MODE_TREE_ONLY) {
 		_update_file_list(false);
 
 		// Reset the scroll for a directory.
-		if (p_path.ends_with("/")) {
+		if (is_directory) {
 			files->get_v_scroll_bar()->set_value(0);
 		}
 	}
 
-	String file_name = p_path.get_file();
 	if (!file_name.is_empty()) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->get_item_text(i) == file_name) {

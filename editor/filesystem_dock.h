@@ -133,6 +133,7 @@ private:
 		CONVERT_BASE_ID = 1000,
 	};
 
+	HashMap<String, TreeItem *> folder_map;
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
