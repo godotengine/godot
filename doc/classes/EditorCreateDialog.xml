@@ -32,7 +32,7 @@
 				Removes all custom suffixes for types with them.
 			</description>
 		</method>
-		<method name="get_dialog_window"  qualifiers="const">
+		<method name="get_dialog_window" qualifiers="const">
 			<return type="ConfirmationDialog" />
 			<description>
 				Returns the window of the create dialog.
