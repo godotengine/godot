@@ -144,6 +144,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 single_path->set_h_size_flags(SIZE_EXPAND_FILL);
 				single_path->set_custom_property(true);
                 single_path->update_property();
+				vb->add_child(single_path);
 
                 single_animation_group = memnew(EditorPropertyTextEnum);
                 single_animation_group->set_label(L"动画组");
@@ -169,7 +170,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
 
 
                 
-                vb->add_child(create_line(  single_path,single_animation_group,single_animation_tags));
+                vb->add_child(create_line( single_animation_group,single_animation_tags));
 
                 vb->add_child(conver_single_button);
             }
@@ -198,6 +199,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 multe_path->setup(Vector<String>(), true, false);
 				multe_path->set_custom_property(true);
                 multe_path->update_property();
+				vb->add_child(multe_path);
 
                 multe_animation_group = memnew(EditorPropertyTextEnum);
                 multe_animation_group->set_label(L"动画组");
@@ -223,7 +225,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 conver_multe_button->set_text(L"转换");
                 conver_multe_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationProcessPanel::_on_conver_multe_pressed));
                 
-                vb->add_child(create_line(  multe_path,multe_animation_group,multe_animation_tags));
+                vb->add_child(create_line( multe_animation_group,multe_animation_tags));
 
                 vb->add_child(conver_multe_button);
 

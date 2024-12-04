@@ -60,6 +60,7 @@ public:
         ItemBoxItem *it = memnew(ItemBoxItem);
         it->set_custom_minimum_size(item_size);
         view_root->add_child(it);
+
         it->add_child(item);
         item->set_h_size_flags(SIZE_EXPAND_FILL);
         item->set_v_size_flags(SIZE_EXPAND_FILL);

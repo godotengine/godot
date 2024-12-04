@@ -92,6 +92,16 @@ HBoxContainer* CharacterPrefabProcessPanel::create_line(Control* control0 , Cont
 CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
     load_charcter_prefab_config();
 
+	property_preview_mesh_path = memnew(EditorPropertyPath);
+	property_preview_mesh_path->set_label(L"選擇预制件：");
+	property_preview_mesh_path->set_object_and_property(this, SNAME("preview_mesh_path"));
+	property_preview_mesh_path->setup({ "*.fbx", "*.gltf","*.glb" }, false, false);
+	property_preview_mesh_path->set_h_size_flags(SIZE_EXPAND_FILL);
+	property_preview_mesh_path->set_custom_property(true);
+	property_preview_mesh_path->update_property();
+	add_child(property_preview_mesh_path);
+
+
     HBoxContainer* hb = memnew(HBoxContainer);
     hb->set_h_size_flags(SIZE_EXPAND_FILL);
     add_child(hb);
@@ -100,14 +110,6 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
         vb->set_custom_minimum_size(Vector2(300, 0));
         hb->add_child(vb);
 
-        property_preview_mesh_path = memnew(EditorPropertyPath);
-        property_preview_mesh_path->set_label(L"選擇预制件：");
-        property_preview_mesh_path->set_object_and_property(this, SNAME("preview_mesh_path"));
-		property_preview_mesh_path->setup({ "*.fbx", "*.gltf","*.glb" }, false, false);
-        property_preview_mesh_path->set_h_size_flags(SIZE_EXPAND_FILL);
-		property_preview_mesh_path->set_custom_property(true);
-        property_preview_mesh_path->update_property();
-        vb->add_child(property_preview_mesh_path);
 
         preview = memnew(SceneViewPanel);
         preview->set_custom_minimum_size(Vector2(400, 400));
@@ -171,16 +173,19 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
             label->set_modulate(Color(1,0.8,0.7,1));
 
             vb->add_child(create_line(label,true));
+
+
+			multe_path = memnew(EditorPropertyPath);
+			multe_path->set_label(L"选择文件夹");
+			multe_path->set_object_and_property(this, "multe_charcter_prefab_file_path");
+			multe_path->set_h_size_flags(SIZE_EXPAND_FILL);
+			multe_path->setup(Vector<String>(), true, false);
+			multe_path->set_custom_property(true);
+			vb->add_child(multe_path);
                                     
             VSeparator* sep = memnew(VSeparator);
             vb->add_child(sep);
             {
-                multe_path = memnew(EditorPropertyPath);
-                multe_path->set_label(L"选择文件夹");
-                multe_path->set_object_and_property(this, "multe_charcter_prefab_file_path");
-                multe_path->set_h_size_flags(SIZE_EXPAND_FILL);
-                multe_path->setup(Vector<String>(), true, false);
-				multe_path->set_custom_property(true);
 
                 multe_charcter_prefab_group = memnew(EditorPropertyTextEnum);
                 multe_charcter_prefab_group->set_label(L"动画组");
@@ -197,7 +202,7 @@ CharacterPrefabProcessPanel::CharacterPrefabProcessPanel() {
                 conver_multe_button->set_text(L"转换");
                 conver_multe_button->connect(SceneStringName(pressed), callable_mp(this, &CharacterPrefabProcessPanel::_on_conver_multe_pressed));
                 
-                vb->add_child(create_line(  multe_path,multe_charcter_prefab_group));
+                vb->add_child(create_line( multe_charcter_prefab_group));
 
                 vb->add_child(conver_multe_button);
 
