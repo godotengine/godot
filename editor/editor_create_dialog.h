@@ -41,7 +41,7 @@ class EditorCreateDialog : public Object {
 	static EditorCreateDialog *singleton;
 	CreateDialog *create_dialog = nullptr;
 
-	HashSet<String> custom_type_blacklist;
+	HashSet<StringName> custom_type_blacklist;
 	HashMap<StringName, String> custom_type_suffixes;
 
 #define CHECK_IF_NO_BOUND_CREATE_DIALOG \
@@ -67,7 +67,7 @@ public:
 
 	void add_type_to_blacklist(const StringName &p_type_name);
 	bool is_type_in_blacklist(const StringName &p_type_name) const;
-	const HashSet<String> &get_type_blacklist() const;
+	const HashSet<StringName> &get_type_blacklist() const;
 	void remove_type_from_blacklist(const StringName &p_type_name);
 	void clear_type_blacklist();
 
