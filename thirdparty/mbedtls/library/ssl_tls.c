@@ -4452,6 +4452,7 @@ static void ssl_remove_psk(mbedtls_ssl_context *ssl)
                                  ssl->handshake->psk_len);
         mbedtls_free(ssl->handshake->psk);
         ssl->handshake->psk_len = 0;
+        ssl->handshake->psk = NULL;
     }
 }
 
