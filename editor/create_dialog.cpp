@@ -129,7 +129,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true; // Do not show editor nodes or create dialog.
 	}
 
-	HashSet<String> &custom_type_blacklist = EditorInterface::get_singleton()->get_create_dialog()->get_type_blacklist();
+	HashSet<String> custom_type_blacklist = EditorInterface::get_singleton()->get_create_dialog()->get_type_blacklist();
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -162,8 +162,22 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		}
 
 		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
-		if (ClassDB::class_exists(native_type) && !ClassDB::can_instantiate(native_type)) {
+		if (ClassDB::class_exists(native_type)) {
+			if (!ClassDB::can_instantiate(native_type)) {
+				return true;
+			}
+			if (custom_type_blacklist.has(native_type)) {
+				return true;
+			}
+		}
+
+		if (custom_type_blacklist.has(p_type)) {
 			return true;
+		}
+		for (const StringName &E : custom_type_blacklist) {
+			if (E == ScriptServer::get_global_class_base(p_type)) {
+				return true; // Parent type is listed in the custom blacklist.
+			}
 		}
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
@@ -175,15 +189,6 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path); // Only the custom type by an enabled addon can display in the create dialog.
 				}
 				i = script_path.find_char('/', i + 1);
-			}
-		}
-
-		if (custom_type_blacklist.has(p_type)) {
-			return true;
-		}
-		for (const StringName &E : custom_type_blacklist) {
-			if (E == ScriptServer::get_global_class_base(p_type) || ScriptServer::get_global_class_native_base(p_type) == E) {
-				return true; // Parent type is listed in the custom blacklist.
 			}
 		}
 	}
