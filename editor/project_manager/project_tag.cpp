@@ -35,8 +35,13 @@
 #include "scene/gui/color_rect.h"
 
 void ProjectTag::_notification(int p_what) {
-	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
-		button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		if (display_close) {
+			button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
+		}
+		button->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("ProjectTag")));
+		button->add_theme_style_override("hover", get_theme_stylebox("hover", SNAME("ProjectTag")));
+		button->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), SNAME("ProjectTag")));
 	}
 }
 
