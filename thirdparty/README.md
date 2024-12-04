@@ -916,7 +916,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.14.10 (366dcd72850c360b49e841e568fc5a154d7cce9e, 2024)
+- Version: 0.15.5 (89ab573acb253567975b2494069c7ee9abc9267c, 2024)
 - License: MIT
 
 Files extracted from upstream source:
