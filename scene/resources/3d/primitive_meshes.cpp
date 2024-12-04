@@ -443,15 +443,25 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		v = j;
 
 		v /= (rings + 1);
-		w = sin(0.5 * Math_PI * v);
-		y = radius * cos(0.5 * Math_PI * v);
+		if (j == (rings + 1)) {
+			w = 1.0;
+			y = 0.0;
+		} else {
+			w = Math::sin(0.5 * Math_PI * v);
+			y = Math::cos(0.5 * Math_PI * v) * radius;
+		}
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, 0.5 * height - radius, 0.0));
@@ -492,8 +502,13 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * radius, y, -z * radius);
 			points.push_back(p);
@@ -527,24 +542,33 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		v = j;
 
 		v /= (rings + 1);
-		v += 1.0;
-		w = sin(0.5 * Math_PI * v);
-		y = radius * cos(0.5 * Math_PI * v);
+		if (j == (rings + 1)) {
+			w = 0.0;
+			y = -radius;
+		} else {
+			w = Math::cos(0.5 * Math_PI * v);
+			y = -Math::sin(0.5 * Math_PI * v) * radius;
+		}
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
 			points.push_back(p + Vector3(0.0, -0.5 * height + radius, 0.0));
 			normals.push_back(p.normalized());
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, twothirds + ((v - 1.0) * onethird)));
+			uvs.push_back(Vector2(u, twothirds + v * onethird));
 			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * radial_h, radial_v + height_v + ((v - 1.0) * radial_v)));
+				uv2s.push_back(Vector2(u * radial_h, radial_v + height_v + v * radial_v));
 			}
 			point++;
 
@@ -1074,8 +1098,13 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
@@ -1126,8 +1155,13 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * Math_TAU);
-			z = cos(r * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(r * Math_TAU);
+				z = Math::cos(r * Math_TAU);
+			}
 
 			u = ((x + 1.0) * 0.25);
 			v = 0.5 + ((z + 1.0) * 0.25);
@@ -1168,8 +1202,13 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * Math_TAU);
-			z = cos(r * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(r * Math_TAU);
+				z = Math::cos(r * Math_TAU);
+			}
 
 			u = 0.5 + ((x + 1.0) * 0.25);
 			v = 1.0 - ((z + 1.0) * 0.25);
@@ -1934,15 +1973,25 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		float w;
 
 		v /= (rings + 1);
-		w = sin(Math_PI * v);
-		y = scale * cos(Math_PI * v);
+		if (j == (rings + 1)) {
+			w = 0.0;
+			y = -scale;
+		} else {
+			w = Math::sin(Math_PI * v);
+			y = Math::cos(Math_PI * v) * scale;
+		}
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			if (is_hemisphere && y < 0.0) {
 				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));
@@ -2144,13 +2193,13 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 		float inci = float(i) / rings;
 		float angi = inci * Math_TAU;
 
-		Vector2 normali = Vector2(-Math::sin(angi), -Math::cos(angi));
+		Vector2 normali = (i == rings) ? Vector2(0.0, -1.0) : Vector2(-Math::sin(angi), -Math::cos(angi));
 
 		for (int j = 0; j <= ring_segments; j++) {
 			float incj = float(j) / ring_segments;
 			float angj = incj * Math_TAU;
 
-			Vector2 normalj = Vector2(-Math::cos(angj), Math::sin(angj));
+			Vector2 normalj = (j == ring_segments) ? Vector2(-1.0, 0.0) : Vector2(-Math::cos(angj), Math::sin(angj));
 			Vector2 normalk = normalj * radius + Vector2(min_radius + radius, 0);
 
 			float offset_h = 0.5 * (1.0 - normalj.x) * delta_h;
@@ -2159,7 +2208,7 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 
 			points.push_back(Vector3(normali.x * normalk.x, normalk.y, normali.y * normalk.x));
 			normals.push_back(Vector3(normali.x * normalj.x, normalj.y, normali.y * normalj.x));
-			ADD_TANGENT(-Math::cos(angi), 0.0, Math::sin(angi), 1.0);
+			ADD_TANGENT(normali.y, 0.0, -normali.x, 1.0);
 			uvs.push_back(Vector2(inci, incj));
 			if (_add_uv2) {
 				uv2s.push_back(Vector2(offset_h + inci * adj_h, incj * height_v));
@@ -2434,8 +2483,12 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 			if (curve.is_valid() && curve->get_point_count() > 0) {
 				r *= curve->sample_baked(v);
 			}
-			float x = sin(u * Math_TAU);
-			float z = cos(u * Math_TAU);
+			float x = 0.0;
+			float z = 1.0;
+			if (i < radial_steps) {
+				x = Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * r, y, z * r);
 			points.push_back(p);
@@ -2503,8 +2556,12 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				float r = i;
 				r /= radial_steps;
 
-				float x = sin(r * Math_TAU);
-				float z = cos(r * Math_TAU);
+				float x = 0.0;
+				float z = 1.0;
+				if (i < radial_steps) {
+					x = Math::sin(r * Math_TAU);
+					z = Math::cos(r * Math_TAU);
+				}
 
 				float u = ((x + 1.0) * 0.25);
 				float v = 0.5 + ((z + 1.0) * 0.25);
@@ -2568,8 +2625,12 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				float r = i;
 				r /= radial_steps;
 
-				float x = sin(r * Math_TAU);
-				float z = cos(r * Math_TAU);
+				float x = 0.0;
+				float z = 1.0;
+				if (i < radial_steps) {
+					x = Math::sin(r * Math_TAU);
+					z = Math::cos(r * Math_TAU);
+				}
 
 				float u = 0.5 + ((x + 1.0) * 0.25);
 				float v = 1.0 - ((z + 1.0) * 0.25);
