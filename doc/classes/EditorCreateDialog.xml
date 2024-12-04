@@ -32,35 +32,35 @@
 				Removes all custom suffixes for types with them.
 			</description>
 		</method>
-		<method name="get_dialog_window">
+		<method name="get_dialog_window"  qualifiers="const">
 			<return type="ConfirmationDialog" />
 			<description>
 				Returns the window of the create dialog.
 				[b]Warning:[/b] The window of the create dialog shouldn't be deleted. Trying removing and freeing this window will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_search_options">
+		<method name="get_search_options" qualifiers="const">
 			<return type="Tree" />
 			<description>
 				Returns a tree of search options for the create dialog.
 				[b]Warning:[/b] The search options tree shouldn't be deleted. Trying removing and freeing this tree will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_type_custom_suffix">
+		<method name="get_type_custom_suffix" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="type_name" type="StringName" />
 			<description>
 				Returns the custom suffix for the given type. If the type has no custom suffix, a [code]suffix not found[/code] string will be returned. If the type is invalid, a [code]invalid suffix[/code] string will be returned.
 			</description>
 		</method>
-		<method name="has_type_custom_suffix">
+		<method name="has_type_custom_suffix" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="type_name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the type has a custom suffix, [code]false[/code] otherwise.
 			</description>
 		</method>
-		<method name="is_type_in_blacklist">
+		<method name="is_type_in_blacklist" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="type_name" type="StringName" />
 			<description>
