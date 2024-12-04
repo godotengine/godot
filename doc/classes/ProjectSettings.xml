@@ -2367,7 +2367,7 @@
 		<member name="rendering/2d/batching/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas item commands that can be batched into a single draw call.
 		</member>
-		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="256">
+		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="4096">
 			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
 			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
 		</member>
