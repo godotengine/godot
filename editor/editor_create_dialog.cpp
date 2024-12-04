@@ -56,7 +56,7 @@ void EditorCreateDialog::add_type_to_blacklist(const StringName &p_type_name) {
 	custom_type_blacklist.insert(p_type_name);
 }
 
-HashSet<String> &EditorCreateDialog::get_type_blacklist() {
+HashSet<String> EditorCreateDialog::get_type_blacklist() {
 	return custom_type_blacklist;
 }
 
