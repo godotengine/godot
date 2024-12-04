@@ -337,17 +337,18 @@ static inline const unsigned char *mbedtls_buffer_offset_const(
 #endif
 
 /* Always provide a static assert macro, so it can be used unconditionally.
- * It will expand to nothing on some systems.
- * Can be used outside functions (but don't add a trailing ';' in that case:
- * the semicolon is included here to avoid triggering -Wextra-semi when
- * MBEDTLS_STATIC_ASSERT() expands to nothing).
- * Can't use the C11-style `defined(static_assert)` on FreeBSD, since it
+ * It will expand to nothing on some systems. */
+/* Can't use the C11-style `defined(static_assert)` on FreeBSD, since it
  * defines static_assert even with -std=c99, but then complains about it.
  */
 #if defined(static_assert) && !defined(__FreeBSD__)
-#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg);
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg)
 #else
-#define MBEDTLS_STATIC_ASSERT(expr, msg)
+/* Make sure `MBEDTLS_STATIC_ASSERT(expr, msg);` is valid both inside and
+ * outside a function. We choose a struct declaration, which can be repeated
+ * any number of times and does not need a matching definition. */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)                                \
+    struct ISO_C_does_not_allow_extra_semicolon_outside_of_a_function
 #endif
 
 /* Suppress compiler warnings for unused functions and variables. */
