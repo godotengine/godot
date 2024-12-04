@@ -533,6 +533,11 @@ protected:
 	static Engine *singleton;
 
 public:
+	enum CpuGpuSyncMode {
+		CPU_GPU_SYNC_PARALLEL,
+		CPU_GPU_SYNC_SEQUENTIAL,
+	};
+
 	static Engine *get_singleton() { return singleton; }
 	void set_physics_ticks_per_second(int p_ips);
 	int get_physics_ticks_per_second() const;
@@ -543,6 +548,9 @@ public:
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;
+
+	void set_cpu_gpu_sync_mode(CpuGpuSyncMode p_sync_mode);
+	CpuGpuSyncMode get_cpu_gpu_sync_mode() const;
 
 	void set_max_fps(int p_fps);
 	int get_max_fps() const;
@@ -652,6 +660,8 @@ public:
 };
 
 } // namespace CoreBind
+
+VARIANT_ENUM_CAST(CoreBind::Engine::CpuGpuSyncMode);
 
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
