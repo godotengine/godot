@@ -1294,14 +1294,22 @@ CSGBrush *CSGSphere3D::_build_brush() {
 		const double longitude_step = Math_TAU / radial_segments;
 		int face = 0;
 		for (int i = 0; i < rings; i++) {
-			double latitude0 = latitude_step * i + Math_TAU / 4;
-			double cos0 = Math::cos(latitude0);
-			double sin0 = Math::sin(latitude0);
+			double cos0 = 0;
+			double sin0 = 1;
+			if (i > 0) {
+				double latitude0 = latitude_step * i + Math_TAU / 4;
+				cos0 = Math::cos(latitude0);
+				sin0 = Math::sin(latitude0);
+			}
 			double v0 = double(i) / rings;
 
-			double latitude1 = latitude_step * (i + 1) + Math_TAU / 4;
-			double cos1 = Math::cos(latitude1);
-			double sin1 = Math::sin(latitude1);
+			double cos1 = 0;
+			double sin1 = -1;
+			if (i < rings - 1) {
+				double latitude1 = latitude_step * (i + 1) + Math_TAU / 4;
+				cos1 = Math::cos(latitude1);
+				sin1 = Math::sin(latitude1);
+			}
 			double v1 = double(i + 1) / rings;
 
 			for (int j = 0; j < radial_segments; j++) {
