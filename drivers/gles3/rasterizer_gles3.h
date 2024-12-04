@@ -105,8 +105,8 @@ public:
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
 	bool is_opengl() { return true; }
-	void gl_end_frame(bool p_swap_buffers);
-	void end_frame(bool p_swap_buffers);
+	void gl_end_frame(bool p_swap_buffers, bool p_sequential_sync);
+	void end_frame(bool p_swap_buffers, bool p_sequential_sync);
 
 	void finalize();
 

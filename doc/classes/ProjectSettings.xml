@@ -3191,6 +3191,14 @@
 			[b]Note:[/b] This property's upper limit is controlled by [member rendering/rendering_device/staging_buffer/block_size_kb] and whether it's possible to allocate a single block of texture data with this region size in the format that is requested.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
 		</member>
+		<member name="rendering/rendering_device/vsync/cpu_gpu_sync" type="int" setter="" getter="" default="0">
+			Sets the CPU/GPU synchronization mode used by the renderer:
+			- [b]Parallel[/b] tells the renderer to prioritize higher framerate by allowing the CPU to queue up additional frames before they're rendered by the GPU. This allows the CPU and GPU to work in tandem, improving the framerate and framepacing in complex scenes at the expense of input latency. This default setting is suitable for most 3D applications, especially on mobile and lower-performance desktop hardware.
+			- [b]Auto[/b] tells the renderer to decide whether to use Parallel or use Sequential. See [constant RenderingServer.CPU_GPU_SYNC_AUTO].
+			[b]Note:[/b] This property may be overridden with the [code]--cpu-gpu-sync[/code] command-line argument. When this argument is used, this project setting is ignored.
+			[b]Note:[/b] This property is only read when the project starts. To change the CPU/GPU synchronization mode at runtime, call [method RenderingServer.set_cpu_gpu_sync_mode] instead.
+			See also [member rendering/rendering_device/vsync/frame_queue_size] and [member rendering/rendering_device/vsync/swapchain_image_count].
+		</member>
 		<member name="rendering/rendering_device/vsync/frame_queue_size" type="int" setter="" getter="" default="2">
 			The number of frames to track on the CPU side before stalling to wait for the GPU.
 			Try the [url=https://darksylinc.github.io/vsync_simulator/]V-Sync Simulator[/url], an interactive interface that simulates presentation to better understand how it is affected by different variables under various conditions.

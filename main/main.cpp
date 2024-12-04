@@ -199,6 +199,7 @@ String rendering_driver = "";
 String rendering_method = "";
 static int text_driver_idx = -1;
 static int audio_driver_idx = -1;
+static int cpu_gpu_sync_mode = -1;
 
 // Engine config/tools
 
@@ -595,6 +596,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
 	print_help_option("--gpu-index <device_index>", "Use a specific GPU (run with --verbose to get a list of available devices).\n");
+	print_help_option("--cpu-gpu-sync <mode>", "Override the CPU/GPU synchronization mode [\"parallel\", \"auto\"].\n");
 	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping).\n");
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
 	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
@@ -1236,6 +1238,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--cpu-gpu-sync") {
+			if (N) {
+				if (N->get() == "parallel") {
+					cpu_gpu_sync_mode = RenderingServer::CPUGPUSyncMode::CPU_GPU_SYNC_PARALLEL;
+				} else if (N->get() == "auto") {
+					cpu_gpu_sync_mode = RenderingServer::CPUGPUSyncMode::CPU_GPU_SYNC_AUTO;
+				}
+#ifdef DEBUG_ENABLED
+				else if (N->get() == "sequential") {
+					cpu_gpu_sync_mode = RenderingServer::CPUGPUSyncMode::CPU_GPU_SYNC_SEQUENTIAL;
+				}
+#endif
+				else {
+					OS::get_singleton()->print("Unknown CPU/GPU synchronization mode, aborting.\nValid options are 'parallel' and 'sequential'.\n");
+					goto error;
+				}
+
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing CPU/GPU synchronization mode argument, aborting.\n");
 				goto error;
 			}
 		} else if (arg == "-f" || arg == "--fullscreen") { // force fullscreen
@@ -3338,6 +3362,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Rendering");
 
+		// The setting cpu_gpu_sync belongs to RenderingServer, but it has a different path
+		// so that it is together with the other relevant VSync settings.
+		GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/cpu_gpu_sync", PROPERTY_HINT_ENUM, "Auto,Parallel"), 0);
+
 		rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->is_separate_thread_rendering_enabled()));
 
 		rendering_server->init();
@@ -3354,6 +3382,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 				ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
 				Engine::get_singleton()->set_write_movie_path(String());
 			}
+		}
+
+		rendering_server->update_cached_refresh_rate();
+		if (cpu_gpu_sync_mode >= 0) {
+			rendering_server->set_cpu_gpu_sync_mode(RenderingServer::CPUGPUSyncMode(cpu_gpu_sync_mode));
+		} else {
+			rendering_server->set_cpu_gpu_sync_mode(RenderingServer::CPUGPUSyncMode((int)GLOBAL_GET("rendering/rendering_device/vsync/cpu_gpu_sync")));
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Rendering");
@@ -4686,7 +4721,7 @@ bool Main::iteration() {
 		}
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
-		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+		const uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
 #ifndef NAVIGATION_2D_DISABLED
 		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
@@ -4695,8 +4730,9 @@ bool Main::iteration() {
 		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_3D_DISABLED
 
-		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
-		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
+		uint64_t tmp_tick = OS::get_singleton()->get_ticks_usec();
+		navigation_process_ticks = MAX(navigation_process_ticks, tmp_tick - navigation_begin); // keep the largest one for reference
+		navigation_process_max = MAX(tmp_tick - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
@@ -4715,8 +4751,9 @@ bool Main::iteration() {
 
 		OS::get_singleton()->get_main_loop()->iteration_end();
 
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
+		tmp_tick = OS::get_singleton()->get_ticks_usec();
+		physics_process_ticks = MAX(physics_process_ticks, tmp_tick - physics_begin); // keep the largest one for reference
+		physics_process_max = MAX(tmp_tick - physics_begin, physics_process_max);
 
 		Engine::get_singleton()->_in_physics = false;
 	}
@@ -4741,6 +4778,8 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
+	const uint64_t ticks_before_draw = OS::get_singleton()->get_ticks_usec();
+
 	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
 	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
 								 DisplayServer::get_singleton()->has_additional_outputs()) &&
@@ -4760,9 +4799,11 @@ bool Main::iteration() {
 		}
 	}
 
-	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
+	uint64_t tmp_tick = OS::get_singleton()->get_ticks_usec();
+	const uint64_t ticks_after_draw = tmp_tick;
+	process_ticks = tmp_tick - process_begin;
 	process_max = MAX(process_ticks, process_max);
-	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+	uint64_t frame_time = tmp_tick - ticks;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
@@ -4802,6 +4843,10 @@ bool Main::iteration() {
 		frame %= 1000000;
 		frames = 0;
 	}
+
+	tmp_tick = OS::get_singleton()->get_ticks_usec();
+	const uint64_t cpu_time = (tmp_tick - ticks_after_draw) + (ticks_before_draw - ticks) + RenderingServer::draw_cpu_time;
+	RenderingServer::get_singleton()->notify_cpu_gpu_sync_timings(cpu_time, RenderingServer::draw_gpu_time);
 
 	iterating--;
 

@@ -6239,11 +6239,15 @@ String RenderingDevice::get_device_pipeline_cache_uuid() const {
 	return driver->get_pipeline_cache_uuid();
 }
 
-void RenderingDevice::swap_buffers(bool p_present) {
+void RenderingDevice::swap_buffers(bool p_present, bool p_sequential_sync) {
 	ERR_RENDER_THREAD_GUARD();
 
 	_end_frame();
 	_execute_frame(p_present);
+
+	if (p_sequential_sync) {
+		_stall_for_previous_frames();
+	}
 
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();

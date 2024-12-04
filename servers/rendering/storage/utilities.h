@@ -147,10 +147,10 @@ public:
 
 	bool capturing_timestamps = false;
 
-#define TIMESTAMP_BEGIN()                               \
-	{                                                   \
-		if (RSG::utilities->capturing_timestamps)       \
-			RSG::utilities->capture_timestamps_begin(); \
+#define TIMESTAMP_BEGIN()                                                                                                                            \
+	{                                                                                                                                                \
+		if (RSG::utilities->capturing_timestamps || RenderingServer::get_singleton()->get_cpu_gpu_sync_mode() == RenderingServer::CPU_GPU_SYNC_AUTO) \
+			RSG::utilities->capture_timestamps_begin();                                                                                              \
 	}
 
 #define RENDER_TIMESTAMP(m_text)                       \
@@ -161,6 +161,7 @@ public:
 
 	virtual void capture_timestamps_begin() = 0;
 	virtual void capture_timestamp(const String &p_name) = 0;
+	virtual void capture_timestamps_sync_mode_auto_end() = 0;
 	virtual uint32_t get_captured_timestamps_count() const = 0;
 	virtual uint64_t get_captured_timestamps_frame() const = 0;
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const = 0;

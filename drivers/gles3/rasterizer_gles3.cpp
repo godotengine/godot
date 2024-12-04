@@ -112,14 +112,22 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	//scene->iteration();
 }
 
-void RasterizerGLES3::end_frame(bool p_swap_buffers) {
+void RasterizerGLES3::end_frame(bool p_swap_buffers, bool p_sequential_sync) {
 	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
 	utils->capture_timestamps_end();
 }
 
-void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
+void RasterizerGLES3::gl_end_frame(bool p_swap_buffers, bool p_sequential_sync) {
+	static const GLuint64 CLIENT_WAIT_SYNC_TIMEOUT = 1'000'000'000; // One second
+
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
+
+		if (p_sequential_sync) {
+			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, CLIENT_WAIT_SYNC_TIMEOUT);
+			glDeleteSync(fence);
+		}
 	} else {
 		glFinish();
 	}
@@ -519,7 +527,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	copy_effects->copy_to_rect(screenrect);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	gl_end_frame(true);
+	gl_end_frame(true, false);
 
 	texture_storage->texture_free(texture);
 }
