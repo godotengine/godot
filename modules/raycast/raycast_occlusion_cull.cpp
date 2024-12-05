@@ -366,7 +366,7 @@ void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_threa
 }
 
 void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, float *p_write, const Transform3D &p_xform, int p_from, int p_to) {
-	float *floats_w = p_write;
+	float *floats_w = p_write + 3 * p_from;
 	for (int i = p_from; i < p_to; i++) {
 		const Vector3 p = p_xform.xform(p_read[i]);
 		floats_w[0] = p.x;
