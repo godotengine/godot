@@ -4,7 +4,8 @@
 		Help manage the create dialog.
 	</brief_description>
 	<description>
-		This object helps manage the create dialog selection in the editor.
+		This object helps manage the create dialog in the editor. You can manage the custom suffixes for types by calling [method set_type_custom_suffix] and [method remove_type_custom_suffix], or manage their visibility by calling [method add_type_to_blacklist] and [method remove_type_from_black_list].
+		This object also provides quick access to some key compoenents. You are allowed access the window of the create dialog and the search options tree, by calling [method get_dialog_window] and [method get_search_options]. As they are editor-owned, any operation on them should be careful; otherwise it would lead to unexpected behaviors, or irrevertible changes, or even crashes.
 		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_create_dialog].
 	</description>
 	<tutorials>
