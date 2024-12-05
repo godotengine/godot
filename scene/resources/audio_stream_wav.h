@@ -31,9 +31,6 @@
 #ifndef AUDIO_STREAM_WAV_H
 #define AUDIO_STREAM_WAV_H
 
-#define QOA_IMPLEMENTATION
-#define QOA_NO_STDIO
-
 #include "servers/audio/audio_stream.h"
 #include "thirdparty/misc/qoa.h"
 
@@ -270,6 +267,34 @@ public:
 			} else {
 				*out = nibble;
 			}
+		}
+	}
+
+	static void _compress_qoa(const Vector<float> &p_data, Vector<uint8_t> &dst_data, qoa_desc *p_desc) {
+		uint32_t frames_len = (p_desc->samples + QOA_FRAME_LEN - 1) / QOA_FRAME_LEN * (QOA_LMS_LEN * 4 * p_desc->channels + 8);
+		uint32_t slices_len = (p_desc->samples + QOA_SLICE_LEN - 1) / QOA_SLICE_LEN * 8 * p_desc->channels;
+		dst_data.resize(8 + frames_len + slices_len);
+
+		for (uint32_t c = 0; c < p_desc->channels; c++) {
+			memset(p_desc->lms[c].history, 0, sizeof(p_desc->lms[c].history));
+			memset(p_desc->lms[c].weights, 0, sizeof(p_desc->lms[c].weights));
+			p_desc->lms[c].weights[2] = -(1 << 13);
+			p_desc->lms[c].weights[3] = (1 << 14);
+		}
+
+		LocalVector<int16_t> data16;
+		data16.resize(QOA_FRAME_LEN * p_desc->channels);
+
+		uint8_t *dst_ptr = dst_data.ptrw();
+		dst_ptr += qoa_encode_header(p_desc, dst_data.ptrw());
+
+		uint32_t frame_len = QOA_FRAME_LEN;
+		for (uint32_t s = 0; s < p_desc->samples; s += frame_len) {
+			frame_len = MIN(frame_len, p_desc->samples - s);
+			for (uint32_t i = 0; i < frame_len * p_desc->channels; i++) {
+				data16[i] = CLAMP(p_data[s * p_desc->channels + i] * 32767.0, -32768, 32767);
+			}
+			dst_ptr += qoa_encode_frame(data16.ptr(), p_desc, frame_len, dst_ptr);
 		}
 	}
 
