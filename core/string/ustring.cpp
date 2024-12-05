@@ -1979,14 +1979,14 @@ String String::num_scientific(double p_num) {
 	// MinGW requires _set_output_format() to conform to C99 output for printf
 	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
-	snprintf(buf, 256, "%lg", p_num);
+	snprintf(buf, 256, "%lE", p_num);
 
 #if defined(__MINGW32__) && defined(_TWO_DIGIT_EXPONENT) && !defined(_UCRT)
 	_set_output_format(old_exponent_format);
 #endif
 
 #else
-	sprintf(buf, "%.16lg", p_num);
+	sprintf(buf, "%.16lE", p_num);
 #endif
 
 	buf[255] = 0;
