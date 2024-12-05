@@ -6144,6 +6144,16 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return safe_unbounded;
+		case LIMIT_MAX_TEXTURE_ARRAY_LAYERS:
+			return D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_1D:
+			return D3D12_REQ_TEXTURE1D_U_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_2D:
+			return D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_3D:
+			return D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_CUBE:
+			return D3D12_REQ_TEXTURECUBE_DIMENSION;
 		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE:
 			return device_limits.max_srvs_per_shader_stage;
 		case LIMIT_MAX_UNIFORM_BUFFER_SIZE:
