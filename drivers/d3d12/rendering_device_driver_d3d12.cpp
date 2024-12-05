@@ -905,6 +905,11 @@ void RenderingDeviceDriverD3D12::buffer_unmap(BufferID p_buffer) {
 	buf_info->resource->Unmap(0, &VOID_RANGE);
 }
 
+uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer) {
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	return buf_info->resource->GetGPUVirtualAddress();
+}
+
 /*****************/
 /**** TEXTURE ****/
 /*****************/
@@ -6270,6 +6275,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 		case SUPPORTS_ATTACHMENT_VRS:
 			return vrs_capabilities.ss_image_supported;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
+			return true;
+		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
 			return true;
 		default:
 			return false;
