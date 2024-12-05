@@ -285,3 +285,12 @@ GH-101482
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/set_table_column_expand/arguments': size changed value in new API, from 3 to 4.
 
 Added optional "shrink" argument. Compatibility method registered.
+
+
+GH-100062
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/index_buffer_create/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/uniform_buffer_create/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/vertex_buffer_create/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added. Compatibility methods registered.
