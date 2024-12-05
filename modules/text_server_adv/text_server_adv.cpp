@@ -442,23 +442,23 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 #else
 	if (!icu_data_loaded) {
 		UErrorCode err = U_ZERO_ERROR;
-#ifdef ICU_DATA_NAME
-		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
+		String filename = (p_filename.is_empty()) ? String("res://icudt_godot.dat") : p_filename;
+		if (FileAccess::exists(filename)) {
+			Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
+			if (f.is_null()) {
+				return false;
+			}
+			uint64_t len = f->get_length();
+			icu_data = f->get_buffer(len);
 
-		Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
-		if (f.is_null()) {
-			return false;
+			udata_setCommonData(icu_data.ptr(), &err);
+			if (U_FAILURE(err)) {
+				ERR_FAIL_V_MSG(false, u_errorName(err));
+			}
+
+			err = U_ZERO_ERROR;
 		}
-		uint64_t len = f->get_length();
-		icu_data = f->get_buffer(len);
 
-		udata_setCommonData(icu_data.ptr(), &err);
-		if (U_FAILURE(err)) {
-			ERR_FAIL_V_MSG(false, u_errorName(err));
-		}
-
-		err = U_ZERO_ERROR;
-#endif
 		u_init(&err);
 		if (U_FAILURE(err)) {
 			ERR_FAIL_V_MSG(false, u_errorName(err));
@@ -470,11 +470,11 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 }
 
 String TextServerAdvanced::_get_support_data_filename() const {
-	return _MKSTR(ICU_DATA_NAME);
+	return String("icudt_godot.dat");
 }
 
 String TextServerAdvanced::_get_support_data_info() const {
-	return String("ICU break iteration data (") + _MKSTR(ICU_DATA_NAME) + String(").");
+	return String("ICU break iteration data (\"icudt_godot.dat\").");
 }
 
 bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
