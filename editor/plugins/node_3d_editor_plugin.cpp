@@ -3156,7 +3156,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			view_menu->begin_bulk_theme_override();
 			view_menu->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
 			view_menu->add_theme_style_override("normal_mirrored", information_3d_stylebox);
-			view_menu->add_theme_style_override("hover", information_3d_stylebox);
+			view_menu->add_theme_style_override(SceneStringName(hover), information_3d_stylebox);
 			view_menu->add_theme_style_override("hover_mirrored", information_3d_stylebox);
 			view_menu->add_theme_style_override("hover_pressed", information_3d_stylebox);
 			view_menu->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);
@@ -3171,7 +3171,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			preview_camera->begin_bulk_theme_override();
 			preview_camera->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
 			preview_camera->add_theme_style_override("normal_mirrored", information_3d_stylebox);
-			preview_camera->add_theme_style_override("hover", information_3d_stylebox);
+			preview_camera->add_theme_style_override(SceneStringName(hover), information_3d_stylebox);
 			preview_camera->add_theme_style_override("hover_mirrored", information_3d_stylebox);
 			preview_camera->add_theme_style_override("hover_pressed", information_3d_stylebox);
 			preview_camera->add_theme_style_override("hover_pressed_mirrored", information_3d_stylebox);

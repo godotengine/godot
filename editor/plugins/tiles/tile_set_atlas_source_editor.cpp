@@ -998,7 +998,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			button->set_flat(true);
 			button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
-			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
+			button->add_theme_style_override(SceneStringName(hover), memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
 			button->connect(SceneStringName(pressed), callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile).bind(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));

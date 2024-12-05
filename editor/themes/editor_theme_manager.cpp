@@ -725,7 +725,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// Button.
 
 		p_theme->set_stylebox(CoreStringName(normal), "Button", p_config.button_style);
-		p_theme->set_stylebox("hover", "Button", p_config.button_style_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "Button", p_config.button_style_hover);
 		p_theme->set_stylebox(SceneStringName(pressed), "Button", p_config.button_style_pressed);
 		p_theme->set_stylebox("focus", "Button", p_config.button_style_focus);
 		p_theme->set_stylebox("disabled", "Button", p_config.button_style_disabled);
@@ -753,7 +753,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// MenuButton.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuButton", p_config.panel_container_style);
-		p_theme->set_stylebox("hover", "MenuButton", p_config.button_style_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "MenuButton", p_config.button_style_hover);
 		p_theme->set_stylebox(SceneStringName(pressed), "MenuButton", p_config.panel_container_style);
 		p_theme->set_stylebox("focus", "MenuButton", p_config.panel_container_style);
 		p_theme->set_stylebox("disabled", "MenuButton", p_config.panel_container_style);
@@ -769,7 +769,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
-		p_theme->set_stylebox("hover", "MenuBar", p_config.button_style_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "MenuBar", p_config.button_style_hover);
 		p_theme->set_stylebox(SceneStringName(pressed), "MenuBar", p_config.button_style_pressed);
 		p_theme->set_stylebox("disabled", "MenuBar", p_config.button_style_disabled);
 
@@ -806,7 +806,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			p_theme->set_stylebox("focus", "OptionButton", option_button_focus_style);
 			p_theme->set_stylebox(CoreStringName(normal), "OptionButton", p_config.button_style);
-			p_theme->set_stylebox("hover", "OptionButton", p_config.button_style_hover);
+			p_theme->set_stylebox(SceneStringName(hover), "OptionButton", p_config.button_style_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "OptionButton", p_config.button_style_pressed);
 			p_theme->set_stylebox("disabled", "OptionButton", p_config.button_style_disabled);
 
@@ -841,7 +841,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_stylebox(CoreStringName(normal), "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox(SceneStringName(pressed), "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox("disabled", "CheckButton", p_config.panel_container_style);
-		p_theme->set_stylebox("hover", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox(SceneStringName(hover), "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox("hover_pressed", "CheckButton", p_config.panel_container_style);
 
 		p_theme->set_icon("checked", "CheckButton", p_theme->get_icon(SNAME("GuiToggleOn"), EditorStringName(EditorIcons)));
@@ -879,7 +879,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style);
 			p_theme->set_stylebox(SceneStringName(pressed), "CheckBox", checkbox_style);
 			p_theme->set_stylebox("disabled", "CheckBox", checkbox_style);
-			p_theme->set_stylebox("hover", "CheckBox", checkbox_style);
+			p_theme->set_stylebox(SceneStringName(hover), "CheckBox", checkbox_style);
 			p_theme->set_stylebox("hover_pressed", "CheckBox", checkbox_style);
 			p_theme->set_icon("checked", "CheckBox", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("unchecked", "CheckBox", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
@@ -1334,7 +1334,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			Ref<StyleBoxFlat> style_menu_hover = p_config.button_style_hover->duplicate();
 			// Don't use rounded corners for hover highlights since the StyleBox touches the PopupMenu's edges.
 			style_menu_hover->set_corner_radius_all(0);
-			p_theme->set_stylebox("hover", "PopupMenu", style_menu_hover);
+			p_theme->set_stylebox(SceneStringName(hover), "PopupMenu", style_menu_hover);
 
 			Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 			style_popup_separator->set_color(p_config.separator_color);
@@ -1796,7 +1796,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox("hover", "ProjectTag", tag);
+			p_theme->set_stylebox(SceneStringName(hover), "ProjectTag", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
@@ -1883,7 +1883,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("normal_mirrored", "MainScreenButton", menu_transparent_style);
 		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", menu_transparent_style);
 		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", menu_transparent_style);
-		p_theme->set_stylebox("hover", "MainScreenButton", main_screen_button_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "MainScreenButton", main_screen_button_hover);
 		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", main_screen_button_hover);
 		p_theme->set_stylebox("hover_pressed", "MainScreenButton", main_screen_button_hover);
 		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", main_screen_button_hover);
@@ -1891,7 +1891,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "MainMenuBar", menu_transparent_style);
 		p_theme->set_stylebox(SceneStringName(pressed), "MainMenuBar", main_screen_button_hover);
-		p_theme->set_stylebox("hover", "MainMenuBar", main_screen_button_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "MainMenuBar", main_screen_button_hover);
 		p_theme->set_stylebox("hover_pressed", "MainMenuBar", main_screen_button_hover);
 
 		// Run bar.
@@ -1907,7 +1907,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox(CoreStringName(normal), "BottomPanelButton", menu_transparent_style);
 		p_theme->set_stylebox(SceneStringName(pressed), "BottomPanelButton", menu_transparent_style);
 		p_theme->set_stylebox("hover_pressed", "BottomPanelButton", main_screen_button_hover);
-		p_theme->set_stylebox("hover", "BottomPanelButton", main_screen_button_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "BottomPanelButton", main_screen_button_hover);
 		// Don't tint the icon even when in "pressed" state.
 		p_theme->set_color("icon_pressed_color", "BottomPanelButton", Color(1, 1, 1, 1));
 		Color icon_hover_color = p_config.icon_normal_color * (p_config.dark_theme ? 1.15 : 1.0);
@@ -1991,12 +1991,12 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			style_flat_button_pressed->set_bg_color(flat_pressed_color);
 
 			p_theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), style_flat_button);
-			p_theme->set_stylebox("hover", SceneStringName(FlatButton), style_flat_button_hover);
+			p_theme->set_stylebox(SceneStringName(hover), SceneStringName(FlatButton), style_flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", SceneStringName(FlatButton), style_flat_button);
 
 			p_theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", style_flat_button);
-			p_theme->set_stylebox("hover", "FlatMenuButton", style_flat_button_hover);
+			p_theme->set_stylebox(SceneStringName(hover), "FlatMenuButton", style_flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", style_flat_button);
 
@@ -2022,7 +2022,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 				editor_log_button_pressed->set_bg_color(flat_pressed_color.lightened(0.5));
 			}
 			p_theme->set_stylebox(CoreStringName(normal), "EditorLogFilterButton", style_flat_button);
-			p_theme->set_stylebox("hover", "EditorLogFilterButton", style_flat_button_hover);
+			p_theme->set_stylebox(SceneStringName(hover), "EditorLogFilterButton", style_flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "EditorLogFilterButton", editor_log_button_pressed);
 		}
 
@@ -2043,7 +2043,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			panel_button_style_disabled->set_bg_color(p_config.disabled_bg_color);
 
 			p_theme->set_stylebox(CoreStringName(normal), "PanelBackgroundButton", panel_button_style);
-			p_theme->set_stylebox("hover", "PanelBackgroundButton", panel_button_style_hover);
+			p_theme->set_stylebox(SceneStringName(hover), "PanelBackgroundButton", panel_button_style_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "PanelBackgroundButton", panel_button_style_pressed);
 			p_theme->set_stylebox("disabled", "PanelBackgroundButton", panel_button_style_disabled);
 		}
@@ -2086,7 +2086,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 			style_inspector_action = p_config.button_style_hover->duplicate();
 			style_inspector_action->set_content_margin(SIDE_RIGHT, action_extra_margin);
-			p_theme->set_stylebox("hover", "InspectorActionButton", style_inspector_action);
+			p_theme->set_stylebox(SceneStringName(hover), "InspectorActionButton", style_inspector_action);
 
 			style_inspector_action = p_config.button_style_hover->duplicate();
 			style_inspector_action->set_content_margin(SIDE_LEFT, action_extra_margin);
@@ -2125,7 +2125,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			p_theme->set_color("icon_hover_color", "PreviewLightButton", dim_light_highlighted_color);
 
 			p_theme->set_stylebox(CoreStringName(normal), "PreviewLightButton", sb_empty_borderless);
-			p_theme->set_stylebox("hover", "PreviewLightButton", sb_empty_borderless);
+			p_theme->set_stylebox(SceneStringName(hover), "PreviewLightButton", sb_empty_borderless);
 			p_theme->set_stylebox("focus", "PreviewLightButton", sb_empty_borderless);
 			p_theme->set_stylebox(SceneStringName(pressed), "PreviewLightButton", sb_empty_borderless);
 		}
@@ -2330,7 +2330,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		Ref<StyleBoxFlat> style_animation_track_hover = make_flat_stylebox(Color(0.5, 0.5, 0.5, 0.1), 0, 0, 0, 0, p_config.corner_radius);
 
 		p_theme->set_stylebox("odd", "AnimationTrackEdit", style_animation_track_odd);
-		p_theme->set_stylebox("hover", "AnimationTrackEdit", style_animation_track_hover);
+		p_theme->set_stylebox(SceneStringName(hover), "AnimationTrackEdit", style_animation_track_hover);
 		p_theme->set_stylebox("focus", "AnimationTrackEdit", p_config.button_style_focus);
 
 		p_theme->set_color("h_line_color", "AnimationTrackEdit", p_config.font_color * Color(1, 1, 1, 0.2));

@@ -115,7 +115,7 @@ void ColorPicker::_notification(int p_what) {
 				mode_btns[i]->begin_bulk_theme_override();
 				mode_btns[i]->add_theme_style_override(SceneStringName(pressed), theme_cache.mode_button_pressed);
 				mode_btns[i]->add_theme_style_override(CoreStringName(normal), theme_cache.mode_button_normal);
-				mode_btns[i]->add_theme_style_override(SNAME("hover"), theme_cache.mode_button_hover);
+				mode_btns[i]->add_theme_style_override(SceneStringName(hover), theme_cache.mode_button_hover);
 				mode_btns[i]->end_bulk_theme_override();
 			}
 
