@@ -219,7 +219,7 @@ void DependencyEditor::_update_list() {
 
 		item->add_button(1, folder, 0);
 	}
-
+	on_update(missing);
 	fixdeps->set_disabled(!broken);
 }
 
@@ -757,7 +757,20 @@ void DependencyErrorDialog::ok_pressed() {
 }
 
 void DependencyErrorDialog::custom_action(const String &) {
-	EditorNode::get_singleton()->fix_dependencies(for_file);
+	EditorNode::get_singleton()->fix_dependencies( for_file, std::bind(&DependencyErrorDialog::on_update_callback, this, std::placeholders::_1) );
+}
+
+void DependencyErrorDialog::on_update_callback(Vector<String> report) {
+	if (report.is_empty()) {
+		files->clear();
+		set_ok_button_text(TTR("Open"));
+	}
+	auto len = files->get_size().length();
+	printf("%f", len);
+	// for (auto &r : report) {
+		
+	// 	if ()
+	// }
 }
 
 DependencyErrorDialog::DependencyErrorDialog() {
