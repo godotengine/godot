@@ -851,6 +851,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
 	mesh->has_bone_weights = false;
+	mesh->aabb = AABB();
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
