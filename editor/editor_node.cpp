@@ -7170,6 +7170,7 @@ EditorNode::EditorNode() {
 	main_menu = memnew(MenuBar);
 	main_menu->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_menu);
+	main_menu->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	main_menu->set_theme_type_variation("MainMenuBar");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
 	main_menu->set_prefer_global_menu(global_menu);
