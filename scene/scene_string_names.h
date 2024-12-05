@@ -142,6 +142,7 @@ public:
 	const StringName pressed = StaticCString::create("pressed");
 	const StringName id_pressed = StaticCString::create("id_pressed");
 	const StringName toggled = StaticCString::create("toggled");
+	const StringName hover = StaticCString::create("hover");
 
 	const StringName panel = StaticCString::create("panel");
 	const StringName item_selected = StaticCString::create("item_selected");
