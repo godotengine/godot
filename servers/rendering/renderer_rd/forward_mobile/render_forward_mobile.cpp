@@ -124,14 +124,23 @@ void RenderForwardMobile::fill_push_constant_instance_indices(SceneState::Instan
 	p_instance_data->reflection_probes[0] = 0xFFFFFFFF;
 	p_instance_data->reflection_probes[1] = 0xFFFFFFFF;
 
+	ForwardIDByMapSort sorted_reflection_probes[MAX_RDL_CULL];
+	for (uint32_t i = 0; i < p_instance->reflection_probe_count; i++) {
+		sorted_reflection_probes[i].forward_id = p_instance->reflection_probes[i];
+		sorted_reflection_probes[i].map = forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].map[p_instance->reflection_probes[i]];
+	}
+
+	SortArray<ForwardIDByMapSort> sort_array;
+	sort_array.sort(sorted_reflection_probes, p_instance->reflection_probe_count);
+
 	idx = 0;
 	for (uint32_t i = 0; i < p_instance->reflection_probe_count; i++) {
 		uint32_t ofs = idx < 4 ? 0 : 1;
 		uint32_t shift = (idx & 0x3) << 3;
 		uint32_t mask = ~(0xFF << shift);
-		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].last_pass[p_instance->reflection_probes[i]] == current_frame) {
+		if (forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].last_pass[sorted_reflection_probes[i].forward_id] == current_frame) {
 			p_instance_data->reflection_probes[ofs] &= mask;
-			p_instance_data->reflection_probes[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].map[p_instance->reflection_probes[i]]) << shift;
+			p_instance_data->reflection_probes[ofs] |= uint32_t(forward_id_storage_mobile->forward_id_allocators[RendererRD::FORWARD_ID_TYPE_REFLECTION_PROBE].map[sorted_reflection_probes[i].forward_id]) << shift;
 			idx++;
 		}
 	}

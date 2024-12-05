@@ -1732,11 +1732,12 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		if (!rpi) {
 			continue;
 		}
-
-		Transform3D transform = rpi->transform;
+		ReflectionProbe *probe = reflection_probe_owner.get_or_null(rpi->probe);
+		Vector3 extents = probe->size / 2;
+		float probe_size = extents.length();
 
 		reflection_sort[reflection_count].probe_instance = rpi;
-		reflection_sort[reflection_count].depth = -p_camera_inverse_transform.xform(transform.origin).z;
+		reflection_sort[reflection_count].size = -probe_size;
 		reflection_count++;
 	}
 
