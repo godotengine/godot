@@ -1210,7 +1210,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 								if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
 									continue;
 								}
-								if (E.name.contains("/")) {
+								if (E.name.contains_char('/')) {
 									continue;
 								}
 								int location = p_recursion_depth + _get_property_location(scr, E.name);
@@ -1301,7 +1301,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
 								continue;
 							}
-							if (E.name.contains("/")) {
+							if (E.name.contains_char('/')) {
 								continue;
 							}
 							int location = p_recursion_depth + _get_property_location(type, E.name);
@@ -1383,7 +1383,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						if (E.usage & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_INTERNAL)) {
 							continue;
 						}
-						if (!String(E.name).contains("/")) {
+						if (!String(E.name).contains_char('/')) {
 							ScriptLanguage::CodeCompletionOption option(E.name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, location);
 							if (base_type.kind == GDScriptParser::DataType::ENUM) {
 								// Sort enum members in their declaration order.
@@ -2719,7 +2719,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 }
 
 static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_context, const String &p_enum_hint, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
-	if (!p_enum_hint.contains(".")) {
+	if (!p_enum_hint.contains_char('.')) {
 		// Global constant or in the current class.
 		StringName current_enum = p_enum_hint;
 		if (p_context.current_class && p_context.current_class->has_member(current_enum) && p_context.current_class->get_member(current_enum).type == GDScriptParser::ClassNode::Member::ENUM) {
@@ -3474,7 +3474,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 			for (const MethodInfo &mi : virtual_methods) {
 				String method_hint = mi.name;
-				if (method_hint.contains(":")) {
+				if (method_hint.contains_char(':')) {
 					method_hint = method_hint.get_slice(":", 0);
 				}
 				method_hint += "(";
@@ -3484,7 +3484,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						method_hint += ", ";
 					}
 					String arg = arg_itr->name;
-					if (arg.contains(":")) {
+					if (arg.contains_char(':')) {
 						arg = arg.substr(0, arg.find_char(':'));
 					}
 					method_hint += arg;
@@ -3542,7 +3542,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					if (path_needs_quote) {
 						// Ignore quote_style and just use double quotes for paths with apostrophes.
 						// Double quotes don't need to be checked because they're not valid in node and property names.
-						opt = opt.quote(opt.contains("'") ? "\"" : quote_style); // Handle user preference.
+						opt = opt.quote(opt.contains_char('\'') ? "\"" : quote_style); // Handle user preference.
 					}
 					ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
 					options.insert(option.display, option);

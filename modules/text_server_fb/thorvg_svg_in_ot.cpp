@@ -97,7 +97,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			if (parser->has_attribute("id")) {
 				const String &gl_name = parser->get_named_attribute_value("id");
 				if (gl_name.begins_with("glyph")) {
-					int dot_pos = gl_name.find(".");
+					int dot_pos = gl_name.find_char('.');
 					int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
 					if (p_slot->glyph_index != gl_idx) {
 						parser->skip_section();
