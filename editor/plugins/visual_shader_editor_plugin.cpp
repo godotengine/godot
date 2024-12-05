@@ -6554,14 +6554,14 @@ VisualShaderEditor::VisualShaderEditor() {
 	varying_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
 
 	code_preview_button = memnew(Button);
-	code_preview_button->set_theme_type_variation("FlatButton");
+	code_preview_button->set_theme_type_variation(SceneStringName(FlatButton));
 	code_preview_button->set_toggle_mode(true);
 	code_preview_button->set_tooltip_text(TTR("Show generated shader code."));
 	toolbar->add_child(code_preview_button);
 	code_preview_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	shader_preview_button = memnew(Button);
-	shader_preview_button->set_theme_type_variation("FlatButton");
+	shader_preview_button->set_theme_type_variation(SceneStringName(FlatButton));
 	shader_preview_button->set_toggle_mode(true);
 	shader_preview_button->set_tooltip_text(TTR("Toggle shader preview."));
 	shader_preview_button->set_pressed(true);

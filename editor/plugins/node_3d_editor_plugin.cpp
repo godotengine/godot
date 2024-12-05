@@ -8696,7 +8696,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	tool_button[TOOL_MODE_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SELECT));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), Key::Q));
@@ -8707,7 +8707,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_MOVE]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_MODE_MOVE]->set_theme_type_variation(SceneStringName(FlatButton));
 
 	tool_button[TOOL_MODE_MOVE]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_MOVE));
 	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), Key::W));
@@ -8717,7 +8717,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_ROTATE]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_MODE_ROTATE]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_ROTATE]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_ROTATE));
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), Key::E));
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut_context(this);
@@ -8726,7 +8726,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SCALE] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_SCALE]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_MODE_SCALE]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_SCALE]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SCALE));
 	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), Key::R));
 	tool_button[TOOL_MODE_SCALE]->set_shortcut_context(this);
@@ -8737,13 +8737,13 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
-	tool_button[TOOL_LOCK_SELECTED]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_LOCK_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_LOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
@@ -8751,7 +8751,7 @@ Node3DEditor::Node3DEditor() {
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
-	tool_button[TOOL_UNLOCK_SELECTED]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_UNLOCK_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_UNLOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
@@ -8759,7 +8759,7 @@ Node3DEditor::Node3DEditor() {
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
-	tool_button[TOOL_GROUP_SELECTED]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_GROUP_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_GROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTR("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
@@ -8767,7 +8767,7 @@ Node3DEditor::Node3DEditor() {
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
-	tool_button[TOOL_UNGROUP_SELECTED]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_UNGROUP_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_UNGROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
@@ -8778,7 +8778,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
 	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_theme_type_variation("FlatButton");
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_LOCAL_COORDS));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), Key::T));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
@@ -8786,7 +8786,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
 	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation("FlatButton");
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_USE_SNAP]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_SNAP));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), Key::Y));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
@@ -8795,7 +8795,7 @@ Node3DEditor::Node3DEditor() {
 	sun_button = memnew(Button);
 	sun_button->set_tooltip_text(TTR("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
 	sun_button->set_toggle_mode(true);
-	sun_button->set_theme_type_variation("FlatButton");
+	sun_button->set_theme_type_variation(SceneStringName(FlatButton));
 	sun_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	sun_button->set_pressed(true);
@@ -8805,7 +8805,7 @@ Node3DEditor::Node3DEditor() {
 	environ_button = memnew(Button);
 	environ_button->set_tooltip_text(TTR("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
 	environ_button->set_toggle_mode(true);
-	environ_button->set_theme_type_variation("FlatButton");
+	environ_button->set_theme_type_variation(SceneStringName(FlatButton));
 	environ_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	environ_button->set_pressed(true);
@@ -8814,7 +8814,7 @@ Node3DEditor::Node3DEditor() {
 
 	sun_environ_settings = memnew(Button);
 	sun_environ_settings->set_tooltip_text(TTR("Edit Sun and Environment settings."));
-	sun_environ_settings->set_theme_type_variation("FlatButton");
+	sun_environ_settings->set_theme_type_variation(SceneStringName(FlatButton));
 	sun_environ_settings->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
 
 	main_menu_hbox->add_child(sun_environ_settings);

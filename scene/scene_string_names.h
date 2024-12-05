@@ -150,6 +150,8 @@ public:
 	const StringName text_changed = StaticCString::create("text_changed");
 	const StringName text_submitted = StaticCString::create("text_submitted");
 	const StringName value_changed = StaticCString::create("value_changed");
+
+	const StringName FlatButton = StaticCString::create("FlatButton");
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name
