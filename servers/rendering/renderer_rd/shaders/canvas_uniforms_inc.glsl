@@ -37,7 +37,7 @@ struct InstanceData {
 
 #endif
 	vec2 color_texture_pixel_size;
-	uint lights[4];
+	uvec4 lights;
 };
 
 //1 means enabled, 2+ means trails in use
