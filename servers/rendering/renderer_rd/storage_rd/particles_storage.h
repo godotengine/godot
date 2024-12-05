@@ -225,6 +225,7 @@ private:
 		int fixed_fps = 30;
 		bool interpolate = true;
 		bool fractional_delta = false;
+		bool use_physics_step = false;
 		double frame_remainder = 0;
 		real_t collision_base_size = 0.01;
 
@@ -264,7 +265,7 @@ private:
 		}
 	};
 
-	void _particles_process(Particles *p_particles, double p_delta);
+	void _particles_process(Particles *p_particles, double p_delta, bool p_is_final_process = false);
 	void _particles_allocate_emission_buffer(Particles *particles);
 	void _particles_ensure_unused_emission_buffer(Particles *particles);
 	void _particles_ensure_unused_trail_buffer(Particles *particles);
@@ -282,6 +283,11 @@ private:
 			uint32_t sub_emitter_mode;
 			uint32_t can_emit;
 			uint32_t trail_pass;
+
+			uint32_t use_physics_step;
+			uint32_t is_final_process;
+			uint32_t pad2;
+			uint32_t pad3;
 		};
 
 		ParticlesShaderRD shader;
@@ -452,6 +458,7 @@ public:
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) override;
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) override;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
+	virtual void particles_set_use_physics_step(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
 
