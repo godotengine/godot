@@ -332,7 +332,7 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path));
+	undo_redo->create_action(vformat(TTR("Edit Shortcut: %s"), p_path), UndoRedo::MERGE_DISABLE, EditorSettings::get_singleton());
 	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "shortcuts");

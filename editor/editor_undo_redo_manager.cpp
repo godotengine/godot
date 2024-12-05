@@ -150,6 +150,7 @@ void EditorUndoRedoManager::create_action(const String &p_name, UndoRedo::MergeM
 	if (p_custom_context) {
 		// This assigns history to pending action.
 		get_history_for_object(p_custom_context);
+		force_fixed_history();
 	}
 }
 
