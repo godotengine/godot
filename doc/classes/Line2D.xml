@@ -86,8 +86,8 @@
 			The style of the connections between segments of the polyline. Use [enum LineJointMode] constants.
 		</member>
 		<member name="min_curve_line_segments" type="int" setter="set_min_curve_line_segments" getter="get_min_curve_line_segments" default="1">
-			Subdivide the line into the number of at least [member min_curve_line_segments] segments. The resulting segment count varies depending on the use of a fill gradient and the distances between points.
-			[b]Note:[/b] Using higher values results in more segments (and vertices/indices) that need to be generated which can degrade performance, particularly if you are animating properties on your line.
+			The minimum number of segments that the line should be subdivided into. The resulting segment count depends on the use of a fill gradient and the distances between points.
+			[b]Note:[/b] Using higher values results in more segments (and vertices/indices) that need to be generated which can hurt performance, particularly if you are animating properties on your line.
 		</member>
 		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
 			The points of the polyline, interpreted in local 2D coordinates. Segments are drawn between the adjacent points in this array.
