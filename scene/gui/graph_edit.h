@@ -399,7 +399,6 @@ public:
 	// Connection related methods.
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
-	int get_connection_count(const StringName &p_node, int p_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
 
@@ -408,6 +407,8 @@ public:
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
 	Ref<Connection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	List<Ref<Connection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	TypedArray<Dictionary> _get_connection_list_from_port(const StringName &p_node, int p_port);
+	int get_connection_count(const StringName &p_node, int p_port);
 
 	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 

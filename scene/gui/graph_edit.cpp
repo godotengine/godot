@@ -347,6 +347,27 @@ int GraphEdit::get_connection_count(const StringName &p_node, int p_port) {
 	return count;
 }
 
+TypedArray<Dictionary> GraphEdit::_get_connection_list_from_port(const StringName &p_node, int p_port) {
+	TypedArray<Dictionary> connections_from_port;
+	for (const Ref<Connection> &conn : connections) {
+		if (conn->from_node == p_node && conn->from_port == p_port) {
+			Dictionary d;
+			d["node"] = conn->to_node;
+			d["port"] = conn->to_port;
+			d["type"] = "right";
+			connections_from_port.push_back(d);
+
+		} else if (conn->to_node == p_node && conn->to_port == p_port) {
+			Dictionary d;
+			d["node"] = conn->from_node;
+			d["port"] = conn->from_port;
+			d["type"] = "left";
+			connections_from_port.push_back(d);
+		}
+	}
+	return connections_from_port;
+}
+
 void GraphEdit::set_scroll_offset(const Vector2 &p_offset) {
 	setting_scroll_offset = true;
 	h_scrollbar->set_value(p_offset.x);
@@ -2651,6 +2672,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "from_node", "from_port", "to_node", "to_port", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
 	ClassDB::bind_method(D_METHOD("get_connection_count", "from_node", "from_port"), &GraphEdit::get_connection_count);
+	ClassDB::bind_method(D_METHOD("get_connection_list_from_port", "node", "port"), &GraphEdit::_get_connection_list_from_port);
 	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
 	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
