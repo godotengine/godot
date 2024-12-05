@@ -257,10 +257,6 @@ Files extracted from upstream source:
   * Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.304 (cd5227bd1f61dff3bbd6c814ceaf7ffd95e947d9, 2023)
   * License: OFL-1.1
-- `NotoNaskhArabicUI*.woff2`:
-  * Upstream: https://github.com/notofonts/arabic
-  * Version: 2.014 (133ccaebf922ca080a7eef22998611ac3c242df9, 2022)
-  * License: OFL-1.1
 - `NotoSans*.woff2`:
   * Upstream: https://github.com/notofonts/latin-greek-cyrillic
   * Version: 2.012 (9ea0c8d37bff0c0067b03777f40aa04f2bf78f99, 2023)
@@ -309,6 +305,10 @@ Files extracted from upstream source:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
+- `Vazirmatn*.woff2`:
+  * Upstream: https://github.com/rastikerdar/vazirmatn
+  * Version: 33.003 (83629f877e8f084cc07b47030b5d3a0ff06c76ec, 2022)
+  * License: OFL-1.1
 
 All fonts are converted from the unhinted `.ttf` sources using the
 `https://github.com/google/woff2` tool.

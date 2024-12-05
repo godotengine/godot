@@ -124,7 +124,7 @@ TEST_SUITE("[TextServer]") {
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 
 				Array font;
 				font.push_back(font1);
@@ -180,7 +180,7 @@ TEST_SUITE("[TextServer]") {
 				ts->font_set_data_ptr(font2, _font_NotoSansThai_Regular, _font_NotoSansThai_Regular_size);
 				ts->font_set_allow_system_fallback(font2, false);
 				RID font3 = ts->create_font();
-				ts->font_set_data_ptr(font3, _font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
+				ts->font_set_data_ptr(font3, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 				ts->font_set_allow_system_fallback(font3, false);
 
 				Array font;
@@ -503,7 +503,7 @@ TEST_SUITE("[TextServer]") {
 						{ U"         มีอุปกรณ์\nนี้", { 0, 11, 11, 19, 19, 22 } },
 						{ U"الحمدا لحمدا لحمـــد", { 0, 13, 13, 20 } },
 						{ U"         الحمد test", { 0, 15, 15, 19 } },
-						{ U"الحمـد الرياضي العربي", { 0, 7, 7, 21 } },
+						{ U"الحمـد الرياضي العربي", { 0, 7, 7, 15, 15, 21 } },
 					};
 					for (size_t j = 0; j < sizeof(cases) / sizeof(TestCase); j++) {
 						RID ctx = ts->create_shaped_text();
@@ -584,7 +584,7 @@ TEST_SUITE("[TextServer]") {
 				RID font1 = ts->create_font();
 				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
 				RID font2 = ts->create_font();
-				ts->font_set_data_ptr(font2, _font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
+				ts->font_set_data_ptr(font2, _font_Vazirmatn_Regular, _font_Vazirmatn_Regular_size);
 
 				Array font;
 				font.push_back(font1);

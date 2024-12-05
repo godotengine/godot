@@ -240,6 +240,11 @@ Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
+Files: ./thirdparty/fonts/Vazirmatn*.woff2
+Comment: Vazirmatn font
+Copyright: 2015, The Vazirmatn Project Authors.
+License: OFL-1.1
+
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
 Copyright: 1996-2023, David Turner, Robert Wilhelm, and Werner Lemberg.
