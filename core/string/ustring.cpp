@@ -4599,7 +4599,7 @@ String String::simplify_path() const {
 			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
-			if (i != 0) {
+			if (i != 0 && dirs[i - 1] != "..") {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;
