@@ -85,6 +85,11 @@ void GPUParticles3D::set_interp_to_end(float p_interp) {
 	RS::get_singleton()->particles_set_interp_to_end(particles, interp_to_end_factor);
 }
 
+void GPUParticles3D::set_use_physics_step(bool p_enable) {
+	use_physics_step = p_enable;
+	RS::get_singleton()->particles_set_use_physics_step(particles, use_physics_step);
+}
+
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
@@ -157,6 +162,10 @@ double GPUParticles3D::get_lifetime() const {
 
 float GPUParticles3D::get_interp_to_end() const {
 	return interp_to_end_factor;
+}
+
+bool GPUParticles3D::get_use_physics_step() const {
+	return use_physics_step;
 }
 
 bool GPUParticles3D::get_one_shot() const {
@@ -506,7 +515,7 @@ void GPUParticles3D::_notification(int p_what) {
 			} else {
 				RS::get_singleton()->particles_set_speed_scale(particles, 0);
 			}
-			previous_position = get_global_transform().origin;
+			previous_position = get_global_position();
 			set_process_internal(true);
 			set_physics_process_internal(true);
 		} break;
@@ -693,6 +702,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles3D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles3D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles3D::set_interp_to_end);
+	ClassDB::bind_method(D_METHOD("set_use_physics_step", "enable"), &GPUParticles3D::set_use_physics_step);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles3D::get_amount);
@@ -710,6 +720,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles3D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles3D::get_collision_base_size);
 	ClassDB::bind_method(D_METHOD("get_interp_to_end"), &GPUParticles3D::get_interp_to_end);
+	ClassDB::bind_method(D_METHOD("get_use_physics_step"), &GPUParticles3D::get_use_physics_step);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles3D::set_draw_order);
 
@@ -764,6 +775,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_physics_step"), "set_use_physics_step", "get_use_physics_step");
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:m"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");

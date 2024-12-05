@@ -99,6 +99,7 @@ layout(std140) uniform FrameData { //ubo:0
 #define PARTICLE_FLAG_ACTIVE uint(1)
 #define PARTICLE_FLAG_STARTED uint(2)
 #define PARTICLE_FLAG_TRAILED uint(4)
+#define PARTICLE_FLAG_COMPLETED_FIRST_FRAME uint(8)
 #define PARTICLE_FRAME_MASK uint(0xFFFF)
 #define PARTICLE_FRAME_SHIFT uint(16)
 
@@ -163,6 +164,8 @@ uniform float lifetime;
 uniform bool clear;
 uniform uint total_particles;
 uniform bool use_fractional_delta;
+uniform bool use_physics_step;
+uniform bool is_final_process;
 
 uint hash(uint x) {
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
@@ -486,7 +489,14 @@ void main() {
 		}
 	}
 
-	if (particle_active) {
+	// GH-97160
+	// for particles using physics step, do NOT process on the first frame of creation. This keeps the particle from getting ahead of the physics simulation.
+	bool suppress_process_for_first_frame = use_physics_step && !bool(flags & PARTICLE_FLAG_COMPLETED_FIRST_FRAME);
+	if (is_final_process) {
+		flags |= PARTICLE_FLAG_COMPLETED_FIRST_FRAME;
+	}
+
+	if (particle_active && !suppress_process_for_first_frame) {
 #CODE : PROCESS
 	}
 
