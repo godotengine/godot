@@ -3860,17 +3860,17 @@ float String::similarity(const String &p_string) const {
 		return 0.0f;
 	}
 
-	Vector<String> src_bigrams = bigrams();
-	Vector<String> tgt_bigrams = p_string.bigrams();
+	const int src_size = length() - 1;
+	const int tgt_size = p_string.length() - 1;
 
-	int src_size = src_bigrams.size();
-	int tgt_size = tgt_bigrams.size();
-
-	int sum = src_size + tgt_size;
+	const int sum = src_size + tgt_size;
 	int inter = 0;
 	for (int i = 0; i < src_size; i++) {
+		const char32_t i0 = get(i);
+		const char32_t i1 = get(i + 1);
+
 		for (int j = 0; j < tgt_size; j++) {
-			if (src_bigrams[i] == tgt_bigrams[j]) {
+			if (i0 == p_string.get(j) && i1 == p_string.get(j + 1)) {
 				inter++;
 				break;
 			}
