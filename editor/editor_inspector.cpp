@@ -281,7 +281,7 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 			}
-			if (label.contains(".")) {
+			if (label.contains_char('.')) {
 				// FIXME: Move this to the project settings editor, as this is only used
 				// for project settings feature tag overrides.
 				color.a = 0.5;
@@ -3177,7 +3177,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Get the property label's string.
-		String name_override = (path.contains("/")) ? path.substr(path.rfind_char('/') + 1) : path;
+		String name_override = (path.contains_char('/')) ? path.substr(path.rfind_char('/') + 1) : path;
 		String feature_tag;
 		{
 			const int dot = name_override.find_char('.');
@@ -3326,7 +3326,7 @@ void EditorInspector::update_tree() {
 				array_element_prefix = class_name_components[0];
 				editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 
-				String array_label = path.contains("/") ? path.substr(path.rfind_char('/') + 1) : path;
+				String array_label = path.contains_char('/') ? path.substr(path.rfind_char('/') + 1) : path;
 				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style, p.name, doc_name);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);

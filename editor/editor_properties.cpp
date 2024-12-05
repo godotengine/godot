@@ -837,7 +837,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
+	} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -2873,7 +2873,7 @@ void EditorPropertyNodePath::update_property() {
 	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
-	if (String(target_node->get_name()).contains("@")) {
+	if (String(target_node->get_name()).contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;

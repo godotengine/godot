@@ -470,7 +470,7 @@ void AnimationLibraryEditor::_item_renamed() {
 	bool restore_text = false;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
-	if (String(text).contains("/") || String(text).contains(":") || String(text).contains(",") || String(text).contains("[")) {
+	if (String(text).contains_char('/') || String(text).contains_char(':') || String(text).contains_char(',') || String(text).contains_char('[')) {
 		restore_text = true;
 	} else {
 		if (ti->get_parent() == tree->get_root()) {

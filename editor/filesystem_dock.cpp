@@ -1803,7 +1803,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		rename_error = true;
-	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
+	} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		rename_error = true;
 	} else if (new_name[0] == '.') {
@@ -2266,7 +2266,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				test_args.push_back("command -v " + terminal_emulator);
 				const Error err = OS::get_singleton()->execute("bash", test_args, &pipe);
 				// Check if a path to the terminal executable exists.
-				if (err == OK && pipe.contains("/")) {
+				if (err == OK && pipe.contains_char('/')) {
 					chosen_terminal_emulator = terminal_emulator;
 					break;
 				} else if (err == ERR_CANT_FORK) {

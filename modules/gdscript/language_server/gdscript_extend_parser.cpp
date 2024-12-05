@@ -67,7 +67,7 @@ lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 	res.character = column - 1;
 
 	String pos_line = p_lines[res.line];
-	if (pos_line.contains("\t")) {
+	if (pos_line.contains_char('\t')) {
 		int tab_size = get_indent_size();
 
 		int in_col = 1;

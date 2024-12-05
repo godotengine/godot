@@ -239,7 +239,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				List<StringName> anims;
 				ap->get_animation_list(&anims);
 				for (const StringName &name : anims) {
-					if (String(name).contains("/")) {
+					if (String(name).contains_char('/')) {
 						continue; // Avoid animation library which may be created by importer dynamically.
 					}
 

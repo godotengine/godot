@@ -4147,7 +4147,7 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 		if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
 			if (!p_input_vars[count].is_empty()) {
 				String s = ports[idx].string;
-				if (s.contains(":")) {
+				if (s.contains_char(':')) {
 					shader_code += "	" + s.get_slicec(':', 0) + " = " + p_input_vars[count] + "." + s.get_slicec(':', 1) + ";\n";
 				} else {
 					shader_code += "	" + s + " = " + p_input_vars[count] + ";\n";

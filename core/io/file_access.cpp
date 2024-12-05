@@ -740,7 +740,7 @@ bool FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 	for (int i = 0; i < size; ++i) {
 		String value = p_values[i];
 
-		if (value.contains("\"") || value.contains(p_delim) || value.contains("\n")) {
+		if (value.contains_char('"') || value.contains(p_delim) || value.contains_char('\n')) {
 			value = "\"" + value.replace("\"", "\"\"") + "\"";
 		}
 		if (i < size - 1) {

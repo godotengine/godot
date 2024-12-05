@@ -3314,6 +3314,10 @@ int String::find(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
+	if (src_len == 1) {
+		return find_char(p_str[0], p_from); // Optimize with single-char find.
+	}
+
 	const char32_t *src = get_data();
 	const char32_t *str = p_str.get_data();
 
@@ -3352,6 +3356,10 @@ int String::find(const char *p_str, int p_from) const {
 
 	if (len == 0 || src_len == 0) {
 		return -1; // won't find anything!
+	}
+
+	if (src_len == 1) {
+		return find_char(*p_str, p_from); // Optimize with single-char find.
 	}
 
 	const char32_t *src = get_data();
@@ -4081,7 +4089,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (placeholder.contains("_")) {
+				if (placeholder.contains_char('_')) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);

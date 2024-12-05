@@ -744,7 +744,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	List<String> comment_delimiters;
 	p_language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
-		if (!script_delimiter.contains(" ")) {
+		if (!script_delimiter.contains_char(' ')) {
 			meta_delimiter = script_delimiter;
 			break;
 		}

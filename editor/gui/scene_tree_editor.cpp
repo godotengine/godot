@@ -759,7 +759,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 		const String &term = p_terms[i];
 
 		// Recognize special filter.
-		if (term.contains(":") && !term.get_slicec(':', 0).is_empty()) {
+		if (term.contains_char(':') && !term.get_slicec(':', 0).is_empty()) {
 			String parameter = term.get_slicec(':', 0);
 			String argument = term.get_slicec(':', 1);
 

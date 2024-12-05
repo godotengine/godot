@@ -1437,7 +1437,7 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_name == SceneStringName(output));
-	ERR_FAIL_COND(String(p_name).contains("/"));
+	ERR_FAIL_COND(String(p_name).contains_char('/'));
 
 	Node n;
 	n.node = p_node;

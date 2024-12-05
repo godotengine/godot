@@ -4078,7 +4078,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			if (uri.begins_with("data:")) { // Embedded data using base64.
 				data = _parse_base64_uri(uri);
 				// mimeType is optional, but if we have it defined in the URI, let's use it.
-				if (mime_type.is_empty() && uri.contains(";")) {
+				if (mime_type.is_empty() && uri.contains_char(';')) {
 					// Trim "data:" prefix which is 5 characters long, and end at ";base64".
 					mime_type = uri.substr(5, uri.find(";base64") - 5);
 				}

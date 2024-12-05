@@ -349,7 +349,7 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 				PackedStringArray version_array = file_version.split(".", false);
 				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
 						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || file_version.contains("-")) {
+						!version_array[3].is_valid_int() || file_version.contains_char('-')) {
 					return TTR("Invalid file version.");
 				}
 			}
@@ -359,7 +359,7 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 				PackedStringArray version_array = product_version.split(".", false);
 				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
 						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || product_version.contains("-")) {
+						!version_array[3].is_valid_int() || product_version.contains_char('-')) {
 					return TTR("Invalid product version.");
 				}
 			}

@@ -1618,7 +1618,7 @@ void AnimationNodeStateMachineEditor::_open_editor(const String &p_name) {
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name.is_empty() || new_name.contains(".") || new_name.contains("/"));
+	ERR_FAIL_COND(new_name.is_empty() || new_name.contains_char('.') || new_name.contains_char('/'));
 
 	if (new_name == prev_name) {
 		return; // Nothing to do.
