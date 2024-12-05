@@ -68,6 +68,7 @@ public:
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
+	void request_draw_and_wait(RID viewport) const;
 };
 
 class EditorResourcePreview : public Node {
