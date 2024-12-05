@@ -31,6 +31,7 @@ protected:
 		String animation_path;
 		StringName animation_group;
 		StringName animation_tag;
+        bool is_visible = false;
 		bool load(Dictionary& p_dict) {
 			animation_path = p_dict["animation_path"];
 			animation_group = p_dict["animation_group"];
@@ -52,7 +53,56 @@ protected:
 	};
     void load_animation_config() ;
     void refresh_animation_list(bool update_ui = true) ;
-     void save_animation_config();
+    void save_animation_config();
+
+protected:
+    void on_item_visible_state_change(ItemBoxItem* item,bool visible) {
+        Ref<AnimationInfo> animation_info = item->data;
+        if(animation_info.is_null()) {
+            return;
+        }
+        if(animation_info->is_visible == visible) {
+            return;
+        }
+        animation_info->is_visible = visible;
+        if(visible) {
+            AnimationNodePreview* preview = get_item_preview();
+            animation_preview_list[item] = preview;
+        }
+        else {
+            HashMap<ItemBoxItem*,AnimationNodePreview*>::Iterator it = animation_preview_list.find(item);
+            if(it != animation_preview_list.end()) {
+                unuse_preview_list.push_back(it->value);
+                if(it->value->get_parent() == it->key) {
+                    it->key->remove_child(it->value);
+                }
+                animation_preview_list.erase(it->key);
+            }
+        }
+        is_dirty = true;
+    }
+    
+    AnimationNodePreview* get_item_preview() {
+        if(unuse_preview_list.size() > 0) {
+            AnimationNodePreview* preview = unuse_preview_list.front()->get();
+            unuse_preview_list.pop_front();
+            return preview;
+        }
+        return memnew(AnimationNodePreview);        
+    }
+
+    void update_preview() {
+        for(auto& it : animation_preview_list) {
+            if(it.key->get_parent() != it.value) {
+				Ref<AnimationInfo> data = it.key->data;
+                if(data.is_valid()) {
+                    it.value->set_animation_path(data->animation_path);
+                    it.key->add_child(it.value);                    
+                }
+            }
+        }
+    }
+
     
 protected:
     String last_select_group = "";
@@ -68,6 +118,9 @@ protected:
     LocalVector<String> animation_list_paths = {"res://Assets/public/animation/", "res://Assets/public/human_animation/"};
     List<Ref<AnimationInfo>> animations;
     List<Ref<AnimationInfo>> curr_show_animations;
+    HashMap<ItemBoxItem*,AnimationNodePreview*> animation_preview_list;
+    List<AnimationNodePreview*> unuse_preview_list;
+    bool is_dirty = false;
 };
 
 class AnimationPreviewPanelItem : public ResourceEditorToolItem {

@@ -46,10 +46,17 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
     animation_list = memnew(ItemBox);
     hbc->add_child(animation_list);
 
+    set_process(true);
 }
 void AnimationPreviewPanel::_notification(int what) {
     if (what == NOTIFICATION_ENTER_TREE) {
         load_animation_config();
+    }
+    else if (what == NOTIFICATION_PROCESS) {
+        if(is_dirty) {
+            update_preview();
+            is_dirty = false;
+        }
     }
 }
 void AnimationPreviewPanel::_on_revert_show_toggled(bool pressed) {
@@ -163,10 +170,8 @@ void AnimationPreviewPanel::refresh_animation_list(bool update_ui) {
     animation_list->clear();
     for(auto& it : animations) {
         if(it->is_show(last_select_group, last_select_tag,last_inv_select)) {
-            AnimationNodePreview* preview = memnew(AnimationNodePreview);
-            preview->set_animation_path(it->animation_path);
             curr_show_animations.push_back(it);
-			animation_list->add_item(preview);
+			animation_list->add_item(it);
         }
     }
     

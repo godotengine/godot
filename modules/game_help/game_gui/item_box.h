@@ -9,24 +9,7 @@ public:
 
     ItemBoxItem() {
     }
-    void update_visible() {
-        Node *parent_node = get_parent();
-        if(parent_node) {
-			parent_node = parent_node->get_parent();
-        }
-		Control* parent = Object::cast_to<Control>(parent_node);
-        if(parent) {
-            bool _visible = parent->get_global_rect().intersects(get_global_rect());
-            for(int i = 0; i < get_child_count(); i++) {
-				Control* child = Object::cast_to<Control>(get_child(i));
-				if (child != nullptr) {
-					child->set_visible(_visible);
-				}
-            }
-
-        }
-        
-    }
+    Ref<RefCounted> data;
 };
 
 class ItemBox : public ScrollContainer {
@@ -48,28 +31,41 @@ public:
         view_root->set_v_size_flags(SIZE_EXPAND_FILL);
         add_child(view_root);
     }
+    void _notification(int what) {
+        if(what == NOTIFICATION_EXIT_TREE) {
+            clear();
+        }
+    }
+
+    void set_item_visible_change_callback(Callable& p_item_visible_change_cb) {
+        item_visible_change_cb = p_item_visible_change_cb;
+    }
 
     void scroll_changed(float ) {
+        Rect2 rect = get_global_rect();
         for(auto it : items) {
-            it->update_visible();
+            bool _visible = rect.intersects(it->get_global_rect());
+            item_visible_change_cb.call(it,_visible);
         }
         
     }
 
-    void add_item(Control *item) {
+    void add_item(const Ref<RefCounted>& item) {
         ItemBoxItem *it = memnew(ItemBoxItem);
         it->set_custom_minimum_size(item_size);
         view_root->add_child(it);
 
-        it->add_child(item);
-        item->set_h_size_flags(SIZE_EXPAND_FILL);
-        item->set_v_size_flags(SIZE_EXPAND_FILL);
+        it->data = item;
         items.push_back(it);
+
+        bool _visible = it->get_global_rect().intersects(get_global_rect());
+        item_visible_change_cb.call(it,_visible);
     }
-    void remove_item(Control *item) {
+    void remove_item(const Ref<RefCounted>& item) {
         
         for(auto it : items) {
-            if(it->get_child(0) == item) {
+            if(it->data == item) {
+                item_visible_change_cb.call(it,false);
 				view_root->remove_child(it);
                 it->queue_free();
                 items.erase(it);
@@ -89,6 +85,7 @@ public:
 
     void clear() {
         for(auto it : items) {
+            item_visible_change_cb.call(it,false);
             view_root->remove_child(it);
             it->queue_free();
         }
@@ -98,5 +95,6 @@ protected:
     HFlowContainer *view_root = nullptr;
     List<ItemBoxItem *> items;
     Vector2 item_size = Vector2(150, 150);
+    Callable item_visible_change_cb;
     
 };
