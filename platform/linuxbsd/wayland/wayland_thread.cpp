@@ -32,8 +32,12 @@
 
 #ifdef WAYLAND_ENABLED
 
-// FIXME: Does this cause issues with *BSDs?
+#ifdef __FreeBSD__
+#include <dev/evdev/input-event-codes.h>
+#else
+// Assume Linux.
 #include <linux/input-event-codes.h>
+#endif
 
 // For the actual polling thread.
 #include <poll.h>
