@@ -2527,7 +2527,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_setup_atlas_source_button = memnew(Button);
 	tool_setup_atlas_source_button->set_text(TTR("Setup"));
-	tool_setup_atlas_source_button->set_theme_type_variation("FlatButton");
+	tool_setup_atlas_source_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
@@ -2536,7 +2536,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_select_button = memnew(Button);
 	tool_select_button->set_text(TTR("Select"));
-	tool_select_button->set_theme_type_variation("FlatButton");
+	tool_select_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
@@ -2545,7 +2545,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_text(TTR("Paint"));
-	tool_paint_button->set_theme_type_variation("FlatButton");
+	tool_paint_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
 	toolbox->add_child(tool_paint_button);
@@ -2626,7 +2626,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(tool_settings_tile_data_toolbar_container);
 
 	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_theme_type_variation("FlatButton");
+	tools_settings_erase_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tools_settings_erase_button->set_toggle_mode(true);
 	tools_settings_erase_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/eraser"));
 	tools_settings_erase_button->set_shortcut_context(this);

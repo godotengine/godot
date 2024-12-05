@@ -2309,13 +2309,13 @@ EditorFileDialog::EditorFileDialog() {
 	vbc->add_child(pathhb);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_theme_type_variation("FlatButton");
+	dir_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_prev->set_tooltip_text(TTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_theme_type_variation("FlatButton");
+	dir_next->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_next->set_tooltip_text(TTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_theme_type_variation("FlatButton");
+	dir_up->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_up->set_tooltip_text(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
@@ -2338,13 +2338,13 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir);
 
 	refresh = memnew(Button);
-	refresh->set_theme_type_variation("FlatButton");
+	refresh->set_theme_type_variation(SceneStringName(FlatButton));
 	refresh->set_tooltip_text(TTR("Refresh files."));
 	refresh->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
 	favorite = memnew(Button);
-	favorite->set_theme_type_variation("FlatButton");
+	favorite->set_theme_type_variation(SceneStringName(FlatButton));
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite current folder."));
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_pressed));
@@ -2361,7 +2361,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(makedir_sep);
 
 	makedir = memnew(Button);
-	makedir->set_theme_type_variation("FlatButton");
+	makedir->set_theme_type_variation(SceneStringName(FlatButton));
 	makedir->set_tooltip_text(TTR("Create a new folder."));
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
@@ -2397,11 +2397,11 @@ EditorFileDialog::EditorFileDialog() {
 
 	fav_hb->add_spacer();
 	fav_up = memnew(Button);
-	fav_up->set_theme_type_variation("FlatButton");
+	fav_up->set_theme_type_variation(SceneStringName(FlatButton));
 	fav_hb->add_child(fav_up);
 	fav_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_up));
 	fav_down = memnew(Button);
-	fav_down->set_theme_type_variation("FlatButton");
+	fav_down->set_theme_type_variation(SceneStringName(FlatButton));
 	fav_hb->add_child(fav_down);
 	fav_down->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_down));
 
@@ -2444,7 +2444,7 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(l);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_theme_type_variation("FlatButton");
+	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(TTR("Toggle the visibility of hidden files."));
@@ -2457,7 +2457,7 @@ EditorFileDialog::EditorFileDialog() {
 	view_mode_group.instantiate();
 
 	mode_thumbnails = memnew(Button);
-	mode_thumbnails->set_theme_type_variation("FlatButton");
+	mode_thumbnails->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_thumbnails->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
@@ -2466,7 +2466,7 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(mode_thumbnails);
 
 	mode_list = memnew(Button);
-	mode_list->set_theme_type_variation("FlatButton");
+	mode_list->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_list->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
@@ -2482,7 +2482,7 @@ EditorFileDialog::EditorFileDialog() {
 	file_sort_button->set_tooltip_text(TTR("Sort files"));
 
 	show_search_filter_button = memnew(Button);
-	show_search_filter_button->set_theme_type_variation("FlatButton");
+	show_search_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_search_filter_button->set_toggle_mode(true);
 	show_search_filter_button->set_pressed(false);
 	show_search_filter_button->set_tooltip_text(TTR("Toggle the visibility of the filter for file names."));
