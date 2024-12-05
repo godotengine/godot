@@ -249,7 +249,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(vs);
 
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin replication editor"));
 	hb->add_child(pin);

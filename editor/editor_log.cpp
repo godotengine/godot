@@ -480,7 +480,7 @@ EditorLog::EditorLog() {
 
 	// Clear.
 	clear_button = memnew(Button);
-	clear_button->set_theme_type_variation("FlatButton");
+	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
 	clear_button->set_focus_mode(FOCUS_NONE);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
@@ -488,7 +488,7 @@ EditorLog::EditorLog() {
 
 	// Copy.
 	copy_button = memnew(Button);
-	copy_button->set_theme_type_variation("FlatButton");
+	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
 	copy_button->set_focus_mode(FOCUS_NONE);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
@@ -505,7 +505,7 @@ EditorLog::EditorLog() {
 
 	// Collapse.
 	collapse_button = memnew(Button);
-	collapse_button->set_theme_type_variation("FlatButton");
+	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
 	collapse_button->set_focus_mode(FOCUS_NONE);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
@@ -515,7 +515,7 @@ EditorLog::EditorLog() {
 
 	// Show Search.
 	show_search_button = memnew(Button);
-	show_search_button->set_theme_type_variation("FlatButton");
+	show_search_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);

@@ -365,7 +365,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Button variations
 
-	theme->set_type_variation("FlatButton", "Button");
+	theme->set_type_variation(SceneStringName(FlatButton), "Button");
 	theme->set_type_variation("FlatMenuButton", "MenuButton");
 
 	Ref<StyleBoxEmpty> flat_button_normal = make_empty_stylebox();
@@ -375,10 +375,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
 	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
 
-	theme->set_stylebox(CoreStringName(normal), "FlatButton", flat_button_normal);
-	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
-	theme->set_stylebox(SceneStringName(pressed), "FlatButton", flat_button_pressed);
-	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
+	theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox("hover", SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), flat_button_pressed);
+	theme->set_stylebox("disabled", SceneStringName(FlatButton), flat_button_normal);
 
 	theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);

@@ -2916,7 +2916,7 @@ GraphEdit::GraphEdit() {
 	_update_zoom_label();
 
 	zoom_minus_button = memnew(Button);
-	zoom_minus_button->set_theme_type_variation("FlatButton");
+	zoom_minus_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_minus_button->set_visible(show_zoom_buttons);
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
 	zoom_minus_button->set_focus_mode(FOCUS_NONE);
@@ -2924,7 +2924,7 @@ GraphEdit::GraphEdit() {
 	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
 
 	zoom_reset_button = memnew(Button);
-	zoom_reset_button->set_theme_type_variation("FlatButton");
+	zoom_reset_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_reset_button->set_visible(show_zoom_buttons);
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
 	zoom_reset_button->set_focus_mode(FOCUS_NONE);
@@ -2932,7 +2932,7 @@ GraphEdit::GraphEdit() {
 	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
 
 	zoom_plus_button = memnew(Button);
-	zoom_plus_button->set_theme_type_variation("FlatButton");
+	zoom_plus_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_plus_button->set_visible(show_zoom_buttons);
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
 	zoom_plus_button->set_focus_mode(FOCUS_NONE);
@@ -2942,7 +2942,7 @@ GraphEdit::GraphEdit() {
 	// Grid controls.
 
 	toggle_grid_button = memnew(Button);
-	toggle_grid_button->set_theme_type_variation("FlatButton");
+	toggle_grid_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_grid_button->set_visible(show_grid_buttons);
 	toggle_grid_button->set_toggle_mode(true);
 	toggle_grid_button->set_pressed(true);
@@ -2952,7 +2952,7 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
 	toggle_snapping_button = memnew(Button);
-	toggle_snapping_button->set_theme_type_variation("FlatButton");
+	toggle_snapping_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_snapping_button->set_visible(show_grid_buttons);
 	toggle_snapping_button->set_toggle_mode(true);
 	toggle_snapping_button->set_tooltip_text(ETR("Toggle snapping to the grid."));
@@ -2974,7 +2974,7 @@ GraphEdit::GraphEdit() {
 	// Extra controls.
 
 	minimap_button = memnew(Button);
-	minimap_button->set_theme_type_variation("FlatButton");
+	minimap_button->set_theme_type_variation(SceneStringName(FlatButton));
 	minimap_button->set_visible(show_minimap_button);
 	minimap_button->set_toggle_mode(true);
 	minimap_button->set_tooltip_text(ETR("Toggle the graph minimap."));
@@ -2984,7 +2984,7 @@ GraphEdit::GraphEdit() {
 	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
 	arrange_button = memnew(Button);
-	arrange_button->set_theme_type_variation("FlatButton");
+	arrange_button->set_theme_type_variation(SceneStringName(FlatButton));
 	arrange_button->set_visible(show_arrange_button);
 	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
 	arrange_button->set_focus_mode(FOCUS_NONE);
