@@ -320,7 +320,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 				}
 			}
 
-			if (link.contains(".")) {
+			if (link.contains_char('.')) {
 				const int class_end = link.find_char('.');
 				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
 			}
@@ -365,7 +365,7 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 
 	bool is_enum_type = !p_enum.is_empty();
 	bool is_bitfield = p_is_bitfield && is_enum_type;
-	bool can_ref = !p_type.contains("*") || is_enum_type;
+	bool can_ref = !p_type.contains_char('*') || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
 	String display_t; // For display purposes.
@@ -2552,7 +2552,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_meta("@" + link_tag + " " + link_target, underline_mode);
 
 			if (link_tag == "member" &&
-					((!link_target.contains(".") && (p_class == "ProjectSettings" || p_class == "EditorSettings")) ||
+					((!link_target.contains_char('.') && (p_class == "ProjectSettings" || p_class == "EditorSettings")) ||
 							link_target.begins_with("ProjectSettings.") || link_target.begins_with("EditorSettings."))) {
 				// Special formatting for both ProjectSettings and EditorSettings.
 				String prefix;
@@ -3665,7 +3665,7 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			return;
 		}
 
-		if (link.contains(".")) {
+		if (link.contains_char('.')) {
 			const int class_end = link.find_char('.');
 			_go_to_help(topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
 		} else {
