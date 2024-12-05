@@ -64,6 +64,7 @@ public:
 	CreateDialog *get_create_dialog() const;
 
 	ConfirmationDialog *get_dialog_window() const;
+	Tree *get_search_options() const;
 
 	void add_type_to_blacklist(const StringName &p_type_name);
 	bool is_type_in_blacklist(const StringName &p_type_name) const;
@@ -76,8 +77,6 @@ public:
 	String get_type_custom_suffix(const StringName &p_type_name) const;
 	void remove_type_custom_suffix(const StringName &p_type_name);
 	void clear_type_custom_suffixes();
-
-	Tree *get_search_options() const;
 
 	static EditorCreateDialog *get_singleton();
 

@@ -45,7 +45,19 @@ CreateDialog *EditorCreateDialog::get_create_dialog() const {
 }
 
 ConfirmationDialog *EditorCreateDialog::get_dialog_window() const {
+	if (create_dialog == nullptr) {
+		ERR_PRINT("Got null create dialog reference. Please call this when the dialog is visible.");
+		return nullptr;
+	}
 	return Object::cast_to<ConfirmationDialog>(create_dialog);
+}
+
+Tree *EditorCreateDialog::get_search_options() const {
+	if (create_dialog == nullptr) {
+		ERR_PRINT("Got null search options reference. Please call this when the dialog is visible.");
+		return nullptr;
+	}
+	return create_dialog->search_options;
 }
 
 void EditorCreateDialog::add_type_to_blacklist(const StringName &p_type_name) {
@@ -104,11 +116,6 @@ void EditorCreateDialog::remove_type_custom_suffix(const StringName &p_type_name
 
 void EditorCreateDialog::clear_type_custom_suffixes() {
 	custom_type_suffixes.clear();
-}
-
-Tree *EditorCreateDialog::get_search_options() const {
-	CHECK_IF_NO_BOUND_CREATE_DIALOG_V(nullptr);
-	return create_dialog->search_options;
 }
 
 EditorCreateDialog *EditorCreateDialog::get_singleton() {

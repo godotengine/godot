@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorCreateDialog" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Help manage the create dialog.
+		An interface that helps manage the create dialog.
 	</brief_description>
 	<description>
 		This object helps manage the create dialog in the editor. You can manage the custom suffixes for types by calling [method set_type_custom_suffix] and [method remove_type_custom_suffix], or manage their visibility by calling [method add_type_to_blacklist] and [method remove_type_from_black_list].
@@ -18,7 +18,7 @@
 				Adds a type to the blacklist of the create dialog. If the type is already in the blacklist, nothing will happen. Types in the blacklist will not be shown in the create dialog.
 				[b]Note:[/b] Unlike [method EditorFeatureProfile.set_disable_class], this method allows you to hide custom types from the create dialog.
 				[b]Note:[/b] The built-in classes shouldn't be added to the blacklist, unless you know what you're doing.
-				[b]Note:[/b] For plugins that hides types from the create dialog, [method remove_type_from_blacklist] should be called for the hidden types when the plugin is unregistered. Otherwise, the type will never be displayed until the next start of the engine.
+				[b]Note:[/b] For plugins that hides custom types from the create dialog, [method remove_type_from_blacklist] should be called for the hidden types when the plugin is unregistered. Otherwise, the type will never be displayed until the next start of the engine.
 			</description>
 		</method>
 		<method name="clear_type_blacklist">
@@ -36,14 +36,16 @@
 		<method name="get_dialog_window" qualifiers="const">
 			<return type="ConfirmationDialog" />
 			<description>
-				Returns the window of the create dialog.
-				[b]Warning:[/b] The window of the create dialog shouldn't be deleted. Trying removing and freeing this window will render a part of the editor useless and may cause a crash.
+				Returns the create dialog window.
+				[b]Note:[/b] The create dialog window is accessible only when it is visible. Otherwise, the method will return [code]null[/code] with an error.
+				[b]Warning:[/b] The create dialog window shouldn't be deleted. Trying removing and freeing this window will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_search_options" qualifiers="const">
 			<return type="Tree" />
 			<description>
 				Returns a tree of search options for the create dialog.
+				[b]Note:[/b] The search options are accessible only when the create dialog visible. Otherwise, the method will return [code]null[/code] with an error.
 				[b]Warning:[/b] The search options tree shouldn't be deleted. Trying removing and freeing this tree will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
@@ -81,8 +83,8 @@
 			<param index="0" name="type_name" type="StringName" />
 			<description>
 				Removes a type from the blacklist of the create dialog. If the type is already out of the blacklist, nothing will happen. A type removed from the blacklist will be shown in the create dialog again.
+				[b]Note:[/b] This method cannot enables the visibility of built-in types hidden by the engine.
 				[b]Note:[/b] For plugins that hides types from the create dialog, this method should be called in [method Node._exit_tree] of the addon script to guarantee the safe unregistration. Otherwise, the type will never be displayed until the next start of the engine.
-				[b]Warning:[/b] Never try removing types beginning with "Editor" from the blacklist, even though this is allowed, as most of them are kernel to the editor and should keep hidden.
 			</description>
 		</method>
 		<method name="set_type_custom_suffix">
