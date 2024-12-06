@@ -94,10 +94,11 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	if (unlikely(valid_annotations.is_empty())) {
+		// Script annotations.
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
-
+		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -128,13 +129,18 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, varray(""));
 		register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, varray(""));
 		// Warning annotations.
-		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
+		register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS_LEVEL | AnnotationInfo::STATEMENT, &GDScriptParser::warning_ignore_annotation, varray(), true);
+		register_annotation(MethodInfo("@warning_ignore_start", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
+		register_annotation(MethodInfo("@warning_ignore_restore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::STANDALONE, &GDScriptParser::warning_ignore_region_annotations, varray(), true);
 		// Networking.
 		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
 	}
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
+	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
+		warning_ignore_start_lines[i] = INT_MAX;
+	}
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -212,6 +218,9 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 void GDScriptParser::apply_pending_warnings() {
 	for (const PendingWarning &pw : pending_warnings) {
 		if (warning_ignored_lines[pw.code].has(pw.source->start_line)) {
+			continue;
+		}
+		if (warning_ignore_start_lines[pw.code] <= pw.source->start_line) {
 			continue;
 		}
 
@@ -625,7 +634,7 @@ void GDScriptParser::parse_program() {
 				} else if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
 					PUSH_PENDING_ANNOTATIONS_TO_HEAD;
 					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon")) {
-						// Some annotations need to be resolved in the parser.
+						// Some annotations need to be resolved and applied in the parser.
 						annotation->apply(this, head, nullptr); // `head->outer == nullptr`.
 					} else {
 						head->annotations.push_back(annotation);
@@ -640,8 +649,10 @@ void GDScriptParser::parse_program() {
 						// so we stop looking for script-level stuff.
 						can_have_class_or_extends = false;
 						break;
+					} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
+						// Some annotations need to be resolved and applied in the parser.
+						annotation->apply(this, nullptr, nullptr);
 					} else {
-						// For potential non-group standalone annotations.
 						push_error(R"(Unexpected standalone annotation.)");
 					}
 				} else {
@@ -1030,8 +1041,10 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 						}
 						if (annotation->name == SNAME("@export_category") || annotation->name == SNAME("@export_group") || annotation->name == SNAME("@export_subgroup")) {
 							current_class->add_member_group(annotation);
+						} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
+							// Some annotations need to be resolved and applied in the parser.
+							annotation->apply(this, nullptr, nullptr);
 						} else {
-							// For potential non-group standalone annotations.
 							push_error(R"(Unexpected standalone annotation.)");
 						}
 					} else { // `AnnotationInfo::CLASS_LEVEL`.
@@ -1896,9 +1909,21 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			break;
 		case GDScriptTokenizer::Token::ANNOTATION: {
 			advance();
-			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT);
+			AnnotationNode *annotation = parse_annotation(AnnotationInfo::STATEMENT | AnnotationInfo::STANDALONE);
 			if (annotation != nullptr) {
-				annotation_stack.push_back(annotation);
+				if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
+					if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
+						push_error(R"(Expected newline after a standalone annotation.)");
+					}
+					if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
+						// Some annotations need to be resolved and applied in the parser.
+						annotation->apply(this, nullptr, nullptr);
+					} else {
+						push_error(R"(Unexpected standalone annotation.)");
+					}
+				} else {
+					annotation_stack.push_back(annotation);
+				}
 			}
 			break;
 		}
@@ -4096,23 +4121,25 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 		return false;
 	}
 
-	// Some annotations need to be resolved in the parser.
-	if (p_annotation->name == SNAME("@icon")) {
-		ExpressionNode *argument = p_annotation->arguments[0];
+	// Some annotations need to be resolved and applied in the parser.
+	if (p_annotation->name == SNAME("@icon") || p_annotation->name == SNAME("@warning_ignore_start") || p_annotation->name == SNAME("@warning_ignore_restore")) {
+		for (int i = 0; i < p_annotation->arguments.size(); i++) {
+			ExpressionNode *argument = p_annotation->arguments[i];
 
-		if (argument->type != Node::LITERAL) {
-			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
-			return false;
+			if (argument->type != Node::LITERAL) {
+				push_error(vformat(R"(Argument %d of annotation "%s" must be a string literal.)", i + 1, p_annotation->name), argument);
+				return false;
+			}
+
+			Variant value = static_cast<LiteralNode *>(argument)->value;
+
+			if (value.get_type() != Variant::STRING) {
+				push_error(vformat(R"(Argument %d of annotation "%s" must be a string literal.)", i + 1, p_annotation->name), argument);
+				return false;
+			}
+
+			p_annotation->resolved_arguments.push_back(value);
 		}
-
-		Variant value = static_cast<LiteralNode *>(argument)->value;
-
-		if (value.get_type() != Variant::STRING) {
-			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
-			return false;
-		}
-
-		p_annotation->resolved_arguments.push_back(value);
 	}
 
 	// For other annotations, see `GDScriptAnalyzer::resolve_annotation()`.
@@ -4159,6 +4186,17 @@ bool GDScriptParser::icon_annotation(AnnotationNode *p_annotation, Node *p_targe
 		class_node->simplified_icon_path = path;
 	}
 
+	return true;
+}
+
+bool GDScriptParser::static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to classes.)", p_annotation->name));
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+	if (class_node->annotated_static_unload) {
+		push_error(vformat(R"("%s" annotation can only be used once per script.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	class_node->annotated_static_unload = true;
 	return true;
 }
 
@@ -4756,11 +4794,8 @@ bool GDScriptParser::export_group_annotations(AnnotationNode *p_annotation, Node
 	return true;
 }
 
-bool GDScriptParser::warning_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifndef DEBUG_ENABLED
-	// Only available in debug builds.
-	return true;
-#else // DEBUG_ENABLED
+bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+#ifdef DEBUG_ENABLED
 	if (is_ignoring_warnings) {
 		return true; // We already ignore all warnings, let's optimize it.
 	}
@@ -4805,8 +4840,14 @@ bool GDScriptParser::warning_annotations(AnnotationNode *p_annotation, Node *p_t
 				} break;
 
 				case Node::FUNCTION: {
-					// `@warning_ignore` on function has a controversial feature that is used in tests.
-					// It's better not to remove it for now, while there is no way to mass-ignore warnings.
+					FunctionNode *function = static_cast<FunctionNode *>(p_target);
+					end_line = function->start_line;
+					for (int i = 0; i < function->parameters.size(); i++) {
+						end_line = MAX(end_line, function->parameters[i]->end_line);
+						if (function->parameters[i]->initializer != nullptr) {
+							end_line = MAX(end_line, function->parameters[i]->initializer->end_line);
+						}
+					}
 				} break;
 
 				case Node::MATCH_BRANCH: {
@@ -4828,6 +4869,48 @@ bool GDScriptParser::warning_annotations(AnnotationNode *p_annotation, Node *p_t
 		}
 	}
 	return !has_error;
+#else // !DEBUG_ENABLED
+	// Only available in debug builds.
+	return true;
+#endif // DEBUG_ENABLED
+}
+
+bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+#ifdef DEBUG_ENABLED
+	bool has_error = false;
+	const bool is_start = p_annotation->name == SNAME("@warning_ignore_start");
+	for (const Variant &warning_name : p_annotation->resolved_arguments) {
+		GDScriptWarning::Code warning_code = GDScriptWarning::get_code_from_name(String(warning_name).to_upper());
+		if (warning_code == GDScriptWarning::WARNING_MAX) {
+			push_error(vformat(R"(Invalid warning name: "%s".)", warning_name), p_annotation);
+			has_error = true;
+			continue;
+		}
+		if (is_start) {
+			if (warning_ignore_start_lines[warning_code] != INT_MAX) {
+				push_error(vformat(R"(Warning "%s" is already being ignored by "@warning_ignore_start" at line %d.)", String(warning_name).to_upper(), warning_ignore_start_lines[warning_code]), p_annotation);
+				has_error = true;
+				continue;
+			}
+			warning_ignore_start_lines[warning_code] = p_annotation->start_line;
+		} else {
+			if (warning_ignore_start_lines[warning_code] == INT_MAX) {
+				push_error(vformat(R"(Warning "%s" is not being ignored by "@warning_ignore_start".)", String(warning_name).to_upper()), p_annotation);
+				has_error = true;
+				continue;
+			}
+			const int start_line = warning_ignore_start_lines[warning_code];
+			const int end_line = MAX(start_line, p_annotation->start_line); // Prevent infinite loop.
+			for (int i = start_line; i <= end_line; i++) {
+				warning_ignored_lines[warning_code].insert(i);
+			}
+			warning_ignore_start_lines[warning_code] = INT_MAX;
+		}
+	}
+	return !has_error;
+#else // !DEBUG_ENABLED
+	// Only available in debug builds.
+	return true;
 #endif // DEBUG_ENABLED
 }
 
@@ -4889,17 +4972,6 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 		}
 	}
 	function->rpc_config = rpc_config;
-	return true;
-}
-
-bool GDScriptParser::static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to classes.)", p_annotation->name));
-	ClassNode *class_node = static_cast<ClassNode *>(p_target);
-	if (class_node->annotated_static_unload) {
-		push_error(vformat(R"("%s" annotation can only be used once per script.)", p_annotation->name), p_annotation);
-		return false;
-	}
-	class_node->annotated_static_unload = true;
 	return true;
 }
 
