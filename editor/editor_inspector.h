@@ -161,6 +161,8 @@ protected:
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
+	String get_tooltip_string(const String &p_string) const;
+
 	virtual Size2 get_minimum_size() const override;
 
 	void set_label(const String &p_label);
