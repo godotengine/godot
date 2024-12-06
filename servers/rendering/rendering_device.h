@@ -156,27 +156,33 @@ private:
 	//
 	// See the comments in the code to understand better how it works.
 
+	enum StagingRequiredAction {
+		STAGING_REQUIRED_ACTION_NONE,
+		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
+		STAGING_REQUIRED_ACTION_STALL_PREVIOUS,
+	};
+
 	struct StagingBufferBlock {
 		RDD::BufferID driver_id;
 		uint64_t frame_used = 0;
 		uint32_t fill_amount = 0;
 	};
 
-	Vector<StagingBufferBlock> staging_buffer_blocks;
-	int staging_buffer_current = 0;
-	uint32_t staging_buffer_block_size = 0;
-	uint64_t staging_buffer_max_size = 0;
-	bool staging_buffer_used = false;
-
-	enum StagingRequiredAction {
-		STAGING_REQUIRED_ACTION_NONE,
-		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
-		STAGING_REQUIRED_ACTION_STALL_PREVIOUS
+	struct StagingBuffers {
+		Vector<StagingBufferBlock> blocks;
+		int current = 0;
+		uint32_t block_size = 0;
+		uint64_t max_size = 0;
+		BitField<RDD::BufferUsageBits> usage_bits;
+		bool used = false;
 	};
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
-	void _staging_buffer_execute_required_action(StagingRequiredAction p_required_action);
-	Error _insert_staging_block();
+	Error _staging_buffer_allocate(StagingBuffers &p_staging_buffers, uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
+	void _staging_buffer_execute_required_action(StagingBuffers &p_staging_buffers, StagingRequiredAction p_required_action);
+	Error _insert_staging_block(StagingBuffers &p_staging_buffers);
+
+	StagingBuffers upload_staging_buffers;
+	StagingBuffers download_staging_buffers;
 
 	struct Buffer {
 		RDD::BufferID driver_id;
@@ -205,11 +211,19 @@ private:
 	RID_Owner<Buffer, true> storage_buffer_owner;
 	RID_Owner<Buffer, true> texture_buffer_owner;
 
+	struct BufferGetDataRequest {
+		uint32_t frame_local_index = 0;
+		uint32_t frame_local_count = 0;
+		Callable callback;
+		uint32_t size = 0;
+	};
+
 public:
 	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
 	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data);
 	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
+	Error buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset = 0, uint32_t p_size = 0);
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -300,6 +314,7 @@ public:
 
 	RID_Owner<Texture, true> texture_owner;
 	uint32_t texture_upload_region_size_px = 0;
+	uint32_t texture_download_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
 	uint32_t _texture_layer_count(Texture *p_texture) const;
@@ -310,6 +325,17 @@ public:
 	void _texture_free_shared_fallback(Texture *p_texture);
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
+
+	struct TextureGetDataRequest {
+		uint32_t frame_local_index = 0;
+		uint32_t frame_local_count = 0;
+		Callable callback;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		uint32_t depth = 0;
+		uint32_t mipmaps = 0;
+		RDD::DataFormat format = RDD::DATA_FORMAT_MAX;
+	};
 
 public:
 	struct TextureView {
@@ -342,6 +368,7 @@ public:
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
+	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
 
 	bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<TextureUsageBits> p_usage) const;
 	bool texture_is_shared(RID p_texture);
@@ -1381,6 +1408,17 @@ private:
 		List<RenderPipeline> render_pipelines_to_dispose_of;
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
+		// Pending asynchronous data transfer for buffers.
+		LocalVector<RDD::BufferID> download_buffer_staging_buffers;
+		LocalVector<RDD::BufferCopyRegion> download_buffer_copy_regions;
+		LocalVector<BufferGetDataRequest> download_buffer_get_data_requests;
+
+		// Pending asynchronous data transfer for textures.
+		LocalVector<RDD::BufferID> download_texture_staging_buffers;
+		LocalVector<RDD::BufferTextureCopyRegion> download_buffer_texture_copy_regions;
+		LocalVector<uint32_t> download_texture_mipmap_offsets;
+		LocalVector<TextureGetDataRequest> download_texture_get_data_requests;
+
 		// The command pool used by the command buffer.
 		RDD::CommandPoolID command_pool;
 
@@ -1446,6 +1484,7 @@ public:
 	void _begin_frame(bool p_presented = false);
 	void _end_frame();
 	void _execute_frame(bool p_present);
+	void _stall_for_frame(uint32_t p_frame);
 	void _stall_for_previous_frames();
 	void _flush_and_stall_for_all_frames();
 

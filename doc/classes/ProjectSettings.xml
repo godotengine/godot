@@ -2972,10 +2972,22 @@
 			Determines at which interval pipeline cache is saved to disk. The lower the value, the more often it is saved.
 		</member>
 		<member name="rendering/rendering_device/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
+			The size of a block allocated in the staging buffers. Staging buffers are the intermediate resources the engine uses to upload or download data to the GPU. This setting determines the max amount of data that can be transferred in a copy operation. Increasing this will result in faster data transfers at the cost of extra memory.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
 		</member>
 		<member name="rendering/rendering_device/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
+			The maximum amount of memory allowed to be used by staging buffers. If the amount of data being uploaded or downloaded exceeds this amount, the GPU will stall and wait for previous frames to finish.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/texture_download_region_size_px" type="int" setter="" getter="" default="64">
+			The region size in pixels used to download texture data from the GPU when using methods like [method RenderingDevice.texture_get_data_async].
+			[b]Note:[/b] This property's upper limit is controlled by [member rendering/rendering_device/staging_buffer/block_size_kb] and whether it's possible to allocate a single block of texture data with this region size in the format that is requested.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
 		</member>
 		<member name="rendering/rendering_device/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
+			The region size in pixels used to upload texture data from the GPU when using methods like [method RenderingDevice.texture_update].
+			[b]Note:[/b] This property's upper limit is controlled by [member rendering/rendering_device/staging_buffer/block_size_kb] and whether it's possible to allocate a single block of texture data with this region size in the format that is requested.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this value at run-time.
 		</member>
 		<member name="rendering/rendering_device/vsync/frame_queue_size" type="int" setter="" getter="" default="2">
 			The number of frames to track on the CPU side before stalling to wait for the GPU.
