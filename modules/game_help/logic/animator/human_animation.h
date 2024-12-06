@@ -293,7 +293,10 @@ namespace HumanAnim
                 float height = 1.0;
                 Vector<int> children = p_skeleton->get_bone_children(root_bone);
                 for(int j=0;j<children.size();j++) {
-                    pose.child_bones.push_back(p_skeleton->get_bone_name(children[j]));
+                    StringName child_name = p_skeleton->get_bone_name(children[j]);
+                    if(p_human_bone_label.has(child_name)) {
+                        pose.child_bones.push_back(child_name);                        
+                    }
                 }
 				pose.child_bones.sort_custom<SortStringName>();
 
@@ -307,8 +310,8 @@ namespace HumanAnim
                 p_config.virtual_pose[bone_name] = pose;
 
                 // 构建所有子骨骼的姿势
-                for(int j=0;j<children.size();j++) {
-                    build_virtual_pose(p_config,p_skeleton, trans, children[j], p_human_bone_label);
+                for(int j=0;j<pose.child_bones.size();j++) {
+                    build_virtual_pose(p_config,p_skeleton, trans, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
                 }
 				p_config.root_bone.push_back(bone_name);
             }
@@ -331,9 +334,28 @@ namespace HumanAnim
                 child_pose.position *= child_pose.scale;
                 
             }
+            // 计算骨骼的世界空间姿势
+            for(int i=0;i<p_config.root_bone.size();i++) {
+                BonePose& pose = p_config.virtual_pose[p_config.root_bone[i]];
+                pose.global_pose = Transform3D(Basis(pose.rotation),Vector3(0,0,0));
+                for(int j=0;j<pose.child_bones.size();j++) {
+                    BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
+                    build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
+                }
+            }
 
             
         }
+        static void build_virtual_pose_global(HumanBoneConfig& p_config,Transform3D& parent_trans, BonePose& pose, HashMap<String, String>& p_human_bone_label) {
+            pose.global_pose = parent_trans * Transform3D(Basis(pose.rotation),pose.position);
+            for(int j=0;j<pose.child_bones.size();j++) {
+                BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
+                build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
+            }
+            
+        }
+        
+        
         static int get_bone_human_index(Skeleton3D* p_skeleton, Dictionary& p_bone_map,const NodePath& path) {
             if (path.get_subname_count() == 1) {
                 // 获取骨骼映射
@@ -668,16 +690,17 @@ namespace HumanAnim
             //for(int i=0; i < child_bones.size(); i++)
 			{
                 String bone_name = p_skeleton->get_bone_name(bone_index);
-                if(!p_human_bone_label.has(bone_name)) {
-                    return;
-                }
                 BonePose & pose = p_config.virtual_pose[bone_name];
                 Transform3D trans = p_skeleton->get_bone_global_pose(bone_index);
                 float height = 1.0;
                 Vector<int> children = p_skeleton->get_bone_children(bone_index);
 
 				for (int j = 0; j < children.size(); j++) {
-					pose.child_bones.push_back(p_skeleton->get_bone_name(children[j]));
+                    StringName bone_name = p_skeleton->get_bone_name(children[j]);
+                    if(!p_human_bone_label.has(bone_name)) {
+                        return;
+                    }
+					pose.child_bones.push_back(bone_name);
 				}
 				pose.child_bones.sort_custom<SortStringName>();
 
@@ -691,8 +714,8 @@ namespace HumanAnim
                 pose.scale = Vector3(inv_height,inv_height,inv_height);
                 pose.length = height;
                 pose.bone_index = bone_index;
-                for(int j=0;j<children.size();j++) {
-					build_virtual_pose(p_config, p_skeleton, trans, children[j], p_human_bone_label);
+                for(int j=0;j<pose.child_bones.size();j++) {
+					build_virtual_pose(p_config, p_skeleton, trans, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
                 }
             }
             

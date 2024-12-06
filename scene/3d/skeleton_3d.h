@@ -51,6 +51,7 @@ struct BonePose {
 	Quaternion rotation;
 	Vector3 scale;
 	float length;
+	Transform3D global_pose;
 	Vector<StringName> child_bones;
 
 	void load(Dictionary& aDict) {
@@ -60,6 +61,7 @@ struct BonePose {
 		rotation = aDict["rotation"];
 		scale = aDict["scale"];
 		length = aDict["length"];
+		global_pose = aDict["global_pose"];
 		Vector<String> child = aDict["child_bones"];
 
 		for (int i = 0; i < child.size(); i++) {
@@ -73,6 +75,7 @@ struct BonePose {
 		aDict["rotation"] = rotation;
 		aDict["scale"] = scale;
 		aDict["length"] = length;
+		aDict["global_pose"] = global_pose;
 		Vector<String> child;
 		for (int i = 0; i < child_bones.size(); i++) {
 			child.push_back(child_bones[i]);
