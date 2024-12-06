@@ -67,6 +67,24 @@
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
 		</method>
+		<method name="_node_active" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the node has become "active in tree", i.e. when [member node_active] has become [code]true[/code], or after the node enters the [SceneTree] if it is active.
+				In the first case, this method is also called if it was previously inactive in tree and has become active as a result of an ancestor becoming active. See [method is_node_active_in_tree].
+				In the second case, this method is run after [method _ready] has finished. You can use this method for conditional initialization.
+				Corresponds to the [constant NOTIFICATION_NODE_ACTIVE] notification in [method Object._notification].
+			</description>
+		</method>
+		<method name="_node_inactive" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the node has become "inactive in tree", i.e. when [member node_active] has become [code]false[/code], or before the node exits the [SceneTree] if it is active.
+				In the first case, this method is also called if it was previously active in tree and has become inactive due to an ancestor becoming inactive. See [method is_node_active_in_tree].
+				You can use this method for lifecycle cleanup, since it is run when this node or an ancestor node was set to inactive, or if this node is about to be removed from the scene.
+				Corresponds to the [constant NOTIFICATION_NODE_INACTIVE] notification in [method Object._notification].
+			</description>
+		</method>
 		<method name="_physics_process" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
@@ -620,6 +638,12 @@
 				Returns [code]true[/code] if the local system is the multiplayer authority of this node.
 			</description>
 		</method>
+		<method name="is_node_active_in_tree" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node and all of its ancestors have [member node_active] set to [code]true[/code].
+			</description>
+		</method>
 		<method name="is_node_ready" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -1005,6 +1029,11 @@
 			The name of the node. This name must be unique among the siblings (other child nodes from the same parent). When set to an existing sibling's name, the node is automatically renamed.
 			[b]Note:[/b] When changing the name, the following characters will be replaced with an underscore: ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]). In particular, the [code]@[/code] character is reserved for auto-generated names. See also [method String.validate_node_name].
 		</member>
+		<member name="node_active" type="bool" setter="set_node_active" getter="is_node_active_self" default="true">
+			Whether the node should be "active" in the scene. Inactive nodes will not process scripts, will not be visible in the viewport, and will not act as a valid [Camera2D] or [Camera3D].
+			If an ancestor of this node is not active, this node will behave as though it is inactive, even if [member node_active] is [code]true[/code]. See [method is_node_active_in_tree].
+			When [member node_active] changes, [method _node_active] or [method _node_inactive] will be run on this node and on descendant nodes that have had their "active in tree" status changed as a result.
+		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it. See also [member unique_name_in_owner].
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child].
@@ -1066,6 +1095,16 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when the node's editor description field changed.
+			</description>
+		</signal>
+		<signal name="node_active_changed">
+			<description>
+				Emitted when [member node_active] has changed on this node.
+			</description>
+		</signal>
+		<signal name="node_active_in_tree_changed">
+			<description>
+				Emitted when this node's "active in tree" status has changed, i.e. when [member node_active] has changed on this node or any ancestor nodes.
 			</description>
 		</signal>
 		<signal name="ready">
@@ -1170,6 +1209,15 @@
 		</constant>
 		<constant name="NOTIFICATION_ENABLED" value="29">
 			Notification received when the node is enabled again after being disabled. See [constant PROCESS_MODE_DISABLED].
+		</constant>
+		<constant name="NOTIFICATION_NODE_ACTIVE_CHANGED" value="90">
+			Notification received when [member node_active] has changed for this node.
+		</constant>
+		<constant name="NOTIFICATION_NODE_ACTIVE" value="91">
+			Notification received when the node has become active in tree. See [method _node_active].
+		</constant>
+		<constant name="NOTIFICATION_NODE_INACTIVE" value="92">
+			Notification received when the node has become inactive in tree. See [method _node_inactive].
 		</constant>
 		<constant name="NOTIFICATION_RESET_PHYSICS_INTERPOLATION" value="2001">
 			Notification received when [method reset_physics_interpolation] is called on the node or its ancestors.

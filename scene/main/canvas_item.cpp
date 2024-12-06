@@ -62,7 +62,7 @@ Transform2D CanvasItem::_edit_get_transform() const {
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return visible && parent_visible_in_tree;
+	return visible && parent_visible_in_tree && is_node_active_in_tree();
 }
 
 void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
@@ -386,6 +386,13 @@ void CanvasItem::_notification(int p_what) {
 			ERR_MAIN_THREAD_GUARD;
 
 			emit_signal(SceneStringName(visibility_changed));
+		} break;
+		case NOTIFICATION_NODE_ACTIVE_CHANGED: {
+			ERR_THREAD_GUARD;
+
+			if (is_inside_tree()) {
+				_propagate_visibility_changed(parent_visible_in_tree);
+			}
 		} break;
 		case NOTIFICATION_WORLD_2D_CHANGED: {
 			ERR_MAIN_THREAD_GUARD;

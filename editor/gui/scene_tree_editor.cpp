@@ -101,6 +101,20 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			}
 		}
 		undo_redo->commit_action();
+	} else if (p_id == BUTTON_ACTIVE) {
+		undo_redo->create_action(TTR("Toggle Node Active"));
+		_toggle_active(n);
+		List<Node *> selection = editor_selection->get_selected_node_list();
+		if (selection.size() > 1 && selection.find(n) != nullptr) {
+			for (Node *nv : selection) {
+				ERR_FAIL_NULL(nv);
+				if (nv == n) {
+					continue;
+				}
+				_toggle_active(nv);
+			}
+		}
+		undo_redo->commit_action();
 	} else if (p_id == BUTTON_LOCK) {
 		undo_redo->create_action(TTR("Unlock Node"));
 		undo_redo->add_do_method(n, "remove_meta", "_edit_lock_");
@@ -214,6 +228,20 @@ void SceneTreeEditor::_toggle_visible(Node *p_node) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
+	}
+}
+
+void SceneTreeEditor::_toggle_active(Node *p_node) {
+	if (p_node->has_method("is_node_active_self") && p_node->has_method("set_node_active")) {
+		bool currentlyActive = bool(p_node->call("is_node_active_self"));
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		if (currentlyActive) {
+			undo_redo->add_do_method(p_node, "set_node_active", false);
+			undo_redo->add_undo_method(p_node, "set_node_active", true);
+		} else {
+			undo_redo->add_do_method(p_node, "set_node_active", true);
+			undo_redo->add_undo_method(p_node, "set_node_active", false);
+		}
 	}
 }
 
@@ -450,6 +478,16 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			_update_visibility_color(p_node, item);
 		}
 
+		if (p_node->has_method("is_node_active_self") && p_node->has_method("set_node_active")) {
+			bool show_node_active_checkbox = EDITOR_GET("docks/scene_tree/show_node_active_checkbox").operator bool();
+			_set_node_active_checkbox_enabled(item, p_node, show_node_active_checkbox);
+
+			const Callable active_in_tree_changed = callable_mp(this, &SceneTreeEditor::_node_active_in_tree_changed);
+			if (!p_node->is_connected(SceneStringName(node_active_in_tree_changed), active_in_tree_changed)) {
+				p_node->connect(SceneStringName(node_active_in_tree_changed), active_in_tree_changed.bind(p_node));
+			}
+		}
+
 		if (p_node->is_class("AnimationMixer")) {
 			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
@@ -593,9 +631,81 @@ void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 	}
 }
 
+void SceneTreeEditor::_set_node_active_checkbox_enabled(TreeItem *p_item, Node *p_node, bool p_enabled) {
+	int idx = p_item->get_button_by_id(0, BUTTON_ACTIVE);
+	if (p_enabled) {
+		if (idx == -1) {
+			// Only add checkbox if it does not exist.
+			bool is_active = p_node->call("is_node_active_self");
+			if (is_active) {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("GuiChecked")), BUTTON_ACTIVE, false, TTR("Toggle Node Active"));
+			} else {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("GuiUnchecked")), BUTTON_ACTIVE, false, TTR("Toggle Node Active"));
+			}
+		}
+	} else {
+		if (idx != -1) {
+			// Only erase checkbox if it exists.
+			p_item->erase_button(0, idx);
+		}
+	}
+}
+
+void SceneTreeEditor::_node_active_in_tree_changed(Node *p_node) {
+	if (!p_node || (p_node != get_scene_node() && !p_node->get_owner())) {
+		return;
+	}
+
+	TreeItem *item = _find(tree->get_root(), p_node->get_path());
+
+	if (!item) {
+		return;
+	}
+
+	bool show_node_active_checkbox = EDITOR_GET("docks/scene_tree/show_node_active_checkbox").operator bool();
+	if (!show_node_active_checkbox) {
+		return;
+	}
+
+	int idx = item->get_button_by_id(0, BUTTON_ACTIVE);
+	ERR_FAIL_COND(idx == -1);
+
+	bool node_active = false;
+
+	if (p_node->has_method("is_node_active_self")) {
+		node_active = p_node->call("is_node_active_self");
+		if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+			CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
+		}
+	}
+
+	if (node_active) {
+		item->set_button(0, idx, get_editor_theme_icon(SNAME("GuiChecked")));
+	} else {
+		item->set_button(0, idx, get_editor_theme_icon(SNAME("GuiUnchecked")));
+	}
+
+	if (p_node->call("can_process")) {
+		_clear_item_custom_color(item);
+	} else {
+		_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+	}
+
+	if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal(SceneStringName(visibility_changed))) {
+		_node_visibility_changed(p_node);
+	}
+}
+
 void SceneTreeEditor::_set_item_custom_color(TreeItem *p_item, Color p_color) {
 	p_item->set_custom_color(0, p_color);
 	p_item->set_meta(SNAME("custom_color"), p_color);
+}
+
+void SceneTreeEditor::_clear_item_custom_color(TreeItem *p_item) {
+	if (p_item->has_meta(SNAME("custom_color"))) {
+		p_item->clear_custom_color(0);
+		p_item->remove_meta(SNAME("custom_color"));
+	}
 }
 
 void SceneTreeEditor::_node_script_changed(Node *p_node) {
@@ -619,6 +729,12 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	if (p_node->has_signal(SceneStringName(visibility_changed))) {
 		if (p_node->is_connected(SceneStringName(visibility_changed), callable_mp(this, &SceneTreeEditor::_node_visibility_changed))) {
 			p_node->disconnect(SceneStringName(visibility_changed), callable_mp(this, &SceneTreeEditor::_node_visibility_changed));
+		}
+	}
+
+	if (p_node->has_signal(SceneStringName(node_active_in_tree_changed))) {
+		if (p_node->is_connected(SceneStringName(node_active_in_tree_changed), callable_mp(this, &SceneTreeEditor::_node_active_in_tree_changed))) {
+			p_node->disconnect(SceneStringName(node_active_in_tree_changed), callable_mp(this, &SceneTreeEditor::_node_active_in_tree_changed));
 		}
 	}
 
@@ -970,6 +1086,12 @@ void SceneTreeEditor::_notification(int p_what) {
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 			_update_tree();
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/scene_tree")) {
+				_update_tree();
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1871,6 +1993,8 @@ SceneTreeDialog::SceneTreeDialog() {
 	// Disable the OK button when no node is selected.
 	get_ok_button()->set_disabled(!tree->get_selected());
 	tree->connect("node_selected", callable_mp(this, &SceneTreeDialog::_selected_changed));
+
+	EDITOR_DEF("docks/scene_tree/show_node_active_checkbox", true);
 }
 
 SceneTreeDialog::~SceneTreeDialog() {

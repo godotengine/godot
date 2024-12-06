@@ -56,6 +56,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_ACTIVE = 10,
 	};
 
 	Tree *tree = nullptr;
@@ -121,12 +122,16 @@ class SceneTreeEditor : public Control {
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _toggle_visible(Node *p_node);
+	void _toggle_active(Node *p_node);
 	void _cell_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
+	void _set_node_active_checkbox_enabled(TreeItem *p_item, Node *p_node, bool p_enabled);
+	void _node_active_in_tree_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
+	void _clear_item_custom_color(TreeItem *p_item);
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _tree_scroll_to_item(ObjectID p_item_id);

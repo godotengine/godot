@@ -55,6 +55,8 @@ public:
 	StringName draw;
 	StringName hidden;
 	StringName visibility_changed;
+	StringName node_active_changed;
+	StringName node_active_in_tree_changed;
 	StringName input_event;
 	StringName gui_input;
 	StringName item_rect_changed;
@@ -104,6 +106,8 @@ public:
 	StringName area_shape_exited;
 
 	StringName _ready;
+	StringName _node_active;
+	StringName _node_inactive;
 
 	StringName screen_entered;
 	StringName screen_exited;

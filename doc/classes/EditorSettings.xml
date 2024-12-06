@@ -241,6 +241,9 @@
 		<member name="docks/scene_tree/center_node_on_reparent" type="bool" setter="" getter="">
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
 		</member>
+		<member name="docks/scene_tree/show_node_active_checkbox" type="bool" setter="" getter="">
+			If [code]true[/code], a checkbox button will appear next to each node in the scene tree which can be used to toggle the [code]node_active[/code] property.
+		</member>
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
