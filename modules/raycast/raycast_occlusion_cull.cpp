@@ -366,7 +366,7 @@ void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_threa
 }
 
 void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, float *p_write, const Transform3D &p_xform, int p_from, int p_to) {
-	float *floats_w = p_write;
+	float *floats_w = p_write + 3 * p_from;
 	for (int i = p_from; i < p_to; i++) {
 		const Vector3 p = p_xform.xform(p_read[i]);
 		floats_w[0] = p.x;
@@ -536,8 +536,6 @@ Projection RaycastOcclusionCull::_jitter_projection(const Projection &p_cam_proj
 		return p_cam_projection;
 	}
 
-	Projection p = p_cam_projection;
-
 	int32_t frame = Engine::get_singleton()->get_frames_drawn();
 	frame %= 9;
 
@@ -577,11 +575,11 @@ Projection RaycastOcclusionCull::_jitter_projection(const Projection &p_cam_proj
 	// Higher divergence gives fewer false hidden, but more false shown.
 	// False hidden is obvious to viewer, false shown is not.
 	// False shown can lower percentage that are occluded, and therefore performance.
-	jitter *= Vector2(1 / (float)p_viewport_size.x, 1 / (float)p_viewport_size.y) * 0.05f;
+	jitter *= Vector2(1 / (float)p_viewport_size.x, 1 / (float)p_viewport_size.y) * 0.9f;
 
-	p.add_jitter_offset(jitter);
-
-	return p;
+	Projection correction;
+	correction.add_jitter_offset(jitter);
+	return correction * p_cam_projection;
 }
 
 void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {

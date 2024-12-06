@@ -153,6 +153,7 @@ private:
 		Color dc_ol_color;
 
 		Vector2 offset;
+		float indent = 0.0;
 		int char_offset = 0;
 		int char_count = 0;
 
@@ -205,6 +206,7 @@ private:
 		Size2 min_size_over = Size2(-1, -1);
 		Size2 max_size_over = Size2(-1, -1);
 		Rect2 padding;
+		int indent_level = 0;
 
 		ItemFrame() {
 			type = ITEM_FRAME;
@@ -457,6 +459,7 @@ private:
 	std::atomic<bool> updating;
 	std::atomic<bool> validating;
 	std::atomic<double> loaded;
+	std::atomic<bool> parsing_bbcode;
 
 	uint64_t loading_started = 0;
 	int progress_delay = 1000;
@@ -507,6 +510,7 @@ private:
 	void _texture_changed(RID p_item);
 
 	RID_PtrOwner<Item> items;
+	List<String> tag_stack;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;

@@ -65,6 +65,15 @@ const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
 const char32_t String::_replacement_char = 0xfffd;
 
+// strlen equivalent function for char32_t * arguments.
+_FORCE_INLINE_ size_t strlen(const char32_t *p_str) {
+	const char32_t *ptr = p_str;
+	while (*ptr != 0) {
+		++ptr;
+	}
+	return ptr - p_str;
+}
+
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
 	int beg = CLAMP(p_col, 0, s.length());
@@ -424,11 +433,7 @@ void String::copy_from(const char32_t *p_cstr) {
 		return;
 	}
 
-	int len = 0;
-	const char32_t *ptr = p_cstr;
-	while (*(ptr++) != 0) {
-		len++;
-	}
+	const int len = strlen(p_cstr);
 
 	if (len == 0) {
 		resize(0);
@@ -629,12 +634,7 @@ String &String::operator+=(char32_t p_char) {
 
 bool String::operator==(const char *p_str) const {
 	// compare Latin-1 encoded c-string
-	int len = 0;
-	const char *aux = p_str;
-
-	while (*(aux++) != 0) {
-		len++;
-	}
+	int len = strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -668,12 +668,7 @@ bool String::operator==(const wchar_t *p_str) const {
 }
 
 bool String::operator==(const char32_t *p_str) const {
-	int len = 0;
-	const char32_t *aux = p_str;
-
-	while (*(aux++) != 0) {
-		len++;
-	}
+	const int len = strlen(p_str);
 
 	if (length() != len) {
 		return false;
@@ -1109,17 +1104,21 @@ String String::_camelcase_to_underscore() const {
 	String new_string;
 	int start_index = 0;
 
-	for (int i = 1; i < size(); i++) {
-		bool is_prev_upper = is_unicode_upper_case(cstr[i - 1]);
-		bool is_prev_lower = is_unicode_lower_case(cstr[i - 1]);
-		bool is_prev_digit = is_digit(cstr[i - 1]);
+	if (length() == 0) {
+		return *this;
+	}
 
-		bool is_curr_upper = is_unicode_upper_case(cstr[i]);
-		bool is_curr_lower = is_unicode_lower_case(cstr[i]);
-		bool is_curr_digit = is_digit(cstr[i]);
+	bool is_prev_upper = is_unicode_upper_case(cstr[0]);
+	bool is_prev_lower = is_unicode_lower_case(cstr[0]);
+	bool is_prev_digit = is_digit(cstr[0]);
+
+	for (int i = 1; i < length(); i++) {
+		const bool is_curr_upper = is_unicode_upper_case(cstr[i]);
+		const bool is_curr_lower = is_unicode_lower_case(cstr[i]);
+		const bool is_curr_digit = is_digit(cstr[i]);
 
 		bool is_next_lower = false;
-		if (i + 1 < size()) {
+		if (i + 1 < length()) {
 			is_next_lower = is_unicode_lower_case(cstr[i + 1]);
 		}
 
@@ -1132,6 +1131,10 @@ String String::_camelcase_to_underscore() const {
 			new_string += substr(start_index, i - start_index) + "_";
 			start_index = i;
 		}
+
+		is_prev_upper = is_curr_upper;
+		is_prev_lower = is_curr_lower;
+		is_prev_digit = is_curr_digit;
 	}
 
 	new_string += substr(start_index, size() - start_index);
@@ -5286,7 +5289,7 @@ bool String::is_valid_html_color() const {
 }
 
 // Changes made to the set of invalid filename characters must also be reflected in the String documentation for is_valid_filename.
-static const char *invalid_filename_characters = ": / \\ ? * \" | % < >";
+static const char *invalid_filename_characters[] = { ":", "/", "\\", "?", "*", "\"", "|", "%", "<", ">" };
 
 bool String::is_valid_filename() const {
 	String stripped = strip_edges();
@@ -5298,8 +5301,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	Vector<String> chars = String(invalid_filename_characters).split(" ");
-	for (const String &ch : chars) {
+	for (const char *ch : invalid_filename_characters) {
 		if (contains(ch)) {
 			return false;
 		}
@@ -5308,10 +5310,9 @@ bool String::is_valid_filename() const {
 }
 
 String String::validate_filename() const {
-	Vector<String> chars = String(invalid_filename_characters).split(" ");
 	String name = strip_edges();
-	for (int i = 0; i < chars.size(); i++) {
-		name = name.replace(chars[i], "_");
+	for (const char *ch : invalid_filename_characters) {
+		name = name.replace(ch, "_");
 	}
 	return name;
 }

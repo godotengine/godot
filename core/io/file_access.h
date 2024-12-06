@@ -143,6 +143,13 @@ private:
 
 	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags);
 
+	bool _is_temp_file = false;
+	bool _temp_keep_after_use = false;
+	String _temp_path;
+	void _delete_temp();
+
+	static Ref<FileAccess> _create_temp(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false);
+
 public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
 
@@ -222,6 +229,7 @@ public:
 	static Ref<FileAccess> create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static Ref<FileAccess> create_for_path(const String &p_path);
 	static Ref<FileAccess> open(const String &p_path, int p_mode_flags, Error *r_error = nullptr); /// Create a file access (for the current platform) this is the only portable way of accessing files.
+	static Ref<FileAccess> create_temp(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false, Error *r_error = nullptr);
 
 	static Ref<FileAccess> open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
 	static Ref<FileAccess> open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
@@ -257,8 +265,9 @@ public:
 		create_func[p_access] = _create_builtin<T>;
 	}
 
+public:
 	FileAccess() {}
-	virtual ~FileAccess() {}
+	virtual ~FileAccess();
 };
 
 VARIANT_ENUM_CAST(FileAccess::CompressionMode);

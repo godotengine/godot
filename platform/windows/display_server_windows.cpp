@@ -786,6 +786,10 @@ void DisplayServerWindows::process_file_dialog_callbacks() {
 	}
 }
 
+void DisplayServerWindows::beep() const {
+	MessageBeep(MB_OK);
+}
+
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -4811,7 +4815,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			DisplayServer::WindowID receiving_window_id = window_id;
-			if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+			if (!windows[window_id].no_focus) {
 				receiving_window_id = _get_focused_window_or_popup();
 				if (receiving_window_id == INVALID_WINDOW_ID) {
 					receiving_window_id = window_id;
