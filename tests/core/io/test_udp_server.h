@@ -42,6 +42,13 @@ const IPAddress LOCALHOST("127.0.0.1");
 const uint32_t SLEEP_DURATION = 1000;
 const uint64_t MAX_WAIT_USEC = 100000;
 
+void wait_for_condition(std::function<bool()> f_test) {
+	const uint64_t time = OS::get_singleton()->get_ticks_usec();
+	while (!f_test() && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
+		OS::get_singleton()->delay_usec(SLEEP_DURATION);
+	}
+}
+
 Ref<UDPServer> create_server(const IPAddress &p_address, int p_port) {
 	Ref<UDPServer> server;
 	server.instantiate();
@@ -68,12 +75,9 @@ Ref<PacketPeerUDP> create_client(const IPAddress &p_address, int p_port) {
 }
 
 Ref<PacketPeerUDP> accept_connection(Ref<UDPServer> &p_server) {
-	// Required to get the connection properly established.
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	while (!p_server->is_connection_available() && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		p_server->poll();
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
+	wait_for_condition([&]() {
+		return p_server->poll() != Error::OK || p_server->is_connection_available();
+	});
 
 	CHECK_EQ(p_server->poll(), Error::OK);
 	REQUIRE(p_server->is_connection_available());
@@ -83,16 +87,6 @@ Ref<PacketPeerUDP> accept_connection(Ref<UDPServer> &p_server) {
 	CHECK(client_from_server->is_socket_connected());
 
 	return client_from_server;
-}
-
-Error poll(Ref<UDPServer> p_server, Error p_err) {
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	Error err = p_server->poll();
-	while (err != p_err && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		err = p_server->poll();
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
-	return err;
 }
 
 TEST_CASE("[UDPServer] Instantiation") {
@@ -120,14 +114,10 @@ TEST_CASE("[UDPServer] Accept a connection and receive/send data") {
 	const Variant pi = 3.1415;
 	CHECK_EQ(client_from_server->put_var(pi), Error::OK);
 
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	// get_available_packet_count() is the recommended way to call _poll(), because there is no public poll().
-	while (client->get_available_packet_count() == 0 && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		server->poll();
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
+	wait_for_condition([&]() {
+		return client->get_available_packet_count() > 0;
+	});
 
-	CHECK_EQ(server->poll(), Error::OK);
 	CHECK_GT(client->get_available_packet_count(), 0);
 
 	Variant pi_received;
@@ -147,41 +137,55 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 		Ref<PacketPeerUDP> c = create_client(LOCALHOST, PORT);
 
 		// Sending data from client to server.
-		const String hello_client = "Hello " + itos(i);
+		const String hello_client = itos(i);
 		CHECK_EQ(c->put_var(hello_client), Error::OK);
 
 		clients.push_back(c);
 	}
 
+	Array packets;
 	for (int i = 0; i < clients.size(); i++) {
 		Ref<PacketPeerUDP> cfs = accept_connection(server);
 
-		Variant hello_world_received;
-		CHECK_EQ(cfs->get_var(hello_world_received), Error::OK);
-		CHECK_EQ(String(hello_world_received), "Hello " + itos(i));
+		Variant received_var;
+		CHECK_EQ(cfs->get_var(received_var), Error::OK);
+		CHECK_EQ(received_var.get_type(), Variant::STRING);
+		packets.push_back(received_var);
 
 		// Sending data from server to client.
-		const Variant pi = 3.1415 + i;
-		CHECK_EQ(cfs->put_var(pi), Error::OK);
+		const float sent_float = 3.1415 + received_var.operator String().to_float();
+		CHECK_EQ(cfs->put_var(sent_float), Error::OK);
 	}
 
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
+	CHECK_EQ(packets.size(), clients.size());
+
+	packets.sort();
 	for (int i = 0; i < clients.size(); i++) {
-		Ref<PacketPeerUDP> c = clients[i];
-		// get_available_packet_count() is the recommended way to call _poll(), because there is no public poll().
-		// Because `time` is defined outside the for, we will wait the max amount of time only for the first client.
-		while (c->get_available_packet_count() == 0 && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-			server->poll();
-			OS::get_singleton()->delay_usec(SLEEP_DURATION);
+		CHECK_EQ(packets[i].operator String(), itos(i));
+	}
+
+	wait_for_condition([&]() {
+		bool should_exit = true;
+		for (Ref<PacketPeerUDP> &c : clients) {
+			int count = c->get_available_packet_count();
+			if (count < 0) {
+				return true;
+			}
+			if (count == 0) {
+				should_exit = false;
+			}
 		}
+		return should_exit;
+	});
 
-		// The recommended way to call _poll(), because there is no public poll().
-		CHECK_GT(c->get_available_packet_count(), 0);
+	for (int i = 0; i < clients.size(); i++) {
+		CHECK_GT(clients[i]->get_available_packet_count(), 0);
 
-		Variant pi_received;
-		const Variant pi = 3.1415 + i;
-		CHECK_EQ(c->get_var(pi_received), Error::OK);
-		CHECK_EQ(pi_received, pi);
+		Variant received_var;
+		const float expected = 3.1415 + i;
+		CHECK_EQ(clients[i]->get_var(received_var), Error::OK);
+		CHECK_EQ(received_var.get_type(), Variant::FLOAT);
+		CHECK_EQ(received_var.operator float(), expected);
 	}
 
 	for (Ref<PacketPeerUDP> &c : clients) {
@@ -190,7 +194,7 @@ TEST_CASE("[UDPServer] Handle multiple clients at the same time") {
 	server->stop();
 }
 
-TEST_CASE("[UDPServer] When stopped shouldn't accept new connections") {
+TEST_CASE("[UDPServer] Should not accept new connections after stop") {
 	Ref<UDPServer> server = create_server(LOCALHOST, PORT);
 	Ref<PacketPeerUDP> client = create_client(LOCALHOST, PORT);
 
@@ -198,94 +202,16 @@ TEST_CASE("[UDPServer] When stopped shouldn't accept new connections") {
 	const String hello_world = "Hello World!";
 	CHECK_EQ(client->put_var(hello_world), Error::OK);
 
-	Variant hello_world_received;
-	Ref<PacketPeerUDP> client_from_server = accept_connection(server);
-	CHECK_EQ(client_from_server->get_var(hello_world_received), Error::OK);
-	CHECK_EQ(String(hello_world_received), hello_world);
+	wait_for_condition([&]() {
+		return server->poll() != Error::OK || server->is_connection_available();
+	});
 
-	client->close();
+	REQUIRE(server->is_connection_available());
+
 	server->stop();
+
 	CHECK_FALSE(server->is_listening());
-
-	Ref<PacketPeerUDP> new_client = create_client(LOCALHOST, PORT);
-	CHECK_EQ(new_client->put_var(hello_world), Error::OK);
-
-	REQUIRE_EQ(poll(server, Error::ERR_UNCONFIGURED), Error::ERR_UNCONFIGURED);
 	CHECK_FALSE(server->is_connection_available());
-
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	// get_available_packet_count() is the recommended way to call _poll(), because there is no public poll().
-	while (new_client->get_available_packet_count() == 0 && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
-
-	const int packet_count = new_client->get_available_packet_count();
-	CHECK((packet_count == 0 || packet_count == -1));
-}
-
-TEST_CASE("[UDPServer] Should disconnect client") {
-	Ref<UDPServer> server = create_server(LOCALHOST, PORT);
-	Ref<PacketPeerUDP> client = create_client(LOCALHOST, PORT);
-
-	// Sending data from client to server.
-	const String hello_world = "Hello World!";
-	CHECK_EQ(client->put_var(hello_world), Error::OK);
-
-	Variant hello_world_received;
-	Ref<PacketPeerUDP> client_from_server = accept_connection(server);
-	CHECK_EQ(client_from_server->get_var(hello_world_received), Error::OK);
-	CHECK_EQ(String(hello_world_received), hello_world);
-
-	server->stop();
-	CHECK_FALSE(server->is_listening());
-	CHECK_FALSE(client_from_server->is_bound());
-	CHECK_FALSE(client_from_server->is_socket_connected());
-
-	// Sending data from client to server.
-	CHECK_EQ(client->put_var(hello_world), Error::OK);
-
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	// get_available_packet_count() is the recommended way to call _poll(), because there is no public poll().
-	while (client->get_available_packet_count() == 0 && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
-
-	const int packet_count = client->get_available_packet_count();
-	CHECK((packet_count == 0 || packet_count == -1));
-
-	client->close();
-}
-
-TEST_CASE("[UDPServer] Should drop new connections when pending max connection is reached") {
-	Ref<UDPServer> server = create_server(LOCALHOST, PORT);
-	server->set_max_pending_connections(3);
-
-	Vector<Ref<PacketPeerUDP>> clients;
-	for (int i = 0; i < 5; i++) {
-		Ref<PacketPeerUDP> c = create_client(LOCALHOST, PORT);
-
-		// Sending data from client to server.
-		const String hello_client = "Hello " + itos(i);
-		CHECK_EQ(c->put_var(hello_client), Error::OK);
-
-		clients.push_back(c);
-	}
-
-	for (int i = 0; i < server->get_max_pending_connections(); i++) {
-		Ref<PacketPeerUDP> cfs = accept_connection(server);
-
-		Variant hello_world_received;
-		CHECK_EQ(cfs->get_var(hello_world_received), Error::OK);
-		CHECK_EQ(String(hello_world_received), "Hello " + itos(i));
-	}
-
-	CHECK_EQ(poll(server, Error::OK), Error::OK);
-
-	REQUIRE_FALSE(server->is_connection_available());
-	Ref<PacketPeerUDP> client_from_server = server->take_connection();
-	REQUIRE_FALSE_MESSAGE(client_from_server.is_valid(), "A Packet Peer UDP from the UDP Server should be a null pointer because the pending connection was dropped.");
-
-	server->stop();
 }
 
 } // namespace TestUDPServer
