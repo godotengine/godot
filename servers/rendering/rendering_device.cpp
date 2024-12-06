@@ -282,20 +282,20 @@ Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, const uint8_t *p_dat
 	return OK;
 }
 
-Error RenderingDevice::_insert_staging_block() {
+Error RenderingDevice::_insert_staging_block(StagingBuffers &p_staging_buffers) {
 	StagingBufferBlock block;
 
-	block.driver_id = driver->buffer_create(staging_buffer_block_size, RDD::BUFFER_USAGE_TRANSFER_FROM_BIT, RDD::MEMORY_ALLOCATION_TYPE_CPU);
+	block.driver_id = driver->buffer_create(p_staging_buffers.block_size, p_staging_buffers.usage_bits, RDD::MEMORY_ALLOCATION_TYPE_CPU);
 	ERR_FAIL_COND_V(!block.driver_id, ERR_CANT_CREATE);
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
 
-	staging_buffer_blocks.insert(staging_buffer_current, block);
+	p_staging_buffers.blocks.insert(p_staging_buffers.current, block);
 	return OK;
 }
 
-Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment) {
+Error RenderingDevice::_staging_buffer_allocate(StagingBuffers &p_staging_buffers, uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment) {
 	// Determine a block to use.
 
 	r_alloc_size = p_amount;
@@ -305,10 +305,10 @@ Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_re
 		r_alloc_offset = 0;
 
 		// See if we can use current block.
-		if (staging_buffer_blocks[staging_buffer_current].frame_used == frames_drawn) {
+		if (p_staging_buffers.blocks[p_staging_buffers.current].frame_used == frames_drawn) {
 			// We used this block this frame, let's see if there is still room.
 
-			uint32_t write_from = staging_buffer_blocks[staging_buffer_current].fill_amount;
+			uint32_t write_from = p_staging_buffers.blocks[p_staging_buffers.current].fill_amount;
 
 			{
 				uint32_t align_remainder = write_from % p_required_align;
@@ -317,7 +317,7 @@ Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_re
 				}
 			}
 
-			int32_t available_bytes = int32_t(staging_buffer_block_size) - int32_t(write_from);
+			int32_t available_bytes = int32_t(p_staging_buffers.block_size) - int32_t(write_from);
 
 			if ((int32_t)p_amount < available_bytes) {
 				// All is good, we should be ok, all will fit.
@@ -332,20 +332,20 @@ Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_re
 				// Can't fit it into this buffer.
 				// Will need to try next buffer.
 
-				staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
+				p_staging_buffers.current = (p_staging_buffers.current + 1) % p_staging_buffers.blocks.size();
 
 				// Before doing anything, though, let's check that we didn't manage to fill all blocks.
 				// Possible in a single frame.
-				if (staging_buffer_blocks[staging_buffer_current].frame_used == frames_drawn) {
+				if (p_staging_buffers.blocks[p_staging_buffers.current].frame_used == frames_drawn) {
 					// Guess we did.. ok, let's see if we can insert a new block.
-					if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+					if ((uint64_t)p_staging_buffers.blocks.size() * p_staging_buffers.block_size < p_staging_buffers.max_size) {
 						// We can, so we are safe.
-						Error err = _insert_staging_block();
+						Error err = _insert_staging_block(p_staging_buffers);
 						if (err) {
 							return err;
 						}
 						// Claim for this frame.
-						staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+						p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 					} else {
 						// Ok, worst case scenario, all the staging buffers belong to this frame
 						// and this frame is not even done.
@@ -360,20 +360,20 @@ Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_re
 				}
 			}
 
-		} else if (staging_buffer_blocks[staging_buffer_current].frame_used <= frames_drawn - frames.size()) {
+		} else if (p_staging_buffers.blocks[p_staging_buffers.current].frame_used <= frames_drawn - frames.size()) {
 			// This is an old block, which was already processed, let's reuse.
-			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
-			staging_buffer_blocks.write[staging_buffer_current].fill_amount = 0;
+			p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
+			p_staging_buffers.blocks.write[p_staging_buffers.current].fill_amount = 0;
 		} else {
 			// This block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
-			if ((uint64_t)staging_buffer_blocks.size() * staging_buffer_block_size < staging_buffer_max_size) {
+			if ((uint64_t)p_staging_buffers.blocks.size() * p_staging_buffers.block_size < p_staging_buffers.max_size) {
 				// We are still allowed to create a new block, so let's do that and insert it for current pos.
-				Error err = _insert_staging_block();
+				Error err = _insert_staging_block(p_staging_buffers);
 				if (err) {
 					return err;
 				}
 				// Claim for this frame.
-				staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+				p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 			} else {
 				// Oops, we are out of room and we can't create more.
 				// Let's flush older frames.
@@ -387,12 +387,12 @@ Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_re
 		break;
 	}
 
-	staging_buffer_used = true;
+	p_staging_buffers.used = true;
 
 	return OK;
 }
 
-void RenderingDevice::_staging_buffer_execute_required_action(StagingRequiredAction p_required_action) {
+void RenderingDevice::_staging_buffer_execute_required_action(StagingBuffers &p_staging_buffers, StagingRequiredAction p_required_action) {
 	switch (p_required_action) {
 		case STAGING_REQUIRED_ACTION_NONE: {
 			// Do nothing.
@@ -401,30 +401,30 @@ void RenderingDevice::_staging_buffer_execute_required_action(StagingRequiredAct
 			_flush_and_stall_for_all_frames();
 
 			// Clear the whole staging buffer.
-			for (int i = 0; i < staging_buffer_blocks.size(); i++) {
-				staging_buffer_blocks.write[i].frame_used = 0;
-				staging_buffer_blocks.write[i].fill_amount = 0;
+			for (int i = 0; i < p_staging_buffers.blocks.size(); i++) {
+				p_staging_buffers.blocks.write[i].frame_used = 0;
+				p_staging_buffers.blocks.write[i].fill_amount = 0;
 			}
 
 			// Claim for current frame.
-			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+			p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 		} break;
 		case STAGING_REQUIRED_ACTION_STALL_PREVIOUS: {
 			_stall_for_previous_frames();
 
-			for (int i = 0; i < staging_buffer_blocks.size(); i++) {
+			for (int i = 0; i < p_staging_buffers.blocks.size(); i++) {
 				// Clear all blocks but the ones from this frame.
-				int block_idx = (i + staging_buffer_current) % staging_buffer_blocks.size();
-				if (staging_buffer_blocks[block_idx].frame_used == frames_drawn) {
+				int block_idx = (i + p_staging_buffers.current) % p_staging_buffers.blocks.size();
+				if (p_staging_buffers.blocks[block_idx].frame_used == frames_drawn) {
 					break; // Ok, we reached something from this frame, abort.
 				}
 
-				staging_buffer_blocks.write[block_idx].frame_used = 0;
-				staging_buffer_blocks.write[block_idx].fill_amount = 0;
+				p_staging_buffers.blocks.write[block_idx].frame_used = 0;
+				p_staging_buffers.blocks.write[block_idx].fill_amount = 0;
 			}
 
 			// Claim for current frame.
-			staging_buffer_blocks.write[staging_buffer_current].frame_used = frames_drawn;
+			p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 		} break;
 		default: {
 			DEV_ASSERT(false && "Unknown required action.");
@@ -503,7 +503,7 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 		uint32_t block_write_amount;
 		StagingRequiredAction required_action;
 
-		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), required_align, block_write_offset, block_write_amount, required_action);
+		Error err = _staging_buffer_allocate(upload_staging_buffers, MIN(to_submit, upload_staging_buffers.block_size), required_align, block_write_offset, block_write_amount, required_action);
 		if (err) {
 			return err;
 		}
@@ -518,17 +518,17 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 			command_buffer_copies_vector.clear();
 		}
 
-		_staging_buffer_execute_required_action(required_action);
+		_staging_buffer_execute_required_action(upload_staging_buffers, required_action);
 
 		// Map staging buffer (It's CPU and coherent).
-		uint8_t *data_ptr = driver->buffer_map(staging_buffer_blocks[staging_buffer_current].driver_id);
+		uint8_t *data_ptr = driver->buffer_map(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
 		ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
 
 		// Copy to staging buffer.
 		memcpy(data_ptr + block_write_offset, src_data + submit_from, block_write_amount);
 
 		// Unmap.
-		driver->buffer_unmap(staging_buffer_blocks[staging_buffer_current].driver_id);
+		driver->buffer_unmap(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
 
 		// Insert a command to copy this.
 		RDD::BufferCopyRegion region;
@@ -537,11 +537,11 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 		region.size = block_write_amount;
 
 		RDG::RecordedBufferCopy buffer_copy;
-		buffer_copy.source = staging_buffer_blocks[staging_buffer_current].driver_id;
+		buffer_copy.source = upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id;
 		buffer_copy.region = region;
 		command_buffer_copies_vector.push_back(buffer_copy);
 
-		staging_buffer_blocks.write[staging_buffer_current].fill_amount = block_write_offset + block_write_amount;
+		upload_staging_buffers.blocks.write[upload_staging_buffers.current].fill_amount = block_write_offset + block_write_amount;
 
 		to_submit -= block_write_amount;
 		submit_from += block_write_amount;
@@ -611,7 +611,7 @@ Vector<uint8_t> RenderingDevice::buffer_get_data(RID p_buffer, uint32_t p_offset
 
 	Buffer *buffer = _get_buffer_from_owner(p_buffer);
 	if (!buffer) {
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved.");
 	}
 
 	// Size of buffer to retrieve.
@@ -651,6 +651,89 @@ Vector<uint8_t> RenderingDevice::buffer_get_data(RID p_buffer, uint32_t p_offset
 	driver->buffer_free(tmp_buffer);
 
 	return buffer_data;
+}
+
+Error RenderingDevice::buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset, uint32_t p_size) {
+	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
+
+	Buffer *buffer = _get_buffer_from_owner(p_buffer);
+	if (buffer == nullptr) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Buffer is either invalid or this type of buffer can't be retrieved.");
+	}
+
+	if (p_size == 0) {
+		p_size = buffer->size;
+	}
+
+	ERR_FAIL_COND_V_MSG(p_size + p_offset > buffer->size, ERR_INVALID_PARAMETER, "Size is larger than the buffer.");
+	ERR_FAIL_COND_V_MSG(!p_callback.is_valid(), ERR_INVALID_PARAMETER, "Callback must be valid.");
+
+	_check_transfer_worker_buffer(buffer);
+
+	BufferGetDataRequest get_data_request;
+	uint32_t flushed_copies = 0;
+	get_data_request.callback = p_callback;
+	get_data_request.frame_local_index = frames[frame].download_buffer_copy_regions.size();
+	get_data_request.size = p_size;
+
+	const uint32_t required_align = 32;
+	uint32_t block_write_offset;
+	uint32_t block_write_amount;
+	StagingRequiredAction required_action;
+	uint32_t to_submit = p_size;
+	uint32_t submit_from = 0;
+	while (to_submit > 0) {
+		Error err = _staging_buffer_allocate(download_staging_buffers, MIN(to_submit, download_staging_buffers.block_size), required_align, block_write_offset, block_write_amount, required_action);
+		if (err) {
+			return err;
+		}
+
+		if ((get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL) {
+			if (_buffer_make_mutable(buffer, p_buffer)) {
+				// The buffer must be mutable to be used as a copy source.
+				draw_graph.add_synchronization();
+			}
+
+			for (uint32_t i = flushed_copies; i < get_data_request.frame_local_count; i++) {
+				uint32_t local_index = get_data_request.frame_local_index + i;
+				draw_graph.add_buffer_get_data(buffer->driver_id, buffer->draw_tracker, frames[frame].download_buffer_staging_buffers[local_index], frames[frame].download_buffer_copy_regions[local_index]);
+			}
+
+			flushed_copies = get_data_request.frame_local_count;
+		}
+
+		_staging_buffer_execute_required_action(download_staging_buffers, required_action);
+
+		RDD::BufferCopyRegion region;
+		region.src_offset = submit_from + p_offset;
+		region.dst_offset = block_write_offset;
+		region.size = block_write_amount;
+
+		frames[frame].download_buffer_staging_buffers.push_back(download_staging_buffers.blocks[download_staging_buffers.current].driver_id);
+		frames[frame].download_buffer_copy_regions.push_back(region);
+		get_data_request.frame_local_count++;
+
+		download_staging_buffers.blocks.write[download_staging_buffers.current].fill_amount = block_write_offset + block_write_amount;
+
+		to_submit -= block_write_amount;
+		submit_from += block_write_amount;
+	}
+
+	if (get_data_request.frame_local_count > 0) {
+		if (_buffer_make_mutable(buffer, p_buffer)) {
+			// The buffer must be mutable to be used as a copy source.
+			draw_graph.add_synchronization();
+		}
+
+		for (uint32_t i = flushed_copies; i < get_data_request.frame_local_count; i++) {
+			uint32_t local_index = get_data_request.frame_local_index + i;
+			draw_graph.add_buffer_get_data(buffer->driver_id, buffer->draw_tracker, frames[frame].download_buffer_staging_buffers[local_index], frames[frame].download_buffer_copy_regions[local_index]);
+		}
+
+		frames[frame].download_buffer_get_data_requests.push_back(get_data_request);
+	}
+
+	return OK;
 }
 
 RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage) {
@@ -1461,7 +1544,7 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 					uint32_t to_allocate = region_pitch * region_h;
 					uint32_t alloc_offset = 0, alloc_size = 0;
 					StagingRequiredAction required_action;
-					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, required_action, false);
+					Error err = _staging_buffer_allocate(upload_staging_buffers, to_allocate, required_align, alloc_offset, alloc_size, required_action, false);
 					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 					if (!command_buffer_to_texture_copies_vector.is_empty() && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL) {
@@ -1475,12 +1558,12 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 						command_buffer_to_texture_copies_vector.clear();
 					}
 
-					_staging_buffer_execute_required_action(required_action);
+					_staging_buffer_execute_required_action(upload_staging_buffers, required_action);
 
 					uint8_t *write_ptr;
 
 					{ // Map.
-						uint8_t *data_ptr = driver->buffer_map(staging_buffer_blocks[staging_buffer_current].driver_id);
+						uint8_t *data_ptr = driver->buffer_map(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
 						ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
 						write_ptr = data_ptr;
 						write_ptr += alloc_offset;
@@ -1492,7 +1575,7 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 					_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr, x, y, width, region_w, region_h, block_w, block_h, region_pitch, pixel_size, block_size);
 
 					{ // Unmap.
-						driver->buffer_unmap(staging_buffer_blocks[staging_buffer_current].driver_id);
+						driver->buffer_unmap(upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id);
 					}
 
 					RDD::BufferTextureCopyRegion copy_region;
@@ -1505,11 +1588,11 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
 
 					RDG::RecordedBufferToTextureCopy buffer_to_texture_copy;
-					buffer_to_texture_copy.from_buffer = staging_buffer_blocks[staging_buffer_current].driver_id;
+					buffer_to_texture_copy.from_buffer = upload_staging_buffers.blocks[upload_staging_buffers.current].driver_id;
 					buffer_to_texture_copy.region = copy_region;
 					command_buffer_to_texture_copies_vector.push_back(buffer_to_texture_copy);
 
-					staging_buffer_blocks.write[staging_buffer_current].fill_amount = alloc_offset + alloc_size;
+					upload_staging_buffers.blocks.write[upload_staging_buffers.current].fill_amount = alloc_offset + alloc_size;
 				}
 			}
 		}
@@ -1888,6 +1971,131 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 
 		return buffer_data;
 	}
+}
+
+Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback) {
+	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_V(tex, ERR_INVALID_PARAMETER);
+
+	ERR_FAIL_COND_V_MSG(tex->bound, ERR_INVALID_PARAMETER, "Texture can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to `RenderingDevice.FINAL_ACTION_CONTINUE`) to retrieve this texture.");
+	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER, "Texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set to be retrieved.");
+	ERR_FAIL_COND_V(p_layer >= tex->layers, ERR_INVALID_PARAMETER);
+
+	_check_transfer_worker_texture(tex);
+
+	thread_local LocalVector<RDD::TextureCopyableLayout> mip_layouts;
+	mip_layouts.resize(tex->mipmaps);
+	for (uint32_t i = 0; i < tex->mipmaps; i++) {
+		RDD::TextureSubresource subres;
+		subres.aspect = RDD::TEXTURE_ASPECT_COLOR;
+		subres.layer = p_layer;
+		subres.mipmap = i;
+		driver->texture_get_copyable_layout(tex->driver_id, subres, &mip_layouts[i]);
+
+		// Assuming layers are tightly packed. If this is not true on some driver, we must modify the copy algorithm.
+		DEV_ASSERT(mip_layouts[i].layer_pitch == mip_layouts[i].size / tex->layers);
+	}
+
+	ERR_FAIL_COND_V(mip_layouts.is_empty(), ERR_INVALID_PARAMETER);
+
+	if (_texture_make_mutable(tex, p_texture)) {
+		// The texture must be mutable to be used as a copy source due to layout transitions.
+		draw_graph.add_synchronization();
+	}
+
+	TextureGetDataRequest get_data_request;
+	get_data_request.callback = p_callback;
+	get_data_request.frame_local_index = frames[frame].download_buffer_texture_copy_regions.size();
+	get_data_request.width = tex->width;
+	get_data_request.height = tex->height;
+	get_data_request.depth = tex->depth;
+	get_data_request.format = tex->format;
+	get_data_request.mipmaps = tex->mipmaps;
+
+	uint32_t block_w, block_h;
+	get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
+	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex->format);
+
+	uint32_t w, h, d;
+	uint32_t required_align = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
+	uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
+	uint32_t region_size = texture_download_region_size_px;
+	uint32_t logic_w = tex->width;
+	uint32_t logic_h = tex->height;
+	uint32_t mipmap_offset = 0;
+	uint32_t block_write_offset;
+	uint32_t block_write_amount;
+	StagingRequiredAction required_action;
+	uint32_t flushed_copies = 0;
+	for (uint32_t i = 0; i < tex->mipmaps; i++) {
+		uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, i + 1, &w, &h, &d);
+		uint32_t tight_mip_size = image_total - mipmap_offset;
+		for (uint32_t z = 0; z < d; z++) {
+			for (uint32_t y = 0; y < h; y += region_size) {
+				for (uint32_t x = 0; x < w; x += region_size) {
+					uint32_t region_w = MIN(region_size, w - x);
+					uint32_t region_h = MIN(region_size, h - y);
+					ERR_FAIL_COND_V(region_w % block_w, ERR_BUG);
+					ERR_FAIL_COND_V(region_h % block_h, ERR_BUG);
+
+					uint32_t region_logic_w = MIN(region_size, logic_w - x);
+					uint32_t region_logic_h = MIN(region_size, logic_h - y);
+					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
+					region_pitch = STEPIFY(region_pitch, pitch_step);
+
+					uint32_t to_allocate = region_pitch * region_h;
+					Error err = _staging_buffer_allocate(download_staging_buffers, to_allocate, required_align, block_write_offset, block_write_amount, required_action, false);
+					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+
+					if ((get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL) {
+						for (uint32_t j = flushed_copies; j < get_data_request.frame_local_count; j++) {
+							uint32_t local_index = get_data_request.frame_local_index + j;
+							draw_graph.add_texture_get_data(tex->driver_id, tex->draw_tracker, frames[frame].download_texture_staging_buffers[local_index], frames[frame].download_buffer_texture_copy_regions[local_index]);
+						}
+
+						flushed_copies = get_data_request.frame_local_count;
+					}
+
+					_staging_buffer_execute_required_action(download_staging_buffers, required_action);
+
+					RDD::BufferTextureCopyRegion copy_region;
+					copy_region.buffer_offset = block_write_offset;
+					copy_region.texture_subresources.aspect = tex->read_aspect_flags;
+					copy_region.texture_subresources.mipmap = i;
+					copy_region.texture_subresources.base_layer = p_layer;
+					copy_region.texture_subresources.layer_count = 1;
+					copy_region.texture_offset = Vector3i(x, y, z);
+					copy_region.texture_region_size = Vector3i(region_logic_w, region_logic_h, 1);
+					frames[frame].download_texture_staging_buffers.push_back(download_staging_buffers.blocks[download_staging_buffers.current].driver_id);
+					frames[frame].download_buffer_texture_copy_regions.push_back(copy_region);
+					frames[frame].download_texture_mipmap_offsets.push_back(mipmap_offset + (tight_mip_size / d) * z);
+					get_data_request.frame_local_count++;
+
+					download_staging_buffers.blocks.write[download_staging_buffers.current].fill_amount = block_write_offset + block_write_amount;
+				}
+			}
+		}
+
+		mipmap_offset = image_total;
+		logic_w = MAX(1u, logic_w >> 1);
+		logic_h = MAX(1u, logic_h >> 1);
+	}
+
+	if (get_data_request.frame_local_count > 0) {
+		for (uint32_t i = flushed_copies; i < get_data_request.frame_local_count; i++) {
+			uint32_t local_index = get_data_request.frame_local_index + i;
+			draw_graph.add_texture_get_data(tex->driver_id, tex->draw_tracker, frames[frame].download_texture_staging_buffers[local_index], frames[frame].download_buffer_texture_copy_regions[local_index]);
+		}
+
+		flushed_copies = get_data_request.frame_local_count;
+		frames[frame].download_texture_get_data_requests.push_back(get_data_request);
+	}
+
+	return OK;
 }
 
 bool RenderingDevice::texture_is_shared(RID p_texture) {
@@ -6055,11 +6263,8 @@ uint64_t RenderingDevice::get_memory_usage(MemoryType p_type) const {
 }
 
 void RenderingDevice::_begin_frame(bool p_presented) {
-	// Before beginning this frame, wait on the fence if it was signaled to make sure its work is finished.
-	if (frames[frame].fence_signaled) {
-		driver->fence_wait(frames[frame].fence);
-		frames[frame].fence_signaled = false;
-	}
+	// Before writing to this frame, wait for it to be finished.
+	_stall_for_frame(frame);
 
 	if (command_pool_reset_enabled) {
 		bool reset = driver->command_pool_reset(frames[frame].command_pool);
@@ -6081,10 +6286,15 @@ void RenderingDevice::_begin_frame(bool p_presented) {
 	// Erase pending resources.
 	_free_pending_resources(frame);
 
-	// Advance staging buffer if used.
-	if (staging_buffer_used) {
-		staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
-		staging_buffer_used = false;
+	// Advance staging buffers if used.
+	if (upload_staging_buffers.used) {
+		upload_staging_buffers.current = (upload_staging_buffers.current + 1) % upload_staging_buffers.blocks.size();
+		upload_staging_buffers.used = false;
+	}
+
+	if (download_staging_buffers.used) {
+		download_staging_buffers.current = (download_staging_buffers.current + 1) % download_staging_buffers.blocks.size();
+		download_staging_buffers.used = false;
 	}
 
 	if (frames[frame].timestamp_count) {
@@ -6202,12 +6412,97 @@ void RenderingDevice::_execute_frame(bool p_present) {
 	}
 }
 
+void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
+	thread_local PackedByteArray packed_byte_array;
+
+	if (frames[p_frame].fence_signaled) {
+		driver->fence_wait(frames[p_frame].fence);
+		frames[p_frame].fence_signaled = false;
+
+		// Flush any pending requests for asynchronous buffer downloads.
+		if (!frames[p_frame].download_buffer_get_data_requests.is_empty()) {
+			for (uint32_t i = 0; i < frames[p_frame].download_buffer_get_data_requests.size(); i++) {
+				const BufferGetDataRequest &request = frames[p_frame].download_buffer_get_data_requests[i];
+				packed_byte_array.resize(request.size);
+
+				uint32_t array_offset = 0;
+				for (uint32_t j = 0; j < request.frame_local_count; j++) {
+					uint32_t local_index = request.frame_local_index + j;
+					const RDD::BufferCopyRegion &region = frames[p_frame].download_buffer_copy_regions[local_index];
+					uint8_t *buffer_data = driver->buffer_map(frames[p_frame].download_buffer_staging_buffers[local_index]);
+					memcpy(&packed_byte_array.write[array_offset], &buffer_data[region.dst_offset], region.size);
+					driver->buffer_unmap(frames[p_frame].download_buffer_staging_buffers[local_index]);
+					array_offset += region.size;
+				}
+
+				request.callback.call(packed_byte_array);
+			}
+
+			frames[p_frame].download_buffer_staging_buffers.clear();
+			frames[p_frame].download_buffer_copy_regions.clear();
+			frames[p_frame].download_buffer_get_data_requests.clear();
+		}
+
+		// Flush any pending requests for asynchronous texture downloads.
+		if (!frames[p_frame].download_texture_get_data_requests.is_empty()) {
+			uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
+			for (uint32_t i = 0; i < frames[p_frame].download_texture_get_data_requests.size(); i++) {
+				const TextureGetDataRequest &request = frames[p_frame].download_texture_get_data_requests[i];
+				uint32_t texture_size = get_image_format_required_size(request.format, request.width, request.height, request.depth, request.mipmaps);
+				packed_byte_array.resize(texture_size);
+
+				// Find the block size of the texture's format.
+				uint32_t block_w = 0;
+				uint32_t block_h = 0;
+				get_compressed_image_format_block_dimensions(request.format, block_w, block_h);
+
+				uint32_t block_size = get_compressed_image_format_block_byte_size(request.format);
+				uint32_t pixel_size = get_image_format_pixel_size(request.format);
+				uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(request.format);
+				uint32_t region_size = texture_download_region_size_px;
+
+				for (uint32_t j = 0; j < request.frame_local_count; j++) {
+					uint32_t local_index = request.frame_local_index + j;
+					const RDD::BufferTextureCopyRegion &region = frames[p_frame].download_buffer_texture_copy_regions[local_index];
+					uint32_t w = STEPIFY(request.width >> region.texture_subresources.mipmap, block_w);
+					uint32_t h = STEPIFY(request.height >> region.texture_subresources.mipmap, block_h);
+					uint32_t region_w = MIN(region_size, w - region.texture_offset.x);
+					uint32_t region_h = MIN(region_size, h - region.texture_offset.y);
+					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
+					region_pitch = STEPIFY(region_pitch, pitch_step);
+
+					uint8_t *buffer_data = driver->buffer_map(frames[p_frame].download_texture_staging_buffers[local_index]);
+					const uint8_t *read_ptr = buffer_data + region.buffer_offset;
+					uint8_t *write_ptr = packed_byte_array.ptrw() + frames[p_frame].download_texture_mipmap_offsets[local_index];
+					uint32_t unit_size = pixel_size;
+					if (block_w != 1 || block_h != 1) {
+						unit_size = block_size;
+					}
+
+					write_ptr += ((region.texture_offset.y / block_h) * (w / block_w) + (region.texture_offset.x / block_w)) * unit_size;
+					for (uint32_t y = region_h / block_h; y > 0; y--) {
+						memcpy(write_ptr, read_ptr, (region_w / block_w) * unit_size);
+						write_ptr += (w / block_w) * unit_size;
+						read_ptr += region_pitch;
+					}
+
+					driver->buffer_unmap(frames[p_frame].download_texture_staging_buffers[local_index]);
+				}
+
+				request.callback.call(packed_byte_array);
+			}
+
+			frames[p_frame].download_texture_staging_buffers.clear();
+			frames[p_frame].download_buffer_texture_copy_regions.clear();
+			frames[p_frame].download_texture_mipmap_offsets.clear();
+			frames[p_frame].download_texture_get_data_requests.clear();
+		}
+	}
+}
+
 void RenderingDevice::_stall_for_previous_frames() {
 	for (uint32_t i = 0; i < frames.size(); i++) {
-		if (frames[i].fence_signaled) {
-			driver->fence_wait(frames[i].fence);
-			frames[i].fence_signaled = false;
-		}
+		_stall_for_frame(i);
 	}
 }
 
@@ -6386,30 +6681,41 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	}
 
 	// Convert block size from KB.
-	staging_buffer_block_size = GLOBAL_GET("rendering/rendering_device/staging_buffer/block_size_kb");
-	staging_buffer_block_size = MAX(4u, staging_buffer_block_size);
-	staging_buffer_block_size *= 1024;
+	upload_staging_buffers.block_size = GLOBAL_GET("rendering/rendering_device/staging_buffer/block_size_kb");
+	upload_staging_buffers.block_size = MAX(4u, upload_staging_buffers.block_size);
+	upload_staging_buffers.block_size *= 1024;
 
 	// Convert staging buffer size from MB.
-	staging_buffer_max_size = GLOBAL_GET("rendering/rendering_device/staging_buffer/max_size_mb");
-	staging_buffer_max_size = MAX(1u, staging_buffer_max_size);
-	staging_buffer_max_size *= 1024 * 1024;
+	upload_staging_buffers.max_size = GLOBAL_GET("rendering/rendering_device/staging_buffer/max_size_mb");
+	upload_staging_buffers.max_size = MAX(1u, upload_staging_buffers.max_size);
+	upload_staging_buffers.max_size *= 1024 * 1024;
+	upload_staging_buffers.max_size = MAX(upload_staging_buffers.max_size, upload_staging_buffers.block_size * 4);
 
-	if (staging_buffer_max_size < staging_buffer_block_size * 4) {
-		// Validate enough blocks.
-		staging_buffer_max_size = staging_buffer_block_size * 4;
-	}
+	// Copy the sizes to the download staging buffers.
+	download_staging_buffers.block_size = upload_staging_buffers.block_size;
+	download_staging_buffers.max_size = upload_staging_buffers.max_size;
 
 	texture_upload_region_size_px = GLOBAL_GET("rendering/rendering_device/staging_buffer/texture_upload_region_size_px");
 	texture_upload_region_size_px = nearest_power_of_2_templated(texture_upload_region_size_px);
 
+	texture_download_region_size_px = GLOBAL_GET("rendering/rendering_device/staging_buffer/texture_download_region_size_px");
+	texture_download_region_size_px = nearest_power_of_2_templated(texture_download_region_size_px);
+
 	// Ensure current staging block is valid and at least one per frame exists.
-	staging_buffer_current = 0;
-	staging_buffer_used = false;
+	upload_staging_buffers.current = 0;
+	upload_staging_buffers.used = false;
+	upload_staging_buffers.usage_bits = RDD::BUFFER_USAGE_TRANSFER_FROM_BIT;
+
+	download_staging_buffers.current = 0;
+	download_staging_buffers.used = false;
+	download_staging_buffers.usage_bits = RDD::BUFFER_USAGE_TRANSFER_TO_BIT;
 
 	for (uint32_t i = 0; i < frames.size(); i++) {
-		// Staging was never used, create a block.
-		err = _insert_staging_block();
+		// Staging was never used, create the blocks.
+		err = _insert_staging_block(upload_staging_buffers);
+		ERR_FAIL_COND_V(err, FAILED);
+
+		err = _insert_staging_block(download_staging_buffers);
 		ERR_FAIL_COND_V(err, FAILED);
 	}
 
@@ -6788,8 +7094,12 @@ void RenderingDevice::finalize() {
 
 	frames.clear();
 
-	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
-		driver->buffer_free(staging_buffer_blocks[i].driver_id);
+	for (int i = 0; i < upload_staging_buffers.blocks.size(); i++) {
+		driver->buffer_free(upload_staging_buffers.blocks[i].driver_id);
+	}
+
+	for (int i = 0; i < download_staging_buffers.blocks.size(); i++) {
+		driver->buffer_free(download_staging_buffers.blocks[i].driver_id);
 	}
 
 	while (vertex_formats.size()) {
@@ -6869,6 +7179,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data"), &RenderingDevice::texture_update);
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
+	ClassDB::bind_method(D_METHOD("texture_get_data_async", "texture", "layer", "callback"), &RenderingDevice::texture_get_data_async);
 
 	ClassDB::bind_method(D_METHOD("texture_is_format_supported_for_usage", "format", "usage_flags"), &RenderingDevice::texture_is_format_supported_for_usage);
 
@@ -6926,6 +7237,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data"), &RenderingDevice::_buffer_update_bind);
 	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes"), &RenderingDevice::buffer_clear);
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer", "offset_bytes", "size_bytes"), &RenderingDevice::buffer_get_data, DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("buffer_get_data_async", "buffer", "callback", "offset_bytes", "size_bytes"), &RenderingDevice::buffer_get_data_async, DEFVAL(0), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags", "for_render_pass", "specialization_constants"), &RenderingDevice::_render_pipeline_create, DEFVAL(0), DEFVAL(0), DEFVAL(TypedArray<RDPipelineSpecializationConstant>()));
 	ClassDB::bind_method(D_METHOD("render_pipeline_is_valid", "render_pipeline"), &RenderingDevice::render_pipeline_is_valid);
