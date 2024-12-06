@@ -832,8 +832,8 @@ public:
 	};
 
 	struct SceneEditorDataEntry {
-		bool is_editable;
-		bool is_display_folded;
+		bool is_editable = false;
+		bool is_display_folded = false;
 	};
 
 	HashMap<int, SceneModificationsEntry> scenes_modification_table;
