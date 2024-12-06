@@ -203,7 +203,11 @@ void RayCast3D::_notification(int p_what) {
 			}
 
 			bool prev_collision_state = collided;
+			RID prev_against_rid = against_rid;
 			_update_raycast_state();
+			if (prev_collision_state != collided || prev_against_rid != against_rid) {
+				emit_signal(SceneStringName(collision_state_changed), is_colliding(), get_collider_rid(), get_collider(), get_collision_point(), get_collision_normal(), get_collision_face_index());
+			}
 			if (get_tree()->is_debugging_collisions_hint()) {
 				if (prev_collision_state != collided) {
 					_update_debug_shape_material(true);
@@ -373,6 +377,8 @@ void RayCast3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_debug_shape_thickness", "debug_shape_thickness"), &RayCast3D::set_debug_shape_thickness);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_thickness"), &RayCast3D::get_debug_shape_thickness);
+
+	ADD_SIGNAL(MethodInfo("collision_state_changed", PropertyInfo(Variant::BOOL, "colliding"), PropertyInfo(Variant::RID, "collider_rid"), PropertyInfo(Variant::OBJECT, "collider", PROPERTY_HINT_RESOURCE_TYPE, "Node3D"), PropertyInfo(Variant::VECTOR3, "collision_point"), PropertyInfo(Variant::VECTOR3, "collision_normal"), PropertyInfo(Variant::INT, "collision_face_index")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
