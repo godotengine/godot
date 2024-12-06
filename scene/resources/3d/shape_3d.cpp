@@ -67,12 +67,14 @@ void Shape3D::set_margin(real_t p_margin) {
 }
 
 #ifdef DEBUG_ENABLED
+
 void Shape3D::set_debug_color(const Color &p_color) {
 	if (p_color == debug_color) {
 		return;
 	}
 
 	debug_color = p_color;
+	debug_properties_edited = true;
 	_update_shape();
 }
 
@@ -86,12 +88,14 @@ void Shape3D::set_debug_fill(bool p_fill) {
 	}
 
 	debug_fill = p_fill;
+	debug_properties_edited = true;
 	_update_shape();
 }
 
 bool Shape3D::get_debug_fill() const {
 	return debug_fill;
 }
+
 #endif // DEBUG_ENABLED
 
 Ref<ArrayMesh> Shape3D::get_debug_mesh() {
