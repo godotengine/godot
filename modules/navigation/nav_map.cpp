@@ -948,14 +948,18 @@ void NavMap::_sync_dirty_map_update_requests() {
 
 void NavMap::_sync_dirty_avoidance_update_requests() {
 	// Sync NavAgents.
-	agents_dirty = sync_dirty_requests.agents.first();
+	if (!agents_dirty) {
+		agents_dirty = sync_dirty_requests.agents.first();
+	}
 	for (SelfList<NavAgent> *element = sync_dirty_requests.agents.first(); element; element = element->next()) {
 		element->self()->sync();
 	}
 	sync_dirty_requests.agents.clear();
 
 	// Sync NavObstacles.
-	obstacles_dirty = sync_dirty_requests.obstacles.first();
+	if (!obstacles_dirty) {
+		obstacles_dirty = sync_dirty_requests.obstacles.first();
+	}
 	for (SelfList<NavObstacle> *element = sync_dirty_requests.obstacles.first(); element; element = element->next()) {
 		element->self()->sync();
 	}
