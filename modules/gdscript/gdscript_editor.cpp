@@ -962,8 +962,11 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 				}
 			} break;
 		}
-	} else if (p_annotation->name == SNAME("@warning_ignore")) {
+	} else if (p_annotation->name == SNAME("@warning_ignore") || p_annotation->name == SNAME("@warning_ignore_start") || p_annotation->name == SNAME("@warning_ignore_restore")) {
 		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
+			if (warning_code == GDScriptWarning::RENAMED_IN_GODOT_4_HINT) {
+				continue;
+			}
 			ScriptLanguage::CodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			warning.insert_text = warning.display.quote(p_quote_style);
 			r_result.insert(warning.display, warning);
