@@ -397,6 +397,7 @@ FlowContainer::FlowContainer(bool p_vertical) {
 
 void FlowContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_count"), &FlowContainer::get_line_count);
+	ClassDB::bind_method(D_METHOD("resort"), &FlowContainer::resort);
 
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &FlowContainer::set_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &FlowContainer::get_alignment);

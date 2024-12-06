@@ -90,6 +90,10 @@ public:
 	void set_reverse_fill(bool p_reverse_fill);
 	bool is_reverse_fill() const;
 
+	void resort() {
+		_resort();
+	}
+
 	virtual Size2 get_minimum_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;

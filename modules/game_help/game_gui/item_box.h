@@ -47,7 +47,13 @@ public:
             bool _visible = rect.intersects(it->get_global_rect());
             item_visible_change_cb.call(it,_visible);
         }
-        
+        is_dirty = false;
+    }
+    void resort() {
+        if(is_dirty) {
+            view_root->resort();
+            scroll_changed(0);
+        }
     }
 
     void add_item(const Ref<RefCounted>& item) {
@@ -58,8 +64,6 @@ public:
         it->data = item;
         items.push_back(it);
 
-        bool _visible = it->get_global_rect().intersects(get_global_rect());
-        item_visible_change_cb.call(it,_visible);
     }
     void remove_item(const Ref<RefCounted>& item) {
         
@@ -96,5 +100,6 @@ protected:
     List<ItemBoxItem *> items;
     Vector2 item_size = Vector2(150, 150);
     Callable item_visible_change_cb;
+    bool is_dirty = false;
     
 };

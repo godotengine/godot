@@ -45,6 +45,9 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
 
     animation_list = memnew(ItemBox);
     animation_list->set_item_visible_change_callback(callable_mp(this, &AnimationPreviewPanel::on_item_visible_state_change));
+    animation_list->set_h_size_flags(SIZE_EXPAND_FILL);
+    animation_list->set_v_size_flags(SIZE_EXPAND_FILL); 
+    animation_list->set_layout_mode(LAYOUT_MODE_CONTAINER);
     hbc->add_child(animation_list);
 
     set_process(true);

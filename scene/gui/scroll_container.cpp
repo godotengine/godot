@@ -347,6 +347,7 @@ void ScrollContainer::_reposition_children() {
 	}
 
 	queue_redraw();
+	_scroll_changed(0);
 }
 
 void ScrollContainer::_notification(int p_what) {
@@ -476,7 +477,6 @@ void ScrollContainer::update_scrollbars() {
 
 void ScrollContainer::_scroll_moved(float v) {
 	queue_sort();
-	_scroll_changed(v);
 }
 
 void ScrollContainer::set_h_scroll(int p_pos) {
