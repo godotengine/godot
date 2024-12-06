@@ -109,7 +109,7 @@
 			The body's mass.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
-			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method apply_force] methods.
+			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision.
 		</member>
 	</members>
 	<signals>
