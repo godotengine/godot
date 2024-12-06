@@ -35,12 +35,21 @@
 #include "core/io/tcp_server.h"
 #include "tests/test_macros.h"
 
+#include <functional>
+
 namespace TestTCPServer {
 
 const int PORT = 12345;
 const IPAddress LOCALHOST("127.0.0.1");
 const uint32_t SLEEP_DURATION = 1000;
-const uint64_t MAX_WAIT_USEC = 100000;
+const uint64_t MAX_WAIT_USEC = 2000000;
+
+void wait_for_condition(std::function<bool()> f_test) {
+	const uint64_t time = OS::get_singleton()->get_ticks_usec();
+	while (!f_test() && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
+		OS::get_singleton()->delay_usec(SLEEP_DURATION);
+	}
+}
 
 Ref<TCPServer> create_server(const IPAddress &p_address, int p_port) {
 	Ref<TCPServer> server;
@@ -66,11 +75,9 @@ Ref<StreamPeerTCP> create_client(const IPAddress &p_address, int p_port) {
 }
 
 Ref<StreamPeerTCP> accept_connection(Ref<TCPServer> &p_server) {
-	// Required to get the connection properly established.
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	while (!p_server->is_connection_available() && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
+	wait_for_condition([&]() {
+		return p_server->is_connection_available();
+	});
 
 	REQUIRE(p_server->is_connection_available());
 	Ref<StreamPeerTCP> client_from_server = p_server->take_connection();
@@ -79,16 +86,6 @@ Ref<StreamPeerTCP> accept_connection(Ref<TCPServer> &p_server) {
 	CHECK_EQ(client_from_server->get_status(), StreamPeerTCP::STATUS_CONNECTED);
 
 	return client_from_server;
-}
-
-Error poll(Ref<StreamPeerTCP> p_client) {
-	const uint64_t time = OS::get_singleton()->get_ticks_usec();
-	Error err = p_client->poll();
-	while (err != Error::OK && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-		err = p_client->poll();
-	}
-	return err;
 }
 
 TEST_CASE("[TCPServer] Instantiation") {
@@ -104,7 +101,10 @@ TEST_CASE("[TCPServer] Accept a connection and receive/send data") {
 	Ref<StreamPeerTCP> client = create_client(LOCALHOST, PORT);
 	Ref<StreamPeerTCP> client_from_server = accept_connection(server);
 
-	REQUIRE_EQ(poll(client), Error::OK);
+	wait_for_condition([&]() {
+		return client->poll() != Error::OK || client->get_status() == StreamPeerTCP::STATUS_CONNECTED;
+	});
+
 	CHECK_EQ(client->get_status(), StreamPeerTCP::STATUS_CONNECTED);
 
 	// Sending data from client to server.
@@ -135,9 +135,25 @@ TEST_CASE("[TCPServer] Handle multiple clients at the same time") {
 		clients_from_server.push_back(accept_connection(server));
 	}
 
-	// Calling poll() to update client status.
+	wait_for_condition([&]() {
+		bool should_exit = true;
+		for (Ref<StreamPeerTCP> &c : clients) {
+			if (c->poll() != Error::OK) {
+				return true;
+			}
+			StreamPeerTCP::Status status = c->get_status();
+			if (status != StreamPeerTCP::STATUS_CONNECTED && status != StreamPeerTCP::STATUS_CONNECTING) {
+				return true;
+			}
+			if (status != StreamPeerTCP::STATUS_CONNECTED) {
+				should_exit = false;
+			}
+		}
+		return should_exit;
+	});
+
 	for (Ref<StreamPeerTCP> &c : clients) {
-		REQUIRE_EQ(poll(c), Error::OK);
+		REQUIRE_EQ(c->get_status(), StreamPeerTCP::STATUS_CONNECTED);
 	}
 
 	// Sending data from each client to server.
@@ -158,7 +174,10 @@ TEST_CASE("[TCPServer] When stopped shouldn't accept new connections") {
 	Ref<StreamPeerTCP> client = create_client(LOCALHOST, PORT);
 	Ref<StreamPeerTCP> client_from_server = accept_connection(server);
 
-	REQUIRE_EQ(poll(client), Error::OK);
+	wait_for_condition([&]() {
+		return client->poll() != Error::OK || client->get_status() == StreamPeerTCP::STATUS_CONNECTED;
+	});
+
 	CHECK_EQ(client->get_status(), StreamPeerTCP::STATUS_CONNECTED);
 
 	// Sending data from client to server.
@@ -170,27 +189,26 @@ TEST_CASE("[TCPServer] When stopped shouldn't accept new connections") {
 	server->stop();
 	CHECK_FALSE(server->is_listening());
 
+	// Make sure the client times out in less than the wait time.
+	int timeout = ProjectSettings::get_singleton()->get_setting("network/limits/tcp/connect_timeout_seconds");
+	ProjectSettings::get_singleton()->set_setting("network/limits/tcp/connect_timeout_seconds", 1);
+
 	Ref<StreamPeerTCP> new_client = create_client(LOCALHOST, PORT);
 
-	// Required to get the connection properly established.
-	uint64_t time = OS::get_singleton()->get_ticks_usec();
-	while (!server->is_connection_available() && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-	}
+	// Reset the timeout setting.
+	ProjectSettings::get_singleton()->set_setting("network/limits/tcp/connect_timeout_seconds", timeout);
 
 	CHECK_FALSE(server->is_connection_available());
 
-	time = OS::get_singleton()->get_ticks_usec();
-	Error err = new_client->poll();
-	while (err != Error::OK && err != Error::ERR_CONNECTION_ERROR && (OS::get_singleton()->get_ticks_usec() - time) < MAX_WAIT_USEC) {
-		OS::get_singleton()->delay_usec(SLEEP_DURATION);
-		err = new_client->poll();
-	}
-	REQUIRE((err == Error::OK || err == Error::ERR_CONNECTION_ERROR));
-	StreamPeerTCP::Status status = new_client->get_status();
-	CHECK((status == StreamPeerTCP::STATUS_CONNECTING || status == StreamPeerTCP::STATUS_ERROR));
+	wait_for_condition([&]() {
+		return new_client->poll() != Error::OK || new_client->get_status() == StreamPeerTCP::STATUS_ERROR;
+	});
 
+	CHECK_FALSE(server->is_connection_available());
+
+	CHECK_EQ(new_client->get_status(), StreamPeerTCP::STATUS_ERROR);
 	new_client->disconnect_from_host();
+	CHECK_EQ(new_client->get_status(), StreamPeerTCP::STATUS_NONE);
 }
 
 TEST_CASE("[TCPServer] Should disconnect client") {
@@ -198,7 +216,10 @@ TEST_CASE("[TCPServer] Should disconnect client") {
 	Ref<StreamPeerTCP> client = create_client(LOCALHOST, PORT);
 	Ref<StreamPeerTCP> client_from_server = accept_connection(server);
 
-	REQUIRE_EQ(poll(client), Error::OK);
+	wait_for_condition([&]() {
+		return client->poll() != Error::OK || client->get_status() == StreamPeerTCP::STATUS_CONNECTED;
+	});
+
 	CHECK_EQ(client->get_status(), StreamPeerTCP::STATUS_CONNECTED);
 
 	// Sending data from client to server.
@@ -210,12 +231,23 @@ TEST_CASE("[TCPServer] Should disconnect client") {
 	server->stop();
 	CHECK_FALSE(server->is_listening());
 
-	// Reading for a closed connection will print an error.
+	// Wait for disconnection
+	wait_for_condition([&]() {
+		return client->poll() != Error::OK || client->get_status() == StreamPeerTCP::STATUS_NONE;
+	});
+
+	// Wait for disconnection
+	wait_for_condition([&]() {
+		return client_from_server->poll() != Error::OK || client_from_server->get_status() == StreamPeerTCP::STATUS_NONE;
+	});
+
+	CHECK_EQ(client->get_status(), StreamPeerTCP::STATUS_NONE);
+	CHECK_EQ(client_from_server->get_status(), StreamPeerTCP::STATUS_NONE);
+
 	ERR_PRINT_OFF;
 	CHECK_EQ(client->get_string(), String());
+	CHECK_EQ(client_from_server->get_string(), String());
 	ERR_PRINT_ON;
-	REQUIRE_EQ(poll(client), Error::OK);
-	CHECK_EQ(client->get_status(), StreamPeerTCP::STATUS_NONE);
 }
 
 } // namespace TestTCPServer
