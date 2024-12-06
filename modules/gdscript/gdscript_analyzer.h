@@ -98,7 +98,7 @@ class GDScriptAnalyzer {
 	void resolve_return(GDScriptParser::ReturnNode *p_return);
 
 	// Reduction functions.
-	void reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root = false);
+	void reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root = false, bool p_is_assignment = false);
 	void reduce_array(GDScriptParser::ArrayNode *p_array);
 	void reduce_assignment(GDScriptParser::AssignmentNode *p_assignment);
 	void reduce_await(GDScriptParser::AwaitNode *p_await);
@@ -107,13 +107,13 @@ class GDScriptAnalyzer {
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
-	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);
-	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);
+	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false, bool p_is_assignment = false);
+	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr, GDScriptParser::ClassNode **r_real_base_class = nullptr);
 	void reduce_lambda(GDScriptParser::LambdaNode *p_lambda);
 	void reduce_literal(GDScriptParser::LiteralNode *p_literal);
 	void reduce_preload(GDScriptParser::PreloadNode *p_preload);
 	void reduce_self(GDScriptParser::SelfNode *p_self);
-	void reduce_subscript(GDScriptParser::SubscriptNode *p_subscript, bool p_can_be_pseudo_type = false);
+	void reduce_subscript(GDScriptParser::SubscriptNode *p_subscript, bool p_can_be_pseudo_type = false, bool p_is_assignment = false);
 	void reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root = false);
 	void reduce_type_test(GDScriptParser::TypeTestNode *p_type_test);
 	void reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op);
@@ -130,7 +130,7 @@ class GDScriptAnalyzer {
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false, bool p_is_readonly = false) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
-	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class = nullptr);
+	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class = nullptr, GDScriptParser::ClassNode **r_real_base_class = nullptr, GDScriptParser::FunctionNode **r_found_function = nullptr);
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags);
 	void validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
 	void validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);
@@ -151,6 +151,9 @@ class GDScriptAnalyzer {
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const Ref<GDScriptParserRef> &p_dependant_parser);
 	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, GDScriptParser *p_dependant_parser);
 	Ref<GDScript> get_depended_shallow_script(const String &p_path, Error &r_error);
+
+	void check_access_level_for_subscript_attribute(const String &p_base_type_name, GDScriptParser::ClassNode *p_real_base, GDScriptParser::IdentifierNode *p_attribute, GDScriptParser::Node *p_source, bool p_is_assignment);
+	void check_access_level(const String &p_base_type_name, GDScriptParser::ClassNode *p_real_base, GDScriptParser::AccessLevel p_access_level, const StringName &p_identifier_name, GDScriptParser::Node *p_source, bool p_is_attribute, bool p_is_assignment);
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
 #endif

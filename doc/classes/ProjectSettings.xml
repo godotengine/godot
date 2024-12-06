@@ -511,6 +511,9 @@
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
 		</member>
+		<member name="debug/gdscript/warnings/implicit_default_access_level" type="int" setter="" getter="" default="0">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the script does not specify default access level explicitly.
+		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
 		</member>

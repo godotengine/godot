@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot call protected function "foo()" on the class Foo.

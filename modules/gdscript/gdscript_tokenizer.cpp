@@ -115,6 +115,10 @@ static const char *token_names[] = {
 	"is", // IS,
 	"namespace", // NAMESPACE
 	"preload", // PRELOAD,
+	"private", // PRIVATE
+	"protected", // PROTECTED
+	"public", // PUBLIC
+	"readonly", // READONLY
 	"self", // SELF,
 	"signal", // SIGNAL,
 	"static", // STATIC,
@@ -189,6 +193,10 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
 		case WHEN: // New keyword, avoid breaking existing code.
+		case PUBLIC:
+		case READONLY:
+		case PROTECTED:
+		case PRIVATE:
 		// Allow constants to be treated as regular identifiers.
 		case CONST_PI:
 		case CONST_INF:
@@ -233,6 +241,10 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case OR:
 		case PASS:
 		case PRELOAD:
+		case PRIVATE:
+		case PROTECTED:
+		case PUBLIC:
+		case READONLY:
 		case RETURN:
 		case SELF:
 		case SIGNAL:
@@ -520,7 +532,11 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	KEYWORD_GROUP('p')                       \
 	KEYWORD("pass", Token::PASS)             \
 	KEYWORD("preload", Token::PRELOAD)       \
+	KEYWORD("private", Token::PRIVATE)       \
+	KEYWORD("protected", Token::PROTECTED)   \
+	KEYWORD("public", Token::PUBLIC)         \
 	KEYWORD_GROUP('r')                       \
+	KEYWORD("readonly", Token::READONLY)     \
 	KEYWORD("return", Token::RETURN)         \
 	KEYWORD_GROUP('s')                       \
 	KEYWORD("self", Token::SELF)             \

@@ -2539,7 +2539,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	p_return->set_datatype(result);
 }
 
-void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root) {
+void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root, bool p_is_assignment) {
 	// This one makes some magic happen.
 
 	if (p_expression == nullptr) {
@@ -2579,7 +2579,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			reduce_get_node(static_cast<GDScriptParser::GetNodeNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::IDENTIFIER:
-			reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_expression));
+			reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_expression), false, p_is_assignment);
 			break;
 		case GDScriptParser::Node::LAMBDA:
 			reduce_lambda(static_cast<GDScriptParser::LambdaNode *>(p_expression));
@@ -2594,7 +2594,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			reduce_self(static_cast<GDScriptParser::SelfNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::SUBSCRIPT:
-			reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_expression));
+			reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_expression), false, p_is_assignment);
 			break;
 		case GDScriptParser::Node::TERNARY_OPERATOR:
 			reduce_ternary_op(static_cast<GDScriptParser::TernaryOpNode *>(p_expression), p_is_root);
@@ -2812,7 +2812,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 #endif
 
-	reduce_expression(p_assignment->assignee);
+	reduce_expression(p_assignment->assignee, false, true);
 
 #ifdef DEBUG_ENABLED
 	{
@@ -3568,7 +3568,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		return;
 	}
 
-	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
+	GDScriptParser::ClassNode *real_base_class = nullptr;
+	GDScriptParser::FunctionNode *real_function = nullptr;
+	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags, nullptr, &real_base_class, &real_function)) {
 		// If the method is implemented in the class hierarchy, the virtual flag will not be set for that MethodInfo and the search stops there.
 		// Virtual check only possible for super() calls because class hierarchy is known. Node/Objects may have scripts attached we don't know of at compile-time.
 		p_call->is_static = method_flags.has_flag(METHOD_FLAG_STATIC);
@@ -3619,6 +3621,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 		if (!p_is_root && !p_is_await && return_type.is_hard_type() && return_type.kind == GDScriptParser::DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
 			push_error(vformat(R"*(Cannot get return value of call to "%s()" because it returns "void".)*", p_call->function_name), p_call);
+		}
+
+		if (p_call && real_function && base_type.kind == GDScriptParser::DataType::Kind::CLASS) {
+			check_access_level(base_type.to_string(), real_base_class, real_function->access_level, p_call->function_name, p_call, false, false);
 		}
 
 #ifdef DEBUG_ENABLED
@@ -3971,7 +3977,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base_set_class(GDScriptParser::Ide
 	p_identifier->is_constant = true;
 }
 
-void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base) {
+void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base, GDScriptParser::ClassNode **r_real_base_class) {
 	if (!p_identifier->get_datatype().has_no_type()) {
 		return;
 	}
@@ -4122,6 +4128,10 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 		if (script_class->has_member(name)) {
 			resolve_class_member(script_class, name, p_identifier);
+
+			if (r_real_base_class) {
+				*r_real_base_class = script_class;
+			}
 
 			GDScriptParser::ClassNode::Member member = script_class->get_member(name);
 			switch (member.type) {
@@ -4310,7 +4320,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	}
 }
 
-void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin) {
+void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin, bool p_is_assignment) {
 	// TODO: This is an opportunity to further infer types.
 
 	// Check if we are inside an enum. This allows enum values to access other elements of the same enum.
@@ -4397,10 +4407,12 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	// Not a local, so check members.
 
 	if (!found_source) {
-		reduce_identifier_from_base(p_identifier);
+		GDScriptParser::ClassNode *real_base_class = nullptr;
+		reduce_identifier_from_base(p_identifier, nullptr, &real_base_class);
 		if (p_identifier->source != GDScriptParser::IdentifierNode::UNDEFINED_SOURCE || p_identifier->get_datatype().is_set()) {
 			// Found.
 			found_source = true;
+			check_access_level_for_subscript_attribute(parser->current_class->get_datatype().to_string(), real_base_class, p_identifier, p_identifier, p_is_assignment);
 		}
 	}
 
@@ -4709,14 +4721,14 @@ void GDScriptAnalyzer::reduce_self(GDScriptParser::SelfNode *p_self) {
 	mark_lambda_use_self();
 }
 
-void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscript, bool p_can_be_pseudo_type) {
+void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscript, bool p_can_be_pseudo_type, bool p_is_assignment) {
 	if (p_subscript->base == nullptr) {
 		return;
 	}
 	if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
-		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base), true);
+		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base), true, p_is_assignment);
 	} else if (p_subscript->base->type == GDScriptParser::Node::SUBSCRIPT) {
-		reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_subscript->base), true);
+		reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_subscript->base), true, false);
 	} else {
 		reduce_expression(p_subscript->base);
 	}
@@ -4730,6 +4742,14 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 		GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 		bool valid = false;
+
+		if (base_type.kind == GDScriptParser::DataType::Kind::CLASS) {
+			GDScriptParser::ClassNode *real_base_class = nullptr;
+			reduce_identifier_from_base(p_subscript->attribute, &base_type, &real_base_class);
+			if (real_base_class) {
+				check_access_level_for_subscript_attribute(base_type.to_string(), real_base_class, p_subscript->attribute, p_subscript, p_is_assignment);
+			}
+		}
 
 		// If the base is a metatype, use the analyzer instead.
 		if (p_subscript->base->is_constant && !base_type.is_meta_type) {
@@ -5069,6 +5089,78 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 	}
 
 	p_subscript->set_datatype(result_type);
+}
+
+void GDScriptAnalyzer::check_access_level(const String &p_base_type_name, GDScriptParser::ClassNode *p_real_base, GDScriptParser::AccessLevel p_access_level, const StringName &p_identifier_name, GDScriptParser::Node *p_source, bool p_is_attribute, bool p_is_assignment) {
+	switch (p_access_level) {
+		case GDScriptParser::AccessLevel::PRIVATE: {
+			if (parser->current_class == p_real_base) {
+				return;
+			}
+		} break;
+		case GDScriptParser::AccessLevel::PROTECTED: {
+			bool inherited = false;
+			GDScriptParser::ClassNode *clazz = parser->current_class;
+			while (clazz) {
+				if (clazz == p_real_base) {
+					inherited = true;
+					break;
+				}
+				resolve_class_inheritance(clazz, p_source);
+				clazz = clazz->base_type.class_type;
+			}
+			if (inherited) {
+				return;
+			}
+		} break;
+		case GDScriptParser::AccessLevel::PUBLIC: {
+			return;
+		} break;
+		case GDScriptParser::AccessLevel::READONLY: {
+			if (p_is_attribute) {
+				if (parser->current_class == p_real_base || p_is_assignment == false) {
+					return;
+				} else if (p_is_assignment) {
+					push_error(vformat(R"(Cannot assign to %s attribute "%s" on the class %s)", GDScriptParser::access_level_to_string(p_access_level), p_identifier_name, p_base_type_name), p_source);
+					return;
+				}
+			} else {
+				ERR_FAIL_MSG("BUG: read-only access level cannot be applied to function");
+			}
+		} break;
+	}
+
+	if (p_is_attribute) {
+		push_error(vformat(R"(Cannot access %s attribute "%s" on the class %s)", GDScriptParser::access_level_to_string(p_access_level), p_identifier_name, p_base_type_name), p_source);
+	} else {
+		push_error(vformat(R"*(Cannot call %s function "%s()" on the class %s.)*", GDScriptParser::access_level_to_string(p_access_level), p_identifier_name, p_base_type_name), p_source);
+	}
+}
+
+void GDScriptAnalyzer::check_access_level_for_subscript_attribute(const String &p_base_type_name, GDScriptParser::ClassNode *p_real_base, GDScriptParser::IdentifierNode *p_attribute, GDScriptParser::Node *p_source, bool p_is_assignment) {
+	if (p_real_base == nullptr || p_real_base->get_datatype().kind != GDScriptParser::DataType::Kind::CLASS) {
+		return;
+	}
+
+	// Also handle member function to prevent calling through Callable:
+	//   var t = foo.some_private_method
+	//   t.call()
+	GDScriptParser::AccessLevel access_level;
+	if (p_attribute->source == GDScriptParser::IdentifierNode::Source::MEMBER_VARIABLE) {
+		if (p_attribute->variable_source == nullptr) {
+			return;
+		}
+		access_level = p_attribute->variable_source->access_level;
+	} else if (p_attribute->source == GDScriptParser::IdentifierNode::Source::MEMBER_FUNCTION) {
+		if (p_attribute->function_source == nullptr) {
+			return;
+		}
+		access_level = p_attribute->function_source->access_level;
+	} else {
+		return;
+	}
+
+	check_access_level(p_base_type_name, p_real_base, access_level, p_attribute->name, p_source, true, p_is_assignment);
 }
 
 void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root) {
@@ -5640,7 +5732,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	return result;
 }
 
-bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class) {
+bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType p_base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, BitField<MethodFlags> &r_method_flags, StringName *r_native_class, GDScriptParser::ClassNode **r_real_base_class, GDScriptParser::FunctionNode **r_found_function) {
 	r_method_flags = METHOD_FLAGS_DEFAULT;
 	r_default_arg_count = 0;
 	if (r_native_class) {
@@ -5723,6 +5815,14 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 
 			resolve_class_member(base_class, function_name, p_source);
 			found_function = base_class->get_member(function_name).function;
+			if (found_function) {
+				if (r_found_function) {
+					*r_found_function = found_function;
+				}
+				if (r_real_base_class) {
+					*r_real_base_class = base_class;
+				}
+			}
 		}
 
 		resolve_class_inheritance(base_class, p_source);

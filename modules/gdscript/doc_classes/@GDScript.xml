@@ -738,6 +738,24 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@private">
+			<return type="void" />
+			<description>
+				Set the default access level to "private" for all the class methods and class variables without explicit access level modifier in this script.
+			</description>
+		</annotation>
+		<annotation name="@protected">
+			<return type="void" />
+			<description>
+				Set the default access level to "protected" for all the class methods and class variables without explicit access level modifier in this script.
+			</description>
+		</annotation>
+		<annotation name="@public">
+			<return type="void" />
+			<description>
+				Set the default access level to "public" for all the class methods and class variables without explicit access level modifier in this script.
+			</description>
+		</annotation>
 		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
