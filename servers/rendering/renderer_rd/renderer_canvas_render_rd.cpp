@@ -1517,7 +1517,13 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	MutexLock lock(canvas_singleton->shader.mutex);
 
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
-	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+	if (err != OK) {
+		if (version.is_valid()) {
+			canvas_singleton->shader.canvas_shader.version_free(version);
+			version = RID();
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
@@ -1593,9 +1599,13 @@ uint64_t RendererCanvasRenderRD::CanvasShaderData::get_vertex_input_mask(ShaderV
 }
 
 bool RendererCanvasRenderRD::CanvasShaderData::is_valid() const {
-	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	MutexLock lock(canvas_singleton->shader.mutex);
-	return canvas_singleton->shader.canvas_shader.version_is_valid(version);
+	if (version.is_valid()) {
+		RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
+		MutexLock lock(canvas_singleton->shader.mutex);
+		return canvas_singleton->shader.canvas_shader.version_is_valid(version);
+	} else {
+		return false;
+	}
 }
 
 RendererCanvasRenderRD::CanvasShaderData::CanvasShaderData() {

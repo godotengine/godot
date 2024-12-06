@@ -143,7 +143,14 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (err != OK) {
+		if (version.is_valid()) {
+			SceneShaderForwardMobile::singleton->shader.version_free(version);
+			version = RID();
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	if (version.is_null()) {
 		version = SceneShaderForwardMobile::singleton->shader.version_create();

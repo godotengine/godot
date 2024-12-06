@@ -143,7 +143,14 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
 	Error err = SceneShaderForwardClustered::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (err != OK) {
+		if (version.is_valid()) {
+			SceneShaderForwardClustered::singleton->shader.version_free(version);
+			version = RID();
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	if (version.is_null()) {
 		version = SceneShaderForwardClustered::singleton->shader.version_create();
