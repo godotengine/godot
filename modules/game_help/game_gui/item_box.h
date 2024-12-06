@@ -37,7 +37,7 @@ public:
         }
     }
 
-    void set_item_visible_change_callback(Callable& p_item_visible_change_cb) {
+    void set_item_visible_change_callback(const Callable& p_item_visible_change_cb) {
         item_visible_change_cb = p_item_visible_change_cb;
     }
 

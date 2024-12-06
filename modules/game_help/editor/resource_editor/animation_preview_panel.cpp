@@ -44,6 +44,7 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
     hbc->add_child(vs);
 
     animation_list = memnew(ItemBox);
+    animation_list->set_item_visible_change_callback(callable_mp(this, &AnimationPreviewPanel::on_item_visible_state_change));
     hbc->add_child(animation_list);
 
     set_process(true);
@@ -152,6 +153,7 @@ void AnimationPreviewPanel::refresh_animation_list(bool update_ui) {
             StringName name = it;
             animation_group_tab->add_tab(name);
         }
+        animation_group_tab->set_current_tab_by_name(last_select_group);
 
         for(auto& it : animation_tags_list) {
             StringName name = it;

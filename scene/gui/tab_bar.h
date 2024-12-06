@@ -241,7 +241,8 @@ public:
 
 	void set_tab_count(int p_count);
 	int get_tab_count() const;
-
+	int get_tab_index_by_name(const String &p_name) const;
+	void set_current_tab_by_name(const String& p_current_name,bool p_emit_signal = true);
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 	int get_previous_tab() const;

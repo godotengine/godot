@@ -37,7 +37,7 @@
 #include "modules/gltf/structures/gltf_skin.h"
 #include "modules/gltf/structures/gltf_texture.h"
 
-#include <ufbx.h>
+#include <thirdparty/ufbx/ufbx.h>
 
 class FBXState : public GLTFState {
 	GDCLASS(FBXState, GLTFState);
@@ -46,7 +46,7 @@ class FBXState : public GLTFState {
 	friend class GLTFSkin;
 
 	// Smart pointer that holds the loaded scene.
-	ufbx_unique_ptr<ufbx_scene> scene;
+	ufbx_unique_ptr<struct ufbx_scene> scene;
 	bool allow_geometry_helper_nodes = false;
 
 	HashMap<uint64_t, Image::AlphaMode> alpha_mode_cache;
