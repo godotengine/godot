@@ -423,7 +423,7 @@ public:
 	virtual String clipboard_get_primary() const override;
 
 	virtual bool clipboard_has_type(const String &p_type) const override;
-	virtual Vector<uint8_t> clipboard_get_raw_type(const String &p_type) const override;
+	virtual Vector<uint8_t> clipboard_get_type(const String &p_type) const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

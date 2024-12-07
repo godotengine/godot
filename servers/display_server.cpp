@@ -49,7 +49,6 @@
 DisplayServer *DisplayServer::singleton = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
-HashMap<StringName, Callable> DisplayServer::clipboard_handler_map;
 
 bool DisplayServer::window_early_clear_override_enabled = false;
 Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
@@ -546,34 +545,8 @@ bool DisplayServer::clipboard_has_type(const String &p_type) const {
 	ERR_FAIL_V_MSG(false, "Dynamic Clipboard is not implemented yet by this display server.");
 }
 
-Vector<uint8_t> DisplayServer::clipboard_get_raw_type(const String &p_type) const {
+Vector<uint8_t> DisplayServer::clipboard_get_type(const String &p_type) const {
 	ERR_FAIL_V_MSG(Vector<uint8_t>(), "Dynamic Clipboard is not implemented yet by this display server.");
-}
-
-Variant DisplayServer::clipboard_get_type(const String &p_type) const {
-	StringName type = StringName(p_type);
-	ERR_FAIL_COND_V(!clipboard_handler_map.has(type), Variant::NIL);
-	Vector<uint8_t> raw = clipboard_get_raw_type(p_type);
-	ERR_FAIL_COND_V(raw.is_empty(), Variant::NIL);
-	return clipboard_handler_map.get(type).call(raw);
-}
-
-Error DisplayServer::clipboard_add_type_handler(const String &p_type, const Callable &p_handler) const {
-	StringName type = StringName(p_type);
-	ERR_FAIL_COND_V_MSG(clipboard_handler_map.has(type), ERR_ALREADY_EXISTS, "Clipboard already has handler for type");
-	clipboard_handler_map.insert(type, p_handler);
-	return OK;
-}
-
-Error DisplayServer::clipboard_remove_type_handler(const String &p_type) const {
-	StringName type = StringName(p_type);
-	ERR_FAIL_COND_V_MSG(!clipboard_handler_map.has(type), ERR_INVALID_PARAMETER, "Clipboard doesn't have handler for type");
-	clipboard_handler_map.erase(type);
-	return OK;
-}
-
-bool DisplayServer::clipboard_has_type_handler(const String &p_type) const {
-	return clipboard_handler_map.has(StringName(p_type));
 }
 
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
@@ -924,9 +897,6 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_has_type", "type"), &DisplayServer::clipboard_has_type);
 	ClassDB::bind_method(D_METHOD("clipboard_get_type", "type"), &DisplayServer::clipboard_get_type);
-	ClassDB::bind_method(D_METHOD("clipboard_add_type_handler", "type", "handler"), &DisplayServer::clipboard_add_type_handler);
-	ClassDB::bind_method(D_METHOD("clipboard_has_type_handler", "type"), &DisplayServer::clipboard_has_type_handler);
-	ClassDB::bind_method(D_METHOD("clipboard_remove_type_handler", "type"), &DisplayServer::clipboard_remove_type_handler);
 
 	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
 	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);
@@ -1361,8 +1331,6 @@ DisplayServer::DisplayServer() {
 	Input::warp_mouse_func = _input_warp;
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
-
-	clipboard_handler_map.insert(StringName("image/png"), callable_mp_static(_get_png_from_buffer));
 }
 
 DisplayServer::~DisplayServer() {

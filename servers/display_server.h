@@ -50,7 +50,6 @@ class DisplayServer : public Object {
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
-	static HashMap<StringName, Callable> clipboard_handler_map;
 
 #ifndef DISABLE_DEPRECATED
 	mutable HashMap<String, RID> menu_names;
@@ -272,7 +271,6 @@ private:
 protected:
 	static bool _get_window_early_clear_override(Color &r_color);
 
-	virtual Vector<uint8_t> clipboard_get_raw_type(const String &p_type) const;
 
 public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
@@ -300,11 +298,8 @@ public:
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 
-	Error clipboard_add_type_handler(const String &p_type, const Callable &p_handler) const;
-	Error clipboard_remove_type_handler(const String &p_type) const;
-	bool clipboard_has_type_handler(const String &p_type) const;
 	virtual bool clipboard_has_type(const String &p_type) const;
-	Variant clipboard_get_type(const String &p_type) const;
+	virtual PackedByteArray clipboard_get_type(const String &p_type) const;
 
 	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
