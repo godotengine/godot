@@ -402,82 +402,21 @@ void Projection::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, r
 }
 
 real_t Projection::get_z_far() const {
-	const real_t *matrix = (const real_t *)columns;
-	Plane new_plane = Plane(matrix[3] - matrix[2],
-			matrix[7] - matrix[6],
-			matrix[11] - matrix[10],
-			matrix[15] - matrix[14]);
-
-	new_plane.normalize();
-
-	return new_plane.d;
+	return -(columns[3][3] - columns[3][2]) / (columns[2][2] - columns[2][3]);
 }
 
 real_t Projection::get_z_near() const {
-	const real_t *matrix = (const real_t *)columns;
-	Plane new_plane = Plane(matrix[3] + matrix[2],
-			matrix[7] + matrix[6],
-			matrix[11] + matrix[10],
-			-matrix[15] - matrix[14]);
-
-	new_plane.normalize();
-	return new_plane.d;
+	return (columns[3][3] + columns[3][2]) / (columns[2][2] + columns[2][3]);
 }
 
 Vector2 Projection::get_viewport_half_extents() const {
-	const real_t *matrix = (const real_t *)columns;
-	///////--- Near Plane ---///////
-	Plane near_plane = Plane(matrix[3] + matrix[2],
-			matrix[7] + matrix[6],
-			matrix[11] + matrix[10],
-			-matrix[15] - matrix[14]);
-	near_plane.normalize();
-
-	///////--- Right Plane ---///////
-	Plane right_plane = Plane(matrix[3] - matrix[0],
-			matrix[7] - matrix[4],
-			matrix[11] - matrix[8],
-			-matrix[15] + matrix[12]);
-	right_plane.normalize();
-
-	Plane top_plane = Plane(matrix[3] - matrix[1],
-			matrix[7] - matrix[5],
-			matrix[11] - matrix[9],
-			-matrix[15] + matrix[13]);
-	top_plane.normalize();
-
-	Vector3 res;
-	near_plane.intersect_3(right_plane, top_plane, &res);
-
-	return Vector2(res.x, res.y);
+	real_t w = -get_z_near() * columns[2][3] + columns[3][3];
+	return Vector2(w / columns[0][0], w / columns[1][1]);
 }
 
 Vector2 Projection::get_far_plane_half_extents() const {
-	const real_t *matrix = (const real_t *)columns;
-	///////--- Far Plane ---///////
-	Plane far_plane = Plane(matrix[3] - matrix[2],
-			matrix[7] - matrix[6],
-			matrix[11] - matrix[10],
-			-matrix[15] + matrix[14]);
-	far_plane.normalize();
-
-	///////--- Right Plane ---///////
-	Plane right_plane = Plane(matrix[3] - matrix[0],
-			matrix[7] - matrix[4],
-			matrix[11] - matrix[8],
-			-matrix[15] + matrix[12]);
-	right_plane.normalize();
-
-	Plane top_plane = Plane(matrix[3] - matrix[1],
-			matrix[7] - matrix[5],
-			matrix[11] - matrix[9],
-			-matrix[15] + matrix[13]);
-	top_plane.normalize();
-
-	Vector3 res;
-	far_plane.intersect_3(right_plane, top_plane, &res);
-
-	return Vector2(res.x, res.y);
+	real_t w = -get_z_far() * columns[2][3] + columns[3][3];
+	return Vector2(w / columns[0][0], w / columns[1][1]);
 }
 
 bool Projection::get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const {
@@ -919,14 +858,12 @@ Projection::operator String() const {
 }
 
 real_t Projection::get_aspect() const {
-	Vector2 vp_he = get_viewport_half_extents();
-	return vp_he.x / vp_he.y;
+	return columns[1][1] / columns[0][0];
 }
 
 int Projection::get_pixels_per_meter(int p_for_pixel_width) const {
-	Vector3 result = xform(Vector3(1, 0, -1));
-
-	return int((result.x * 0.5 + 0.5) * p_for_pixel_width);
+	real_t width = 2.0f * (-get_z_near() * columns[2][3] + columns[3][3]) / columns[0][0];
+	return int(p_for_pixel_width / width); // The cast to int should be removed at some point (kept for compatibility for now)
 }
 
 bool Projection::is_orthogonal() const {
@@ -934,38 +871,18 @@ bool Projection::is_orthogonal() const {
 }
 
 real_t Projection::get_fov() const {
-	const real_t *matrix = (const real_t *)columns;
-
-	Plane right_plane = Plane(matrix[3] - matrix[0],
-			matrix[7] - matrix[4],
-			matrix[11] - matrix[8],
-			-matrix[15] + matrix[12]);
-	right_plane.normalize();
-
-	if ((matrix[8] == 0) && (matrix[9] == 0)) {
-		return Math::rad_to_deg(Math::acos(Math::abs(right_plane.normal.x))) * 2.0;
+	if (columns[2][0] == 0) {
+		return Math::rad_to_deg(2 * Math::atan(1.0 / columns[0][0]));
 	} else {
-		// our frustum is asymmetrical need to calculate the left planes angle separately..
-		Plane left_plane = Plane(matrix[3] + matrix[0],
-				matrix[7] + matrix[4],
-				matrix[11] + matrix[8],
-				matrix[15] + matrix[12]);
-		left_plane.normalize();
-
-		return Math::rad_to_deg(Math::acos(Math::abs(left_plane.normal.x))) + Math::rad_to_deg(Math::acos(Math::abs(right_plane.normal.x)));
+		// The frustum is asymmetrical so we need to calculate the left and right angles separately.
+		real_t right = (columns[2][0] + 1) / columns[0][0];
+		real_t left = (columns[2][0] - 1) / columns[0][0];
+		return Math::rad_to_deg(Math::atan(right) - Math::atan(left));
 	}
 }
 
 real_t Projection::get_lod_multiplier() const {
-	if (is_orthogonal()) {
-		return get_viewport_half_extents().x;
-	} else {
-		const real_t zn = get_z_near();
-		const real_t width = get_viewport_half_extents().x * 2.0f;
-		return 1.0f / (zn / width);
-	}
-
-	// Usage is lod_size / (lod_distance * multiplier) < threshold
+	return 2.0f / columns[0][0];
 }
 
 void Projection::make_scale(const Vector3 &p_scale) {
