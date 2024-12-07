@@ -765,12 +765,25 @@ void DependencyErrorDialog::on_update_callback(Vector<String> report) {
 		files->clear();
 		set_ok_button_text(TTR("Open"));
 	}
-	auto len = files->get_size().length();
-	printf("%f", len);
-	// for (auto &r : report) {
-		
-	// 	if ()
-	// }
+
+	// recreating files to update the popup list
+	files->clear();
+
+	TreeItem *root = files->create_item(nullptr);
+	for (int i = 0; i < report.size(); i++) {
+		String dep;
+		String type = "Object";
+		dep = report[i].get_slice("::", 0);
+		if (report[i].get_slice_count("::") > 0) {
+			type = report[i].get_slice("::", 1);
+		}
+
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
+
+		TreeItem *ti = files->create_item(root);
+		ti->set_text(0, dep);
+		ti->set_icon(0, icon);
+	}
 }
 
 DependencyErrorDialog::DependencyErrorDialog() {
