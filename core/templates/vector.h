@@ -33,7 +33,10 @@
 
 /**
  * @class Vector
- * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use Vector for large arrays.
+ * Vector container. Simple copy-on-write container.
+ *
+ * LocalVector is an alternative available for internal use when COW is not
+ * required.
  */
 
 #include "core/error/error_macros.h"
