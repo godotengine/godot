@@ -41,8 +41,13 @@
 template <size_t previous_offset, typename PreviousType, typename NextType>
 constexpr size_t memory_get_offset() {
 	size_t free_addr = previous_offset + sizeof(PreviousType);
-	size_t n_bytes_unaligned = free_addr % alignof(NextType);
-	return (n_bytes_unaligned == 0) ? free_addr : (free_addr + alignof(NextType) - n_bytes_unaligned);
+	size_t alignment = alignof(NextType);
+
+	if (alignment == 0) {
+		return free_addr;
+	}
+	size_t n_bytes_unaligned = free_addr % alignment;
+	return (n_bytes_unaligned == 0) ? free_addr : (free_addr + alignment - n_bytes_unaligned);
 }
 
 class Memory {

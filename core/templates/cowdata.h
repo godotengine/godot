@@ -89,7 +89,7 @@ private:
 		return ++x;
 	}
 
-	// Alignment:  ↓ max_align_t           ↓ USize          ↓ max_align_t
+	// Alignment:  ↓ max_align_t           ↓ USize          ↓ T
 	//             ┌────────────────────┬──┬─────────────┬──┬───────────...
 	//             │ SafeNumeric<USize> │░░│ USize       │░░│ T[]
 	//             │ ref. count         │░░│ data size   │░░│ data
@@ -98,7 +98,7 @@ private:
 
 	static constexpr size_t REF_COUNT_OFFSET = 0;
 	static constexpr size_t SIZE_OFFSET = memory_get_offset<REF_COUNT_OFFSET, SafeNumeric<USize>, USize>();
-	static constexpr size_t DATA_OFFSET = memory_get_offset<SIZE_OFFSET, USize, max_align_t>();
+	static constexpr size_t DATA_OFFSET = memory_get_offset<SIZE_OFFSET, USize, T>();
 
 	mutable T *_ptr = nullptr;
 
