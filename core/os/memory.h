@@ -50,9 +50,9 @@ public:
 	//             └─────────────────┴──┴────────────────┴──┴───────────...
 	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
 
-	static constexpr size_t SIZE_OFFSET = 0;
-	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
-	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
+	static const size_t SIZE_OFFSET;
+	static const size_t ELEMENT_OFFSET;
+	static const size_t DATA_OFFSET;
 
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
@@ -85,7 +85,18 @@ public:
 	static uint64_t get_mem_available();
 	static uint64_t get_mem_usage();
 	static uint64_t get_mem_max_usage();
+
+	static constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment);
 };
+
+constexpr size_t Memory::get_aligned_address(size_t p_address, size_t p_alignment) {
+	const size_t n_bytes_unaligned = p_address % p_alignment;
+	return (n_bytes_unaligned == 0) ? p_address : (p_address + p_alignment - n_bytes_unaligned);
+}
+
+inline constexpr size_t Memory::SIZE_OFFSET = 0;
+inline constexpr size_t Memory::ELEMENT_OFFSET = get_aligned_address(SIZE_OFFSET + sizeof(uint64_t), alignof(uint64_t));
+inline constexpr size_t Memory::DATA_OFFSET = get_aligned_address(ELEMENT_OFFSET + sizeof(uint64_t), alignof(max_align_t));
 
 class DefaultAllocator {
 public:
