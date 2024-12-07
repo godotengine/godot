@@ -430,6 +430,40 @@ void CharacterBody2D::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 }
 
+#include <cstdarg>
+
+bool CharacterBody2D::is_touching(const char* bound, ...) const {
+	va_list args;
+	va_start(args, bound);
+
+	while (*bound != '\0')
+	{
+		if (*bound == "only")
+		{
+			++bound;
+			switch(tolower(*bound))
+			{
+				case "floor": return on_floor && !on_wall && !on_ceilling;
+				case "wall": return !on_floor && on_wall & !on_ceiling;
+				case "ceiling": return !on_floor && !on_wall & on_ceiling;
+				default: return 0;
+			}
+		}
+		else
+		{
+			switch(tolower(*bound))
+			{
+				case "floor": return on_floor;
+				case "wall": return on_wall;
+				case "ceiling": return on_ceiling;
+				default: return 0;
+			}
+		}
+	}
+
+	va_end(args);
+}
+
 bool CharacterBody2D::is_on_floor() const {
 	return on_floor;
 }
