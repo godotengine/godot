@@ -1528,7 +1528,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	String config_file = "project.binary";
-	String engine_cfb = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp" + config_file);
+	String engine_cfb = EditorPaths::get_singleton()->get_temp_dir().path_join("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_bytes(engine_cfb);
 	DirAccess::remove_file_or_error(engine_cfb);
@@ -1832,9 +1832,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	// Create the temporary export directory if it doesn't exist.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir());
+	da->make_dir_recursive(EditorPaths::get_singleton()->get_temp_dir());
 
-	String tmppath = EditorPaths::get_singleton()->get_cache_dir().path_join("packtmp");
+	String tmppath = EditorPaths::get_singleton()->get_temp_dir().path_join("packtmp");
 	Ref<FileAccess> ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	if (ftmp.is_null()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Cannot create file \"%s\"."), tmppath));
@@ -2094,7 +2094,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 		p_save_func = _save_zip_file;
 	}
 
-	String tmppath = EditorPaths::get_singleton()->get_cache_dir().path_join("packtmp");
+	String tmppath = EditorPaths::get_singleton()->get_temp_dir().path_join("packtmp");
 
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
