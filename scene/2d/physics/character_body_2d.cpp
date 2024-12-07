@@ -441,27 +441,43 @@ bool CharacterBody2D::is_touching(const char* bound, ...) const {
 		if (*bound == "only")
 		{
 			++bound;
-			switch(tolower(*bound))
+			switch(*bound)
 			{
-				case "floor": return on_floor && !on_wall && !on_ceilling;
-				case "wall": return !on_floor && on_wall & !on_ceiling;
-				case "ceiling": return !on_floor && !on_wall & on_ceiling;
+				case "floor": {
+					va_end(args);
+					return on_floor && !on_wall && !on_ceilling;
+				}
+				case "wall": {
+					va_end(args);
+					return !on_floor && on_wall && !on_ceiling;
+				}
+				case "ceiling": {
+					va_end(args);
+					return !on_floor && !on_wall && on_ceiling;
+				}
 				default: return 0;
 			}
 		}
 		else
 		{
-			switch(tolower(*bound))
+			switch(*bound)
 			{
-				case "floor": return on_floor;
-				case "wall": return on_wall;
-				case "ceiling": return on_ceiling;
+				case "floor": {
+					va_end(args);
+					return on_floor;
+				}
+				case "wall": {
+					va_end(args);
+					return on_wall;
+				}
+				case "ceiling": {
+					va_end(args);
+					return on_ceiling;
+				}
 				default: return 0;
 			}
 		}
 	}
-
-	va_end(args);
 }
 
 bool CharacterBody2D::is_on_floor() const {
