@@ -270,7 +270,7 @@ void EditorHelp::_search(bool p_search_previous) {
 
 void EditorHelp::_class_desc_finished() {
 	if (scroll_to >= 0) {
-		class_desc->scroll_to_paragraph(scroll_to);
+		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(scroll_to), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	}
 	scroll_to = -1;
 }
