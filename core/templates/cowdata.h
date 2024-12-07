@@ -48,6 +48,8 @@ class VMap;
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
+extern SafeNumeric<uint64_t> _MEM_ADDED;
+
 // Silence a false positive warning (see GH-52119).
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -70,6 +72,18 @@ public:
 	static constexpr USize MAX_INT = INT64_MAX;
 
 private:
+	struct Header {
+		SafeNumeric<USize> refcount;
+		USize size;
+		T _data; // dummy
+
+		_FORCE_INLINE_ T *data() {
+			return &this->_data;
+		}
+	};
+
+	static constexpr USize HEADER_SIZE = sizeof(Header) - sizeof(T);
+
 	// Function to find the next power of 2 to an integer.
 	static _FORCE_INLINE_ USize next_po2(USize x) {
 		if (x == 0) {
@@ -96,40 +110,16 @@ private:
 	//             └────────────────────┴──┴─────────────┴──┴───────────...
 	// Offset:     ↑ REF_COUNT_OFFSET      ↑ SIZE_OFFSET    ↑ DATA_OFFSET
 
-	static constexpr size_t REF_COUNT_OFFSET = 0;
-	static constexpr size_t SIZE_OFFSET = memory_get_offset<REF_COUNT_OFFSET, SafeNumeric<USize>, USize>();
-	static constexpr size_t DATA_OFFSET = memory_get_offset<SIZE_OFFSET, USize, T>();
-
-	mutable T *_ptr = nullptr;
+	mutable Header *_header_ptr = nullptr;
 
 	// internal helpers
 
-	static _FORCE_INLINE_ SafeNumeric<USize> *_get_refcount_ptr(uint8_t *p_ptr) {
-		return (SafeNumeric<USize> *)(p_ptr + REF_COUNT_OFFSET);
-	}
-
-	static _FORCE_INLINE_ USize *_get_size_ptr(uint8_t *p_ptr) {
-		return (USize *)(p_ptr + SIZE_OFFSET);
-	}
-
-	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
-		return (T *)(p_ptr + DATA_OFFSET);
-	}
-
 	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
-		if (!_ptr) {
+		if (!_header_ptr) {
 			return nullptr;
 		}
 
-		return (SafeNumeric<USize> *)((uint8_t *)_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
-	}
-
-	_FORCE_INLINE_ USize *_get_size() const {
-		if (!_ptr) {
-			return nullptr;
-		}
-
-		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
+		return &_header_ptr->refcount;
 	}
 
 	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
@@ -170,41 +160,38 @@ public:
 
 	_FORCE_INLINE_ T *ptrw() {
 		_copy_on_write();
-		return _ptr;
+		return _header_ptr->data();
 	}
 
 	_FORCE_INLINE_ const T *ptr() const {
-		return _ptr;
+		return _header_ptr->data();
 	}
 
 	_FORCE_INLINE_ Size size() const {
-		USize *size = (USize *)_get_size();
-		if (size) {
-			return *size;
-		} else {
+		if (!_header_ptr) {
 			return 0;
 		}
+
+		return _header_ptr->size;
 	}
 
 	_FORCE_INLINE_ void clear() { resize(0); }
-	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
+	_FORCE_INLINE_ bool is_empty() const { return _header_ptr == nullptr; }
 
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) {
 		ERR_FAIL_INDEX(p_index, size());
-		_copy_on_write();
-		_ptr[p_index] = p_elem;
+		ptrw()[p_index] = p_elem;
 	}
 
 	_FORCE_INLINE_ T &get_m(Size p_index) {
 		CRASH_BAD_INDEX(p_index, size());
-		_copy_on_write();
-		return _ptr[p_index];
+		return ptrw()[p_index];
 	}
 
 	_FORCE_INLINE_ const T &get(Size p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
-		return _ptr[p_index];
+		return ptr()[p_index];
 	}
 
 	template <bool p_ensure_zero = false>
@@ -246,7 +233,7 @@ public:
 
 template <typename T>
 void CowData<T>::_unref() {
-	if (!_ptr) {
+	if (!_header_ptr) {
 		return;
 	}
 
@@ -257,22 +244,22 @@ void CowData<T>::_unref() {
 	// clean up
 
 	if constexpr (!std::is_trivially_destructible_v<T>) {
-		USize current_size = *_get_size();
+		const USize current_size = size();
 
 		for (USize i = 0; i < current_size; ++i) {
 			// call destructors
-			T *t = &_ptr[i];
+			T *t = &_header_ptr->data()[i];
 			t->~T();
 		}
 	}
 
 	// free mem
-	Memory::free_static(((uint8_t *)_ptr) - DATA_OFFSET, false);
+	Memory::free_static(_header_ptr, false);
 }
 
 template <typename T>
 typename CowData<T>::USize CowData<T>::_copy_on_write() {
-	if (!_ptr) {
+	if (!_header_ptr) {
 		return 0;
 	}
 
@@ -281,29 +268,26 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 	USize rc = refc->get();
 	if (unlikely(rc > 1)) {
 		/* in use by more than me */
-		USize current_size = *_get_size();
+		const USize current_size = size();
 
-		uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
-		ERR_FAIL_NULL_V(mem_new, 0);
+		_MEM_ADDED.add(HEADER_SIZE + _get_alloc_size(current_size));
+		Header *new_header_ptr = (Header *)Memory::alloc_static(HEADER_SIZE + _get_alloc_size(current_size), false);
+		ERR_FAIL_NULL_V(new_header_ptr, 0);
 
-		SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-		USize *_size_ptr = _get_size_ptr(mem_new);
-		T *_data_ptr = _get_data_ptr(mem_new);
-
-		new (_refc_ptr) SafeNumeric<USize>(1); //refcount
-		*(_size_ptr) = current_size; //size
+		new (&new_header_ptr->refcount) SafeNumeric<USize>(1); //refcount
+		new_header_ptr->size = current_size; //size
 
 		// initialize new elements
 		if constexpr (std::is_trivially_copyable_v<T>) {
-			memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
+			memcpy(new_header_ptr->data(), _header_ptr->data(), current_size * sizeof(T));
 		} else {
 			for (USize i = 0; i < current_size; i++) {
-				memnew_placement(&_data_ptr[i], T(_ptr[i]));
+				memnew_placement(&new_header_ptr->data()[i], T(_header_ptr->data()[i]));
 			}
 		}
 
 		_unref();
-		_ptr = _data_ptr;
+		_header_ptr = new_header_ptr;
 
 		rc = 1;
 	}
@@ -324,7 +308,7 @@ Error CowData<T>::resize(Size p_size) {
 	if (p_size == 0) {
 		// wants to clean up
 		_unref();
-		_ptr = nullptr;
+		_header_ptr = nullptr;
 		return OK;
 	}
 
@@ -339,65 +323,58 @@ Error CowData<T>::resize(Size p_size) {
 		if (alloc_size != current_alloc_size) {
 			if (current_size == 0) {
 				// alloc from scratch
-				uint8_t *mem_new = (uint8_t *)Memory::alloc_static(alloc_size + DATA_OFFSET, false);
-				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
+				_MEM_ADDED.add(HEADER_SIZE + alloc_size);
+				Header *new_header_ptr = (Header *)Memory::alloc_static(HEADER_SIZE + alloc_size, false);
+				ERR_FAIL_NULL_V(new_header_ptr, ERR_OUT_OF_MEMORY);
 
-				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-				USize *_size_ptr = _get_size_ptr(mem_new);
-				T *_data_ptr = _get_data_ptr(mem_new);
+				new (&new_header_ptr->refcount) SafeNumeric<USize>(1); //refcount
+				new_header_ptr->size = 0; //size, currently none
 
-				new (_refc_ptr) SafeNumeric<USize>(1); //refcount
-				*(_size_ptr) = 0; //size, currently none
-
-				_ptr = _data_ptr;
+				_header_ptr = new_header_ptr;
 
 			} else {
-				uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
-				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
+				_MEM_ADDED.add(HEADER_SIZE + alloc_size);
+				Header *new_header_ptr = (Header *)Memory::realloc_static(_header_ptr, HEADER_SIZE + alloc_size, false);
+				ERR_FAIL_NULL_V(new_header_ptr, ERR_OUT_OF_MEMORY);
 
-				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-				T *_data_ptr = _get_data_ptr(mem_new);
+				new (&new_header_ptr->refcount) SafeNumeric<USize>(rc); //refcount
 
-				new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
-
-				_ptr = _data_ptr;
+				_header_ptr = new_header_ptr;
 			}
 		}
 
 		// construct the newly created elements
 
 		if constexpr (!std::is_trivially_constructible_v<T>) {
-			for (Size i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&_ptr[i], T);
+			for (Size i = _header_ptr->size; i < p_size; i++) {
+				memnew_placement(&_header_ptr->data()[i], T);
 			}
 		} else if (p_ensure_zero) {
-			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
+			memset((void *)(_header_ptr->data() + current_size), 0, (p_size - current_size) * sizeof(T));
 		}
 
-		*_get_size() = p_size;
+		_header_ptr->size = p_size;
 
 	} else if (p_size < current_size) {
 		if constexpr (!std::is_trivially_destructible_v<T>) {
 			// deinitialize no longer needed elements
-			for (USize i = p_size; i < *_get_size(); i++) {
-				T *t = &_ptr[i];
+			for (USize i = p_size; i < _header_ptr->size; i++) {
+				T *t = &_header_ptr->data()[i];
 				t->~T();
 			}
 		}
 
 		if (alloc_size != current_alloc_size) {
-			uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
-			ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
+			_MEM_ADDED.add(HEADER_SIZE + alloc_size);
+			Header *new_header_ptr = (Header *)Memory::realloc_static(_header_ptr, HEADER_SIZE + alloc_size, false);
+			ERR_FAIL_NULL_V(new_header_ptr, ERR_OUT_OF_MEMORY);
 
-			SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-			T *_data_ptr = _get_data_ptr(mem_new);
+			new (&new_header_ptr->refcount) SafeNumeric<USize>(rc); //refcount
 
-			new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
-
-			_ptr = _data_ptr;
+			_header_ptr = new_header_ptr;
 		}
 
-		*_get_size() = p_size;
+		_header_ptr->size = p_size;
 	}
 
 	return OK;
@@ -458,19 +435,19 @@ void CowData<T>::_ref(const CowData *p_from) {
 
 template <typename T>
 void CowData<T>::_ref(const CowData &p_from) {
-	if (_ptr == p_from._ptr) {
+	if (_header_ptr == p_from._header_ptr) {
 		return; // self assign, do nothing.
 	}
 
 	_unref();
-	_ptr = nullptr;
+	_header_ptr = nullptr;
 
-	if (!p_from._ptr) {
+	if (!p_from._header_ptr) {
 		return; //nothing to do
 	}
 
 	if (p_from._get_refcount()->conditional_increment() > 0) { // could reference
-		_ptr = p_from._ptr;
+		_header_ptr = p_from._header_ptr;
 	}
 }
 

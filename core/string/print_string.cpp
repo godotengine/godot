@@ -68,12 +68,18 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 	ERR_FAIL_NULL(l);
 }
 
+SafeNumeric<uint64_t> _MEM_ADDED;
+
 void __print_line(const String &p_string) {
 	if (!CoreGlobals::print_line_enabled) {
 		return;
 	}
 
+	static auto start = std::chrono::high_resolution_clock::now();
 	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
+	OS::get_singleton()->print("%llu\n", _MEM_ADDED.get());
+	auto diff = std::chrono::high_resolution_clock::now() - start;
+	OS::get_singleton()->print("%llu\n", std::chrono::duration_cast<std::chrono::microseconds>(diff).count());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
