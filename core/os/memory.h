@@ -38,6 +38,13 @@
 #include <new>
 #include <type_traits>
 
+template <size_t previous_offset, typename PreviousType, typename NextType>
+constexpr size_t memory_get_offset() {
+	size_t free_addr = previous_offset + sizeof(PreviousType);
+	size_t n_bytes_unaligned = free_addr % alignof(NextType);
+	return (n_bytes_unaligned == 0) ? free_addr : (free_addr + alignof(NextType) - n_bytes_unaligned);
+}
+
 class Memory {
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> mem_usage;
@@ -55,8 +62,8 @@ public:
 	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
 
 	static constexpr size_t SIZE_OFFSET = 0;
-	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
-	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
+	static constexpr size_t ELEMENT_OFFSET = memory_get_offset<SIZE_OFFSET, uint64_t, uint64_t>();
+	static constexpr size_t DATA_OFFSET = memory_get_offset<ELEMENT_OFFSET, uint64_t, max_align_t>();
 
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
