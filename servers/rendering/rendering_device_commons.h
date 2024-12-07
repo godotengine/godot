@@ -373,6 +373,7 @@ public:
 		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
+		bool is_discardable = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {
@@ -394,6 +395,10 @@ public:
 			} else if (usage_bits != b.usage_bits) {
 				return false;
 			} else if (shareable_formats != b.shareable_formats) {
+				return false;
+			} else if (is_resolve_buffer != b.is_resolve_buffer) {
+				return false;
+			} else if (is_discardable != b.is_discardable) {
 				return false;
 			} else {
 				return true;

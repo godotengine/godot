@@ -265,7 +265,15 @@ void OS_Windows::initialize() {
 
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
-	timeBeginPeriod(1);
+	TIMECAPS time_caps;
+	if (timeGetDevCaps(&time_caps, sizeof(time_caps)) == MMSYSERR_NOERROR) {
+		delay_resolution = time_caps.wPeriodMin * 1000;
+		timeBeginPeriod(time_caps.wPeriodMin);
+	} else {
+		ERR_PRINT("Unable to detect sleep timer resolution.");
+		delay_resolution = 1000;
+		timeBeginPeriod(1);
+	}
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -817,22 +825,10 @@ double OS_Windows::get_unix_time() const {
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	constexpr uint32_t tolerance = 1000 + 20;
-
-	uint64_t t0 = get_ticks_usec();
-	uint64_t target_time = t0 + p_usec;
-
-	// Calculate sleep duration with a tolerance for fine-tuning.
-	if (p_usec > tolerance) {
-		uint32_t coarse_sleep_usec = p_usec - tolerance;
-		if (coarse_sleep_usec >= 1000) {
-			Sleep(coarse_sleep_usec / 1000);
-		}
-	}
-
-	// Spin-wait until we reach the precise target time.
-	while (get_ticks_usec() < target_time) {
-		YieldProcessor();
+	if (p_usec < 1000) {
+		Sleep(1);
+	} else {
+		Sleep(p_usec / 1000);
 	}
 }
 
@@ -1540,7 +1536,8 @@ DWRITE_FONT_STRETCH OS_Windows::_stretch_to_dw(int p_stretch) const {
 }
 
 Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
-	if (!dwrite2_init) {
+	// This may be called before TextServerManager has been created, which would cause a crash downstream if we do not check here
+	if (!dwrite2_init || !TextServerManager::get_singleton()) {
 		return Vector<String>();
 	}
 
@@ -1751,7 +1748,7 @@ String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
 	data.resize(p_buffer_size);
 	DWORD count = 0;
 	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
-		return String::utf8((const char *)data.ptr(), count);
+		return String::utf8((const char *)data.ptr(), count).replace("\r\n", "\n").rstrip("\n");
 	}
 
 	return String();
@@ -2080,14 +2077,35 @@ String OS_Windows::get_cache_path() const {
 		if (has_environment("LOCALAPPDATA")) {
 			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
 		}
-		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
-			cache_path_cache = get_environment("TEMP").replace("\\", "/");
-		}
 		if (cache_path_cache.is_empty()) {
-			cache_path_cache = get_config_path();
+			cache_path_cache = get_temp_path();
 		}
 	}
 	return cache_path_cache;
+}
+
+String OS_Windows::get_temp_path() const {
+	static String temp_path_cache;
+	if (temp_path_cache.is_empty()) {
+		{
+			Vector<WCHAR> temp_path;
+			// The maximum possible size is MAX_PATH+1 (261) + terminating null character.
+			temp_path.resize(MAX_PATH + 2);
+			DWORD temp_path_length = GetTempPathW(temp_path.size(), temp_path.ptrw());
+			if (temp_path_length > 0 && temp_path_length < temp_path.size()) {
+				temp_path_cache = String::utf16((const char16_t *)temp_path.ptr());
+				// Let's try to get the long path instead of the short path (with tildes ~).
+				DWORD temp_path_long_length = GetLongPathNameW(temp_path.ptr(), temp_path.ptrw(), temp_path.size());
+				if (temp_path_long_length > 0 && temp_path_long_length < temp_path.size()) {
+					temp_path_cache = String::utf16((const char16_t *)temp_path.ptr());
+				}
+			}
+		}
+		if (temp_path_cache.is_empty()) {
+			temp_path_cache = get_config_path();
+		}
+	}
+	return temp_path_cache;
 }
 
 // Get properly capitalized engine name for system paths
@@ -2232,6 +2250,46 @@ String OS_Windows::get_system_ca_certificates() {
 	}
 	CertCloseStore(cert_store, 0);
 	return certs;
+}
+
+void OS_Windows::add_frame_delay(bool p_can_draw) {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		delay_usec(frame_delay * 1000);
+	}
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
+		uint64_t current_ticks = get_ticks_usec();
+
+		// The minimum sleep resolution on windows is 1 ms on most systems.
+		if (current_ticks < (target_ticks - delay_resolution)) {
+			delay_usec((target_ticks - delay_resolution) - current_ticks);
+		}
+		// Busy wait for the remainder of time.
+		while (get_ticks_usec() < target_ticks) {
+			YieldProcessor();
+		}
+
+		current_ticks = get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
+	}
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

@@ -35,6 +35,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
+const int InputEvent::DEVICE_ID_EMULATION = -1;
+const int InputEvent::DEVICE_ID_INTERNAL = -2;
+
 void InputEvent::set_device(int p_device) {
 	device = p_device;
 	emit_changed();

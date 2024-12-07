@@ -69,6 +69,12 @@ bool EditorInspector::_property_path_matches(const String &p_property_path, cons
 	return false;
 }
 
+String EditorProperty::get_tooltip_string(const String &p_string) const {
+	// Trim to 100 characters to prevent the tooltip from being too long.
+	constexpr int TOOLTIP_MAX_LENGTH = 100;
+	return p_string.left(TOOLTIP_MAX_LENGTH).strip_edges() + String((p_string.length() > TOOLTIP_MAX_LENGTH) ? "..." : "");
+}
+
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Tree"));
@@ -2534,7 +2540,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	new_size_spin_box = memnew(SpinBox);
 	new_size_spin_box->set_max(16384);
 	new_size_spin_box->connect(SceneStringName(value_changed), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_value_changed));
-	new_size_spin_box->get_line_edit()->connect("text_submitted", callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_submitted));
+	new_size_spin_box->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_submitted));
 	new_size_spin_box->set_editable(!read_only);
 	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_spin_box);
 
@@ -2617,7 +2623,7 @@ EditorPaginator::EditorPaginator() {
 	add_child(prev_page_button);
 
 	page_line_edit = memnew(LineEdit);
-	page_line_edit->connect("text_submitted", callable_mp(this, &EditorPaginator::_page_line_edit_text_submitted));
+	page_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &EditorPaginator::_page_line_edit_text_submitted));
 	page_line_edit->add_theme_constant_override("minimum_character_width", 2);
 	add_child(page_line_edit);
 
@@ -3472,6 +3478,14 @@ void EditorInspector::update_tree() {
 
 		editors.append_array(late_editors);
 
+		const Node *node = Object::cast_to<Node>(object);
+
+		Vector<SceneState::PackState> sstack;
+		if (node != nullptr) {
+			const Node *es = EditorNode::get_singleton()->get_edited_scene();
+			sstack = PropertyUtils::get_node_states_stack(node, es);
+		}
+
 		for (int i = 0; i < editors.size(); i++) {
 			EditorProperty *ep = Object::cast_to<EditorProperty>(editors[i].property_editor);
 			const Vector<String> &properties = editors[i].properties;
@@ -3525,7 +3539,15 @@ void EditorInspector::update_tree() {
 				ep->set_checked(checked);
 				ep->set_keying(keying);
 				ep->set_read_only(property_read_only || all_read_only);
-				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
+				if (p.name.begins_with("metadata/")) {
+					Variant _default = Variant();
+					if (node != nullptr) {
+						_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
+					}
+					ep->set_deletable(_default == Variant());
+				} else {
+					ep->set_deletable(deletable_properties);
+				}
 			}
 
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
@@ -3648,8 +3670,6 @@ void EditorInspector::update_tree() {
 		for (List<EditorInspectorSection *>::Element *I = sections.back(); I; I = I->prev()) {
 			EditorInspectorSection *section = I->get();
 			if (section->get_vbox()->get_child_count() == 0) {
-				I = I->prev();
-
 				sections.erase(section);
 				vbox_per_path[main_vbox].erase(section->get_section());
 				memdelete(section);
@@ -4664,6 +4684,7 @@ EditorInspector::EditorInspector() {
 	search_box = nullptr;
 	_prop_edited = "property_edited";
 	set_process(false);
+	set_focus_mode(FocusMode::FOCUS_ALL);
 	property_focusable = -1;
 	property_clipboard = Variant();
 
@@ -4682,4 +4703,6 @@ EditorInspector::EditorInspector() {
 
 	// `use_settings_name_style` is true by default, set the name style accordingly.
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
+
+	set_draw_focus_border(true);
 }

@@ -112,6 +112,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(chr_height);
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
+	font->set_keep_rounding_remainders(true);
 	font->set_force_autohinter(false);
 	font->set_allow_system_fallback(false);
 	font->set_hinting(TextServer::HINTING_NONE);
