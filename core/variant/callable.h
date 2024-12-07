@@ -37,6 +37,7 @@
 class Object;
 class Variant;
 class CallableCustom;
+class CallQueue;
 
 // This is an abstraction of things that can be called.
 // It is used for signals and other cases where efficient calling of functions
@@ -71,7 +72,7 @@ public:
 	template <typename... VarArgs>
 	Variant call(VarArgs... p_args) const;
 	void callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;
-	void call_deferredp(const Variant **p_arguments, int p_argcount) const;
+	void call_deferredp(const Variant **p_arguments, int p_argcount, CallQueue *p_callqueue = nullptr) const;
 	Variant callv(const Array &p_arguments) const;
 
 	template <typename... VarArgs>
@@ -82,6 +83,16 @@ public:
 			argptrs[i] = &args[i];
 		}
 		return call_deferredp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	template <typename... VarArgs>
+	void call_deferred_on_queue(CallQueue *p_callqueue, VarArgs... p_args) const {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., 0 }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		return call_deferredp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), p_callqueue);
 	}
 
 	Error rpcp(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const;

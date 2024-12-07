@@ -36,8 +36,11 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant_callable.h"
 
-void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
+void Callable::call_deferredp(const Variant **p_arguments, int p_argcount, CallQueue *p_callqueue) const {
+	if (!p_callqueue) {
+		p_callqueue = MessageQueue::get_singleton();
+	}
+	p_callqueue->push_callablep(*this, p_arguments, p_argcount, true);
 }
 
 void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {

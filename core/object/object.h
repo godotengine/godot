@@ -951,6 +951,11 @@ public:
 		MessageQueue::get_singleton()->push_call(this, p_name, p_args...);
 	}
 
+	template <typename... VarArgs>
+	void call_deferred_on_queue(CallQueue *p_callqueue, const StringName &p_name, VarArgs... p_args) {
+		p_callqueue->push_call(this, p_name, p_args...);
+	}
+
 	void set_deferred(const StringName &p_property, const Variant &p_value);
 
 	void set_block_signals(bool p_block);
