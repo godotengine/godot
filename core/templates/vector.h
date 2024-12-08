@@ -88,6 +88,8 @@ public:
 
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ Span<T> vieww() { return _cowdata.vieww(); }
+	_FORCE_INLINE_ Span<const T> view() const { return _cowdata.view(); }
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
@@ -99,9 +101,9 @@ public:
 	Error resize_zeroed(Size p_size) { return _cowdata.template resize<true>(p_size); }
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
-	Size find(const T &p_val, Size p_from = 0) const { return _cowdata.find(p_val, p_from); }
-	Size rfind(const T &p_val, Size p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
-	Size count(const T &p_val) const { return _cowdata.count(p_val); }
+	Size find(const T &p_val, Size p_from = 0) const { return view().find(p_val, p_from); }
+	Size rfind(const T &p_val, Size p_from = -1) const { return view().rfind(p_val, p_from); }
+	Size count(const T &p_val) const { return view().count(p_val); }
 
 	void append_array(const Vector<T> &p_other);
 

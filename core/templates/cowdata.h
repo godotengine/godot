@@ -34,6 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/span.h"
 
 #include <string.h>
 #include <type_traits>
@@ -235,9 +236,12 @@ public:
 		return OK;
 	}
 
-	Size find(const T &p_val, Size p_from = 0) const;
-	Size rfind(const T &p_val, Size p_from = -1) const;
-	Size count(const T &p_val) const;
+	Span<T> vieww() {
+		return Span<T>(ptrw(), size());
+	}
+	Span<const T> view() const {
+		return Span<const T>(ptr(), size());
+	}
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
@@ -401,54 +405,6 @@ Error CowData<T>::resize(Size p_size) {
 	}
 
 	return OK;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::find(const T &p_val, Size p_from) const {
-	Size ret = -1;
-
-	if (p_from < 0 || size() == 0) {
-		return ret;
-	}
-
-	for (Size i = p_from; i < size(); i++) {
-		if (get(i) == p_val) {
-			ret = i;
-			break;
-		}
-	}
-
-	return ret;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::rfind(const T &p_val, Size p_from) const {
-	const Size s = size();
-
-	if (p_from < 0) {
-		p_from = s + p_from;
-	}
-	if (p_from < 0 || p_from >= s) {
-		p_from = s - 1;
-	}
-
-	for (Size i = p_from; i >= 0; i--) {
-		if (get(i) == p_val) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::count(const T &p_val) const {
-	Size amount = 0;
-	for (Size i = 0; i < size(); i++) {
-		if (get(i) == p_val) {
-			amount++;
-		}
-	}
-	return amount;
 }
 
 template <typename T>

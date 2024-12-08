@@ -304,16 +304,16 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	return OK;
 }
 
-void String::copy_from(const StrRange<char> &p_cstr) {
-	if (p_cstr.len == 0) {
+void String::copy_from(const Span<const char> &p_cstr) {
+	if (p_cstr.empty()) {
 		resize(0);
 		return;
 	}
 
-	resize(p_cstr.len + 1); // include 0
+	resize(p_cstr.size() + 1); // include 0
 
-	const char *src = p_cstr.c_str;
-	const char *end = src + p_cstr.len;
+	const char *src = p_cstr.ptr();
+	const char *end = src + p_cstr.size();
 	char32_t *dst = ptrw();
 
 	for (; src < end; ++src, ++dst) {
@@ -323,13 +323,13 @@ void String::copy_from(const StrRange<char> &p_cstr) {
 	*dst = 0;
 }
 
-void String::copy_from(const StrRange<char32_t> &p_cstr) {
-	if (p_cstr.len == 0) {
+void String::copy_from(const Span<const char32_t> &p_cstr) {
+	if (p_cstr.empty()) {
 		resize(0);
 		return;
 	}
 
-	copy_from_unchecked(p_cstr.c_str, p_cstr.len);
+	copy_from_unchecked(p_cstr.ptr(), p_cstr.size());
 }
 
 void String::copy_from(const char32_t &p_char) {
@@ -592,8 +592,8 @@ bool String::operator==(const String &p_str) const {
 	return true;
 }
 
-bool String::operator==(const StrRange<char32_t> &p_str_range) const {
-	int len = p_str_range.len;
+bool String::operator==(const Span<const char32_t> &p_str_range) const {
+	int len = p_str_range.size();
 
 	if (length() != len) {
 		return false;
@@ -602,7 +602,7 @@ bool String::operator==(const StrRange<char32_t> &p_str_range) const {
 		return true;
 	}
 
-	const char32_t *c_str = p_str_range.c_str;
+	const char32_t *c_str = p_str_range.ptr();
 	const char32_t *dst = &operator[](0);
 
 	/* Compare char by char */
@@ -3247,7 +3247,7 @@ int String::find(const char *p_str, int p_from) const {
 }
 
 int String::find_char(char32_t p_char, int p_from) const {
-	return _cowdata.find(p_char, p_from);
+	return view().find(p_char, p_from);
 }
 
 int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
@@ -3484,7 +3484,7 @@ int String::rfind(const char *p_str, int p_from) const {
 }
 
 int String::rfind_char(char32_t p_char, int p_from) const {
-	return _cowdata.rfind(p_char, p_from);
+	return view().rfind(p_char, p_from);
 }
 
 int String::rfindn(const String &p_str, int p_from) const {
