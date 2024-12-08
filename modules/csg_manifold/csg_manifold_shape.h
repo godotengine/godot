@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  csg_shape.h                                                           */
+/*  csg_manifold_shape.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_SHAPE_H
-#define CSG_SHAPE_H
+#ifndef CSG_MANIFOLD_SHAPE_H
+#define CSG_MANIFOLD_SHAPE_H
 
-#include "csg.h"
+#include "csg_manifold.h"
 
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
@@ -39,8 +39,8 @@
 
 #include "thirdparty/misc/mikktspace.h"
 
-class CSGShape3D : public GeometryInstance3D {
-	GDCLASS(CSGShape3D, GeometryInstance3D);
+class CSGManifoldShape3D : public GeometryInstance3D {
+	GDCLASS(CSGManifoldShape3D, GeometryInstance3D);
 
 public:
 	enum Operation {
@@ -52,9 +52,9 @@ public:
 
 private:
 	Operation operation = OPERATION_UNION;
-	CSGShape3D *parent_shape = nullptr;
+	CSGManifoldShape3D *parent_shape = nullptr;
 
-	CSGBrush *brush = nullptr;
+	CSGManifoldBrush *brush = nullptr;
 
 	AABB node_aabb;
 
@@ -117,13 +117,13 @@ private:
 
 protected:
 	void _notification(int p_what);
-	virtual CSGBrush *_build_brush() = 0;
+	virtual CSGManifoldBrush *_build_brush() = 0;
 	void _make_dirty(bool p_parent_removing = false);
 
 	static void _bind_methods();
 
-	friend class CSGCombiner3D;
-	CSGBrush *_get_brush();
+	friend class CSGManifoldCombiner3D;
+	CSGManifoldBrush *_get_brush();
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -155,8 +155,10 @@ public:
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_snap(float p_snap);
 	float get_snap() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_calculate_tangents(bool p_calculate_tangents);
 	bool is_calculating_tangents() const;
@@ -166,41 +168,41 @@ public:
 	Ref<ArrayMesh> bake_static_mesh();
 	Ref<ConcavePolygonShape3D> bake_collision_shape();
 
-	CSGShape3D();
-	~CSGShape3D();
+	CSGManifoldShape3D();
+	~CSGManifoldShape3D();
 };
 
-VARIANT_ENUM_CAST(CSGShape3D::Operation)
+VARIANT_ENUM_CAST(CSGManifoldShape3D::Operation)
 
-class CSGCombiner3D : public CSGShape3D {
-	GDCLASS(CSGCombiner3D, CSGShape3D);
+class CSGManifoldCombiner3D : public CSGManifoldShape3D {
+	GDCLASS(CSGManifoldCombiner3D, CSGManifoldShape3D);
 
 private:
-	virtual CSGBrush *_build_brush() override;
+	virtual CSGManifoldBrush *_build_brush() override;
 
 public:
-	CSGCombiner3D();
+	CSGManifoldCombiner3D();
 };
 
-class CSGPrimitive3D : public CSGShape3D {
-	GDCLASS(CSGPrimitive3D, CSGShape3D);
+class CSGManifoldPrimitive3D : public CSGManifoldShape3D {
+	GDCLASS(CSGManifoldPrimitive3D, CSGManifoldShape3D);
 
 protected:
 	bool flip_faces;
-	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
+	CSGManifoldBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
 public:
 	void set_flip_faces(bool p_invert);
 	bool get_flip_faces();
 
-	CSGPrimitive3D();
+	CSGManifoldPrimitive3D();
 };
 
-class CSGMesh3D : public CSGPrimitive3D {
-	GDCLASS(CSGMesh3D, CSGPrimitive3D);
+class CSGManifoldMesh3D : public CSGManifoldPrimitive3D {
+	GDCLASS(CSGManifoldMesh3D, CSGManifoldPrimitive3D);
 
-	virtual CSGBrush *_build_brush() override;
+	virtual CSGManifoldBrush *_build_brush() override;
 
 	Ref<Mesh> mesh;
 	Ref<Material> material;
@@ -218,9 +220,9 @@ public:
 	Ref<Material> get_material() const;
 };
 
-class CSGSphere3D : public CSGPrimitive3D {
-	GDCLASS(CSGSphere3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
+class CSGManifoldSphere3D : public CSGManifoldPrimitive3D {
+	GDCLASS(CSGManifoldSphere3D, CSGManifoldPrimitive3D);
+	virtual CSGManifoldBrush *_build_brush() override;
 
 	Ref<Material> material;
 	bool smooth_faces;
@@ -247,12 +249,12 @@ public:
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
-	CSGSphere3D();
+	CSGManifoldSphere3D();
 };
 
-class CSGBox3D : public CSGPrimitive3D {
-	GDCLASS(CSGBox3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
+class CSGManifoldBox3D : public CSGManifoldPrimitive3D {
+	GDCLASS(CSGManifoldBox3D, CSGManifoldPrimitive3D);
+	virtual CSGManifoldBrush *_build_brush() override;
 
 	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
@@ -271,12 +273,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox3D() {}
+	CSGManifoldBox3D() {}
 };
 
-class CSGCylinder3D : public CSGPrimitive3D {
-	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
+class CSGManifoldCylinder3D : public CSGManifoldPrimitive3D {
+	GDCLASS(CSGManifoldCylinder3D, CSGManifoldPrimitive3D);
+	virtual CSGManifoldBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float radius;
@@ -307,12 +309,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGCylinder3D();
+	CSGManifoldCylinder3D();
 };
 
-class CSGTorus3D : public CSGPrimitive3D {
-	GDCLASS(CSGTorus3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush() override;
+class CSGManifoldTorus3D : public CSGManifoldPrimitive3D {
+	GDCLASS(CSGManifoldTorus3D, CSGManifoldPrimitive3D);
+	virtual CSGManifoldBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float inner_radius;
@@ -343,11 +345,11 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGTorus3D();
+	CSGManifoldTorus3D();
 };
 
-class CSGPolygon3D : public CSGPrimitive3D {
-	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
+class CSGManifoldPolygon3D : public CSGManifoldPrimitive3D {
+	GDCLASS(CSGManifoldPolygon3D, CSGManifoldPrimitive3D);
 
 public:
 	enum Mode {
@@ -368,7 +370,7 @@ public:
 	};
 
 private:
-	virtual CSGBrush *_build_brush() override;
+	virtual CSGManifoldBrush *_build_brush() override;
 
 	Vector<Vector2> polygon;
 	Ref<Material> material;
@@ -454,11 +456,11 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGPolygon3D();
+	CSGManifoldPolygon3D();
 };
 
-VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
-VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
-VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
+VARIANT_ENUM_CAST(CSGManifoldPolygon3D::Mode)
+VARIANT_ENUM_CAST(CSGManifoldPolygon3D::PathRotation)
+VARIANT_ENUM_CAST(CSGManifoldPolygon3D::PathIntervalType)
 
-#endif // CSG_SHAPE_H
+#endif // CSG_MANIFOLD_SHAPE_H
