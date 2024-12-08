@@ -524,7 +524,7 @@ void ConnectDialog::set_dst_node(Node *p_node) {
 StringName ConnectDialog::get_dst_method_name() const {
 	String txt = dst_method->get_text();
 	if (txt.contains("(")) {
-		txt = txt.left(txt.find("(")).strip_edges();
+		txt = txt.left(txt.find_char('(')).strip_edges();
 	}
 	return txt;
 }
@@ -907,7 +907,7 @@ ConnectDialog::~ConnectDialog() {
 
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	// If it's not a doc tooltip, fallback to the default one.
-	if (p_text.contains("::")) {
+	if (p_text.is_empty() || p_text.contains("::")) {
 		return nullptr;
 	}
 

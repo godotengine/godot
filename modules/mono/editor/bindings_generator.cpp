@@ -190,7 +190,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
-		int brk_pos = bbcode.find("[", pos);
+		int brk_pos = bbcode.find_char('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
@@ -210,7 +210,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			break;
 		}
 
-		int brk_end = bbcode.find("]", brk_pos + 1);
+		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
@@ -239,7 +239,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			output.append("[");
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
-			const int tag_end = tag.find(" ");
+			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
@@ -385,7 +385,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -403,7 +403,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -455,7 +455,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
-		int brk_pos = bbcode.find("[", pos);
+		int brk_pos = bbcode.find_char('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
@@ -488,7 +488,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			break;
 		}
 
-		int brk_end = bbcode.find("]", brk_pos + 1);
+		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			if (!line_del) {
@@ -551,7 +551,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			xml_output.append("[");
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
-			const int tag_end = tag.find(" ");
+			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
@@ -696,7 +696,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag.begins_with("code ")) {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -751,7 +751,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -772,7 +772,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -1619,7 +1619,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 		bool enum_in_static_class = false;
 
-		if (enum_proxy_name.find(".") > 0) {
+		if (enum_proxy_name.find_char('.') > 0) {
 			enum_in_static_class = true;
 			String enum_class_name = enum_proxy_name.get_slicec('.', 0);
 			enum_proxy_name = enum_proxy_name.get_slicec('.', 1);
@@ -5040,22 +5040,25 @@ void BindingsGenerator::_populate_global_constants() {
 		}
 	}
 
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2I.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3I.Axis");
-	for (const StringName &enum_cname : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		TypeInterface enum_itype;
-		enum_itype.is_enum = true;
-		enum_itype.name = enum_cname.operator String();
-		enum_itype.cname = enum_cname;
-		enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
-		TypeInterface::postsetup_enum_type(enum_itype);
-		enum_types.insert(enum_itype.cname, enum_itype);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::OBJECT) {
+			continue;
+		}
+
+		const Variant::Type type = Variant::Type(i);
+
+		List<StringName> enum_names;
+		Variant::get_enums_for_type(type, &enum_names);
+
+		for (const StringName &enum_name : enum_names) {
+			TypeInterface enum_itype;
+			enum_itype.is_enum = true;
+			enum_itype.name = Variant::get_type_name(type) + "." + enum_name;
+			enum_itype.cname = enum_itype.name;
+			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
+			TypeInterface::postsetup_enum_type(enum_itype);
+			enum_types.insert(enum_itype.cname, enum_itype);
+		}
 	}
 }
 

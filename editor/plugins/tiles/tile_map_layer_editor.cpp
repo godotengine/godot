@@ -2415,6 +2415,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	sources_list->set_stretch_ratio(0.25);
 	sources_list->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	sources_list->set_theme_type_variation("ItemListSecondary");
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_source_display).unbind(1));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect("item_activated", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::display_tile_set_editor_panel).unbind(1));
@@ -3531,6 +3532,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	terrains_tree->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	terrains_tree->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	terrains_tree->set_hide_root(true);
+	terrains_tree->set_theme_type_variation("ItemListSecondary");
 	terrains_tree->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTerrainsPlugin::_update_tiles_list));
 	tilemap_tab_terrains->add_child(terrains_tree);
 

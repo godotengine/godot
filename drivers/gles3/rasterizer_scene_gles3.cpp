@@ -238,7 +238,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	GLES3::SceneMaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_world_coordinates) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_world_coordinates && !p_material->shader_data->wireframe) {
 		flags |= GeometryInstanceSurface::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.default_material, RS::SHADER_SPATIAL));
 
@@ -3157,7 +3157,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			bool use_wireframe = false;
-			if (p_params->force_wireframe) {
+			if (p_params->force_wireframe || shader->wireframe) {
 				GLuint wireframe_index_array_gl = mesh_storage->mesh_surface_get_index_buffer_wireframe(mesh_surface);
 				if (wireframe_index_array_gl) {
 					index_array_gl = wireframe_index_array_gl;
@@ -3314,10 +3314,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 
 				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant, spec_constants);
-
-				prev_shader = shader;
-				prev_variant = instance_variant;
-				prev_spec_constants = spec_constants;
 			}
 
 			// Pass in lighting uniforms.
@@ -3355,7 +3351,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 
 				// Pass light count and array of light indices for base pass.
-				if ((prev_inst != inst || prev_shader != shader || prev_variant != instance_variant) && pass == 0) {
+				if ((prev_inst != inst || prev_shader != shader || prev_variant != instance_variant || prev_spec_constants != spec_constants) && pass == 0) {
 					// Rebind the light indices.
 					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_gl_cache.size(), shader->version, instance_variant, spec_constants);
 					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_gl_cache.size(), shader->version, instance_variant, spec_constants);
@@ -3412,10 +3408,13 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					} else if (inst->lightmap_sh) {
 						glUniform4fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_CAPTURES, shader->version, instance_variant, spec_constants), 9, reinterpret_cast<const GLfloat *>(inst->lightmap_sh->sh));
 					}
-
 					prev_inst = inst;
 				}
 			}
+
+			prev_shader = shader;
+			prev_variant = instance_variant;
+			prev_spec_constants = spec_constants;
 
 			// Pass in reflection probe data
 			if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {

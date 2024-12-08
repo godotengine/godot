@@ -32,8 +32,12 @@
 
 #ifdef WAYLAND_ENABLED
 
-// FIXME: Does this cause issues with *BSDs?
+#ifdef __FreeBSD__
+#include <dev/evdev/input-event-codes.h>
+#else
+// Assume Linux.
 #include <linux/input-event-codes.h>
+#endif
 
 // For the actual polling thread.
 #include <poll.h>
@@ -497,6 +501,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, xdg_system_bell_v1_interface.name) == 0) {
+		registry->xdg_system_bell = (struct xdg_system_bell_v1 *)wl_registry_bind(wl_registry, name, &xdg_system_bell_v1_interface, 1);
+		registry->xdg_system_bell_name = name;
+		return;
+	}
+
 	if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
 		registry->xdg_activation = (struct xdg_activation_v1 *)wl_registry_bind(wl_registry, name, &xdg_activation_v1_interface, 1);
 		registry->xdg_activation_name = name;
@@ -688,6 +698,17 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		}
 
 		registry->xdg_decoration_manager_name = 0;
+
+		return;
+	}
+
+	if (name == registry->xdg_system_bell_name) {
+		if (registry->xdg_system_bell) {
+			xdg_system_bell_v1_destroy(registry->xdg_system_bell);
+			registry->xdg_system_bell = nullptr;
+		}
+
+		registry->xdg_system_bell_name = 0;
 
 		return;
 	}
@@ -3282,6 +3303,12 @@ struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID 
 	return ws.wl_surface;
 }
 
+void WaylandThread::beep() const {
+	if (registry.xdg_system_bell) {
+		xdg_system_bell_v1_ring(registry.xdg_system_bell, nullptr);
+	}
+}
+
 void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowState &ws = main_window;
@@ -3988,10 +4015,10 @@ void WaylandThread::selection_set_text(const String &p_text) {
 		wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
 		wl_data_source_offer(ss->wl_data_source_selection, "text/plain;charset=utf-8");
 		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
-	}
 
-	// TODO: Implement a good way of getting the latest serial from the user.
-	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+		// TODO: Implement a good way of getting the latest serial from the user.
+		wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	}
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
@@ -4362,6 +4389,10 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_activation) {
 		xdg_activation_v1_destroy(registry.xdg_activation);
+	}
+
+	if (registry.xdg_system_bell) {
+		xdg_system_bell_v1_destroy(registry.xdg_system_bell);
 	}
 
 	if (registry.xdg_decoration_manager) {

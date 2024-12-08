@@ -160,13 +160,13 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.begins_with("res://addons/")) {
-			int i = script_path.find("/", 13); // 13 is length of "res://addons/".
+			int i = script_path.find_char('/', 13); // 13 is length of "res://addons/".
 			while (i > -1) {
 				const String plugin_path = script_path.substr(0, i).path_join("plugin.cfg");
 				if (FileAccess::exists(plugin_path)) {
 					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path);
 				}
-				i = script_path.find("/", i + 1);
+				i = script_path.find_char('/', i + 1);
 			}
 		}
 	}
@@ -764,6 +764,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
+	favorites->set_theme_type_variation("TreeSecondary");
 	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 
@@ -779,6 +780,7 @@ CreateDialog::CreateDialog() {
 	recent->connect(SceneStringName(item_selected), callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
 	recent->add_theme_constant_override("draw_guides", 1);
+	recent->set_theme_type_variation("ItemListSecondary");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);

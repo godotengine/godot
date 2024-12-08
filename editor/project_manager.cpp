@@ -34,8 +34,6 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/resource_saver.h"
-#include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
@@ -51,12 +49,9 @@
 #include "editor/project_manager/project_list.h"
 #include "editor/project_manager/project_tag.h"
 #include "editor/project_manager/quick_settings_dialog.h"
-#include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/main.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -64,7 +59,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
@@ -1285,7 +1279,7 @@ ProjectManager::ProjectManager() {
 			search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 			search_box->set_clear_button_enabled(true);
 			search_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_on_search_term_changed));
-			search_box->connect("text_submitted", callable_mp(this, &ProjectManager::_on_search_term_submitted));
+			search_box->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_on_search_term_submitted));
 			search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			hb->add_child(search_box);
 
@@ -1300,15 +1294,10 @@ ProjectManager::ProjectManager() {
 			filter_option->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_on_order_option_changed));
 			hb->add_child(filter_option);
 
-			Vector<String> sort_filter_titles;
-			sort_filter_titles.push_back(TTR("Last Edited"));
-			sort_filter_titles.push_back(TTR("Name"));
-			sort_filter_titles.push_back(TTR("Path"));
-			sort_filter_titles.push_back(TTR("Tags"));
-
-			for (int i = 0; i < sort_filter_titles.size(); i++) {
-				filter_option->add_item(sort_filter_titles[i]);
-			}
+			filter_option->add_item(TTR("Last Edited"));
+			filter_option->add_item(TTR("Name"));
+			filter_option->add_item(TTR("Path"));
+			filter_option->add_item(TTR("Tags"));
 		}
 
 		// Project list and its sidebar.
@@ -1589,7 +1578,7 @@ ProjectManager::ProjectManager() {
 		new_tag_name = memnew(LineEdit);
 		tag_vb->add_child(new_tag_name);
 		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
-		new_tag_name->connect("text_submitted", callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
+		new_tag_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
 		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus), CONNECT_DEFERRED);
 

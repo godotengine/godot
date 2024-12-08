@@ -270,6 +270,13 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 //
 
+Window *Window::get_from_id(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return nullptr;
+	}
+	return Object::cast_to<Window>(ObjectDB::get_instance(DisplayServer::get_singleton()->window_get_attached_instance_id(p_window_id)));
+}
+
 void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -301,6 +308,11 @@ void Window::set_title(const String &p_title) {
 String Window::get_title() const {
 	ERR_READ_THREAD_GUARD_V(String());
 	return title;
+}
+
+String Window::get_translated_title() const {
+	ERR_READ_THREAD_GUARD_V(String());
+	return tr_title;
 }
 
 void Window::_settings_changed() {
@@ -385,6 +397,12 @@ void Window::move_to_center() {
 
 void Window::set_size(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
+#if defined(ANDROID_ENABLED)
+	if (!get_parent()) {
+		// Can't set root window size on Android.
+		return;
+	}
+#endif
 
 	size = p_size;
 	_update_window_size();
@@ -455,6 +473,12 @@ void Window::_validate_limit_size() {
 
 void Window::set_max_size(const Size2i &p_max_size) {
 	ERR_MAIN_THREAD_GUARD;
+#if defined(ANDROID_ENABLED)
+	if (!get_parent()) {
+		// Can't set root window size on Android.
+		return;
+	}
+#endif
 	Size2i max_size_clamped = _clamp_limit_size(p_max_size);
 	if (max_size == max_size_clamped) {
 		return;
@@ -472,6 +496,12 @@ Size2i Window::get_max_size() const {
 
 void Window::set_min_size(const Size2i &p_min_size) {
 	ERR_MAIN_THREAD_GUARD;
+#if defined(ANDROID_ENABLED)
+	if (!get_parent()) {
+		// Can't set root window size on Android.
+		return;
+	}
+#endif
 	Size2i min_size_clamped = _clamp_limit_size(p_min_size);
 	if (min_size == min_size_clamped) {
 		return;
@@ -907,7 +937,7 @@ void Window::_make_transient() {
 	if (!is_embedded() && transient_to_focused) {
 		DisplayServer::WindowID focused_window_id = DisplayServer::get_singleton()->get_focused_window();
 		if (focused_window_id != DisplayServer::INVALID_WINDOW_ID) {
-			window = Object::cast_to<Window>(ObjectDB::get_instance(DisplayServer::get_singleton()->window_get_attached_instance_id(focused_window_id)));
+			window = Window::get_from_id(focused_window_id);
 		}
 	}
 

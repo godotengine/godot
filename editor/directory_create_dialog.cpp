@@ -142,7 +142,7 @@ void DirectoryCreateDialog::config(const String &p_base_dir, const Callable &p_a
 	validation_panel->update();
 
 	if (p_mode == MODE_FILE) {
-		int extension_pos = p_default_name.rfind(".");
+		int extension_pos = p_default_name.rfind_char('.');
 		if (extension_pos > -1) {
 			dir_path->select(0, extension_pos);
 			return;

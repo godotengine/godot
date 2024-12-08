@@ -180,7 +180,7 @@ bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExpo
 void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,ppc32"), "x86_64"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,ppc32,loongarch64"), "x86_64"));
 
 	String run_script = "#!/usr/bin/env bash\n"
 						"export DISPLAY=:0\n"
@@ -282,6 +282,8 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 			return "arm64";
 		case 0x00f3:
 			return "rv64";
+		case 0x0102:
+			return "loongarch64";
 		default:
 			return "unknown";
 	}

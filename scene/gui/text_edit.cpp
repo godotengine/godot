@@ -1605,7 +1605,9 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			_show_virtual_keyboard();
+			if (editable) {
+				_show_virtual_keyboard();
+			}
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
@@ -2008,7 +2010,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 
-			_show_virtual_keyboard();
+			if (editable) {
+				_show_virtual_keyboard();
+			}
 		}
 	}
 
@@ -4175,7 +4179,7 @@ void TextEdit::redo() {
 	}
 	_push_current_op();
 
-	if (undo_stack_pos == nullptr) {
+	if (!has_redo()) {
 		return; // Nothing to do.
 	}
 

@@ -253,8 +253,8 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				// append that to yield "folder/foo.tscn".
 				if (difference > 0) {
 					String parent = full_path.substr(0, difference);
-					int slash_idx = parent.rfind("/");
-					slash_idx = parent.rfind("/", slash_idx - 1);
+					int slash_idx = parent.rfind_char('/');
+					slash_idx = parent.rfind_char('/', slash_idx - 1);
 					parent = (slash_idx >= 0 && parent.length() > 1) ? parent.substr(slash_idx + 1) : parent;
 					r_filenames.write[set_idx] = parent + r_filenames[set_idx];
 				}
@@ -1427,7 +1427,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		if (p_resource->get_path().is_resource_file()) {
 			file->set_current_file(p_resource->get_path().get_file());
 		} else {
-			if (extensions.size()) {
+			if (!preferred.is_empty()) {
 				String resource_name_snake_case = p_resource->get_class().to_snake_case();
 				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower());
 			} else {
@@ -1436,18 +1436,15 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		}
 	} else if (!p_resource->get_path().is_empty()) {
 		file->set_current_path(p_resource->get_path());
-		if (extensions.size()) {
-			String ext = p_resource->get_path().get_extension().to_lower();
+		if (!extensions.is_empty()) {
+			const String ext = p_resource->get_path().get_extension().to_lower();
 			if (extensions.find(ext) == nullptr) {
 				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
 			}
 		}
-	} else if (preferred.size()) {
-		String existing;
-		if (extensions.size()) {
-			String resource_name_snake_case = p_resource->get_class().to_snake_case();
-			existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
-		}
+	} else if (!preferred.is_empty()) {
+		const String resource_name_snake_case = p_resource->get_class().to_snake_case();
+		const String existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
 		file->set_current_path(existing);
 	}
 	file->set_title(TTR("Save Resource As..."));
@@ -5190,7 +5187,8 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 		_close_save_scene_progress();
 		accept->set_ok_button_text(p_title);
 		accept->set_text(p_text);
-		EditorInterface::get_singleton()->popup_dialog_centered(accept);
+		accept->reset_size();
+		EditorInterface::get_singleton()->popup_dialog_centered_clamped(accept, Size2i(), 0.0);
 	}
 }
 
@@ -5200,7 +5198,8 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
 		_close_save_scene_progress();
 		save_accept->set_ok_button_text(p_title);
 		save_accept->set_text(p_text);
-		EditorInterface::get_singleton()->popup_dialog_centered(save_accept);
+		save_accept->reset_size();
+		EditorInterface::get_singleton()->popup_dialog_centered_clamped(save_accept, Size2i(), 0.0);
 	}
 }
 
@@ -5209,7 +5208,8 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 		_close_save_scene_progress();
 		warning->set_text(p_text);
 		warning->set_title(p_title);
-		EditorInterface::get_singleton()->popup_dialog_centered(warning);
+		warning->reset_size();
+		EditorInterface::get_singleton()->popup_dialog_centered_clamped(warning, Size2i(), 0.0);
 	} else {
 		WARN_PRINT(p_title + " " + p_text);
 	}
@@ -7170,6 +7170,7 @@ EditorNode::EditorNode() {
 	main_menu = memnew(MenuBar);
 	main_menu->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(main_menu);
+	main_menu->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	main_menu->set_theme_type_variation("MainMenuBar");
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
 	main_menu->set_prefer_global_menu(global_menu);
@@ -7706,24 +7707,28 @@ EditorNode::EditorNode() {
 
 	disk_changed = memnew(ConfirmationDialog);
 	{
-		disk_changed->set_title(TTR("Files have been modified on disk"));
+		disk_changed->set_title(TTR("Files have been modified outside Godot"));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		disk_changed->add_child(vbc);
 
 		Label *dl = memnew(Label);
-		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?"));
+		dl->set_text(TTR("The following files are newer on disk:"));
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew(Tree);
 		vbc->add_child(disk_changed_list);
 		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
+		Label *what_action_label = memnew(Label);
+		what_action_label->set_text(TTR("What action should be taken?"));
+		vbc->add_child(what_action_label);
+
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_modified_scenes));
 		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_project_settings));
-		disk_changed->set_ok_button_text(TTR("Discard local changes and reload"));
+		disk_changed->set_ok_button_text(TTR("Reload from disk"));
 
-		disk_changed->add_button(TTR("Keep local changes and overwrite"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_scenes));
 	}
 

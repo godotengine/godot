@@ -96,7 +96,7 @@ class SectionedInspectorFilter : public Object {
 		List<PropertyInfo> pinfo;
 		edited->get_property_list(&pinfo);
 		for (PropertyInfo &pi : pinfo) {
-			int sp = pi.name.find("/");
+			int sp = pi.name.find_char('/');
 
 			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
 				continue;
@@ -255,7 +255,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		int sp = pi.name.find("/");
+		int sp = pi.name.find_char('/');
 		if (sp == -1) {
 			pi.name = "global/" + pi.name;
 		}
@@ -353,6 +353,7 @@ SectionedInspector::SectionedInspector() :
 	sections->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
+	sections->set_theme_type_variation("TreeSecondary");
 
 	left_vb->add_child(sections, true);
 

@@ -30,20 +30,24 @@
 
 #include "color_picker.h"
 
-#include "core/input/input.h"
 #include "core/io/image.h"
-#include "core/math/color.h"
+#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_mode.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
 #include "thirdparty/misc/ok_color_shader.h"
-
-List<Color> ColorPicker::preset_cache;
-List<Color> ColorPicker::recent_preset_cache;
 
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
@@ -159,10 +163,6 @@ void ColorPicker::_update_theme_item_cache() {
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
 
-Ref<Shader> ColorPicker::wheel_shader;
-Ref<Shader> ColorPicker::circle_shader;
-Ref<Shader> ColorPicker::circle_ok_color_shader;
-
 void ColorPicker::init_shaders() {
 	wheel_shader.instantiate();
 	wheel_shader->set_code(R"(
@@ -217,14 +217,14 @@ void fragment() {
 	circle_ok_color_shader->set_code(OK_COLOR_SHADER + R"(
 // ColorPicker ok color hsv circle shader.
 
-uniform float v = 1.0;
+uniform float ok_hsl_l = 1.0;
 
 void fragment() {
 	float x = UV.x - 0.5;
 	float y = UV.y - 0.5;
 	float h = atan(y, x) / (2.0 * M_PI);
 	float s = sqrt(x * x + y * y) * 2.0;
-	vec3 col = okhsl_to_srgb(vec3(h, s, v));
+	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
 	x += 0.001;
 	y += 0.001;
 	float b = float(sqrt(x * x + y * y) < 0.5);
@@ -387,10 +387,21 @@ void ColorPicker::_slider_value_changed() {
 	color = modes[current_mode]->get_color();
 	modes[current_mode]->_value_changed();
 
-	if (current_mode == MODE_HSV || current_mode == MODE_OKHSL) {
+	if (current_mode == MODE_HSV) {
 		h = sliders[0]->get_value() / 360.0;
 		s = sliders[1]->get_value() / 100.0;
 		v = sliders[2]->get_value() / 100.0;
+		ok_hsl_h = color.get_ok_hsl_h();
+		ok_hsl_s = color.get_ok_hsl_s();
+		ok_hsl_l = color.get_ok_hsl_l();
+		last_color = color;
+	} else if (current_mode == MODE_OKHSL) {
+		ok_hsl_h = sliders[0]->get_value() / 360.0;
+		ok_hsl_s = sliders[1]->get_value() / 100.0;
+		ok_hsl_l = sliders[2]->get_value() / 100.0;
+		h = color.get_h();
+		s = color.get_s();
+		v = color.get_v();
 		last_color = color;
 	}
 
@@ -504,20 +515,17 @@ Vector<float> ColorPicker::get_active_slider_values() {
 }
 
 void ColorPicker::_copy_color_to_hsv() {
-	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
-		h = color.get_ok_hsl_h();
-		s = color.get_ok_hsl_s();
-		v = color.get_ok_hsl_l();
-	} else {
-		h = color.get_h();
-		s = color.get_s();
-		v = color.get_v();
-	}
+	ok_hsl_h = color.get_ok_hsl_h();
+	ok_hsl_s = color.get_ok_hsl_s();
+	ok_hsl_l = color.get_ok_hsl_l();
+	h = color.get_h();
+	s = color.get_s();
+	v = color.get_v();
 }
 
 void ColorPicker::_copy_hsv_to_color() {
 	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
-		color.set_ok_hsl(h, s, v, color.a);
+		color.set_ok_hsl(ok_hsl_h, ok_hsl_s, ok_hsl_l, color.a);
 	} else {
 		color.set_hsv(h, s, v, color.a);
 	}
@@ -1201,8 +1209,8 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		int x;
 		int y;
 		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
-			x = center.x + (center.x * Math::cos(h * Math_TAU) * s) - (theme_cache.picker_cursor->get_width() / 2);
-			y = center.y + (center.y * Math::sin(h * Math_TAU) * s) - (theme_cache.picker_cursor->get_height() / 2);
+			x = center.x + (center.x * Math::cos((actual_shape == SHAPE_OKHSL_CIRCLE ? ok_hsl_h : h) * Math_TAU) * s) - (theme_cache.picker_cursor->get_width() / 2);
+			y = center.y + (center.y * Math::sin((actual_shape == SHAPE_OKHSL_CIRCLE ? ok_hsl_h : h) * Math_TAU) * s) - (theme_cache.picker_cursor->get_height() / 2);
 		} else {
 			real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
 			real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
@@ -1238,11 +1246,11 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			Vector<Point2> points;
 			Vector<Color> colors;
 			Color col;
-			col.set_ok_hsl(h, s, 1);
+			col.set_ok_hsl(ok_hsl_h, ok_hsl_s, 1);
 			Color col2;
-			col2.set_ok_hsl(h, s, 0.5);
+			col2.set_ok_hsl(ok_hsl_h, ok_hsl_s, 0.5);
 			Color col3;
-			col3.set_ok_hsl(h, s, 0);
+			col3.set_ok_hsl(ok_hsl_h, ok_hsl_s, 0);
 			points.resize(6);
 			colors.resize(6);
 			points.set(0, Vector2(c->get_size().x, 0));
@@ -1258,8 +1266,8 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			colors.set(4, col2);
 			colors.set(5, col);
 			c->draw_polygon(points, colors);
-			int y = c->get_size().y - c->get_size().y * CLAMP(v, 0, 1);
-			col.set_ok_hsl(h, 1, v);
+			int y = c->get_size().y - c->get_size().y * CLAMP(ok_hsl_l, 0, 1);
+			col.set_ok_hsl(ok_hsl_h, 1, ok_hsl_l);
 			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
 		} else if (actual_shape == SHAPE_VHS_CIRCLE) {
 			Vector<Point2> points;
@@ -1283,8 +1291,10 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		}
 	} else if (p_which == 2) {
 		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
-		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
+		if (actual_shape == SHAPE_VHS_CIRCLE) {
 			circle_mat->set_shader_parameter("v", v);
+		} else if (actual_shape == SHAPE_OKHSL_CIRCLE) {
+			circle_mat->set_shader_parameter("ok_hsl_l", ok_hsl_l);
 		}
 	}
 }
@@ -1308,6 +1318,8 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 					real_t rad = center.angle_to_point(bev->get_position());
 					h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 					s = CLAMP(dist / center.x, 0, 1);
+					ok_hsl_h = h;
+					ok_hsl_s = s;
 				} else {
 					return;
 				}
@@ -1375,6 +1387,8 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 			real_t rad = center.angle_to_point(mev->get_position());
 			h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
 			s = CLAMP(dist / center.x, 0, 1);
+			ok_hsl_h = h;
+			ok_hsl_s = s;
 		} else {
 			if (spinning) {
 				real_t rad = center.angle_to_point(mev->get_position());
@@ -1412,6 +1426,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
 			if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
 				v = 1.0 - (y / w_edit->get_size().height);
+				ok_hsl_l = v;
 			} else {
 				h = y / w_edit->get_size().height;
 			}
@@ -1440,6 +1455,7 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		float y = CLAMP((float)mev->get_position().y, 0, w_edit->get_size().height);
 		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
 			v = 1.0 - (y / w_edit->get_size().height);
+			ok_hsl_l = v;
 		} else {
 			h = y / w_edit->get_size().height;
 		}
@@ -1585,18 +1601,12 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		// Add the Texture of each Window to the Image.
 		Vector<DisplayServer::WindowID> wl = ds->get_window_list();
 		// FIXME: sort windows by visibility.
-		for (int index = 0; index < wl.size(); index++) {
-			DisplayServer::WindowID wid = wl[index];
-			if (wid == DisplayServer::INVALID_WINDOW_ID) {
+		for (const DisplayServer::WindowID &window_id : wl) {
+			Window *w = Window::get_from_id(window_id);
+			if (!w) {
 				continue;
 			}
 
-			ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-			if (woid == ObjectID()) {
-				continue;
-			}
-
-			Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
 			Ref<Image> img = w->get_texture()->get_image();
 			if (!img.is_valid() || img->is_empty()) {
 				continue;
@@ -1840,6 +1850,7 @@ ColorPicker::ColorPicker() {
 	real_vbox->add_child(sample_hbc);
 
 	btn_pick = memnew(Button);
+	btn_pick->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	sample_hbc->add_child(btn_pick);
 
 	sample = memnew(TextureRect);
@@ -1853,6 +1864,7 @@ ColorPicker::ColorPicker() {
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
+	btn_shape->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 	current_shape = SHAPE_HSV_RECTANGLE;
 
@@ -1947,7 +1959,7 @@ ColorPicker::ColorPicker() {
 	c_text->set_select_all_on_focus(true);
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
-	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
+	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 

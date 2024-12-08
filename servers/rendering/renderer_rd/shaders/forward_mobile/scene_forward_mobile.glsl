@@ -434,12 +434,12 @@ void main() {
 
 	vertex_interp = vertex;
 #ifdef NORMAL_USED
-	normal_interp = normal;
+	normal_interp = normalize(normal);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	tangent_interp = tangent;
-	binormal_interp = binormal;
+	tangent_interp = normalize(tangent);
+	binormal_interp = normalize(binormal);
 #endif
 
 // VERTEX LIGHTING
@@ -456,13 +456,13 @@ void main() {
 	uvec2 omni_light_indices = instances.data[draw_call.instance_index].omni_lights;
 	for (uint i = 0; i < sc_omni_lights(); i++) {
 		uint light_index = (i > 3) ? ((omni_light_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_light_indices.x >> (i * 8)) & 0xFF);
-		light_process_omni_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_omni_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
 	uvec2 spot_light_indices = instances.data[draw_call.instance_index].spot_lights;
 	for (uint i = 0; i < sc_spot_lights(); i++) {
 		uint light_index = (i > 3) ? ((spot_light_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_light_indices.x >> (i * 8)) & 0xFF);
-		light_process_spot_vertex(light_index, vertex, view, normal, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
+		light_process_spot_vertex(light_index, vertex, view, normal_interp, roughness, diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 
 	if (sc_directional_lights() > 0) {
@@ -479,13 +479,13 @@ void main() {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
-				light_compute_vertex(normal, directional_lights.data[0].direction, view,
+				light_compute_vertex(normal_interp, directional_lights.data[0].direction, view,
 						directional_lights.data[0].color * directional_lights.data[0].energy,
 						true, roughness,
 						directional_diffuse,
 						directional_specular);
 			} else {
-				light_compute_vertex(normal, directional_lights.data[i].direction, view,
+				light_compute_vertex(normal_interp, directional_lights.data[i].direction, view,
 						directional_lights.data[i].color * directional_lights.data[i].energy,
 						true, roughness,
 						diffuse_light_interp.rgb,
@@ -768,7 +768,7 @@ layout(location = 0) out mediump vec4 frag_color;
 vec4 fog_process(vec3 vertex) {
 	vec3 fog_color = scene_data_block.data.fog_light_color;
 
-	if (scene_data_block.data.fog_aerial_perspective > 0.0) {
+	if (sc_use_fog_aerial_perspective()) {
 		vec3 sky_fog_color = vec3(0.0);
 		vec3 cube_view = scene_data_block.data.radiance_inverse_xform * vertex;
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
@@ -784,7 +784,7 @@ vec4 fog_process(vec3 vertex) {
 		fog_color = mix(fog_color, sky_fog_color, scene_data_block.data.fog_aerial_perspective);
 	}
 
-	if (scene_data_block.data.fog_sun_scatter > 0.001) {
+	if (sc_use_fog_sun_scatter()) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
 		vec3 view = normalize(vertex);
@@ -806,7 +806,7 @@ vec4 fog_process(vec3 vertex) {
 		fog_amount = 1 - exp(min(0.0, -length(vertex) * scene_data_block.data.fog_density));
 	}
 
-	if (abs(scene_data_block.data.fog_height_density) >= 0.0001) {
+	if (sc_use_fog_height_density()) {
 		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
@@ -1497,9 +1497,11 @@ void main() {
 
 				pssm_coord /= pssm_coord.w;
 
-				shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * float(directional_lights.data[i].blend_splits)), pssm_coord, scene_data.taa_frame_count);
+				bool blend_split = sc_directional_light_blend_split(i);
+				float blend_split_weight = blend_split ? 1.0f : 0.0f;
+				shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor + (1.0 - blur_factor) * blend_split_weight), pssm_coord, scene_data.taa_frame_count);
 
-				if (directional_lights.data[i].blend_splits) {
+				if (blend_split) {
 					float pssm_blend;
 					float blur_factor2;
 
@@ -1531,7 +1533,7 @@ void main() {
 
 					pssm_coord /= pssm_coord.w;
 
-					float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * float(directional_lights.data[i].blend_splits)), pssm_coord, scene_data.taa_frame_count);
+					float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * (blur_factor2 + (1.0 - blur_factor2) * blend_split_weight), pssm_coord, scene_data.taa_frame_count);
 					shadow = mix(shadow, shadow2, pssm_blend);
 				}
 
@@ -1591,7 +1593,7 @@ void main() {
 
 			light_compute(normal, directional_lights.data[i].direction, view, size_A,
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
-					true, shadow, f0, orms, 1.0, albedo, alpha,
+					true, shadow, f0, orms, 1.0, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1622,13 +1624,7 @@ void main() {
 	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
 	for (uint i = 0; i < sc_omni_lights(); i++) {
 		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
-
-		float shadow = light_process_omni_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-		shadow = blur_shadow(shadow);
-
-		// Fragment lighting
-		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+		light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1656,12 +1652,7 @@ void main() {
 	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
 	for (uint i = 0; i < sc_spot_lights(); i++) {
 		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
-
-		float shadow = light_process_spot_shadow(light_index, vertex, normal, scene_data.taa_frame_count);
-
-		shadow = blur_shadow(shadow);
-
-		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+		light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif

@@ -148,7 +148,7 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 
 	// Here equal length + begins_with from above implies p_class_specifier == p_edited_class :)
 	if (p_class_specifier.length() == p_edited_class.length()) {
-		int rfind = p_class_specifier.rfind(".");
+		int rfind = p_class_specifier.rfind_char('.');
 		if (rfind == -1) { // Single identifier
 			return p_class_specifier;
 		}
@@ -234,7 +234,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			enum_class_name = "@GlobalScope";
 			enum_name = link;
 		} else {
-			const int dot_pos = link.rfind(".");
+			const int dot_pos = link.rfind_char('.');
 			if (dot_pos >= 0) {
 				enum_class_name = link.left(dot_pos);
 				enum_name = link.substr(dot_pos + 1);
@@ -2378,11 +2378,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	if (class_desc->is_finished()) {
-		// call_deferred() is not enough.
-		if (class_desc->is_connected(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph))) {
-			class_desc->disconnect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph));
-		}
-		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		class_desc->scroll_to_paragraph(line);
 	} else {
 		scroll_to = line;
 	}
@@ -2407,6 +2403,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	const Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), EditorStringName(EditorFonts));
 	const Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), EditorStringName(EditorFonts));
 
+	const int doc_font_size = p_owner_node->get_theme_font_size(SNAME("doc_size"), EditorStringName(EditorFonts));
 	const int doc_code_font_size = p_owner_node->get_theme_font_size(SNAME("doc_source_size"), EditorStringName(EditorFonts));
 	const int doc_kbd_font_size = p_owner_node->get_theme_font_size(SNAME("doc_keyboard_size"), EditorStringName(EditorFonts));
 
@@ -2519,7 +2516,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			tag_stack.pop_front();
 			pos = brk_end + 1;
-			if (tag != "/img") {
+			if (tag == "/img") {
+				// Nothing to do.
+			} else if (tag == "/url") {
+				p_rt->pop(); // meta
+				p_rt->pop(); // color
+				p_rt->add_text(" ");
+				p_rt->add_image(p_owner_node->get_editor_theme_icon(SNAME("ExternalLink")), 0, doc_font_size, link_color);
+			} else {
 				p_rt->pop();
 			}
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
@@ -2787,19 +2791,20 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 		} else if (tag == "rb") {
 			p_rt->add_text("]");
 			pos = brk_end + 1;
-		} else if (tag == "url") {
-			int end = bbcode.find_char('[', brk_end);
-			if (end == -1) {
-				end = bbcode.length();
+		} else if (tag == "url" || tag.begins_with("url=")) {
+			String url;
+			if (tag.begins_with("url=")) {
+				url = tag.substr(4);
+			} else {
+				int end = bbcode.find_char('[', brk_end);
+				if (end == -1) {
+					end = bbcode.length();
+				}
+				url = bbcode.substr(brk_end + 1, end - brk_end - 1);
 			}
-			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
-			p_rt->push_meta(url);
 
-			pos = brk_end + 1;
-			tag_stack.push_front(tag);
-		} else if (tag.begins_with("url=")) {
-			String url = tag.substr(4);
-			p_rt->push_meta(url);
+			p_rt->push_color(link_color);
+			p_rt->push_meta(url, RichTextLabel::META_UNDERLINE_ON_HOVER, url + "\n\n" + TTR("Click to open in browser."));
 
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
@@ -3252,7 +3257,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 				enum_class_name = "@GlobalScope";
 				enum_name = property.enumeration;
 			} else {
-				const int dot_pos = property.enumeration.rfind(".");
+				const int dot_pos = property.enumeration.rfind_char('.');
 				if (dot_pos >= 0) {
 					enum_class_name = property.enumeration.left(dot_pos);
 					enum_name = property.enumeration.substr(dot_pos + 1);
@@ -3619,7 +3624,7 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			enum_class_name = "@GlobalScope";
 			enum_name = link;
 		} else {
-			const int dot_pos = link.rfind(".");
+			const int dot_pos = link.rfind_char('.');
 			if (dot_pos >= 0) {
 				enum_class_name = link.left(dot_pos);
 				enum_name = link.substr(dot_pos + 1);
@@ -3868,7 +3873,7 @@ void EditorHelpBitTooltip::show_tooltip(EditorHelpBit *p_help_bit, Control *p_ta
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target));
 	p_help_bit->connect("request_hide", callable_mp(tooltip, &EditorHelpBitTooltip::_safe_queue_free));
 	tooltip->add_child(p_help_bit);
-	p_target->get_viewport()->add_child(tooltip);
+	p_target->add_child(tooltip);
 	p_help_bit->update_content_height();
 	tooltip->popup_under_cursor();
 }
@@ -4103,7 +4108,7 @@ FindBar::FindBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindBar::_search_text_changed));
-	search_text->connect("text_submitted", callable_mp(this, &FindBar::_search_text_submitted));
+	search_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindBar::_search_text_submitted));
 
 	matches_label = memnew(Label);
 	add_child(matches_label);

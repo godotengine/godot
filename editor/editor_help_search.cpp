@@ -957,7 +957,7 @@ void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::
 				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 				(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 				(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-			method.doc = const_cast<DocData::MethodDoc *>(&p_methods[i]);
+			method.doc = &p_methods[i];
 			r_match_methods->push_back(method);
 		}
 	}
@@ -1166,7 +1166,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (p_matching_keyword.is_empty()) {
 		item->set_text(0, p_doc->name);
 	} else {
-		item->set_text(0, p_doc->name + "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword)));
+		item->set_text(0, p_doc->name + "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword));
 	}
 
 	if (!term.is_empty()) {
@@ -1272,7 +1272,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_class_name + "." + p_text;
 	}
 	if (!p_matching_keyword.is_empty()) {
-		text += "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword));
+		text += "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword);
 	}
 	item->set_text(0, text);
 
