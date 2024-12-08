@@ -19,31 +19,31 @@ class AnimationNodePreview : public SubViewportContainer
         ClassDB::bind_method(D_METHOD("get_animation_tags"),&AnimationNodePreview::get_animation_tags);
 
 
-        ClassDB::bind_method(D_METHOD("set_group", "group"), &AnimationNodePreview::set_group);
-        ClassDB::bind_method(D_METHOD("get_group"), &AnimationNodePreview::get_group);
+        ClassDB::bind_method(D_METHOD("set_resource_group", "group"), &AnimationNodePreview::set_group);
+        ClassDB::bind_method(D_METHOD("get_resource_group"), &AnimationNodePreview::get_group);
 
-        ClassDB::bind_method(D_METHOD("set_tag", "tag"), &AnimationNodePreview::set_tag);
-        ClassDB::bind_method(D_METHOD("get_tag"), &AnimationNodePreview::get_tag);
+        ClassDB::bind_method(D_METHOD("set_resource_tag", "tag"), &AnimationNodePreview::set_tag);
+        ClassDB::bind_method(D_METHOD("get_resource_tag"), &AnimationNodePreview::get_tag);
 
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "group"), "set_group", "get_group");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "tag"), "set_tag", "get_tag");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_group"), "set_resource_group", "get_resource_group");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_tag"), "set_resource_tag", "get_resource_tag");
     }
 public:
 	float rot_x;
 	float rot_y;
-    enum Play_State {
+    enum class Play_State {
         PS_Play,
         PS_Pause,
         PS_Stop
     };
-    enum PreviewType {
+    enum class PreviewType {
       PT_AnimationNode,
       PT_CharacterBodyPrefab,
       PT_Animation,  
     };
-    Play_State play_state = PS_Stop;
-    PreviewType preview_type = PT_AnimationNode;
-
+    Play_State play_state = Play_State::PS_Stop;
+    PreviewType preview_type = PreviewType::PT_AnimationNode;
+    Label *label = nullptr;
 	SubViewport *viewport = nullptr;
 	Node3D *rotation = nullptr;
 	Node3D *charcter_parent = nullptr;
@@ -86,6 +86,8 @@ public:
 	class CharacterBodyMain *preview_character = nullptr;
     bool preview_animation = true;
 
+    bool show_by_editor_property = false;
+
 
 	struct ThemeCache {
 		Ref<Texture2D> light_1_icon;
@@ -121,7 +123,6 @@ public:
 
 	void _update_rotation();
 
-	virtual void on_visilbe_changed(bool p_visible) override ;
 public:
     void play();
 
@@ -169,6 +170,8 @@ public:
     void set_animation(Ref<Animation> p_animation) ;
     void set_animation_path(String p_path) ;
     String get_animation_path() { return animation_path; }
+
+    void set_show_by_editor_property(bool p_show) { show_by_editor_property = p_show; }
 
 	AnimationNodePreview();
 

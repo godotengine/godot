@@ -193,6 +193,7 @@ public:
 
         preview = memnew(AnimationNodePreview);
         preview->set_custom_minimum_size(Size2(1, 300) * EDSCALE);
+        preview->set_show_by_editor_property(true);
         tasks_container->add_child(preview);
 
         update_child_item();

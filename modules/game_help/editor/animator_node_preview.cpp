@@ -5,15 +5,15 @@
 void AnimationNodePreview::_on_drag_button_pressed() {
     
     Ref<Resource> res;
-    switch (preview_type	)
+    switch (preview_type)
     {
-    case PT_AnimationNode:
+    case PreviewType::PT_AnimationNode:
         res = node;
         break;
-    case PT_CharacterBodyPrefab:
+    case PreviewType::PT_CharacterBodyPrefab:
         res = prefab;
         break;
-    case PT_Animation:
+    case PreviewType::PT_Animation:
         res = animation;
         break;
     }
@@ -31,55 +31,93 @@ void AnimationNodePreview::_update_rotation(){
     rotation->set_transform(t);
 }
 
-void AnimationNodePreview::on_visilbe_changed(bool p_visible) {
-    
-    if(!is_visible_in_tree()) {
-        switch (preview_type)
-        {
-        case PT_AnimationNode:
-            node = Ref<CharacterAnimatorNodeBase>();
-            node_path_is_load = false;
-            break;
-        case PT_CharacterBodyPrefab:
-            prefab = Ref<CharacterBodyPrefab>();
-            prefab_path_is_load = false;
-            break;
-        case PT_Animation:
-            animation = Ref<Animation>();
-            animation_path_is_load = false;
-            break;
-        }
+Ref<CharacterBodyPrefab> AnimationNodePreview::get_preview_prefab() {
 
+	if (show_by_editor_property) {
+		CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
+		if (body_main != nullptr)
+		{
+			Ref<CharacterBodyPrefab> body_prefab = body_main->get_body_prefab();
+			if (body_prefab.is_valid())
+			{
+				return body_prefab;
+			}
+		}
+	}
+
+	if (preview_type == PreviewType::PT_CharacterBodyPrefab) {
+		if (!prefab_path_is_load && prefab.is_null()) {
+			prefab = ResourceLoader::load(prefab_path);
+			prefab_path_is_load = true;
+			if (prefab.is_valid()) {
+				label->set_text(prefab->get_name());
+				group_enum->update_property();
+				tag_enum->update_property();
+			}
+		}
+		return prefab;
+	}
+	else if (preview_type == PreviewType::PT_Animation) {
+		if (!animation_path_is_load && animation.is_null()) {
+			animation = ResourceLoader::load(animation_path);
+			animation_path_is_load = true;
+			if (animation.is_valid()) {
+				label->set_text(animation->get_name());
+				group_enum->update_property();
+				tag_enum->update_property();
+			}
+		}
+		if (animation.is_valid()) {
+			Ref<CharacterBodyPrefab> _prefab = ResourceLoader::load(animation->get_preview_prefab_path());
+			if (_prefab.is_valid()) {
+				return _prefab;
+			}
+		}
+	}
+	else if (preview_type == PreviewType::PT_AnimationNode) {
+		if (!node_path_is_load && node.is_null()) {
+			node = ResourceLoader::load(node_path);
+			if (node.is_valid()) {
+				label->set_text(node->get_name());
+				group_enum->update_property();
+				tag_enum->update_property();
+			}
+			node_path_is_load = true;
+		}
+		if (node.is_valid()) {
+			Ref<CharacterBodyPrefab> _prefab = ResourceLoader::load(node->get_priview_prefab_path());
+			if (_prefab.is_valid()) {
+				return _prefab;
+			}
+		}
+	}
+	return get_globle_preview_prefab();
+}
+void AnimationNodePreview::process(double delta)  {
+    Ref<CharacterBodyPrefab> _prefab = get_preview_prefab();
+    if(preview_character->get_body_prefab() != _prefab) {
+        edit(_prefab);
         stop();
     }
-    group_enum->update_property();
-    tag_enum->update_property();
-
+    play();
+    
 }
 void AnimationNodePreview::play() {
-    if(preview_type == PT_CharacterBodyPrefab) {
+    if(preview_type == PreviewType::PT_CharacterBodyPrefab) {
         return;            
     }
-    if(play_state == PS_Play) {
+    if( play_state == Play_State::PS_Play) {
         return;
     }
-    play_state = PS_Play;
+    play_state = Play_State::PS_Play;
     preview_character->set_editor_pause_animation(false);
-    if(preview_type == PT_Animation) {
+    if(preview_type == PreviewType::PT_Animation) {
         
-        if(!animation_path_is_load && animation.is_null()) {
-            animation = ResourceLoader::load(animation_path);
-            animation_path_is_load = true;
-        }
         if(animation.is_valid()) {
             preview_character->get_animator()->editor_play_animation(animation);
         }
         return;
-    } else if(preview_type == PT_AnimationNode) {
-        if(!node_path_is_load && node.is_null()) {
-            node = ResourceLoader::load(node_path);
-            node_path_is_load = true;
-        }
+    } else if(preview_type == PreviewType::PT_AnimationNode) {
         if(node.is_valid()) {
             preview_character->get_animator()->editor_play_animation(node);
         }
@@ -88,13 +126,13 @@ void AnimationNodePreview::play() {
 }
 
 void AnimationNodePreview::pause() {
-    if(preview_type == PT_CharacterBodyPrefab) {
+    if(preview_type == PreviewType::PT_CharacterBodyPrefab) {
         return;            
     }
-    if(play_state == PS_Pause) {
+    if(play_state == Play_State::PS_Pause) {
         return;
     }
-    play_state = PS_Pause;
+    play_state = Play_State::PS_Pause;
     preview_character->set_editor_pause_animation(!preview_character->get_editor_pause_animation());
     if(preview_character->get_editor_pause_animation()) {
         pause_button->set_text(L"继续");
@@ -109,13 +147,13 @@ void AnimationNodePreview::pause() {
 }
 
 void AnimationNodePreview::stop() {
-    if(preview_type == PT_CharacterBodyPrefab) {
+    if(preview_type == PreviewType::PT_CharacterBodyPrefab) {
         return;            
     }
-    if(play_state == PS_Stop) {
+    if(play_state == Play_State::PS_Stop) {
         return;
     }
-    play_state = PS_Stop;
+    play_state = Play_State::PS_Stop;
     preview_character->set_editor_pause_animation(false);
     preview_character->get_animator()->editor_stop_animation();
     update_play_state();
@@ -143,7 +181,7 @@ void AnimationNodePreview::set_globle_preview_blackboard(const Ref<BlackboardPla
 }
 
 void AnimationNodePreview::update_play_state() {
-    if(preview_type == PT_CharacterBodyPrefab) {
+    if(preview_type == PreviewType::PT_CharacterBodyPrefab) {
         play_button->set_visible(false);
         pause_button->set_visible(false);
         stop_button->set_visible(false);
@@ -154,7 +192,7 @@ void AnimationNodePreview::update_play_state() {
     stop_button->set_visible(true);
     switch (play_state)
     {
-    case PS_Play:
+    case Play_State::PS_Play:
         play_button->set_disabled(true);
         play_button->set_focus_mode(Control::FOCUS_NONE);
 
@@ -164,7 +202,7 @@ void AnimationNodePreview::update_play_state() {
         stop_button->set_disabled(false);
         stop_button->set_focus_mode(Control::FOCUS_CLICK);
         break;
-    case PS_Pause:
+    case Play_State::PS_Pause:
         play_button->set_disabled(true);
         play_button->set_focus_mode(Control::FOCUS_NONE);
 
@@ -174,7 +212,7 @@ void AnimationNodePreview::update_play_state() {
         stop_button->set_disabled(false);
         stop_button->set_focus_mode(Control::FOCUS_CLICK);
         break;
-    case PS_Stop:
+    case Play_State::PS_Stop:
         play_button->set_disabled(false);
         play_button->set_focus_mode(Control::FOCUS_CLICK);
 
@@ -206,47 +244,20 @@ void AnimationNodePreview::_update_theme_item_cache() {
     stop_button->set_button_icon(theme_cache.stop_icon);
 }
 void AnimationNodePreview::_notification(int p_what) {
-    switch (p_what) {
-        case NOTIFICATION_ENTER_TREE: {
-            Ref<CharacterBodyPrefab> _prefab = get_preview_prefab();
-            if (_prefab.is_valid()) {
-                edit(_prefab);
-            }
-        }
-        break;
-    }
-}
-void AnimationNodePreview::process(double delta)  {
-    Ref<CharacterBodyPrefab> _prefab = get_preview_prefab();
-    if(preview_character->get_body_prefab() != _prefab) {
-        edit(_prefab);
-        group_enum->update_property();
-        tag_enum->update_property();
-    }
 
-    if(preview_type == PT_AnimationNode) {
-        Ref<BlackboardPlan> blackboard = get_preview_blackboard();
-        if (preview_character->get_blackboard_plan() != blackboard)
-        {
-            preview_character->set_blackboard_plan(blackboard);
-        }
-
-    }
-    play();
-    
 }
 Variant AnimationNodePreview::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
     Ref<Resource> res;
     switch (preview_type)
     {
-    case PT_AnimationNode:
+    case PreviewType::PT_AnimationNode:
         res = node;
         break;
-    case PT_CharacterBodyPrefab:
+    case PreviewType::PT_CharacterBodyPrefab:
         res = prefab;
         break;
-    case PT_Animation:
+    case PreviewType::PT_Animation:
         res = animation;
         break;
     }
@@ -276,37 +287,6 @@ Ref<BlackboardPlan> AnimationNodePreview::get_preview_blackboard() {
     }
     return get_globle_preview_blackboard();
 }
-Ref<CharacterBodyPrefab> AnimationNodePreview::get_preview_prefab() {
-    if(preview_type == PT_CharacterBodyPrefab) {
-        if(!prefab_path_is_load && prefab.is_null()) {
-            prefab = ResourceLoader::load(prefab_path);
-            prefab_path_is_load = true;
-        }
-        return prefab;
-    }
-    if(preview_type == PT_Animation) {
-        if(!animation_path_is_load && animation.is_null()) {
-            animation = ResourceLoader::load(animation_path);
-            animation_path_is_load = true;
-        }
-        if(animation.is_valid()) {
-            Ref<CharacterBodyPrefab> _prefab = ResourceLoader::load(animation->get_preview_prefab_path());
-            if(_prefab.is_valid()) {
-                return _prefab;
-            }                  
-        }         
-    }
-    CharacterBodyMain* body_main = CharacterBodyMain::get_current_editor_player();
-    if (body_main != nullptr)
-    {
-        Ref<CharacterBodyPrefab> body_prefab = body_main->get_body_prefab();
-        if (body_prefab.is_valid())
-        {
-            return body_prefab;
-        }
-    }
-    return get_globle_preview_prefab();
-}
 void AnimationNodePreview::gui_input(const Ref<InputEvent> &p_event) {
     ERR_FAIL_COND(p_event.is_null());
 
@@ -320,7 +300,6 @@ void AnimationNodePreview::gui_input(const Ref<InputEvent> &p_event) {
     }
 }
 void AnimationNodePreview::edit(Ref<CharacterBodyPrefab> p_prefab){
-    play_state = PS_Stop;
     update_play_state();
     preview_character->set_body_prefab(p_prefab);
 
@@ -346,7 +325,7 @@ void AnimationNodePreview::edit(Ref<CharacterBodyPrefab> p_prefab){
 void AnimationNodePreview::set_prefab(Ref<CharacterBodyPrefab> p_prefab) {
     prefab = p_prefab;
     prefab_path = p_prefab->get_path();
-    preview_type = PT_CharacterBodyPrefab;
+    preview_type = PreviewType::PT_CharacterBodyPrefab;
 
     group_enum->set_visible(true);
     tag_enum->set_visible(false);
@@ -355,19 +334,16 @@ void AnimationNodePreview::set_prefab_path(String p_path) {
     prefab_path = p_path;
     prefab_path_is_load = false;
     prefab.unref();
-    preview_type = PT_CharacterBodyPrefab;
+    preview_type = PreviewType::PT_CharacterBodyPrefab;
     group_enum->set_visible(true);
     tag_enum->set_visible(false);
 }
 
 
 void AnimationNodePreview::set_animator_node(Ref<CharacterAnimatorNodeBase> p_node) {
-    preview_type = PT_AnimationNode;
+    preview_type = PreviewType::PT_AnimationNode;
     node = p_node;
     node_path = p_node->get_path();
-    if(node.is_valid()) {
-        node->set_blackboard_plan(get_preview_blackboard());
-    }
     stop();
     group_enum->set_visible(true);
     tag_enum->set_visible(true);
@@ -376,7 +352,7 @@ void AnimationNodePreview::set_animator_node_path(String p_path) {
     node_path = p_path;
     node_path_is_load = false;
     node.unref();
-    preview_type = PT_AnimationNode;
+    preview_type = PreviewType::PT_AnimationNode;
     if (node.is_valid()) {
         node->set_blackboard_plan(get_preview_blackboard());
     }
@@ -388,12 +364,9 @@ void AnimationNodePreview::set_animator_node_path(String p_path) {
 
 
 void AnimationNodePreview::set_animation(Ref<Animation> p_animation) {
-    preview_type = PT_Animation;
+    preview_type = PreviewType::PT_Animation;
     animation = p_animation;
     animation_path = p_animation->get_path();
-    if(node.is_valid()) {
-        node->set_blackboard_plan(get_preview_blackboard());
-    }
     stop();
     group_enum->set_visible(true);
     tag_enum->set_visible(true);
@@ -402,10 +375,7 @@ void AnimationNodePreview::set_animation_path(String p_path) {
     animation_path = p_path;
     animation_path_is_load = false;
     animation.unref();
-    preview_type = PT_Animation;
-    if(node.is_valid()) {
-        node->set_blackboard_plan(get_preview_blackboard());
-    }
+    preview_type = PreviewType::PT_Animation;
     stop();
     group_enum->set_visible(true);
     tag_enum->set_visible(true);
@@ -448,14 +418,42 @@ AnimationNodePreview::AnimationNodePreview()
 
     preview_character = memnew(CharacterBodyMain);
     preview_character->init();
+    preview_character->get_animator()->set_is_using_root_motion(false);
     charcter_parent->add_child(preview_character);
 
+
+    VBoxContainer *vb = memnew(VBoxContainer);
+    vb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+    vb->set_custom_minimum_size(Size2(150, 1) * EDSCALE);
+    vb->set_h_size_flags(SIZE_EXPAND_FILL);
+    add_child(vb);
+    {
+        HBoxContainer *hb = memnew(HBoxContainer);
+        vb->add_child(hb);
+
+        label = memnew(Label);
+        label->set_text("Preview");
+        label->set_h_size_flags(SIZE_EXPAND_FILL);
+        label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+        label->set_modulate(Color(0.4, 0.6, 1, 1));
+        hb->add_child(label);
+
+
+        drag_button = memnew(Button);
+        drag_button->set_custom_minimum_size(Size2(28.0, 28.0) * EDSCALE);
+        drag_button->set_button_icon(theme_cache.drag_icon);
+        drag_button->set_tooltip_text(L"鼠标左键点击定位资源,按住鼠标左键,拖拽我呀!八格牙路!");
+        drag_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_drag_button_pressed));
+        SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
+        hb->add_child(drag_button);
+
+    }
 
     set_custom_minimum_size(Size2(1, 150) * EDSCALE);
     HBoxContainer *root_hb = memnew(HBoxContainer);
     root_hb->set_modulate(Color(1, 1, 1, 0.7f));
-    add_child(root_hb);
-    root_hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
+    root_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+    vb->add_child(root_hb);
 
     {
         VBoxContainer *vb = memnew(VBoxContainer);
@@ -541,15 +539,6 @@ AnimationNodePreview::AnimationNodePreview()
             time_scale_slider->set_allow_lesser(true);
             time_scale_slider->set_ticks(10);
             time_scale_slider->set_ticks_on_borders(true);
-
-
-            drag_button = memnew(Button);
-            drag_button->set_custom_minimum_size(Size2(28.0, 28.0) * EDSCALE);
-            drag_button->set_button_icon(theme_cache.drag_icon);
-            drag_button->set_tooltip_text(L"鼠标左键点击定位资源,按住鼠标左键,拖拽我呀!八格牙路!");
-            drag_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodePreview::_on_drag_button_pressed));
-            SET_DRAG_FORWARDING_GCD(drag_button, AnimationNodePreview);
-            hb->add_child(drag_button);
         }
 
         {
@@ -560,7 +549,7 @@ AnimationNodePreview::AnimationNodePreview()
 
             group_enum = memnew(EditorTextEnum);
             group_enum->set_h_size_flags(SIZE_EXPAND_FILL);
-            group_enum->set_object_and_property(this, StringName("group"));
+            group_enum->set_object_and_property(this, StringName("resource_group"));
             group_enum->setup({});
             group_enum->set_dynamic(true, "get_animation_groups");
             group_enum->set_modulate(Color(1,0.8,0.7,1));
@@ -568,7 +557,7 @@ AnimationNodePreview::AnimationNodePreview()
 
             tag_enum = memnew(EditorTextEnum);
             tag_enum->set_h_size_flags(SIZE_EXPAND_FILL);
-            tag_enum->set_object_and_property(this, StringName("tag"));
+            tag_enum->set_object_and_property(this, StringName("resource_tag"));
             tag_enum->set_modulate(Color(1,0.8,1.0,1));
             tag_enum->setup({});
             tag_enum->set_dynamic(true, "get_animation_groups");
@@ -602,7 +591,7 @@ void AnimationNodePreview::set_group(String p_group) {
     }
     switch (preview_type)
     {
-    case PT_AnimationNode:
+    case PreviewType::PT_AnimationNode:
         {
             if(node.is_valid()) {
                 node->set_group(p_group);
@@ -610,7 +599,7 @@ void AnimationNodePreview::set_group(String p_group) {
             }
         }
         break;
-    case PT_CharacterBodyPrefab:   
+    case PreviewType::PT_CharacterBodyPrefab:
         if(!prefab_path_is_load && prefab.is_null()) {
             prefab = ResourceLoader::load(prefab_path);
             prefab_path_is_load = true;
@@ -620,7 +609,7 @@ void AnimationNodePreview::set_group(String p_group) {
             ResourceSaver::save(prefab, prefab_path);
         }
         break;
-    case PT_Animation:
+    case PreviewType::PT_Animation:
         {
             if(animation.is_valid()) {
                 animation->set_animation_group(p_group);
@@ -638,19 +627,19 @@ String AnimationNodePreview::get_group() {
 
     switch (preview_type)
     {
-    case PT_AnimationNode:
+    case PreviewType::PT_AnimationNode:
         {
             if(node.is_valid()) {
                 return node->get_group();
             }
         }
         break;
-    case PT_CharacterBodyPrefab:   
+    case PreviewType::PT_CharacterBodyPrefab:
         if(prefab.is_valid()) {
             return prefab->get_resource_group();
         }
         break;
-    case PT_Animation:
+    case PreviewType::PT_Animation:
         {
             if(animation.is_valid()) {
                 return animation->get_animation_group();
@@ -670,7 +659,7 @@ void AnimationNodePreview::set_tag(String p_tag)  {
     }
     switch (preview_type)
     {
-    case PT_AnimationNode:
+    case PreviewType::PT_AnimationNode:
         {
             if(node.is_valid()) {
                 node->set_tag(p_tag);
@@ -678,9 +667,9 @@ void AnimationNodePreview::set_tag(String p_tag)  {
             }
         }
         break;
-    case PT_CharacterBodyPrefab:   
+    case PreviewType::PT_CharacterBodyPrefab:
         break;
-    case PT_Animation:
+    case PreviewType::PT_Animation:
         {
             if(animation.is_valid()) {
                 animation->set_animation_tag(p_tag);
@@ -693,16 +682,16 @@ void AnimationNodePreview::set_tag(String p_tag)  {
 String AnimationNodePreview::get_tag() { 
     switch (preview_type)
     {
-    case PT_AnimationNode:
+    case PreviewType::PT_AnimationNode:
         {
             if(node.is_valid()) {
                 return node->get_tag();
             }
         }
         break;
-    case PT_CharacterBodyPrefab:   
+    case PreviewType::PT_CharacterBodyPrefab:
         break;
-    case PT_Animation:
+    case PreviewType::PT_Animation:
         {
             if(animation.is_valid()) {
                 return animation->get_animation_tag();    

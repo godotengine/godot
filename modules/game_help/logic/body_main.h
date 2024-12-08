@@ -207,6 +207,8 @@ protected:
     HashMap<int, Label3D*> bone_label;
 };
 
+
+
 // 身体主要部件部分
 class CharacterBodyMain : public CharacterBody3D {
     GDCLASS(CharacterBodyMain, CharacterBody3D);
@@ -220,7 +222,7 @@ public:
     void _process_ik();
 
 public:
-    void init();
+    void init(bool p_is_only_mesh = false);
     void clear_all();
     void _notification( int p_notification );
     CharacterBodyMain();
@@ -583,26 +585,9 @@ protected:
     }
 public:
 
-    StringName editor_animation_group;
-    void set_editor_animation_group(StringName p_name) {
-        editor_animation_group = p_name;
-    }
-
-    StringName get_editor_animation_group() {
-        return editor_animation_group;
-    }
-
 
 	Array get_animation_Group() const;
 	Array get_animation_Tags() const;
-    void set_editor_form_mesh_file_path(const String& p_file_path)
-    {
-		editor_form_mesh_file_path = ResourceUID::ensure_path(p_file_path);
-    }
-    String get_editor_form_mesh_file_path()
-    {
-        return editor_form_mesh_file_path;
-    }
 
     void set_editor_run_ai(bool p_run_ai)
     {
@@ -614,36 +599,6 @@ public:
     {
         return run_ai;
     }
-    void set_editor_is_skeleton_human(bool p_is_human) {
-        is_skeleton_human = p_is_human;
-    }
-
-    bool get_editor_is_skeleton_human() {
-        return is_skeleton_human;
-    }
-    void set_is_position_by_hip_bone(bool p_is_position_by_hip_bone) {
-        is_position_by_hip_bone = p_is_position_by_hip_bone;
-    }
-    bool get_is_position_by_hip_bone() {
-        return is_position_by_hip_bone;
-    }
-	Ref<CharacterBodyPrefab> build_prefab(const String& mesh_path, bool is_skeleton_human);
-    DECL_MEMBER_BUTTON(editor_build_form_mesh_file_path);
-
-    // 生成动画资产帮助类
-    void set_editor_animation_file_path(const String& p_file_path)
-    {
-		editor_animation_file_name = ResourceUID::ensure_path(p_file_path);
-    }
-
-    String get_editor_animation_file_path()
-    {
-        return editor_animation_file_name;
-    }
-
-    String editor_animation_file_name;
-    void editor_build_animation_form_path(String p_file_path);
-    DECL_MEMBER_BUTTON(editor_build_animation);
 
     void set_editor_animation_speed(float p_speed) {
         editor_animation_speed = p_speed;
@@ -679,38 +634,12 @@ public:
         return play_animation;
     }
 
-	bool editor_show_mesh = true;
-
-    void set_editor_show_mesh(bool p_show) {
-        editor_show_mesh = p_show;
-        for(auto& part : bodyPart) {
-            part.value->set_show_mesh(p_show);
-        }
-    }
-
-    bool get_editor_show_mesh() {
-        return editor_show_mesh;
-    }
 
 
     Ref<Animation> play_animation;
     DECL_MEMBER_BUTTON(animation_test_play_select_animation);
 
 
-    
-    // 动画路径
-    String editor_convert_animations_path;
-    void set_editor_convert_animations_path(const String& p_path) {
-		editor_convert_animations_path = p_path;
-    }
-
-    String get_editor_convert_animations_path() {
-        return editor_convert_animations_path;
-    }
-
-    void editor_convert_animations(String p_file_path);
-    
-	DECL_MEMBER_BUTTON(editor_convert_animations_bt);
 
     
 	DECL_MEMBER_BUTTON(humanizer_install_mkhm);
@@ -731,11 +660,6 @@ protected:
     HashMap<StringName, Ref<RayCastCompoent3D>> raycast;
     // 初始化数据
     Dictionary init_data;
-    // 角色的编辑器模型
-    String editor_form_mesh_file_path;
-    bool is_skeleton_human = false;
-    // 通過臀部計算位置
-    bool is_position_by_hip_bone = true;
 
 
     bool is_skill_stop = false;
@@ -778,6 +702,7 @@ protected:
     bool run_ai = true;
     bool editor_pause_animation = false;
     float editor_animation_speed = 1.0;
+    bool editor_only_mesh = false;
 };
 
 #endif

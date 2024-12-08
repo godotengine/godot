@@ -35,6 +35,9 @@
 
 #define cofac(row1, col1, row2, col2) \
 	(rows[row1][col1] * rows[row2][col2] - rows[row1][col2] * rows[row2][col1])
+	
+#define cofac_other(p_matrix,row1, col1, row2, col2) \
+	(p_matrix.rows[row1][col1] * p_matrix.rows[row2][col2] - p_matrix.rows[row1][col2] * p_matrix.rows[row2][col1])
 
 void Basis::invert() {
 	real_t co[3] = {
@@ -51,6 +54,23 @@ void Basis::invert() {
 	set(co[0] * s, cofac(0, 2, 2, 1) * s, cofac(0, 1, 1, 2) * s,
 			co[1] * s, cofac(0, 0, 2, 2) * s, cofac(0, 2, 1, 0) * s,
 			co[2] * s, cofac(0, 1, 2, 0) * s, cofac(0, 0, 1, 1) * s);
+}
+void Basis::set_inverse(const Basis &p_matrix) {
+	real_t co[3] = {
+		cofac_other(p_matrix,1, 1, 2, 2), cofac_other(p_matrix,1, 2, 2, 0), cofac_other(p_matrix,1, 0, 2, 1)
+	};
+	real_t det = p_matrix.rows[0][0] * co[0] +
+			p_matrix.rows[0][1] * co[1] +
+			p_matrix.rows[0][2] * co[2];
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND(det == 0);
+#endif
+	real_t s = 1.0f / det;
+
+	set(co[0] * s, cofac_other(p_matrix,0, 2, 2, 1) * s, cofac_other(p_matrix,0, 1, 1, 2) * s,
+			co[1] * s, cofac_other(p_matrix,0, 0, 2, 2) * s, cofac_other(p_matrix,0, 2, 1, 0) * s,
+			co[2] * s, cofac_other(p_matrix,0, 1, 2, 0) * s, cofac_other(p_matrix,0, 0, 1, 1) * s);
+	
 }
 
 void Basis::orthonormalize() {

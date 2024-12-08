@@ -13,13 +13,8 @@ CharacterAIContext::CharacterAIContext()
 	beehave_run_context.instantiate();
 }
 
-void CharacterBodyMain::init()
+void CharacterBodyMain::init(bool p_is_only_mesh)
 {
-    if(character_ai.is_null())
-    {
-		character_ai.instantiate();
-    }
-	character_ai->init();
     if(animator.is_null())
     {
         animator.instantiate();
@@ -27,39 +22,48 @@ void CharacterBodyMain::init()
     animator->set_body(this);
     animator->init();
 
-    // 创建外形
-    if(mainShape.is_null())
-    {
-        mainShape.instantiate();
-        Ref<CapsuleShape3D> shape;
-        shape.instantiate();
-        shape->set_radius(0.5f);
-        shape->set_height(2.0f);
+    editor_only_mesh = p_is_only_mesh;
+    if(!p_is_only_mesh) {
+        if(character_ai.is_null())
+        {
+            character_ai.instantiate();
+        }
+        character_ai->init();
+        // 创建外形
+        if(mainShape.is_null())
+        {
+            mainShape.instantiate();
+            Ref<CapsuleShape3D> shape;
+            shape.instantiate();
+            shape->set_radius(0.5f);
+            shape->set_height(2.0f);
 
-        mainShape->set_shape(shape);
-		mainShape->set_position(Vector3(0, 1, 0));
-        mainShape->set_link_target(this);        
-    }
-    if(audio_players.has(StringName("body"))) {
-        Ref<AudioStreamPlayer3DCompoent> player;
-        player.instantiate();
-        player->set_owenr(this);
-        audio_players["body"] = player;
-    }
-    if(audio_players.has(StringName("footstep"))) {
-        Ref<AudioStreamPlayer3DCompoent> player;
-        player.instantiate();
-        player->set_owenr(this);
-        audio_players["footstep"] = player;
+            mainShape->set_shape(shape);
+            mainShape->set_position(Vector3(0, 1, 0));
+            mainShape->set_link_target(this);        
+        }
+        if(audio_players.has(StringName("body"))) {
+            Ref<AudioStreamPlayer3DCompoent> player;
+            player.instantiate();
+            player->set_owenr(this);
+            audio_players["body"] = player;
+        }
+        if(audio_players.has(StringName("footstep"))) {
+            Ref<AudioStreamPlayer3DCompoent> player;
+            player.instantiate();
+            player->set_owenr(this);
+            audio_players["footstep"] = player;
+            
+        }    
+        if(check_area.size() == 0) {
+            Ref<CharacterCheckArea3D> _area;
+            _area.instantiate();
+            _area->set_name(StringName(L"周围人物检查区域"));
+            _area->set_body_main(this);
+            _area->init();
+            check_area.push_back(_area);
+        }
         
-    }
-    if(check_area.size() == 0) {
-        Ref<CharacterCheckArea3D> _area;
-		_area.instantiate();
-		_area->set_name(StringName(L"周围人物检查区域"));
-		_area->set_body_main(this);
-		_area->init();
-        check_area.push_back(_area);
     }
 }
 void CharacterBodyMain::clear_all()
@@ -147,6 +151,9 @@ void CharacterBodyMain::_update(double p_delta)
 }
 void CharacterBodyMain::_update_ai()
 {
+    if(editor_only_mesh) {
+        return;
+    }
 #ifdef TOOLS_ENABLED
     if(!run_ai)
     {
@@ -193,6 +200,9 @@ void CharacterBodyMain::_process_ik()
 
 void CharacterBodyMain::_process_move()
 {
+    if(editor_only_mesh) {
+        return;
+    }
 	if (animator.is_null()) {
 		return;
 	}
@@ -355,12 +365,13 @@ void CharacterBodyMain::_init_body()
 		skeleton->set_dont_save(true);
 
 
-
-		if (skeleton)
-		{
-            ik.instantiate();
-			ik->_initialize(skeleton);
-		}
+        if(!editor_only_mesh) {
+            if (skeleton)
+            {
+                ik.instantiate();
+                ik->_initialize(skeleton);
+            }
+        }
 		skeletonID = skeleton->get_instance_id();
 		// 
 		TypedArray<CharacterBodyPart> part_array = body_prefab->load_part();
@@ -372,7 +383,7 @@ void CharacterBodyMain::_init_body()
 			p.instantiate();
 			p->set_skeleton(skeleton);
 			p->set_part(part_array[i]);
-            p->set_show_mesh(editor_show_mesh);
+            //p->set_show_mesh(editor_show_mesh);
 			Ref< CharacterBodyPart> part = part_array[i];
 			bodyPart[part->get_name()] = p;
 		}
@@ -422,7 +433,7 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_audio_player"), &CharacterBodyMain::get_audio_player);
 
     ClassDB::bind_method(D_METHOD("get_animation_Group"), &CharacterBodyMain::get_animation_Group);
-    ClassDB::bind_method(D_METHOD("get_animation_Tags", "tag"), &CharacterBodyMain::get_animation_Tags);
+    ClassDB::bind_method(D_METHOD("get_animation_Tags"), &CharacterBodyMain::get_animation_Tags);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -459,12 +470,6 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_character_ai"), &CharacterBodyMain::get_character_ai);
 
     
-    ClassDB::bind_method(D_METHOD("set_editor_form_mesh_file_path", "editor_form_mesh_file_path"), &CharacterBodyMain::set_editor_form_mesh_file_path);
-    ClassDB::bind_method(D_METHOD("get_editor_form_mesh_file_path"), &CharacterBodyMain::get_editor_form_mesh_file_path);
-
-
-    ClassDB::bind_method(D_METHOD("set_editor_animation_file_path", "path"), &CharacterBodyMain::set_editor_animation_file_path);
-    ClassDB::bind_method(D_METHOD("get_editor_animation_file_path"), &CharacterBodyMain::get_editor_animation_file_path);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
@@ -475,51 +480,10 @@ void CharacterBodyMain::_bind_methods()
     IMP_GODOT_PROPERTY(StringName,audio_socket_name)
     ADD_MEMBER_BUTTON(audio_add_socket,L"增加音频插槽",CharacterBodyMain);
 
-    ADD_SUBGROUP("editor", "editor_");
-
-    ClassDB::bind_method(D_METHOD("set_editor_show_mesh", "editor_show_mesh"), &CharacterBodyMain::set_editor_show_mesh);
-    ClassDB::bind_method(D_METHOD("get_editor_show_mesh"), &CharacterBodyMain::get_editor_show_mesh);
-
-    ClassDB::bind_method(D_METHOD("set_editor_is_skeleton_human", "editor_is_skeleton_human"), &CharacterBodyMain::set_editor_is_skeleton_human);
-    ClassDB::bind_method(D_METHOD("get_editor_is_skeleton_human"), &CharacterBodyMain::get_editor_is_skeleton_human);
-
-    ClassDB::bind_method(D_METHOD("set_editor_animation_group"), &CharacterBodyMain::set_editor_animation_group);
-    ClassDB::bind_method(D_METHOD("get_editor_animation_group"), &CharacterBodyMain::get_editor_animation_group);
-
-    ClassDB::bind_method(D_METHOD("set_editor_convert_animations_path", "path"), &CharacterBodyMain::set_editor_convert_animations_path);
-    ClassDB::bind_method(D_METHOD("get_editor_convert_animations_path"), &CharacterBodyMain::get_editor_convert_animations_path);
-
-    ClassDB::bind_method(D_METHOD("set_play_animation", "play_animation"), &CharacterBodyMain::set_play_animation);
-    ClassDB::bind_method(D_METHOD("get_play_animation"), &CharacterBodyMain::get_play_animation);
-
-    ClassDB::bind_method(D_METHOD("set_play_animayion_speed", "speed"), &CharacterBodyMain::set_play_animayion_speed);
-    ClassDB::bind_method(D_METHOD("get_play_animayion_speed"), &CharacterBodyMain::get_play_animayion_speed);
-
-
-    ClassDB::bind_method(D_METHOD("set_is_position_by_hip_bone", "is_positiobn_by_hip_bone"), &CharacterBodyMain::set_is_position_by_hip_bone);
-    ClassDB::bind_method(D_METHOD("get_is_position_by_hip_bone"), &CharacterBodyMain::get_is_position_by_hip_bone);
 
 
 
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_show_mesh", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_editor_show_mesh", "get_editor_show_mesh");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_mesh_file_path"), "set_editor_form_mesh_file_path", "get_editor_form_mesh_file_path");
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_skeleton_human"), "set_editor_is_skeleton_human", "get_editor_is_skeleton_human");
-    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_is_position_by_hip_bone"), "set_is_position_by_hip_bone", "get_is_position_by_hip_bone");
-    ADD_MEMBER_BUTTON(editor_build_form_mesh_file_path,L"根据模型初始化",CharacterBodyMain);
-
-    
-
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_animation_file_path",PROPERTY_HINT_FILE,"*.res,*.tres"), "set_editor_animation_file_path", "get_editor_animation_file_path");
-
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "get_animation_Group",PROPERTY_USAGE_EDITOR), "set_editor_animation_group", "get_editor_animation_group");
-    ADD_MEMBER_BUTTON(editor_build_animation,L"构建动画文件信息",CharacterBodyMain);
-
-
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_convert_animations_path", PROPERTY_HINT_DIR), "set_editor_convert_animations_path", "get_editor_convert_animations_path");
-
-    ADD_MEMBER_BUTTON(editor_convert_animations_bt,L"转换动画文件夹",CharacterBodyMain);
 
     ADD_SUBGROUP("animation_test", "animation_test");
     
@@ -723,217 +687,6 @@ Array CharacterBodyMain::get_animation_Tags() const {
     
 }
 
-
-
-// 保存模型资源
-static void save_fbx_res( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& save_path, bool is_resource = true)
-{
-	String export_root_path = "res://Assets/public";
-	if (!DirAccess::exists("res://Assets"))
-	{
-		DirAccess::make_dir_absolute("res://Assets");
-	}
-	if (!DirAccess::exists(export_root_path))
-	{
-		DirAccess::make_dir_absolute(export_root_path);
-	}
-	export_root_path  = export_root_path.path_join(group_name);
-	if (!DirAccess::exists(export_root_path))
-	{
-		DirAccess::make_dir_absolute(export_root_path);
-	}
-	export_root_path = export_root_path.path_join(sub_path);
-	if (!DirAccess::exists(export_root_path))
-	{
-		DirAccess::make_dir_absolute(export_root_path);
-	}
-	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
-	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
-	ResourceCache::set_ref(save_path, p_resource.ptr());
-	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
-    save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".res" :".scn"));
-}
-static void save_fbx_tres( const String& group_name,const String& sub_path,const Ref<Resource>& p_resource,String& save_path, bool is_resource = true)
-{
-	String export_root_path = "res://Assets/public";
-	if (!DirAccess::exists("res://Assets"))
-	{
-		DirAccess::make_dir_absolute("res://Assets");
-	}
-	if (!DirAccess::exists(export_root_path))
-	{
-		DirAccess::make_dir_absolute(export_root_path);
-	}
-	export_root_path  = export_root_path.path_join(group_name);
-	if (!DirAccess::exists(export_root_path))
-	{
-		DirAccess::make_dir_absolute(export_root_path);
-	}
-	export_root_path = export_root_path.path_join(sub_path);
-	if (!DirAccess::exists(export_root_path))
-	{
-		DirAccess::make_dir_absolute(export_root_path);
-	}
-	save_path = export_root_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
-	ResourceSaver::save(p_resource, save_path, ResourceSaver::FLAG_CHANGE_PATH);
-	print_line(L"CharacterBodyMain.save_fbx_res: 存储资源 :" + save_path);
-    save_path = sub_path.path_join(p_resource->get_name() + (is_resource ? ".tres" :".tscn"));
-}
-
-
-static void get_fbx_meshs(Node *p_node,HashMap<String,MeshInstance3D* > &meshs)
-{
-
-	for(int i=0;i<p_node->get_child_count();i++)
-	{
-		Node * child = p_node->get_child(i);
-		if(child->get_class() == "MeshInstance3D")
-		{
-			MeshInstance3D * mesh = Object::cast_to<MeshInstance3D>(child);
-			if(!meshs.has(mesh->get_name())){
-				meshs[mesh->get_name()] = mesh;
-			}
-			else{
-				String name = mesh->get_name();
-				int index = 1;
-				while(meshs.has(name +"_"+ itos(index))){
-					name = mesh->get_name().str() + "_" + itos(index);
-					index++;
-				}
-				meshs[name] = mesh;
-			}
-		}
-		get_fbx_meshs(child,meshs);
-	}
-}
-static void reset_owenr(Node* node, Node* owenr)
-{
-	for (int i = 0; i < node->get_child_count(); ++i)
-	{
-		Node* c = node->get_child(i);
-		c->set_owner(nullptr);
-		reset_owenr(c, owenr);
-	}
-}
-Ref<CharacterBodyPrefab> CharacterBodyMain::build_prefab(const String& mesh_path,bool p_is_skeleton_human)
-{
-	if (!FileAccess::exists(mesh_path))
-	{
-		return Ref<CharacterBodyPrefab>();
-	}
-
-	// 加载模型
-	Ref<PackedScene> scene = ResourceLoader::load(mesh_path);
-
-	if (scene.is_null())
-	{
-		print_line(L"CharacterBodyMain: 路径不存在 :" + mesh_path);
-		return Ref<CharacterBodyPrefab>();
-	}
-	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
-	String p_group = mesh_path.get_file().get_basename();
-
-	Node* node = p_node->find_child("Skeleton3D");
-	Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
-
-	Dictionary bone_map;
-	String ske_save_path, bone_map_save_path;
-	if (skeleton != nullptr)
-	{
-		bone_map = skeleton->get_human_bone_mapping();
-        Vector<String> bone_names = skeleton->get_bone_names();
-        
-        Ref<HumanBoneConfig> config;
-
-		skeleton->set_human_bone_mapping(bone_map);
-        
-        if(p_is_skeleton_human)
-        {
-			config.instantiate();
-			HashMap<String,String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
-			HumanAnim::HumanAnimmation::build_virtual_pose(skeleton, *config.ptr(), _bone_label);
-            skeleton->set_human_config(config);
-            config = skeleton->get_human_config();
-            config->set_name("human_config");
-		    save_fbx_res("human_config", p_group, config, ske_save_path, true);
-        }
-
-		// 存储骨骼映射
-		Ref<CharacterBoneMap> bone_map_ref;
-		bone_map_ref.instantiate();
-		bone_map_ref->set_name("bone_map");
-		bone_map_ref->set_bone_map(bone_map);
-        bone_map_ref->set_bone_names(bone_names);
-        bone_map_ref->set_human_config(config);
-        bone_map_ref->set_skeleton_path(p_group.path_join("skeleton.scn" ));
-        if(p_is_skeleton_human) {
-		    save_fbx_res("human_bone_map", p_group, bone_map_ref, bone_map_save_path, true);
-        }
-        else {
-		    save_fbx_res("bone_map", p_group, bone_map_ref, bone_map_save_path, true);            
-        }
-
-
-		skeleton->set_owner(nullptr);
-		reset_owenr(skeleton, skeleton);
-
-		// 存儲骨架信息
-		Ref<PackedScene> packed_scene;
-		packed_scene.instantiate();
-		packed_scene->pack(skeleton);
-		packed_scene->set_name("skeleton");
-        if(p_is_skeleton_human) {
-		    save_fbx_res("human_skeleton", p_group, packed_scene, ske_save_path, false);
-        }
-        else {
-		    save_fbx_res("skeleton", p_group, packed_scene, ske_save_path, false);
-        }
-
-	}
-	// 生成预制体
-	Ref<CharacterBodyPrefab> _body_prefab;
-	_body_prefab.instantiate();
-	_body_prefab->set_name(p_group);
-	HashMap<String, MeshInstance3D* > meshs;
-	// 便利存儲模型文件
-	get_fbx_meshs(p_node, meshs);
-	for (auto it = meshs.begin(); it != meshs.end(); ++it) {
-		Ref<CharacterBodyPart> part;
-		part.instantiate();
-		MeshInstance3D* mesh = it->value;
-		part->init_form_mesh_instance(mesh, bone_map);
-        
-		part->set_name(it->key);
-		String save_path;
-        if(p_is_skeleton_human) {
-		    save_fbx_res("human_meshs", p_group, part, save_path, true);
-        }
-        else {
-		    save_fbx_res("meshs", p_group, part, save_path, true);
-        }
-		_body_prefab->parts[save_path] = true;
-	}
-	// 保存预制体
-	_body_prefab->skeleton_path = ske_save_path;
-	_body_prefab->set_is_human(p_is_skeleton_human);
-    if(p_is_skeleton_human) {
-	    save_fbx_res("human_prefab", p_group, _body_prefab, bone_map_save_path, true);
-    }
-    else {
-	    save_fbx_res("prefab", p_group, _body_prefab, bone_map_save_path, true);
-    }
-
-
-	p_node->queue_free();
-	return _body_prefab;
-}
-void CharacterBodyMain::editor_build_form_mesh_file_path()
-{
-	Ref<CharacterBodyPrefab> prefab = build_prefab(editor_form_mesh_file_path,is_skeleton_human);
-    // 设置预制体
-    set_body_prefab(prefab);
-    
-}
 void CharacterBodyMain::animation_test_play_select_animation() {
     init();
     if(play_animation.is_null()) {
@@ -967,220 +720,6 @@ void CharacterBodyMain::update_bone_visble()
 }
 
 
-static void node_to_bone_skeleton(Skeleton3D* p_ske, Node3D* p_node, int bode_parent) {
-	int index = bode_parent;
-	index = p_ske->add_bone(p_node->get_name());
-	p_ske->set_bone_parent(index, bode_parent);
-	Transform3D trans = p_node->get_transform();
-	p_ske->set_bone_pose(index, trans);
-	
-
-	for (int i = 0; i < p_node->get_child_count(); ++i) {
-		Node3D* node = Object::cast_to<Node3D>(p_node->get_child(i));
-		if (node != nullptr) {
-			node_to_bone_skeleton(p_ske, node, index);
-
-		}
-	}
-	
-}
-
-void CharacterBodyMain::editor_build_animation() {
-    if(editor_animation_group.is_empty()) {
-        WARN_PRINT("请先设置动画组名");
-        return;
-    }
-    editor_build_animation_form_path(editor_animation_file_name);
-}
-void CharacterBodyMain::editor_build_animation_form_path(String p_file_path)
-{
-    if(!FileAccess::exists(p_file_path))
-    {
-		print_line(L"CharacterBodyMain: 路径不存在 :" + p_file_path);
-        return;
-    }
-	Ref<PackedScene> scene = ResourceLoader::load(p_file_path);
-	if (scene.is_null())
-	{
-		print_line(L"CharacterBodyMain: 路径不存在 :" + p_file_path);
-        return;
-	}
-	Node* p_node = scene->instantiate(PackedScene::GEN_EDIT_STATE_DISABLED);
-    Node* node = p_node->find_child("Skeleton3D");
-    Skeleton3D* skeleton = Object::cast_to<Skeleton3D>(node);
-
-	Node* anim_node = p_node->find_child("AnimationPlayer");
-    if(anim_node == nullptr)
-    {
-        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + p_file_path);
-        return;
-    }
-
-    AnimationPlayer* player = Object::cast_to<AnimationPlayer>(anim_node);
-    if(player == nullptr)
-    {
-        print_line(L"CharacterBodyMain: 路径不存在动画信息:" + p_file_path);
-        return;
-    }
-	String p_group = p_file_path.get_file().get_basename();
-    List<StringName> p_animations;
-    player->get_animation_list(&p_animations);
-
-
-	bool is_node_skeleton = false;
-	Skeleton3D* bone_map_skeleton;
-
-	HashMap<String, int> human_bone_name_index;
-	Dictionary bone_map;
-	Vector<String> bone_names;
-	Ref<HumanBoneConfig> animation_human_config;
-	//if (skeleton == nullptr)
-	{
-		is_node_skeleton = true;
-
-		HashSet<String> node_name;
-		for (const StringName& E : p_animations) {
-			Ref<Animation> animation = player->get_animation(E);
-			animation->get_node_names(node_name);
-		}
-
-		bone_map_skeleton = memnew(Skeleton3D);
-
-		for (int i = 0; i < p_node->get_child_count(); ++i) {
-			Node3D* child = Object::cast_to<Node3D>(p_node->get_child(i));
-			if (child != nullptr) {
-				if (child->get_child_count() > 0) {
-					node_to_bone_skeleton(bone_map_skeleton, child, -1);
-					break;
-				}
-			}
-		}
-		bone_names = bone_map_skeleton->get_bone_names();
-
-		bone_map = bone_map_skeleton->get_human_bone_mapping();
-		bone_map_skeleton->set_human_bone_mapping(bone_map);
-	}
-	//else
-
-	// 有些动画的骨架可能存在多份,选择骨头最多的当做身体
-	if(skeleton != nullptr && skeleton->get_bone_count() > bone_map.size())
-	{
-		auto new_bone_map = skeleton->get_human_bone_mapping();
-		if (new_bone_map.size() > bone_map.size()) {
-			bone_map = new_bone_map;
-			bone_names = skeleton->get_bone_names();
-
-			skeleton->set_human_bone_mapping(bone_map);
-			bone_map_skeleton = skeleton;
-		}
-	}
-	if (bone_map.size() < 2) {
-			print_line(L"CharacterBodyMain: 动画的骨架不支持:" + p_file_path);
-		return;
-	}
-
-
-
-
-    animation_human_config.instantiate();
-    HashMap<String, String> _bone_label = HumanAnim::HumanAnimmation::get_bone_label();
-    HumanAnim::HumanAnimmation::build_virtual_pose(bone_map_skeleton, *animation_human_config.ptr(), _bone_label);
-	for (int i = 0; i < bone_names.size(); ++i) {
-		human_bone_name_index[bone_names[i]] = i;
-	}
-
-
-
-    for (const StringName &E : p_animations) {
-        Ref<Animation> animation = player->get_animation(E);
-        if(animation.is_valid())
-        {
-            Ref<Animation> new_animation;
-			new_animation = animation->duplicate();
-            if(skeleton == nullptr)
-            {
-                new_animation->remap_node_to_bone_name(bone_names);
-            }
-
-			// 如果存在人形动作配置,转换动画为人形动画
-			if (animation_human_config.is_valid()) {
-				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map, is_position_by_hip_bone);
-			}
-            new_animation->set_animation_group(editor_animation_group);
-            new_animation->optimize();
-#if EDITOR_OPTIMIZE_ANIMATION
-            new_animation->compress();
-#endif
-            play_animation = new_animation;
-			String group = p_group;
-			if (p_animations.size() == 1)
-			{
-				Vector<String> names = p_group.split("@");
-				if (names.size() == 2)
-				{
-					group = names[0];
-				}
-				String name;
-				if (names.size() > 0)
-				{
-					name = names[names.size() - 1];
-				}
-				else
-				{
-					name = E;
-				}
-				new_animation->set_name(name);
-			}
-			else
-			{
-				new_animation->set_name(E);
-			}
-            String save_path;
-            if(animation_human_config.is_valid())  {
-			    save_fbx_res("human_animation", group, new_animation, save_path, true);
-            }
-            else {
-			    save_fbx_res("animation", group, new_animation, save_path, true);
-            }
-            
-        }
-    }
-	if (is_node_skeleton) {
-		memdelete(bone_map_skeleton);
-		bone_map_skeleton = nullptr;
-	}
-    p_node->queue_free();
-}
-void CharacterBodyMain::editor_convert_animations_bt() {
-
-    if( !DirAccess::exists(editor_convert_animations_path) ) {
-        return;
-    }
-    if(editor_animation_group.is_empty()) {
-        WARN_PRINT("请先设置动画组名");
-        return;
-    }
-    editor_convert_animations(editor_convert_animations_path);
-}
-void CharacterBodyMain::editor_convert_animations(String p_file_path)
-{
-
-    PackedStringArray files = DirAccess::get_files_at(p_file_path);
-
-    for (int i = 0; i < files.size(); ++i) {
-        String file = files[i];
-        String ext = file.get_extension().to_lower();
-        if (ext == "fbx" || ext == "gltf" || ext == "glb") {
-            editor_build_animation_form_path(p_file_path.path_join(file));
-        }
-    }
-    PackedStringArray dirs = DirAccess::get_directories_at(p_file_path);
-    for (int i = 0; i < dirs.size(); ++i) {
-        String dir = p_file_path.path_join(dirs[i]);
-        editor_convert_animations(dir);
-    }
-
-}
 
 #include "modules/zip/zip_reader.h"
 

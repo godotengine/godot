@@ -7,8 +7,14 @@ class HumanBonePostRotation : public RefCounted
 {
     GDCLASS(HumanBonePostRotation, RefCounted);
 public:
+    struct HumanBonePoseOutput {
+        Basis post_rotation;
+        Basis global_post_rotation;
+        Basis global_post_rotation_inverse;
+        Basis local_post_rotation;
+    };
     void init(Ref<HumanBoneConfig> p_source_human,Ref<HumanBoneConfig> p_target_human) {
-        
+        Basis post_basis;
         for(auto& it : p_target_human->root_bone) {
             
             if(!p_source_human->virtual_pose.has(it)) {
@@ -16,9 +22,10 @@ public:
             }
             BonePose& source_pose = p_source_human->virtual_pose[it];
             BonePose& target_pose = p_target_human->virtual_pose[it]; 
-            Basis post_basis = Basis(source_pose.rotation).inverse() ;
-            post_basis = post_basis * Basis(target_pose.rotation);
-            post_rotation[it] = post_basis;
+            post_basis = Basis(source_pose.rotation).inverse() ;
+
+            post_basis.xform(Basis(target_pose.rotation),post_basis);
+            post[it].post_rotation = post_basis;
             
             for(auto& cit : target_pose.child_bones) {
                 StringName bone_name = cit;
@@ -31,26 +38,26 @@ public:
         }
         
     }
-    void retarget(Ref<HumanBoneConfig> p_target_human,HashMap<StringName, Basis>& p_golbal_post_rotation,
-        HashMap<StringName, Basis>& p_target_global_post_rotation,HashMap<StringName, Basis>& p_target_global_post_rotation_inverse,HashMap<StringName, Basis>& p_target_local_post_rotation) {
-        
+    void retarget(Ref<HumanBoneConfig> p_target_human,HashMap<StringName, Basis>& p_animation_golbal_post_rotation) {
+        Basis global_basis;
         for(auto& it : p_target_human->root_bone) {
-            if(!p_golbal_post_rotation.has(it)) {
+            if(!p_animation_golbal_post_rotation.has(it)) {
                 continue;
             }
             BonePose& target_pose = p_target_human->virtual_pose[it];
-            Basis global_basis = p_golbal_post_rotation[it] * post_rotation[it];
-			p_target_global_post_rotation[it] = global_basis;
-            p_target_global_post_rotation_inverse[it] = global_basis.affine_inverse();
-            p_target_local_post_rotation[it] = global_basis;
+            HumanBonePoseOutput& output = post[it];
+            Basis& bone_pose = p_animation_golbal_post_rotation[it];
+            bone_pose.xform( output.post_rotation,output.global_post_rotation);
+            output.global_post_rotation_inverse.set_inverse(output.global_post_rotation);
+            output.local_post_rotation = output.global_post_rotation;
 
             for(auto& cit : target_pose.child_bones) {
-                StringName bone_name = cit;
-                if(!p_golbal_post_rotation.has(bone_name)) {
+                StringName& bone_name = cit;
+                if(!p_animation_golbal_post_rotation.has(bone_name)) {
                     continue;
                 }
                 BonePose& bone_pose = p_target_human->virtual_pose[bone_name];
-                retarget(p_target_human,bone_pose,bone_name,it,p_target_global_post_rotation,p_target_global_post_rotation_inverse,p_target_local_post_rotation);
+                retarget(p_target_human,bone_pose,bone_name,it,p_animation_golbal_post_rotation);
             }
         }
         
@@ -62,9 +69,9 @@ private:
         
         Basis post_basis = Basis(source_pose.rotation).inverse() * source_parent_rotation.inverse();
         post_basis = post_basis * target_parent_rotation* Basis(target_pose.rotation);
-        post_rotation[p_bone_name] = post_basis;
+        post[p_bone_name].post_rotation = post_basis;
         for(auto& it : target_pose.child_bones) {
-            StringName bone_name = it;
+            StringName& bone_name = it;
             if(!p_source_human->virtual_pose.has(bone_name)) {
                 continue;
             }
@@ -74,27 +81,26 @@ private:
     }
 
 
-    void retarget(Ref<HumanBoneConfig> p_target_human,BonePose& target_pose, StringName p_bone_name ,StringName p_parent_bone_name
-        HashMap<StringName, Basis>& p_golbal_post_rotation,HashMap<StringName, Basis>& p_target_global_post_rotation,
-        HashMap<StringName, Basis>& p_target_global_post_rotation_inverse,HashMap<StringName, Basis>& p_target_local_post_rotation) {
+    void retarget(Ref<HumanBoneConfig> p_target_human,BonePose& target_pose, StringName p_bone_name ,StringName p_parent_bone_name,
+        HashMap<StringName, Basis>& p_animation_golbal_post_rotation) {
         
-        
-        Basis global_basis = p_golbal_post_rotation[p_bone_name]* post_rotation[p_bone_name];
-        p_target_global_post_rotation[p_bone_name] = global_basis;
-        p_target_global_post_rotation_inverse[p_bone_name] = global_basis.inverse();
-        p_target_local_post_rotation[p_bone_name] = p_target_global_post_rotation_inverse[p_parent_bone_name] * global_basis;
+        HumanBonePoseOutput& output = post[p_bone_name];
+        HumanBonePoseOutput& parent_output = post[p_parent_bone_name];
+        output.global_post_rotation = p_animation_golbal_post_rotation[p_bone_name] * output.post_rotation;
+        output.global_post_rotation_inverse.set_inverse(output.global_post_rotation);
+        output.local_post_rotation = parent_output.global_post_rotation_inverse * output.global_post_rotation;
         
         for(auto& it : target_pose.child_bones) {
-            StringName bone_name = it;
-            if(!p_golbal_post_rotation.has(bone_name)) {
+            StringName& bone_name = it;
+            if(!p_animation_golbal_post_rotation.has(bone_name)) {
                 continue;
             }
             BonePose& bone_pose = p_target_human->virtual_pose[bone_name];
-            retarget(p_target_human,bone_pose,bone_name,p_bone_name,p_target_global_post_rotation,p_target_global_post_rotation_inverse,p_target_local_post_rotation);
+            retarget(p_target_human,bone_pose,bone_name,p_bone_name,p_animation_golbal_post_rotation);
         }
         
     }
 
-    HashMap<StringName, Basis> post_rotation;
+    HashMap<StringName, HumanBonePoseOutput> post;
 
 };

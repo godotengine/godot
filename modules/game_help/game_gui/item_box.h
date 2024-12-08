@@ -2,8 +2,9 @@
 
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/flow_container.h"
-class ItemBoxItem : public Control {
-    GDCLASS(ItemBoxItem, Control);
+#include "scene/gui/box_container.h"
+class ItemBoxItem : public HBoxContainer {
+    GDCLASS(ItemBoxItem, HBoxContainer);
 
 public:
 
@@ -27,6 +28,7 @@ public:
 
     ItemBox() {
         view_root = memnew(HFlowContainer);
+        view_root->set_scale(Vector2(0.7, 0.7));
         view_root->set_h_size_flags(SIZE_EXPAND_FILL);
         view_root->set_v_size_flags(SIZE_EXPAND_FILL);
         add_child(view_root);
@@ -41,19 +43,13 @@ public:
         item_visible_change_cb = p_item_visible_change_cb;
     }
 
-    void scroll_changed(float ) {
+    void _scroll_changed(float ) override{
         Rect2 rect = get_global_rect();
         for(auto it : items) {
             bool _visible = rect.intersects(it->get_global_rect());
             item_visible_change_cb.call(it,_visible);
         }
         is_dirty = false;
-    }
-    void resort() {
-        if(is_dirty) {
-            view_root->resort();
-            scroll_changed(0);
-        }
     }
 
     void add_item(const Ref<RefCounted>& item) {
@@ -98,7 +94,7 @@ public:
 protected:
     HFlowContainer *view_root = nullptr;
     List<ItemBoxItem *> items;
-    Vector2 item_size = Vector2(150, 150);
+    Vector2 item_size = Vector2(400, 400);
     Callable item_visible_change_cb;
     bool is_dirty = false;
     

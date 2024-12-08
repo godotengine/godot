@@ -54,6 +54,8 @@ struct [[nodiscard]] Basis {
 	Basis inverse() const;
 	Basis transposed() const;
 
+	void set_inverse(const Basis &p_matrix);
+
 	_FORCE_INLINE_ real_t determinant() const;
 
 	void rotate(const Vector3 &p_axis, real_t p_angle);
@@ -232,6 +234,13 @@ struct [[nodiscard]] Basis {
 
 	_FORCE_INLINE_ Basis(const Vector3 &p_x_axis, const Vector3 &p_y_axis, const Vector3 &p_z_axis) {
 		set_columns(p_x_axis, p_y_axis, p_z_axis);
+	}
+
+	_FORCE_INLINE_ void xform(const Basis &p_matrix, Basis &r_b) const {
+		r_b.set(
+				tdotx(p_matrix.rows[0]), tdoty(p_matrix.rows[0]), tdotz(p_matrix.rows[0]),
+				tdotx(p_matrix.rows[1]), tdoty(p_matrix.rows[1]), tdotz(p_matrix.rows[1]),
+				tdotx(p_matrix.rows[2]), tdoty(p_matrix.rows[2]), tdotz(p_matrix.rows[2]));				
 	}
 
 	_FORCE_INLINE_ Basis() {}

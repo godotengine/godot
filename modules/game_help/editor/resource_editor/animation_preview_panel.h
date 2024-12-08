@@ -56,17 +56,19 @@ protected:
     void save_animation_config();
 
 protected:
-    void on_item_visible_state_change(ItemBoxItem* item,bool visible) {
+    void on_item_visible_state_change(ItemBoxItem* item,bool p_visible) {
         Ref<AnimationInfo> animation_info = item->data;
         if(animation_info.is_null()) {
             return;
         }
-        if(animation_info->is_visible == visible) {
+        if(animation_info->is_visible == p_visible) {
             return;
         }
-        animation_info->is_visible = visible;
-        if(visible) {
+        animation_info->is_visible = p_visible;
+        if(p_visible) {
             AnimationNodePreview* preview = get_item_preview();
+            preview->set_h_size_flags(SIZE_EXPAND_FILL);
+            preview->set_v_size_flags(SIZE_EXPAND_FILL);
             animation_preview_list[item] = preview;
         }
         else {
@@ -94,9 +96,9 @@ protected:
     void update_preview() {
         for(auto& it : animation_preview_list) {
             if(it.key->get_parent() != it.value) {
-				Ref<AnimationInfo> data = it.key->data;
-                if(data.is_valid()) {
-                    it.value->set_animation_path(data->animation_path);
+				Ref<AnimationInfo> _data = it.key->data;
+                if(_data.is_valid()) {
+                    it.value->set_animation_path(_data->animation_path);
                     it.key->add_child(it.value);                    
                 }
             }
