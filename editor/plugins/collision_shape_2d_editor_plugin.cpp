@@ -73,9 +73,17 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			Ref<ConcavePolygonShape2D> shape = node->get_shape();
+			const Vector<Vector2> &segments = shape->get_segments();
+			return segments[idx];
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			Ref<ConvexPolygonShape2D> shape = node->get_shape();
+			const Vector<Vector2> &points = shape->get_points();
+			return points[idx];
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
@@ -145,9 +153,27 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			Ref<ConcavePolygonShape2D> concave_shape = node->get_shape();
+
+			Vector<Vector2> segments = concave_shape->get_segments();
+
+			ERR_FAIL_INDEX(idx, segments.size());
+			segments.write[idx] = p_point;
+
+			concave_shape->set_segments(segments);
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			Ref<ConvexPolygonShape2D> convex_shape = node->get_shape();
+
+			Vector<Vector2> points = convex_shape->get_points();
+
+			ERR_FAIL_INDEX(idx, points.size());
+			points.write[idx] = p_point;
+
+			convex_shape->set_points(points);
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
@@ -237,11 +263,33 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
-			// Cannot be edited directly, use CollisionPolygon2D instead.
+			Ref<ConcavePolygonShape2D> concave_shape = node->get_shape();
+
+			Vector2 values = p_org;
+
+			Vector<Vector2> undo_segments = concave_shape->get_segments();
+
+			ERR_FAIL_INDEX(idx, undo_segments.size());
+			undo_segments.write[idx] = values;
+
+			undo_redo->add_do_method(concave_shape.ptr(), "set_segments", concave_shape->get_segments());
+			undo_redo->add_undo_method(concave_shape.ptr(), "set_segments", undo_segments);
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
-			// Cannot be edited directly, use CollisionPolygon2D instead.
+			Ref<ConvexPolygonShape2D> convex_shape = node->get_shape();
+
+			Vector2 values = p_org;
+
+			Vector<Vector2> undo_points = convex_shape->get_points();
+
+			ERR_FAIL_INDEX(idx, undo_points.size());
+			undo_points.write[idx] = values;
+
+			undo_redo->add_do_method(convex_shape.ptr(), "set_points", convex_shape->get_points());
+			undo_redo->add_undo_method(convex_shape.ptr(), "set_points", undo_points);
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
@@ -471,9 +519,29 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case CONCAVE_POLYGON_SHAPE: {
+			Ref<ConcavePolygonShape2D> shape = current_shape;
+
+			const Vector<Vector2> &segments = shape->get_segments();
+
+			handles.resize(segments.size());
+			for (int i = 0; i < handles.size(); i++) {
+				handles.write[i] = segments[i];
+				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
+			}
+
 		} break;
 
 		case CONVEX_POLYGON_SHAPE: {
+			Ref<ConvexPolygonShape2D> shape = current_shape;
+
+			const Vector<Vector2> &points = shape->get_points();
+
+			handles.resize(points.size());
+			for (int i = 0; i < handles.size(); i++) {
+				handles.write[i] = points[i];
+				p_overlay->draw_texture(h, gt.xform(handles[i]) - size);
+			}
+
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
