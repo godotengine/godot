@@ -523,6 +523,9 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "Resource";
 		}
+		if (K.key == SNAME("_custom_type_script")) {
+			pi.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
+		}
 		p_list->push_back(pi);
 	}
 }
