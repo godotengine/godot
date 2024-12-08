@@ -149,6 +149,15 @@ env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
     env["ENV"]["TERM"] = os.environ["TERM"]
 
+# Set up environment for ccache and distcc
+#env['ENV']['HOME']          = os.environ['HOME']
+#env['ENV']['DISTCC_HOSTS']  = os.environ['DISTCC_HOSTS']
+#env['ENV']['CCACHE_PREFIX'] = os.environ['CCACHE_PREFIX']
+if 'CCACHE_DIR' in os.environ:
+    env_base['ENV']['CCACHE_DIR'] = os.environ['CCACHE_DIR']
+if 'CCACHE_CPP2' in os.environ:
+    env_base['ENV']['CCACHE_CPP2'] = os.environ['CCACHE_CPP2']
+
 env.disabled_modules = set()
 env.module_version_string = ""
 env.msvc = False
