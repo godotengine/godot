@@ -275,6 +275,7 @@ private:
 
 		Color activity_color;
 		Color connection_hover_tint_color;
+		int connection_hover_thickness;
 		Color connection_valid_target_tint_color;
 		Color connection_rim_color;
 

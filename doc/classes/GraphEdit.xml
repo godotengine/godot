@@ -551,6 +551,9 @@
 		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
 			The outline color of the selection rectangle.
 		</theme_item>
+		<theme_item name="connection_hover_thickness" data_type="constant" type="int" default="0">
+			Widen the line of the connection when the mouse is hovering over it by a percentage factor. A value of [code]0[/code] disables the highlight. A value of [code]100[/code] doubles the line width.
+		</theme_item>
 		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
 			The horizontal range within which a port can be grabbed (inner side).
 		</theme_item>
