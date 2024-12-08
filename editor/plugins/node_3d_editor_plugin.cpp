@@ -1817,6 +1817,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
+					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_RULER) {
+						EditorNode::get_singleton()->get_scene_root()->add_child(ruler);
+						collision_reposition = true;
+						break;
+					}
+
 					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_LIST_SELECT) {
 						_list_select(b);
 						break;
@@ -1953,6 +1959,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					surface->queue_redraw();
 				} else {
+					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_RULER) {
+						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
+						ruler_start_point->set_visible(false);
+						ruler_end_point->set_visible(false);
+						ruler_label->set_visible(false);
+						collision_reposition = false;
+						break;
+					}
+
 					if (_edit.gizmo.is_valid()) {
 						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
 						spatial_editor->get_single_selected_node()->update_gizmos();
@@ -2882,6 +2897,24 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			if (ruler->is_inside_tree()) {
+				Vector3 start_pos = ruler_start_point->get_global_position();
+				Vector3 end_pos = ruler_end_point->get_global_position();
+
+				geometry->clear_surfaces();
+				geometry->surface_begin(Mesh::PRIMITIVE_LINES);
+				geometry->surface_add_vertex(start_pos);
+				geometry->surface_add_vertex(end_pos);
+				geometry->surface_end();
+
+				float distance = start_pos.distance_to(end_pos);
+				ruler_label->set_text(TS->format_number(vformat("%.3f m", distance)));
+
+				Vector3 center = (start_pos + end_pos) / 2;
+				Vector2 screen_position = camera->unproject_position(center) - (ruler_label->get_custom_minimum_size() / 2);
+				ruler_label->set_position(screen_position);
+			}
+
 			real_t delta = get_process_delta_time();
 
 			if (zoom_indicator_delay > 0) {
@@ -3094,15 +3127,37 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			if (collision_reposition) {
-				List<Node *> &selection = editor_selection->get_selected_node_list();
+				Node3D *selected_node = nullptr;
 
-				if (selection.size() == 1) {
-					Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
-					double snap = EDITOR_GET("interface/inspector/default_float_step");
-					int snap_step_decimals = Math::range_step_decimals(snap);
-					set_message(TTR("Translating:") + " (" + String::num(first_selected_node->get_global_position().x, snap_step_decimals) + ", " +
-							String::num(first_selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(first_selected_node->get_global_position().z, snap_step_decimals) + ")");
-					first_selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, first_selected_node)));
+				if (ruler->is_inside_tree()) {
+					if (ruler_start_point->is_visible()) {
+						selected_node = ruler_end_point;
+					} else {
+						selected_node = ruler_start_point;
+					}
+				} else {
+					List<Node *> &selection = editor_selection->get_selected_node_list();
+					if (selection.size() == 1) {
+						selected_node = Object::cast_to<Node3D>(selection.front()->get());
+					}
+				}
+
+				if (selected_node) {
+					if (!ruler->is_inside_tree()) {
+						double snap = EDITOR_GET("interface/inspector/default_float_step");
+						int snap_step_decimals = Math::range_step_decimals(snap);
+						set_message(TTR("Translating:") + " (" + String::num(selected_node->get_global_position().x, snap_step_decimals) + ", " +
+								String::num(selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(selected_node->get_global_position().z, snap_step_decimals) + ")");
+					}
+
+					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
+
+					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
+						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
+						ruler_start_point->set_visible(true);
+						ruler_end_point->set_visible(true);
+						ruler_label->set_visible(true);
+					}
 				}
 			}
 
@@ -4311,7 +4366,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 
 	HashSet<RID> rids;
 
-	if (!preview_node->is_inside_tree()) {
+	if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		List<Node *> &selection = editor_selection->get_selected_node_list();
 
 		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
@@ -5739,6 +5794,53 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 		viewport->set_as_audio_listener_3d(true);
 	}
 
+	ruler = memnew(Node);
+
+	ruler_start_point = memnew(Node3D);
+	ruler_start_point->set_visible(false);
+
+	ruler_end_point = memnew(Node3D);
+	ruler_end_point->set_visible(false);
+
+	ruler_material.instantiate();
+	ruler_material->set_albedo(Color(1.0, 0.9, 0.0, 1.0));
+	ruler_material->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material->set_depth_draw_mode(BaseMaterial3D::DEPTH_DRAW_DISABLED);
+
+	ruler_material_xray.instantiate();
+	ruler_material_xray->set_albedo(Color(1.0, 0.9, 0.0, 0.15));
+	ruler_material_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_FOG, true);
+	ruler_material_xray->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	ruler_material_xray->set_flag(BaseMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	ruler_material_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	ruler_material_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
+
+	geometry.instantiate();
+
+	ruler_line = memnew(MeshInstance3D);
+	ruler_line->set_mesh(geometry);
+	ruler_line->set_material_override(ruler_material);
+
+	ruler_line_xray = memnew(MeshInstance3D);
+	ruler_line_xray->set_mesh(geometry);
+	ruler_line_xray->set_material_override(ruler_material_xray);
+
+	ruler_label = memnew(Label);
+	ruler_label->add_theme_color_override(SceneStringName(font_color), Color(1.0, 0.9, 0.0, 1.0));
+	ruler_label->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
+	ruler_label->add_theme_constant_override("outline_size", 4 * EDSCALE);
+	ruler_label->add_theme_font_size_override(SceneStringName(font_size), 15 * EDSCALE);
+	ruler_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+	ruler_label->set_visible(false);
+
+	ruler->add_child(ruler_start_point);
+	ruler->add_child(ruler_end_point);
+	ruler->add_child(ruler_line);
+	ruler->add_child(ruler_line_xray);
+
+	viewport->add_child(ruler_label);
+
 	view_type = VIEW_TYPE_USER;
 	_update_name();
 
@@ -5746,6 +5848,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
+	memdelete(ruler);
 	memdelete(frame_time_gradient);
 }
 
@@ -6859,6 +6962,14 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->add_do_method(this, "_refresh_menu_icons");
 			undo_redo->add_undo_method(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
+		} break;
+		case MENU_RULER: {
+			for (int i = 0; i < TOOL_MAX; i++) {
+				tool_button[i]->set_pressed(i == p_option);
+			}
+			tool_button[TOOL_RULER]->set_pressed(true);
+			tool_mode = ToolMode::TOOL_RULER;
+			update_transform_gizmo();
 		} break;
 	}
 }
@@ -8024,6 +8135,7 @@ void Node3DEditor::_update_theme() {
 	tool_button[TOOL_UNLOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
 	tool_button[TOOL_GROUP_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Group")));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Ungroup")));
+	tool_button[TOOL_RULER]->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_button_icon(get_editor_theme_icon(SNAME("Object")));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
@@ -8772,6 +8884,15 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
+
+	tool_button[TOOL_RULER] = memnew(Button);
+	main_menu_hbox->add_child(tool_button[TOOL_RULER]);
+	tool_button[TOOL_RULER]->set_toggle_mode(true);
+	tool_button[TOOL_RULER]->set_theme_type_variation("FlatButton");
+	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
+	tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space."));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTR("Ruler Mode"), Key::M));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
