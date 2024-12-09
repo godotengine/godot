@@ -121,7 +121,8 @@ void AnimationNodePreview::play() {
         if(node.is_valid()) {
             preview_character->get_animator()->editor_play_animation(node);
         }
-    } 
+    }
+	preview_character->set_editor_pause_animation(false);
     update_play_state();
 }
 
@@ -308,9 +309,9 @@ void AnimationNodePreview::edit(Ref<CharacterBodyPrefab> p_prefab){
     _update_rotation();
     AABB aabb = preview_character->get_mesh_aabb();
     Vector3 ofs = aabb.get_center();
-    float m = aabb.get_longest_axis_size() * 1.2f;
-    if (m != 0) {
-        m = 1.0 / m;
+    float size = aabb.get_longest_axis_size() * 1.2f;
+    if (size != 0) {
+        float m = 1.0 / size;
         m *= 0.5;
         Transform3D xform;
         xform.basis.scale(Vector3(m, m, m));
@@ -417,7 +418,7 @@ AnimationNodePreview::AnimationNodePreview()
 
 
     preview_character = memnew(CharacterBodyMain);
-    preview_character->init();
+    preview_character->init(true);
     preview_character->get_animator()->set_is_using_root_motion(false);
     charcter_parent->add_child(preview_character);
 

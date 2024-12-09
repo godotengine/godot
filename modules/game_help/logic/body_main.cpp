@@ -388,8 +388,11 @@ void CharacterBodyMain::_init_body()
 			bodyPart[part->get_name()] = p;
 		}
         if(animator.is_valid()) {
-            animator->set_body(this);
+			animator.unref();
         }
+		animator.instantiate();
+		animator->set_body(this);
+        animator->init();
 		//update_bone_visble();
 		notify_property_list_changed();
 	}

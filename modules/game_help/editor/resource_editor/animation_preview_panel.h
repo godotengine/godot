@@ -56,54 +56,11 @@ protected:
     void save_animation_config();
 
 protected:
-    void on_item_visible_state_change(ItemBoxItem* item,bool p_visible) {
-        Ref<AnimationInfo> animation_info = item->data;
-        if(animation_info.is_null()) {
-            return;
-        }
-        if(animation_info->is_visible == p_visible) {
-            return;
-        }
-        animation_info->is_visible = p_visible;
-        if(p_visible) {
-            AnimationNodePreview* preview = get_item_preview();
-            preview->set_h_size_flags(SIZE_EXPAND_FILL);
-            preview->set_v_size_flags(SIZE_EXPAND_FILL);
-            animation_preview_list[item] = preview;
-        }
-        else {
-            HashMap<ItemBoxItem*,AnimationNodePreview*>::Iterator it = animation_preview_list.find(item);
-            if(it != animation_preview_list.end()) {
-                unuse_preview_list.push_back(it->value);
-                if(it->value->get_parent() == it->key) {
-                    it->key->remove_child(it->value);
-                }
-                animation_preview_list.erase(it->key);
-            }
-        }
-        is_dirty = true;
-    }
+    void on_item_visible_state_change(ItemBoxItem* item,bool p_visible);
     
-    AnimationNodePreview* get_item_preview() {
-        if(unuse_preview_list.size() > 0) {
-            AnimationNodePreview* preview = unuse_preview_list.front()->get();
-            unuse_preview_list.pop_front();
-            return preview;
-        }
-        return memnew(AnimationNodePreview);        
-    }
+    AnimationNodePreview* get_item_preview() ;
 
-    void update_preview() {
-        for(auto& it : animation_preview_list) {
-            if(it.key->get_parent() != it.value) {
-				Ref<AnimationInfo> _data = it.key->data;
-                if(_data.is_valid()) {
-                    it.value->set_animation_path(_data->animation_path);
-                    it.key->add_child(it.value);                    
-                }
-            }
-        }
-    }
+    void update_preview() ;
 
     
 protected:
@@ -122,6 +79,7 @@ protected:
     List<Ref<AnimationInfo>> curr_show_animations;
     HashMap<ItemBoxItem*,AnimationNodePreview*> animation_preview_list;
     List<AnimationNodePreview*> unuse_preview_list;
+    float last_update_time = 0;
     bool is_dirty = false;
 };
 

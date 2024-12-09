@@ -58,8 +58,11 @@ void AnimationPreviewPanel::_notification(int what) {
     }
     else if (what == NOTIFICATION_PROCESS) {
         if(is_dirty) {
-            update_preview();
-            is_dirty = false;
+            double curr_time = OS::get_singleton()->get_unix_time();
+            if(curr_time - last_update_time > 1) {
+                update_preview();
+                is_dirty = false;                
+            }
         }
     }
 }
@@ -206,4 +209,55 @@ void AnimationPreviewPanel::save_animation_config() {
         }
     }
     
+}
+
+void AnimationPreviewPanel::on_item_visible_state_change(ItemBoxItem* item,bool p_visible) {
+    Ref<AnimationInfo> animation_info = item->data;
+    if(animation_info.is_null()) {
+        return;
+    }
+    if(animation_info->is_visible == p_visible) {
+        return;
+    }
+    animation_info->is_visible = p_visible;
+    if(p_visible) {
+        AnimationNodePreview* preview = get_item_preview();
+        preview->set_h_size_flags(SIZE_EXPAND_FILL);
+        preview->set_v_size_flags(SIZE_EXPAND_FILL);
+        animation_preview_list[item] = preview;
+    }
+    else {
+        HashMap<ItemBoxItem*,AnimationNodePreview*>::Iterator it = animation_preview_list.find(item);
+        if(it != animation_preview_list.end()) {
+            unuse_preview_list.push_back(it->value);
+            Node* parent = it->value->get_parent();
+            if (parent != nullptr) {
+                parent->remove_child(it->value);
+            }
+            animation_preview_list.erase(it->key);
+        }
+    }
+    is_dirty = true;
+}
+    
+AnimationNodePreview* AnimationPreviewPanel::get_item_preview() {
+    if(unuse_preview_list.size() > 0) {
+        AnimationNodePreview* preview = unuse_preview_list.front()->get();
+        unuse_preview_list.pop_front();
+        return preview;
+    }
+    return memnew(AnimationNodePreview);        
+}
+
+void AnimationPreviewPanel::update_preview() {
+    for(auto& it : animation_preview_list) {
+        if(it.value->get_parent() != it.key) {
+            Ref<AnimationInfo> _data = it.key->data;
+            if(_data.is_valid()) {
+                it.value->set_animation_path(_data->animation_path);
+                it.key->add_child(it.value);     
+                break;               
+            }
+        }
+    }
 }
