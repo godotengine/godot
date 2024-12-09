@@ -2515,14 +2515,24 @@ Variant::Variant(const String &p_string) :
 	memnew_placement(_data._mem, String(p_string));
 }
 
-Variant::Variant(const char *const p_cstring) :
+Variant::Variant(const char *p_cstring) :
 		type(STRING) {
-	memnew_placement(_data._mem, String((const char *)p_cstring));
+	memnew_placement(_data._mem, String(p_cstring));
 }
 
-Variant::Variant(const char32_t *p_wstring) :
+Variant::Variant(const wchar_t *p_wstring) :
 		type(STRING) {
 	memnew_placement(_data._mem, String(p_wstring));
+}
+
+Variant::Variant(const char16_t *p_c16string) :
+		type(STRING) {
+	memnew_placement(_data._mem, String(p_c16string));
+}
+
+Variant::Variant(const char32_t *p_c32string) :
+		type(STRING) {
+	memnew_placement(_data._mem, String(p_c32string));
 }
 
 Variant::Variant(const Vector3 &p_vector3) :

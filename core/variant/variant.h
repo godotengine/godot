@@ -463,8 +463,10 @@ public:
 	Variant(const ObjectID &p_id);
 	Variant(const String &p_string);
 	Variant(const StringName &p_string);
-	Variant(const char *const p_cstring);
-	Variant(const char32_t *p_wstring);
+	Variant(const char *p_cstring);
+	Variant(const wchar_t *p_wstring);
+	Variant(const char16_t *p_c16string);
+	Variant(const char32_t *p_c32string);
 	Variant(const Vector2 &p_vector2);
 	Variant(const Vector2i &p_vector2i);
 	Variant(const Rect2 &p_rect2);
