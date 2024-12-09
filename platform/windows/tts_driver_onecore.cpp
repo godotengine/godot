@@ -449,15 +449,15 @@ void TTSDriverOneCore::stop() {
 
 bool TTSDriverOneCore::init() {
 	if (!WinRTUtils::is_initialized()) {
-		print_verbose("Text-to-Speech: Cannot initialize OneCore driver, WinRT API not supported!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize OneCore driver, WinRT API not supported!");
 		return false;
 	}
 	if (!WinRTUtils::is_api_contract_present(L"Windows.Foundation.UniversalApiContract", 1) || !WinRTUtils::is_type_present(ROSpeechSynthesizerName) || !WinRTUtils::is_type_present(ROSpeechSynthesisStreamName) || !WinRTUtils::is_type_present(ROMediaPlayerName)) {
-		print_verbose("Text-to-Speech: Cannot initialize OneCore driver, API contract or type not present!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize OneCore driver, API contract or type not present!");
 	}
 	ComPtr<ROInstalledVoicesStatic> synth_static;
 	if (FAILED(WinRTUtils::activation_factory(ROSpeechSynthesizerName, IID_PPV_ARGS(&synth_static)))) {
-		print_verbose("Text-to-Speech: Cannot initialize OneCore driver, interface not supported!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize OneCore driver, interface not supported!");
 		return false;
 	}
 
@@ -467,11 +467,11 @@ bool TTSDriverOneCore::init() {
 	uint32_t size = 0;
 	ERR_FAIL_COND_V(FAILED(voices->get_Size(&size)), false);
 	if (size == 0) {
-		print_verbose("Text-to-Speech: Cannot initialize OneCore driver, no voices found!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize OneCore driver, no voices found!");
 		return false;
 	}
 
-	print_verbose("Text-to-Speech: OneCore initialized.");
+	PRINT_VERBOSE("Text-to-Speech: OneCore initialized.");
 	return true;
 }
 

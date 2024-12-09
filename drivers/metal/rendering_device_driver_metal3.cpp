@@ -89,13 +89,13 @@ Error RenderingDeviceDriverMetal::_create_device() {
 
 void RenderingDeviceDriverMetal::_resolve_sync_mode() {
 	if (sync_mode == Barriers) {
-		print_verbose("Metal 3: Barrier synchronization enabled.");
+		PRINT_VERBOSE("Metal 3: Barrier synchronization enabled.");
 		base_hazard_tracking = MTL::ResourceHazardTrackingModeUntracked;
 		// Apple GPUs only sample counters at stage boundaries, which is all the
 		// timestamp encoders rely on.
 		timestamp_queries_supported = device->supportsCounterSampling(MTL::CounterSamplingPointAtStageBoundary);
 	} else {
-		print_verbose("Metal 3: Native hazard tracking enabled.");
+		PRINT_VERBOSE("Metal 3: Native hazard tracking enabled.");
 	}
 }
 

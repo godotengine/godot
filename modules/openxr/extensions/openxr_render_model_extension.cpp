@@ -235,7 +235,7 @@ void OpenXRRenderModelExtension::on_sync_actions() {
 			if (XR_FAILED(result)) {
 				ERR_PRINT("OpenXR: Failed to update the top level path for render models [" + openxr_api->get_error_string(result) + "]");
 			} else if (new_path != render_model->top_level_path) {
-				print_verbose("OpenXR: Render model top level path changed to " + openxr_api->get_xr_path_name(new_path));
+				PRINT_VERBOSE("OpenXR: Render model top level path changed to " + openxr_api->get_xr_path_name(new_path));
 
 				// Set the new path
 				render_model->top_level_path = new_path;
