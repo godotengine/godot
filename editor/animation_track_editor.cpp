@@ -2149,13 +2149,11 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
 				string_pos = string_pos.floor();
-				if (text.contains("/")) {
+				int pos = text.rfind_char('/');
+				if (pos != -1) {
 					float text_width = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 					if (text_width > (limit - ofs - h_separation)) {
-						Vector<String> parts = text.rsplit("/", true, 1);
-						if (parts.size() > 0) {
-							text = ".../" + parts[parts.size() - 1];
-						}
+						text = ".../" + text.substr(pos + 1);
 					}
 				}
 				draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - h_separation, font_size, text_color);
