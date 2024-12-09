@@ -933,6 +933,13 @@ class Godot(private val context: Context) {
 		return value.data
 	}
 
+	@Keep
+	private fun getBaseColor(): Int {
+		val value = TypedValue()
+		context.theme.resolveAttribute(android.R.attr.colorBackground, value, true)
+		return value.data
+	}
+
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.
 	 */

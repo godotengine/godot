@@ -126,6 +126,7 @@ public:
 	void emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths);
 
 	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
 
 	virtual TypedArray<Rect2> get_display_cutouts() const override;
 	virtual Rect2i get_display_safe_area() const override;
