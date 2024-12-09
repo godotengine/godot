@@ -301,7 +301,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 				}
 			}
 		}
-		print_verbose(vformat("Test #%4d: %3d edges, ", test + 1, count));
+		PRINT_VERBOSE(vformat("Test #%4d: %3d edges, ", test + 1, count));
 		count = 0;
 		for (int u = 0; u < N; u++) {
 			for (int v = 0; v < N; v++) {
@@ -310,7 +310,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 				}
 			}
 		}
-		print_verbose(vformat("%3d/%d pairs of reachable points\n", count - N, N * (N - 1)));
+		PRINT_VERBOSE(vformat("%3d/%d pairs of reachable points\n", count - N, N * (N - 1)));
 
 		// Check A*'s output.
 		bool match = true;
@@ -321,14 +321,14 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 					if (!Math::is_inf(d[u][v])) {
 						// Reachable.
 						if (route.size() == 0) {
-							print_verbose(vformat("From %d to %d: A* did not find a path\n", u, v));
+							PRINT_VERBOSE(vformat("From %d to %d: A* did not find a path\n", u, v));
 							match = false;
 							goto exit;
 						}
 						float astar_dist = 0;
 						for (int i = 1; i < route.size(); i++) {
 							if (!adj[route[i - 1]][route[i]]) {
-								print_verbose(vformat("From %d to %d: edge (%d, %d) does not exist\n",
+								PRINT_VERBOSE(vformat("From %d to %d: edge (%d, %d) does not exist\n",
 										u, v, route[i - 1], route[i]));
 								match = false;
 								goto exit;
@@ -336,7 +336,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 							astar_dist += p[route[i - 1]].distance_to(p[route[i]]);
 						}
 						if (!Math::is_equal_approx(astar_dist, d[u][v])) {
-							print_verbose(vformat("From %d to %d: Floyd-Warshall gives %.6f, A* gives %.6f\n",
+							PRINT_VERBOSE(vformat("From %d to %d: Floyd-Warshall gives %.6f, A* gives %.6f\n",
 									u, v, d[u][v], astar_dist));
 							match = false;
 							goto exit;
@@ -344,7 +344,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 					} else {
 						// Unreachable.
 						if (route.size() > 0) {
-							print_verbose(vformat("From %d to %d: A* somehow found a nonexistent path\n", u, v));
+							PRINT_VERBOSE(vformat("From %d to %d: A* somehow found a nonexistent path\n", u, v));
 							match = false;
 							goto exit;
 						}
