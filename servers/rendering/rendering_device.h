@@ -305,6 +305,7 @@ public:
 	void _texture_free_shared_fallback(Texture *p_texture);
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
+	uint32_t _texture_vrs_method_to_usage_bits() const;
 
 public:
 	struct TextureView {
@@ -354,6 +355,29 @@ public:
 	void texture_set_discardable(RID p_texture, bool p_discardable);
 	bool texture_is_discardable(RID p_texture);
 
+private:
+	/*************/
+	/**** VRS ****/
+	/*************/
+
+	enum VRSMethod {
+		VRS_METHOD_NONE,
+		VRS_METHOD_FRAGMENT_SHADING_RATE,
+		VRS_METHOD_FRAGMENT_DENSITY_MAP,
+	};
+
+	VRSMethod vrs_method = VRS_METHOD_NONE;
+	DataFormat vrs_format = DATA_FORMAT_MAX;
+	Size2i vrs_texel_size;
+
+	void _vrs_detect_method();
+	RDG::ResourceUsage _vrs_usage_from_method(VRSMethod p_method) const;
+	RDD::PipelineStageBits _vrs_stages_from_method(VRSMethod p_method) const;
+
+public:
+	DataFormat vrs_get_format() const;
+	Size2i vrs_get_texel_size() const;
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -384,7 +408,6 @@ public:
 		Vector<int32_t> resolve_attachments;
 		Vector<int32_t> preserve_attachments;
 		int32_t depth_attachment = ATTACHMENT_UNUSED;
-		int32_t vrs_attachment = ATTACHMENT_UNUSED; // density map for VRS, only used if supported
 	};
 
 	typedef int64_t FramebufferFormatID;
@@ -394,8 +417,23 @@ private:
 		Vector<AttachmentFormat> attachments;
 		Vector<FramebufferPass> passes;
 		uint32_t view_count = 1;
+		VRSMethod vrs_method = VRS_METHOD_NONE;
+		int32_t vrs_attachment = ATTACHMENT_UNUSED;
+		Size2i vrs_texel_size;
 
 		bool operator<(const FramebufferFormatKey &p_key) const {
+			if (vrs_texel_size != p_key.vrs_texel_size) {
+				return vrs_texel_size < p_key.vrs_texel_size;
+			}
+
+			if (vrs_attachment != p_key.vrs_attachment) {
+				return vrs_attachment < p_key.vrs_attachment;
+			}
+
+			if (vrs_method != p_key.vrs_method) {
+				return vrs_method < p_key.vrs_method;
+			}
+
 			if (view_count != p_key.view_count) {
 				return view_count < p_key.view_count;
 			}
@@ -500,7 +538,7 @@ private:
 		}
 	};
 
-	static RDD::RenderPassID _render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
+	static RDD::RenderPassID _render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count = 1, VRSMethod p_vrs_method = VRS_METHOD_NONE, int32_t p_vrs_attachment = -1, Size2i p_vrs_texel_size = Size2i(), Vector<TextureSamples> *r_samples = nullptr);
 	static RDD::RenderPassID _render_pass_create_from_graph(RenderingDeviceDriver *p_driver, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, void *p_user_data);
 
 	// This is a cache and it's never freed, it ensures
@@ -531,8 +569,8 @@ private:
 
 public:
 	// This ID is warranted to be unique for the same formats, does not need to be freed
-	FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1);
-	FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1);
+	FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1, int32_t p_vrs_attachment = -1);
+	FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1, int32_t p_vrs_attachment = -1);
 	FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
 	TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass = 0);
 

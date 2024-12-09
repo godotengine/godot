@@ -794,7 +794,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	ERR_FAIL_COND_V_MSG(required_mipmaps < format.mipmaps, RID(),
 			"Too many mipmaps requested for texture format and dimensions (" + itos(format.mipmaps) + "), maximum allowed: (" + itos(required_mipmaps) + ").");
 
-	uint32_t forced_usage_bits = 0;
+	uint32_t forced_usage_bits = _texture_vrs_method_to_usage_bits();
 	if (p_data.size()) {
 		ERR_FAIL_COND_V_MSG(p_data.size() != (int)format.array_layers, RID(),
 				"Default supplied data for image format is of invalid length (" + itos(p_data.size()) + "), should be (" + itos(format.array_layers) + ").");
@@ -809,7 +809,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 				"Textures created as depth attachments can't be initialized with data directly. Use RenderingDevice::texture_update() instead.");
 
 		if (!(format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-			forced_usage_bits = TEXTURE_USAGE_CAN_UPDATE_BIT;
+			forced_usage_bits |= TEXTURE_USAGE_CAN_UPDATE_BIT;
 		}
 	}
 
@@ -836,7 +836,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
 		}
 		if ((format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && !supported_usage.has_flag(TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
-			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as VRS attachment.");
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as variable shading rate attachment.");
 		}
 	}
 
@@ -894,7 +894,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	texture.bound = false;
 
 	// Textures are only assumed to be immutable if they have initial data and none of the other bits that indicate write usage are enabled.
-	bool texture_mutable_by_default = texture.usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_STORAGE_ATOMIC_BIT | TEXTURE_USAGE_VRS_ATTACHMENT_BIT);
+	bool texture_mutable_by_default = texture.usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_STORAGE_ATOMIC_BIT);
 	if (p_data.is_empty() || texture_mutable_by_default) {
 		_texture_make_mutable(&texture, RID());
 	}
@@ -1706,6 +1706,17 @@ void RenderingDevice::_texture_create_reinterpret_buffer(Texture *p_texture) {
 	p_texture->shared_fallback->buffer_tracker = tracker;
 }
 
+uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
+	switch (vrs_method) {
+		case VRS_METHOD_FRAGMENT_SHADING_RATE:
+			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT;
+		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
+			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT;
+		default:
+			return 0;
+	}
+}
+
 Vector<uint8_t> RenderingDevice::_texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d) {
 	uint32_t width, height, depth;
 	uint32_t tight_mip_size = get_image_format_required_size(tex->format, tex->width, tex->height, p_2d ? 1 : tex->depth, tex->mipmaps, &width, &height, &depth);
@@ -2140,7 +2151,7 @@ bool RenderingDevice::texture_is_format_supported_for_usage(DataFormat p_format,
 /**** FRAMEBUFFER ****/
 /*********************/
 
-RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count, Vector<TextureSamples> *r_samples) {
+RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count, VRSMethod p_vrs_method, int32_t p_vrs_attachment, Size2i p_vrs_texel_size, Vector<TextureSamples> *r_samples) {
 	// NOTE:
 	// Before the refactor to RenderingDevice-RenderingDeviceDriver, there was commented out code to
 	// specify dependencies to external subpasses. Since it had been unused for a long timel it wasn't ported
@@ -2180,8 +2191,7 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 		// We can setup a framebuffer where we write to our VRS texture to set it up.
 		// We make the assumption here that if our texture is actually used as our VRS attachment.
 		// It is used as such for each subpass. This is fairly certain seeing the restrictions on subpasses.
-		bool is_vrs = (p_attachments[i].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && i == p_passes[0].vrs_attachment;
-
+		bool is_vrs = (p_attachments[i].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && i == p_vrs_attachment;
 		if (is_vrs) {
 			description.load_op = RDD::ATTACHMENT_LOAD_OP_LOAD;
 			description.store_op = RDD::ATTACHMENT_STORE_OP_DONT_CARE;
@@ -2321,14 +2331,15 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 			subpass.depth_stencil_reference.layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
 		}
 
-		if (pass->vrs_attachment != ATTACHMENT_UNUSED) {
-			int32_t attachment = pass->vrs_attachment;
+		if (p_vrs_method == VRS_METHOD_FRAGMENT_SHADING_RATE && p_vrs_attachment >= 0) {
+			int32_t attachment = p_vrs_attachment;
 			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), RDD::RenderPassID(), "Invalid framebuffer VRS format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), VRS attachment.");
 			ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT), RDD::RenderPassID(), "Invalid framebuffer VRS format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as VRS, but it's not a VRS attachment.");
 			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, RDD::RenderPassID(), "Invalid framebuffer VRS attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 
-			subpass.vrs_reference.attachment = attachment_remap[attachment];
-			subpass.vrs_reference.layout = RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL;
+			subpass.fragment_shading_rate_reference.attachment = attachment_remap[attachment];
+			subpass.fragment_shading_rate_reference.layout = RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
+			subpass.fragment_shading_rate_texel_size = p_vrs_texel_size;
 
 			attachment_last_pass[attachment] = i;
 		}
@@ -2363,7 +2374,13 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 		}
 	}
 
-	RDD::RenderPassID render_pass = p_driver->render_pass_create(attachments, subpasses, subpass_dependencies, p_view_count);
+	RDD::AttachmentReference fragment_density_map_attachment_reference;
+	if (p_vrs_method == VRS_METHOD_FRAGMENT_DENSITY_MAP && p_vrs_attachment >= 0) {
+		fragment_density_map_attachment_reference.attachment = p_vrs_attachment;
+		fragment_density_map_attachment_reference.layout = RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+	}
+
+	RDD::RenderPassID render_pass = p_driver->render_pass_create(attachments, subpasses, subpass_dependencies, p_view_count, fragment_density_map_attachment_reference);
 	ERR_FAIL_COND_V(!render_pass, RDD::RenderPassID());
 
 	return render_pass;
@@ -2377,10 +2394,68 @@ RDD::RenderPassID RenderingDevice::_render_pass_create_from_graph(RenderingDevic
 	// resolving the dependencies between commands. This function creates a render pass for the framebuffer accordingly.
 	Framebuffer *framebuffer = (Framebuffer *)(p_user_data);
 	const FramebufferFormatKey &key = framebuffer->rendering_device->framebuffer_formats[framebuffer->format_id].E->key();
-	return _render_pass_create(p_driver, key.attachments, key.passes, p_load_ops, p_store_ops, framebuffer->view_count);
+	return _render_pass_create(p_driver, key.attachments, key.passes, p_load_ops, p_store_ops, framebuffer->view_count, key.vrs_method, key.vrs_attachment, key.vrs_texel_size);
 }
 
-RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count) {
+void RenderingDevice::_vrs_detect_method() {
+	const RDD::FragmentShadingRateCapabilities &fsr_capabilities = driver->get_fragment_shading_rate_capabilities();
+	const RDD::FragmentDensityMapCapabilities &fdm_capabilities = driver->get_fragment_density_map_capabilities();
+	if (fsr_capabilities.attachment_supported) {
+		vrs_method = VRS_METHOD_FRAGMENT_SHADING_RATE;
+	}
+
+	// If available, we prefer using fragment density maps on Qualcomm as they adjust tile distribution when using
+	// this technique. Performance as a result is higher than when using fragment shading rate.
+	bool prefer_fdm_on_qualcomm = device.vendor == RenderingContextDriver::VENDOR_QUALCOMM;
+	if ((vrs_method == VRS_METHOD_NONE || prefer_fdm_on_qualcomm) && fdm_capabilities.attachment_supported) {
+		vrs_method = VRS_METHOD_FRAGMENT_DENSITY_MAP;
+	}
+
+	switch (vrs_method) {
+		case VRS_METHOD_FRAGMENT_SHADING_RATE:
+			vrs_format = DATA_FORMAT_R8_UINT;
+			vrs_texel_size = Vector2i(16, 16).clamp(fsr_capabilities.min_texel_size, fsr_capabilities.max_texel_size);
+			break;
+		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
+			vrs_format = DATA_FORMAT_R8G8_UNORM;
+			vrs_texel_size = Vector2i(32, 32).clamp(fdm_capabilities.min_texel_size, fdm_capabilities.max_texel_size);
+			break;
+		default:
+			break;
+	}
+}
+
+RDG::ResourceUsage RenderingDevice::_vrs_usage_from_method(VRSMethod p_method) const {
+	switch (p_method) {
+		case VRS_METHOD_FRAGMENT_SHADING_RATE:
+			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ;
+		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
+			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ;
+		default:
+			return RDG::RESOURCE_USAGE_NONE;
+	}
+}
+
+RDD::PipelineStageBits RenderingDevice::_vrs_stages_from_method(VRSMethod p_method) const {
+	switch (p_method) {
+		case VRS_METHOD_FRAGMENT_SHADING_RATE:
+			return RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT;
+		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
+			return RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT;
+		default:
+			return RDD::PipelineStageBits(0);
+	}
+}
+
+RD::DataFormat RenderingDevice::vrs_get_format() const {
+	return vrs_format;
+}
+
+Size2i RenderingDevice::vrs_get_texel_size() const {
+	return vrs_texel_size;
+}
+
+RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count, int32_t p_fragment_density_map_attachment) {
 	FramebufferPass pass;
 	for (int i = 0; i < p_format.size(); i++) {
 		if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
@@ -2392,16 +2467,19 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create(
 
 	Vector<FramebufferPass> passes;
 	passes.push_back(pass);
-	return framebuffer_format_create_multipass(p_format, passes, p_view_count);
+	return framebuffer_format_create_multipass(p_format, passes, p_view_count, p_fragment_density_map_attachment);
 }
 
-RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count) {
+RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count, int32_t p_vrs_attachment) {
 	_THREAD_SAFE_METHOD_
 
 	FramebufferFormatKey key;
 	key.attachments = p_attachments;
 	key.passes = p_passes;
 	key.view_count = p_view_count;
+	key.vrs_method = vrs_method;
+	key.vrs_attachment = p_vrs_attachment;
+	key.vrs_texel_size = vrs_texel_size;
 
 	const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E = framebuffer_format_cache.find(key);
 	if (E) {
@@ -2417,7 +2495,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 		store_ops.push_back(RDD::ATTACHMENT_STORE_OP_STORE);
 	}
 
-	RDD::RenderPassID render_pass = _render_pass_create(driver, p_attachments, p_passes, load_ops, store_ops, p_view_count, &samples); // Actions don't matter for this use case.
+	RDD::RenderPassID render_pass = _render_pass_create(driver, p_attachments, p_passes, load_ops, store_ops, p_view_count, vrs_method, p_vrs_attachment, vrs_texel_size, &samples); // Actions don't matter for this use case.
 	if (!render_pass) { // Was likely invalid.
 		return INVALID_ID;
 	}
@@ -2457,7 +2535,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 	LocalVector<RDD::Subpass> subpass;
 	subpass.resize(1);
 
-	RDD::RenderPassID render_pass = driver->render_pass_create({}, subpass, {}, 1);
+	RDD::RenderPassID render_pass = driver->render_pass_create({}, subpass, {}, 1, RDD::AttachmentReference());
 	ERR_FAIL_COND_V(!render_pass, FramebufferFormatID());
 
 	FramebufferFormatID id = FramebufferFormatID(framebuffer_format_cache.size()) | (FramebufferFormatID(ID_TYPE_FRAMEBUFFER_FORMAT) << FramebufferFormatID(ID_BASE_SHIFT));
@@ -2528,8 +2606,6 @@ RID RenderingDevice::framebuffer_create(const Vector<RID> &p_texture_attachments
 
 		if (texture && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			pass.depth_attachment = i;
-		} else if (texture && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
-			pass.vrs_attachment = i;
 		} else {
 			if (texture && texture->is_resolve_buffer) {
 				pass.resolve_attachments.push_back(i);
@@ -2551,6 +2627,7 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 	Vector<AttachmentFormat> attachments;
 	LocalVector<RDD::TextureID> textures;
 	LocalVector<RDG::ResourceTracker *> trackers;
+	int32_t vrs_attachment = -1;
 	attachments.resize(p_texture_attachments.size());
 	Size2i size;
 	bool size_set = false;
@@ -2564,6 +2641,11 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 			ERR_FAIL_COND_V_MSG(texture->layers != p_view_count, RID(), "Layers of our texture doesn't match view count for this framebuffer");
 
 			_check_transfer_worker_texture(texture);
+
+			if (i != 0 && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+				// Detect if the texture is the fragment density map and it's not the first attachment.
+				vrs_attachment = i;
+			}
 
 			if (!size_set) {
 				size.width = texture->width;
@@ -2592,7 +2674,7 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 
 	ERR_FAIL_COND_V_MSG(!size_set, RID(), "All attachments unused.");
 
-	FramebufferFormatID format_id = framebuffer_format_create_multipass(attachments, p_passes, p_view_count);
+	FramebufferFormatID format_id = framebuffer_format_create_multipass(attachments, p_passes, p_view_count, vrs_attachment);
 	if (format_id == INVALID_ID) {
 		return RID();
 	}
@@ -3918,7 +4000,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	clear_value.color = p_clear_color;
 
 	RDD::RenderPassID render_pass = driver->swap_chain_get_render_pass(sc_it->value);
-	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, RDG::ATTACHMENT_OPERATION_CLEAR, clear_value, true, false, RDD::BreadcrumbMarker::BLIT_PASS);
+	draw_graph.add_draw_list_begin(render_pass, fb_it->value, viewport, RDG::ATTACHMENT_OPERATION_CLEAR, clear_value, RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, RDD::BreadcrumbMarker::BLIT_PASS);
 
 	draw_graph.add_draw_list_set_viewport(viewport);
 	draw_graph.add_draw_list_set_scissor(viewport);
@@ -3934,6 +4016,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
 
+	const FramebufferFormatKey &framebuffer_key = framebuffer_formats[framebuffer->format_id].E->key();
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
 
@@ -3954,12 +4037,12 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	thread_local LocalVector<RDD::RenderPassClearValue> clear_values;
 	thread_local LocalVector<RDG::ResourceTracker *> resource_trackers;
 	thread_local LocalVector<RDG::ResourceUsage> resource_usages;
-	bool uses_color = false;
-	bool uses_depth = false;
+	BitField<RDD::PipelineStageBits> stages;
 	operations.resize(framebuffer->texture_ids.size());
 	clear_values.resize(framebuffer->texture_ids.size());
 	resource_trackers.clear();
 	resource_usages.clear();
+	stages.clear();
 
 	uint32_t color_index = 0;
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
@@ -3976,7 +4059,11 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 
 		RDG::AttachmentOperation operation = RDG::ATTACHMENT_OPERATION_DEFAULT;
 		RDD::RenderPassClearValue clear_value;
-		if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+		if (framebuffer_key.vrs_attachment == i && (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+			resource_trackers.push_back(texture->draw_tracker);
+			resource_usages.push_back(_vrs_usage_from_method(framebuffer_key.vrs_method));
+			stages.set_flag(_vrs_stages_from_method(framebuffer_key.vrs_method));
+		} else if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 			if (p_draw_flags.has_flag(DrawFlags(DRAW_CLEAR_COLOR_0 << color_index))) {
 				ERR_FAIL_COND_V_MSG(color_index >= p_clear_color_values.size(), INVALID_ID, vformat("Color texture (%d) was specified to be cleared but no color value was provided.", color_index));
 				operation = RDG::ATTACHMENT_OPERATION_CLEAR;
@@ -3987,7 +4074,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 
 			resource_trackers.push_back(texture->draw_tracker);
 			resource_usages.push_back(RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE);
-			uses_color = true;
+			stages.set_flag(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 			color_index++;
 		} else if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			if (p_draw_flags.has_flag(DRAW_CLEAR_DEPTH) || p_draw_flags.has_flag(DRAW_CLEAR_STENCIL)) {
@@ -4000,14 +4087,15 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 
 			resource_trackers.push_back(texture->draw_tracker);
 			resource_usages.push_back(RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE);
-			uses_depth = true;
+			stages.set_flag(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
+			stages.set_flag(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
 		}
 
 		operations[i] = operation;
 		clear_values[i] = clear_value;
 	}
 
-	draw_graph.add_draw_list_begin(framebuffer->framebuffer_cache, Rect2i(viewport_offset, viewport_size), operations, clear_values, uses_color, uses_depth, p_breadcrumb);
+	draw_graph.add_draw_list_begin(framebuffer->framebuffer_cache, Rect2i(viewport_offset, viewport_size), operations, clear_values, stages, p_breadcrumb);
 	draw_graph.add_draw_list_usages(resource_trackers, resource_usages);
 
 	// Mark textures as bound.
@@ -4028,9 +4116,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	draw_list_framebuffer_format = framebuffer->format_id;
 #endif
 	draw_list_current_subpass = 0;
-
-	const FramebufferFormatKey &key = framebuffer_formats[framebuffer->format_id].E->key();
-	draw_list_subpass_count = key.passes.size();
+	draw_list_subpass_count = framebuffer_key.passes.size();
 
 	Rect2i viewport_rect(viewport_offset, viewport_size);
 	draw_graph.add_draw_list_set_viewport(viewport_rect);
@@ -6251,6 +6337,9 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		}
 	}
 
+	// Find the best method available for VRS on the current hardware.
+	_vrs_detect_method();
+
 	return OK;
 }
 
@@ -6674,7 +6763,20 @@ RenderingDevice *RenderingDevice::create_local_device() {
 }
 
 bool RenderingDevice::has_feature(const Features p_feature) const {
-	return driver->has_feature(p_feature);
+	// Some features can be deduced from the capabilities without querying the driver and looking at the capabilities.
+	switch (p_feature) {
+		case SUPPORTS_MULTIVIEW: {
+			const RDD::MultiviewCapabilities &multiview_capabilities = driver->get_multiview_capabilities();
+			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
+		}
+		case SUPPORTS_ATTACHMENT_VRS: {
+			const RDD::FragmentShadingRateCapabilities &fsr_capabilities = driver->get_fragment_shading_rate_capabilities();
+			const RDD::FragmentDensityMapCapabilities &fdm_capabilities = driver->get_fragment_density_map_capabilities();
+			return fsr_capabilities.attachment_supported || fdm_capabilities.attachment_supported;
+		}
+		default:
+			return driver->has_feature(p_feature);
+	}
 }
 
 void RenderingDevice::_bind_methods() {

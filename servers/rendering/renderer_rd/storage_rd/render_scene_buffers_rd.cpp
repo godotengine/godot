@@ -169,10 +169,10 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// Create our color buffer.
 	const bool resolve_target = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, get_color_usage_bits(resolve_target, false, can_be_storage));
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR, base_data_format, get_color_usage_bits(resolve_target, false, can_be_storage), RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 
 	// Create our depth buffer.
-	create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, get_depth_format(resolve_target, false, can_be_storage), get_depth_usage_bits(resolve_target, false, can_be_storage));
+	create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, get_depth_format(resolve_target, false, can_be_storage), get_depth_usage_bits(resolve_target, false, can_be_storage), RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 
 	// Create our MSAA buffers.
 	if (msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
@@ -725,9 +725,9 @@ uint32_t RenderSceneBuffersRD::get_velocity_usage_bits(bool p_resolve, bool p_ms
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {
-	return RD::DATA_FORMAT_R8_UINT;
+	return RD::get_singleton()->vrs_get_format();
 }
 
 uint32_t RenderSceneBuffersRD::get_vrs_usage_bits() {
-	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 }

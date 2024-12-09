@@ -1471,6 +1471,22 @@ Vector3 OpenXRInterface::get_hand_joint_angular_velocity(Hand p_hand, HandJoints
 	return Vector3();
 }
 
+PackedVector2Array OpenXRInterface::get_vrs_eye_foci(float p_aspect) {
+	PackedVector2Array ret;
+
+	if (!openxr_api) {
+		return ret;
+	}
+
+	uint32_t view_count = get_view_count();
+
+	for (uint32_t v = 0; v < view_count; v++) {
+		ret.push_back(openxr_api->get_eye_focus(v, p_aspect));
+	}
+
+	return ret;
+}
+
 RID OpenXRInterface::get_vrs_texture() {
 	if (!openxr_api) {
 		return RID();

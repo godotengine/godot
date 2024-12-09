@@ -234,6 +234,15 @@ Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double
 	return Projection();
 }
 
+PackedVector2Array XRInterfaceExtension::get_vrs_eye_foci(float p_aspect) {
+	PackedVector2Array vrs_eye_foci;
+	if (GDVIRTUAL_CALL(_get_vrs_eye_foci, p_aspect, vrs_eye_foci)) {
+		return vrs_eye_foci;
+	} else {
+		return XRInterface::get_vrs_eye_foci(p_aspect);
+	}
+}
+
 RID XRInterfaceExtension::get_vrs_texture() {
 	RID vrs_texture;
 	if (GDVIRTUAL_CALL(_get_vrs_texture, vrs_texture)) {

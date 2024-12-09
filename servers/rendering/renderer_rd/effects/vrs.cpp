@@ -42,8 +42,14 @@ using namespace RendererRD;
 VRS::VRS() {
 	{
 		Vector<String> vrs_modes;
-		vrs_modes.push_back("\n"); // VRS_DEFAULT
-		vrs_modes.push_back("\n#define USE_MULTIVIEW\n"); // VRS_MULTIVIEW
+		vrs_modes.push_back("\n#define SOURCE_TEXTURE\n"); // VRS_DEFAULT
+		vrs_modes.push_back("\n#define SOURCE_TEXTURE\n#define USE_MULTIVIEW\n"); // VRS_MULTIVIEW
+		vrs_modes.push_back("\n#define SOURCE_TEXTURE\n#define SPLIT_RG\n"); // VRS_RG
+		vrs_modes.push_back("\n#define SOURCE_TEXTURE\n#define SPLIT_RG\n#define USE_MULTIVIEW\n"); // VRS_RG_MULTIVIEW
+		vrs_modes.push_back("\n"); // VRS_DYNAMIC
+		vrs_modes.push_back("\n#define USE_MULTIVIEW\n"); // VRS_DYNAMIC_MULTIVIEW
+		vrs_modes.push_back("\n#define SPLIT_RG\n"); // VRS_DYNAMIC_RG
+		vrs_modes.push_back("\n#define SPLIT_RG\n#define USE_MULTIVIEW\n"); // VRS_DYNAMIC_RG_MULTIVIEW
 
 		vrs_shader.shader.initialize(vrs_modes);
 
@@ -80,14 +86,16 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 
 	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
 
+	int mode = 0;
 	VRSPushConstant push_constant = {};
-
-	int mode = p_multiview ? VRS_MULTIVIEW : VRS_DEFAULT;
-
-	// Set maximum texel factor based on maximum fragment size, some GPUs do not support 8x8 (fragment shading rate approach).
-	if (MIN(RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_WIDTH), RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_HEIGHT)) > 4) {
-		push_constant.max_texel_factor = 3.0;
+	bool uses_rg_format = RD::get_singleton()->vrs_get_format() == RD::DATA_FORMAT_R8G8_UNORM;
+	if (uses_rg_format) {
+		mode = p_multiview ? VRS_RG_MULTIVIEW : VRS_RG;
 	} else {
+		mode = p_multiview ? VRS_MULTIVIEW : VRS_DEFAULT;
+
+		// Default to 4x4 as it's not possible to query the max fragment size from RenderingDevice. This can be improved to use the largest size
+		// available if this code is moved over to RenderingDevice at some point.
 		push_constant.max_texel_factor = 2.0;
 	}
 
@@ -102,25 +110,62 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 	RD::get_singleton()->draw_list_end();
 }
 
-Size2i VRS::get_vrs_texture_size(const Size2i p_base_size) const {
-	int32_t texel_width = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_WIDTH);
-	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
+void VRS::draw_vrs(RID p_dest_framebuffer, const Vector<Vector2> &p_eye_centers, const float p_min_radius, const float p_max_radius, const float p_aspect_ratio) {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
 
-	int width = p_base_size.x / texel_width;
-	if (p_base_size.x % texel_width != 0) {
-		width++;
+	bool multiview = p_eye_centers.size() > 1;
+
+	int mode = 0;
+	VRSPushConstant push_constant = {};
+	bool uses_rg_format = RD::get_singleton()->vrs_get_format() == RD::DATA_FORMAT_R8G8_UNORM;
+	if (uses_rg_format) {
+		mode = multiview ? VRS_DYNAMIC_RG_MULTIVIEW : VRS_DYNAMIC_RG;
+	} else {
+		mode = multiview ? VRS_DYNAMIC_MULTIVIEW : VRS_DYNAMIC;
+
+		// Default to 4x4 as it's not possible to query the max fragment size from RenderingDevice. This can be improved to use the largest size
+		// available if this code is moved over to RenderingDevice at some point.
+		push_constant.max_texel_factor = 2.0;
 	}
-	int height = p_base_size.y / texel_height;
-	if (p_base_size.y % texel_height != 0) {
-		height++;
+
+	push_constant.min_radius = p_min_radius;
+	push_constant.max_radius = p_max_radius;
+	push_constant.aspect_ratio = p_aspect_ratio;
+
+	int i = 0;
+	for (const Vector2 &eye_center : p_eye_centers) {
+		push_constant.eye_center[i][0] = eye_center.x * 0.5 + 0.5;
+		push_constant.eye_center[i][1] = eye_center.y * 0.5 + 0.5;
+		i++;
 	}
-	return Size2i(width, height);
+
+	RID shader = vrs_shader.shader.version_get_shader(vrs_shader.shader_version, mode);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, vrs_shader.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(VRSPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
+	RD::get_singleton()->draw_list_end();
+}
+
+Size2i VRS::get_vrs_texture_size(const Size2i p_base_size) const {
+	Size2i vrs_texel_size = RD::get_singleton()->vrs_get_texel_size();
+	return Size2i((p_base_size.x + vrs_texel_size.x - 1) / vrs_texel_size.x, (p_base_size.y + vrs_texel_size.y - 1) / vrs_texel_size.y);
 }
 
 void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
 	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_target);
 	RS::ViewportVRSUpdateMode vrs_update_mode = texture_storage->render_target_get_vrs_update_mode(p_render_target);
+
+#ifndef _3D_DISABLED
+	if (vrs_mode == RS::VIEWPORT_VRS_XR_DYNAMIC) {
+		// We're not copying but generating, so always do this!
+		vrs_update_mode = RS::VIEWPORT_VRS_UPDATE_ALWAYS;
+	}
+#endif // _3D_DISABLED
 
 	if (vrs_mode != RS::VIEWPORT_VRS_DISABLED && vrs_update_mode != RS::VIEWPORT_VRS_UPDATE_DISABLED) {
 		RD::get_singleton()->draw_command_begin_label("VRS Setup");
@@ -149,6 +194,24 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 						copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 					}
 				}
+			}
+		} else if (vrs_mode == RS::VIEWPORT_VRS_XR_DYNAMIC) {
+			Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
+			if (interface.is_valid()) {
+				Size2 size = texture_storage->render_target_get_size(p_render_target);
+				float aspect_ratio = size.x / size.y;
+
+				// Need to get these from our interface:
+				PackedVector2Array eye_centers = interface->get_vrs_eye_foci(aspect_ratio);
+
+				// Need to vary these based on performance:
+				float min_radius = 0.1;
+				float max_radius = 0.3;
+
+				// TODO: should check if any of the above has changed since last frame,
+				// or VRS texture was marked dirty. Skip draw if neither is the case.
+
+				draw_vrs(p_vrs_fb, eye_centers, min_radius, max_radius, aspect_ratio);
 			}
 #endif // _3D_DISABLED
 		}

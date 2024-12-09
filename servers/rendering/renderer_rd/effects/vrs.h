@@ -44,14 +44,21 @@ private:
 	enum VRSMode {
 		VRS_DEFAULT,
 		VRS_MULTIVIEW,
+		VRS_RG,
+		VRS_RG_MULTIVIEW,
+		VRS_DYNAMIC,
+		VRS_DYNAMIC_MULTIVIEW,
+		VRS_DYNAMIC_RG,
+		VRS_DYNAMIC_RG_MULTIVIEW,
 		VRS_MAX,
 	};
 
 	struct VRSPushConstant {
+		float eye_center[2][2];
 		float max_texel_factor; // 4x8, 8x4 and 8x8 are only available on some GPUs.
-		float res1;
-		float res2;
-		float res3;
+		float min_radius;
+		float max_radius;
+		float aspect_ratio;
 	};
 
 	struct VRSShader {
@@ -66,6 +73,7 @@ public:
 	~VRS();
 
 	void copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multiview = false);
+	void draw_vrs(RID p_dest_framebuffer, const Vector<Vector2> &p_eye_centers, const float p_min_radius, const float p_max_radius, const float p_aspect_ratio);
 
 	Size2i get_vrs_texture_size(const Size2i p_base_size) const;
 	void update_vrs_texture(RID p_vrs_fb, RID p_render_target);

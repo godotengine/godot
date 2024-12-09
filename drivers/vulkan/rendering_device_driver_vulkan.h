@@ -76,18 +76,6 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		String supported_operations_desc() const;
 	};
 
-	struct VRSCapabilities {
-		bool pipeline_vrs_supported = false; // We can specify our fragment rate on a pipeline level.
-		bool primitive_vrs_supported = false; // We can specify our fragment rate on each drawcall.
-		bool attachment_vrs_supported = false; // We can provide a density map attachment on our framebuffer.
-
-		Size2i min_texel_size;
-		Size2i max_texel_size;
-		Size2i max_fragment_size;
-
-		Size2i texel_size; // The texel size we'll use
-	};
-
 	struct ShaderCapabilities {
 		bool shader_float16_is_supported = false;
 		bool shader_int8_is_supported = false;
@@ -135,7 +123,8 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	RDD::Capabilities device_capabilities;
 	SubgroupCapabilities subgroup_capabilities;
 	MultiviewCapabilities multiview_capabilities;
-	VRSCapabilities vrs_capabilities;
+	FragmentShadingRateCapabilities fsr_capabilities;
+	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	bool pipeline_cache_control_support = false;
@@ -560,7 +549,7 @@ public:
 
 	// ----- SUBPASS -----
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) override final;
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) override final;
 	virtual void render_pass_free(RenderPassID p_render_pass) override final;
 
 	// ----- COMMANDS -----
@@ -676,6 +665,8 @@ public:
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
