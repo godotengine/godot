@@ -1008,7 +1008,7 @@ Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExpor
 	}
 	PList info_plist;
 	if (!info_plist.load_string(str, err_str)) {
-		print_verbose(str);
+		PRINT_VERBOSE(str);
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not read 'actool' version."));
 		return err;
 	}
@@ -1051,7 +1051,7 @@ Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExpor
 
 	err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
 	if (err != OK || str.contains("error:") || !FileAccess::exists(p_app_path + "/Contents/Resources/Assets.car") || !FileAccess::exists(plist)) {
-		print_verbose(str);
+		PRINT_VERBOSE(str);
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not export liquid glass icon:") + "\n" + str);
 		return err;
 	}
@@ -1070,7 +1070,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 	int notary_tool = p_preset->get("notarization/notarization");
 	switch (notary_tool) {
 		case 1: { // "rcodesign"
-			print_verbose("using rcodesign notarization...");
+			PRINT_VERBOSE("using rcodesign notarization...");
 
 			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
@@ -1119,7 +1119,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
 				return Error::FAILED;
 			} else {
-				print_verbose("rcodesign (" + p_path + "):\n" + str);
+				PRINT_VERBOSE("rcodesign (" + p_path + "):\n" + str);
 				int next_nl = str.find_char('\n', rq_offset);
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 23) : str.substr(rq_offset + 23, next_nl - rq_offset - 23);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
@@ -1132,7 +1132,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 		} break;
 #ifdef MACOS_ENABLED
 		case 2: { // "notarytool"
-			print_verbose("using notarytool notarization...");
+			PRINT_VERBOSE("using notarytool notarization...");
 
 			if (!FileAccess::exists("/usr/bin/xcrun") && !FileAccess::exists("/bin/xcrun")) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Xcode command line tools are not installed."));
@@ -1203,7 +1203,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
 				return Error::FAILED;
 			} else {
-				print_verbose("notarytool (" + p_path + "):\n" + str);
+				PRINT_VERBOSE("notarytool (" + p_path + "):\n" + str);
 				int next_nl = str.find_char('\n', rq_offset);
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 4) : str.substr(rq_offset + 4, next_nl - rq_offset - 4);
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
@@ -1227,7 +1227,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 	int codesign_tool = p_preset->get("codesign/codesign");
 	switch (codesign_tool) {
 		case 1: { // built-in ad-hoc
-			print_verbose("using built-in codesign...");
+			PRINT_VERBOSE("using built-in codesign...");
 			String error_msg;
 			Error err = CodeSign::codesign(false, true, p_path, p_ent_path, error_msg);
 			if (err != OK) {
@@ -1236,7 +1236,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			}
 		} break;
 		case 2: { // "rcodesign"
-			print_verbose("using rcodesign codesign...");
+			PRINT_VERBOSE("using rcodesign codesign...");
 
 			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
@@ -1287,12 +1287,12 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
 				return;
 			} else {
-				print_verbose("rcodesign (" + p_path + "):\n" + str);
+				PRINT_VERBOSE("rcodesign (" + p_path + "):\n" + str);
 			}
 		} break;
 #ifdef MACOS_ENABLED
 		case 3: { // "codesign"
-			print_verbose("using xcode codesign...");
+			PRINT_VERBOSE("using xcode codesign...");
 
 			if (!FileAccess::exists("/usr/bin/codesign") && !FileAccess::exists("/bin/codesign")) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xcode command line tools are not installed."));
@@ -1353,7 +1353,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
 				return;
 			} else {
-				print_verbose("codesign (" + p_path + "):\n" + str);
+				PRINT_VERBOSE("codesign (" + p_path + "):\n" + str);
 			}
 		} break;
 #endif
@@ -1456,7 +1456,7 @@ Error EditorExportPlatformMacOS::_copy_and_validate_arch(const Ref<EditorExportP
 			return ERR_CANT_CREATE;
 		}
 		if (lip.extract_arch(arch_idx, p_to)) {
-			print_verbose(vformat("Extracted binary for architecture \"%s\" from universal binary \"%s\" to \"%s\".", architecture, p_from, p_to));
+			PRINT_VERBOSE(vformat("Extracted binary for architecture \"%s\" from universal binary \"%s\" to \"%s\".", architecture, p_from, p_to));
 			if (p_chmod_flags != -1) {
 				FileAccess::set_unix_permissions(p_to, p_chmod_flags);
 			}
@@ -1570,7 +1570,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 #ifndef UNIX_ENABLED
 		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
 #endif
-		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
+		PRINT_VERBOSE("export framework: " + p_src_path + " -> " + p_in_app_path);
 
 		bool plist_missing = false;
 		Ref<PList> plist;
@@ -1651,7 +1651,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			}
 		}
 	} else {
-		print_verbose("export dylib: " + p_src_path + " -> " + p_in_app_path);
+		PRINT_VERBOSE("export dylib: " + p_src_path + " -> " + p_in_app_path);
 		err = _copy_and_validate_arch(p_preset, dir_access, p_src_path, p_in_app_path);
 	}
 	if (err == OK && p_sign_enabled) {
@@ -1724,7 +1724,7 @@ Error EditorExportPlatformMacOS::_create_pkg(const Ref<EditorExportPreset> &p_pr
 		return err;
 	}
 
-	print_verbose("productbuild returned: " + str);
+	PRINT_VERBOSE("productbuild returned: " + str);
 	if (str.contains("productbuild: error:")) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("`productbuild` failed."));
 		return FAILED;
@@ -1756,7 +1756,7 @@ Error EditorExportPlatformMacOS::_create_dmg(const String &p_dmg_path, const Str
 		return err;
 	}
 
-	print_verbose("hdiutil returned: " + str);
+	PRINT_VERBOSE("hdiutil returned: " + str);
 	if (str.contains("create failed")) {
 		if (str.contains("File exists")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed - file exists."));
@@ -1817,7 +1817,7 @@ Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	print_verbose(vformat("Exporting debug symbols from %s, for architecture %s.", p_zip_path, p_arch));
+	PRINT_VERBOSE(vformat("Exporting debug symbols from %s, for architecture %s.", p_zip_path, p_arch));
 
 	String template_file_name = get_template_file_name(p_debug ? "debug" : "release", p_arch);
 	int ret = unzGoToFirstFile(src_pkg_zip);
@@ -1843,7 +1843,7 @@ Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const
 			unzCloseCurrentFile(src_pkg_zip);
 
 			if (data.size() > 0) {
-				print_verbose("ADDING: " + file + " size: " + itos(data.size()));
+				PRINT_VERBOSE("ADDING: " + file + " size: " + itos(data.size()));
 
 				file = p_path.path_join(file);
 				Error err = p_da->make_dir_recursive(file.get_base_dir());
@@ -1878,7 +1878,7 @@ Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const
 			}
 		}
 		if (id_match == 0) {
-			print_verbose(vformat("No matching symbols found in %s (%s found, %s expected).", p_zip_path, symb_debug_ids, p_exec_ids));
+			PRINT_VERBOSE(vformat("No matching symbols found in %s (%s found, %s expected).", p_zip_path, symb_debug_ids, p_exec_ids));
 			if (DirAccess::exists(p_path)) {
 				Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(p_path);
 				if (tmp_app_dir.is_null()) {
@@ -1930,7 +1930,7 @@ Error EditorExportPlatformMacOS::_copy_debugsymbols_recursively(Ref<DirAccess> &
 						return err;
 					}
 				}
-				print_verbose("ADDING: " + rel_path);
+				PRINT_VERBOSE("ADDING: " + rel_path);
 
 				err = p_da->copy(src_da->get_current_dir().path_join(n), p_path.path_join(rel_path));
 				if (err) {
@@ -1965,7 +1965,7 @@ bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const S
 	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debugsymbols_file_name(template_file_name));
 
 	if (DirAccess::exists(sym_path)) {
-		print_verbose(vformat("Exporting debug symbols from %s, for architecture %s.", sym_path, p_arch));
+		PRINT_VERBOSE(vformat("Exporting debug symbols from %s, for architecture %s.", sym_path, p_arch));
 		Vector<String> symb_debug_ids = OS::get_singleton()->get_debug_build_id(sym_path.path_join("Contents").path_join("Resources").path_join("DWARF").path_join("godot_" + template_file_name));
 		if (!symb_debug_ids.is_empty()) {
 			int id_match = 0;
@@ -1978,7 +1978,7 @@ bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const S
 			if (id_match > 0) {
 				r_err = _copy_debugsymbols_recursively(p_da, p_path.simplify_path(), sym_path, p_app_name, p_arch, p_debug);
 			} else {
-				print_verbose(vformat("No matching symbols found in %s (%s found, %s expected).", sym_path, symb_debug_ids, p_exec_ids));
+				PRINT_VERBOSE(vformat("No matching symbols found in %s (%s found, %s expected).", sym_path, symb_debug_ids, p_exec_ids));
 				r_err = ERR_FILE_NOT_FOUND;
 				return false;
 			}
@@ -2080,7 +2080,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		scr_path = tmp_base_path_name.path_join(pkg_name + ".command");
 	}
 
-	print_verbose("Exporting to " + tmp_app_path_name);
+	PRINT_VERBOSE("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
 
@@ -2108,7 +2108,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	// Create our folder structure.
 	if (err == OK) {
-		print_verbose("Creating " + tmp_app_path_name + "/Contents/MacOS");
+		PRINT_VERBOSE("Creating " + tmp_app_path_name + "/Contents/MacOS");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/MacOS"));
@@ -2116,7 +2116,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	if (err == OK) {
-		print_verbose("Creating " + tmp_app_path_name + "/Contents/Frameworks");
+		PRINT_VERBOSE("Creating " + tmp_app_path_name + "/Contents/Frameworks");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Frameworks"));
@@ -2124,7 +2124,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	if ((err == OK) && helpers.size() > 0) {
-		print_verbose("Creating " + tmp_app_path_name + "/Contents/Helpers");
+		PRINT_VERBOSE("Creating " + tmp_app_path_name + "/Contents/Helpers");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Helpers");
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Helpers"));
@@ -2132,7 +2132,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	if (err == OK) {
-		print_verbose("Creating " + tmp_app_path_name + "/Contents/Resources");
+		PRINT_VERBOSE("Creating " + tmp_app_path_name + "/Contents/Resources");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Resources"));
@@ -2318,7 +2318,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				if (err != OK) {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not created symlink \"%s\" -> \"%s\"."), lnk_data, file));
 				}
-				print_verbose(vformat("ADDING SYMLINK %s => %s\n", file, lnk_data));
+				PRINT_VERBOSE(vformat("ADDING SYMLINK %s => %s\n", file, lnk_data));
 			}
 
 			ret = unzGoToNextFile(src_pkg_zip);
@@ -2400,7 +2400,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (data.size() > 0) {
-			print_verbose("ADDING: " + file + " size: " + itos(data.size()));
+			PRINT_VERBOSE("ADDING: " + file + " size: " + itos(data.size()));
 
 			// Write it into our application bundle.
 			file = tmp_app_path_name.path_join(file);
@@ -2432,7 +2432,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 						err = ERR_CANT_CREATE;
 					}
 					if (lip.extract_arch(arch_idx, file)) {
-						print_verbose(vformat("Extracted binary for architecture \"%s\" from universal binary \"%s\" to \"%s\".", architecture, ofile, file));
+						PRINT_VERBOSE(vformat("Extracted binary for architecture \"%s\" from universal binary \"%s\" to \"%s\".", architecture, ofile, file));
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
 #ifndef UNIX_ENABLED
@@ -2499,7 +2499,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	// Copy debug symbols.
 	if (copy_debug_symbols) {
-		print_verbose("Exporting debug symbols to " + tmp_app_path_name + ".dSYM");
+		PRINT_VERBOSE("Exporting debug symbols to " + tmp_app_path_name + ".dSYM");
 		Vector<String> exec_debug_ids = OS::get_singleton()->get_debug_build_id(tmp_app_path_name.path_join("Contents").path_join("MacOS").path_join(pkg_name));
 		Vector<String> symb_debug_ids;
 		if (architecture == "universal") {
@@ -2898,11 +2898,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (FileAccess::exists(ent_path)) {
-			print_verbose("entitlements:\n" + FileAccess::get_file_as_string(ent_path));
+			PRINT_VERBOSE("entitlements:\n" + FileAccess::get_file_as_string(ent_path));
 		}
 
 		if (FileAccess::exists(hlp_ent_path)) {
-			print_verbose("helper entitlements:\n" + FileAccess::get_file_as_string(hlp_ent_path));
+			PRINT_VERBOSE("helper entitlements:\n" + FileAccess::get_file_as_string(hlp_ent_path));
 		}
 
 		// Clean up temporary entitlements files.
