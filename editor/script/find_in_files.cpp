@@ -126,12 +126,12 @@ void FindInFilesSearch::_notification(int p_what) {
 
 void FindInFilesSearch::start() {
 	if (pattern.is_empty()) {
-		print_verbose("Nothing to search, pattern is empty");
+		PRINT_VERBOSE("Nothing to search, pattern is empty");
 		emit_signal(SceneStringName(finished));
 		return;
 	}
 	if (extension_filter.is_empty()) {
-		print_verbose("Nothing to search, filter matches no files");
+		PRINT_VERBOSE("Nothing to search, filter matches no files");
 		emit_signal(SceneStringName(finished));
 		return;
 	}
@@ -210,7 +210,7 @@ void FindInFilesSearch::_iterate() {
 		_scan_file(fpath);
 
 	} else {
-		print_verbose("Search complete");
+		PRINT_VERBOSE("Search complete");
 		set_process(false);
 		current_dir = "";
 		searching = false;
@@ -228,7 +228,7 @@ float FindInFilesSearch::get_progress() const {
 void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out_folders, PackedStringArray &r_out_files_to_scan) {
 	Ref<DirAccess> dir = DirAccess::open(p_path);
 	if (dir.is_null()) {
-		print_verbose("Cannot open directory! " + p_path);
+		PRINT_VERBOSE("Cannot open directory! " + p_path);
 		return;
 	}
 
@@ -284,7 +284,7 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 void FindInFilesSearch::_scan_file(const String &p_fpath) {
 	Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
 	if (f.is_null()) {
-		print_verbose("Cannot open file " + p_fpath);
+		PRINT_VERBOSE("Cannot open file " + p_fpath);
 		return;
 	}
 
@@ -1119,7 +1119,7 @@ void FindInFilesPanel::_apply_replaces_in_file(const String &p_fpath, const Vect
 		int _;
 		if (!find_next(line, search_text, repl_begin, finder->is_match_case(), finder->is_whole_words(), _, _)) {
 			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, repl_begin));
+			PRINT_VERBOSE(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, repl_begin));
 			continue;
 		}
 
