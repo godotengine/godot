@@ -2278,9 +2278,14 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 		target_ticks += dynamic_delay;
 		uint64_t current_ticks = get_ticks_usec();
 
-		// The minimum sleep resolution on windows is 1 ms on most systems.
-		if (current_ticks < (target_ticks - delay_resolution)) {
-			delay_usec((target_ticks - delay_resolution) - current_ticks);
+		if (target_ticks > current_ticks + delay_resolution) {
+			uint64_t delay_time = target_ticks - current_ticks - delay_resolution;
+			// Make sure we always sleep for a multiple of delay_resolution to avoid overshooting.
+			// Refer to: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep#remarks
+			delay_time = (delay_time / delay_resolution) * delay_resolution;
+			if (delay_time > 0) {
+				delay_usec(delay_time);
+			}
 		}
 		// Busy wait for the remainder of time.
 		while (get_ticks_usec() < target_ticks) {
