@@ -162,7 +162,7 @@ bool RenderingDeviceGraph::_check_command_intersection(ResourceTracker *p_resour
 bool RenderingDeviceGraph::_check_command_partial_coverage(ResourceTracker *p_resource_tracker, int32_t p_command_index) const {
 	if (p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE && p_resource_tracker->usage != RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE) {
 		// We don't check for partial coverage in usages that aren't attachment writes.
-		return true;
+		return false;
 	}
 
 	const uint32_t command_data_offset = command_data_offsets[p_command_index];
