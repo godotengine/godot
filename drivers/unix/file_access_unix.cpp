@@ -443,7 +443,7 @@ void FileAccessUnix::close() {
 	_close();
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
+FileAccessUnix::CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {
 	_close();
