@@ -635,6 +635,8 @@ class DisplayServerWindows : public DisplayServer {
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
+	bool _is_always_on_top_recursive(WindowID p_window) const;
+
 	void _update_window_style(WindowID p_window, bool p_repaint = true);
 	void _update_window_mouse_passthrough(WindowID p_window);
 
